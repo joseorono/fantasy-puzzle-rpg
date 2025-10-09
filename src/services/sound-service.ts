@@ -51,9 +51,9 @@ class SoundService {
   // In JavaScript, objects and arrays are passed by reference, so this will not create a new object
   public static soundApi = sound;
 
-  public audioLoaded: boolean;
-  public isPreloading: boolean;
-  public globalVolume: number; //between 0 and 1;
+  public audioLoaded: boolean = false;
+  public isPreloading: boolean = false;
+  public globalVolume: number = 1; //between 0 and 1;
 
   constructor() {
     if (!SoundService.instance) {

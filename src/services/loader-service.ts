@@ -9,7 +9,7 @@ class LoaderService {
 
   constructor() {
     if (!LoaderService.instance) {
-      console.log('created new instance of sound service');
+      console.log('created new instance of loader service');
       this.isLoaded = false;
       this.isPreloading = false;
       LoaderService.instance = this;

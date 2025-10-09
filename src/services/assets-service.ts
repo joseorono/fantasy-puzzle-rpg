@@ -36,8 +36,8 @@ export const assetList: string[] = [
 
 class AssetsService {
   private static instance: AssetsService;
-  public isPreloading: boolean;
-  public assetsLoaded: boolean;
+  public isPreloading: boolean = false;
+  public assetsLoaded: boolean = false;
 
   constructor() {
     if (!AssetsService.instance) {
