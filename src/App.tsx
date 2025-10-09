@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { Button } from "./components/ui/8bit/button";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -25,7 +26,10 @@ function App() {
       <p className="read-the-docs text-center">
         Click on the Vite and React logos to learn more
       </p>
-
+      <p>
+        <span className="text-blue-500">Hello World</span>
+        <Button>Button</Button>
+      </p>
     </>
   );
 }

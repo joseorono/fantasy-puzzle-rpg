@@ -3,10 +3,13 @@
   ---break---
   */
 @plugin "tailwindcss-animate";
-@import "tw-animate-css";
 /*
   ---break---
-  */
+*/
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
