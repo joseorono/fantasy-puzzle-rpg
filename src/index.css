@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /*
   font-synthesis: none;
@@ -6,3 +10,4 @@
   -moz-osx-font-smoothing: grayscale;
   */
 }
+
