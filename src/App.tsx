@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./App.css";
 import { Button } from "./components/ui/8bit/button";
 
 function App() {

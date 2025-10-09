@@ -1,13 +1,23 @@
 {
   "name": "fantasy-puzzle-rpg",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev-expose-host": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test-cli": "vitest --run --reporter verbose",
+    "test": "vitest --ui",
+    "test-filter": "vitest --reporter verbose --testNamePattern",
+    "coverage": "vitest run --coverage",
+    "prettier-format": "prettier --config .prettierrc --write src/**/*.ts src/**/*.tsx spec/**/*.ts",
+    "prettier-watch": "onchange src/**/*.ts src/**/*.tsx spec/**/*.ts -- prettier --write {{changed}}",
+    "visualize-bundle": "vite-bundle-visualizer & vite-bundle-visualizer -t sunburst & vite-bundle-visualizer -t network",
+    "check-updates": "ncu",
+    "update-deps": "ncu -u && npm install"
   },
   "dependencies": {
     "@pixi/sound": "^6.0.1",
