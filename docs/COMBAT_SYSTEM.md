@@ -67,7 +67,8 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Display**: Header shows countdown in seconds
 - **Styling**: Red background with pulsing animation
 - **Icon**: Crossed swords icon
-- **Reset**: Automatically resets to 8 seconds after each attack
+- **Reset**: Automatically resets to 4 seconds after each attack
+- **Interval**: Configurable via `enemy.attackInterval` (default: 4000ms)
 
 ### Health Bars
 - **Party Health**: Collective health bar at top of enemy section
@@ -82,11 +83,13 @@ The battle screen now features a fully functional combat system with enemy attac
 
 ### State Management (Jotai Atoms)
 ```typescript
-// New atoms added:
-- gameStatusAtom: 'playing' | 'won' | 'lost'
-- lastDamageAtom: { amount, target, timestamp }
-- damagePartyAtom: Action to damage party
+// Combat-related atoms:
+- gameStatusAtom: BattleStatus ('playing' | 'won' | 'lost')
+- lastDamageAtom: { amount, target: ActionTarget, timestamp, characterId? }
+- lastMatchedTypeAtom: OrbType | null
+- damagePartyAtom: Action to damage party (targets random living hero)
 - damageEnemyAtom: Action to damage enemy
+- removeMatchedOrbsAtom: Action to remove matched orbs and refill board
 ```
 
 ### Components Added
@@ -115,31 +118,58 @@ The battle screen now features a fully functional combat system with enemy attac
 
 ### Type Updates
 ```typescript
-// Enemy interface now includes:
-interface Enemy {
-  attackInterval?: number;  // 8000ms
+// EnemyData interface (rpg-elements.ts):
+interface EnemyData extends BaseStats {
+  type: string;
+  sprite: string;
+  attackInterval?: number;  // 4000ms (4 seconds)
   attackDamage?: number;    // 25 HP
 }
 
-// BattleState interface now includes:
+// CharacterData interface (rpg-elements.ts):
+interface CharacterData extends BaseStats {
+  class: CharacterClass;
+  color: OrbType;  // Matches orb type for damage calculation
+  skillCooldown: number;
+  maxCooldown: number;
+}
+
+// BattleState interface (battle.ts):
 interface BattleState {
-  gameStatus: 'playing' | 'won' | 'lost';
-  lastDamage: { amount, target, timestamp } | null;
+  party: CharacterData[];
+  enemy: EnemyData;
+  board: Orb[][];
+  gameStatus: BattleStatus;
+  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
+  lastMatchedType: OrbType | null;
+  enemyAttackTimestamp?: number | null;
+}
+
+// Orb interface (battle.ts):
+interface Orb {
+  id: string;
+  type: OrbType;  // Changed from 'color' to 'type'
+  row: number;
+  col: number;
+  isMatched?: boolean;
+  isHighlighted?: boolean;
 }
 ```
 
 ## Gameplay Flow
 
 1. **Battle Start**
-   - Party at full HP (410 total)
+   - Party at full HP (390 total: Warrior 120, Rogue 90, Mage 80, Healer 100)
    - Enemy at full HP (300)
-   - 8-second attack timer begins
+   - 4-second attack timer begins
 
 2. **During Battle**
    - Player makes matches to damage enemy
-   - Enemy attacks every 8 seconds
-   - Health bars update in real-time
+   - Enemy attacks every 4 seconds (targets random living hero)
+   - Health bars update in real-time with color-coded feedback
    - Damage numbers show feedback
+   - Matched orbs trigger particle effects and gravity animations
+   - Health bar pulses when matching orbs of character colors
 
 3. **Battle End**
    - When enemy HP = 0: Victory modal appears
@@ -150,15 +180,21 @@ interface BattleState {
 ## Balance Notes
 
 ### Current Stats
-- **Party Total HP**: 410 (Warrior: 120, Rogue: 90, Mage: 80, Healer: 100)
+- **Party Total HP**: 390 (Warrior: 120, Rogue: 90, Mage: 80, Healer: 100)
 - **Enemy HP**: 300
-- **Enemy Attack**: 25 damage every 8 seconds
+- **Enemy Attack**: 25 damage every 4 seconds (targets random living hero)
 - **Player Damage**: 10-20 per match
 
 ### Time to Defeat
-- **Without healing**: ~16-17 enemy attacks to lose (64-68 seconds)
+- **Without healing**: ~16 enemy attacks to lose (64 seconds)
 - **To win**: Need 15-30 matches depending on combos
-- **Average battle**: 40-60 seconds
+- **Average battle**: 30-50 seconds
+
+### Orb Type System
+- Each character is associated with an orb type (color)
+- Matching orbs of a character's type provides visual feedback
+- Health bar changes color based on last matched type
+- Gray orbs are neutral and don't trigger character-specific effects
 
 ## Future Enhancements
 - Character-specific abilities when skills are ready

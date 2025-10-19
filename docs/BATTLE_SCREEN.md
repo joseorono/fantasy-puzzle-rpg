@@ -52,11 +52,19 @@ src/
 │   └── battle/
 │       ├── enemy-display.tsx      # Top half - enemy and party health
 │       ├── party-display.tsx      # Bottom half - party sprites
-│       └── match3-board.tsx       # Match-3 game board
+│       ├── match3-board.tsx       # Match-3 game board
+│       ├── game-over-modal.tsx    # Victory/defeat modal
+│       └── damage-number.tsx      # Floating damage indicators
 ├── stores/
 │   └── battle-store.ts            # Jotai atoms for battle state
 ├── types/
-│   └── battle.ts                  # TypeScript interfaces
+│   ├── rpg-elements.ts            # Core RPG types (characters, enemies, orbs)
+│   ├── battle.ts                  # Battle-specific types
+│   ├── components.ts              # Component prop types
+│   └── index.ts                   # Type re-exports
+├── constants/
+│   ├── game.ts                    # Game configuration and initial data
+│   └── ui.ts                      # UI styling constants
 ├── views/
 │   └── battle-screen.tsx          # Main battle screen layout
 └── styles/
@@ -66,26 +74,58 @@ src/
 ## State Management
 Using Jotai atoms for reactive state:
 - `battleStateAtom` - Main battle state
-- `partyAtom` - Party characters
-- `enemyAtom` - Enemy data
-- `boardAtom` - Match-3 board
+- `partyAtom` - Party characters (CharacterData[])
+- `enemyAtom` - Enemy data (EnemyData)
+- `boardAtom` - Match-3 board (Orb[][])
 - `selectedOrbAtom` - Currently selected orb
 - `selectOrbAtom` - Action to select an orb
 - `swapOrbsAtom` - Action to swap orbs
+- `damagePartyAtom` - Action to damage party
+- `damageEnemyAtom` - Action to damage enemy
 - `resetBattleAtom` - Reset battle state
+- `gameStatusAtom` - Game status ('playing' | 'won' | 'lost')
+- `lastDamageAtom` - Last damage dealt
+- `lastMatchedTypeAtom` - Last matched orb type
+
+## Type System
+
+### Core RPG Types (`rpg-elements.ts`)
+- `OrbType` - Orb type identifiers ('blue' | 'green' | 'purple' | 'yellow' | 'gray')
+- `CharacterClass` - Character classes ('warrior' | 'rogue' | 'mage' | 'healer')
+- `BaseStats` - Shared stats for characters and enemies (id, name, HP)
+- `CharacterData` - Character-specific stats (extends BaseStats)
+- `EnemyData` - Enemy-specific stats (extends BaseStats)
+
+### Battle Types (`battle.ts`)
+- `ActionTarget` - Target of actions ('party' | 'enemy')
+- `Orb` - Match-3 orb data (id, type, position)
+- `Match` - Match detection result
+- `BattleStatus` - Battle state ('playing' | 'won' | 'lost')
+- `BattleState` - Complete battle state
 
 ## Customization
-- Modify `initialParty` in `battle-store.ts` to change party composition
-- Adjust `initialEnemy` to change enemy stats
-- Update `createInitialBoard()` to change board size
-- Customize colors in `characterColors` and `orbColorClasses`
+- Modify `INITIAL_PARTY` in `constants/game.ts` to change party composition
+- Adjust `INITIAL_ENEMY` to change enemy stats
+- Update `BOARD_ROWS` and `BOARD_COLS` to change board size
+- Customize `ORB_TYPES` array to add/remove orb types
+- Update styling in `constants/ui.ts` for colors and effects
+
+## Implemented Features
+✅ Damage calculation and combat system
+✅ Orb falling/gravity animations
+✅ Particle effects for matches
+✅ Win/lose conditions
+✅ Game over modal with restart
+✅ Enemy attack timer
+✅ Floating damage numbers
+✅ Health bar animations
 
 ## Future Enhancements
 - Actual pixel art sprites for characters and enemies
-- Orb falling/gravity animations
-- Damage calculation and combat system
 - Sound effects and background music
-- Particle effects for matches
-- Special abilities and power-ups
-- Multiple enemy types
-- Level progression
+- Character-specific special abilities
+- Healing mechanics
+- Multiple enemy types with different attack patterns
+- Level progression and difficulty scaling
+- Equipment and stat upgrades
+- Save/load game state

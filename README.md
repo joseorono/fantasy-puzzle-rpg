@@ -1,17 +1,73 @@
-# React + TypeScript + Vite
+# Fantasy Puzzle RPG
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A cozy fantasy Match-3 RPG battle system with pixel art aesthetics, built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## 🎮 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Match-3 Combat System**: Strategic puzzle-based battles with real-time combat
+- **Party Management**: Four unique character classes (Warrior, Rogue, Mage, Healer)
+- **Enemy Encounters**: Timed enemy attacks with visual feedback
+- **Pixel Art Aesthetic**: Retro-inspired UI with modern React components
+- **Type-Safe**: Full TypeScript implementation with comprehensive type system
+- **State Management**: Reactive state with Jotai atoms
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## 📚 Documentation
+
+- [Battle Screen](./docs/BATTLE_SCREEN.md) - UI components and layout
+- [Combat System](./docs/COMBAT_SYSTEM.md) - Game mechanics and balance
+
+## 🛠️ Tech Stack
+
+- **React 19** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling
+- **Jotai** for state management
+- **Lucide React** for icons
+- **React Compiler** for optimized rendering
+
+## 📁 Project Structure
+
+```
+src/
+├── components/       # React components
+│   ├── battle/      # Battle-specific components
+│   └── ui/          # Reusable UI components
+├── stores/          # Jotai state management
+├── types/           # TypeScript type definitions
+├── constants/       # Game configuration
+├── views/           # Page-level components
+└── lib/             # Utility functions
+```
+
+## 🎯 Type System
+
+The project uses a well-organized type system:
+
+- **`rpg-elements.ts`**: Core RPG types (CharacterData, EnemyData, OrbType)
+- **`battle.ts`**: Battle-specific types (BattleState, Orb, Match)
+- **`components.ts`**: Component prop types
 
 ## React Compiler
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+The React Compiler is enabled on this project. See [this documentation](https://react.dev/learn/react-compiler) for more information.
 
-Note: This will impact Vite dev & build performances.
+Note: This will impact Vite dev & build performances. We might need to remove it later if the tradeoff is not worth it.
 
 ## Expanding the ESLint configuration
 
