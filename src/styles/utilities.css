@@ -1,0 +1,32 @@
+/* Pixel art image rendering */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Retro screen effect */
+.retro-screen {
+  position: relative;
+}
+
+.retro-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    transparent 1px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 3px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Pixel border utility */
+.pixel-border {
+  border-style: solid;
+  border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><rect x="0" y="0" width="2" height="2" fill="black"/><rect x="4" y="0" width="2" height="2" fill="black"/><rect x="0" y="4" width="2" height="2" fill="black"/><rect x="4" y="4" width="2" height="2" fill="black"/></svg>') 2;
+}
