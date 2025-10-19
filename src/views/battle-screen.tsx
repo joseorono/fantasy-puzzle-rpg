@@ -16,7 +16,11 @@ export default function BattleScreen() {
   const resetBattle = useSetAtom(resetBattleAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const [isMuted, setIsMuted] = useState(false);
-  const [nextAttackIn, setNextAttackIn] = useState(4);
+  
+  // Derive attack interval in seconds from enemy config
+  const attackIntervalSeconds = (enemy.attackInterval || 4000) / 1000;
+  
+  const [nextAttackIn, setNextAttackIn] = useState(attackIntervalSeconds);
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -30,12 +34,12 @@ export default function BattleScreen() {
     }
 
     // Reset countdown
-    setNextAttackIn(4);
+    setNextAttackIn(attackIntervalSeconds);
 
     // Countdown timer (updates every second)
     countdownRef.current = setInterval(() => {
       setNextAttackIn(prev => {
-        if (prev <= 1) return 4;
+        if (prev <= 1) return attackIntervalSeconds;
         return prev - 1;
       });
     }, 1000);
@@ -50,7 +54,7 @@ export default function BattleScreen() {
       if (attackTimerRef.current) clearInterval(attackTimerRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [gameStatus, enemy.attackInterval, enemy.attackDamage, damageParty]);
+  }, [gameStatus, enemy.attackInterval, enemy.attackDamage, damageParty, attackIntervalSeconds]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
