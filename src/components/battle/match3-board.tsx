@@ -1,33 +1,12 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
 import { boardAtom, selectedOrbAtom, selectOrbAtom, swapOrbsAtom, damageEnemyAtom, removeMatchedOrbsAtom, battleStateAtom } from '~/stores/battle-store';
-import type { Orb, OrbColor } from '~/types/battle';
+import type { Orb, BattleState } from '~/types/battle';
+import type { OrbColor } from '~/types/rpg-elements';
+import type { OrbComponentProps } from '~/types/components';
 import { cn } from '~/lib/utils';
-import type { BattleState } from '~/types/battle';
+import { ORB_COLOR_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 
-const orbColorClasses: Record<OrbColor, string> = {
-  blue: 'bg-blue-500 shadow-blue-600 border-blue-400',
-  green: 'bg-green-500 shadow-green-600 border-green-400',
-  purple: 'bg-purple-500 shadow-purple-600 border-purple-400',
-  yellow: 'bg-yellow-400 shadow-yellow-500 border-yellow-300',
-  gray: 'bg-gray-400 shadow-gray-500 border-gray-300',
-};
-
-const orbGlowClasses: Record<OrbColor, string> = {
-  blue: 'shadow-[0_0_20px_rgba(59,130,246,0.8)]',
-  green: 'shadow-[0_0_20px_rgba(34,197,94,0.8)]',
-  purple: 'shadow-[0_0_20px_rgba(168,85,247,0.8)]',
-  yellow: 'shadow-[0_0_20px_rgba(250,204,21,0.8)]',
-  gray: 'shadow-[0_0_20px_rgba(156,163,175,0.5)]',
-};
-
-interface OrbComponentProps {
-  orb: Orb;
-  isSelected: boolean;
-  isInvalidSwap: boolean;
-  isNew: boolean;
-  onSelect: () => void;
-}
 
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
@@ -56,9 +35,9 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
         'relative w-12 h-12 md:w-14 md:h-14 rounded-full transition-all duration-200',
         'border-4 cursor-pointer',
         'hover:scale-110 active:scale-95',
-        orbColorClasses[orb.color],
+        ORB_COLOR_CLASSES[orb.color],
         isSelected && 'scale-110 ring-4 ring-white animate-pulse',
-        orb.isHighlighted && [orbGlowClasses[orb.color], 'animate-ping'],
+        orb.isHighlighted && [ORB_GLOW_CLASSES[orb.color], 'animate-ping'],
         isDisappearing && 'scale-0 opacity-0 rotate-180',
         isInvalidSwap && 'shake ring-4 ring-red-500',
         isNew && 'fall-in'
@@ -85,7 +64,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
               key={i}
               className={cn(
                 'absolute w-2 h-2 rounded-full animate-ping',
-                orbColorClasses[orb.color]
+                ORB_COLOR_CLASSES[orb.color]
               )}
               style={{
                 top: '50%',

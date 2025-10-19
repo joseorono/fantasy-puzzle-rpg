@@ -1,18 +1,12 @@
 import { useAtomValue } from 'jotai';
 import { partyAtom, partyHealthPercentageAtom, lastMatchedColorAtom, lastDamageAtom } from '~/stores/battle-store';
-import type { Character, OrbColor } from '~/types/battle';
+import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
-import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import { CHARACTER_ICONS, HEALTH_BAR_COLORS } from '~/constants/ui';
 
-const characterIcons = {
-  warrior: Sword,
-  rogue: Zap,
-  mage: Sparkles,
-  healer: Heart,
-};
-
+// Character colors with cooldown property
 const characterColors = {
   warrior: {
     bg: 'bg-blue-600',
@@ -44,12 +38,8 @@ const characterColors = {
   },
 };
 
-interface CharacterSpriteProps {
-  character: Character;
-}
-
 function CharacterSprite({ character }: CharacterSpriteProps) {
-  const Icon = characterIcons[character.class];
+  const Icon = CHARACTER_ICONS[character.class];
   const colors = characterColors[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
   const healthPercentage = (character.currentHp / character.maxHp) * 100;
@@ -197,13 +187,6 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
   );
 }
 
-const healthBarColors: Record<OrbColor, string> = {
-  blue: 'from-blue-600 to-blue-500',
-  green: 'from-green-600 to-green-500',
-  purple: 'from-purple-600 to-purple-500',
-  yellow: 'from-yellow-500 to-yellow-400',
-  gray: 'from-gray-600 to-gray-500',
-};
 
 export function PartyDisplay() {
   const party = useAtomValue(partyAtom);
@@ -223,7 +206,7 @@ export function PartyDisplay() {
   // Determine health bar color
   const getHealthBarColor = () => {
     if (lastMatchedColor && lastMatchedColor !== 'gray') {
-      return healthBarColors[lastMatchedColor];
+      return HEALTH_BAR_COLORS[lastMatchedColor];
     }
     // Default color based on health percentage
     if (partyHealthPercentage > 50) return 'from-green-600 to-green-500';

@@ -1,4 +1,6 @@
-export type OrbColor = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
+import type { CharacterData, EnemyData, OrbColor } from './rpg-elements';
+
+export type ActionTarget = 'party' | 'enemy';
 
 export interface Orb {
   id: string;
@@ -9,27 +11,6 @@ export interface Orb {
   isHighlighted?: boolean;
 }
 
-export interface Character {
-  id: string;
-  name: string;
-  class: 'warrior' | 'rogue' | 'mage' | 'healer';
-  color: OrbColor;
-  maxHp: number;
-  currentHp: number;
-  skillCooldown: number;
-  maxCooldown: number;
-}
-
-export interface Enemy {
-  id: string;
-  name: string;
-  type: string;
-  maxHp: number;
-  currentHp: number;
-  sprite: string;
-  attackInterval?: number;
-  attackDamage?: number;
-}
 
 export interface Match {
   orbs: Orb[];
@@ -38,16 +19,18 @@ export interface Match {
   multiplier: number;
 }
 
+export type BattleStatus = 'playing' | 'won' | 'lost';
+
 export interface BattleState {
-  party: Character[];
-  enemy: Enemy;
+  party: CharacterData[];
+  enemy: EnemyData;
   board: Orb[][];
   selectedOrb: { row: number; col: number } | null;
   currentMatches: Match[];
   score: number;
   turn: number;
-  gameStatus: 'playing' | 'won' | 'lost';
-  lastDamage: { amount: number; target: 'party' | 'enemy'; timestamp: number; characterId?: string } | null;
+  gameStatus: BattleStatus;
+  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
   lastMatchedColor: OrbColor | null;
   enemyAttackTimestamp?: number | null;
 }

@@ -3,10 +3,7 @@ import { useAtomValue } from 'jotai';
 import { lastDamageAtom } from '~/stores/battle-store';
 import { cn } from '~/lib/utils';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
-
-interface DamageNumberProps {
-  target: 'party' | 'enemy';
-}
+import type { DamageNumberProps } from '~/types/components';
 
 export function DamageNumber({ target }: DamageNumberProps) {
   const lastDamage = useAtomValue(lastDamageAtom);

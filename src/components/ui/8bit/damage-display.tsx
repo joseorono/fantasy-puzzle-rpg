@@ -1,10 +1,5 @@
 import { cn } from "~/lib/utils";
-
-interface DamageDisplayProps {
-  amount: number;
-  type: 'damage' | 'heal' | 'critical';
-  className?: string;
-}
+import type { DamageDisplayProps } from "~/types/components";
 
 export function DamageDisplay({ amount, type, className }: DamageDisplayProps) {
   const getTypeStyles = () => {

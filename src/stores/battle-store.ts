@@ -1,11 +1,12 @@
 import { atom } from 'jotai';
-import type { BattleState, Character, Enemy, Orb, OrbColor } from '~/types/battle';
+import type { BattleState, Orb } from '~/types/battle';
+import type { OrbColor } from '~/types/rpg-elements';
 import { randIntInRange, substractionWithMin } from '~/lib/math';
+import { ORB_COLORS, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 
 // Helper function to generate a random orb color
 const getRandomOrbColor = (): OrbColor => {
-  const colors: OrbColor[] = ['blue', 'green', 'purple', 'yellow', 'gray'];
-  return colors[randIntInRange(0, colors.length - 1)];
+  return ORB_COLORS[randIntInRange(0, ORB_COLORS.length - 1)];
 };
 
 // Helper function to check if there's a match at a position
@@ -42,7 +43,7 @@ const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean =
 };
 
 // Helper function to create initial board
-const createInitialBoard = (rows: number = 8, cols: number = 6): Orb[][] => {
+const createInitialBoard = (rows: number = BOARD_ROWS, cols: number = BOARD_COLS): Orb[][] => {
   const board: Orb[][] = [];
   for (let row = 0; row < rows; row++) {
     board[row] = [];
@@ -58,61 +59,9 @@ const createInitialBoard = (rows: number = 8, cols: number = 6): Orb[][] => {
   return board;
 };
 
-// Initial party setup
-const initialParty: Character[] = [
-  {
-    id: 'warrior',
-    name: 'Warrior',
-    class: 'warrior',
-    color: 'blue',
-    maxHp: 120,
-    currentHp: 120,
-    skillCooldown: 0,
-    maxCooldown: 3,
-  },
-  {
-    id: 'rogue',
-    name: 'Rogue',
-    class: 'rogue',
-    color: 'green',
-    maxHp: 90,
-    currentHp: 90,
-    skillCooldown: 0,
-    maxCooldown: 2,
-  },
-  {
-    id: 'mage',
-    name: 'Mage',
-    class: 'mage',
-    color: 'purple',
-    maxHp: 80,
-    currentHp: 80,
-    skillCooldown: 0,
-    maxCooldown: 4,
-  },
-  {
-    id: 'healer',
-    name: 'Healer',
-    class: 'healer',
-    color: 'yellow',
-    maxHp: 100,
-    currentHp: 100,
-    skillCooldown: 0,
-    maxCooldown: 3,
-  },
-];
-
-// Initial enemy setup
-const initialEnemy: Enemy = {
-  id: 'moss-golem',
-  name: 'Moss Golem',
-  type: 'golem',
-  maxHp: 300,
-  currentHp: 300,
-  sprite: '🗿', // Placeholder - will be replaced with pixel art
-  attackInterval: 4000, // 4 seconds
-  attackDamage: 25,
-};
+// Use initial data from constants
+const initialParty = INITIAL_PARTY;
+const initialEnemy = INITIAL_ENEMY;
 
 // Initial battle state
 const initialBattleState: BattleState = {
