@@ -1,0 +1,91 @@
+/* Pixel font styling inspired by Katana Zero */
+.pixel-font {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  text-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.05em;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Alternative: Use system monospace with pixel styling */
+.pixel-font-alt {
+  font-family: 'Courier New', 'Courier', monospace;
+  font-weight: bold;
+  text-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.1em;
+  text-shadow: 
+    2px 2px 0px rgba(0, 0, 0, 0.8),
+    1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Damage number animation */
+@keyframes damage-float {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-30px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.damage-number {
+  animation: damage-float 1s ease-out forwards;
+}
+
+/* Pixel art image rendering */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Retro screen effect */
+.retro-screen {
+  position: relative;
+}
+
+.retro-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    transparent 1px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 3px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Pixel border utility */
+.pixel-border {
+  border-style: solid;
+  border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><rect x="0" y="0" width="2" height="2" fill="black"/><rect x="4" y="0" width="2" height="2" fill="black"/><rect x="0" y="4" width="2" height="2" fill="black"/><rect x="4" y="4" width="2" height="2" fill="black"/></svg>') 2;
+}
+
+/* Glow effect for orbs */
+@keyframes orb-glow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 5px currentColor);
+  }
+  50% {
+    filter: brightness(1.3) drop-shadow(0 0 15px currentColor);
+  }
+}
+
+.orb-glow {
+  animation: orb-glow 2s ease-in-out infinite;
+}
