@@ -1,0 +1,42 @@
+# General Rules
+- Carefully read and interpret user instructions
+- Clearly identify technical constraints and requirements
+- Always use === / !==
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Optimize Web Vitals (LCP, CLS, FID).
+
+# React Rules
+
+Define props with interfaces/types, not prop-types.
+
+Use the function keyword for components:
+
+```ts
+interface ButtonProps {
+label: string
+onClick?: () => void
+}
+
+export function Button({ label, onClick }: ButtonProps) {
+return <button onClick={onClick}>{label}</button>
+}
+```
+
+Follow the Rules of Hooks and the Rules of React rules.
+
+Call hooks (useState, useEffect, etc.) only at the top level.
+
+Extract reusable logic into custom hooks (useAuth, useFormValidation).
+
+We're using the React Compiler so don't memoize with React.memo, useCallback, useMemo.
+
+Favor composition (render props, children) over inheritance.
+
+Use refs only for direct DOM access.
+
+Use guard clauses (early returns) for error handling.
+
+
