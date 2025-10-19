@@ -1,11 +1,11 @@
-import type { CharacterData, EnemyData, OrbColor } from '~/types';
+import type { CharacterData, EnemyData, OrbType } from '~/types';
 
 // Board configuration
 export const BOARD_ROWS = 8;
 export const BOARD_COLS = 6;
 
-// Orb colors
-export const ORB_COLORS: OrbColor[] = ['blue', 'green', 'purple', 'yellow', 'gray'];
+// Orb types
+export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'gray'];
 
 // Match configuration
 export const MIN_MATCH_LENGTH = 3;

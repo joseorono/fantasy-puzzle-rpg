@@ -1,10 +1,10 @@
-import type { CharacterData, EnemyData, OrbColor } from './rpg-elements';
+import type { CharacterData, EnemyData, OrbType } from './rpg-elements';
 
 export type ActionTarget = 'party' | 'enemy';
 
 export interface Orb {
   id: string;
-  color: OrbColor;
+  type: OrbType;
   row: number;
   col: number;
   isMatched?: boolean;
@@ -14,7 +14,7 @@ export interface Orb {
 
 export interface Match {
   orbs: Orb[];
-  color: OrbColor;
+  type: OrbType;
   count: number;
   multiplier: number;
 }
@@ -31,6 +31,6 @@ export interface BattleState {
   turn: number;
   gameStatus: BattleStatus;
   lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
-  lastMatchedColor: OrbColor | null;
+  lastMatchedType: OrbType | null;
   enemyAttackTimestamp?: number | null;
 }

@@ -2,10 +2,10 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
 import { boardAtom, selectedOrbAtom, selectOrbAtom, swapOrbsAtom, damageEnemyAtom, removeMatchedOrbsAtom, battleStateAtom } from '~/stores/battle-store';
 import type { Orb, BattleState } from '~/types/battle';
-import type { OrbColor } from '~/types/rpg-elements';
+import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
 import { cn } from '~/lib/utils';
-import { ORB_COLOR_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
+import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 
 
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
@@ -35,9 +35,9 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
         'relative w-12 h-12 md:w-14 md:h-14 rounded-full transition-all duration-200',
         'border-4 cursor-pointer',
         'hover:scale-110 active:scale-95',
-        ORB_COLOR_CLASSES[orb.color],
+        ORB_TYPE_CLASSES[orb.type],
         isSelected && 'scale-110 ring-4 ring-white animate-pulse',
-        orb.isHighlighted && [ORB_GLOW_CLASSES[orb.color], 'animate-ping'],
+        orb.isHighlighted && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
         isDisappearing && 'scale-0 opacity-0 rotate-180',
         isInvalidSwap && 'shake ring-4 ring-red-500',
         isNew && 'fall-in'
@@ -64,7 +64,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
               key={i}
               className={cn(
                 'absolute w-2 h-2 rounded-full animate-ping',
-                ORB_COLOR_CLASSES[orb.color]
+                ORB_TYPE_CLASSES[orb.type]
               )}
               style={{
                 top: '50%',
@@ -124,20 +124,20 @@ export function Match3Board() {
     // Check horizontal matches
     for (let row = 0; row < board.length; row++) {
       for (let col = 0; col < board[row].length - 2; col++) {
-        const color = board[row][col].color;
+        const orbType = board[row][col].type;
         if (
-          board[row][col + 1].color === color &&
-          board[row][col + 2].color === color
+          board[row][col + 1].type === orbType &&
+          board[row][col + 2].type === orbType
         ) {
           matches.add(board[row][col].id);
           matches.add(board[row][col + 1].id);
           matches.add(board[row][col + 2].id);
           
           // Check for 4 and 5 matches
-          if (col < board[row].length - 3 && board[row][col + 3].color === color) {
+          if (col < board[row].length - 3 && board[row][col + 3].type === orbType) {
             matches.add(board[row][col + 3].id);
           }
-          if (col < board[row].length - 4 && board[row][col + 4].color === color) {
+          if (col < board[row].length - 4 && board[row][col + 4].type === orbType) {
             matches.add(board[row][col + 4].id);
           }
         }
@@ -147,20 +147,20 @@ export function Match3Board() {
     // Check vertical matches
     for (let col = 0; col < board[0].length; col++) {
       for (let row = 0; row < board.length - 2; row++) {
-        const color = board[row][col].color;
+        const orbType = board[row][col].type;
         if (
-          board[row + 1][col].color === color &&
-          board[row + 2][col].color === color
+          board[row + 1][col].type === orbType &&
+          board[row + 2][col].type === orbType
         ) {
           matches.add(board[row][col].id);
           matches.add(board[row + 1][col].id);
           matches.add(board[row + 2][col].id);
           
           // Check for 4 and 5 matches
-          if (row < board.length - 3 && board[row + 3][col].color === color) {
+          if (row < board.length - 3 && board[row + 3][col].type === orbType) {
             matches.add(board[row + 3][col].id);
           }
-          if (row < board.length - 4 && board[row + 4][col].color === color) {
+          if (row < board.length - 4 && board[row + 4][col].type === orbType) {
             matches.add(board[row + 4][col].id);
           }
         }
@@ -176,23 +176,23 @@ export function Match3Board() {
         clearTimeout(processingTimerRef.current);
       }
       
-      // Determine the matched color (get color from first matched orb)
-      let matchedColor: OrbColor | null = null;
+      // Determine the matched type (get type from first matched orb)
+      let matchedType: OrbType | null = null;
       for (let row = 0; row < board.length; row++) {
         for (let col = 0; col < board[row].length; col++) {
           if (matches.has(board[row][col].id)) {
-            matchedColor = board[row][col].color;
+            matchedType = board[row][col].type;
             break;
           }
         }
-        if (matchedColor) break;
+        if (matchedType) break;
       }
       
-      // Update battle state with matched color
-      if (matchedColor) {
+      // Update battle state with matched type
+      if (matchedType) {
         setBattleState((prev: BattleState) => ({
           ...prev,
-          lastMatchedColor: matchedColor,
+          lastMatchedType: matchedType,
         }));
       }
       

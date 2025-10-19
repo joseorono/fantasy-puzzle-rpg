@@ -1,28 +1,28 @@
 import { atom } from 'jotai';
 import type { BattleState, Orb } from '~/types/battle';
-import type { OrbColor } from '~/types/rpg-elements';
+import type { OrbType } from '~/types/rpg-elements';
 import { randIntInRange, substractionWithMin } from '~/lib/math';
-import { ORB_COLORS, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { ORB_TYPES, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 
-// Helper function to generate a random orb color
-const getRandomOrbColor = (): OrbColor => {
-  return ORB_COLORS[randIntInRange(0, ORB_COLORS.length - 1)];
+// Helper function to generate a random orb type
+const getRandomOrbType = (): OrbType => {
+  return ORB_TYPES[randIntInRange(0, ORB_TYPES.length - 1)];
 };
 
 // Helper function to check if there's a match at a position
 const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean => {
-  const color = board[row][col].color;
+  const orbType = board[row][col].type;
   const rows = board.length;
   const cols = board[0].length;
   
   // Check horizontal match (3 or more)
   let horizontalCount = 1;
   // Check left
-  for (let c = col - 1; c >= 0 && board[row][c].color === color; c--) {
+  for (let c = col - 1; c >= 0 && board[row][c].type === orbType; c--) {
     horizontalCount++;
   }
   // Check right
-  for (let c = col + 1; c < cols && board[row][c].color === color; c++) {
+  for (let c = col + 1; c < cols && board[row][c].type === orbType; c++) {
     horizontalCount++;
   }
   if (horizontalCount >= 3) return true;
@@ -30,11 +30,11 @@ const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean =
   // Check vertical match (3 or more)
   let verticalCount = 1;
   // Check up
-  for (let r = row - 1; r >= 0 && board[r][col].color === color; r--) {
+  for (let r = row - 1; r >= 0 && board[r][col].type === orbType; r--) {
     verticalCount++;
   }
   // Check down
-  for (let r = row + 1; r < rows && board[r][col].color === color; r++) {
+  for (let r = row + 1; r < rows && board[r][col].type === orbType; r++) {
     verticalCount++;
   }
   if (verticalCount >= 3) return true;
@@ -50,7 +50,7 @@ const createInitialBoard = (rows: number = BOARD_ROWS, cols: number = BOARD_COLS
     for (let col = 0; col < cols; col++) {
       board[row][col] = {
         id: `orb-${row}-${col}`,
-        color: getRandomOrbColor(),
+        type: getRandomOrbType(),
         row,
         col,
       };
@@ -74,7 +74,7 @@ const initialBattleState: BattleState = {
   turn: 1,
   gameStatus: 'playing',
   lastDamage: null,
-  lastMatchedColor: null,
+  lastMatchedType: null,
   enemyAttackTimestamp: null,
 };
 
@@ -235,7 +235,7 @@ export const resetBattleAtom = atom(null, (_get, set) => {
     turn: 1,
     gameStatus: 'playing',
     lastDamage: null,
-    lastMatchedColor: null,
+    lastMatchedType: null,
   });
 });
 
@@ -288,7 +288,7 @@ export const removeMatchedOrbsAtom = atom(
         const row = newOrbsNeeded - 1 - i;
         newBoard[row][col] = {
           id: `orb-${Date.now()}-${row}-${col}`,
-          color: getRandomOrbColor(),
+          type: getRandomOrbType(),
           row,
           col,
         };
@@ -305,4 +305,4 @@ export const removeMatchedOrbsAtom = atom(
 // Derived atom for game status
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
-export const lastMatchedColorAtom = atom((get) => get(battleStateAtom).lastMatchedColor);
+export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);

@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { partyAtom, partyHealthPercentageAtom, lastMatchedColorAtom, lastDamageAtom } from '~/stores/battle-store';
+import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom } from '~/stores/battle-store';
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
@@ -191,22 +191,22 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
 export function PartyDisplay() {
   const party = useAtomValue(partyAtom);
   const partyHealthPercentage = useAtomValue(partyHealthPercentageAtom);
-  const lastMatchedColor = useAtomValue(lastMatchedColorAtom);
+  const lastMatchedType = useAtomValue(lastMatchedTypeAtom);
   const [showPulse, setShowPulse] = useState(false);
   
-  // Trigger pulse animation when color changes
+  // Trigger pulse animation when type changes
   useEffect(() => {
-    if (lastMatchedColor) {
+    if (lastMatchedType) {
       setShowPulse(true);
       const timer = setTimeout(() => setShowPulse(false), 1000);
       return () => clearTimeout(timer);
     }
-  }, [lastMatchedColor]);
+  }, [lastMatchedType]);
   
   // Determine health bar color
   const getHealthBarColor = () => {
-    if (lastMatchedColor && lastMatchedColor !== 'gray') {
-      return HEALTH_BAR_COLORS[lastMatchedColor];
+    if (lastMatchedType && lastMatchedType !== 'gray') {
+      return HEALTH_BAR_COLORS[lastMatchedType];
     }
     // Default color based on health percentage
     if (partyHealthPercentage > 50) return 'from-green-600 to-green-500';

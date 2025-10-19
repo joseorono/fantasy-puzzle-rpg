@@ -1,4 +1,4 @@
-export type OrbColor = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
+export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
 export type CharacterClass = 'warrior' | 'rogue' | 'mage' | 'healer';
 
@@ -13,7 +13,7 @@ export interface BaseStats {
 // Character-specific stats
 export interface CharacterData extends BaseStats {
   class: CharacterClass;
-  color: OrbColor;
+  color: OrbType;
   skillCooldown: number;
   maxCooldown: number;
 }
