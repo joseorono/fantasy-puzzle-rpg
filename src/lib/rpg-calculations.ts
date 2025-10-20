@@ -23,6 +23,19 @@ export function calculateMaxHp(baseHp: number, vit: number, vitMultiplier: numbe
 }
 
 /**
+ * Calculates maximum HP for an entity using its own vitHpMultiplier.
+ * This is useful for recalculating HP when stats change.
+ * Formula: (maxHP - VIT * vitHpMultiplier) + (VIT * vitHpMultiplier)
+ * @param entity Character or enemy data
+ * @returns Calculated max HP based on entity's VIT and vitHpMultiplier
+ */
+export function calculateEntityMaxHp(entity: CharacterData | EnemyData): number {
+  // Extract base HP by removing VIT contribution
+  const baseHp = entity.maxHp - (entity.vit * entity.vitHpMultiplier);
+  return calculateMaxHp(baseHp, entity.vit, entity.vitHpMultiplier);
+}
+
+/**
  * Calculates the party's collective maximum HP.
  * @param party Array of character data
  * @returns Total max HP of all party members

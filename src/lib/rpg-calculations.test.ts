@@ -14,6 +14,7 @@ const mockCharacter: CharacterData = {
   pow: 20,
   vit: 15,
   spd: 10,
+  vitHpMultiplier: 5,
   class: 'warrior',
   color: 'blue',
   skillCooldown: 0,
@@ -28,6 +29,7 @@ const mockEnemy: EnemyData = {
   pow: 15,
   vit: 20,
   spd: 5,
+  vitHpMultiplier: 5,
   type: 'test',
   sprite: '👾',
   attackInterval: 4000,
@@ -52,6 +54,30 @@ describe('HP Calculations', () => {
   test('calculateMaxHp: Floors decimal results', () => {
     const result = rpg.calculateMaxHp(100, 7, 3);
     expect(result).toBe(121); // 100 + (7 * 3) = 121
+  });
+
+  test('calculateMaxHp: Handles zero VIT', () => {
+    const result = rpg.calculateMaxHp(100, 0, 5);
+    expect(result).toBe(100);
+  });
+
+  test('calculateEntityMaxHp: Uses entity vitHpMultiplier', () => {
+    // mockCharacter has maxHp: 100, vit: 15, vitHpMultiplier: 5
+    // baseHp = 100 - (15 * 5) = 25
+    // recalculated = 25 + (15 * 5) = 100
+    const result = rpg.calculateEntityMaxHp(mockCharacter);
+    expect(result).toBe(100);
+  });
+
+  test('calculateEntityMaxHp: Works with different multipliers', () => {
+    const tankChar: CharacterData = {
+      ...mockCharacter,
+      vit: 20,
+      vitHpMultiplier: 6,
+      maxHp: 50 + (20 * 6), // 170
+    };
+    const result = rpg.calculateEntityMaxHp(tankChar);
+    expect(result).toBe(170);
   });
 
   test('calculatePartyMaxHp: Sums all party members', () => {

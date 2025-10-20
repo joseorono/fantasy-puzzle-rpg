@@ -12,6 +12,7 @@ export interface BaseStats {
   pow: number; // Power - affects damage output
   vit: number; // Vitality - affects HP
   spd: number; // Speed - affects cooldowns/attack intervals
+  vitHpMultiplier: number; // How much HP each VIT point grants (e.g., 5 = +5 HP per VIT)
 }
 
 // Character-specific stats

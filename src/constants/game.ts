@@ -12,11 +12,10 @@ export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'gray'
 export const MIN_MATCH_LENGTH = 3;
 
 // RPG Configuration
-export const VIT_HP_MULTIPLIER = 5; // HP gained per VIT point
 export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 
 // Initial party setup
-// Stats: POW (damage), VIT (HP), SPD (cooldown speed)
+// Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)
 const partyBase: CharacterData[] = [
   {
     id: 'warrior',
@@ -26,7 +25,8 @@ const partyBase: CharacterData[] = [
     pow: 15,
     vit: 20,
     spd: 5,
-    maxHp: calculateMaxHp(50, 20, VIT_HP_MULTIPLIER),
+    vitHpMultiplier: 6, // Tanky - highest HP scaling
+    maxHp: calculateMaxHp(50, 20, 6),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 3,
@@ -39,7 +39,8 @@ const partyBase: CharacterData[] = [
     pow: 20,
     vit: 10,
     spd: 25,
-    maxHp: calculateMaxHp(40, 10, VIT_HP_MULTIPLIER),
+    vitHpMultiplier: 3, // Glass cannon - lowest HP scaling
+    maxHp: calculateMaxHp(40, 10, 3),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 2,
@@ -52,7 +53,8 @@ const partyBase: CharacterData[] = [
     pow: 25,
     vit: 8,
     spd: 10,
-    maxHp: calculateMaxHp(35, 8, VIT_HP_MULTIPLIER),
+    vitHpMultiplier: 4, // Fragile - low HP scaling
+    maxHp: calculateMaxHp(35, 8, 4),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 4,
@@ -65,7 +67,8 @@ const partyBase: CharacterData[] = [
     pow: 10,
     vit: 18,
     spd: 12,
-    maxHp: calculateMaxHp(45, 18, VIT_HP_MULTIPLIER),
+    vitHpMultiplier: 5, // Balanced - moderate HP scaling
+    maxHp: calculateMaxHp(45, 18, 5),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 3,
@@ -85,7 +88,8 @@ export const INITIAL_ENEMY: EnemyData = {
   pow: 10,
   vit: 50,
   spd: 0,
-  maxHp: calculateMaxHp(50, 50, VIT_HP_MULTIPLIER),
+  vitHpMultiplier: 5, // Standard enemy HP scaling
+  maxHp: calculateMaxHp(50, 50, 5),
   currentHp: 0, // Will be set to maxHp on init
   sprite: '🗿', // Placeholder - will be replaced with pixel art
   attackInterval: 4000, // Base interval (4 seconds)
