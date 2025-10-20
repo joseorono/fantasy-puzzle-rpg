@@ -116,45 +116,24 @@ The battle screen now features a fully functional combat system with enemy attac
    - Win/lose detection
    - Enhanced reset functionality
 
-### Type Updates
-```typescript
-// EnemyData interface (rpg-elements.ts):
-interface EnemyData extends BaseStats {
-  type: string;
-  sprite: string;
-  attackInterval: number;  // 4000ms (4 seconds)
-  attackDamage: number;    // 25 HP
-}
+### Type Definitions
 
-// CharacterData interface (rpg-elements.ts):
-interface CharacterData extends BaseStats {
-  class: CharacterClass;
-  color: OrbType;  // Matches orb type for damage calculation
-  skillCooldown: number;
-  maxCooldown: number;
-}
+All type definitions are located in the source files:
 
-// BattleState interface (battle.ts):
-interface BattleState {
-  party: CharacterData[];
-  enemy: EnemyData;
-  board: Orb[][];
-  gameStatus: BattleStatus;
-  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
-  lastMatchedType: OrbType | null;
-  enemyAttackTimestamp?: number | null;
-}
+- **RPG Types**: See `src/types/rpg-elements.ts`
+  - `BaseStats` - Core stats (id, name, HP, POW, VIT, SPD)
+  - `CharacterData` - Character-specific data
+  - `EnemyData` - Enemy-specific data
+  - `OrbType` - Orb color types
+  - `CharacterClass` - Character classes
 
-// Orb interface (battle.ts):
-interface Orb {
-  id: string;
-  type: OrbType;  // Changed from 'color' to 'type'
-  row: number;
-  col: number;
-  isMatched?: boolean;
-  isHighlighted?: boolean;
-}
-```
+- **Battle Types**: See `src/types/battle.ts`
+  - `BattleState` - Complete battle state
+  - `Orb` - Individual orb data
+  - `BattleStatus` - Game status ('playing' | 'won' | 'lost')
+  - `ActionTarget` - Damage target ('party' | 'enemy')
+
+For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md).
 
 ## Gameplay Flow
 
