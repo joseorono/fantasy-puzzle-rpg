@@ -76,3 +76,20 @@ export function substractionWithMin(a: number, b: number, min: number = 0): numb
 export function additionWithMax(a: number, b: number, max: number): number {
     return Math.min(a + b, max);
 }
+
+/**
+ * Multiplies dimensions (width and height) by a scaling factor with proper rounding.
+ * Useful for scaling pixel art or UI elements while maintaining valid pixel values.
+ * @param x The width dimension.
+ * @param y The height dimension.
+ * @param factor The scaling factor to multiply by.
+ * @returns A tuple [scaledX, scaledY] with rounded integer values.
+ * @example
+ * multiplyDimensions(10, 10, 2) // returns [20, 20]
+ * multiplyDimensions(10, 15, 1.5) // returns [15, 23]
+ * multiplyDimensions(7, 9, 0.5) // returns [4, 5]
+ */
+export function multiplyDimensions(x: number, y: number, factor: number): [number, number] {
+    return [Math.round(x * factor), Math.round(y * factor)];
+}
+

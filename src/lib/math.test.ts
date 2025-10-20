@@ -111,3 +111,54 @@ test('additionWithMax: Handles negative numbers', () => {
   const result2 = math.additionWithMax(-5, 10, 3);
   expect(result2).toBe(3);
 });
+
+test('multiplyDimensions: Scales dimensions by integer factor', () => {
+  const result = math.multiplyDimensions(10, 10, 2);
+  expect(result).toEqual([20, 20]);
+});
+
+test('multiplyDimensions: Scales dimensions by decimal factor with rounding', () => {
+  const result1 = math.multiplyDimensions(10, 15, 1.5);
+  expect(result1).toEqual([15, 23]);
+
+  const result2 = math.multiplyDimensions(7, 9, 0.5);
+  expect(result2).toEqual([4, 5]);
+});
+
+test('multiplyDimensions: Handles factor of 1 (no scaling)', () => {
+  const result = math.multiplyDimensions(10, 20, 1);
+  expect(result).toEqual([10, 20]);
+});
+
+test('multiplyDimensions: Handles factor of 0', () => {
+  const result = math.multiplyDimensions(10, 20, 0);
+  expect(result).toEqual([0, 0]);
+});
+
+test('multiplyDimensions: Rounds correctly for edge cases', () => {
+  // 10 * 1.44 = 14.4 -> rounds to 14
+  // 10 * 1.45 = 14.5 -> rounds to 15 (banker\'s rounding)
+  const result1 = math.multiplyDimensions(10, 10, 1.44);
+  expect(result1).toEqual([14, 14]);
+
+  const result2 = math.multiplyDimensions(10, 10, 1.45);
+  expect(result2).toEqual([15, 15]);
+
+  const result3 = math.multiplyDimensions(10, 10, 1.46);
+  expect(result3).toEqual([15, 15]);
+});
+
+test('multiplyDimensions: Handles different x and y values', () => {
+  const result = math.multiplyDimensions(16, 9, 2.5);
+  expect(result).toEqual([40, 23]);
+});
+
+test('multiplyDimensions: Handles negative dimensions', () => {
+  const result = math.multiplyDimensions(-10, -20, 2);
+  expect(result).toEqual([-20, -40]);
+});
+
+test('multiplyDimensions: Handles negative factor', () => {
+  const result = math.multiplyDimensions(10, 20, -1.5);
+  expect(result).toEqual([-15, -30]);
+});
