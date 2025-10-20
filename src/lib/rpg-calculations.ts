@@ -99,10 +99,26 @@ export function calculateEnemyDamage(enemy: EnemyData): number {
 }
 
 /**
+ * Calculates the damage multiplier based on match size.
+ * @param matchSize Number of orbs matched
+ * @returns Damage multiplier (1x, 1.5x, or 2x)
+ */
+export function calculateMatchMultiplier(matchSize: number): number {
+  // Early exits for common cases; 3-match is most frequent
+  // Ugly but leverages branch prediction, doesn't allocate memory,
+  // can be cached, and is optimized by V8.
+  if (matchSize === 3) return 1;   // 3: 1x
+  if (matchSize === 4) return 1.5; // 4: 1.5x
+  if (matchSize === 5) return 1.7; // 5: 1.7x
+  if (matchSize >= 6) return 2;    // 6+: 2x
+  return 1;
+}
+
+/**
  * Calculates match-3 damage based on match size and character power.
  * @param matchSize Number of orbs matched
  * @param baseDamage Base damage per match
- * @param pow Power stat (optional, for character-specific bonuses)
+ * @param pow Power stat
  * @returns Calculated damage
  */
 export function calculateMatchDamage(
@@ -110,15 +126,13 @@ export function calculateMatchDamage(
   baseDamage: number = 10,
   pow: number = 0
 ): number {
-  // Combo multiplier for 5+ matches
-  const comboMultiplier = matchSize >= 5 ? 2 : 1;
-  const damage = baseDamage * comboMultiplier;
-  
-  // Apply power bonus if provided
+  const matchMultiplier = calculateMatchMultiplier(matchSize);
+  const damage = baseDamage * matchMultiplier;
+
   if (pow > 0) {
     return calculateDamage(damage, pow);
   }
-  
+
   return damage;
 }
 
