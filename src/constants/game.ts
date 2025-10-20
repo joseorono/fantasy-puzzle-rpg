@@ -1,4 +1,5 @@
 import type { CharacterData, EnemyData, OrbType } from '~/types';
+import { calculateMaxHp } from '~/lib/rpg-calculations';
 
 // Board configuration
 export const BOARD_ROWS = 8;
@@ -10,15 +11,23 @@ export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'gray'
 // Match configuration
 export const MIN_MATCH_LENGTH = 3;
 
+// RPG Configuration
+export const VIT_HP_MULTIPLIER = 5; // HP gained per VIT point
+export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
+
 // Initial party setup
-export const INITIAL_PARTY: CharacterData[] = [
+// Stats: POW (damage), VIT (HP), SPD (cooldown speed)
+const partyBase: CharacterData[] = [
   {
     id: 'warrior',
     name: 'Warrior',
     class: 'warrior',
     color: 'blue',
-    maxHp: 120,
-    currentHp: 120,
+    pow: 15,
+    vit: 20,
+    spd: 5,
+    maxHp: calculateMaxHp(50, 20, VIT_HP_MULTIPLIER),
+    currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 3,
   },
@@ -27,8 +36,11 @@ export const INITIAL_PARTY: CharacterData[] = [
     name: 'Rogue',
     class: 'rogue',
     color: 'green',
-    maxHp: 90,
-    currentHp: 90,
+    pow: 20,
+    vit: 10,
+    spd: 25,
+    maxHp: calculateMaxHp(40, 10, VIT_HP_MULTIPLIER),
+    currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 2,
   },
@@ -37,8 +49,11 @@ export const INITIAL_PARTY: CharacterData[] = [
     name: 'Mage',
     class: 'mage',
     color: 'purple',
-    maxHp: 80,
-    currentHp: 80,
+    pow: 25,
+    vit: 8,
+    spd: 10,
+    maxHp: calculateMaxHp(35, 8, VIT_HP_MULTIPLIER),
+    currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 4,
   },
@@ -47,21 +62,35 @@ export const INITIAL_PARTY: CharacterData[] = [
     name: 'Healer',
     class: 'healer',
     color: 'yellow',
-    maxHp: 100,
-    currentHp: 100,
+    pow: 10,
+    vit: 18,
+    spd: 12,
+    maxHp: calculateMaxHp(45, 18, VIT_HP_MULTIPLIER),
+    currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 3,
   },
 ];
+
+export const INITIAL_PARTY: CharacterData[] = partyBase.map(char => ({
+  ...char,
+  currentHp: char.maxHp,
+}));
 
 // Initial enemy setup
 export const INITIAL_ENEMY: EnemyData = {
   id: 'moss-golem',
   name: 'Moss Golem',
   type: 'golem',
-  maxHp: 300,
-  currentHp: 300,
+  pow: 10,
+  vit: 50,
+  spd: 0,
+  maxHp: calculateMaxHp(50, 50, VIT_HP_MULTIPLIER),
+  currentHp: 0, // Will be set to maxHp on init
   sprite: '🗿', // Placeholder - will be replaced with pixel art
-  attackInterval: 4000, // 4 seconds
-  attackDamage: 25,
+  attackInterval: 4000, // Base interval (4 seconds)
+  attackDamage: 20, // Base damage before POW modifier
 };
+
+// Set currentHp to maxHp
+INITIAL_ENEMY.currentHp = INITIAL_ENEMY.maxHp;
