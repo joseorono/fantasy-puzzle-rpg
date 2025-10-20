@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
-import { randIntInRange, subtractionWithMin } from '~/lib/math';
+import { subtractionWithMin } from '~/lib/math';
+import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
 import { calculatePartyCurrentHp, calculatePartyHpPercentage } from '~/lib/rpg-calculations';
 import {
@@ -102,8 +103,8 @@ export const damagePartyAtom = atom(
     if (livingMembers.length === 0) return;
 
     // Select a random living hero to take damage
-    const targetIndex = randIntInRange(0, livingMembers.length - 1);
-    const targetHero = livingMembers[targetIndex];
+    // ToDo: Maybe make this a bit smarter? If it makes the game more fun.
+    const targetHero = getRandomElement(livingMembers);
 
     // Find and damage the target hero
     const heroIndex = party.findIndex(char => char.id === targetHero.id);

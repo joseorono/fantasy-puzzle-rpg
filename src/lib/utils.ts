@@ -38,6 +38,5 @@ export function auxObjectMap(object: Record<string, any>, mapFn: (arg: any) => a
 }
 
 export function getRandomElement<T>(array: T[]): T {
-  const index = Math.floor(Math.random() * array.length);
-  return array[index];
+  return array[Math.floor(Math.random() * array.length)];
 }

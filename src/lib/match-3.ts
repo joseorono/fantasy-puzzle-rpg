@@ -1,6 +1,6 @@
 import type { Orb } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
-import { randIntInRange } from '~/lib/math';
+import { getRandomElement } from '~/lib/utils';
 import { ORB_TYPES, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 
 /**
@@ -9,7 +9,7 @@ import { ORB_TYPES, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
  * @returns A randomly selected OrbType
  */
 export function getRandomOrbType(): OrbType {
-  return ORB_TYPES[randIntInRange(0, ORB_TYPES.length - 1)];
+  return getRandomElement(ORB_TYPES);
 }
 
 /**
