@@ -158,17 +158,35 @@ describe('Damage Calculations', () => {
 
   test('calculateMatchDamage: 5-match combo multiplier', () => {
     const result = rpg.calculateMatchDamage(5, 10, 0);
-    expect(result).toBe(20); // 10 * 2 (combo multiplier)
+    expect(result).toBe(17); // 10 * 1.7 (combo multiplier)
   });
 
   test('calculateMatchDamage: With power bonus', () => {
     const result = rpg.calculateMatchDamage(3, 10, 20);
-    expect(result).toBe(12); // 10 * (1 + 20/100) = 12
+    expect(result).toBe(12); // 10 * 1 * 1.2 = 12
+  });
+
+  test('calculateMatchMultiplier returns correct multipliers', () => {
+    // Normal cases
+    expect(rpg.calculateMatchMultiplier(3)).toBe(1);    // 3-match: 1x
+    expect(rpg.calculateMatchMultiplier(4)).toBe(1.5);  // 4-match: 1.5x
+    expect(rpg.calculateMatchMultiplier(5)).toBe(1.7);  // 5-match: 1.7x
+    
+    // 6+ matches: 2x
+    expect(rpg.calculateMatchMultiplier(6)).toBe(2);
+    expect(rpg.calculateMatchMultiplier(7)).toBe(2);
+    expect(rpg.calculateMatchMultiplier(8)).toBe(2);
+    expect(rpg.calculateMatchMultiplier(10)).toBe(2);
+  });
+
+  test('calculateMatchMultiplier: Handles edge cases', () => {
+    expect(rpg.calculateMatchMultiplier(2)).toBe(1); // Below minimum
+    expect(rpg.calculateMatchMultiplier(0)).toBe(1); // Zero
   });
 
   test('calculateMatchDamage: 5-match with power', () => {
     const result = rpg.calculateMatchDamage(5, 10, 20);
-    expect(result).toBe(24); // (10 * 2) * (1 + 20/100) = 24
+    expect(result).toBe(20); // (10 * 1.7) * (1 + 20/100) = 20.4 -> 20
   });
 });
 
