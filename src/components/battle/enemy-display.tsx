@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { enemyAtom } from '~/stores/battle-store';
+import { enemyAtom } from '~/stores/battle-atoms';
 import { calculatePercentage } from '~/lib/math';
 
 export function EnemyDisplay() {
@@ -15,7 +15,7 @@ export function EnemyDisplay() {
         <div className="relative">
           {/* Glow effect */}
           <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full scale-150" />
-          
+
           {/* Enemy sprite placeholder - will be replaced with actual pixel art */}
           <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
             {/* Pixel art style enemy */}
@@ -28,10 +28,10 @@ export function EnemyDisplay() {
                   🗿
                 </div>
               </div>
-              
+
               {/* Moss texture overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/30 via-transparent to-green-700/20" />
-              
+
               {/* Eyes */}
               <div className="absolute top-1/3 left-1/3 w-4 h-4 bg-yellow-400 rounded-full border-2 border-yellow-600" />
               <div className="absolute top-1/3 right-1/3 w-4 h-4 bg-yellow-400 rounded-full border-2 border-yellow-600" />
@@ -55,7 +55,7 @@ export function EnemyDisplay() {
             Level 5 {enemy.type}
           </p>
         </div>
-        
+
         {/* Enemy Health Bar */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider pixel-font">
@@ -73,7 +73,7 @@ export function EnemyDisplay() {
           >
             {/* Animated shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
-            
+
             {/* Segmented bars effect */}
             <div className="absolute inset-0 flex">
               {Array.from({ length: 10 }).map((_, i) => (

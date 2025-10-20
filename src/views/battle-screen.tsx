@@ -4,7 +4,7 @@ import { PartyDisplay } from '~/components/battle/party-display';
 import { Match3Board } from '~/components/battle/match3-board';
 import { GameOverModal } from '~/components/battle/game-over-modal';
 import { DamageNumber } from '~/components/battle/damage-number';
-import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom } from '~/stores/battle-store';
+import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom } from '~/stores/battle-atoms';
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -17,14 +17,14 @@ export default function BattleScreen() {
   const resetBattle = useSetAtom(resetBattleAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const [isMuted, setIsMuted] = useState(false);
-  
+
   // Calculate actual attack interval with SPD modifier
   const actualAttackInterval = calculateEnemyAttackInterval(enemy);
   const attackIntervalSeconds = actualAttackInterval / 1000;
-  
+
   // Calculate actual damage with POW modifier
   const actualDamage = calculateEnemyDamage(enemy);
-  
+
   const [nextAttackIn, setNextAttackIn] = useState(attackIntervalSeconds);
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
@@ -64,7 +64,7 @@ export default function BattleScreen() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
       {/* Retro screen effect overlay */}
       <div className="retro-screen fixed inset-0 pointer-events-none z-50" />
-      
+
       {/* Main container */}
       <div className="relative h-screen flex flex-col">
         {/* Header */}
@@ -88,7 +88,7 @@ export default function BattleScreen() {
                 <span className="text-white font-bold pixel-font">{nextAttackIn}s</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Button
                 size="icon"
@@ -120,7 +120,7 @@ export default function BattleScreen() {
               <div className="absolute top-0 left-0 w-64 h-64 bg-green-500 rounded-full blur-3xl animate-pulse" />
               <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-600 rounded-full blur-3xl animate-pulse delay-1000" />
             </div>
-            
+
             <EnemyDisplay />
             <DamageNumber target="enemy" />
           </div>
@@ -133,7 +133,7 @@ export default function BattleScreen() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl animate-pulse" />
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600 rounded-full blur-3xl animate-pulse delay-1000" />
             </div>
-            
+
             <PartyDisplay />
             <DamageNumber target="party" />
           </div>
@@ -145,7 +145,7 @@ export default function BattleScreen() {
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] pixel-art" />
           </div>
-          
+
           <div className="relative max-w-2xl mx-auto">
             <Match3Board />
           </div>

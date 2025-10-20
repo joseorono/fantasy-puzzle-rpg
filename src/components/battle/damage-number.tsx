@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { lastDamageAtom } from '~/stores/battle-store';
+import { lastDamageAtom } from '~/stores/battle-atoms';
 import { cn } from '~/lib/utils';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import type { DamageNumberProps } from '~/types/components';
@@ -37,13 +37,13 @@ export function DamageNumber({ target }: DamageNumberProps) {
           animation: 'damage-float 1.2s ease-out forwards',
         }}
       >
-        <DamageDisplay 
-          amount={displayDamage} 
+        <DamageDisplay
+          amount={displayDamage}
           type={displayDamage > 20 ? 'critical' : 'damage'}
           className="text-4xl md:text-5xl"
         />
       </div>
-      
+
       {/* Impact flash effect */}
       <div
         key={`flash-${animationKey}`}
@@ -55,7 +55,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
           animation: 'flash-fade 0.3s ease-out forwards',
         }}
       />
-      
+
       {/* Additional smaller damage numbers for impact */}
       {displayDamage > 15 && (
         <>

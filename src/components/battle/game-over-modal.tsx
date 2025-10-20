@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { gameStatusAtom, resetBattleAtom } from '~/stores/battle-store';
+import { gameStatusAtom, resetBattleAtom } from '~/stores/battle-atoms';
 import { Button } from '~/components/ui/8bit/button';
 import { Trophy, Skull, RotateCcw } from 'lucide-react';
 import { cn } from '~/lib/utils';

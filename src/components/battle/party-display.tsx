@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom } from '~/stores/battle-store';
+import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom } from '~/stores/battle-atoms';
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
@@ -49,11 +49,11 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
   const isDead = character.currentHp <= 0;
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
-  
+
   // Show damage animation when this character is hit
   useEffect(() => {
-    if (lastDamage && 
-        lastDamage.target === 'party' && 
+    if (lastDamage &&
+        lastDamage.target === 'party' &&
         lastDamage.characterId === character.id) {
       setDamageAmount(lastDamage.amount);
       setShowDamage(true);
@@ -70,7 +70,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
         {isSkillReady && (
           <div className={cn('absolute inset-0 rounded-lg blur-xl animate-pulse', colors.glow)} />
         )}
-        
+
         {/* Character container */}
         <div
           className={cn(
@@ -92,7 +92,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
               "w-8 h-8 rounded-full border-2 mb-1",
               isDead ? "bg-gray-400 border-gray-500" : "bg-amber-200 border-amber-300"
             )} />
-            
+
             {/* Body with icon */}
             <div className="flex-1 flex items-center justify-center">
               <Icon className={cn(
@@ -100,7 +100,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
                 isDead ? "text-gray-400" : "text-white"
               )} strokeWidth={3} />
             </div>
-            
+
             {/* Death indicator */}
             {isDead && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -108,7 +108,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
               </div>
             )}
           </div>
-          
+
           {/* Pixel border effect */}
           <div className="absolute inset-0 rounded-lg pointer-events-none"
             style={{
@@ -123,26 +123,26 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
             {character.currentHp}
           </span>
         </div>
-        
+
         {/* Damage number animation with 8bitcn styling */}
         {showDamage && (
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 damage-number pointer-events-none">
-            <DamageDisplay 
-              amount={damageAmount} 
+            <DamageDisplay
+              amount={damageAmount}
               type="damage"
               className="text-xl md:text-2xl"
             />
           </div>
         )}
       </div>
-      
+
       {/* Individual HP bar */}
       <div className="w-full max-w-[100px] mb-1">
         <div className="relative h-2 bg-gray-800 border-2 border-gray-700 rounded-none">
           <div
             className={cn(
               'h-full transition-all duration-300',
-              healthPercentage > 50 ? 'bg-green-500' : 
+              healthPercentage > 50 ? 'bg-green-500' :
               healthPercentage > 25 ? 'bg-yellow-500' : 'bg-red-500'
             )}
             style={{ width: `${healthPercentage}%` }}
@@ -194,7 +194,7 @@ export function PartyDisplay() {
   const partyHealthPercentage = useAtomValue(partyHealthPercentageAtom);
   const lastMatchedType = useAtomValue(lastMatchedTypeAtom);
   const [showPulse, setShowPulse] = useState(false);
-  
+
   // Trigger pulse animation when type changes
   useEffect(() => {
     if (lastMatchedType) {
@@ -203,7 +203,7 @@ export function PartyDisplay() {
       return () => clearTimeout(timer);
     }
   }, [lastMatchedType]);
-  
+
   // Determine health bar color
   const getHealthBarColor = () => {
     if (lastMatchedType && lastMatchedType !== 'gray') {
@@ -219,7 +219,7 @@ export function PartyDisplay() {
     <div className="relative h-full flex flex-col items-center justify-between p-6 bg-gradient-to-b from-slate-900/50 to-slate-950/70">
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
-      
+
       {/* Party members grid */}
       <div className="relative flex-1 flex items-center justify-center">
         <div className="grid grid-cols-4 gap-4 md:gap-8">
@@ -236,7 +236,7 @@ export function PartyDisplay() {
             ⚔️ HEROES ⚔️
           </h2>
         </div>
-        
+
         {/* Party Health Bar */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider pixel-font">
@@ -261,7 +261,7 @@ export function PartyDisplay() {
           >
             {/* Animated shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
-            
+
             {/* Segmented bars effect */}
             <div className="absolute inset-0 flex">
               {Array.from({ length: 10 }).map((_, i) => (
