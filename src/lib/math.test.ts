@@ -162,3 +162,27 @@ test('multiplyDimensions: Handles negative factor', () => {
   const result = math.multiplyDimensions(10, 20, -1.5);
   expect(result).toEqual([-15, -30]);
 });
+
+test('calculatePercentage works', () => {
+  // Normal cases
+  expect(math.calculatePercentage(50, 100)).toBe(50);
+  expect(math.calculatePercentage(75, 100)).toBe(75);
+  expect(math.calculatePercentage(100, 100)).toBe(100);
+
+  // Decimal results
+  expect(math.calculatePercentage(75, 200)).toBe(37.5);
+  expect(math.calculatePercentage(1, 3)).toBeCloseTo(33.33, 2);
+
+  // Zero value
+  expect(math.calculatePercentage(0, 100)).toBe(0);
+
+  // Zero total (safe division)
+  expect(math.calculatePercentage(50, 0)).toBe(0);
+
+  // Values greater than total
+  expect(math.calculatePercentage(150, 100)).toBe(150);
+
+  // Negative values
+  expect(math.calculatePercentage(-50, 100)).toBe(-50);
+  expect(math.calculatePercentage(50, -100)).toBe(-50);
+});
