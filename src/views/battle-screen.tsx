@@ -18,7 +18,7 @@ export default function BattleScreen() {
   const [isMuted, setIsMuted] = useState(false);
   
   // Derive attack interval in seconds from enemy config
-  const attackIntervalSeconds = (enemy.attackInterval || 4000) / 1000;
+  const attackIntervalSeconds = enemy.attackInterval / 1000;
   
   const [nextAttackIn, setNextAttackIn] = useState(attackIntervalSeconds);
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -44,11 +44,10 @@ export default function BattleScreen() {
       });
     }, 1000);
 
-    // Attack timer (every 4 seconds)
+    // Attack timer
     attackTimerRef.current = setInterval(() => {
-      const damage = enemy.attackDamage || 25;
-      damageParty(damage);
-    }, enemy.attackInterval || 4000);
+      damageParty(enemy.attackDamage);
+    }, enemy.attackInterval);
 
     return () => {
       if (attackTimerRef.current) clearInterval(attackTimerRef.current);

@@ -122,8 +122,8 @@ The battle screen now features a fully functional combat system with enemy attac
 interface EnemyData extends BaseStats {
   type: string;
   sprite: string;
-  attackInterval?: number;  // 4000ms (4 seconds)
-  attackDamage?: number;    // 25 HP
+  attackInterval: number;  // 4000ms (4 seconds)
+  attackDamage: number;    // 25 HP
 }
 
 // CharacterData interface (rpg-elements.ts):

@@ -22,6 +22,6 @@ export interface CharacterData extends BaseStats {
 export interface EnemyData extends BaseStats {
   type: string;
   sprite: string;
-  attackInterval?: number;
-  attackDamage?: number;
+  attackInterval: number;
+  attackDamage: number;
 }
