@@ -62,7 +62,7 @@ export function betweenZeroAndOne(value: number, varName: string = 'variable'): 
  * @param min The minimum value to ensure the result is not less than. Defaults to 0.
  * @returns The result of the subtraction, clamped to the minimum value.
  */
-export function substractionWithMin(a: number, b: number, min: number = 0): number {
+export function subtractionWithMin(a: number, b: number, min: number = 0): number {
     return Math.max(a - b, min);
 }
 

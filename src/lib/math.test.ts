@@ -66,26 +66,26 @@ test('betweenZeroAndOne is between zero and one', () => {
   expect(betweenZeroAndOne).toEqual(0.752133);
 });
 
-test('substractionWithMin: Subtracts correctly', () => {
-  const result = math.substractionWithMin(10, 5);
+test('subtractionWithMin: Subtracts correctly', () => {
+  const result = math.subtractionWithMin(10, 5);
   expect(result).toBe(5);
 });
 
-test('substractionWithMin: Clamps to minimum value (default 0)', () => {
-  const result = math.substractionWithMin(5, 10);
+test('subtractionWithMin: Clamps to minimum value (default 0)', () => {
+  const result = math.subtractionWithMin(5, 10);
   expect(result).toBe(0);
 });
 
-test('substractionWithMin: Clamps to custom minimum value', () => {
-  const result = math.substractionWithMin(5, 10, 2);
+test('subtractionWithMin: Clamps to custom minimum value', () => {
+  const result = math.subtractionWithMin(5, 10, 2);
   expect(result).toBe(2);
 });
 
-test('substractionWithMin: Handles negative numbers', () => {
-  const result1 = math.substractionWithMin(-5, 3);
+test('subtractionWithMin: Handles negative numbers', () => {
+  const result1 = math.subtractionWithMin(-5, 3);
   expect(result1).toBe(0);
 
-  const result2 = math.substractionWithMin(-5, 3, -10);
+  const result2 = math.subtractionWithMin(-5, 3, -10);
   expect(result2).toBe(-8);
 });
 

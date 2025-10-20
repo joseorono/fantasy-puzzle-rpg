@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 import type { BattleState, Orb } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
-import { randIntInRange, substractionWithMin } from '~/lib/math';
+import { randIntInRange, subtractionWithMin } from '~/lib/math';
 import { ORB_TYPES, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 
 // Helper function to generate a random orb type
@@ -14,7 +14,7 @@ const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean =
   const orbType = board[row][col].type;
   const rows = board.length;
   const cols = board[0].length;
-  
+
   // Check horizontal match (3 or more)
   let horizontalCount = 1;
   // Check left
@@ -26,7 +26,7 @@ const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean =
     horizontalCount++;
   }
   if (horizontalCount >= 3) return true;
-  
+
   // Check vertical match (3 or more)
   let verticalCount = 1;
   // Check up
@@ -38,7 +38,7 @@ const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean =
     verticalCount++;
   }
   if (verticalCount >= 3) return true;
-  
+
   return false;
 };
 
@@ -112,22 +112,22 @@ export const swapOrbsAtom = atom(
   (get, set, from: { row: number; col: number }, to: { row: number; col: number }) => {
     const currentState = get(battleStateAtom);
     const newBoard = currentState.board.map(row => [...row]);
-    
+
     // Swap orbs
     const temp = newBoard[from.row][from.col];
     newBoard[from.row][from.col] = newBoard[to.row][to.col];
     newBoard[to.row][to.col] = temp;
-    
+
     // Update positions
     newBoard[from.row][from.col].row = from.row;
     newBoard[from.row][from.col].col = from.col;
     newBoard[to.row][to.col].row = to.row;
     newBoard[to.row][to.col].col = to.col;
-    
+
     // Check if the swap creates a match
-    const createsMatch = hasMatchAtPosition(newBoard, from.row, from.col) || 
+    const createsMatch = hasMatchAtPosition(newBoard, from.row, from.col) ||
                          hasMatchAtPosition(newBoard, to.row, to.col);
-    
+
     if (createsMatch) {
       // Valid swap - update board and clear selection
       set(battleStateAtom, {
@@ -137,7 +137,7 @@ export const swapOrbsAtom = atom(
       });
     }
     // If invalid, don't update state at all - keep the selection
-    
+
     return createsMatch;
   }
 );
@@ -148,14 +148,14 @@ export const checkSwapValidityAtom = atom(
   (get, _set, from: { row: number; col: number }, to: { row: number; col: number }): boolean => {
     const currentState = get(battleStateAtom);
     const testBoard = currentState.board.map(row => [...row]);
-    
+
     // Swap orbs temporarily
     const temp = testBoard[from.row][from.col];
     testBoard[from.row][from.col] = testBoard[to.row][to.col];
     testBoard[to.row][to.col] = temp;
-    
+
     // Check if the swap creates a match
-    return hasMatchAtPosition(testBoard, from.row, from.col) || 
+    return hasMatchAtPosition(testBoard, from.row, from.col) ||
            hasMatchAtPosition(testBoard, to.row, to.col);
   }
 );
@@ -166,35 +166,35 @@ export const damagePartyAtom = atom(
   (get, set, damage: number) => {
     const currentState = get(battleStateAtom);
     const party = [...currentState.party];
-    
+
     // Get living party members
     const livingMembers = party.filter(char => char.currentHp > 0);
     if (livingMembers.length === 0) return;
-    
+
     // Select a random living hero to take damage
     const targetIndex = randIntInRange(0, livingMembers.length - 1);
     const targetHero = livingMembers[targetIndex];
-    
+
     // Find and damage the target hero
     const heroIndex = party.findIndex(char => char.id === targetHero.id);
     if (heroIndex !== -1) {
       party[heroIndex] = {
         ...party[heroIndex],
-        currentHp: substractionWithMin(party[heroIndex].currentHp, damage, 0),
+        currentHp: subtractionWithMin(party[heroIndex].currentHp, damage, 0),
       };
     }
-    
+
     // Check if party is defeated
     const totalHp = party.reduce((sum, char) => sum + char.currentHp, 0);
     const gameStatus = totalHp <= 0 ? 'lost' : 'playing';
-    
+
     set(battleStateAtom, {
       ...currentState,
       party,
       gameStatus,
-      lastDamage: { 
-        amount: damage, 
-        target: 'party', 
+      lastDamage: {
+        amount: damage,
+        target: 'party',
         timestamp: Date.now(),
         characterId: targetHero.id,
       },
@@ -208,12 +208,12 @@ export const damageEnemyAtom = atom(
   (get, set, damage: number) => {
     const currentState = get(battleStateAtom);
     const enemy = { ...currentState.enemy };
-    
-    enemy.currentHp = substractionWithMin(enemy.currentHp, damage, 0);
-    
+
+    enemy.currentHp = subtractionWithMin(enemy.currentHp, damage, 0);
+
     // Check if enemy is defeated
     const gameStatus = enemy.currentHp <= 0 ? 'won' : 'playing';
-    
+
     set(battleStateAtom, {
       ...currentState,
       enemy,
@@ -244,12 +244,12 @@ export const removeMatchedOrbsAtom = atom(
   null,
   (get, set, matchedOrbIds: Set<string>) => {
     if (matchedOrbIds.size === 0) return;
-    
+
     const currentState = get(battleStateAtom);
     const newBoard = currentState.board.map(row => [...row]);
     const rows = newBoard.length;
     const cols = newBoard[0].length;
-    
+
     // Mark matched orbs for removal
     const matchedPositions = new Set<string>();
     for (let row = 0; row < rows; row++) {
@@ -259,7 +259,7 @@ export const removeMatchedOrbsAtom = atom(
         }
       }
     }
-    
+
     // Process each column for gravity
     for (let col = 0; col < cols; col++) {
       // Collect non-matched orbs from bottom to top
@@ -269,10 +269,10 @@ export const removeMatchedOrbsAtom = atom(
           remainingOrbs.push(newBoard[row][col]);
         }
       }
-      
+
       // Calculate how many new orbs we need
       const newOrbsNeeded = rows - remainingOrbs.length;
-      
+
       // Fill from bottom with remaining orbs
       for (let i = 0; i < remainingOrbs.length; i++) {
         const row = rows - 1 - i;
@@ -282,7 +282,7 @@ export const removeMatchedOrbsAtom = atom(
           col,
         };
       }
-      
+
       // Fill top with new random orbs
       for (let i = 0; i < newOrbsNeeded; i++) {
         const row = newOrbsNeeded - 1 - i;
@@ -294,7 +294,7 @@ export const removeMatchedOrbsAtom = atom(
         };
       }
     }
-    
+
     set(battleStateAtom, {
       ...currentState,
       board: newBoard,
