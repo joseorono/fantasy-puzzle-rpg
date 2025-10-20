@@ -8,6 +8,7 @@ import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enem
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
 
 export default function BattleScreen() {
   const battleState = useAtomValue(battleStateAtom);
@@ -17,8 +18,12 @@ export default function BattleScreen() {
   const damageParty = useSetAtom(damagePartyAtom);
   const [isMuted, setIsMuted] = useState(false);
   
-  // Derive attack interval in seconds from enemy config
-  const attackIntervalSeconds = enemy.attackInterval / 1000;
+  // Calculate actual attack interval with SPD modifier
+  const actualAttackInterval = calculateEnemyAttackInterval(enemy);
+  const attackIntervalSeconds = actualAttackInterval / 1000;
+  
+  // Calculate actual damage with POW modifier
+  const actualDamage = calculateEnemyDamage(enemy);
   
   const [nextAttackIn, setNextAttackIn] = useState(attackIntervalSeconds);
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,14 +51,14 @@ export default function BattleScreen() {
 
     // Attack timer
     attackTimerRef.current = setInterval(() => {
-      damageParty(enemy.attackDamage);
-    }, enemy.attackInterval);
+      damageParty(actualDamage);
+    }, actualAttackInterval);
 
     return () => {
       if (attackTimerRef.current) clearInterval(attackTimerRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [gameStatus, enemy.attackInterval, enemy.attackDamage, damageParty, attackIntervalSeconds]);
+  }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">

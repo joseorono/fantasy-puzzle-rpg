@@ -3,6 +3,7 @@ import type { BattleState, Orb } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
 import { randIntInRange, subtractionWithMin } from '~/lib/math';
 import { ORB_TYPES, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { calculatePartyCurrentHp, calculatePartyHpPercentage } from '~/lib/rpg-calculations';
 
 // Helper function to generate a random orb type
 const getRandomOrbType = (): OrbType => {
@@ -89,9 +90,7 @@ export const currentMatchesAtom = atom((get) => get(battleStateAtom).currentMatc
 // Derived atom for party health percentage
 export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
-  const totalMaxHp = party.reduce((sum, char) => sum + char.maxHp, 0);
-  const totalCurrentHp = party.reduce((sum, char) => sum + char.currentHp, 0);
-  return (totalCurrentHp / totalMaxHp) * 100;
+  return calculatePartyHpPercentage(party);
 });
 
 // Atom to select an orb
@@ -185,7 +184,7 @@ export const damagePartyAtom = atom(
     }
 
     // Check if party is defeated
-    const totalHp = party.reduce((sum, char) => sum + char.currentHp, 0);
+    const totalHp = calculatePartyCurrentHp(party);
     const gameStatus = totalHp <= 0 ? 'lost' : 'playing';
 
     set(battleStateAtom, {
