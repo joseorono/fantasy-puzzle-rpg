@@ -1,64 +1,15 @@
 import { atom } from 'jotai';
-import type { BattleState, Orb } from '~/types/battle';
-import type { OrbType } from '~/types/rpg-elements';
+import type { BattleState } from '~/types/battle';
 import { randIntInRange, subtractionWithMin } from '~/lib/math';
-import { ORB_TYPES, INITIAL_PARTY, INITIAL_ENEMY, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
 import { calculatePartyCurrentHp, calculatePartyHpPercentage } from '~/lib/rpg-calculations';
-
-// Helper function to generate a random orb type
-const getRandomOrbType = (): OrbType => {
-  return ORB_TYPES[randIntInRange(0, ORB_TYPES.length - 1)];
-};
-
-// Helper function to check if there's a match at a position
-const hasMatchAtPosition = (board: Orb[][], row: number, col: number): boolean => {
-  const orbType = board[row][col].type;
-  const rows = board.length;
-  const cols = board[0].length;
-
-  // Check horizontal match (3 or more)
-  let horizontalCount = 1;
-  // Check left
-  for (let c = col - 1; c >= 0 && board[row][c].type === orbType; c--) {
-    horizontalCount++;
-  }
-  // Check right
-  for (let c = col + 1; c < cols && board[row][c].type === orbType; c++) {
-    horizontalCount++;
-  }
-  if (horizontalCount >= 3) return true;
-
-  // Check vertical match (3 or more)
-  let verticalCount = 1;
-  // Check up
-  for (let r = row - 1; r >= 0 && board[r][col].type === orbType; r--) {
-    verticalCount++;
-  }
-  // Check down
-  for (let r = row + 1; r < rows && board[r][col].type === orbType; r++) {
-    verticalCount++;
-  }
-  if (verticalCount >= 3) return true;
-
-  return false;
-};
-
-// Helper function to create initial board
-const createInitialBoard = (rows: number = BOARD_ROWS, cols: number = BOARD_COLS): Orb[][] => {
-  const board: Orb[][] = [];
-  for (let row = 0; row < rows; row++) {
-    board[row] = [];
-    for (let col = 0; col < cols; col++) {
-      board[row][col] = {
-        id: `orb-${row}-${col}`,
-        type: getRandomOrbType(),
-        row,
-        col,
-      };
-    }
-  }
-  return board;
-};
+import {
+  createInitialBoard,
+  hasMatchAtPosition,
+  swapOrbs,
+  isValidSwap,
+  removeMatchedOrbsAndRefill,
+} from '~/lib/match-3';
 
 // Use initial data from constants
 const initialParty = INITIAL_PARTY;
@@ -110,18 +61,7 @@ export const swapOrbsAtom = atom(
   null,
   (get, set, from: { row: number; col: number }, to: { row: number; col: number }) => {
     const currentState = get(battleStateAtom);
-    const newBoard = currentState.board.map(row => [...row]);
-
-    // Swap orbs
-    const temp = newBoard[from.row][from.col];
-    newBoard[from.row][from.col] = newBoard[to.row][to.col];
-    newBoard[to.row][to.col] = temp;
-
-    // Update positions
-    newBoard[from.row][from.col].row = from.row;
-    newBoard[from.row][from.col].col = from.col;
-    newBoard[to.row][to.col].row = to.row;
-    newBoard[to.row][to.col].col = to.col;
+    const newBoard = swapOrbs(currentState.board, from, to);
 
     // Check if the swap creates a match
     const createsMatch = hasMatchAtPosition(newBoard, from.row, from.col) ||
@@ -146,16 +86,7 @@ export const checkSwapValidityAtom = atom(
   null,
   (get, _set, from: { row: number; col: number }, to: { row: number; col: number }): boolean => {
     const currentState = get(battleStateAtom);
-    const testBoard = currentState.board.map(row => [...row]);
-
-    // Swap orbs temporarily
-    const temp = testBoard[from.row][from.col];
-    testBoard[from.row][from.col] = testBoard[to.row][to.col];
-    testBoard[to.row][to.col] = temp;
-
-    // Check if the swap creates a match
-    return hasMatchAtPosition(testBoard, from.row, from.col) ||
-           hasMatchAtPosition(testBoard, to.row, to.col);
+    return isValidSwap(currentState.board, from, to);
   }
 );
 
@@ -245,54 +176,7 @@ export const removeMatchedOrbsAtom = atom(
     if (matchedOrbIds.size === 0) return;
 
     const currentState = get(battleStateAtom);
-    const newBoard = currentState.board.map(row => [...row]);
-    const rows = newBoard.length;
-    const cols = newBoard[0].length;
-
-    // Mark matched orbs for removal
-    const matchedPositions = new Set<string>();
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (matchedOrbIds.has(newBoard[row][col].id)) {
-          matchedPositions.add(`${row}-${col}`);
-        }
-      }
-    }
-
-    // Process each column for gravity
-    for (let col = 0; col < cols; col++) {
-      // Collect non-matched orbs from bottom to top
-      const remainingOrbs: Orb[] = [];
-      for (let row = rows - 1; row >= 0; row--) {
-        if (!matchedPositions.has(`${row}-${col}`)) {
-          remainingOrbs.push(newBoard[row][col]);
-        }
-      }
-
-      // Calculate how many new orbs we need
-      const newOrbsNeeded = rows - remainingOrbs.length;
-
-      // Fill from bottom with remaining orbs
-      for (let i = 0; i < remainingOrbs.length; i++) {
-        const row = rows - 1 - i;
-        newBoard[row][col] = {
-          ...remainingOrbs[i],
-          row,
-          col,
-        };
-      }
-
-      // Fill top with new random orbs
-      for (let i = 0; i < newOrbsNeeded; i++) {
-        const row = newOrbsNeeded - 1 - i;
-        newBoard[row][col] = {
-          id: `orb-${Date.now()}-${row}-${col}`,
-          type: getRandomOrbType(),
-          row,
-          col,
-        };
-      }
-    }
+    const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds);
 
     set(battleStateAtom, {
       ...currentState,
