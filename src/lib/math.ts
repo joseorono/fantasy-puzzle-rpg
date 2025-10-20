@@ -93,3 +93,17 @@ export function multiplyDimensions(x: number, y: number, factor: number): [numbe
     return [Math.round(x * factor), Math.round(y * factor)];
 }
 
+/**
+ * Calculates what percentage a value is of a total.
+ * @param value The current value.
+ * @param total The total/maximum value.
+ * @returns Percentage (0-100), or 0 if total is 0.
+ * @example
+ * calculatePercentage(50, 100) // returns 50
+ * calculatePercentage(75, 200) // returns 37.5
+ * calculatePercentage(10, 0) // returns 0 (safe division)
+ */
+export function calculatePercentage(value: number, total: number): number {
+    return total > 0 ? (value / total) * 100 : 0;
+}
+

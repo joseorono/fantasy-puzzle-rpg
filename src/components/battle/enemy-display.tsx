@@ -1,9 +1,10 @@
 import { useAtomValue } from 'jotai';
 import { enemyAtom } from '~/stores/battle-store';
+import { calculatePercentage } from '~/lib/math';
 
 export function EnemyDisplay() {
   const enemy = useAtomValue(enemyAtom);
-  const enemyHealthPercentage = (enemy.currentHp / enemy.maxHp) * 100;
+  const enemyHealthPercentage = calculatePercentage(enemy.currentHp, enemy.maxHp);
 
   return (
     <div className="relative h-full flex flex-col items-center justify-center p-6 bg-gradient-to-b from-emerald-900/30 to-emerald-950/50">

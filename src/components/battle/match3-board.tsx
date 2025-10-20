@@ -1,9 +1,11 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
-import { boardAtom, selectedOrbAtom, selectOrbAtom, swapOrbsAtom, damageEnemyAtom, removeMatchedOrbsAtom, battleStateAtom } from '~/stores/battle-store';
+import { boardAtom, selectedOrbAtom, selectOrbAtom, swapOrbsAtom, damageEnemyAtom, removeMatchedOrbsAtom, battleStateAtom, partyAtom } from '~/stores/battle-store';
 import type { Orb, BattleState } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
+import { calculateMatchDamage } from '~/lib/rpg-calculations';
+import { BASE_MATCH_DAMAGE } from '~/constants/game';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 
@@ -84,6 +86,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
 export function Match3Board() {
   const board = useAtomValue(boardAtom);
   const selectedOrb = useAtomValue(selectedOrbAtom);
+  const party = useAtomValue(partyAtom);
   const selectOrb = useSetAtom(selectOrbAtom);
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
@@ -196,9 +199,12 @@ export function Match3Board() {
         }));
       }
       
-      const baseDamage = 10;
-      const matchMultiplier = matches.size >= 5 ? 2 : 1;
-      const totalDamage = baseDamage * matchMultiplier;
+      // Find the character that matches this orb type to apply their POW bonus
+      const matchingCharacter = matchedType ? party.find(char => char.color === matchedType) : null;
+      const characterPow = matchingCharacter?.pow ?? 0;
+      
+      // Calculate damage using RPG system (includes combo multiplier and POW bonus)
+      const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);
       
       // Show highlight for a moment, then remove orbs
       setTimeout(() => {

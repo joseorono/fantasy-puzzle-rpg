@@ -1,4 +1,5 @@
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
+import { calculatePercentage } from './math';
 
 /**
  * RPG Calculation Functions
@@ -42,12 +43,12 @@ export function calculatePartyCurrentHp(party: CharacterData[]): number {
 /**
  * Calculates the party's HP percentage.
  * @param party Array of character data
- * @returns HP percentage (0-100)
+ * @returns HP percentage (0-100), floored to integer
  */
 export function calculatePartyHpPercentage(party: CharacterData[]): number {
   const maxHp = calculatePartyMaxHp(party);
   const currentHp = calculatePartyCurrentHp(party);
-  return maxHp > 0 ? Math.floor((currentHp / maxHp) * 100) : 0;
+  return Math.floor(calculatePercentage(currentHp, maxHp));
 }
 
 // ============================================================================

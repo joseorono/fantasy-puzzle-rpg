@@ -5,6 +5,7 @@ import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import { CHARACTER_ICONS, HEALTH_BAR_COLORS } from '~/constants/ui';
+import { calculatePercentage } from '~/lib/math';
 
 // Character colors with cooldown property
 const characterColors = {
@@ -42,7 +43,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
   const colors = characterColors[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
-  const healthPercentage = (character.currentHp / character.maxHp) * 100;
+  const healthPercentage = calculatePercentage(character.currentHp, character.maxHp);
   const cooldownPercentage = ((character.maxCooldown - character.skillCooldown) / character.maxCooldown) * 100;
   const isSkillReady = character.skillCooldown === 0;
   const isDead = character.currentHp <= 0;
