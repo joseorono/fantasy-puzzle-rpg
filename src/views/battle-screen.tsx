@@ -61,57 +61,57 @@ export default function BattleScreen() {
   }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden flex items-center justify-center p-2 sm:p-4">
       {/* Retro screen effect overlay */}
       <div className="retro-screen fixed inset-0 pointer-events-none z-50" />
 
-      {/* Main container */}
-      <div className="relative h-screen flex flex-col">
+      {/* Main container - constrained max size */}
+      <div className="w-full max-w-7xl max-h-[95vh] flex sm:gap-0 flex-col bg-slate-900/50 rounded-lg overflow-hidden">
         {/* Header */}
-        <header className="relative z-10 bg-gradient-to-b from-gray-900/90 to-gray-900/70 border-b-4 border-gray-700 px-4 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl md:text-3xl font-bold text-white pixel-font-alt">
+        <header className="relative z-10 bg-gradient-to-b from-gray-900/90 to-gray-900/70 border-b-2 border-gray-700 px-2 sm:px-3 py-1.5 sm:py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="text-base sm:text-lg md:text-xl font-bold text-white pixel-font-alt">
                 ⚔️ BATTLE
               </h1>
-              <div className="hidden md:flex items-center gap-2 bg-gray-800 px-4 py-2 rounded border-2 border-gray-700">
-                <span className="text-gray-400 text-sm pixel-font">TURN:</span>
-                <span className="text-white font-bold pixel-font">{battleState.turn}</span>
+              <div className="hidden sm:flex items-center gap-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
+                <span className="text-gray-400 text-xs pixel-font">TURN:</span>
+                <span className="text-white font-bold text-xs pixel-font">{battleState.turn}</span>
               </div>
-              <div className="hidden md:flex items-center gap-2 bg-gray-800 px-4 py-2 rounded border-2 border-gray-700">
-                <span className="text-gray-400 text-sm pixel-font">SCORE:</span>
-                <span className="text-yellow-400 font-bold pixel-font">{battleState.score}</span>
+              <div className="hidden sm:flex items-center gap-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
+                <span className="text-gray-400 text-xs pixel-font">SCORE:</span>
+                <span className="text-yellow-400 font-bold text-xs pixel-font">{battleState.score}</span>
               </div>
-              <div className="flex items-center gap-2 bg-red-900 px-4 py-2 rounded border-2 border-red-700 animate-pulse">
-                <Swords className="w-4 h-4 text-red-300" />
-                <span className="text-red-200 text-sm pixel-font">ATTACK IN:</span>
-                <span className="text-white font-bold pixel-font">{nextAttackIn}s</span>
+              <div className="flex items-center gap-1 bg-red-900 px-2 py-1 rounded border border-red-700 animate-pulse">
+                <Swords className="w-3 h-3 text-red-300" />
+                <span className="text-red-200 text-xs pixel-font">ATK:</span>
+                <span className="text-white font-bold text-xs pixel-font">{nextAttackIn}s</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 size="icon"
                 variant="outline"
                 onClick={() => setIsMuted(!isMuted)}
-                className="bg-gray-800 hover:bg-gray-700"
+                className="bg-gray-800 hover:bg-gray-700 h-7 w-7 sm:h-8 sm:w-8"
               >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                {isMuted ? <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" /> : <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />}
               </Button>
               <Button
                 size="icon"
                 variant="outline"
                 onClick={() => resetBattle()}
-                className="bg-gray-800 hover:bg-gray-700"
+                className="bg-gray-800 hover:bg-gray-700 h-7 w-7 sm:h-8 sm:w-8"
               >
-                <RotateCcw className="w-5 h-5" />
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
         </header>
 
         {/* Main battle area - Split view */}
-        <div className="flex-1 grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 gap-0">
+        <div className="flex-1 grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 gap-0 min-h-0">
           {/* Left/Top section - Enemy */}
           <div className="relative border-b-4 lg:border-b-0 lg:border-r-4 border-gray-700 overflow-hidden">
             {/* Animated background */}
@@ -140,13 +140,13 @@ export default function BattleScreen() {
         </div>
 
         {/* Bottom section - Match-3 Board */}
-        <div className="relative bg-gradient-to-b from-amber-950/80 to-amber-900/60 border-t-4 border-amber-700 p-4 md:p-6">
+        <div className="relative bg-gradient-to-b from-amber-950/80 to-amber-900/60 border-t-2 border-amber-700 p-2 sm:p-3">
           {/* Decorative background pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] pixel-art" />
           </div>
 
-          <div className="relative max-w-2xl mx-auto">
+          <div className="relative max-w-xl mx-auto">
             <Match3Board />
           </div>
         </div>

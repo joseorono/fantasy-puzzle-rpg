@@ -17,7 +17,7 @@ export function GameOverModal() {
       {/* Modal container */}
       <div
         className={cn(
-          'relative w-full max-w-md mx-4 p-8 rounded-lg border-8 modal-zoom-in',
+          'relative w-full max-w-sm mx-4 p-4 sm:p-6 rounded-lg border-4 sm:border-6 modal-zoom-in',
           isVictory
             ? 'bg-gradient-to-b from-yellow-500 to-amber-600 border-yellow-400'
             : 'bg-gradient-to-b from-red-600 to-red-800 border-red-500'
@@ -25,27 +25,27 @@ export function GameOverModal() {
       >
         {/* Decorative corners */}
         <div className={cn(
-          'absolute -top-3 -left-3 w-6 h-6 border-4',
+          'absolute -top-2 -left-2 w-4 h-4 border-2',
           isVictory ? 'bg-yellow-400 border-yellow-300' : 'bg-red-500 border-red-400'
         )} />
         <div className={cn(
-          'absolute -top-3 -right-3 w-6 h-6 border-4',
+          'absolute -top-2 -right-2 w-4 h-4 border-2',
           isVictory ? 'bg-yellow-400 border-yellow-300' : 'bg-red-500 border-red-400'
         )} />
         <div className={cn(
-          'absolute -bottom-3 -left-3 w-6 h-6 border-4',
+          'absolute -bottom-2 -left-2 w-4 h-4 border-2',
           isVictory ? 'bg-yellow-400 border-yellow-300' : 'bg-red-500 border-red-400'
         )} />
         <div className={cn(
-          'absolute -bottom-3 -right-3 w-6 h-6 border-4',
+          'absolute -bottom-2 -right-2 w-4 h-4 border-2',
           isVictory ? 'bg-yellow-400 border-yellow-300' : 'bg-red-500 border-red-400'
         )} />
 
         {/* Content */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
           {/* Icon */}
           <div className={cn(
-            'relative p-6 rounded-full border-8',
+            'relative p-3 sm:p-4 rounded-full border-4 sm:border-6',
             isVictory
               ? 'bg-yellow-300 border-yellow-200 animate-bounce'
               : 'bg-red-400 border-red-300 animate-pulse'
@@ -54,9 +54,9 @@ export function GameOverModal() {
               animationDelay: '0.2s',
             }}>
             {isVictory ? (
-              <Trophy className="w-16 h-16 text-yellow-700" strokeWidth={3} />
+              <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-700" strokeWidth={3} />
             ) : (
-              <Skull className="w-16 h-16 text-red-900" strokeWidth={3} />
+              <Skull className="w-10 h-10 sm:w-12 sm:h-12 text-red-900" strokeWidth={3} />
             )}
           </div>
 
@@ -66,13 +66,13 @@ export function GameOverModal() {
               animationDelay: '0.3s',
             }}>
             <h2 className={cn(
-              'text-4xl md:text-5xl font-bold mb-2 pixel-font-alt uppercase',
+              'text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 pixel-font-alt uppercase',
               isVictory ? 'text-yellow-900' : 'text-white'
             )}>
               {isVictory ? 'VICTORY!' : 'DEFEAT!'}
             </h2>
             <p className={cn(
-              'text-lg md:text-xl pixel-font',
+              'text-sm sm:text-base md:text-lg pixel-font',
               isVictory ? 'text-yellow-800' : 'text-red-100'
             )}>
               {isVictory
@@ -89,7 +89,7 @@ export function GameOverModal() {
 
           {/* Message */}
           <div className={cn(
-            'text-center text-sm md:text-base pixel-font',
+            'text-center text-xs sm:text-sm pixel-font',
             isVictory ? 'text-yellow-900' : 'text-white'
           )}>
             {isVictory ? (
@@ -108,9 +108,9 @@ export function GameOverModal() {
           {/* Button */}
           <Button
             onClick={() => resetBattle()}
-            size="lg"
+            size="default"
             className={cn(
-              'w-full text-lg pixel-font-alt gap-3',
+              'w-full text-sm sm:text-base pixel-font-alt gap-2',
               isVictory
                 ? 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'
                 : 'bg-red-900 hover:bg-red-950 text-white'

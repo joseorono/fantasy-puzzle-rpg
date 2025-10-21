@@ -74,7 +74,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
         {/* Character container */}
         <div
           className={cn(
-            'relative w-20 h-24 md:w-24 md:h-28 rounded-lg border-4 transition-all duration-300',
+            'relative w-14 h-16 sm:w-16 sm:h-20 md:w-18 md:h-22 rounded-lg border-2 sm:border-3 transition-all duration-300',
             'hover:scale-110 cursor-pointer',
             isDead ? 'bg-gray-600 border-gray-500 grayscale opacity-50' : colors.bg,
             !isDead && colors.border,
@@ -84,19 +84,19 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
         >
           {/* Chibi character representation */}
           <div className={cn(
-            "absolute inset-0 flex flex-col items-center justify-center p-2",
+            "absolute inset-0 flex flex-col items-center justify-center p-1",
             isDead && "opacity-40"
           )}>
             {/* Head */}
             <div className={cn(
-              "w-8 h-8 rounded-full border-2 mb-1",
+              "w-5 h-5 sm:w-6 sm:h-6 rounded-full border mb-0.5",
               isDead ? "bg-gray-400 border-gray-500" : "bg-amber-200 border-amber-300"
             )} />
 
             {/* Body with icon */}
             <div className="flex-1 flex items-center justify-center">
               <Icon className={cn(
-                "w-8 h-8 drop-shadow-lg",
+                "w-5 h-5 sm:w-6 sm:h-6 drop-shadow-lg",
                 isDead ? "text-gray-400" : "text-white"
               )} strokeWidth={3} />
             </div>
@@ -104,7 +104,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
             {/* Death indicator */}
             {isDead && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-4xl opacity-80">💀</div>
+                <div className="text-2xl sm:text-3xl opacity-80">💀</div>
               </div>
             )}
           </div>
@@ -112,33 +112,33 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
           {/* Pixel border effect */}
           <div className="absolute inset-0 rounded-lg pointer-events-none"
             style={{
-              boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.2)',
+              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
             }}
           />
         </div>
 
         {/* HP indicator */}
-        <div className="absolute -top-2 -right-2 bg-gray-900 border-2 border-gray-700 rounded px-1.5 py-0.5">
-          <span className="text-white text-xs font-bold pixel-font">
+        <div className="absolute -top-1 -right-1 bg-gray-900 border border-gray-700 rounded px-1 py-0.5">
+          <span className="text-white text-[10px] font-bold pixel-font">
             {character.currentHp}
           </span>
         </div>
 
         {/* Damage number animation with 8bitcn styling */}
         {showDamage && (
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 damage-number pointer-events-none">
+          <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 z-30 damage-number pointer-events-none">
             <DamageDisplay
               amount={damageAmount}
               type="damage"
-              className="text-xl md:text-2xl"
+              className="text-base sm:text-lg"
             />
           </div>
         )}
       </div>
 
       {/* Individual HP bar */}
-      <div className="w-full max-w-[100px] mb-1">
-        <div className="relative h-2 bg-gray-800 border-2 border-gray-700 rounded-none">
+      <div className="w-full max-w-[70px] sm:max-w-[80px] mb-0.5">
+        <div className="relative h-1.5 sm:h-2 bg-gray-800 border border-gray-700 rounded-none">
           <div
             className={cn(
               'h-full transition-all duration-300',
@@ -152,19 +152,19 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
 
       {/* Character name */}
       <div className={cn(
-        'text-[10px] md:text-xs font-bold uppercase pixel-font',
+        'text-[8px] sm:text-[10px] font-bold uppercase pixel-font',
         isDead ? 'text-gray-500 line-through' : colors.text
       )}>
         {character.name}
-        {isDead && <span className="ml-1 text-red-500">✝</span>}
+        {isDead && <span className="ml-0.5 text-red-500">✝</span>}
       </div>
 
       {/* Skill cooldown bar */}
-      <div className="w-full max-w-[100px]">
-        <div className="text-[10px] text-gray-400 mb-1 text-center pixel-font">
+      <div className="w-full max-w-[70px] sm:max-w-[80px]">
+        <div className="text-[8px] sm:text-[9px] text-gray-400 mb-0.5 text-center pixel-font">
           {isSkillReady ? 'READY!' : `CD: ${character.skillCooldown}`}
         </div>
-        <div className="relative h-3 bg-gray-800 border-2 border-gray-700 rounded-none">
+        <div className="relative h-2 sm:h-2.5 bg-gray-800 border border-gray-700 rounded-none">
           <div
             className={cn(
               'h-full transition-all duration-300',
@@ -216,13 +216,13 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-between p-6 bg-gradient-to-b from-slate-900/50 to-slate-950/70">
+    <div className="relative h-full flex flex-col items-center justify-between p-2 sm:p-3 md:p-4 bg-gradient-to-b from-slate-900/50 to-slate-950/70">
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
 
       {/* Party members grid */}
       <div className="relative flex-1 flex items-center justify-center">
-        <div className="grid grid-cols-4 gap-4 md:gap-8">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} />
           ))}
@@ -230,24 +230,24 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info */}
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-3">
-          <h2 className="text-white font-bold text-xl md:text-2xl uppercase tracking-wider pixel-font">
+      <div className="w-full max-w-xs px-2 relative z-10">
+        <div className="text-center">
+          <h2 className="text-white pt-3 font-bold text-sm sm:text-base md:text-lg uppercase tracking-wider pixel-font">
             ⚔️ HEROES ⚔️
           </h2>
         </div>
 
         {/* Party Health Bar */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider pixel-font">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-white font-bold text-xs sm:text-sm uppercase tracking-wider pixel-font">
             HP
           </span>
-          <span className="text-white font-bold text-sm md:text-base pixel-font">
+          <span className="text-white font-bold text-xs sm:text-sm pixel-font">
             {Math.round(partyHealthPercentage)}%
           </span>
         </div>
         <div className={cn(
-          "relative h-8 bg-gray-800 border-4 border-gray-700 rounded-none transition-all duration-300",
+          "relative h-4 sm:h-5 md:h-6 bg-gray-800 border-2 sm:border-3 border-gray-700 rounded-none transition-all duration-300",
           showPulse && "ring-4 ring-white/50 scale-105"
         )}>
           {/* Health bar fill */}

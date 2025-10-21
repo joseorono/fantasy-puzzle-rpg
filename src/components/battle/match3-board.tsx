@@ -34,8 +34,8 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
     <button
       onClick={onSelect}
       className={cn(
-        'relative w-12 h-12 md:w-14 md:h-14 rounded-full transition-all duration-200',
-        'border-4 cursor-pointer',
+        'relative w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full transition-all duration-200',
+        'border-2 sm:border-3 cursor-pointer',
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
         isSelected && 'scale-110 ring-4 ring-white animate-pulse',
@@ -49,12 +49,12 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
       }}
     >
       {/* Shine effect */}
-      <div className="absolute top-1 left-1 w-3 h-3 bg-white/40 rounded-full blur-sm" />
+      <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-white/40 rounded-full blur-sm" />
 
       {/* Pixel border effect */}
       <div className="absolute inset-0 rounded-full"
         style={{
-          boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.3)',
+          boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
         }}
       />
 
@@ -266,7 +266,7 @@ export function Match3Board() {
   return (
     <div className="relative">
       {/* Board container with pixel art border */}
-      <div className="relative bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-4 md:p-6 rounded-lg border-4 border-amber-700">
+      <div className="relative bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:p-3 md:p-4 rounded-lg border-2 sm:border-3 border-amber-700">
         {/* Decorative corners */}
         <div className="absolute -top-2 -left-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
         <div className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
@@ -274,9 +274,9 @@ export function Match3Board() {
         <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
 
         {/* Board grid */}
-        <div className="grid gap-2 md:gap-3" style={{ gridTemplateRows: `repeat(${board.length}, minmax(0, 1fr))` }}>
+        <div className="grid gap-1 sm:gap-1.5 md:gap-2" style={{ gridTemplateRows: `repeat(${board.length}, minmax(0, 1fr))` }}>
           {board.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid gap-2 md:gap-3" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))` }}>
+            <div key={rowIndex} className="grid gap-1 sm:gap-1.5 md:gap-2" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))` }}>
               {row.map((orb) => (
                 <OrbComponent
                   key={orb.id}
@@ -303,7 +303,7 @@ export function Match3Board() {
 
       {/* Match indicator */}
       {highlightedMatches.size > 0 && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-amber-600 text-white px-4 py-2 rounded-lg border-4 border-amber-400 font-bold text-xl animate-bounce">
+        <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 bg-amber-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border-2 border-amber-400 font-bold text-sm sm:text-base animate-bounce">
           {highlightedMatches.size >= 5 ? '5x COMBO!' : `${highlightedMatches.size} MATCH!`}
         </div>
       )}
