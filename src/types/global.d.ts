@@ -18,6 +18,12 @@ declare global {
     } & {};
   }
 
+  // CSS Modules type declaration
+  declare module '*.module.css' {
+    const classes: { [key: string]: string };
+    export default classes;
+  }
+
   // This export statement is required to make this file a module
   // and enable the global declarations above
   export {};
