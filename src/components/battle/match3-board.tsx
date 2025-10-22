@@ -34,7 +34,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
     <button
       onClick={onSelect}
       className={cn(
-        'relative w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full transition-all duration-200',
+        'relative w-6 mx-2 h-6 sm:w-8 sm:h-8 md:w-11 md:h-11 rounded-full transition-all duration-200',
         'border-2 sm:border-3 cursor-pointer',
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
@@ -264,7 +264,7 @@ export function Match3Board() {
   };
 
   return (
-    <div className="relative">
+    <div className="flex flex-1 justify-center">
       {/* Board container with pixel art border */}
       <div className="relative bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:p-3 md:p-4 rounded-lg border-2 sm:border-3 border-amber-700">
         {/* Decorative corners */}
@@ -274,9 +274,9 @@ export function Match3Board() {
         <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
 
         {/* Board grid */}
-        <div className="grid gap-1 sm:gap-1.5 md:gap-2" style={{ gridTemplateRows: `repeat(${board.length}, minmax(0, 1fr))` }}>
+        <div className="flex flex-col gap-2 justify-around">
           {board.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid gap-1 sm:gap-1.5 md:gap-2" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))` }}>
+            <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
               {row.map((orb) => (
                 <OrbComponent
                   key={orb.id}
