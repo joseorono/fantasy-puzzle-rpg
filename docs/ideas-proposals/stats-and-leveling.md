@@ -34,6 +34,10 @@ goes to 99, but once you go past 99, it just displays the number and
 the bar is replaced with a flowing bar that's always full and has a
 "flowing" animation, like you're overflowing with power.
 
+# Experience needed to level up:
+
+We could have a system where the experience needed to level up is based on the player's level. Usually this is a curve but I have no idea what the formula is (but there are plenty of RPG systems/engines out there that we could take inspiration from).
+
 # Leveling System Math:
 
 We'll probably need FromSoft style soft caps, because if
@@ -45,6 +49,9 @@ fine tune them and make it more gradual with a range that grants +4, etc)
 From 1 to 40 (or similar), a point in Power adds +5 Damage.
 From 41 to 60, a point in Power only adds +3 Damage.
 From 61 to 99, a point in Power only adds +1 Damage.
+
+Come to think of this, the soft caps kind of work like a curve, but
+is likely easier to implement. Up to you.
 
 # A Half-Baked Idea of how to implement natural stat progression:
 
@@ -72,6 +79,4 @@ This system means:
 - The early game will be somewhat variable, but the late game will be more consistent.
 - I think this adds a little bit of variety to the game, but it's not a big deal.
 - You'll almost always have a build that fits your class.
-
-
 
