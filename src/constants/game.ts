@@ -14,6 +14,14 @@ export const MIN_MATCH_LENGTH = 3;
 // RPG Configuration
 export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 
+
+/**
+ * Store configuration
+ */
+export const GAME_STORE_VERSION = 1;
+export const GAME_STORE_NAME = 'puzzlerpg';
+
+
 // Initial party setup
 // Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)
 const partyBase: CharacterData[] = [
