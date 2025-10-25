@@ -115,7 +115,7 @@ class SoundService {
     });
   }
 
-  async asyncPlaySouund(alias: SoundNames, volume: number = 1, variance: number = 0) {
+  async asyncPlaySound(alias: SoundNames, volume: number = 1, variance: number = 0) {
     volume = betweenZeroAndOne(volume, 'volume');
     variance = betweenZeroAndOne(variance, 'variance');
 
