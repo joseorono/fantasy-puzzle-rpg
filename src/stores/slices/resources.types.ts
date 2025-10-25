@@ -11,6 +11,7 @@ export interface ResourcesState extends Resources {}
  */
 export interface ResourcesActions {
   addResources: (resources: Resources) => void;
+  reduceResources: (cost: Resources) => void;
   setResources: (resources: Resources) => void;
 }
 

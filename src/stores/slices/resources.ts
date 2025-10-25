@@ -1,5 +1,5 @@
 import type { ResourcesSlice } from './resources.types';
-import { addResources as addResourcesLib } from '../../lib/resources';
+import { addResources as addResourcesLib, deductCost } from '../../lib/resources';
 import { INITIAL_RESOURCES_STATE } from '../../constants/resources';
 import type { Resources } from '~/types/resources';
 
@@ -21,6 +21,15 @@ export const createResourcesSlice = (set: any): ResourcesSlice => ({
           },
           false,
           'resources/addResources'
+        ),
+
+      reduceResources: (cost: Resources) =>
+        set(
+          (state: ResourcesSlice) => {
+            state.resources = deductCost(state.resources, cost);
+          },
+          false,
+          'resources/reduceResources'
         ),
 
       setResources: (resources: Resources) =>
