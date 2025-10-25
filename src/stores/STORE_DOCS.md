@@ -81,23 +81,31 @@ function AnyComponent() {
 
 ## Store Structure
 
+```
+stores/
+├── slices/
+│   ├── money.ts          # Money slice implementation
+│   └── money.types.ts    # Money slice types
+├── game-store.ts         # Main store with middleware
+└── README.md             # This file
+```
+
 ### Current Slices
 
-- **Money Slice**: Manages the game's currency (gold)
+- **Money Slice** (`slices/money.ts`): Manages the game's currency (gold)
 
 ### Adding New Slices
 
-1. Create type definitions in `your-slice.types.ts`
-2. Implement the slice in `your-slice.ts`
+1. Create type definitions in `slices/your-slice.types.ts`
+2. Implement the slice in `slices/your-slice.ts`
 3. Add the slice to `GameStore` type in `game-store.ts`
 4. Merge the slice in the store creator
-5. Export from `index.ts`
 
 Example:
 
 ```typescript
-// your-slice.types.ts
-import type { BaseSlice } from './types';
+// slices/your-slice.types.ts
+import type { BaseSlice } from '../types';
 
 export interface YourSlice extends BaseSlice {
   yourState: YourState;
@@ -106,9 +114,12 @@ export interface YourSlice extends BaseSlice {
   };
 }
 
-// your-slice.ts
+// slices/your-slice.ts
+import type { YourSlice } from './your-slice.types';
+import { INITIAL_YOUR_STATE } from '../../constants/your-slice';
+
 export const createYourSlice = (set: any): YourSlice => ({
-  yourState: initialState,
+  yourState: INITIAL_YOUR_STATE,
   actions: {
     yourActions: {
       someAction: () => set((state: YourSlice) => {
@@ -120,6 +131,9 @@ export const createYourSlice = (set: any): YourSlice => ({
 });
 
 // game-store.ts
+import type { YourSlice } from './slices/your-slice.types';
+import { createYourSlice } from './slices/your-slice';
+
 export type GameStore = MoneySlice & YourSlice;
 
 export const useGameStore = create<GameStore>()(
