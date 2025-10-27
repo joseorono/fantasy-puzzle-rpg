@@ -10,8 +10,10 @@
   - The Blacksmith can exchange resources for Coins.
   - The Blacksmith can convert Coins into Gold by melting.
   - The Blacksmith can create Equipment using resources.
-- Inn: Use and display all resources.
+- Inn: Only use and display Coins.
   - The Inn charges you Coins for healing your entire party.
+- Other options:
+  - All locations (Item Shop, Blacksmith, Inn) need a "Leave" Option to go back to the Town.
 
 # Town Menu Options
 Item Shop, Blacksmith, and Inn.
