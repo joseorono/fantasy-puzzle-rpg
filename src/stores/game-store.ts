@@ -3,12 +3,19 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { ResourcesSlice } from './slices/resources.types';
 import { createResourcesSlice } from './slices/resources';
+import type { PartySlice } from './slices/party.types';
+import { createPartySlice } from './slices/party';
 import { GAME_STORE_NAME, GAME_STORE_VERSION } from '~/constants/game';
 
 /**
  * Root game store interface combining all slices
  */
-export type GameStore = ResourcesSlice;
+export type GameStore = {
+  resources: ResourcesSlice['resources'];
+  party: PartySlice['party'];
+  actions: ResourcesSlice['actions'] & PartySlice['actions'];
+  reset?: () => void;
+};
 
 /**
  * Main game store with DevTools, immer, and persist middleware
@@ -16,9 +23,18 @@ export type GameStore = ResourcesSlice;
 export const useGameStore = create<GameStore>()(
   devtools(
     persist(
-      immer((set) => ({
-        ...createResourcesSlice(set),
-      })),
+      immer((set) => {
+        const resourcesSlice = createResourcesSlice(set);
+        const partySlice = createPartySlice(set);
+        return {
+          ...resourcesSlice,
+          ...partySlice,
+          actions: {
+            ...resourcesSlice.actions,
+            ...partySlice.actions,
+          },
+        };
+      }),
       {
         name: GAME_STORE_NAME,
         version: GAME_STORE_VERSION,
@@ -48,3 +64,14 @@ export const useResourcesActions = () => useGameStore((state) => state.actions.r
  * Get the current resources
  */
 export const useResources = () => useGameStore((state) => state.resources);
+
+/**
+ * Selector hooks for party slice
+ */
+export const usePartyState = () => useGameStore((state) => state.party);
+export const usePartyActions = () => useGameStore((state) => state.actions.party);
+
+/**
+ * Get the current party
+ */
+export const useParty = () => useGameStore((state) => state.party.members);
