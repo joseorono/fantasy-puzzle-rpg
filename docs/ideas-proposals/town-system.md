@@ -6,6 +6,7 @@
 - They all use the same store slice.
 - They all use Resources
 - Item Shop: Only use and display Coins.
+  - Extra Feature: Special Offer (described below).
 - Blacksmith: Use and display all resources.
   - The Blacksmith can exchange resources for Coins.
   - The Blacksmith can convert Coins into Gold by melting.
@@ -21,4 +22,11 @@ Item Shop, Blacksmith, and Inn.
 # Images
 You can use placeholder images for now, just make it work.
 
+# Item Store Ideas
+
+An item store where you can buy special consumables you can use in Battle.
+
+We could add an additional, highlighted slot to the store: Special Offer.
+
+Basically, one randomly-selected item from the shop can be purchased once per stage/world at something like 50% of the original price.
 
