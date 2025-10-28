@@ -4,3 +4,4 @@ export * from './battle';
 export * from './components';
 export * from './number-types';
 export * from './map';
+export * from './inventory';
