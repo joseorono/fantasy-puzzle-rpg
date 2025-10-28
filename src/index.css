@@ -149,4 +149,5 @@
 /* Import organized styles */
 @import "./styles/fonts.css";
 @import "./styles/utilities.css";
+@import "./styles/click-tracker-effect.css";
 @import "./styles/animations.css";

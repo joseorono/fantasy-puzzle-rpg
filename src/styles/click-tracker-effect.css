@@ -1,0 +1,58 @@
+
+/*
+=======================================
+        Generic on Click effect
+=======================================
+*/
+
+.mouseTracker {
+  pointer-events: none;
+}
+
+/* CURSOR ANIMATION */
+.clickAnim {
+  width: 80px;
+  height: 80px;
+  background-color: black;
+  border: none;
+  border-radius: 50%;
+  position: absolute;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+  animation: clickAnimAnim 0.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+.clickAnim::after {
+  content: '';
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  background-color: white;
+  border: none;
+  border-radius: 50%;
+  top: 0px;
+  left: 0px;
+  animation: clickAnimAnim2 0.5s;
+}
+
+@keyframes clickAnimAnim {
+  from {
+    opacity: 1;
+    border-radius: 50%;
+  }
+  to {
+    border-radius: 50%;
+    opacity: 0;
+  }
+}
+
+@keyframes clickAnimAnim2 {
+  from {
+    transform: scale(0.1);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
