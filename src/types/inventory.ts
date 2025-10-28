@@ -1,3 +1,4 @@
+import type { Resources } from "./resources";
 import type { CharacterClass } from "./rpg-elements";
 
 export type ItemTypes = 'equipment' | 'consumable' | 'key';
@@ -7,6 +8,7 @@ export interface BaseItemData {
     name: string;
     type: ItemTypes;
     description: string;
+    cost: Resources;
 }
 
 export interface EquipmentItemData extends BaseItemData {
@@ -17,7 +19,7 @@ export interface EquipmentItemData extends BaseItemData {
 }
 
 export interface ConsumableItemData extends BaseItemData {
-    amount: number;
+    amount?: number;
 }
 
 export interface KeyItemData extends BaseItemData {
