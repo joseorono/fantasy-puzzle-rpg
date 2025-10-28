@@ -8,6 +8,7 @@ import {
   howManyCanAfford,
   createResources,
 } from './resources';
+import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 
 const fullResources: Resources = {
   coins: 100,
@@ -132,9 +133,9 @@ describe('resource utilities', () => {
       expect(howManyCanAfford(fullResources, createResources({ gold: 200 }))).toBe(0);
     });
 
-    it('should return 0 for zero or undefined cost', () => {
-      expect(howManyCanAfford(fullResources, createResources({ gold: 0 }))).toBe(0);
-      expect(howManyCanAfford(fullResources, createResources())).toBe(0);
+    it('should return the max amount for zero or undefined cost', () => {
+      expect(howManyCanAfford(fullResources, createResources({ gold: 0 }))).toBe(MAX_AMOUNT_PER_ITEM);
+      expect(howManyCanAfford(fullResources, createResources())).toBe(MAX_AMOUNT_PER_ITEM);
     });
 
     it('should return count based on limiting resource', () => {

@@ -19,9 +19,9 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
 });
 
 const testParty: CharacterData[] = [
-  createTestCharacter({ id: 'warrior', name: 'Warrior', currentHp: 50, maxHp: 100 }),
-  createTestCharacter({ id: 'rogue', name: 'Rogue', currentHp: 30, maxHp: 60 }),
-  createTestCharacter({ id: 'mage', name: 'Mage', currentHp: 20, maxHp: 50 }),
+  createTestCharacter({ id: 'warrior', name: 'Warrior', class: 'warrior', currentHp: 50, maxHp: 100 }),
+  createTestCharacter({ id: 'rogue', name: 'Rogue', class: 'rogue', currentHp: 30, maxHp: 60 }),
+  createTestCharacter({ id: 'mage', name: 'Mage', class: 'mage', currentHp: 20, maxHp: 50 }),
 ];
 
 describe('party system utilities', () => {
@@ -93,11 +93,15 @@ describe('party system utilities', () => {
       expect(result[2].currentHp).toBe(0);
     });
 
-    it('should allow HP to go negative when canDie is true', () => {
+    it('should allow HP to go to 0, but not below 0', () => {
       const result = damageAllPartyMembers(testParty, 150, true);
-      expect(result[0].currentHp).toBe(-100);
-      expect(result[1].currentHp).toBe(-120);
-      expect(result[2].currentHp).toBe(-130);
+      expect(result[0].currentHp).toBe(0);
+      expect(result[1].currentHp).toBe(0);
+      expect(result[2].currentHp).toBe(0);
+      // Not below 0
+      expect(result[0].currentHp).toBeGreaterThanOrEqual(0);
+      expect(result[1].currentHp).toBeGreaterThanOrEqual(0);
+      expect(result[2].currentHp).toBeGreaterThanOrEqual(0);
     });
 
     it('should handle zero damage', () => {
