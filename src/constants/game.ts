@@ -1,5 +1,6 @@
-import type { CharacterData, EnemyData, OrbType } from '~/types';
+import type { CharacterData, EnemyData, OrbType, StatType } from '~/types';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
+import { calculateExpToNextLevel } from '~/lib/leveling-system';
 
 // Board configuration
 export const BOARD_ROWS = 8;
@@ -7,6 +8,9 @@ export const BOARD_COLS = 6;
 
 // Orb types
 export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'gray'];
+
+// Stat types
+export const STAT_TYPES: StatType[] = ['pow', 'vit', 'spd'];
 
 // Match configuration
 export const MIN_MATCH_LENGTH = 3;
@@ -21,6 +25,8 @@ export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 export const GAME_STORE_VERSION = 1;
 export const GAME_STORE_NAME = 'puzzlerpg';
 
+//Default EXP needed for level 1 characters
+export const EXP_TO_LEVEL_ONE = calculateExpToNextLevel(1);
 
 // Initial party setup
 // Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)
@@ -30,9 +36,19 @@ const partyBase: CharacterData[] = [
     name: 'Warrior',
     class: 'warrior',
     color: 'blue',
-    pow: 15,
-    vit: 20,
-    spd: 5,
+    stats: {
+      pow: 6,
+      vit: 20,
+      spd: 5,
+    },
+    potentialStats: {
+      pow: 30,
+      vit: 30,
+      spd: 10,
+    },
+    level: 1,
+    baseHp: 50,
+    expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 6, // Tanky - highest HP scaling
     maxHp: calculateMaxHp(50, 20, 6),
     currentHp: 0,
@@ -44,9 +60,19 @@ const partyBase: CharacterData[] = [
     name: 'Rogue',
     class: 'rogue',
     color: 'green',
-    pow: 20,
-    vit: 10,
-    spd: 25,
+    stats: {
+      pow: 20,
+      vit: 10,
+      spd: 25,
+    },
+    potentialStats: {
+      pow: 45,
+      vit: 5,
+      spd: 20,
+    },
+    level: 1,
+    baseHp: 40,
+    expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 3, // Glass cannon - lowest HP scaling
     maxHp: calculateMaxHp(40, 10, 3),
     currentHp: 0,
@@ -58,9 +84,19 @@ const partyBase: CharacterData[] = [
     name: 'Mage',
     class: 'mage',
     color: 'purple',
-    pow: 25,
-    vit: 8,
-    spd: 10,
+    stats: {
+      pow: 25,
+      vit: 8,
+      spd: 10,
+    },
+    potentialStats: {
+      pow: 35,
+      vit: 12,
+      spd: 17,
+    },
+    level: 1,
+    baseHp: 35,
+    expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 4, // Fragile - low HP scaling
     maxHp: calculateMaxHp(35, 8, 4),
     currentHp: 0,
@@ -72,9 +108,19 @@ const partyBase: CharacterData[] = [
     name: 'Healer',
     class: 'healer',
     color: 'yellow',
-    pow: 10,
-    vit: 18,
-    spd: 12,
+    stats: {
+      pow: 10,
+      vit: 18,
+      spd: 12,
+    },
+    potentialStats: {
+      pow: 13,
+      vit: 40,
+      spd: 17,
+    },
+    level: 1,
+    baseHp: 45,
+    expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 5, // Balanced - moderate HP scaling
     maxHp: calculateMaxHp(45, 18, 5),
     currentHp: 0,
@@ -93,9 +139,11 @@ export const INITIAL_ENEMY: EnemyData = {
   id: 'moss-golem',
   name: 'Moss Golem',
   type: 'golem',
-  pow: 10,
-  vit: 50,
-  spd: 0,
+  stats: {
+    pow: 10,
+    vit: 50,
+    spd: 0,
+  },
   vitHpMultiplier: 5, // Standard enemy HP scaling
   maxHp: calculateMaxHp(50, 50, 5),
   currentHp: 0, // Will be set to maxHp on init
