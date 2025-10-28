@@ -76,7 +76,10 @@ export function calculatePartyHpPercentage(party: CharacterData[]): number {
  * @returns Calculated damage (rounded)
  */
 export function calculateDamage(baseDamage: number, pow: number): number {
-  return Math.floor(baseDamage * (1 + (pow / 100)));
+  // Use scaled integer math to avoid floating point precision issues
+  // Example: 100 * 1.15 may evaluate to 114.999... causing floor to return 114.
+  // Compute as (baseDamage * (100 + pow)) / 100 instead.
+  return Math.floor((baseDamage * (100 + pow)) / 100);
 }
 
 /**
