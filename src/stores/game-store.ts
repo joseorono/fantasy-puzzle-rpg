@@ -5,6 +5,8 @@ import type { ResourcesSlice } from './slices/resources.types';
 import { createResourcesSlice } from './slices/resources';
 import type { PartySlice } from './slices/party.types';
 import { createPartySlice } from './slices/party';
+import type { InventorySlice } from './slices/inventory.types';
+import { createInventorySlice } from './slices/inventory';
 import { GAME_STORE_NAME, GAME_STORE_VERSION } from '~/constants/game';
 
 /**
@@ -13,7 +15,8 @@ import { GAME_STORE_NAME, GAME_STORE_VERSION } from '~/constants/game';
 export type GameStore = {
   resources: ResourcesSlice['resources'];
   party: PartySlice['party'];
-  actions: ResourcesSlice['actions'] & PartySlice['actions'];
+  inventory: InventorySlice['inventory'];
+  actions: ResourcesSlice['actions'] & PartySlice['actions'] & InventorySlice['actions'];
   reset?: () => void;
 };
 
@@ -26,18 +29,26 @@ export const useGameStore = create<GameStore>()(
       immer((set) => {
         const resourcesSlice = createResourcesSlice(set);
         const partySlice = createPartySlice(set);
+        const inventorySlice = createInventorySlice(set);
         return {
           ...resourcesSlice,
           ...partySlice,
+          ...inventorySlice,
           actions: {
             ...resourcesSlice.actions,
             ...partySlice.actions,
+            ...inventorySlice.actions,
           },
         };
       }),
       {
         name: GAME_STORE_NAME,
         version: GAME_STORE_VERSION,
+        partialize: (state) => ({
+          resources: state.resources,
+          party: state.party,
+          inventory: state.inventory,
+        }),
         // Optionally, you can add migration logic here for version changes
         // migrate: (persistedState: any, version: number) => {
         //   if (version === 0) {
@@ -75,3 +86,14 @@ export const usePartyActions = () => useGameStore((state) => state.actions.party
  * Get the current party
  */
 export const useParty = () => useGameStore((state) => state.party.members);
+
+/**
+ * Selector hooks for inventory slice
+ */
+export const useInventoryState = () => useGameStore((state) => state.inventory);
+export const useInventoryActions = () => useGameStore((state) => state.actions.inventory);
+
+/**
+ * Get the current inventory items
+ */
+export const useInventory = () => useGameStore((state) => state.inventory.items);
