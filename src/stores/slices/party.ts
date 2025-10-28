@@ -1,5 +1,6 @@
 import type { PartySlice } from './party.types';
 import { INITIAL_PARTY } from '../../constants/game';
+import { fullyHealParty as fullyHealPartyLib } from '../../lib/party-system';
 import type { CharacterData } from '~/types/rpg-elements';
 
 /**
@@ -27,10 +28,7 @@ export const createPartySlice = (set: any): PartySlice => ({
       fullyHealParty: () =>
         set(
           (state: PartySlice) => {
-            state.party.members = state.party.members.map(member => ({
-              ...member,
-              currentHp: member.maxHp,
-            }));
+            state.party.members = fullyHealPartyLib(state.party.members);
           },
           false,
           'party/fullyHealParty'
