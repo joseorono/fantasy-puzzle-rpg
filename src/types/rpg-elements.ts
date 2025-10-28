@@ -2,6 +2,12 @@ export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
 export type CharacterClass = 'warrior' | 'rogue' | 'mage' | 'healer';
 
+export type CoreRPGStats = {
+  pow: number;
+  vit: number;
+  spd: number;
+}
+
 // Base stats shared by both characters and enemies
 export interface BaseStats {
   id: string;
@@ -9,9 +15,7 @@ export interface BaseStats {
   maxHp: number;
   currentHp: number;
   // Core RPG stats
-  pow: number; // Power - affects damage output
-  vit: number; // Vitality - affects HP
-  spd: number; // Speed - affects cooldowns/attack intervals
+  stats: CoreRPGStats;
   vitHpMultiplier: number; // How much HP each VIT point grants (e.g., 5 = +5 HP per VIT)
 }
 
@@ -20,6 +24,7 @@ export interface CharacterData extends BaseStats {
   class: CharacterClass;
   color: OrbType;
   skillCooldown: number;
+  potentialStats: CoreRPGStats;
   maxCooldown: number; // Base cooldown before SPD modifications
 }
 
