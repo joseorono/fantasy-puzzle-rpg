@@ -15,3 +15,13 @@ export function fullyHealParty(party: CharacterData[]): CharacterData[] {
     currentHp: member.maxHp,
   }));
 }
+
+export function damageAllPartyMembers(party: CharacterData[], damage: number, canDie: boolean = false): CharacterData[] {
+    // Damage all party members by a given amount
+    // Useful for overworld & dungeon traps
+    const minHp = canDie ? 0 : 1;
+    return party.map(member => ({
+    ...member,
+    currentHp: Math.max(minHp, member.currentHp - damage),
+  }));
+}
