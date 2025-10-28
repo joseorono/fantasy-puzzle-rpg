@@ -15,8 +15,6 @@
 
 // TODO: Implement leveling system
 // - calculateExpForLevel(level: number): number
-// - calculateStatGrowth(baseStat: number, level: number, growthRate: number): number
-// - levelUp(character: CharacterData): CharacterData
 // - etc.
 
 // DO NOT IMPLEMENT WITHOUT CONSULTING JOSE
