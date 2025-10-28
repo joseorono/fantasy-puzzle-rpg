@@ -5,6 +5,7 @@
 import type { ConsumableItemData, EquipmentItemData } from "~/types";
 
 export const MAX_AMOUNT_PER_ITEM = 99;
+export const CRAFTING_FEE = 100;
 
 /*
  * Items
@@ -20,6 +21,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 0,
     forClass: 'warrior',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, bronze: 5 },
   },
   {
     id: 'iron-daggers',
@@ -30,6 +32,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 3,
     forClass: 'rogue',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, bronze: 4 },
   },
   {
     id: 'iron-staff',
@@ -40,6 +43,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 1,
     forClass: 'mage',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, bronze: 6 },
   },
   {
     id: 'iron-armor',
@@ -49,6 +53,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 10,
     spd: -2,
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, bronze: 10 },
   },
 
   // --- Bronze Tier ---
@@ -61,6 +66,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 3,
     spd: 0,
     forClass: 'warrior',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 0, bronze: 15 },
   },
   {
     id: 'bronze-daggers',
@@ -71,6 +77,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 5,
     forClass: 'rogue',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 0, bronze: 12 },
   },
   {
     id: 'bronze-staff',
@@ -81,6 +88,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 2,
     forClass: 'mage',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, bronze: 16 },
   },
   {
     id: 'bronze-armor',
@@ -90,6 +98,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 15,
     spd: -3,
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 0, bronze: 20 },
   },
 
   // --- Silver Tier ---
@@ -102,6 +111,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 4,
     forClass: 'warrior',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 8, bronze: 10 },
   },
   {
     id: 'silver-daggers',
@@ -112,6 +122,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 8,
     forClass: 'rogue',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, bronze: 8 },
   },
   {
     id: 'silver-staff',
@@ -122,6 +133,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 5,
     forClass: 'mage',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 9, bronze: 12 },
   },
   {
     id: 'silver-armor',
@@ -131,6 +143,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 22,
     spd: -1,
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 12, bronze: 15 },
   },
 
   // --- Steel Tier ---
@@ -143,6 +156,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 4,
     spd: 1,
     forClass: 'warrior',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 6, bronze: 0 },
   },
   {
     id: 'steel-daggers',
@@ -153,6 +167,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 10,
     forClass: 'rogue',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 6, bronze: 0 },
   },
   {
     id: 'steel-staff',
@@ -163,6 +178,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 4,
     forClass: 'mage',
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 8, bronze: 0 },
   },
   {
     id: 'steel-armor',
@@ -172,6 +188,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 30,
     spd: 0,
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 12, silver: 10, bronze: 0 },
   },
 
   // --- Gold Tier ---
@@ -184,6 +201,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 6,
     spd: -4,
     forClass: 'warrior',
+    cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 8, bronze: 0 },
   },
   {
     id: 'golden-dirks',
@@ -194,6 +212,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 12,
     forClass: 'rogue',
+    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 10, bronze: 0 },
   },
   {
     id: 'golden-scepter',
@@ -204,6 +223,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 5,
     spd: 6,
     forClass: 'mage',
+    cost: { coins: CRAFTING_FEE, gold: 5, copper: 0, silver: 10, bronze: 0 },
   },
   {
     id: 'golden-plate-armor',
@@ -213,6 +233,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 40,
     spd: -5,
+    cost: { coins: CRAFTING_FEE, gold: 8, copper: 0, silver: 12, bronze: 0 },
   },
 
   // --- Legendary & Joke Tier ---
@@ -224,6 +245,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 5,
     vit: 45,
     spd: 0,
+    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 15, bronze: 0 },
   },
   {
     id: 'gold-armor',
@@ -233,6 +255,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 1,
     spd: -5,
+    cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 0, bronze: 0 },
   },
 ];
 
@@ -242,20 +265,20 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Potion',
     type: 'consumable',
     description: 'Heals a little. Tastes like red.',
-    amount: 100,
+    cost: { coins: 50, gold: 0, copper: 0, silver: 0, bronze: 0 },
   },
   {
     id: 'high-potion',
     name: 'High Potion',
     type: 'consumable',
     description: 'Heals a lot. Tastes like really red.',
-    amount: 500,
+    cost: { coins: 200, gold: 0, copper: 0, silver: 0, bronze: 0 },
   },
   {
     id: 'energy-booster',
     name: 'Energy Booster',
     type: 'consumable',
     description: 'A jolt for the whole team. Fills 30% of the ultimate bar.',
-    amount: 30,
+    cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
   },
 ];
