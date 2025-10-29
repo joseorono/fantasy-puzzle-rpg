@@ -201,7 +201,7 @@ export function Match3Board() {
 
       // Find the character that matches this orb type to apply their POW bonus
       const matchingCharacter = matchedType ? party.find(char => char.color === matchedType) : null;
-      const characterPow = matchingCharacter?.pow ?? 0;
+      const characterPow = matchingCharacter?.stats.pow ?? 0;
 
       // Calculate damage using RPG system (includes combo multiplier and POW bonus)
       const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);

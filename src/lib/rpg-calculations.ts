@@ -31,8 +31,8 @@ export function calculateMaxHp(baseHp: number, vit: number, vitMultiplier: numbe
  */
 export function calculateEntityMaxHp(entity: CharacterData | EnemyData): number {
   // Extract base HP by removing VIT contribution
-  const baseHp = entity.maxHp - (entity.vit * entity.vitHpMultiplier);
-  return calculateMaxHp(baseHp, entity.vit, entity.vitHpMultiplier);
+  const baseHp = entity.maxHp - (entity.stats.vit * entity.vitHpMultiplier);
+  return calculateMaxHp(baseHp, entity.stats.vit, entity.vitHpMultiplier);
 }
 
 /**
@@ -89,7 +89,7 @@ export function calculateDamage(baseDamage: number, pow: number): number {
  * @returns Final damage value
  */
 export function calculateCharacterDamage(character: CharacterData, baseDamage: number): number {
-  return calculateDamage(baseDamage, character.pow);
+  return calculateDamage(baseDamage, character.stats.pow);
 }
 
 /**
@@ -98,7 +98,7 @@ export function calculateCharacterDamage(character: CharacterData, baseDamage: n
  * @returns Final damage value
  */
 export function calculateEnemyDamage(enemy: EnemyData): number {
-  return calculateDamage(enemy.attackDamage, enemy.pow);
+  return calculateDamage(enemy.attackDamage, enemy.stats.pow);
 }
 
 /**
@@ -185,7 +185,7 @@ export function calculateCooldownFillRate(baseCooldown: number, spd: number): nu
  * @returns Actual attack interval in milliseconds
  */
 export function calculateEnemyAttackInterval(enemy: EnemyData): number {
-  return calculateAttackInterval(enemy.attackInterval, enemy.spd);
+  return calculateAttackInterval(enemy.attackInterval, enemy.stats.spd);
 }
 
 /**
@@ -194,7 +194,7 @@ export function calculateEnemyAttackInterval(enemy: EnemyData): number {
  * @returns Actual cooldown in seconds
  */
 export function calculateCharacterCooldown(character: CharacterData): number {
-  return calculateCooldown(character.maxCooldown, character.spd);
+  return calculateCooldown(character.maxCooldown, character.stats.spd);
 }
 
 // ============================================================================
