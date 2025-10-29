@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui/button";
 
-export function TestView() {
+export default function TestView() {
   function handleClick() {
     console.log('Test button clicked!');
   }
