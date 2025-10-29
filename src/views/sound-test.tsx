@@ -32,7 +32,8 @@ function LabeledSlider({ label, value, min = 0, max = 1, step = 0.01, onChange }
 
 export default function SoundTestView() {
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [isAudioLoaded, setIsAudioLoaded] = useState<boolean>(false);
+  const [isAudioLoaded, setIsAudioLoaded] = useState<boolean>(soundService.audioLoaded === true);
+  const [isPreloading, setIsPreloading] = useState<boolean>(false);
   const [globalVolume, setGlobalVolume] = useState<number>(1);
   const [playVolume, setPlayVolume] = useState<number>(1);
   const [playVariance, setPlayVariance] = useState<number>(0);
@@ -41,11 +42,22 @@ export default function SoundTestView() {
     try {
       setIsMuted(soundService.isMuted());
     } catch {}
+    // Do NOT auto-preload here to respect user gesture requirements for AudioContext
+    setIsAudioLoaded(soundService.audioLoaded === true);
   }, []);
 
   const handlePreload = async () => {
+    if (isAudioLoaded === true || isPreloading === true) return;
+    setIsPreloading(true);
     await soundService.preloadAudios();
     setIsAudioLoaded(true);
+    setIsPreloading(false);
+  };
+
+  const ensureLoaded = async () => {
+    if (isAudioLoaded === true) return true;
+    await handlePreload();
+    return true;
   };
 
   const handleSetGlobalVolume = (next: number) => {
@@ -71,7 +83,9 @@ export default function SoundTestView() {
       <h2 className="text-xl font-bold">Sound Service Test</h2>
 
       <div className="flex gap-3 flex-wrap items-center">
-        <Button onClick={handlePreload}>Preload Audio</Button>
+        <Button onClick={handlePreload} disabled={isPreloading || isAudioLoaded}> 
+          {isPreloading ? 'Preloading…' : isAudioLoaded ? 'Audio Loaded' : 'Preload Audio'}
+        </Button>
         <Button onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</Button>
         <div className="text-sm px-2 py-1 rounded bg-neutral-200 text-neutral-800">
           Loaded: {isAudioLoaded ? 'yes' : 'no'}
@@ -90,7 +104,13 @@ export default function SoundTestView() {
           {soundNameList.map((alias) => (
             <div key={alias} className="flex items-center justify-between gap-2 border rounded px-2 py-2">
               <div className="text-sm truncate">{alias}</div>
-              <Button onClick={() => soundService.playSound(alias as SoundNames, playVolume, playVariance)}>
+              <Button
+                disabled={!isAudioLoaded || isPreloading}
+                onClick={async () => {
+                  await ensureLoaded();
+                  soundService.playSound(alias as SoundNames, playVolume, playVariance);
+                }}
+              >
                 Play
               </Button>
             </div>
@@ -105,7 +125,15 @@ export default function SoundTestView() {
             <div key={alias + '-loop'} className="flex items-center justify-between gap-2 border rounded px-2 py-2">
               <div className="text-sm truncate">{alias}</div>
               <div className="flex gap-2">
-                <Button onClick={() => soundService.startMusic(alias as SoundNames, playVolume)}>Start</Button>
+                <Button
+                  disabled={!isAudioLoaded || isPreloading}
+                  onClick={async () => {
+                    await ensureLoaded();
+                    soundService.startMusic(alias as SoundNames, playVolume);
+                  }}
+                >
+                  Start
+                </Button>
                 <Button onClick={() => soundService.stopMusic(alias as SoundNames)}>Stop</Button>
               </div>
             </div>
