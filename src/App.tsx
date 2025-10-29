@@ -3,6 +3,7 @@
 import MouseTracker from "./components/effects/mouse-tracker";
 import InventoryTestView from "./views/inventory-test";
 import ResourcesTestView from "./views/resources-test";
+import SoundTestView from "./views/sound-test";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
     <MouseTracker />
     <InventoryTestView />
     <ResourcesTestView />
+    <SoundTestView />
     {/* <BattleScreen /> */}
   </>
   );
