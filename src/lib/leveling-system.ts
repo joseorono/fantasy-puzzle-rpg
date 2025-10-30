@@ -39,8 +39,16 @@ export function calculateExpToNextLevel(level: number): number {
  * @returns A random non-zero stat from the character's potential stats or null if no non-zero stats are found
  */
 export function getPotentialStat(character: CharacterData): StatType | null {
-  const key = Object.keys(character.potentialStats).find((key) => character.potentialStats[key as StatType] > 0);
-  return (key as StatType) || null;
+  // Retrieve all valid stats
+  const validKeys = Object.keys(character.potentialStats).filter(
+    (key) => character.potentialStats[key as StatType] > 0,
+  );
+  // If no valid stats, return null
+  if (validKeys.length === 0) return null;
+
+  // Otherwise, return a random valid stat
+  const randomIndex = Math.floor(Math.random() * validKeys.length);
+  return validKeys[randomIndex] as StatType;
 }
 /**
  * Levels up a character
@@ -49,13 +57,22 @@ export function getPotentialStat(character: CharacterData): StatType | null {
  * @returns The leveled up character object
  */
 export function levelUp(character: CharacterData): CharacterData {
+  // Get a random stat to level up
   let randomStat = getPotentialStat(character);
+
+  // If there's a valid stat to level up, increase the value and decrease the potential value
   if (randomStat) {
     character.stats[randomStat] += 1;
     character.potentialStats[randomStat] -= 1;
   }
-  character.maxHp = calculateMaxHp(character.baseHp, character.stats.vit, character.vitHpMultiplier);
+
+  // If vit was increased, recalculate max HP
+  if (randomStat === 'vit') {
+    character.maxHp = calculateMaxHp(character.baseHp, character.stats.vit, character.vitHpMultiplier);
+  }
+
+  // Increase level and calculate new exp to next level
   character.level += 1;
-  character.expToNextLevel = calculateExpToNextLevel(character.level + 1);
+  character.expToNextLevel = calculateExpToNextLevel(character.level);
   return character;
 }
