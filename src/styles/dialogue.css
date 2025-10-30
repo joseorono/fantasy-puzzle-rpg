@@ -1,0 +1,252 @@
+/* Dialogue System Styles - Retro 16-bit JRPG Aesthetic */
+
+/* Backdrop */
+.dialogue-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Main dialogue container */
+.dialogue-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.dialogue-container > * {
+  pointer-events: auto;
+}
+
+/* Portrait container */
+.dialogue-portraits {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 1rem;
+  gap: 2rem;
+  position: relative;
+}
+
+/* Individual portrait */
+.dialogue-portrait {
+  position: relative;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dialogue-portrait--left {
+  align-self: flex-end;
+}
+
+.dialogue-portrait--right {
+  align-self: flex-end;
+}
+
+.dialogue-portrait--center {
+  align-self: flex-end;
+}
+
+.dialogue-portrait--inactive {
+  opacity: 0.5;
+  filter: brightness(0.7);
+}
+
+.dialogue-portrait--active {
+  opacity: 1;
+  filter: brightness(1);
+  animation: portrait-pulse 0.3s ease;
+}
+
+.dialogue-portrait__image {
+  display: block;
+  max-height: 300px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.dialogue-portrait__name {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border: 2px solid #fff;
+  font-family: monospace;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  image-rendering: pixelated;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes portrait-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Dialogue box */
+.dialogue-box {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  background-color: rgba(20, 20, 40, 0.95);
+  border: 4px solid #fff;
+  box-shadow: 
+    0 0 0 2px rgba(20, 20, 40, 0.95),
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+  padding: 1.5rem;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.dialogue-box__speaker {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+}
+
+.dialogue-box__text {
+  font-family: monospace;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #fff;
+  min-height: 4rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+}
+
+.dialogue-box__indicator {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #ffd700;
+  animation: indicator-bounce 0.8s ease-in-out infinite;
+}
+
+@keyframes indicator-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 0.7;
+  }
+}
+
+.dialogue-box__indicator--hidden {
+  display: none;
+}
+
+/* Skip indicator */
+.dialogue-skip-indicator {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffd700;
+  padding: 0.5rem 1rem;
+  border: 2px solid #ffd700;
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  animation: skip-pulse 0.5s ease-in-out infinite;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes skip-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Typewriter cursor */
+.dialogue-box__cursor {
+  display: inline-block;
+  width: 0.5rem;
+  height: 1.125rem;
+  background-color: #fff;
+  margin-left: 0.125rem;
+  animation: cursor-blink 0.8s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dialogue-portraits {
+    max-width: 100%;
+    gap: 1rem;
+  }
+
+  .dialogue-portrait__image {
+    max-height: 200px;
+  }
+
+  .dialogue-box {
+    max-width: 100%;
+    padding: 1rem;
+  }
+
+  .dialogue-box__text {
+    font-size: 1rem;
+    min-height: 3rem;
+  }
+
+  .dialogue-box__speaker {
+    font-size: 0.875rem;
+  }
+}
