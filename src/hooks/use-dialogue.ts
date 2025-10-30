@@ -1,15 +1,148 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { DialogueScene, DialogueLine } from "../types/dialogue";
 
-export function useDialogue(scene: DialogueScene) {
+interface UseDialogueOptions {
+  textSpeed?: number; // Characters per frame (default: 2)
+  turboSpeed?: number; // Characters per frame when CTRL held (default: 10)
+  autoAdvanceDelay?: number; // ms to wait before auto-advancing (0 = disabled)
+}
+
+export function useDialogue(
+  scene: DialogueScene,
+  options: UseDialogueOptions = {}
+) {
+  const { textSpeed = 2, turboSpeed = 10, autoAdvanceDelay = 0 } = options;
+
   const [index, setIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
 
   const currentLine: DialogueLine | undefined = scene.lines[index];
-  const next = useCallback(() => {
-    setIndex((i) => Math.min(i + 1, scene.lines.length - 1));
-  }, [scene.lines.length]);
-
   const isLast = index === scene.lines.length - 1;
+  const isComplete = displayedText === currentLine?.text;
 
-  return { currentLine, index, next, isLast };
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const lastUpdateRef = useRef<number>(0);
+  const charIndexRef = useRef<number>(0);
+
+  // Handle CTRL key press for fast-forward
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Control") {
+        setIsCtrlPressed(true);
+      }
+    }
+
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === "Control") {
+        setIsCtrlPressed(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  // Typewriter animation
+  useEffect(() => {
+    if (!currentLine) return;
+
+    const lineText = currentLine.text;
+
+    // Reset for new line
+    setDisplayedText("");
+    setIsTyping(true);
+    charIndexRef.current = 0;
+    lastUpdateRef.current = performance.now();
+
+    function animate(timestamp: number) {
+      const deltaTime = timestamp - lastUpdateRef.current;
+      const currentSpeed = isCtrlPressed ? turboSpeed : textSpeed;
+
+      // Update every ~16ms (60fps), but add multiple characters based on speed
+      if (deltaTime >= 16) {
+        const charsToAdd = Math.floor(currentSpeed);
+        const newIndex = Math.min(
+          charIndexRef.current + charsToAdd,
+          lineText.length
+        );
+
+        setDisplayedText(lineText.slice(0, newIndex));
+        charIndexRef.current = newIndex;
+        lastUpdateRef.current = timestamp;
+
+        if (newIndex >= lineText.length) {
+          setIsTyping(false);
+          return;
+        }
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [currentLine, isCtrlPressed, textSpeed, turboSpeed]);
+
+  const next = useCallback(() => {
+    if (!isComplete) {
+      // Skip to end of current text
+      setDisplayedText(currentLine?.text || "");
+      setIsTyping(false);
+      charIndexRef.current = currentLine?.text.length || 0;
+    } else if (!isLast) {
+      // Move to next line
+      setIndex((i) => Math.min(i + 1, scene.lines.length - 1));
+    }
+  }, [isComplete, isLast, currentLine, scene.lines.length]);
+
+  // Auto-advance after delay (if enabled)
+  useEffect(() => {
+    if (autoAdvanceDelay > 0 && isComplete && !isLast) {
+      const timer = setTimeout(() => {
+        next();
+      }, autoAdvanceDelay);
+
+      return () => clearTimeout(timer);
+    }
+  }, [autoAdvanceDelay, isComplete, isLast, next]);
+
+  const skip = useCallback(() => {
+    // Skip to last line and complete text
+    const lastIndex = scene.lines.length - 1;
+    setIndex(lastIndex);
+    setDisplayedText(scene.lines[lastIndex].text);
+    setIsTyping(false);
+  }, [scene.lines]);
+
+  const reset = useCallback(() => {
+    setIndex(0);
+    setDisplayedText("");
+    setIsTyping(false);
+    charIndexRef.current = 0;
+  }, []);
+
+  return {
+    currentLine,
+    displayedText,
+    index,
+    isTyping,
+    isComplete,
+    isLast,
+    isCtrlPressed,
+    next,
+    skip,
+    reset,
+  };
 }
