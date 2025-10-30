@@ -1,4 +1,5 @@
 //import BattleScreen from "~/views/battle-screen";
+//import { DialogueTestView } from "~/views/dialogue-test";
 import MouseTracker from "~/components/effects/mouse-tracker";
 import InventoryTestView from "~/views/inventory-test";
 import ResourcesTestView from "~/views/resources-test";
@@ -13,6 +14,7 @@ function App() {
     <InventoryTestView />
     <ResourcesTestView />
     <SoundTestView />
+    {/* <DialogueTestView /> */}
     {/* <BattleScreen /> */}
   </>
   );
