@@ -1,9 +1,9 @@
 
-export type DialogueSide = "left" | "right";
+export type DialogueSide = "left" | "right" | "center";
 
 export interface DialogueCharacter {
   id: string;
-  name: string;
+  name?: string;
   portrait?: string; // URL or image path
   side: DialogueSide;
 }
