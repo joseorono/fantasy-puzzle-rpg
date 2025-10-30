@@ -7,6 +7,7 @@
 - Use TypeScript for all code; prefer interfaces over types.
 - Avoid enums; use maps instead.
 - Optimize Web Vitals (LCP, CLS, FID).
+- You can use Tailwind for simple things but for pixel art and other more complex things use CSS in the /styles directory and import it in index.css.
 
 # React Rules
 
