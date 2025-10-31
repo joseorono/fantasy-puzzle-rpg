@@ -40,6 +40,14 @@ export function DialogueScene({
     }
   }, [isLast, isComplete, onComplete, next]);
 
+  // Add/remove dialogue-active class to prevent page scrolling
+  useEffect(() => {
+    document.body.classList.add("dialogue-active");
+    return () => {
+      document.body.classList.remove("dialogue-active");
+    };
+  }, []);
+
   // Keyboard controls
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

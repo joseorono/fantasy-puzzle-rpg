@@ -1,5 +1,10 @@
 /* Dialogue System Styles - Retro 16-bit JRPG Aesthetic */
 
+/* Disable page scrolling when dialogue is active */
+body.dialogue-active {
+  overflow: hidden;
+}
+
 /* Backdrop */
 .dialogue-backdrop {
   position: fixed;
@@ -12,6 +17,7 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  cursor: pointer;
 }
 
 /* Main dialogue container */
