@@ -18,11 +18,13 @@ export function MessageHistory({
   onClose,
 }: MessageHistoryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when opened
+  // Auto-scroll mh-content to the bottom when opened so the user sees the latest message first
   useEffect(() => {
-    if (isOpen && containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    if (isOpen && contentRef.current) {
+      // NOTE: mh-content is the scrollable element, not the container
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
   }, [isOpen]);
 
@@ -51,7 +53,7 @@ export function MessageHistory({
           </button>
         </div>
 
-        <div className="mh-content">
+        <div className="mh-content" ref={contentRef}>
           {historyLines.map((line, idx) => {
             const speakerName = getSpeakerName(line.speakerId);
             const isNarration = !speakerName;
