@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import type { DialogueScene as DialogueSceneType } from "~/types/dialogue";
 import { useDialogue } from "~/hooks/use-dialogue";
 import { DialogueBox } from "./dialogue-box";
 import { DialoguePortrait } from "./dialogue-portrait";
+import { MessageHistory } from "./message-history";
 
 interface DialogueSceneProps {
   scene: DialogueSceneType;
@@ -25,7 +26,10 @@ export function DialogueScene({
     isLast,
     isCtrlPressed,
     next,
+    index,
   } = useDialogue(scene, { textSpeed, turboSpeed });
+
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Handle click/space/enter to advance
   const handleAdvance = useCallback(() => {
@@ -49,6 +53,24 @@ export function DialogueScene({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAdvance]);
 
+  // Scroll wheel detection to open message history
+  useEffect(() => {
+    function handleWheel(e: WheelEvent) {
+      // Only open on scroll up (negative deltaY)
+      if (e.deltaY < 0 && !isHistoryOpen) {
+        e.preventDefault();
+        setIsHistoryOpen(true);
+      }
+    }
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, [isHistoryOpen]);
+
+  function closeHistory() {
+    setIsHistoryOpen(false);
+  }
+
   if (!currentLine) return null;
 
   // Find the current speaker
@@ -69,6 +91,15 @@ export function DialogueScene({
 
   return (
     <>
+      {/* Message History */}
+      <MessageHistory
+        lines={scene.lines}
+        characters={scene.characters}
+        currentIndex={index}
+        isOpen={isHistoryOpen}
+        onClose={closeHistory}
+      />
+
       {/* Dark backdrop */}
       <div className="dialogue-backdrop" onClick={handleAdvance} />
 

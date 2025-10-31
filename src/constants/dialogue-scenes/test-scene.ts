@@ -92,3 +92,77 @@ export const SIMPLE_DIALOGUE_SCENE: DialogueScene = {
     },
   ],
 };
+
+export const CUTSCENE_WITH_NARRATOR: DialogueScene = {
+  id: "cutscene-narrator",
+  characters: [
+    {
+      id: "narrator",
+      side: "center",
+    },
+    {
+      id: "knight",
+      name: "Sir Roland",
+      portrait: "/assets/portraits/Innkeeper_02.png",
+      side: "left",
+    },
+    {
+      id: "mage",
+      name: "Elara",
+      portrait: "/assets/portraits/Witch_03.png",
+      side: "right",
+    },
+  ],
+  lines: [
+    {
+      id: "line-1",
+      speakerId: "narrator",
+      text: "The ancient temple loomed before them, its weathered stones covered in mysterious runes that glowed faintly in the moonlight.",
+    },
+    {
+      id: "line-2",
+      speakerId: "knight",
+      text: "This place... it feels wrong. Like we're being watched.",
+    },
+    {
+      id: "line-3",
+      speakerId: "mage",
+      text: "Your instincts serve you well, Sir Roland. The magical wards here are still active after all these centuries.",
+    },
+    {
+      id: "line-4",
+      speakerId: "narrator",
+      text: "A cold wind swept through the courtyard, carrying with it whispers of forgotten voices.",
+    },
+    {
+      id: "line-5",
+      speakerId: "knight",
+      text: "Can you dispel them? We need to get inside before dawn.",
+    },
+    {
+      id: "line-6",
+      speakerId: "mage",
+      text: "I can try, but breaking these wards will alert whatever guards this place. Are you ready for a fight?",
+    },
+    {
+      id: "line-7",
+      speakerId: "knight",
+      text: "I was born ready. Do what you must.",
+    },
+    {
+      id: "line-8",
+      speakerId: "narrator",
+      text: "Elara began to chant, her hands weaving intricate patterns in the air. The runes on the temple walls pulsed with increasing intensity.",
+    },
+    {
+      id: "line-9",
+      speakerId: "mage",
+      text: "It's done! But we must hurry—the guardians will awaken soon!",
+    },
+    {
+      id: "line-10",
+      speakerId: "narrator",
+      text: "As if in response to her words, the ground beneath them began to tremble...",
+    },
+  ],
+};

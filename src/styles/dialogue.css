@@ -250,3 +250,191 @@
     font-size: 0.875rem;
   }
 }
+
+/* Message History Styles */
+
+/* Message History Backdrop - Darker than dialogue backdrop */
+.mh-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1002;
+  transition: opacity 0.2s ease;
+  opacity: 1;
+}
+
+/* Message History Container */
+.mh-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  background-color: rgba(20, 20, 40, 0.98);
+  border: 4px solid #fff;
+  box-shadow: 
+    0 0 0 2px rgba(20, 20, 40, 0.98),
+    0 12px 24px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+  z-index: 1003;
+  display: flex;
+  flex-direction: column;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Message History Header */
+.mh-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.mh-title {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.mh-close-button {
+  background: none;
+  border: 2px solid #fff;
+  color: #fff;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.mh-close-button:hover {
+  background-color: #fff;
+  color: rgba(20, 20, 40, 0.98);
+}
+
+/* Message History Content */
+.mh-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: #ffd700 rgba(255, 255, 255, 0.1);
+}
+
+.mh-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mh-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mh-content::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 4px;
+}
+
+.mh-content::-webkit-scrollbar-thumb:hover {
+  background: #ffed4e;
+}
+
+/* Message Items */
+.mh-message {
+  margin-bottom: 1rem;
+}
+
+/* Dialogue Messages */
+.mh-dialogue {
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #ffd700;
+}
+
+.mh-dialogue-name {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+}
+
+.mh-dialogue-message {
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+}
+
+/* Narration Messages */
+.mh-narration {
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.mh-narration-text {
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+}
+
+/* Add extra margin when narration follows dialogue */
+.mh-narration--after-dialogue {
+  margin-top: 1.5rem;
+}
+
+/* Responsive adjustments for message history */
+@media (max-width: 768px) {
+  .mh-container {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .mh-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .mh-title {
+    font-size: 1rem;
+  }
+
+  .mh-content {
+    padding: 1rem;
+  }
+
+  .mh-dialogue-message,
+  .mh-narration-text {
+    font-size: 0.875rem;
+  }
+}

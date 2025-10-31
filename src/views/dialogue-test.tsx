@@ -3,12 +3,13 @@ import { DialogueScene } from "~/components/dialogue/dialogue-scene";
 import {
   TEST_DIALOGUE_SCENE,
   SIMPLE_DIALOGUE_SCENE,
+  CUTSCENE_WITH_NARRATOR,
 } from "~/constants/dialogue-scenes/test-scene";
 
 export function DialogueTestView() {
-  const [activeScene, setActiveScene] = useState<"test" | "simple" | null>(
-    null
-  );
+  const [activeScene, setActiveScene] = useState<
+    "test" | "simple" | "narrator" | null
+  >(null);
   const [sceneKey, setSceneKey] = useState(0);
 
   function handleComplete() {
@@ -24,6 +25,11 @@ export function DialogueTestView() {
   function startSimpleScene() {
     setSceneKey((k) => k + 1);
     setActiveScene("simple");
+  }
+
+  function startNarratorScene() {
+    setSceneKey((k) => k + 1);
+    setActiveScene("narrator");
   }
 
   function closeDialogue() {
@@ -101,6 +107,24 @@ export function DialogueTestView() {
             Start Simple Scene
           </button>
 
+          <button
+            onClick={startNarratorScene}
+            style={{
+              padding: "1rem 2rem",
+              fontSize: "1.125rem",
+              fontFamily: "monospace",
+              fontWeight: "bold",
+              backgroundColor: "#16213e",
+              color: "#ffd700",
+              border: "3px solid #ffd700",
+              cursor: "pointer",
+              textTransform: "uppercase",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            Cutscene With Narrator
+          </button>
+
           {activeScene && (
             <button
               onClick={closeDialogue}
@@ -146,6 +170,7 @@ export function DialogueTestView() {
           <ul style={{ listStyle: "none", padding: 0 }}>
             <li>• Click anywhere or press SPACE/ENTER to advance</li>
             <li>• Hold CTRL to fast-forward text</li>
+            <li>• Scroll up to open Message History</li>
             <li>• First click completes current text</li>
             <li>• Second click advances to next line</li>
           </ul>
@@ -163,6 +188,8 @@ export function DialogueTestView() {
           <ul style={{ listStyle: "none", padding: 0 }}>
             <li>• Typewriter text animation</li>
             <li>• Character portraits with active/inactive states</li>
+            <li>• Message History/Log (scroll up to open)</li>
+            <li>• Narrator support for cutscenes</li>
             <li>• Retro 16-bit pixel art aesthetic</li>
             <li>• Dark transparent backdrop</li>
             <li>• Speaker name display</li>
@@ -184,6 +211,14 @@ export function DialogueTestView() {
         <DialogueScene
           key={sceneKey}
           scene={SIMPLE_DIALOGUE_SCENE}
+          onComplete={handleComplete}
+        />
+      )}
+
+      {activeScene === "narrator" && (
+        <DialogueScene
+          key={sceneKey}
+          scene={CUTSCENE_WITH_NARRATOR}
           onComplete={handleComplete}
         />
       )}
