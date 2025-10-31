@@ -4,6 +4,7 @@ interface DialogueBoxProps {
   isTyping: boolean;
   showIndicator?: boolean;
   onClick?: () => void;
+  onOpenHistory?: () => void;
 }
 
 export function DialogueBox({
@@ -12,6 +13,7 @@ export function DialogueBox({
   isTyping,
   showIndicator = true,
   onClick,
+  onOpenHistory,
 }: DialogueBoxProps) {
   return (
     <div className="dialogue-box" onClick={onClick}>
@@ -22,9 +24,23 @@ export function DialogueBox({
         {text}
         {isTyping && <span className="dialogue-box__cursor" />}
       </div>
-      {!isTyping && showIndicator && (
-        <div className="dialogue-box__indicator" aria-label="Continue" />
-      )}
+      <div className="dialogue-box__footer">
+        {!isTyping && showIndicator && (
+          <div className="dialogue-box__indicator" aria-label="Continue" />
+        )}
+        {onOpenHistory && (
+          <button
+            className="dialogue-box__history-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenHistory();
+            }}
+            title="Open Message History (or scroll up)"
+          >
+            ⬆ History
+          </button>
+        )}
+      </div>
     </div>
   );
 }

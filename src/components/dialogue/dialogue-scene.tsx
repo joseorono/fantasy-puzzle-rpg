@@ -162,6 +162,7 @@ export function DialogueScene({
           isTyping={isTyping}
           showIndicator={isComplete}
           onClick={handleAdvance}
+          onOpenHistory={() => setIsHistoryOpen(true)}
         />
       </div>
     </>

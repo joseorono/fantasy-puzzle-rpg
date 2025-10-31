@@ -152,16 +152,49 @@
   letter-spacing: 0.02em;
 }
 
+.dialogue-box__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  position: relative;
+}
+
 .dialogue-box__indicator {
   position: absolute;
-  bottom: 0.75rem;
-  right: 0.75rem;
+  bottom: 0;
+  right: 0;
   width: 0;
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-top: 12px solid #ffd700;
   animation: indicator-bounce 0.8s ease-in-out infinite;
+}
+
+.dialogue-box__history-button {
+  background-color: rgba(255, 215, 0, 0.1);
+  border: 2px solid #ffd700;
+  color: #ffd700;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+}
+
+.dialogue-box__history-button:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.dialogue-box__history-button:active {
+  background-color: rgba(255, 215, 0, 0.3);
 }
 
 @keyframes indicator-bounce {
