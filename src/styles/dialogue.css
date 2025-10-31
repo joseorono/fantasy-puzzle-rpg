@@ -121,7 +121,7 @@
   max-width: 800px;
   background-color: rgba(20, 20, 40, 0.95);
   border: 4px solid #fff;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px rgba(20, 20, 40, 0.95),
     0 8px 16px rgba(0, 0, 0, 0.7),
     inset 0 0 0 2px rgba(255, 255, 255, 0.3);
@@ -173,6 +173,9 @@
 }
 
 .dialogue-box__history-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   background-color: rgba(255, 215, 0, 0.1);
   border: 2px solid #ffd700;
   color: #ffd700;
@@ -310,7 +313,7 @@
   max-height: 80vh;
   background-color: rgba(20, 20, 40, 0.98);
   border: 4px solid #fff;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px rgba(20, 20, 40, 0.98),
     0 12px 24px rgba(0, 0, 0, 0.8),
     inset 0 0 0 2px rgba(255, 255, 255, 0.3);

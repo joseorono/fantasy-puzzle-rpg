@@ -1,3 +1,5 @@
+import { ArrowUpIcon } from "lucide-react";
+
 interface DialogueBoxProps {
   speakerName?: string;
   text: string;
@@ -30,14 +32,16 @@ export function DialogueBox({
         )}
         {onOpenHistory && (
           <button
-            className="dialogue-box__history-button"
+            className="dialogue-box__button dialogue-box__history-button"
             onClick={(e) => {
               e.stopPropagation();
               onOpenHistory();
             }}
             title="Open Message History (or scroll up)"
           >
-            ⬆ History
+            {/* TODO: Change this icon */}
+            <ArrowUpIcon className="w-4 h-4" />
+            Message Log
           </button>
         )}
       </div>
