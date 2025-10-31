@@ -5,13 +5,19 @@ interface UseDialogueOptions {
   textSpeed?: number; // Characters per frame (default: 2)
   turboSpeed?: number; // Characters per frame when CTRL held (default: 10)
   autoAdvanceDelay?: number; // ms to wait before auto-advancing (0 = disabled)
+  controlsEnabled?: boolean; // when false, ignore input like CTRL fast-forward
 }
 
 export function useDialogue(
   scene: DialogueScene,
   options: UseDialogueOptions = {}
 ) {
-  const { textSpeed = 2, turboSpeed = 10, autoAdvanceDelay = 0 } = options;
+  const {
+    textSpeed = 2,
+    turboSpeed = 10,
+    autoAdvanceDelay = 0,
+    controlsEnabled = true,
+  } = options;
 
   const [index, setIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -30,6 +36,7 @@ export function useDialogue(
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Control") {
+        if (!controlsEnabled) return;
         setIsCtrlPressed(true);
       }
     }
@@ -47,7 +54,14 @@ export function useDialogue(
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [controlsEnabled]);
+
+  // If controls get disabled, ensure CTRL state is cleared
+  useEffect(() => {
+    if (!controlsEnabled && isCtrlPressed) {
+      setIsCtrlPressed(false);
+    }
+  }, [controlsEnabled, isCtrlPressed]);
 
   // Typewriter animation
   useEffect(() => {
@@ -63,7 +77,7 @@ export function useDialogue(
 
     function animate(timestamp: number) {
       const deltaTime = timestamp - lastUpdateRef.current;
-      const currentSpeed = isCtrlPressed ? turboSpeed : textSpeed;
+      const currentSpeed = controlsEnabled && isCtrlPressed ? turboSpeed : textSpeed;
 
       // Update every ~16ms (60fps), but add multiple characters based on speed
       if (deltaTime >= 16) {
@@ -93,7 +107,7 @@ export function useDialogue(
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [currentLine, isCtrlPressed, textSpeed, turboSpeed]);
+  }, [currentLine, isCtrlPressed, textSpeed, turboSpeed, controlsEnabled]);
 
   const next = useCallback(() => {
     if (!isComplete) {

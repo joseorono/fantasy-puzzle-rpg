@@ -18,6 +18,8 @@ export function DialogueScene({
   textSpeed = 2,
   turboSpeed = 10,
 }: DialogueSceneProps) {
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   const {
     currentLine,
     displayedText,
@@ -27,9 +29,7 @@ export function DialogueScene({
     isCtrlPressed,
     next,
     index,
-  } = useDialogue(scene, { textSpeed, turboSpeed });
-
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  } = useDialogue(scene, { textSpeed, turboSpeed, controlsEnabled: !isHistoryOpen });
 
   // Handle click/space/enter to advance
   const handleAdvance = useCallback(() => {
@@ -51,6 +51,20 @@ export function DialogueScene({
   // Keyboard controls
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      // When history is open: prevent dialogue advancement and allow ESC to close
+      if (isHistoryOpen) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeHistory();
+        }
+        // Block SPACE/ENTER from advancing while history is open
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      // Normal controls when history is not open
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         handleAdvance();
@@ -59,7 +73,7 @@ export function DialogueScene({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAdvance]);
+  }, [handleAdvance, isHistoryOpen]);
 
   // Scroll wheel detection to open message history
   useEffect(() => {
