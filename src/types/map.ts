@@ -22,3 +22,6 @@ export interface MapNode {
 
 // Direction for character movement
 export type Direction = 'up' | 'down' | 'left' | 'right';
+
+// Valid sublocations of any town
+export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store';
