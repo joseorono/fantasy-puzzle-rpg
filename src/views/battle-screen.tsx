@@ -9,7 +9,6 @@ import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
-import styles from '~/styles/battle-layout.module.css';
 
 export default function BattleScreen() {
   const battleState = useAtomValue(battleStateAtom);
