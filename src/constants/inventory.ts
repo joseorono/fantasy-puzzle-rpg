@@ -259,6 +259,7 @@ export const EquipmentItems: EquipmentItemData[] = [
   },
 ];
 
+export const ConsumableItemIds = ['potion', 'high-potion', 'energy-booster'];
 export const ConsumableItems: ConsumableItemData[] = [
   {
     id: 'potion',
@@ -282,3 +283,4 @@ export const ConsumableItems: ConsumableItemData[] = [
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
   },
 ];
+

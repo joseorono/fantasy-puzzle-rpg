@@ -19,8 +19,13 @@ export interface EquipmentItemData extends BaseItemData {
 }
 
 export interface ConsumableItemData extends BaseItemData {
-    amount?: number;
 }
+
+import { ConsumableItemIds } from "../constants/inventory";
+export type ConsumableItemIds = typeof ConsumableItemIds[number];
+export type ItemStoreParams = Array<ConsumableItemIds>;
+
+
 
 export interface KeyItemData extends BaseItemData {
 }
