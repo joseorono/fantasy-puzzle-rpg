@@ -5,12 +5,14 @@ import InventoryTestView from "~/views/inventory-test";
 import ResourcesTestView from "~/views/resources-test";
 import SoundTestView from "~/views/sound-test";
 import TestView from "~/views/test-view";
+import PartyTestView from "~/views/party-test";
 
 function App() {
   return (
   <>
     <TestView />
     <MouseTracker />
+    <PartyTestView />
     <InventoryTestView />
     <ResourcesTestView />
     <SoundTestView />
