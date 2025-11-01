@@ -111,10 +111,10 @@ export default function BattleScreen() {
         </header>
 
         {/* Main battle area - Split view */}
-        <div className={styles.battleContainer}>
-          <div className={styles.battleArea}>
+        <div className="battleContainer">
+          <div className="battleArea">
             {/* Left/Top section - Enemy */}
-            <div className={`${styles.enemySection} relative border-b-4 lg:border-b-0 lg:border-r-4 border-gray-700`}>
+            <div className="enemySection relative border-b-4 lg:border-b-0 lg:border-r-4 border-gray-700">
             {/* Animated background */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-emerald-950/30" />
             <div className="absolute inset-0 opacity-10">
@@ -127,7 +127,7 @@ export default function BattleScreen() {
             </div>
 
             {/* Right/Bottom section - Party */}
-            <div className={`${styles.partySection} relative`}>
+            <div className="partySection relative">
             {/* Animated background */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/10 to-purple-900/20" />
             <div className="absolute inset-0 opacity-10">
@@ -141,7 +141,7 @@ export default function BattleScreen() {
           </div>
 
           {/* Bottom section - Match-3 Board */}
-          <div className={`${styles.boardSection} relative bg-gradient-to-b from-amber-950/80 to-amber-900/60 border-t-2 border-amber-700 p-2 sm:p-3`}>
+          <div className="boardSection relative bg-gradient-to-b from-amber-950/80 to-amber-900/60 border-t-2 border-amber-700 p-2 sm:p-3">
           {/* Decorative background pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] pixel-art" />
