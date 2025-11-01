@@ -1,5 +1,6 @@
 import type { Resources } from "./resources";
 import type { CharacterClass } from "./rpg-elements";
+import { ConsumableItemIds } from "~/constants/inventory";
 
 export type ItemTypes = 'equipment' | 'consumable' | 'key';
 
@@ -21,7 +22,6 @@ export interface EquipmentItemData extends BaseItemData {
 export interface ConsumableItemData extends BaseItemData {
 }
 
-import { ConsumableItemIds } from "../constants/inventory";
 export type ConsumableItemIds = typeof ConsumableItemIds[number];
 export type ItemStoreParams = Array<ConsumableItemIds>;
 
