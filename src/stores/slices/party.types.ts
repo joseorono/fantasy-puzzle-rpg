@@ -14,6 +14,8 @@ export interface PartyState {
 export interface PartyActions {
   setParty: (party: CharacterData[]) => void;
   fullyHealParty: () => void;
+  isPartyFullyHealed: () => boolean;
+  damageAllPartyMembers: (damage: number, canDie: boolean) => void;
 }
 
 /**
