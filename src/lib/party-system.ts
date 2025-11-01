@@ -16,6 +16,10 @@ export function fullyHealParty(party: CharacterData[]): CharacterData[] {
   }));
 }
 
+export function isPartyFullyHealed(party: CharacterData[]): boolean {
+    return party.every(member => member.currentHp === member.maxHp);
+}
+
 export function damageAllPartyMembers(party: CharacterData[], damage: number, canDie: boolean = false): CharacterData[] {
     // Damage all party members by a given amount
     // Useful for overworld & dungeon traps
