@@ -6,11 +6,12 @@
 - They all use the same store slice.
 - They all use Resources
 - Item Shop: Only use and display Coins.
+  - The Item Shop sells ConsumableItems.
   - Extra Feature: Special Offer (described below).
 - Blacksmith: Use and display all resources.
+  - The Blacksmith crafts EquipmentItems.
   - The Blacksmith can exchange resources for Coins.
   - The Blacksmith can convert Coins into Gold by melting.
-  - The Blacksmith can create Equipment using resources.
 - Inn: Only use and display Coins.
   - The Inn charges you Coins for healing your entire party.
 - Other options:
