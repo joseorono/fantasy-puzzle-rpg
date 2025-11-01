@@ -7,14 +7,16 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   name: 'Test Warrior',
   class: 'warrior',
   color: 'blue',
-  pow: 15,
-  vit: 20,
-  spd: 5,
+  stats: { pow: 15, vit: 20, spd: 5 },
   vitHpMultiplier: 6,
   maxHp: 100,
   currentHp: 50,
   skillCooldown: 0,
   maxCooldown: 3,
+  baseHp: 100,
+  potentialStats: { pow: 15, vit: 20, spd: 5 },
+  level: 1,
+  expToNextLevel: 100,
   ...overrides,
 });
 
@@ -44,7 +46,7 @@ describe('party system utilities', () => {
       const result = fullyHealParty(testParty);
       expect(result[0].name).toBe('Warrior');
       expect(result[1].class).toBe('rogue');
-      expect(result[2].pow).toBe(15);
+      expect(result[2].stats.pow).toBe(15);
     });
 
     it('should work with single member party', () => {

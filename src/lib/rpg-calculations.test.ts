@@ -11,14 +11,16 @@ const mockCharacter: CharacterData = {
   name: 'Test Warrior',
   maxHp: 100,
   currentHp: 100,
-  pow: 20,
-  vit: 15,
-  spd: 10,
+  stats: { pow: 20, vit: 15, spd: 10 },
   vitHpMultiplier: 5,
   class: 'warrior',
   color: 'blue',
   skillCooldown: 0,
   maxCooldown: 3,
+  baseHp: 100,
+  potentialStats: { pow: 20, vit: 15, spd: 10 },
+  level: 1,
+  expToNextLevel: 100,
 };
 
 const mockEnemy: EnemyData = {
@@ -26,9 +28,7 @@ const mockEnemy: EnemyData = {
   name: 'Test Enemy',
   maxHp: 200,
   currentHp: 200,
-  pow: 15,
-  vit: 20,
-  spd: 5,
+  stats: { pow: 15, vit: 20, spd: 5 },
   vitHpMultiplier: 5,
   type: 'test',
   sprite: '👾',
@@ -72,7 +72,7 @@ describe('HP Calculations', () => {
   test('calculateEntityMaxHp: Works with different multipliers', () => {
     const tankChar: CharacterData = {
       ...mockCharacter,
-      vit: 20,
+      stats: { ...mockCharacter.stats, vit: 20 },
       vitHpMultiplier: 6,
       maxHp: 50 + (20 * 6), // 170
     };
