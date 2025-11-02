@@ -54,6 +54,8 @@ export function getPotentialStat(character: CharacterData): StatType | null {
  * Levels up a character
  *
  * @param character - The object representing the character to level up
+ * @param randomStat - Stat chosen by the player to be increased, this will reduce the potential stat increases
+ * @param chosenStat - The object representing the character to level up, which DOESN'T affect potential stats
  * @returns The leveled up character object
  */
 export function levelUp(
@@ -64,7 +66,6 @@ export function levelUp(
   // If there's a valid stat to level up, increase the value and decrease the potential value
   if (chosenStat) {
     character.stats[chosenStat] += 1;
-    character.potentialStats[chosenStat] -= 1;
   }
 
   //I think this would always be true but just in case yk
