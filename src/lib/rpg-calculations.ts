@@ -156,7 +156,7 @@ export function calculateAttackInterval(baseInterval: number, spd: number): numb
 }
 
 /**
- * Calculates cooldown reduction based on speed stat.
+ * Calculates skill cooldown reduction based on speed stat.
  * Formula: baseCooldown / (1 + (SPD / 100))
  * Higher speed = faster cooldown
  * @param baseCooldown Base cooldown in seconds
