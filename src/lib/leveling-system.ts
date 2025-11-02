@@ -56,18 +56,25 @@ export function getPotentialStat(character: CharacterData): StatType | null {
  * @param character - The object representing the character to level up
  * @returns The leveled up character object
  */
-export function levelUp(character: CharacterData): CharacterData {
-  // Get a random stat to level up
-  let randomStat = getPotentialStat(character);
-
+export function levelUp(
+  character: CharacterData,
+  chosenStat: StatType | null,
+  randomStat: StatType | null,
+): CharacterData {
   // If there's a valid stat to level up, increase the value and decrease the potential value
+  if (chosenStat) {
+    character.stats[chosenStat] += 1;
+    character.potentialStats[chosenStat] -= 1;
+  }
+
+  //I think this would always be true but just in case yk
   if (randomStat) {
     character.stats[randomStat] += 1;
     character.potentialStats[randomStat] -= 1;
   }
 
   // If vit was increased, recalculate max HP
-  if (randomStat === 'vit') {
+  if (randomStat === 'vit' || chosenStat === 'vit') {
     character.maxHp = calculateMaxHp(character.baseHp, character.stats.vit, character.vitHpMultiplier);
   }
 
