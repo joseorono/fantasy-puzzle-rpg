@@ -8,6 +8,7 @@ That said, we'll need to make the CharacterData a prop for a bunch of these calc
 
 # Derived Stats
 
+- Max HP, calculated by: calculateMaxHp().
 - Skill Cooldown Fill Rate, calculated by: calculateCooldownFillRate().
 - Skill Cooldown Fill Time (Seconds), calculated by: calculateCooldown().
 - Attack Power/Healing Power, calculated by: calculateDamage().
