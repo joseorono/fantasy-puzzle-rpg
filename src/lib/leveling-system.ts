@@ -1,4 +1,4 @@
-import type { CharacterData, StatType } from '~/types';
+import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
 /**
  * Leveling System
@@ -36,51 +36,78 @@ export function calculateExpToNextLevel(level: number): number {
  * Returns a random stat from the character's potential stats
  *
  * @param character - The object representing the character
- * @returns A random non-zero stat from the character's potential stats or null if no non-zero stats are found
+ * @returns An object containing the stats to increase
  */
-export function getPotentialStat(character: CharacterData): StatType | null {
-  // Retrieve all valid stats
-  const validKeys = Object.keys(character.potentialStats).filter(
+export function getRandomPotentialStats(character: CharacterData, statAmountToIncrease: number): CoreRPGStats | null {
+  if (statAmountToIncrease === 0) return null;
+
+  // Retrieve all valid stats according to the character's potential stats
+  const validStats = Object.keys(character.potentialStats).filter(
     (key) => character.potentialStats[key as StatType] > 0,
   );
-  // If no valid stats, return null
-  if (validKeys.length === 0) return null;
+  if (validStats.length === 0) return null;
 
-  // Otherwise, return a random valid stat
-  const randomIndex = Math.floor(Math.random() * validKeys.length);
-  return validKeys[randomIndex] as StatType;
+  let statIncreases = {
+    pow: 0,
+    vit: 0,
+    spd: 0,
+  };
+
+  // Increase the stats in the statIncreases object
+  while (statAmountToIncrease > 0) {
+    const randomStat = validStats[Math.floor(Math.random() * validStats.length)];
+    statIncreases[randomStat as StatType] += 1;
+    statAmountToIncrease -= 1;
+    character.potentialStats[randomStat as StatType] -= 1;
+
+    //Make sure potentialStats are not decreased below 0
+    if (character.potentialStats[randomStat as StatType] === 0) {
+      validStats.splice(validStats.indexOf(randomStat), 1);
+    }
+  }
+
+  return statIncreases;
 }
 /**
  * Levels up a character
  *
  * @param character - The object representing the character to level up
- * @param randomStat - Stat chosen by the player to be increased, this will reduce the potential stat increases
+ * @param randomStats - Stat chosen by the player to be increased, this will reduce the potential stat increases
  * @param chosenStat - The object representing the character to level up, which DOESN'T affect potential stats
+ * @param levelUpAmount - The amount of levels to increase the character by
  * @returns The leveled up character object
  */
 export function levelUp(
   character: CharacterData,
-  chosenStat: StatType | null,
-  randomStat: StatType | null,
+  chosenStat: CoreRPGStats,
+  randomStats: CoreRPGStats | null,
+  levelUpAmount: number,
 ): CharacterData {
+  if (levelUpAmount <= 0) return character;
+  const initialVit = character.stats.vit;
+
   // If there's a valid stat to level up, increase the value and decrease the potential value
-  if (chosenStat) {
-    character.stats[chosenStat] += 1;
+  if (randomStats) {
+    character.stats.pow += randomStats.pow;
+    character.potentialStats.pow -= randomStats.pow;
+    character.stats.vit += randomStats.vit;
+    character.potentialStats.vit -= randomStats.vit;
+    character.stats.spd += randomStats.spd;
+    character.potentialStats.spd -= randomStats.spd;
   }
 
-  //I think this would always be true but just in case yk
-  if (randomStat) {
-    character.stats[randomStat] += 1;
-    character.potentialStats[randomStat] -= 1;
-  }
+  // Increase the chosen stats
+  character.stats.pow += chosenStat.pow;
+  character.stats.vit += chosenStat.vit;
+  character.stats.spd += chosenStat.spd;
 
   // If vit was increased, recalculate max HP
-  if (randomStat === 'vit' || chosenStat === 'vit') {
+  if (initialVit !== character.stats.vit) {
     character.maxHp = calculateMaxHp(character.baseHp, character.stats.vit, character.vitHpMultiplier);
   }
 
   // Increase level and calculate new exp to next level
-  character.level += 1;
+  character.level += levelUpAmount;
   character.expToNextLevel = calculateExpToNextLevel(character.level);
   return character;
 }
