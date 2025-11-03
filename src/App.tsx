@@ -1,13 +1,13 @@
 // import { DialogueTestView } from "~/views/dialogue-test";
 import MouseTracker from '~/components/effects/mouse-tracker';
-import GameScreen from '~/game-screen';
+import { GameLoader } from '~/components/game-loader';
 
 
 function App() {
   return (
     <>
       <MouseTracker />
-      <GameScreen />
+      <GameLoader />
     </>
   )
 }

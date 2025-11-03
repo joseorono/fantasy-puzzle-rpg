@@ -1,0 +1,108 @@
+/* ==========================================
+   SPLASH SCREEN / GAME LOADER
+   ========================================== */
+
+.splash-screen {
+  position: relative;
+  display: flex;
+  height: 100svh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-screen__bg {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: -1;
+}
+
+.splash-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 600px;
+  padding: 2rem;
+}
+
+/* ==========================================
+   PROGRESS BAR ANIMATION
+   ========================================== */
+
+@keyframes progress-bar-width-growth {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.loop-progress-bar {
+  animation: progress-bar-width-growth 1s linear infinite;
+}
+
+/* ==========================================
+   PIXEL BUTTON
+   ========================================== */
+
+.pixel-button {
+  width: 280px;
+  max-width: 90%;
+  padding: 1rem 2rem;
+  font-size: 3rem;
+  color: white;
+  background: theme('colors.red.500');
+  border: 0;
+  position: relative;
+  box-shadow:
+    inset -4px 2px 1px 1px grey,
+    inset -4px -2px 1px 1px lightgray,
+    inset 4px 0px 1px 1px lightgray;
+  transition: background-color 0.2s;
+}
+
+.pixel-button:hover:not(:disabled) {
+  cursor: pointer;
+  background-color: theme('colors.red.700');
+}
+
+.pixel-button:active:not(:disabled) {
+  top: 5px;
+  box-shadow:
+    -4px 2px 1px 1px grey,
+    -4px -2px 1px 1px lightgray,
+    4px 0px 1px 1px lightgray;
+}
+
+.pixel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pixel-button::after {
+  content: '';
+  background: black;
+  position: absolute;
+  left: -2.5%;
+  top: 0;
+  width: 105%;
+  height: 100%;
+  z-index: -1;
+}
+
+.pixel-button::before {
+  content: '';
+  background: black;
+  position: absolute;
+  left: 0;
+  top: -5%;
+  width: 100%;
+  height: 113%;
+  z-index: -1;
+}
