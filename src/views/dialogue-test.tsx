@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { DialogueScene } from "~/components/dialogue/dialogue-scene";
+import { DialogueScene } from "~/components/dialogue";
 import {
   TEST_DIALOGUE_SCENE,
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
-} from "~/constants/dialogue-scenes/test-scene";
+} from "~/constants/dialogue/scenes/test-scene";
 
 export function DialogueTestView() {
   const [activeScene, setActiveScene] = useState<
