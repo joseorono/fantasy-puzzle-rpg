@@ -1,21 +1,9 @@
 import type { DialogueScene } from "~/types/dialogue";
+import { INNKEEPER_CHAR, WITCH_CHAR, NARRATOR_CHAR, KNIGHT_CHAR, MAGE_CHAR } from "../characters";
 
 export const TEST_DIALOGUE_SCENE: DialogueScene = {
   id: "test-scene-1",
-  characters: [
-    {
-      id: "innkeeper",
-      name: "Innkeeper",
-      portrait: "/assets/portraits/Innkeeper_02.png",
-      side: "left",
-    },
-    {
-      id: "witch",
-      name: "Mysterious Witch",
-      portrait: "/assets/portraits/Witch_03.png",
-      side: "right",
-    },
-  ],
+  characters: [INNKEEPER_CHAR, WITCH_CHAR],
   lines: [
     {
       id: "line-1",
@@ -66,14 +54,7 @@ export const TEST_DIALOGUE_SCENE: DialogueScene = {
 
 export const SIMPLE_DIALOGUE_SCENE: DialogueScene = {
   id: "simple-scene",
-  characters: [
-    {
-      id: "innkeeper",
-      name: "Innkeeper",
-      portrait: "/assets/portraits/Innkeeper_02.png",
-      side: "center",
-    },
-  ],
+  characters: [{ ...INNKEEPER_CHAR, side: "center" }],
   lines: [
     {
       id: "line-1",
@@ -95,24 +76,7 @@ export const SIMPLE_DIALOGUE_SCENE: DialogueScene = {
 
 export const CUTSCENE_WITH_NARRATOR: DialogueScene = {
   id: "cutscene-narrator",
-  characters: [
-    {
-      id: "narrator",
-      side: "center",
-    },
-    {
-      id: "knight",
-      name: "Sir Roland",
-      portrait: "/assets/portraits/Innkeeper_02.png",
-      side: "left",
-    },
-    {
-      id: "mage",
-      name: "Elara",
-      portrait: "/assets/portraits/Witch_03.png",
-      side: "right",
-    },
-  ],
+  characters: [NARRATOR_CHAR, KNIGHT_CHAR, MAGE_CHAR],
   lines: [
     {
       id: "line-1",
