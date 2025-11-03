@@ -68,7 +68,7 @@ A complete JRPG-style dialogue system has been implemented with retro 16-bit aes
 
 ```tsx
 import { DialogueScene } from "~/components/dialogue";
-import { MY_SCENE } from "~/constants/dialogue-scenes/my-scene";
+import { MY_SCENE } from "~/constants/dialogue/scenes/my-scene";
 
 function MyComponent() {
   const [showDialogue, setShowDialogue] = useState(false);

@@ -145,6 +145,8 @@ export function DialogueScene({
                   ? currentLine.emotion
                   : undefined
               }
+              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
+              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
             />
           ))}
 
@@ -159,6 +161,8 @@ export function DialogueScene({
                   ? currentLine.emotion
                   : undefined
               }
+              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
+              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
             />
           ))}
 
@@ -173,6 +177,8 @@ export function DialogueScene({
                   ? currentLine.emotion
                   : undefined
               }
+              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
+              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
             />
           ))}
         </div>
