@@ -107,7 +107,7 @@ export function useDialogue(
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [currentLine, isCtrlPressed, textSpeed, turboSpeed, controlsEnabled]);
+  }, [currentLine, textSpeed, turboSpeed, controlsEnabled]);
 
   const next = useCallback(() => {
     if (!isComplete) {
@@ -120,6 +120,17 @@ export function useDialogue(
       setIndex((i) => Math.min(i + 1, scene.lines.length - 1));
     }
   }, [isComplete, isLast, currentLine, scene.lines.length]);
+
+  // Auto-advance when CTRL is held and line is complete
+  useEffect(() => {
+    if (controlsEnabled && isCtrlPressed && isComplete && !isLast) {
+      const timer = setTimeout(() => {
+        next();
+      }, 100); // Small delay to prevent jarring instant transitions
+
+      return () => clearTimeout(timer);
+    }
+  }, [controlsEnabled, isCtrlPressed, isComplete, isLast, next]);
 
   // Auto-advance after delay (if enabled)
   useEffect(() => {
