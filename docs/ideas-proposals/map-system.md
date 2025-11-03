@@ -61,6 +61,7 @@ Since React Compiler will detect that the MapData is a const, it will cache the 
 - [ ] Ciertos nodos son Pueblos
 - [ ] Ciertos nodos son Dungeons (Estos son un branch de mapas a un ladito que no estorben el camino principal)
 - [ ] No puedes traspasar por un Nodo de Battle o Boss al menos que tengas su propiedad {completed: true}
+  - Puedes pasar por un boss o battle si (isWalkable === true and completed === true)
 - [ ] Cada nodo debe cuando se paras sobre él mostrar información sobre el tipo de nodo (Battle, Boss, pueblo, etc), si está completado o no, y un menu flotante con opciones.
 - [ ] El menu flotante debe tener opciones para interactuar con el nodo, e.g: Entrar al pueblo, Entrar al dungeon, Fight (si es Boss/Battle) etc.
 - [ ] Debe haber un Nodo de Next Map o Preview Map para ir al siguiente mapa o al mapa anterior (maybe esto sería como un Linked List).
