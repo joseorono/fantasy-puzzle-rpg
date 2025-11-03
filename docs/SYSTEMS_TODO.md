@@ -10,7 +10,7 @@ Base Systems:
 - [ ] Battle system: Detailed elsewhere. (WIP by the whole Team)
 
 Second-Order Systems:
-- [ ] Inventory system: Will be implemented alongside the Town system. Requires: Zustand store.
+- [x] Inventory system: Will be implemented alongside the Town system. Requires: Zustand store. Done by Jose.
 - [x] Crafting system: Will be implemented alongside the Town system. Requires: Zustand store, partially implemented Town system. Finished by Jose.
 - [ ] Dungeon System. Requires: Properly integrated Map, Town, Battle, and Level-up/progression systems.
 - [ ] Save data: not included until we have a clear idea of the data we'll need. Requires: Most of the base systems.
