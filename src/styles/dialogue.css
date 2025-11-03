@@ -92,6 +92,10 @@ body.dialogue-active {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
+.dialogue-portrait__image--rotated {
+  transform: scaleX(-1);
+}
+
 .dialogue-portrait__name {
   position: absolute;
   bottom: -1.5rem;
