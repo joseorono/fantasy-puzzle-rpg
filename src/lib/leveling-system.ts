@@ -1,5 +1,6 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
+import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/game';
 /**
  * Leveling System
  *
@@ -109,5 +110,9 @@ export function levelUp(
   // Increase level and calculate new exp to next level
   character.level += levelUpAmount;
   character.expToNextLevel = calculateExpToNextLevel(character.level);
+
+  if (LEVELING_UP_HEALS_CHARACTER) {
+    character.currentHp = character.maxHp;
+  }
   return character;
 }

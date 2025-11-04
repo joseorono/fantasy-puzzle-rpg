@@ -21,12 +21,13 @@ export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 
 /**
  * Store configuration
- */
+*/
 export const GAME_STORE_VERSION = 1;
 export const GAME_STORE_NAME = 'puzzlerpg';
 
 //Default EXP needed for level 1 characters
 export const EXP_TO_LEVEL_ONE = calculateExpToNextLevel(1);
+export const LEVELING_UP_HEALS_CHARACTER = true;
 
 // Initial party setup
 // Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)
