@@ -55,7 +55,7 @@ export function GameLoader(_props: GameLoaderProps) {
           <button
             onClick={handlePlayClick}
             disabled={isLoading}
-            className="pixel-button"
+            className="splash-screen__button"
           >
             Play!
           </button>
