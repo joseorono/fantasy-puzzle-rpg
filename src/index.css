@@ -146,6 +146,10 @@
   }
 }
 
+body {
+  user-select: none;
+}
+
 /* Import organized styles */
 @import "./styles/fonts.css";
 @import "./styles/utilities.css";
