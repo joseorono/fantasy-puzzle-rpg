@@ -30,3 +30,239 @@
   border-style: solid;
   border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><rect x="0" y="0" width="2" height="2" fill="black"/><rect x="4" y="0" width="2" height="2" fill="black"/><rect x="0" y="4" width="2" height="2" fill="black"/><rect x="4" y="4" width="2" height="2" fill="black"/></svg>') 2;
 }
+
+/* Pixelated rounded corners (borderless) */
+.pixel-rounded {
+  clip-path: polygon(
+    0px calc(100% - 6px),
+    3px calc(100% - 6px),
+    3px calc(100% - 3px),
+    6px calc(100% - 3px),
+    6px 100%,
+    calc(100% - 6px) 100%,
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    100% calc(100% - 6px),
+    100% 6px,
+    calc(100% - 3px) 6px,
+    calc(100% - 3px) 3px,
+    calc(100% - 6px) 3px,
+    calc(100% - 6px) 0px,
+    6px 0px,
+    6px 3px,
+    3px 3px,
+    3px 6px,
+    0px 6px
+  );
+}
+
+/* Pixelated border frame for buttons */
+.pixel-button-border {
+  position: relative;
+  border: 6px solid transparent; /* reserve space for the pseudo border */
+  clip-path: polygon(
+    0px calc(100% - 9px),
+    3px calc(100% - 9px),
+    3px calc(100% - 6px),
+    6px calc(100% - 3px),
+    9px calc(100% - 3px),
+    9px 100%,
+    calc(100% - 9px) 100%,
+    calc(100% - 9px) calc(100% - 3px),
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    calc(100% - 3px) calc(100% - 9px),
+    100% calc(100% - 9px),
+    100% 9px,
+    calc(100% - 3px) 9px,
+    calc(100% - 3px) 6px,
+    calc(100% - 6px) 3px,
+    calc(100% - 9px) 3px,
+    calc(100% - 9px) 0px,
+    9px 0px,
+    9px 3px,
+    6px 3px,
+    3px 6px,
+    3px 9px,
+    0px 9px
+  );
+}
+
+.pixel-button-border::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  display: block;
+  /* Use the design system border color; falls back to current text color */
+  background: var(--color-border, currentColor);
+  margin: -6px; /* border thickness */
+  clip-path: polygon(
+    0px calc(100% - 9px),
+    3px calc(100% - 9px),
+    3px calc(100% - 6px),
+    6px calc(100% - 3px),
+    9px calc(100% - 3px),
+    9px 100%,
+    calc(100% - 9px) 100%,
+    calc(100% - 9px) calc(100% - 3px),
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    calc(100% - 3px) calc(100% - 9px),
+    100% calc(100% - 9px),
+    100% 9px,
+    calc(100% - 3px) 9px,
+    calc(100% - 3px) 6px,
+    calc(100% - 6px) 3px,
+    calc(100% - 9px) 3px,
+    calc(100% - 9px) 0px,
+    9px 0px,
+    9px 3px,
+    6px 3px,
+    3px 6px,
+    3px 9px,
+    0px 9px,
+    0px 50%,
+    6px 50%,
+    6px 12px,
+    9px 12px,
+    9px 9px,
+    12px 9px,
+    12px 6px,
+    calc(100% - 12px) 6px,
+    calc(100% - 12px) 9px,
+    calc(100% - 9px) 9px,
+    calc(100% - 9px) 12px,
+    calc(100% - 6px) 12px,
+    calc(100% - 6px) calc(100% - 12px),
+    calc(100% - 9px) calc(100% - 12px),
+    calc(100% - 9px) calc(100% - 9px),
+    calc(100% - 12px) calc(100% - 9px),
+    calc(100% - 12px) calc(100% - 6px),
+    12px calc(100% - 6px),
+    12px calc(100% - 9px),
+    9px calc(100% - 9px),
+    9px calc(100% - 12px),
+    6px calc(100% - 12px),
+    6px 50%,
+    0px 50%
+  );
+}
+
+/* Beveled pixel button (AA style approximation) */
+.pixel-bevel-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  color: var(--btn-text, #dfe6ea);
+  background: var(--btn-fill, #6f7f8a);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  /* create a new stacking context so pseudo-elements can sit behind */
+  isolation: isolate;
+}
+.pixel-bevel-button {
+  /* inner rounded pixel corners */
+  clip-path: polygon(
+    0px calc(100% - 6px),
+    3px calc(100% - 6px),
+    3px calc(100% - 3px),
+    6px calc(100% - 3px),
+    6px 100%,
+    calc(100% - 6px) 100%,
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    100% calc(100% - 6px),
+    100% 6px,
+    calc(100% - 3px) 6px,
+    calc(100% - 3px) 3px,
+    calc(100% - 6px) 3px,
+    calc(100% - 6px) 0px,
+    6px 0px,
+    6px 3px,
+    3px 3px,
+    3px 6px,
+    0px 6px
+  );
+}
+.pixel-bevel-button::before,
+.pixel-bevel-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  display: block;
+  z-index: -1; /* render behind button content */
+}
+/* Outer darker frame */
+.pixel-bevel-button::before {
+  background: var(--btn-frame-outer, #a9905b);
+  margin: -6px; /* outer thickness */
+  clip-path: polygon(
+    0px calc(100% - 9px),
+    3px calc(100% - 9px),
+    3px calc(100% - 6px),
+    6px calc(100% - 3px),
+    9px calc(100% - 3px),
+    9px 100%,
+    calc(100% - 9px) 100%,
+    calc(100% - 9px) calc(100% - 3px),
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    calc(100% - 3px) calc(100% - 9px),
+    100% calc(100% - 9px),
+    100% 9px,
+    calc(100% - 3px) 9px,
+    calc(100% - 3px) 6px,
+    calc(100% - 6px) 3px,
+    calc(100% - 9px) 3px,
+    calc(100% - 9px) 0px,
+    9px 0px,
+    9px 3px,
+    6px 3px,
+    3px 6px,
+    3px 9px,
+    0px 9px
+  );
+}
+/* Inner lighter frame to create ridge effect */
+.pixel-bevel-button::after {
+  background: var(--btn-frame-inner, #d8c999);
+  margin: -4px; /* inner thickness */
+  clip-path: polygon(
+    0px calc(100% - 9px),
+    3px calc(100% - 9px),
+    3px calc(100% - 6px),
+    6px calc(100% - 3px),
+    9px calc(100% - 3px),
+    9px 100%,
+    calc(100% - 9px) 100%,
+    calc(100% - 9px) calc(100% - 3px),
+    calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 6px),
+    calc(100% - 3px) calc(100% - 9px),
+    100% calc(100% - 9px),
+    100% 9px,
+    calc(100% - 3px) 9px,
+    calc(100% - 3px) 6px,
+    calc(100% - 6px) 3px,
+    calc(100% - 9px) 3px,
+    calc(100% - 9px) 0px,
+    9px 0px,
+    9px 3px,
+    6px 3px,
+    3px 6px,
+    3px 9px,
+    0px 9px
+  );
+}
