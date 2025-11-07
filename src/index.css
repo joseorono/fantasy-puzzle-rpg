@@ -63,16 +63,16 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   /* Font families */
   --font-sans: var(--font-sans, system-ui, sans-serif);
   --font-serif: var(--font-serif, Georgia, serif);
   --font-mono: var(--font-mono, monospace);
-  --font-body: "Press Start 2P", "Courier New", monospace;
-  --font-pixel: var(--font-body);
-  --font-marquee: var(--font-body);
-  --font-dialogue: var(--font-body);
-  
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
+  --font-body: var(--font-pixel);
+  --font-marquee: var(--font-pixel);
+  --font-dialogue: var(--font-pixel);
+
   /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -105,7 +105,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  
+
   /* Custom colors from config */
   --color-white: #F5F6FA;
   --color-blue-50: #eff4ff;
@@ -119,7 +119,7 @@
   --color-blue-800: #1e4baf;
   --color-blue-900: #1e408a;
   --color-blue-950: #172a54;
-  
+
   /* Animations */
   --animation-accordion-down: accordion-down 0.2s ease-out;
   --animation-accordion-up: accordion-up 0.2s ease-out;

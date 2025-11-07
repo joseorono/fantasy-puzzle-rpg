@@ -12,17 +12,17 @@ import { LevelUpDemo } from './views/level-up-demo';
 export default function GameScreen() {
   return (
     <>
-      {/* <TownHub
+      <TownHub
         innCost={{ coins: 10, gold: 0, silver: 0, bronze: 0, copper: 0 }}
         itemsForSell={['potion']}
         onLeaveCallback={() => {}}
-      /> */}
-      {/* <TestView /> */}
-      {/* <PartyTestView /> */}
-      {/* <InventoryTestView /> */}
-      {/* <ResourcesTestView /> */}
-      {/* <SoundTestView /> */}
-      <LevelUpDemo />
+      />
+      <TestView />
+      <PartyTestView />
+      <InventoryTestView />
+      <ResourcesTestView />
+      <SoundTestView />
+      {/* <LevelUpDemo /> */}
       {/* <MapDemo /> */}
       {/* <DialogueTestView /> */}
       {/* <BattleScreen /> */}
