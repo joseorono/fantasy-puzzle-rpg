@@ -30,7 +30,7 @@ import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/game';
  * @returns The amount of EXP required to reach a certain level (currently just an exponential function)
  */
 export function calculateExpToNextLevel(level: number): number {
-  return Math.exp(level);
+  return Math.trunc(level * level);
 }
 
 /**

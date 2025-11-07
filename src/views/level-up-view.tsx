@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
+import { levelUp } from '~/lib/leveling-system';
+import { calculateMaxHp } from '~/lib/rpg-calculations';
 
 interface LevelUpViewProps {
   character: CharacterData;
@@ -49,14 +51,21 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
 
   function handleConfirm() {
     if (!hasPendingChanges) return;
+    levelUp(character, pendingAllocations, null, 1);
     onConfirm(pendingAllocations);
   }
 
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
-  const expPercentage = (character.expToNextLevel > 0) 
-    ? Math.min(100, (character.expToNextLevel / calculateExpToNextLevel(character.level)) * 100)
-    : 0;
+  const expPercentage =
+    character.expToNextLevel > 0
+      ? Math.min(100, (character.expToNextLevel / calculateExpToNextLevel(character.level)) * 100)
+      : 0;
+
+  // Calculate HP delta from VIT changes
+  const currentMaxHp = character.maxHp;
+  const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
+  const maxHpDelta = previewMaxHp - currentMaxHp;
 
   // Helper function for exp calculation (simplified for display)
   function calculateExpToNextLevel(level: number): number {
@@ -69,8 +78,8 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
     <div className="level-up-screen">
       {/* Header */}
       <header className="level-up-header">
-        <h1 className="level-up-title">Level Up!</h1>
-        <div className="points-remaining">
+        <h1 className="level-up-title pixel-font text-base sm:text-lg md:text-xl">Level Up!</h1>
+        <div className="points-remaining pixel-font text-xs">
           <span className="star-icon">★</span>
           <span>Points Remaining:</span>
           <span className="points-value">{pointsRemaining}</span>
@@ -86,32 +95,38 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
               <img
                 src="/assets/portraits/Innkeeper_02.png"
                 alt={character.name}
-                className="character-portrait-small"
+                className="character-portrait-small pixel-art"
               />
-              <div className="level-badge">{character.level}</div>
+              <div className="level-badge pixel-border pixel-font text-xs">{character.level}</div>
             </div>
             <div className="character-name-class">
-              <h2 className="character-name">{character.name}</h2>
-              <p className="character-class">{character.class}</p>
+              <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>
+              <p className="character-class pixel-font text-xs">{character.class}</p>
             </div>
           </div>
 
           <div className="progress-section">
-            <div className="stat-label">EXP</div>
+            <div className="stat-label pixel-font text-xs">EXP</div>
             <div className="exp-bar-container">
               <div className="exp-bar" style={{ width: `${expPercentage}%` }} />
-              <div className="bar-text">
+              <div className="bar-text pixel-font text-xs">
                 {character.expToNextLevel} / {calculateExpToNextLevel(character.level)}
               </div>
             </div>
           </div>
 
           <div className="progress-section">
-            <div className="stat-label">HP</div>
+            <div className="stat-label pixel-font text-xs">HP</div>
             <div className="hp-bar-container">
               <div className="hp-bar" style={{ width: `${hpPercentage}%` }} />
-              <div className="bar-text">
-                {character.currentHp} / {character.maxHp}
+              <div className="bar-text pixel-font text-xs">
+                {character.currentHp}/{character.maxHp}
+                {maxHpDelta !== 0 && (
+                  <span className="bar-text-delta" style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}>
+                    {maxHpDelta > 0 ? ' +' : ''}
+                    {maxHpDelta}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -124,25 +139,25 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
           <img
             src="/assets/portraits/Innkeeper_02.png"
             alt={character.name}
-            className="character-portrait-large"
+            className="character-portrait-large pixel-art"
           />
 
           <div className="stat-chips">
-            <div className="stat-chip pow">
+            <div className="stat-chip pow pixel-font text-xs">
               <span className="stat-chip-label">POW</span>
               <span className="stat-chip-value">
                 {character.stats.pow}
                 {pendingAllocations.pow > 0 && ` +${pendingAllocations.pow}`}
               </span>
             </div>
-            <div className="stat-chip vit">
+            <div className="stat-chip vit pixel-font text-xs">
               <span className="stat-chip-label">VIT</span>
               <span className="stat-chip-value">
                 {character.stats.vit}
                 {pendingAllocations.vit > 0 && ` +${pendingAllocations.vit}`}
               </span>
             </div>
-            <div className="stat-chip spd">
+            <div className="stat-chip spd pixel-font text-xs">
               <span className="stat-chip-label">SPD</span>
               <span className="stat-chip-value">
                 {character.stats.spd}
@@ -152,7 +167,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
           </div>
 
           {hasPendingChanges && (
-            <div className="pending-changes-banner">
+            <div className="pending-changes-banner pixel-font text-xs">
               <p className="pending-changes-text">Confirm to apply changes</p>
               <p className="pending-changes-hint">Use Reset to undo pending points</p>
             </div>
@@ -161,16 +176,18 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
 
         {/* Right Column - Stat Allocation */}
         <div className="stat-allocation-panel">
-          <h2 className="allocation-title">Allocate Points</h2>
+          <h2 className="allocation-title pixel-font text-sm sm:text-base">Allocate Points</h2>
 
           {/* Power Stat */}
           <div className="stat-allocation-row">
             <div className="stat-header">
               <div className="stat-name-group">
-                <span className="stat-name pow">Power (POW)</span>
-                <span className="info-icon" title="Increases your damage output">ⓘ</span>
+                <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
+                <span className="info-icon" title="Increases your damage output">
+                  ⓘ
+                </span>
               </div>
-              <div className="stat-values">
+              <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.pow}</span>
                 {pendingAllocations.pow > 0 && (
                   <>
@@ -180,16 +197,13 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 )}
               </div>
             </div>
-            <p className="stat-hint">Increases your damage output.</p>
+            <p className="stat-hint pixel-font text-xs">Increases your damage output.</p>
             <div className="stat-meter">
-              <div
-                className="stat-meter-fill pow"
-                style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }}
-              />
+              <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
             </div>
             <div className="stat-controls">
               <button
-                className="stat-button minus"
+                className="stat-button minus pixel-font text-xs sm:text-sm"
                 onClick={() => handleDecreaseStat('pow')}
                 disabled={pendingAllocations.pow === 0}
                 aria-label="Decrease Power"
@@ -197,7 +211,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 −
               </button>
               <button
-                className="stat-button plus"
+                className="stat-button plus pixel-font text-xs sm:text-sm"
                 onClick={() => handleIncreaseStat('pow')}
                 disabled={pointsRemaining === 0}
                 aria-label="Increase Power"
@@ -211,10 +225,12 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
           <div className="stat-allocation-row">
             <div className="stat-header">
               <div className="stat-name-group">
-                <span className="stat-name vit">Vitality (VIT)</span>
-                <span className="info-icon" title="Increases your Maximum HP">ⓘ</span>
+                <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
+                <span className="info-icon" title="Increases your Maximum HP">
+                  ⓘ
+                </span>
               </div>
-              <div className="stat-values">
+              <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.vit}</span>
                 {pendingAllocations.vit > 0 && (
                   <>
@@ -224,16 +240,13 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 )}
               </div>
             </div>
-            <p className="stat-hint">Increases your Maximum HP.</p>
+            <p className="stat-hint pixel-font text-xs">Increases your Maximum HP.</p>
             <div className="stat-meter">
-              <div
-                className="stat-meter-fill vit"
-                style={{ width: `${(previewStats.vit / maxStatValue) * 100}%` }}
-              />
+              <div className="stat-meter-fill vit" style={{ width: `${(previewStats.vit / maxStatValue) * 100}%` }} />
             </div>
             <div className="stat-controls">
               <button
-                className="stat-button minus"
+                className="stat-button minus pixel-font text-xs sm:text-sm"
                 onClick={() => handleDecreaseStat('vit')}
                 disabled={pendingAllocations.vit === 0}
                 aria-label="Decrease Vitality"
@@ -241,7 +254,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 −
               </button>
               <button
-                className="stat-button plus"
+                className="stat-button plus pixel-font text-xs sm:text-sm"
                 onClick={() => handleIncreaseStat('vit')}
                 disabled={pointsRemaining === 0}
                 aria-label="Increase Vitality"
@@ -255,10 +268,12 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
           <div className="stat-allocation-row">
             <div className="stat-header">
               <div className="stat-name-group">
-                <span className="stat-name spd">Speed (SPD)</span>
-                <span className="info-icon" title="Reduces skill cooldowns">ⓘ</span>
+                <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
+                <span className="info-icon" title="Reduces skill cooldowns">
+                  ⓘ
+                </span>
               </div>
-              <div className="stat-values">
+              <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.spd}</span>
                 {pendingAllocations.spd > 0 && (
                   <>
@@ -268,16 +283,13 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 )}
               </div>
             </div>
-            <p className="stat-hint">Reduces skill cooldowns.</p>
+            <p className="stat-hint pixel-font text-xs">Reduces skill cooldowns.</p>
             <div className="stat-meter">
-              <div
-                className="stat-meter-fill spd"
-                style={{ width: `${(previewStats.spd / maxStatValue) * 100}%` }}
-              />
+              <div className="stat-meter-fill spd" style={{ width: `${(previewStats.spd / maxStatValue) * 100}%` }} />
             </div>
             <div className="stat-controls">
               <button
-                className="stat-button minus"
+                className="stat-button minus pixel-font text-xs sm:text-sm"
                 onClick={() => handleDecreaseStat('spd')}
                 disabled={pendingAllocations.spd === 0}
                 aria-label="Decrease Speed"
@@ -285,7 +297,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
                 −
               </button>
               <button
-                className="stat-button plus"
+                className="stat-button plus pixel-font text-xs sm:text-sm"
                 onClick={() => handleIncreaseStat('spd')}
                 disabled={pointsRemaining === 0}
                 aria-label="Increase Speed"
@@ -298,20 +310,20 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
           {/* Action Buttons */}
           <div className="allocation-actions">
             <button
-              className="action-button confirm"
+              className="action-button confirm pixel-font text-xs sm:text-sm"
               onClick={handleConfirm}
               disabled={!hasPendingChanges}
             >
               Confirm
             </button>
             <button
-              className="action-button reset"
+              className="action-button reset pixel-font text-xs sm:text-sm"
               onClick={handleReset}
               disabled={!hasPendingChanges}
             >
               Reset
             </button>
-            <button className="action-button back" onClick={onBack}>
+            <button className="action-button back pixel-font text-xs sm:text-sm" onClick={onBack}>
               Back
             </button>
           </div>
@@ -319,9 +331,10 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
       </div>
 
       {/* Footer */}
-      <footer className="level-up-footer">
+      <footer className="level-up-footer pixel-font text-xs">
         Allocate points to increase your stats and grow stronger.
       </footer>
     </div>
   );
 }
+

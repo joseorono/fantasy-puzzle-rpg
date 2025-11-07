@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LevelUpView } from './level-up-view';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
+import { levelUp } from '~/lib/leveling-system';
 
 /**
  * Demo component to test the Level Up Screen
@@ -12,7 +13,7 @@ export function LevelUpDemo() {
     name: 'Alistair the Brave',
     class: 'warrior',
     color: 'blue',
-    level: 5,
+    level: 1,
     baseHp: 100,
     maxHp: 200,
     currentHp: 200,
@@ -36,22 +37,12 @@ export function LevelUpDemo() {
   const [showDemo, setShowDemo] = useState(true);
 
   function handleConfirm(allocatedStats: CoreRPGStats) {
-    // Apply the stat changes
-    setCharacter((prev) => ({
-      ...prev,
-      stats: {
-        pow: prev.stats.pow + allocatedStats.pow,
-        vit: prev.stats.vit + allocatedStats.vit,
-        spd: prev.stats.spd + allocatedStats.spd,
-      },
-      // Recalculate max HP if vitality changed
-      maxHp: allocatedStats.vit > 0 
-        ? prev.maxHp + (allocatedStats.vit * prev.vitHpMultiplier)
-        : prev.maxHp,
-      currentHp: allocatedStats.vit > 0
-        ? prev.currentHp + (allocatedStats.vit * prev.vitHpMultiplier)
-        : prev.currentHp,
-    }));
+    // Apply the stat changes using the leveling system
+    setCharacter((prev) => {
+      const updatedCharacter = { ...prev };
+      levelUp(updatedCharacter, allocatedStats, null, 1);
+      return updatedCharacter;
+    });
 
     // Deduct the points
     const pointsUsed = allocatedStats.pow + allocatedStats.vit + allocatedStats.spd;
@@ -73,7 +64,7 @@ export function LevelUpDemo() {
       level: 5,
       baseHp: 100,
       maxHp: 200,
-      currentHp: 200,
+      currentHp: 100,
       stats: {
         pow: 25,
         vit: 20,
@@ -95,19 +86,23 @@ export function LevelUpDemo() {
 
   if (!showDemo) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #1a1d29 0%, #2d3142 100%)',
-        color: '#e0e0e0',
-        fontFamily: 'Cinzel, serif',
-        gap: '2rem'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'linear-gradient(135deg, #1a1d29 0%, #2d3142 100%)',
+          color: '#e0e0e0',
+          fontFamily: 'Cinzel, serif',
+          gap: '2rem',
+        }}
+      >
         <h1 style={{ fontSize: '2rem', color: '#ffc107' }}>Level Up Demo Closed</h1>
-        <p>Current Stats: POW {character.stats.pow} | VIT {character.stats.vit} | SPD {character.stats.spd}</p>
+        <p>
+          Current Stats: POW {character.stats.pow} | VIT {character.stats.vit} | SPD {character.stats.spd}
+        </p>
         <p>Points Remaining: {availablePoints}</p>
         <button
           onClick={handleResetDemo}
@@ -137,3 +132,4 @@ export function LevelUpDemo() {
     />
   );
 }
+
