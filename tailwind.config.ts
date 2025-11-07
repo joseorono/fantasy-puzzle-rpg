@@ -1,5 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 
+const pixelFontFamily = [
+  '"Press Start 2P"',
+  'Courier New',
+  'monospace',
+];
+
 const config = {
   darkMode: ['class'],
   content: [
@@ -16,6 +22,10 @@ const config = {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-serif)', 'Georgia', 'serif'],
         mono: ['var(--font-mono)', 'monospace'],
+        pixel: pixelFontFamily,
+        body: pixelFontFamily,
+        marquee: pixelFontFamily,
+        dialogue: pixelFontFamily
       },
       colors: {
         white: '#F5F6FA',

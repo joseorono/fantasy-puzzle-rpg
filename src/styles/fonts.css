@@ -1,11 +1,6 @@
 /* Pixel font styling inspired by Katana Zero */
 .pixel-font {
   font-family: 'Press Start 2P', 'Courier New', monospace;
-  text-rendering: optimizeSpeed;
-  image-rendering: pixelated;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.05em;
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
 }
 
@@ -18,7 +13,7 @@
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 0.1em;
-  text-shadow: 
+  text-shadow:
     2px 2px 0px rgba(0, 0, 0, 0.8),
     1px 1px 0px rgba(0, 0, 0, 0.5);
 }
