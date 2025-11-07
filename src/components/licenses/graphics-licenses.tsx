@@ -19,6 +19,13 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Dwarven Cursor, CC-BY 3.0, by Jinn, commissioned by Jinn&nbsp;
+          <a href="https://opengameart.org/content/dwarven-cursor">
+            https://opengameart.org/content/dwarven-cursor
+          </a>
+        </p>
+
+        <p>
           Witch portrait, CC-BY 3.0, JosephSeraph&nbsp;
           <a href="https://opengameart.org/content/js-actor-witch">
             https://opengameart.org/content/js-actor-witch
