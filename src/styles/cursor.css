@@ -1,0 +1,49 @@
+/* Custom cursor styles for the fantasy RPG */
+
+/* Base cursor - dwarven gauntlet */
+body {
+  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png'), auto;
+}
+
+/* Override Tailwind's cursor-pointer class */
+.cursor-pointer {
+  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 16 16, auto !important;
+}
+
+/* Interactive elements - enhanced cursor effect */
+button:hover,
+[role="button"]:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+[onclick]:hover,
+a[href]:hover,
+.cursor-pointer:hover {
+  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 16 16, auto !important;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.2);
+}
+
+/* Alternative cursor effects - can be toggled by adding classes */
+
+/* Glow effect for interactive elements */
+.cursor-glow:hover {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)) brightness(1.3);
+}
+
+/* Scale effect for interactive elements */
+.cursor-scale:hover {
+  transform: scale(1.2);
+}
+
+/* Pulse effect for interactive elements */
+.cursor-pulse:hover {
+  animation: cursor-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cursor-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.2);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 1)) brightness(1.4);
+  }
+}
