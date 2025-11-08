@@ -13,10 +13,10 @@
 }
 
 @keyframes global-shake {
-  10% { transform: translate(-6px, 0); }
-  30% { transform: translate(6px, 0); }
-  50% { transform: translate(-3px, 0); }
-  70% { transform: translate(3px, 0); }
+  10% { transform: translate(-15px, -3px); }
+  30% { transform: translate(15px, 3px); }
+  50% { transform: translate(-8px, -2px); }
+  70% { transform: translate(8px, 2px); }
   100% { transform: translate(0, 0); }
 }
 
