@@ -9,31 +9,20 @@ export default function RouterTestView() {
     useRouterActions();
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0, 0, 0, 0.8)',
-        color: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        zIndex: 9999,
-        maxWidth: '300px',
-      }}
-    >
-      <h3 style={{ margin: '0 0 10px 0' }}>Router Test</h3>
+    <div className="flex flex-col items-center justify-center p-5 gap-2.5">
+      <h3 className="text-xl font-bold mb-2">Router Test</h3>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div className="mb-2">
         <strong>Current View:</strong> {router.currentView}
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
+      <div className="mb-4">
         <strong>Previous View:</strong> {router.previousView ?? 'None'}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="flex flex-wrap gap-2 justify-center">
         <button
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() =>
             goToTownHub({
               innCost: { coins: 20, gold: 0, silver: 0, bronze: 0, copper: 0 },
@@ -41,12 +30,12 @@ export default function RouterTestView() {
               onLeaveCallback: () => {},
             })
           }
-          style={{ padding: '8px', cursor: 'pointer' }}
         >
-          Go to Town Hub
+          Town Hub
         </button>
 
         <button
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() =>
             goToBattleDemo({
               enemyId: 'moss-golem',
@@ -54,33 +43,32 @@ export default function RouterTestView() {
               canFlee: true,
             })
           }
-          style={{ padding: '8px', cursor: 'pointer' }}
         >
-          Go to Battle Demo
+          Battle Demo
         </button>
 
         <button
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() => goToMapDemo()}
-          style={{ padding: '8px', cursor: 'pointer' }}
         >
-          Go to Map Demo
+          Map Demo
         </button>
 
         <button
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() => goToDebug()}
-          style={{ padding: '8px', cursor: 'pointer' }}
         >
-          Go to Debug
+          Debug
         </button>
 
         <button
+          className={`px-3 py-2 rounded transition-colors ${
+            router.previousView
+              ? 'bg-gray-500 text-white hover:bg-gray-600'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
           onClick={() => goBack()}
           disabled={!router.previousView}
-          style={{
-            padding: '8px',
-            cursor: router.previousView ? 'pointer' : 'not-allowed',
-            opacity: router.previousView ? 1 : 0.5,
-          }}
         >
           Go Back
         </button>
