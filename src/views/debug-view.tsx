@@ -4,6 +4,7 @@ import SoundTestView from '~/views/sound-test';
 import TestView from '~/views/test-view';
 import PartyTestView from '~/views/party-test';
 import RouterTestView from '~/views/router-test';
+import GlobalAnimationTest from '~/views/global-animation-test';
 
 /**
  * Debug view containing all test components
@@ -11,6 +12,7 @@ import RouterTestView from '~/views/router-test';
 export default function DebugView() {
   return (
     <>
+      <GlobalAnimationTest />
       <RouterTestView />
       <TestView />
       <PartyTestView />

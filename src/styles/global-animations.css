@@ -1,0 +1,33 @@
+/* global-animations.css */
+.global-animations-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ---- Screen Shake ---- */
+.anim-screen-shake {
+  animation: global-shake 0.35s cubic-bezier(.36,.07,.19,.97);
+  will-change: transform;
+}
+
+@keyframes global-shake {
+  10% { transform: translate(-6px, 0); }
+  30% { transform: translate(6px, 0); }
+  50% { transform: translate(-3px, 0); }
+  70% { transform: translate(3px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---- View Transition (simple fade) ---- */
+.anim-view-transition {
+  background: rgba(0,0,0,0.6);
+  animation: global-fade 0.4s ease-in-out;
+  will-change: opacity;
+}
+
+@keyframes global-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
