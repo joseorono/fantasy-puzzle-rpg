@@ -7,6 +7,8 @@ import type { PartySlice } from './slices/party.types';
 import { createPartySlice } from './slices/party';
 import type { InventorySlice } from './slices/inventory.types';
 import { createInventorySlice } from './slices/inventory';
+import type { RouterSlice } from './slices/router.types';
+import { createRouterSlice } from './slices/router';
 import { GAME_STORE_NAME, GAME_STORE_VERSION } from '~/constants/game';
 
 /**
@@ -16,7 +18,8 @@ export type GameStore = {
   resources: ResourcesSlice['resources'];
   party: PartySlice['party'];
   inventory: InventorySlice['inventory'];
-  actions: ResourcesSlice['actions'] & PartySlice['actions'] & InventorySlice['actions'];
+  router: RouterSlice['router'];
+  actions: ResourcesSlice['actions'] & PartySlice['actions'] & InventorySlice['actions'] & RouterSlice['actions'];
   reset?: () => void;
 };
 
@@ -30,14 +33,17 @@ export const useGameStore = create<GameStore>()(
         const resourcesSlice = createResourcesSlice(set);
         const partySlice = createPartySlice(set);
         const inventorySlice = createInventorySlice(set);
+        const routerSlice = createRouterSlice(set);
         return {
           ...resourcesSlice,
           ...partySlice,
           ...inventorySlice,
+          ...routerSlice,
           actions: {
             ...resourcesSlice.actions,
             ...partySlice.actions,
             ...inventorySlice.actions,
+            ...routerSlice.actions,
           },
         };
       }),
@@ -48,6 +54,7 @@ export const useGameStore = create<GameStore>()(
           resources: state.resources,
           party: state.party,
           inventory: state.inventory,
+          router: state.router,
         }),
         // Optionally, you can add migration logic here for version changes
         // migrate: (persistedState: any, version: number) => {
@@ -97,3 +104,21 @@ export const useInventoryActions = () => useGameStore((state) => state.actions.i
  * Get the current inventory items
  */
 export const useInventory = () => useGameStore((state) => state.inventory.items);
+
+/**
+ * Selector hooks for router slice
+ */
+export const useRouterState = () => useGameStore((state) => state.router);
+export const useRouterActions = () => useGameStore((state) => state.actions.router);
+
+/**
+ * Get the current view
+ */
+export const useCurrentView = () => useGameStore((state) => state.router.currentView);
+
+/**
+ * Get view data for a specific view
+ */
+export const useViewData = <T extends keyof import('~/types/routing').ViewDataMap>(
+  view: T
+) => useGameStore((state) => state.router.viewData[view]);
