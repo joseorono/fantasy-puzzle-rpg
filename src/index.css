@@ -194,6 +194,18 @@
     letter-spacing: 0.05em;
     user-select: none;
   }
+
+  #game-screen {
+    position: relative;
+    overflow-x: hidden;
+    /* ToDo:
+      - This will change to hidden after we're done with the initial
+      debbuging stage and build up the actual views.
+    */
+    overflow-y: auto;
+    width: 100dvw;
+    height: 100dvh;
+  }
 }
 
 /* Import organized styles */
