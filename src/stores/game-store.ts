@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { ResourcesSlice } from './slices/resources.types';
 import { createResourcesSlice } from './slices/resources';
@@ -9,7 +9,7 @@ import type { InventorySlice } from './slices/inventory.types';
 import { createInventorySlice } from './slices/inventory';
 import type { RouterSlice } from './slices/router.types';
 import { createRouterSlice } from './slices/router';
-import { GAME_STORE_NAME, GAME_STORE_VERSION } from '~/constants/game';
+import { GAME_STORE_NAME } from '~/constants/game';
 
 /**
  * Root game store interface combining all slices
@@ -24,47 +24,28 @@ export type GameStore = {
 };
 
 /**
- * Main game store with DevTools, immer, and persist middleware
+ * Main game store with DevTools and immer middleware
  */
 export const useGameStore = create<GameStore>()(
   devtools(
-    persist(
-      immer((set) => {
-        const resourcesSlice = createResourcesSlice(set);
-        const partySlice = createPartySlice(set);
-        const inventorySlice = createInventorySlice(set);
-        const routerSlice = createRouterSlice(set);
-        return {
-          ...resourcesSlice,
-          ...partySlice,
-          ...inventorySlice,
-          ...routerSlice,
-          actions: {
-            ...resourcesSlice.actions,
-            ...partySlice.actions,
-            ...inventorySlice.actions,
-            ...routerSlice.actions,
-          },
-        };
-      }),
-      {
-        name: GAME_STORE_NAME,
-        version: GAME_STORE_VERSION,
-        partialize: (state) => ({
-          resources: state.resources,
-          party: state.party,
-          inventory: state.inventory,
-          router: state.router,
-        }),
-        // Optionally, you can add migration logic here for version changes
-        // migrate: (persistedState: any, version: number) => {
-        //   if (version === 0) {
-        //     // migrate from version 0 to version 1
-        //   }
-        //   return persistedState as GameStore;
-        // },
-      }
-    ),
+    immer((set) => {
+      const resourcesSlice = createResourcesSlice(set);
+      const partySlice = createPartySlice(set);
+      const inventorySlice = createInventorySlice(set);
+      const routerSlice = createRouterSlice(set);
+      return {
+        ...resourcesSlice,
+        ...partySlice,
+        ...inventorySlice,
+        ...routerSlice,
+        actions: {
+          ...resourcesSlice.actions,
+          ...partySlice.actions,
+          ...inventorySlice.actions,
+          ...routerSlice.actions,
+        },
+      };
+    }),
     {
       name: GAME_STORE_NAME,
       enabled: process.env.NODE_ENV !== 'production',
