@@ -10,8 +10,7 @@ import BattleScreen from "~/views/battle-screen";
  * Main game screen component that renders views based on router state
  */
 export default function GameScreen() {
-  //const currentView = useCurrentView();
-  const currentView = 'debug';
+  const currentView = useCurrentView();
 
   switch (currentView) {
     case 'town-hub':
