@@ -7,12 +7,15 @@ import React, {
   useEffect,
 } from 'react';
 import { auxSleepFor } from '~/lib/utils';
+import {
+  type GlobalAnimationType,
+  getAnimationDuration,
+  applyAnimation,
+  removeAnimation,
+} from '~/lib/animation-strategies';
 
-export type GlobalAnimationType = 'screen-shake' | 'fade-in-and-out';
-export const GlobalAnimationDuration: Record<GlobalAnimationType, number> = {
-  'screen-shake': 350,
-  'fade-in-and-out': 600,
-};
+// Re-export for convenience
+export type { GlobalAnimationType };
 
 type OnEndCallback = () => void;
 
@@ -39,7 +42,7 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
       callbackRef.current = onEnd || null;
       setAnimation(type);
       // Wait for the animation duration
-      await auxSleepFor(GlobalAnimationDuration[type]);
+      await auxSleepFor(getAnimationDuration(type));
       // Execute callback and resolve
       callbackRef.current?.();
       resolveRef.current?.();
@@ -90,18 +93,30 @@ function GlobalAnimationsOverlay({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = ref.current!;
+    const el = ref.current;
     if (!type) return;
 
+    // Apply animation using strategy
+    applyAnimation(type, el);
+
     function handleEnd() {
-      el.className = 'global-animations-overlay';
+      el?.classList.remove('global-animations-overlay');
+      if (type) removeAnimation(type, el);
       onEnd();
     }
 
-    el.addEventListener('animationend', handleEnd);
-    el.classList.add(`anim-${type}`);
+    // Listen for animationend on both overlay and game-screen
+    const gameScreen = document.getElementById('game-screen');
+    const animationTargets = [el, gameScreen].filter(Boolean) as HTMLElement[];
+
+    animationTargets.forEach((target) => {
+      target.addEventListener('animationend', handleEnd);
+    });
+
     return () => {
-      el.removeEventListener('animationend', handleEnd);
+      animationTargets.forEach((target) => {
+        target.removeEventListener('animationend', handleEnd);
+      });
     };
   }, [type, onEnd]);
 

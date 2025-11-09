@@ -6,8 +6,8 @@
   z-index: 1000;
 }
 
-/* ---- Screen Shake ---- */
-.anim-screen-shake {
+/* ---- Screen Shake (applied to #game-screen) ---- */
+#game-screen.anim-screen-shake {
   animation: global-shake 0.35s cubic-bezier(.36,.07,.19,.97);
   will-change: transform;
 }
