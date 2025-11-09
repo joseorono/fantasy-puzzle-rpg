@@ -1,6 +1,4 @@
 import { useEffect, useCallback, useState } from 'react';
-import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import { useDialogue } from '~/hooks/use-dialogue';
 import { DialogueBox } from './dialogue-box';
@@ -25,7 +23,6 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
 
   // Handle click/space/enter to advance
   const handleAdvance = useCallback(() => {
-    soundService.playSound(SoundNames.mechanicalClick);
     if (isLast && isComplete && onComplete) {
       onComplete();
     } else {
