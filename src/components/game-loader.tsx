@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { loaderService } from '~/services/loader-service';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 
 interface GameLoaderProps {}
 
@@ -29,6 +31,7 @@ export function GameLoader(_props: GameLoaderProps) {
   }, []);
 
   function handlePlayClick() {
+    soundService.playSound(SoundNames.shimmeringSuccessShort);
     setIsReady(true);
   }
 

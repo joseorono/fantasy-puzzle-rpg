@@ -66,21 +66,25 @@ class SoundService {
     });
   }
 
-  playSound(alias: SoundNames, volume: number = 1, variance: number = 0) {
+  playSound(alias: SoundNames, volume: number = 1, volVariance: number = 0, spdVariance: number = 0) {
     volume = betweenZeroAndOne(volume, 'volume');
-    variance = betweenZeroAndOne(variance, 'variance');
+    volVariance = betweenZeroAndOne(volVariance, 'volVariance');
+    spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
     sound.play(alias, {
-      volume: getRandomlyVariedValue(volume, variance),
+      volume: getRandomlyVariedValue(volume, volVariance),
+      speed: getRandomlyVariedValue(1, spdVariance),
     });
   }
 
-  async asyncPlaySound(alias: SoundNames, volume: number = 1, variance: number = 0) {
+  async asyncPlaySound(alias: SoundNames, volume: number = 1, volVariance: number = 0, spdVariance: number = 0) {
     volume = betweenZeroAndOne(volume, 'volume');
-    variance = betweenZeroAndOne(variance, 'variance');
+    volVariance = betweenZeroAndOne(volVariance, 'volVariance');
+    spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
     sound.play(alias, {
-      volume: getRandomlyVariedValue(volume, variance),
+      volume: getRandomlyVariedValue(volume, volVariance),
+      speed: getRandomlyVariedValue(1, spdVariance),
     });
   }
 
