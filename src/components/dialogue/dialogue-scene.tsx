@@ -1,9 +1,11 @@
-import { useEffect, useCallback, useState } from "react";
-import type { DialogueScene as DialogueSceneType } from "~/types/dialogue";
-import { useDialogue } from "~/hooks/use-dialogue";
-import { DialogueBox } from "./dialogue-box";
-import { DialoguePortrait } from "./dialogue-portrait";
-import { MessageHistory } from "./message-history";
+import { useEffect, useCallback, useState } from 'react';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
+import { useDialogue } from '~/hooks/use-dialogue';
+import { DialogueBox } from './dialogue-box';
+import { DialoguePortrait } from './dialogue-portrait';
+import { MessageHistory } from './message-history';
 
 interface DialogueSceneProps {
   scene: DialogueSceneType;
@@ -12,27 +14,18 @@ interface DialogueSceneProps {
   turboSpeed?: number;
 }
 
-export function DialogueScene({
-  scene,
-  onComplete,
-  textSpeed = 2,
-  turboSpeed = 10,
-}: DialogueSceneProps) {
+export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 10 }: DialogueSceneProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const {
-    currentLine,
-    displayedText,
-    isTyping,
-    isComplete,
-    isLast,
-    isCtrlPressed,
-    next,
-    index,
-  } = useDialogue(scene, { textSpeed, turboSpeed, controlsEnabled: !isHistoryOpen });
+  const { currentLine, displayedText, isTyping, isComplete, isLast, isCtrlPressed, next, index } = useDialogue(scene, {
+    textSpeed,
+    turboSpeed,
+    controlsEnabled: !isHistoryOpen,
+  });
 
   // Handle click/space/enter to advance
   const handleAdvance = useCallback(() => {
+    soundService.playSound(SoundNames.mechanicalClick);
     if (isLast && isComplete && onComplete) {
       onComplete();
     } else {
@@ -42,9 +35,9 @@ export function DialogueScene({
 
   // Add/remove dialogue-active class to prevent page scrolling
   useEffect(() => {
-    document.body.classList.add("dialogue-active");
+    document.body.classList.add('dialogue-active');
     return () => {
-      document.body.classList.remove("dialogue-active");
+      document.body.classList.remove('dialogue-active');
     };
   }, []);
 
@@ -53,26 +46,26 @@ export function DialogueScene({
     function handleKeyDown(e: KeyboardEvent) {
       // When history is open: prevent dialogue advancement and allow ESC to close
       if (isHistoryOpen) {
-        if (e.key === "Escape") {
+        if (e.key === 'Escape') {
           e.preventDefault();
           closeHistory();
         }
         // Block SPACE/ENTER from advancing while history is open
-        if (e.key === " " || e.key === "Enter") {
+        if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
         }
         return;
       }
 
       // Normal controls when history is not open
-      if (e.key === " " || e.key === "Enter") {
+      if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         handleAdvance();
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleAdvance, isHistoryOpen]);
 
   // Scroll wheel detection to open message history
@@ -85,8 +78,8 @@ export function DialogueScene({
       }
     }
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
   }, [isHistoryOpen]);
 
   function closeHistory() {
@@ -96,20 +89,12 @@ export function DialogueScene({
   if (!currentLine) return null;
 
   // Find the current speaker
-  const currentSpeaker = scene.characters.find(
-    (char) => char.id === currentLine.speakerId
-  );
+  const currentSpeaker = scene.characters.find((char) => char.id === currentLine.speakerId);
 
   // Organize portraits by side
-  const leftPortraits = scene.characters.filter(
-    (char) => char.side === "left" && char.portrait
-  );
-  const rightPortraits = scene.characters.filter(
-    (char) => char.side === "right" && char.portrait
-  );
-  const centerPortraits = scene.characters.filter(
-    (char) => char.side === "center" && char.portrait
-  );
+  const leftPortraits = scene.characters.filter((char) => char.side === 'left' && char.portrait);
+  const rightPortraits = scene.characters.filter((char) => char.side === 'right' && char.portrait);
+  const centerPortraits = scene.characters.filter((char) => char.side === 'center' && char.portrait);
 
   return (
     <>
@@ -128,9 +113,7 @@ export function DialogueScene({
       {/* Dialogue container */}
       <div className="dialogue-container">
         {/* CTRL skip indicator */}
-        {isCtrlPressed && (
-          <div className="dialogue-skip-indicator">Fast Forward</div>
-        )}
+        {isCtrlPressed && <div className="dialogue-skip-indicator">Fast Forward</div>}
 
         {/* Portraits */}
         <div className="dialogue-portraits">
@@ -140,13 +123,9 @@ export function DialogueScene({
               key={char.id}
               character={char}
               isActive={char.id === currentLine.speakerId}
-              emotion={
-                char.id === currentLine.speakerId
-                  ? currentLine.emotion
-                  : undefined
-              }
-              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
-              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
+              emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
+              showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
+              rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
             />
           ))}
 
@@ -156,13 +135,9 @@ export function DialogueScene({
               key={char.id}
               character={char}
               isActive={char.id === currentLine.speakerId}
-              emotion={
-                char.id === currentLine.speakerId
-                  ? currentLine.emotion
-                  : undefined
-              }
-              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
-              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
+              emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
+              showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
+              rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
             />
           ))}
 
@@ -172,13 +147,9 @@ export function DialogueScene({
               key={char.id}
               character={char}
               isActive={char.id === currentLine.speakerId}
-              emotion={
-                char.id === currentLine.speakerId
-                  ? currentLine.emotion
-                  : undefined
-              }
-              showPortrait={currentLine.speakerId === char.id ? (currentLine.showPortrait !== false) : true}
-              rotate90deg={currentLine.speakerId === char.id ? (currentLine.rotate90deg === true) : false}
+              emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
+              showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
+              rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
             />
           ))}
         </div>
