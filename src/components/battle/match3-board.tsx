@@ -1,6 +1,15 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
-import { boardAtom, selectedOrbAtom, selectOrbAtom, swapOrbsAtom, damageEnemyAtom, removeMatchedOrbsAtom, battleStateAtom, partyAtom } from '~/stores/battle-atoms';
+import {
+  boardAtom,
+  selectedOrbAtom,
+  selectOrbAtom,
+  swapOrbsAtom,
+  damageEnemyAtom,
+  removeMatchedOrbsAtom,
+  battleStateAtom,
+  partyAtom,
+} from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
@@ -8,7 +17,6 @@ import { calculateMatchDamage } from '~/lib/rpg-calculations';
 import { BASE_MATCH_DAMAGE } from '~/constants/game';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
-
 
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
@@ -34,25 +42,26 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
     <button
       onClick={onSelect}
       className={cn(
-        'relative w-6 mx-2 h-6 sm:w-8 sm:h-8 md:w-11 md:h-11 rounded-full transition-all duration-200',
-        'border-2 sm:border-3 cursor-pointer',
+        'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11',
+        'cursor-pointer border-2 sm:border-3',
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
-        isSelected && 'scale-110 ring-4 ring-white animate-pulse',
+        isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         orb.isHighlighted && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
-        isDisappearing && 'scale-0 opacity-0 rotate-180',
+        isDisappearing && 'scale-0 rotate-180 opacity-0',
         isInvalidSwap && 'shake ring-4 ring-red-500',
-        isNew && 'fall-in'
+        isNew && 'fall-in',
       )}
       style={{
         imageRendering: 'pixelated',
       }}
     >
       {/* Shine effect */}
-      <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-white/40 rounded-full blur-sm" />
+      <div className="absolute top-0.5 left-0.5 h-2 w-2 rounded-full bg-white/40 blur-sm" />
 
       {/* Pixel border effect */}
-      <div className="absolute inset-0 rounded-full"
+      <div
+        className="absolute inset-0 rounded-full"
         style={{
           boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
         }}
@@ -60,14 +69,11 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
 
       {/* Particle explosion effect */}
       {showParticles && (
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="pointer-events-none absolute inset-0">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className={cn(
-                'absolute w-2 h-2 rounded-full animate-ping',
-                ORB_TYPE_CLASSES[orb.type]
-              )}
+              className={cn('absolute h-2 w-2 animate-ping rounded-full', ORB_TYPE_CLASSES[orb.type])}
               style={{
                 top: '50%',
                 left: '50%',
@@ -93,7 +99,10 @@ export function Match3Board() {
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
-  const [invalidSwap, setInvalidSwap] = useState<{ from: {row: number, col: number}, to: {row: number, col: number} } | null>(null);
+  const [invalidSwap, setInvalidSwap] = useState<{
+    from: { row: number; col: number };
+    to: { row: number; col: number };
+  } | null>(null);
   const [isProcessingSwap, setIsProcessingSwap] = useState(false);
   const [newOrbIds, setNewOrbIds] = useState<Set<string>>(new Set());
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,10 +137,7 @@ export function Match3Board() {
     for (let row = 0; row < board.length; row++) {
       for (let col = 0; col < board[row].length - 2; col++) {
         const orbType = board[row][col].type;
-        if (
-          board[row][col + 1].type === orbType &&
-          board[row][col + 2].type === orbType
-        ) {
+        if (board[row][col + 1].type === orbType && board[row][col + 2].type === orbType) {
           matches.add(board[row][col].id);
           matches.add(board[row][col + 1].id);
           matches.add(board[row][col + 2].id);
@@ -151,10 +157,7 @@ export function Match3Board() {
     for (let col = 0; col < board[0].length; col++) {
       for (let row = 0; row < board.length - 2; row++) {
         const orbType = board[row][col].type;
-        if (
-          board[row + 1][col].type === orbType &&
-          board[row + 2][col].type === orbType
-        ) {
+        if (board[row + 1][col].type === orbType && board[row + 2][col].type === orbType) {
           matches.add(board[row][col].id);
           matches.add(board[row + 1][col].id);
           matches.add(board[row + 2][col].id);
@@ -200,7 +203,7 @@ export function Match3Board() {
       }
 
       // Find the character that matches this orb type to apply their POW bonus
-      const matchingCharacter = matchedType ? party.find(char => char.color === matchedType) : null;
+      const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
       const characterPow = matchingCharacter?.stats.pow ?? 0;
 
       // Calculate damage using RPG system (includes combo multiplier and POW bonus)
@@ -266,15 +269,15 @@ export function Match3Board() {
   return (
     <div className="flex flex-1 justify-center">
       {/* Board container with pixel art border */}
-      <div className="relative bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:p-3 md:p-4 rounded-lg border-2 sm:border-3 border-amber-700">
+      <div className="relative rounded-lg border-2 border-amber-700 bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:border-3 sm:p-3 md:p-4">
         {/* Decorative corners */}
-        <div className="absolute -top-2 -left-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
-        <div className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
-        <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
-        <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-amber-600 border-2 border-amber-400" />
+        <div className="absolute -top-2 -left-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
+        <div className="absolute -top-2 -right-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
+        <div className="absolute -bottom-2 -left-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
+        <div className="absolute -right-2 -bottom-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
 
         {/* Board grid */}
-        <div className="flex flex-col gap-2 justify-around">
+        <div className="flex flex-col justify-around gap-2">
           {board.map((row, rowIndex) => (
             <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
               {row.map((orb) => (
@@ -284,13 +287,11 @@ export function Match3Board() {
                     ...orb,
                     isHighlighted: highlightedMatches.has(orb.id),
                   }}
-                  isSelected={
-                    selectedOrb?.row === orb.row && selectedOrb?.col === orb.col
-                  }
+                  isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
                   isInvalidSwap={
                     invalidSwap !== null &&
                     ((invalidSwap.from.row === orb.row && invalidSwap.from.col === orb.col) ||
-                     (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
+                      (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
                   }
                   isNew={newOrbIds.has(orb.id)}
                   onSelect={() => handleOrbClick(orb.row, orb.col)}
@@ -303,7 +304,7 @@ export function Match3Board() {
 
       {/* Match indicator */}
       {highlightedMatches.size > 0 && (
-        <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 bg-amber-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border-2 border-amber-400 font-bold text-sm sm:text-base animate-bounce">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
           {highlightedMatches.size >= 5 ? '5x COMBO!' : `${highlightedMatches.size} MATCH!`}
         </div>
       )}
