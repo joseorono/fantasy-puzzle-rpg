@@ -1,6 +1,6 @@
 // Types and constants for the Global Animations system
 
-export type GlobalAnimationType = 'screen-shake' | 'fade-in-and-out';
+export type GlobalAnimationType = 'screen-shake' | 'fade-in-and-out' | 'view-transition-circle';
 export type AnimationStrategy = 'overlay' | 'game-screen';
 
 export interface AnimationConfig {
@@ -25,5 +25,10 @@ export const ANIMATION_CONFIG: Record<GlobalAnimationType, AnimationConfig> = {
     duration: 600,
     strategy: 'overlay',
     className: 'anim-fade-in-and-out',
+  },
+  'view-transition-circle': {
+    duration: 800,
+    strategy: 'overlay',
+    className: 'anim-view-transition-circle',
   },
 };
