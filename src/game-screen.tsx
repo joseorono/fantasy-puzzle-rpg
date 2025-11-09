@@ -11,11 +11,11 @@ import BattleScreen from "~/views/battle-screen";
  */
 export default function GameScreen() {
   const currentView = useCurrentView();
+  const townHubData = useViewData('town-hub');
 
   switch (currentView) {
     case 'town-hub':
       // townHubData is guaranteed to exist from INITIAL_ROUTER_STATE
-      const townHubData = useViewData('town-hub');
       return (
         <TownHub
           innCost={townHubData!.innCost}
