@@ -5,7 +5,7 @@ import { useRouterActions, useRouterState } from '~/stores/game-store';
  */
 export default function RouterTestView() {
   const router = useRouterState();
-  const { goToTownHub, goToBattleDemo, goToMapDemo, goToDebug, goBack } =
+  const { goToTownHub, goToBattleDemo, goToMapDemo, goToDialogueDemo, goToDebug, goBack } =
     useRouterActions();
 
   return (
@@ -52,6 +52,13 @@ export default function RouterTestView() {
           onClick={() => goToMapDemo()}
         >
           Map Demo
+        </button>
+
+        <button
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          onClick={() => goToDialogueDemo({})}
+        >
+          Dialogue Demo
         </button>
 
         <button
