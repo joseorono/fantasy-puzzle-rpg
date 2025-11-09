@@ -7,12 +7,8 @@ import React, {
   useEffect,
 } from 'react';
 import { auxSleepFor } from '~/lib/utils';
-import {
-  type GlobalAnimationType,
-  getAnimationDuration,
-  applyAnimation,
-  removeAnimation,
-} from '~/lib/animation-strategies';
+import { type GlobalAnimationType } from '~/constants/animation-system';
+import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
 
 // Re-export for convenience
 export type { GlobalAnimationType };
@@ -100,8 +96,8 @@ function GlobalAnimationsOverlay({
     applyAnimation(type, el);
 
     function handleEnd() {
-      el?.classList.remove('global-animations-overlay');
       if (type) removeAnimation(type, el);
+      if (el) el.className = 'global-animations-overlay';
       onEnd();
     }
 

@@ -4,29 +4,10 @@
  * - Overlay: Apply class to fixed overlay div
  * - GameScreen: Apply class to #game-screen element
  */
-
-export type AnimationStrategy = 'overlay' | 'game-screen';
-
-export interface AnimationConfig {
-  duration: number;
-  strategy: AnimationStrategy;
-  className: string;
-}
-
-export type GlobalAnimationType = 'screen-shake' | 'fade-in-and-out';
-
-export const ANIMATION_CONFIG: Record<GlobalAnimationType, AnimationConfig> = {
-  'screen-shake': {
-    duration: 350,
-    strategy: 'game-screen',
-    className: 'anim-screen-shake',
-  },
-  'fade-in-and-out': {
-    duration: 600,
-    strategy: 'overlay',
-    className: 'anim-fade-in-and-out',
-  },
-};
+import {
+  ANIMATION_CONFIG,
+  type GlobalAnimationType,
+} from '~/constants/animation-system';
 
 /**
  * Apply animation class to the appropriate element based on strategy
