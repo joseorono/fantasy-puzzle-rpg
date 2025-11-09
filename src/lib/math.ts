@@ -54,7 +54,6 @@ export function betweenZeroAndOne(value: number, varName: string = 'variable'): 
   return value;
 }
 
-
 /**
  * Subtracts two numbers and ensures the result is not less than a minimum value.
  * @param a The first number to subtract from.
@@ -63,7 +62,7 @@ export function betweenZeroAndOne(value: number, varName: string = 'variable'): 
  * @returns The result of the subtraction, clamped to the minimum value.
  */
 export function subtractionWithMin(a: number, b: number, min: number = 0): number {
-    return Math.max(a - b, min);
+  return Math.max(a - b, min);
 }
 
 /**
@@ -74,7 +73,7 @@ export function subtractionWithMin(a: number, b: number, min: number = 0): numbe
  * @returns The result of the addition, clamped to the maximum value.
  */
 export function additionWithMax(a: number, b: number, max: number): number {
-    return Math.min(a + b, max);
+  return Math.min(a + b, max);
 }
 
 /**
@@ -90,7 +89,7 @@ export function additionWithMax(a: number, b: number, max: number): number {
  * multiplyDimensions(7, 9, 0.5) // returns [4, 5]
  */
 export function multiplyDimensions(x: number, y: number, factor: number): [number, number] {
-    return [Math.round(x * factor), Math.round(y * factor)];
+  return [Math.round(x * factor), Math.round(y * factor)];
 }
 
 /**
@@ -104,6 +103,5 @@ export function multiplyDimensions(x: number, y: number, factor: number): [numbe
  * calculatePercentage(10, 0) // returns 0 (safe division)
  */
 export function calculatePercentage(value: number, total: number): number {
-    return total > 0 ? (value / total) * 100 : 0;
+  return total > 0 ? (value / total) * 100 : 0;
 }
-
