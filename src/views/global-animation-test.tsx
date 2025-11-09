@@ -4,7 +4,7 @@ export default function GlobalAnimationTest() {
   const { trigger, triggerSequence } = useGlobalAnimation();
   const buttonClass = "px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors capitalize";
 
-  const animations: Exclude<GlobalAnimationType, null>[] = ['screen-shake', 'view-transition'];
+  const animations: GlobalAnimationType[] = ['screen-shake', 'fade-in-and-out'];
 
   const handleCombo = () =>
     triggerSequence(animations, () =>
@@ -19,7 +19,7 @@ export default function GlobalAnimationTest() {
             key={animationName}
             onClick={() => {
               trigger(animationName)
-              .then(() => alert(`Anim ${animationName} done!`))
+              .then(() => console.log(`Anim ${animationName} done!`))
             }}
             className={buttonClass}
           >

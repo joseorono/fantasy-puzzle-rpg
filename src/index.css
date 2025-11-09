@@ -193,6 +193,8 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: 0.05em;
     user-select: none;
+    /* ToDo: Change the background to be more like a frame
+    like what we showed off in the group chat */
     background-color: brown;
   }
 
