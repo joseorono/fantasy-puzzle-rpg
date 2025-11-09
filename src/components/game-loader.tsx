@@ -19,7 +19,7 @@ export function GameLoader(_props: GameLoaderProps) {
           setIsLoading(false);
         })
         .catch((error) => {
-          console.error('Failed to load game assets:', error);
+          console.error('Failed to loa d game assets:', error);
           setHasError(true);
           setIsLoading(false);
         });
