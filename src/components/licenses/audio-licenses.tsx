@@ -57,7 +57,28 @@ export default function AudioLicensesDialogContent() {
             https://freesound.org/people/Haykrich/sounds/401560/
           </a>
         </p>
+
+        <p>
+          Normal click (mechanicalClick), Creative Commons 0, Breviceps&nbsp;
+          <a href="https://freesound.org/people/Breviceps/sounds/448086/">
+            https://freesound.org/people/Breviceps/sounds/448086/
+          </a>
+        </p>
+
+        <p>
+          Ui sounds - Shimmering success (shimmeringSuccess), Creative Commons 0, Philip_Berger&nbsp;
+          <a href="https://freesound.org/people/Philip_Berger/sounds/648212/">
+            https://freesound.org/people/Philip_Berger/sounds/648212/
+          </a>
+        </p>
+        <p>
+          Success (match), Creative Commons 0, Sjonas88
+          <a href="https://freesound.org/people/Sjonas88/sounds//538554/">
+            https://freesound.org/people/Philip_Berger/sounds/648212/
+          </a>
+        </p>
       </div>
     </>
   );
 }
+
