@@ -8,7 +8,7 @@ export default function GlobalAnimationTest() {
 
   const handleCombo = () =>
     triggerSequence(animations, () =>
-      alert('All animations done!')
+      console.log('All animations done!')
     );
 
   return (
