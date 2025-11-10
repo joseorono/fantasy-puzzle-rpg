@@ -39,7 +39,7 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(tilemapData);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
-  const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 0, col: 0 });
+  const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 58, col: 70 });
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
   const [showTriggerModal, setShowTriggerModal] = useState(false);
@@ -112,7 +112,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     [mapData],
   );
 
-  // Find a valid starting position on initialization
+  // Verify starting position is valid on initialization
   useEffect(() => {
     const roadLayer = mapData.layers.find((layer) => layer.name === 'road');
     if (!roadLayer) {
@@ -121,16 +121,32 @@ const Tilemap: React.FC<TilemapProps> = ({
       return;
     }
 
-    console.log(`🔍 Searching for road tiles in ${roadLayer.width}x${roadLayer.height} map...`);
+    const startRow = 58;
+    const startCol = 70;
 
-    // Search for first non-zero road tile
+    // Check if starting position is valid
+    if (startRow >= 0 && startRow < roadLayer.height && startCol >= 0 && startCol < roadLayer.width) {
+      const dataIndex = startRow * roadLayer.width + startCol;
+      const tileId = roadLayer.data[dataIndex];
+
+      if (tileId !== 0) {
+        console.log(`✅ Starting position (${startRow}, ${startCol}) is valid - TileID ${tileId}`);
+        setDebugInfo(`On road at (${startRow}, ${startCol})`);
+        return;
+      } else {
+        console.warn(`⚠️ Starting position (${startRow}, ${startCol}) is not a road tile (TileID: ${tileId})`);
+      }
+    }
+
+    // If starting position is invalid, find nearest road tile
+    console.log(`🔍 Searching for nearest road tile...`);
     for (let row = 0; row < roadLayer.height; row++) {
       for (let col = 0; col < roadLayer.width; col++) {
         const dataIndex = row * roadLayer.width + col;
         const tileId = roadLayer.data[dataIndex];
 
         if (tileId !== 0) {
-          console.log(`✅ Starting position found: Row ${row}, Col ${col}, TileID ${tileId}`);
+          console.log(`✅ Fallback position found: Row ${row}, Col ${col}, TileID ${tileId}`);
           setCharPosition({ row, col });
           setDebugInfo(`On road at (${row}, ${col})`);
           return;
@@ -199,7 +215,7 @@ const Tilemap: React.FC<TilemapProps> = ({
 
         // Only move if the new position is a road tile
         const canMove = isRoadTile(newRow, newCol);
-        
+
         if (canMove) {
           console.log(`✅ Moving to (${newRow}, ${newCol})`);
           setDebugInfo(`On road at (${newRow}, ${newCol})`);
@@ -358,10 +374,23 @@ const Tilemap: React.FC<TilemapProps> = ({
     });
   }, [tileset, characterImage, mapData, tileSize, visibleLayers, charPosition, visitedTriggers, pulseAnimation]);
 
+  // Calculate scale factor for character positioning
+  const canvasElement = canvasRef.current;
+  const scale = canvasElement ? canvasElement.offsetWidth / (mapData.width * tileSize) : 1;
+
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+      <div className="tilemap-container">
+        <div
+          style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <canvas
             ref={canvasRef}
             style={{
@@ -369,23 +398,28 @@ const Tilemap: React.FC<TilemapProps> = ({
               background: '#87CEEB',
               imageRendering: 'pixelated',
               display: 'block',
-              width: `${mapData.width * tileSize}px`,
-              height: `${mapData.height * tileSize}px`,
+              maxWidth: '100%',
+              maxHeight: '100%',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
             }}
           />
 
           {/* Character rendered as HTML element for smooth CSS transitions */}
-          {characterImage && (
+          {characterImage && canvasElement && (
             <div
               style={{
                 position: 'absolute',
-                left: `${charPosition.col * tileSize}px`,
-                top: `${charPosition.row * tileSize}px`,
-                width: `${tileSize}px`,
-                height: `${tileSize}px`,
+                // Center the character on the tile with scale factor
+                left: `${(charPosition.col * tileSize - tileSize * 0.25) * scale}px`,
+                top: `${(charPosition.row * tileSize - tileSize * 0.5) * scale}px`,
+                // Make character 2x wider and 2.5x taller than a tile, scaled
+                width: `${tileSize * 2 * scale}px`,
+                height: `${tileSize * 2.5 * scale}px`,
+                borderRadius: '5px',
                 backgroundImage: `url('${characterPlaceholder}')`,
                 backgroundSize: 'contain',
-                backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
                 transition: 'left 0.2s ease-out, top 0.2s ease-out',
@@ -397,7 +431,7 @@ const Tilemap: React.FC<TilemapProps> = ({
           )}
         </div>
 
-        <div style={{ fontSize: '14px', fontFamily: 'monospace', minWidth: '250px', padding: '10px' }}>
+        <div className="character-info">
           <strong>Character Position:</strong> Row {charPosition.row}, Col {charPosition.col}
           <br />
           <strong>Controls:</strong> Arrow Keys or WASD
@@ -430,3 +464,4 @@ const Tilemap: React.FC<TilemapProps> = ({
 };
 
 export default Tilemap;
+
