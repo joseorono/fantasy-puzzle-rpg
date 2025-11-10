@@ -1,9 +1,9 @@
 // components/GameMap.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Tilemap from './tile-map';
 import '../../styles/game-map.css';
 
-export const DemoMap: React.FC = () => {
+export default function DemoMap() {
   const [visibleLayers, setVisibleLayers] = useState<string[]>([
     'Capa de patrones 1',
     'road',
@@ -33,4 +33,4 @@ export const DemoMap: React.FC = () => {
       <Tilemap tilesetImage="/assets/tileset/demo-map.png" visibleLayers={visibleLayers} />
     </div>
   );
-};
+}
