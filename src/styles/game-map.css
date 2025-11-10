@@ -1,0 +1,107 @@
+.game-map {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f0f0f0;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Responsive layout: stack on mobile, side-by-side on desktop */
+@media (min-width: 1024px) {
+  .game-map {
+    flex-direction: row;
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+}
+
+.map-controls {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  max-height: fit-content;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .map-controls {
+    min-width: 200px;
+    max-width: 250px;
+    width: auto;
+  }
+}
+
+.map-controls h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1rem;
+}
+
+.map-controls label {
+  display: block;
+  margin: 0.5rem 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.875rem;
+}
+
+.map-controls input[type='checkbox'] {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.tilemap-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.tilemap-container canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  max-width: 100%;
+  max-height: calc(100vh - 12rem);
+  object-fit: contain;
+}
+
+@media (min-width: 1024px) {
+  .tilemap-container canvas {
+    max-height: calc(100vh - 4rem);
+  }
+}
+
+.character-info {
+  font-size: 0.875rem;
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.75rem;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .character-info {
+    min-width: 250px;
+    max-width: 300px;
+  }
+}
+
