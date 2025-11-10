@@ -3,8 +3,8 @@ import TownHub from '~/components/town/town-hub';
 import DebugView from '~/views/debug-view';
 import { DialogueTestView } from './views/dialogue-test';
 import { LevelUpDemo } from './views/level-up-demo';
-import { MapDemo } from './views/map-demo';
-import BattleScreen from "~/views/battle-screen";
+import { DemoMap } from './components/map/game-map';
+import BattleScreen from '~/views/battle-screen';
 
 /**
  * Main game screen component that renders views based on router state
@@ -28,7 +28,7 @@ export default function GameScreen() {
       return <BattleScreen />;
 
     case 'map-demo':
-      return <MapDemo />;
+      return <DemoMap />;
 
     case 'dialogue-demo':
       return <DialogueTestView />;

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Tilemap from './tile-map';
 import '../../styles/game-map.css';
 
-const GameMap: React.FC = () => {
+export const DemoMap: React.FC = () => {
   const [visibleLayers, setVisibleLayers] = useState<string[]>([
     'Capa de patrones 1',
     'road',
@@ -34,5 +34,3 @@ const GameMap: React.FC = () => {
     </div>
   );
 };
-
-export default GameMap;
