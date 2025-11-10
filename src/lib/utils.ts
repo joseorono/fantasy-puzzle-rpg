@@ -40,3 +40,17 @@ export function auxObjectMap(object: Record<string, any>, mapFn: (arg: any) => a
 export function getRandomElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
+
+/**
+ * Returns a random boolean based on the given probability of true.
+ * @param probabilityOfTrue - A number between 0 and 1 representing the chance of returning true (e.g., 0.5 for 50% chance)
+ * @returns A boolean value based on the probability
+ */
+export function randomBool(probabilityOfTrue: number): boolean {
+  if (probabilityOfTrue < 0 || probabilityOfTrue > 1) {
+    throw new Error('probabilityOfTrue must be between 0 and 1');
+  }
+  return Math.random() < probabilityOfTrue;
+}
+
+

@@ -20,6 +20,39 @@
   100% { transform: translate(0, 0); }
 }
 
+/* ---- View Transition Circle (overlay mask) ---- */
+.anim-view-transition-circle {
+  /* Base black overlay that will be masked */
+  background-color: #000;
+  /* Standard mask */
+  mask-image: url('/assets/transitions/circle.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 50px 50px;
+  /* WebKit prefix */
+  -webkit-mask-image: url('/assets/transitions/circle.svg');
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 50px 50px;
+  animation: global-view-transition-circle 0.8s ease-in-out;
+  will-change: mask-size, -webkit-mask-size;
+}
+
+@keyframes global-view-transition-circle {
+  0% {
+    mask-size: 50px 50px;
+    -webkit-mask-size: 50px 50px;
+  }
+  50% {
+    mask-size: 2000vh 2000vh;
+    -webkit-mask-size: 2000vh 2000vh;
+  }
+  100% {
+    mask-size: 50px 50px;
+    -webkit-mask-size: 50px 50px;
+  }
+}
+
 /* ---- Fade In and Out ---- */
 .anim-fade-in-and-out {
   background: rgba(0, 0, 0, 0);
