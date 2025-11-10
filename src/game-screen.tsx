@@ -3,7 +3,7 @@ import TownHub from '~/components/town/town-hub';
 import DebugView from '~/views/debug-view';
 import { DialogueTestView } from './views/dialogue-test';
 import { LevelUpDemo } from './views/level-up-demo';
-import { DemoMap } from './components/map/game-map';
+import DemoMap from './components/map/demo-map';
 import BattleScreen from '~/views/battle-screen';
 
 /**
