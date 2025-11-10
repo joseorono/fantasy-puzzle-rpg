@@ -32,6 +32,13 @@ export default function GraphicsLicensesDialogContent() {
           </a>
         </p>
 
+        <p>
+          Medieval Buttons, CC0 1.0, by pzUH&nbsp;
+          <a href="https://opengameart.org/content/medieval-game-button-pack">
+            https://opengameart.org/content/medieval-game-button-pack
+          </a>
+        </p>
+
       </div>
     </>
   );
