@@ -83,13 +83,13 @@ describe('inventory utilities', () => {
     it('should remove item when quantity reaches zero', () => {
       const result = removeItemFromInventory(testInventory, 'iron-sword', 1);
       expect(result).toHaveLength(2);
-      expect(result.find(item => item.itemId === 'iron-sword')).toBeUndefined();
+      expect(result.find((item) => item.itemId === 'iron-sword')).toBeUndefined();
     });
 
     it('should remove item when removing more than available', () => {
       const result = removeItemFromInventory(testInventory, 'potion', 10);
       expect(result).toHaveLength(2);
-      expect(result.find(item => item.itemId === 'potion')).toBeUndefined();
+      expect(result.find((item) => item.itemId === 'potion')).toBeUndefined();
     });
 
     it('should return unchanged inventory when item does not exist', () => {

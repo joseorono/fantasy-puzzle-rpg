@@ -49,8 +49,8 @@ export const useGameStore = create<GameStore>()(
     {
       name: GAME_STORE_NAME,
       enabled: process.env.NODE_ENV !== 'production',
-    }
-  )
+    },
+  ),
 );
 
 /**
@@ -100,6 +100,5 @@ export const useCurrentView = () => useGameStore((state) => state.router.current
 /**
  * Get view data for a specific view
  */
-export const useViewData = <T extends keyof import('~/types/routing').ViewDataMap>(
-  view: T
-) => useGameStore((state) => state.router.viewData[view]);
+export const useViewData = <T extends keyof import('~/types/routing').ViewDataMap>(view: T) =>
+  useGameStore((state) => state.router.viewData[view]);

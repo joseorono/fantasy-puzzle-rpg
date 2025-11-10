@@ -3,7 +3,6 @@ import MouseTracker from '~/components/effects/mouse-tracker';
 import { GameLoader } from '~/components/game-loader';
 import { GlobalAnimationProvider } from '~/components/global-animations-system';
 
-
 function App() {
   return (
     <div id="game-screen">
@@ -12,7 +11,7 @@ function App() {
         <GameLoader />
       </GlobalAnimationProvider>
     </div>
-  )
+  );
 }
 
 export default App;

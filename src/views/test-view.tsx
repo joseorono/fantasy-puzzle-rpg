@@ -1,5 +1,5 @@
-import { Button } from "~/components/ui/button";
-import { FancyBorderPixelButton } from "~/components/ui/fancy-border-pixel-button";
+import { Button } from '~/components/ui/button';
+import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 
 export default function TestView() {
   function handleClick() {
@@ -8,12 +8,8 @@ export default function TestView() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">Test View</h1>
-      <Button
-        onClick={handleClick}
-      >
-        Test Button
-      </Button>
+      <h1 className="mb-4 text-3xl font-bold">Test View</h1>
+      <Button onClick={handleClick}>Test Button</Button>
       <div className="mt-6 flex items-center gap-4">
         <FancyBorderPixelButton
           label="LEVEL UP"

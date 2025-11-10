@@ -41,12 +41,4 @@ export const MYSTERY_CHAR: DialogueCharacter = {
   side: 'center',
 };
 
-export const CharacterList: DialogueCharacterId[] = [
-  'innkeeper',
-  'witch',
-  'knight',
-  'mage',
-  'narrator',
-  'mystery',
-];
-
+export const CharacterList: DialogueCharacterId[] = ['innkeeper', 'witch', 'knight', 'mage', 'narrator', 'mystery'];

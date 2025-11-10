@@ -30,18 +30,14 @@ export function canAddItem(currentQuantity: number, amountToAdd: number): boolea
  * @param quantity - Quantity to add (default: 1)
  * @returns New inventory with item added
  */
-export function addItemToInventory(
-  inventory: InventoryItem[],
-  itemId: string,
-  quantity: number = 1
-): InventoryItem[] {
-  const existingItemIndex = inventory.findIndex(item => item.itemId === itemId);
+export function addItemToInventory(inventory: InventoryItem[], itemId: string, quantity: number = 1): InventoryItem[] {
+  const existingItemIndex = inventory.findIndex((item) => item.itemId === itemId);
 
   if (existingItemIndex !== -1) {
     // Item exists, update quantity
     const existingItem = inventory[existingItemIndex];
     const newQuantity = Math.min(existingItem.quantity + quantity, MAX_AMOUNT_PER_ITEM);
-    
+
     return [
       ...inventory.slice(0, existingItemIndex),
       { ...existingItem, quantity: newQuantity },
@@ -63,9 +59,9 @@ export function addItemToInventory(
 export function removeItemFromInventory(
   inventory: InventoryItem[],
   itemId: string,
-  quantity: number = 1
+  quantity: number = 1,
 ): InventoryItem[] {
-  const existingItemIndex = inventory.findIndex(item => item.itemId === itemId);
+  const existingItemIndex = inventory.findIndex((item) => item.itemId === itemId);
 
   if (existingItemIndex === -1) {
     // Item doesn't exist, return unchanged
@@ -77,10 +73,7 @@ export function removeItemFromInventory(
 
   if (newQuantity <= 0) {
     // Remove item entirely
-    return [
-      ...inventory.slice(0, existingItemIndex),
-      ...inventory.slice(existingItemIndex + 1),
-    ];
+    return [...inventory.slice(0, existingItemIndex), ...inventory.slice(existingItemIndex + 1)];
   } else {
     // Update quantity
     return [
@@ -98,7 +91,7 @@ export function removeItemFromInventory(
  * @returns Quantity of the item (0 if not found)
  */
 export function getItemQuantity(inventory: InventoryItem[], itemId: string): number {
-  const item = inventory.find(item => item.itemId === itemId);
+  const item = inventory.find((item) => item.itemId === itemId);
   return item ? item.quantity : 0;
 }
 
@@ -109,11 +102,7 @@ export function getItemQuantity(inventory: InventoryItem[], itemId: string): num
  * @param minQuantity - Minimum quantity required (default: 1)
  * @returns true if inventory has the item with at least minQuantity
  */
-export function hasItem(
-  inventory: InventoryItem[],
-  itemId: string,
-  minQuantity: number = 1
-): boolean {
+export function hasItem(inventory: InventoryItem[], itemId: string, minQuantity: number = 1): boolean {
   return getItemQuantity(inventory, itemId) >= minQuantity;
 }
 
@@ -145,10 +134,10 @@ export function getTotalItemCount(inventory: InventoryItem[]): number {
 export function filterInventoryByType(
   inventory: InventoryItem[],
   items: BaseItemData[],
-  type: 'equipment' | 'consumable' | 'key'
+  type: 'equipment' | 'consumable' | 'key',
 ): InventoryItem[] {
-  const itemIds = items.filter(item => item.type === type).map(item => item.id);
-  return inventory.filter(item => itemIds.includes(item.itemId));
+  const itemIds = items.filter((item) => item.type === type).map((item) => item.id);
+  return inventory.filter((item) => itemIds.includes(item.itemId));
 }
 
 /**
@@ -157,16 +146,13 @@ export function filterInventoryByType(
  * @param items - All available items
  * @returns Sorted inventory
  */
-export function sortInventoryByName(
-  inventory: InventoryItem[],
-  items: BaseItemData[]
-): InventoryItem[] {
+export function sortInventoryByName(inventory: InventoryItem[], items: BaseItemData[]): InventoryItem[] {
   return [...inventory].sort((a, b) => {
-    const itemA = items.find(item => item.id === a.itemId);
-    const itemB = items.find(item => item.id === b.itemId);
-    
+    const itemA = items.find((item) => item.id === a.itemId);
+    const itemB = items.find((item) => item.id === b.itemId);
+
     if (!itemA || !itemB) return 0;
-    
+
     return itemA.name.localeCompare(itemB.name);
   });
 }

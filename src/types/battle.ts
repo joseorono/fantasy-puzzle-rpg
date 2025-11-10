@@ -11,7 +11,6 @@ export interface Orb {
   isHighlighted?: boolean;
 }
 
-
 export interface Match {
   orbs: Orb[];
   type: OrbType;

@@ -50,16 +50,10 @@ export function GameLoader(_props: GameLoaderProps) {
           </>
         )}
         {hasError && (
-          <div className="text-xl text-red-500">
-            There was an error loading the game. Please refresh and try again.
-          </div>
+          <div className="text-xl text-red-500">There was an error loading the game. Please refresh and try again.</div>
         )}
         {!isLoading && !hasError && (
-          <button
-            onClick={handlePlayClick}
-            disabled={isLoading}
-            className="splash-screen__button"
-          >
+          <button onClick={handlePlayClick} disabled={isLoading} className="splash-screen__button">
             Play!
           </button>
         )}

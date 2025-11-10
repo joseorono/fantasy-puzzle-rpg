@@ -2,7 +2,7 @@
  * Inventory and items constants
  */
 
-import type { ConsumableItemData, EquipmentItemData } from "~/types";
+import type { ConsumableItemData, EquipmentItemData } from '~/types';
 
 export const MAX_AMOUNT_PER_ITEM = 99;
 export const CRAFTING_FEE = 100;
@@ -283,4 +283,3 @@ export const ConsumableItems: ConsumableItemData[] = [
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
   },
 ];
-

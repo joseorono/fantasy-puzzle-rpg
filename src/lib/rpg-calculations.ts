@@ -19,7 +19,7 @@ import { calculatePercentage } from './math';
  * @returns Calculated max HP
  */
 export function calculateMaxHp(baseHp: number, vit: number, vitMultiplier: number = 5): number {
-  return Math.floor(baseHp + (vit * vitMultiplier));
+  return Math.floor(baseHp + vit * vitMultiplier);
 }
 
 /**
@@ -31,7 +31,7 @@ export function calculateMaxHp(baseHp: number, vit: number, vitMultiplier: numbe
  */
 export function calculateEntityMaxHp(entity: CharacterData | EnemyData): number {
   // Extract base HP by removing VIT contribution
-  const baseHp = entity.maxHp - (entity.stats.vit * entity.vitHpMultiplier);
+  const baseHp = entity.maxHp - entity.stats.vit * entity.vitHpMultiplier;
   return calculateMaxHp(baseHp, entity.stats.vit, entity.vitHpMultiplier);
 }
 
@@ -110,10 +110,10 @@ export function calculateMatchMultiplier(matchSize: number): number {
   // Early exits for common cases; 3-match is most frequent
   // Ugly but leverages branch prediction, doesn't allocate memory,
   // can be cached, and is optimized by V8.
-  if (matchSize === 3) return 1;   // 3: 1x
+  if (matchSize === 3) return 1; // 3: 1x
   if (matchSize === 4) return 1.5; // 4: 1.5x
   if (matchSize === 5) return 1.7; // 5: 1.7x
-  if (matchSize >= 6) return 2;    // 6+: 2x
+  if (matchSize >= 6) return 2; // 6+: 2x
   return 1;
 }
 
@@ -124,11 +124,7 @@ export function calculateMatchMultiplier(matchSize: number): number {
  * @param pow Power stat
  * @returns Calculated damage
  */
-export function calculateMatchDamage(
-  matchSize: number,
-  baseDamage: number = 10,
-  pow: number = 0
-): number {
+export function calculateMatchDamage(matchSize: number, baseDamage: number = 10, pow: number = 0): number {
   const matchMultiplier = calculateMatchMultiplier(matchSize);
   const damage = baseDamage * matchMultiplier;
 
@@ -152,7 +148,7 @@ export function calculateMatchDamage(
  * @returns Calculated interval in milliseconds (rounded)
  */
 export function calculateAttackInterval(baseInterval: number, spd: number): number {
-  return Math.floor(baseInterval / (1 + (spd / 100)));
+  return Math.floor(baseInterval / (1 + spd / 100));
 }
 
 /**
@@ -164,7 +160,7 @@ export function calculateAttackInterval(baseInterval: number, spd: number): numb
  * @returns Calculated cooldown in seconds
  */
 export function calculateCooldown(baseCooldown: number, spd: number): number {
-  return baseCooldown / (1 + (spd / 100));
+  return baseCooldown / (1 + spd / 100);
 }
 
 /**

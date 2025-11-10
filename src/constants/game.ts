@@ -18,10 +18,9 @@ export const MIN_MATCH_LENGTH = 3;
 // RPG Configuration
 export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 
-
 /**
  * Store configuration
-*/
+ */
 export const GAME_STORE_VERSION = 1;
 export const GAME_STORE_NAME = 'puzzlerpg';
 
@@ -130,7 +129,7 @@ const partyBase: CharacterData[] = [
   },
 ];
 
-export const INITIAL_PARTY: CharacterData[] = partyBase.map(char => ({
+export const INITIAL_PARTY: CharacterData[] = partyBase.map((char) => ({
   ...char,
   currentHp: char.maxHp,
 }));

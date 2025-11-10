@@ -4,18 +4,12 @@
  * - Overlay: Apply class to fixed overlay div
  * - GameScreen: Apply class to #game-screen element
  */
-import {
-  ANIMATION_CONFIG,
-  type GlobalAnimationType,
-} from '~/constants/animation-system';
+import { ANIMATION_CONFIG, type GlobalAnimationType } from '~/constants/animation-system';
 
 /**
  * Apply animation class to the appropriate element based on strategy
  */
-export function applyAnimation(
-  type: GlobalAnimationType,
-  overlayRef: HTMLDivElement | null
-): void {
+export function applyAnimation(type: GlobalAnimationType, overlayRef: HTMLDivElement | null): void {
   const config = ANIMATION_CONFIG[type];
 
   if (config.strategy === 'overlay') {
@@ -33,10 +27,7 @@ export function applyAnimation(
 /**
  * Remove animation class from the appropriate element
  */
-export function removeAnimation(
-  type: GlobalAnimationType,
-  overlayRef: HTMLDivElement | null
-): void {
+export function removeAnimation(type: GlobalAnimationType, overlayRef: HTMLDivElement | null): void {
   const config = ANIMATION_CONFIG[type];
 
   if (config.strategy === 'overlay') {

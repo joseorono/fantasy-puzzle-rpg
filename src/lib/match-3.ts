@@ -87,9 +87,9 @@ export function createInitialBoard(rows: number = BOARD_ROWS, cols: number = BOA
 export function swapOrbs(
   board: Orb[][],
   from: { row: number; col: number },
-  to: { row: number; col: number }
+  to: { row: number; col: number },
 ): Orb[][] {
-  const newBoard = board.map(row => [...row]);
+  const newBoard = board.map((row) => [...row]);
 
   // Swap orbs
   const temp = newBoard[from.row][from.col];
@@ -116,11 +116,10 @@ export function swapOrbs(
 export function isValidSwap(
   board: Orb[][],
   from: { row: number; col: number },
-  to: { row: number; col: number }
+  to: { row: number; col: number },
 ): boolean {
   const testBoard = swapOrbs(board, from, to);
-  return hasMatchAtPosition(testBoard, from.row, from.col) ||
-         hasMatchAtPosition(testBoard, to.row, to.col);
+  return hasMatchAtPosition(testBoard, from.row, from.col) || hasMatchAtPosition(testBoard, to.row, to.col);
 }
 
 /**
@@ -135,7 +134,7 @@ export function isValidSwap(
 export function removeMatchedOrbsAndRefill(board: Orb[][], matchedOrbIds: Set<string>): Orb[][] {
   if (matchedOrbIds.size === 0) return board;
 
-  const newBoard = board.map(row => [...row]);
+  const newBoard = board.map((row) => [...row]);
   const rows = newBoard.length;
   const cols = newBoard[0].length;
 

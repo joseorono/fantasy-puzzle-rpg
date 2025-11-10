@@ -74,7 +74,7 @@ describe('HP Calculations', () => {
       ...mockCharacter,
       stats: { ...mockCharacter.stats, vit: 20 },
       vitHpMultiplier: 6,
-      maxHp: 50 + (20 * 6), // 170
+      maxHp: 50 + 20 * 6, // 170
     };
     const result = rpg.calculateEntityMaxHp(tankChar);
     expect(result).toBe(170);
@@ -168,10 +168,10 @@ describe('Damage Calculations', () => {
 
   test('calculateMatchMultiplier returns correct multipliers', () => {
     // Normal cases
-    expect(rpg.calculateMatchMultiplier(3)).toBe(1);    // 3-match: 1x
-    expect(rpg.calculateMatchMultiplier(4)).toBe(1.5);  // 4-match: 1.5x
-    expect(rpg.calculateMatchMultiplier(5)).toBe(1.7);  // 5-match: 1.7x
-    
+    expect(rpg.calculateMatchMultiplier(3)).toBe(1); // 3-match: 1x
+    expect(rpg.calculateMatchMultiplier(4)).toBe(1.5); // 4-match: 1.5x
+    expect(rpg.calculateMatchMultiplier(5)).toBe(1.7); // 5-match: 1.7x
+
     // 6+ matches: 2x
     expect(rpg.calculateMatchMultiplier(6)).toBe(2);
     expect(rpg.calculateMatchMultiplier(7)).toBe(2);

@@ -44,4 +44,3 @@ class LoaderService {
 }
 
 export const loaderService = new LoaderService();
-

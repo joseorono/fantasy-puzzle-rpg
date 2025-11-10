@@ -5,9 +5,7 @@ import type { InventoryItem } from '~/lib/inventory';
 /**
  * Initial inventory state
  */
-const INITIAL_INVENTORY_STATE: InventoryItem[] = [
-  { itemId: 'potion', quantity: 3 },
-];
+const INITIAL_INVENTORY_STATE: InventoryItem[] = [{ itemId: 'potion', quantity: 3 }];
 
 /**
  * Create the inventory slice
@@ -28,7 +26,7 @@ export const createInventorySlice = (set: any): InventorySlice => ({
             state.inventory.items = addItemToInventory(state.inventory.items, itemId, quantity);
           },
           false,
-          'inventory/addItem'
+          'inventory/addItem',
         ),
 
       removeItem: (itemId: string, quantity: number = 1) =>
@@ -37,7 +35,7 @@ export const createInventorySlice = (set: any): InventorySlice => ({
             state.inventory.items = removeItemFromInventory(state.inventory.items, itemId, quantity);
           },
           false,
-          'inventory/removeItem'
+          'inventory/removeItem',
         ),
 
       setInventory: (items: InventoryItem[]) =>
@@ -46,7 +44,7 @@ export const createInventorySlice = (set: any): InventorySlice => ({
             state.inventory.items = items;
           },
           false,
-          'inventory/setInventory'
+          'inventory/setInventory',
         ),
 
       clearInventory: () =>
@@ -55,7 +53,7 @@ export const createInventorySlice = (set: any): InventorySlice => ({
             state.inventory.items = [];
           },
           false,
-          'inventory/clearInventory'
+          'inventory/clearInventory',
         ),
     },
   },
@@ -66,6 +64,6 @@ export const createInventorySlice = (set: any): InventorySlice => ({
         state.inventory.items = INITIAL_INVENTORY_STATE;
       },
       false,
-      'inventory/reset'
+      'inventory/reset',
     ),
 });

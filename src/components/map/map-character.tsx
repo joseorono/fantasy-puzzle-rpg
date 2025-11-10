@@ -105,4 +105,3 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
     </div>
   );
 }
-

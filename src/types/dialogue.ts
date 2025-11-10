@@ -1,5 +1,4 @@
-
-export type DialogueSide = "left" | "right" | "center";
+export type DialogueSide = 'left' | 'right' | 'center';
 
 export interface DialogueCharacter {
   id: string;

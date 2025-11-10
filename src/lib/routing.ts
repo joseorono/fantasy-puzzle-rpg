@@ -1,17 +1,9 @@
-import type {
-  RouterState,
-  ViewType,
-  ViewDataMap,
-  NavigationResult,
-} from '~/types/routing';
+import type { RouterState, ViewType, ViewDataMap, NavigationResult } from '~/types/routing';
 
 /**
  * Validates if a view transition is allowed
  */
-export function canNavigate(
-  _currentState: RouterState,
-  _targetView: ViewType
-): boolean {
+export function canNavigate(_currentState: RouterState, _targetView: ViewType): boolean {
   // Always allow navigation for now
   // Add custom validation logic here if needed (e.g., prevent going to battle from certain views)
   return true;
@@ -23,7 +15,7 @@ export function canNavigate(
 export function prepareNavigation<T extends ViewType>(
   currentState: RouterState,
   targetView: T,
-  viewData?: ViewDataMap[T]
+  viewData?: ViewDataMap[T],
 ): NavigationResult {
   if (!canNavigate(currentState, targetView)) {
     return {
@@ -76,10 +68,7 @@ export function prepareGoBack(currentState: RouterState): NavigationResult {
  * This directly jumps to a view without maintaining proper navigation state.
  * Prefer using direct navigation functions (goToTownHub, etc.) instead.
  */
-export function prepareGoBackTo(
-  currentState: RouterState,
-  targetView: ViewType
-): NavigationResult {
+export function prepareGoBackTo(currentState: RouterState, targetView: ViewType): NavigationResult {
   const nextState: RouterState = {
     currentView: targetView,
     previousView: currentState.currentView,
@@ -98,7 +87,7 @@ export function prepareGoBackTo(
 export function prepareSetViewData<T extends ViewType>(
   currentState: RouterState,
   view: T,
-  data: ViewDataMap[T]
+  data: ViewDataMap[T],
 ): RouterState {
   return {
     ...currentState,
@@ -112,10 +101,7 @@ export function prepareSetViewData<T extends ViewType>(
 /**
  * Gets view data for a specific view
  */
-export function getViewData<T extends ViewType>(
-  state: RouterState,
-  view: T
-): ViewDataMap[T] | undefined {
+export function getViewData<T extends ViewType>(state: RouterState, view: T): ViewDataMap[T] | undefined {
   return state.viewData[view] as ViewDataMap[T] | undefined;
 }
 
@@ -133,79 +119,55 @@ export function canGoBack(state: RouterState): boolean {
 /**
  * Navigate to town hub with required data
  */
-export function goToTownHub(
-  currentState: RouterState,
-  data: ViewDataMap['town-hub']
-): NavigationResult {
+export function goToTownHub(currentState: RouterState, data: ViewDataMap['town-hub']): NavigationResult {
   return prepareNavigation(currentState, 'town-hub', data);
 }
 
 /**
  * Navigate to battle demo with required data
  */
-export function goToBattleDemo(
-  currentState: RouterState,
-  data: ViewDataMap['battle-demo']
-): NavigationResult {
+export function goToBattleDemo(currentState: RouterState, data: ViewDataMap['battle-demo']): NavigationResult {
   return prepareNavigation(currentState, 'battle-demo', data);
 }
 
 /**
  * Navigate to map demo
  */
-export function goToMapDemo(
-  currentState: RouterState,
-  data?: ViewDataMap['map-demo']
-): NavigationResult {
+export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-demo']): NavigationResult {
   return prepareNavigation(currentState, 'map-demo', data ?? {});
 }
 
 /**
  * Navigate to dialogue demo
  */
-export function goToDialogueDemo(
-  currentState: RouterState,
-  data?: ViewDataMap['dialogue-demo']
-): NavigationResult {
+export function goToDialogueDemo(currentState: RouterState, data?: ViewDataMap['dialogue-demo']): NavigationResult {
   return prepareNavigation(currentState, 'dialogue-demo', data ?? {});
 }
 
 /**
  * Navigate to level up with required data
  */
-export function goToLevelUp(
-  currentState: RouterState,
-  data: ViewDataMap['level-up']
-): NavigationResult {
+export function goToLevelUp(currentState: RouterState, data: ViewDataMap['level-up']): NavigationResult {
   return prepareNavigation(currentState, 'level-up', data);
 }
 
 /**
  * Navigate to inventory
  */
-export function goToInventory(
-  currentState: RouterState,
-  data?: ViewDataMap['inventory']
-): NavigationResult {
+export function goToInventory(currentState: RouterState, data?: ViewDataMap['inventory']): NavigationResult {
   return prepareNavigation(currentState, 'inventory', data ?? {});
 }
 
 /**
  * Navigate to level up demo
  */
-export function goToLevelUpDemo(
-  currentState: RouterState,
-  data?: ViewDataMap['level-up-demo']
-): NavigationResult {
+export function goToLevelUpDemo(currentState: RouterState, data?: ViewDataMap['level-up-demo']): NavigationResult {
   return prepareNavigation(currentState, 'level-up-demo', data ?? {});
 }
 
 /**
  * Navigate to debug view
  */
-export function goToDebug(
-  currentState: RouterState,
-  data?: ViewDataMap['debug']
-): NavigationResult {
+export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']): NavigationResult {
   return prepareNavigation(currentState, 'debug', data ?? {});
 }

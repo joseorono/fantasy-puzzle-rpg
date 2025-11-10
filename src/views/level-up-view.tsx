@@ -337,4 +337,3 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
     </div>
   );
 }
-

@@ -43,7 +43,7 @@ export default function BattleScreen() {
 
     // Countdown timer (updates every second)
     countdownRef.current = setInterval(() => {
-      setNextAttackIn(prev => {
+      setNextAttackIn((prev) => {
         if (prev <= 1) return attackIntervalSeconds;
         return prev - 1;
       });
@@ -61,31 +61,29 @@ export default function BattleScreen() {
   }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Retro screen effect overlay */}
-      <div className="retro-screen fixed inset-0 pointer-events-none z-50" />
+      <div className="retro-screen pointer-events-none fixed inset-0 z-50" />
 
       {/* Main container - constrained max size */}
-      <div className="relative h-screen flex flex-col">
+      <div className="relative flex h-screen flex-col">
         {/* Header */}
-        <header className="relative z-10 bg-gradient-to-b from-gray-900/90 to-gray-900/70 border-b-2 border-gray-700 px-2 sm:px-3 py-1.5 sm:py-2">
+        <header className="relative z-10 border-b-2 border-gray-700 bg-gradient-to-b from-gray-900/90 to-gray-900/70 px-2 py-1.5 sm:px-3 sm:py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <h1 className="text-base sm:text-lg md:text-xl font-bold text-white pixel-font-alt">
-                ⚔️ BATTLE
-              </h1>
-              <div className="hidden sm:flex items-center gap-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
-                <span className="text-gray-400 text-xs pixel-font">TURN:</span>
-                <span className="text-white font-bold text-xs pixel-font">{battleState.turn}</span>
+              <h1 className="pixel-font-alt text-base font-bold text-white sm:text-lg md:text-xl">⚔️ BATTLE</h1>
+              <div className="hidden items-center gap-1 rounded border border-gray-700 bg-gray-800 px-2 py-1 sm:flex">
+                <span className="pixel-font text-xs text-gray-400">TURN:</span>
+                <span className="pixel-font text-xs font-bold text-white">{battleState.turn}</span>
               </div>
-              <div className="hidden sm:flex items-center gap-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
-                <span className="text-gray-400 text-xs pixel-font">SCORE:</span>
-                <span className="text-yellow-400 font-bold text-xs pixel-font">{battleState.score}</span>
+              <div className="hidden items-center gap-1 rounded border border-gray-700 bg-gray-800 px-2 py-1 sm:flex">
+                <span className="pixel-font text-xs text-gray-400">SCORE:</span>
+                <span className="pixel-font text-xs font-bold text-yellow-400">{battleState.score}</span>
               </div>
-              <div className="flex items-center gap-1 bg-red-900 px-2 py-1 rounded border border-red-700 animate-pulse">
-                <Swords className="w-3 h-3 text-red-300" />
-                <span className="text-red-200 text-xs pixel-font">ATK:</span>
-                <span className="text-white font-bold text-xs pixel-font">{nextAttackIn}s</span>
+              <div className="flex animate-pulse items-center gap-1 rounded border border-red-700 bg-red-900 px-2 py-1">
+                <Swords className="h-3 w-3 text-red-300" />
+                <span className="pixel-font text-xs text-red-200">ATK:</span>
+                <span className="pixel-font text-xs font-bold text-white">{nextAttackIn}s</span>
               </div>
             </div>
 
@@ -94,17 +92,21 @@ export default function BattleScreen() {
                 size="icon"
                 variant="outline"
                 onClick={() => setIsMuted(!isMuted)}
-                className="bg-gray-800 hover:bg-gray-700 h-7 w-7 sm:h-8 sm:w-8"
+                className="h-7 w-7 bg-gray-800 hover:bg-gray-700 sm:h-8 sm:w-8"
               >
-                {isMuted ? <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" /> : <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />}
+                {isMuted ? (
+                  <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />
+                ) : (
+                  <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                )}
               </Button>
               <Button
                 size="icon"
                 variant="outline"
                 onClick={() => resetBattle()}
-                className="bg-gray-800 hover:bg-gray-700 h-7 w-7 sm:h-8 sm:w-8"
+                className="h-7 w-7 bg-gray-800 hover:bg-gray-700 sm:h-8 sm:w-8"
               >
-                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
@@ -114,13 +116,13 @@ export default function BattleScreen() {
         <div className="battleContainer">
           <div className="battleArea">
             {/* Left/Top section - Enemy */}
-            <div className="enemySection relative border-b-4 lg:border-b-0 lg:border-r-4 border-gray-700">
-            {/* Animated background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-emerald-950/30" />
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 left-0 w-64 h-64 bg-green-500 rounded-full blur-3xl animate-pulse" />
-              <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-600 rounded-full blur-3xl animate-pulse delay-1000" />
-            </div>
+            <div className="enemySection relative border-b-4 border-gray-700 lg:border-r-4 lg:border-b-0">
+              {/* Animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-emerald-950/30" />
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 left-0 h-64 w-64 animate-pulse rounded-full bg-green-500 blur-3xl" />
+                <div className="absolute right-0 bottom-0 h-96 w-96 animate-pulse rounded-full bg-emerald-600 blur-3xl delay-1000" />
+              </div>
 
               <EnemyDisplay />
               <DamageNumber target="enemy" />
@@ -128,12 +130,12 @@ export default function BattleScreen() {
 
             {/* Right/Bottom section - Party */}
             <div className="partySection relative">
-            {/* Animated background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/10 to-purple-900/20" />
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl animate-pulse" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600 rounded-full blur-3xl animate-pulse delay-1000" />
-            </div>
+              {/* Animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/10 to-purple-900/20" />
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 h-64 w-64 animate-pulse rounded-full bg-blue-500 blur-3xl" />
+                <div className="absolute bottom-0 left-0 h-96 w-96 animate-pulse rounded-full bg-purple-600 blur-3xl delay-1000" />
+              </div>
 
               <PartyDisplay />
               <DamageNumber target="party" />
@@ -141,13 +143,13 @@ export default function BattleScreen() {
           </div>
 
           {/* Bottom section - Match-3 Board */}
-          <div className="boardSection relative bg-gradient-to-b from-amber-950/80 to-amber-900/60 border-t-2 border-amber-700 p-2 sm:p-3">
-          {/* Decorative background pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] pixel-art" />
-          </div>
+          <div className="boardSection relative border-t-2 border-amber-700 bg-gradient-to-b from-amber-950/80 to-amber-900/60 p-2 sm:p-3">
+            {/* Decorative background pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="pixel-art absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')]" />
+            </div>
 
-            <div className="relative max-w-xl mx-auto">
+            <div className="relative mx-auto max-w-xl">
               <Match3Board />
             </div>
           </div>
@@ -155,11 +157,11 @@ export default function BattleScreen() {
       </div>
 
       {/* Floating particles effect */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-30 animate-pulse"
+            className="absolute h-1 w-1 animate-pulse rounded-full bg-white opacity-30"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,

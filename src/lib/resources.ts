@@ -28,11 +28,13 @@ export function createResources(overrides: Partial<Resources> = {}): Resources {
  * @returns true if available resources meet or exceed cost
  */
 export function canAfford(available: Resources, cost: Resources): boolean {
-  return available.coins >= cost.coins &&
-         available.gold >= cost.gold &&
-         available.copper >= cost.copper &&
-         available.silver >= cost.silver &&
-         available.bronze >= cost.bronze;
+  return (
+    available.coins >= cost.coins &&
+    available.gold >= cost.gold &&
+    available.copper >= cost.copper &&
+    available.silver >= cost.silver &&
+    available.bronze >= cost.bronze
+  );
 }
 
 /**

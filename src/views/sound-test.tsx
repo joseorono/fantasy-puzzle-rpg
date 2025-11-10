@@ -16,7 +16,9 @@ interface LabeledSliderProps {
 function LabeledSlider({ label, value, min = 0, max = 1, step = 0.01, onChange }: LabeledSliderProps) {
   return (
     <div className="flex items-center gap-3">
-      <label className="w-40 text-sm">{label}: {value.toFixed(2)}</label>
+      <label className="w-40 text-sm">
+        {label}: {value.toFixed(2)}
+      </label>
       <div className="flex-1">
         <EightBitSlider
           min={min}
@@ -79,20 +81,20 @@ export default function SoundTestView() {
   const soundNameList = Object.values(SoundNames);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <h2 className="text-xl font-bold">Sound Service Test</h2>
 
-      <div className="flex gap-3 flex-wrap items-center">
-        <Button onClick={handlePreload} disabled={isPreloading || isAudioLoaded}> 
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={handlePreload} disabled={isPreloading || isAudioLoaded}>
           {isPreloading ? 'Preloading…' : isAudioLoaded ? 'Audio Loaded' : 'Preload Audio'}
         </Button>
         <Button onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</Button>
-        <div className="text-sm px-2 py-1 rounded bg-neutral-200 text-neutral-800">
+        <div className="rounded bg-neutral-200 px-2 py-1 text-sm text-neutral-800">
           Loaded: {isAudioLoaded ? 'yes' : 'no'}
         </div>
       </div>
 
-      <div className="space-y-3 max-w-xl">
+      <div className="max-w-xl space-y-3">
         <LabeledSlider label="Global Volume" value={globalVolume} onChange={handleSetGlobalVolume} />
         <LabeledSlider label="Play Volume" value={playVolume} onChange={setPlayVolume} />
         <LabeledSlider label="Play Variance" value={playVariance} onChange={setPlayVariance} />
@@ -100,10 +102,10 @@ export default function SoundTestView() {
 
       <div className="space-y-2">
         <h3 className="font-semibold">One-shot Sounds</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {soundNameList.map((alias) => (
-            <div key={alias} className="flex items-center justify-between gap-2 border rounded px-2 py-2">
-              <div className="text-sm truncate">{alias}</div>
+            <div key={alias} className="flex items-center justify-between gap-2 rounded border px-2 py-2">
+              <div className="truncate text-sm">{alias}</div>
               <Button
                 disabled={!isAudioLoaded || isPreloading}
                 onClick={async () => {
@@ -120,10 +122,10 @@ export default function SoundTestView() {
 
       <div className="space-y-2">
         <h3 className="font-semibold">Looping (Start/Stop)</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {soundNameList.map((alias) => (
-            <div key={alias + '-loop'} className="flex items-center justify-between gap-2 border rounded px-2 py-2">
-              <div className="text-sm truncate">{alias}</div>
+            <div key={alias + '-loop'} className="flex items-center justify-between gap-2 rounded border px-2 py-2">
+              <div className="truncate text-sm">{alias}</div>
               <div className="flex gap-2">
                 <Button
                   disabled={!isAudioLoaded || isPreloading}

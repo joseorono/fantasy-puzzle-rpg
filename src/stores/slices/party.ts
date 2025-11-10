@@ -1,6 +1,10 @@
 import type { PartySlice } from './party.types';
 import { INITIAL_PARTY } from '~/constants/game';
-import { fullyHealParty as fullyHealPartyLib, isPartyFullyHealed, damageAllPartyMembers as damageAllPartyMembersLib } from '~/lib/party-system';
+import {
+  fullyHealParty as fullyHealPartyLib,
+  isPartyFullyHealed,
+  damageAllPartyMembers as damageAllPartyMembersLib,
+} from '~/lib/party-system';
 import type { CharacterData } from '~/types/rpg-elements';
 
 /**
@@ -22,7 +26,7 @@ export const createPartySlice = (set: any): PartySlice => ({
             state.party.members = party;
           },
           false,
-          'party/setParty'
+          'party/setParty',
         ),
 
       fullyHealParty: () =>
@@ -31,7 +35,7 @@ export const createPartySlice = (set: any): PartySlice => ({
             state.party.members = fullyHealPartyLib(state.party.members);
           },
           false,
-          'party/fullyHealParty'
+          'party/fullyHealParty',
         ),
       isPartyFullyHealed: () =>
         set(
@@ -39,16 +43,16 @@ export const createPartySlice = (set: any): PartySlice => ({
             return isPartyFullyHealed(state.party.members);
           },
           false,
-          'party/isPartyFullyHealed'
+          'party/isPartyFullyHealed',
         ),
-        damageAllPartyMembers: (damage: number, canDie: boolean) =>
-          set(
-            (state: PartySlice) => {
-              state.party.members = damageAllPartyMembersLib(state.party.members, damage, canDie);
-            },
-            false,
-            'party/damageAllPartyMembers'
-          ),
+      damageAllPartyMembers: (damage: number, canDie: boolean) =>
+        set(
+          (state: PartySlice) => {
+            state.party.members = damageAllPartyMembersLib(state.party.members, damage, canDie);
+          },
+          false,
+          'party/damageAllPartyMembers',
+        ),
     },
   },
 
@@ -58,7 +62,6 @@ export const createPartySlice = (set: any): PartySlice => ({
         state.party.members = INITIAL_PARTY;
       },
       false,
-      'party/reset'
+      'party/reset',
     ),
 });
-

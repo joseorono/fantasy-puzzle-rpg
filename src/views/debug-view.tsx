@@ -10,7 +10,7 @@ import GlobalAnimationTest from '~/views/global-animation-test';
  * Debug view containing all test components
  */
 export default function DebugView() {
-  const dividerClasses = "my-4 border-b border-gray-200";
+  const dividerClasses = 'my-4 border-b border-gray-200';
   return (
     <>
       <TestView />

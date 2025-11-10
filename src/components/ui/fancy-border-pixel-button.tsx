@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEventHandler, ReactNode } from "react";
+import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
 
 interface FancyBorderPixelButtonProps {
   children?: ReactNode;
@@ -18,17 +18,17 @@ export function FancyBorderPixelButton({
   label,
   onClick,
   className,
-  fillColor = "#6f7f8a",
-  textColor = "#cdd6db",
-  frameOuterColor = "#a9905b",
-  frameInnerColor = "#d8c999",
+  fillColor = '#6f7f8a',
+  textColor = '#cdd6db',
+  frameOuterColor = '#a9905b',
+  frameInnerColor = '#d8c999',
   style,
 }: FancyBorderPixelButtonProps) {
   const cssVars = {
-    "--btn-fill": fillColor,
-    "--btn-text": textColor,
-    "--btn-frame-outer": frameOuterColor,
-    "--btn-frame-inner": frameInnerColor,
+    '--btn-fill': fillColor,
+    '--btn-text': textColor,
+    '--btn-frame-outer': frameOuterColor,
+    '--btn-frame-inner': frameInnerColor,
     ...style,
   } as CSSProperties & Record<string, string | number>;
 
@@ -38,11 +38,11 @@ export function FancyBorderPixelButton({
     <button
       onClick={onClick}
       className={[
-        "pixel-bevel-button pixel-rounded",
+        'pixel-bevel-button pixel-rounded',
         // default sizing similar to AA style; tweak in callers as needed
-        "px-3 py-1 text-[10px] leading-none uppercase",
-        className ?? "",
-      ].join(" ")}
+        'px-3 py-1 text-[10px] leading-none uppercase',
+        className ?? '',
+      ].join(' ')}
       style={cssVars}
     >
       {content}

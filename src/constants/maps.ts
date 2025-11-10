@@ -12,14 +12,7 @@ export const BOSS: TileType = 'boss';
 export const DUNGEON: TileType = 'dungeon';
 
 // Walkable tiles configuration
-export const WALKABLE_TILES: Set<TileType> = new Set([
-  GRASS,
-  ROAD,
-  TOWN,
-  BATTLE,
-  BOSS,
-  DUNGEON,
-]);
+export const WALKABLE_TILES: Set<TileType> = new Set([GRASS, ROAD, TOWN, BATTLE, BOSS, DUNGEON]);
 
 // Example map 1 - Expanded with more terrain variety
 export const MAP_1: MapData = [

@@ -32,9 +32,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const inventoryActions = useInventoryActions();
 
   // Filter equipment by type
-  const filteredEquipment = EquipmentItems.filter(
-    (item) => getEquipmentType(item.id) === selectedEquipmentType
-  );
+  const filteredEquipment = EquipmentItems.filter((item) => getEquipmentType(item.id) === selectedEquipmentType);
 
   const handleCraftItem = (item: EquipmentItemData) => {
     if (canAfford(resources, item.cost)) {
@@ -44,7 +42,11 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
     }
   };
 
-  const handleExchangeResources = (fromResource: keyof typeof resources, toResource: keyof typeof resources, amount: number) => {
+  const handleExchangeResources = (
+    fromResource: keyof typeof resources,
+    toResource: keyof typeof resources,
+    amount: number,
+  ) => {
     const cost = createResources({ [fromResource]: amount });
     if (canAfford(resources, cost)) {
       resourcesActions.reduceResources(cost);
@@ -80,22 +82,13 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
-        <Button
-          onClick={() => setSelectedTab('craft')}
-          className={selectedTab === 'craft' ? 'active' : ''}
-        >
+        <Button onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
           Craft
         </Button>
-        <Button
-          onClick={() => setSelectedTab('exchange')}
-          className={selectedTab === 'exchange' ? 'active' : ''}
-        >
+        <Button onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
           Exchange
         </Button>
-        <Button
-          onClick={() => setSelectedTab('melt')}
-          className={selectedTab === 'melt' ? 'active' : ''}
-        >
+        <Button onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
           Melt
         </Button>
       </div>
@@ -105,20 +98,18 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <div className="craft-section">
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
-            {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(
-              ([type, label]) => (
-                <Button
-                  key={type}
-                  onClick={() => {
-                    setSelectedEquipmentType(type);
-                    setSelectedItem(null);
-                  }}
-                  className={selectedEquipmentType === type ? 'active' : ''}
-                >
-                  {label}
-                </Button>
-              )
-            )}
+            {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
+              <Button
+                key={type}
+                onClick={() => {
+                  setSelectedEquipmentType(type);
+                  setSelectedItem(null);
+                }}
+                className={selectedEquipmentType === type ? 'active' : ''}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
 
           {/* Equipment Grid */}
@@ -184,10 +175,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 </div>
               </div>
 
-              <Button
-                onClick={() => handleCraftItem(selectedItem)}
-                disabled={!canAfford(resources, selectedItem.cost)}
-              >
+              <Button onClick={() => handleCraftItem(selectedItem)} disabled={!canAfford(resources, selectedItem.cost)}>
                 {canAfford(resources, selectedItem.cost) ? 'Craft' : 'Cannot Afford'}
               </Button>
             </div>
@@ -204,30 +192,21 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
           <div className="exchange-options">
             <div className="exchange-group">
               <h3>Copper to Silver</h3>
-              <Button
-                onClick={() => handleExchangeResources('copper', 'silver', 5)}
-                disabled={resources.copper < 5}
-              >
+              <Button onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
                 Exchange 5 Copper for 1 Silver
               </Button>
             </div>
 
             <div className="exchange-group">
               <h3>Bronze to Silver</h3>
-              <Button
-                onClick={() => handleExchangeResources('bronze', 'silver', 5)}
-                disabled={resources.bronze < 5}
-              >
+              <Button onClick={() => handleExchangeResources('bronze', 'silver', 5)} disabled={resources.bronze < 5}>
                 Exchange 5 Bronze for 1 Silver
               </Button>
             </div>
 
             <div className="exchange-group">
               <h3>Silver to Gold</h3>
-              <Button
-                onClick={() => handleExchangeResources('silver', 'gold', 5)}
-                disabled={resources.silver < 5}
-              >
+              <Button onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
                 Exchange 5 Silver for 1 Gold
               </Button>
             </div>
@@ -242,22 +221,13 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
           <p>Convert coins into gold (10 coins = 1 gold)</p>
 
           <div className="melt-options">
-            <Button
-              onClick={() => handleMeltCoinsToGold(10)}
-              disabled={resources.coins < 10}
-            >
+            <Button onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
               Melt 10 Coins → 1 Gold
             </Button>
-            <Button
-              onClick={() => handleMeltCoinsToGold(50)}
-              disabled={resources.coins < 50}
-            >
+            <Button onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
               Melt 50 Coins → 5 Gold
             </Button>
-            <Button
-              onClick={() => handleMeltCoinsToGold(100)}
-              disabled={resources.coins < 100}
-            >
+            <Button onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
               Melt 100 Coins → 10 Gold
             </Button>
           </div>

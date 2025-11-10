@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-  useEffect,
-} from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState, useEffect } from 'react';
 import { auxSleepFor } from '~/lib/utils';
 import { type GlobalAnimationType } from '~/constants/animation-system';
 import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
@@ -16,14 +9,8 @@ export type { GlobalAnimationType };
 type OnEndCallback = () => void;
 
 interface GlobalAnimationContextValue {
-  trigger: (
-    type: GlobalAnimationType,
-    onEnd?: OnEndCallback
-  ) => Promise<void>;
-  triggerSequence: (
-    sequence: GlobalAnimationType[],
-    onEnd?: OnEndCallback
-  ) => Promise<void>;
+  trigger: (type: GlobalAnimationType, onEnd?: OnEndCallback) => Promise<void>;
+  triggerSequence: (sequence: GlobalAnimationType[], onEnd?: OnEndCallback) => Promise<void>;
 }
 
 const GlobalAnimationContext = createContext<GlobalAnimationContextValue | null>(null);
@@ -33,20 +20,17 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
   const callbackRef = useRef<OnEndCallback | null>(null);
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
-  const trigger = useCallback(
-    async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
-      callbackRef.current = onEnd || null;
-      setAnimation(type);
-      // Wait for the animation duration
-      await auxSleepFor(getAnimationDuration(type));
-      // Execute callback and resolve
-      callbackRef.current?.();
-      resolveRef.current?.();
-      callbackRef.current = null;
-      resolveRef.current = null;
-    },
-    []
-  );
+  const trigger = useCallback(async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
+    callbackRef.current = onEnd || null;
+    setAnimation(type);
+    // Wait for the animation duration
+    await auxSleepFor(getAnimationDuration(type));
+    // Execute callback and resolve
+    callbackRef.current?.();
+    resolveRef.current?.();
+    callbackRef.current = null;
+    resolveRef.current = null;
+  }, []);
 
   const triggerSequence = useCallback(
     async (sequence: GlobalAnimationType[], onEnd?: OnEndCallback) => {
@@ -55,7 +39,7 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
       }
       onEnd?.();
     },
-    [trigger]
+    [trigger],
   );
 
   const handleAnimationEnd = useCallback(() => {
@@ -79,13 +63,7 @@ export function useGlobalAnimation() {
 
 // ------------------------------------------------------
 
-function GlobalAnimationsOverlay({
-  type,
-  onEnd,
-}: {
-  type: GlobalAnimationType | null;
-  onEnd: () => void;
-}) {
+function GlobalAnimationsOverlay({ type, onEnd }: { type: GlobalAnimationType | null; onEnd: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

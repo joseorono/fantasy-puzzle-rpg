@@ -15,7 +15,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
     if (lastDamage && lastDamage.target === target) {
       setDisplayDamage(lastDamage.amount);
       setVisible(true);
-      setAnimationKey(prev => prev + 1); // Force new animation
+      setAnimationKey((prev) => prev + 1); // Force new animation
 
       const timer = setTimeout(() => {
         setVisible(false);
@@ -32,7 +32,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
       {/* Main damage number with 8bitcn styling */}
       <div
         key={animationKey}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20 pointer-events-none damage-number"
+        className="damage-number pointer-events-none absolute top-1/4 left-1/2 z-20 -translate-x-1/2"
         style={{
           animation: 'damage-float 1.2s ease-out forwards',
         }}
@@ -48,8 +48,8 @@ export function DamageNumber({ target }: DamageNumberProps) {
       <div
         key={`flash-${animationKey}`}
         className={cn(
-          'absolute inset-0 pointer-events-none z-10',
-          target === 'enemy' ? 'bg-red-500/30' : 'bg-orange-500/30'
+          'pointer-events-none absolute inset-0 z-10',
+          target === 'enemy' ? 'bg-red-500/30' : 'bg-orange-500/30',
         )}
         style={{
           animation: 'flash-fade 0.3s ease-out forwards',
@@ -62,9 +62,9 @@ export function DamageNumber({ target }: DamageNumberProps) {
           <div
             key={`extra1-${animationKey}`}
             className={cn(
-              'absolute top-1/3 left-1/3 z-15 pointer-events-none',
-              'text-3xl md:text-4xl font-bold pixel-font-alt',
-              target === 'enemy' ? 'text-red-400' : 'text-orange-400'
+              'pointer-events-none absolute top-1/3 left-1/3 z-15',
+              'pixel-font-alt text-3xl font-bold md:text-4xl',
+              target === 'enemy' ? 'text-red-400' : 'text-orange-400',
             )}
             style={{
               textShadow: '2px 2px 0px rgba(0,0,0,0.6)',
@@ -77,9 +77,9 @@ export function DamageNumber({ target }: DamageNumberProps) {
           <div
             key={`extra2-${animationKey}`}
             className={cn(
-              'absolute top-1/3 right-1/3 z-15 pointer-events-none',
-              'text-3xl md:text-4xl font-bold pixel-font-alt',
-              target === 'enemy' ? 'text-red-400' : 'text-orange-400'
+              'pointer-events-none absolute top-1/3 right-1/3 z-15',
+              'pixel-font-alt text-3xl font-bold md:text-4xl',
+              target === 'enemy' ? 'text-red-400' : 'text-orange-400',
             )}
             style={{
               textShadow: '2px 2px 0px rgba(0,0,0,0.6)',

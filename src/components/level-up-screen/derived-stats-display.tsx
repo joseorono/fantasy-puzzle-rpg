@@ -71,4 +71,3 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
     </div>
   );
 }
-

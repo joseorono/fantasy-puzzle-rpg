@@ -45,7 +45,7 @@ export function DialogueTriggerModal({ isOpen, onAccept, onDecline }: DialogueTr
         >
           Event Discovered!
         </h2>
-        
+
         <p
           style={{
             color: '#fff',

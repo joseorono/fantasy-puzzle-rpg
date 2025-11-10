@@ -1,5 +1,5 @@
-import { cn } from "~/lib/utils";
-import type { DamageDisplayProps } from "~/types/components";
+import { cn } from '~/lib/utils';
+import type { DamageDisplayProps } from '~/types/components';
 
 export function DamageDisplay({ amount, type, className }: DamageDisplayProps) {
   const getTypeStyles = () => {
@@ -19,36 +19,37 @@ export function DamageDisplay({ amount, type, className }: DamageDisplayProps) {
     <div
       className={cn(
         'relative inline-flex items-center justify-center',
-        'px-4 py-2 rounded-none border-4',
-        'font-bold pixel-font-alt',
+        'rounded-none border-4 px-4 py-2',
+        'pixel-font-alt font-bold',
         'animate-in zoom-in duration-200',
         getTypeStyles(),
-        className
+        className,
       )}
       style={{
         imageRendering: 'pixelated',
       }}
     >
       {/* Pixelated border corners */}
-      <div className="absolute -top-1.5 w-1/2 left-1.5 h-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute -top-1.5 w-1/2 right-1.5 h-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute -bottom-1.5 w-1/2 left-1.5 h-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute -bottom-1.5 w-1/2 right-1.5 h-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute top-0 left-0 size-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute top-0 right-0 size-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute bottom-0 left-0 size-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute bottom-0 right-0 size-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5 bg-foreground dark:bg-ring" />
-      <div className="absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5 bg-foreground dark:bg-ring" />
+      <div className="bg-foreground dark:bg-ring absolute -top-1.5 left-1.5 h-1.5 w-1/2" />
+      <div className="bg-foreground dark:bg-ring absolute -top-1.5 right-1.5 h-1.5 w-1/2" />
+      <div className="bg-foreground dark:bg-ring absolute -bottom-1.5 left-1.5 h-1.5 w-1/2" />
+      <div className="bg-foreground dark:bg-ring absolute right-1.5 -bottom-1.5 h-1.5 w-1/2" />
+      <div className="bg-foreground dark:bg-ring absolute top-0 left-0 size-1.5" />
+      <div className="bg-foreground dark:bg-ring absolute top-0 right-0 size-1.5" />
+      <div className="bg-foreground dark:bg-ring absolute bottom-0 left-0 size-1.5" />
+      <div className="bg-foreground dark:bg-ring absolute right-0 bottom-0 size-1.5" />
+      <div className="bg-foreground dark:bg-ring absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5" />
+      <div className="bg-foreground dark:bg-ring absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5" />
 
       {/* Content */}
       <span className="relative z-10 text-2xl md:text-3xl">
-        {type === 'heal' ? '+' : '-'}{amount}
+        {type === 'heal' ? '+' : '-'}
+        {amount}
       </span>
 
       {/* Shadow effect */}
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-foreground/20" />
-      <div className="absolute bottom-0 left-0 w-full h-1.5 bg-foreground/20" />
+      <div className="bg-foreground/20 absolute top-0 left-0 h-1.5 w-full" />
+      <div className="bg-foreground/20 absolute bottom-0 left-0 h-1.5 w-full" />
     </div>
   );
 }

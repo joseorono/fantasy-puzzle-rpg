@@ -10,21 +10,25 @@ import type { CharacterData } from '~/types/rpg-elements';
  * @returns New party array with all members at full HP
  */
 export function fullyHealParty(party: CharacterData[]): CharacterData[] {
-  return party.map(member => ({
+  return party.map((member) => ({
     ...member,
     currentHp: member.maxHp,
   }));
 }
 
 export function isPartyFullyHealed(party: CharacterData[]): boolean {
-    return party.every(member => member.currentHp === member.maxHp);
+  return party.every((member) => member.currentHp === member.maxHp);
 }
 
-export function damageAllPartyMembers(party: CharacterData[], damage: number, canDie: boolean = false): CharacterData[] {
-    // Damage all party members by a given amount
-    // Useful for overworld & dungeon traps
-    const minHp = canDie ? 0 : 1;
-    return party.map(member => ({
+export function damageAllPartyMembers(
+  party: CharacterData[],
+  damage: number,
+  canDie: boolean = false,
+): CharacterData[] {
+  // Damage all party members by a given amount
+  // Useful for overworld & dungeon traps
+  const minHp = canDie ? 0 : 1;
+  return party.map((member) => ({
     ...member,
     currentHp: Math.max(minHp, member.currentHp - damage),
   }));

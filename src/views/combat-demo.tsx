@@ -1,7 +1,5 @@
-import React from 'react'
+import React from 'react';
 
 export default function combatDemo() {
-  return (
-    <div>combat-demo</div>
-  )
+  return <div>combat-demo</div>;
 }

@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export const noop = () => {};
@@ -20,7 +20,6 @@ export function shuffleArray(argArray: any[]) {
 export function auxSleepFor(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, Math.floor(ms)));
 }
-
 
 /**
  * Applies a function to each element of an object and returns a new object.
@@ -52,5 +51,3 @@ export function randomBool(probabilityOfTrue: number): boolean {
   }
   return Math.random() < probabilityOfTrue;
 }
-
-

@@ -2,7 +2,6 @@ export default function GraphicsLicensesDialogContent() {
   return (
     <>
       <div className="text-large flex flex-col justify-center gap-2 overflow-y-auto">
-
         <h2 className="text-2xl" id="graphics-assets-licences-and-credits-">
           Graphics Assets - Licences and Credits
         </h2>
@@ -20,16 +19,12 @@ export default function GraphicsLicensesDialogContent() {
 
         <p>
           Dwarven Cursor, CC-BY 3.0, by Jinn, commissioned by Jinn&nbsp;
-          <a href="https://opengameart.org/content/dwarven-cursor">
-            https://opengameart.org/content/dwarven-cursor
-          </a>
+          <a href="https://opengameart.org/content/dwarven-cursor">https://opengameart.org/content/dwarven-cursor</a>
         </p>
 
         <p>
           Witch portrait, CC-BY 3.0, JosephSeraph&nbsp;
-          <a href="https://opengameart.org/content/js-actor-witch">
-            https://opengameart.org/content/js-actor-witch
-          </a>
+          <a href="https://opengameart.org/content/js-actor-witch">https://opengameart.org/content/js-actor-witch</a>
         </p>
 
         <p>
@@ -38,7 +33,6 @@ export default function GraphicsLicensesDialogContent() {
             https://opengameart.org/content/medieval-game-button-pack
           </a>
         </p>
-
       </div>
     </>
   );

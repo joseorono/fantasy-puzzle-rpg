@@ -64,7 +64,7 @@ export default function ResourcesTestView() {
         copper: 50,
         silver: 25,
         bronze: 75,
-      })
+      }),
     );
   }
 
@@ -84,7 +84,7 @@ export default function ResourcesTestView() {
         copper: 25,
         silver: 10,
         bronze: 30,
-      })
+      }),
     );
   }
 
@@ -95,30 +95,30 @@ export default function ResourcesTestView() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">Resources Test</h1>
+    <div className="mx-auto max-w-4xl p-8">
+      <h1 className="mb-8 text-4xl font-bold">Resources Test</h1>
 
       {/* Current Resources Display */}
-      <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Current Resources</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-slate-800 p-4 rounded">
+      <div className="mb-8 rounded-lg bg-slate-100 p-6 dark:bg-slate-900">
+        <h2 className="mb-4 text-2xl font-semibold">Current Resources</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Coins</p>
             <p className="text-2xl font-bold">{resources.coins}</p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-4 rounded">
+          <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Gold</p>
             <p className="text-2xl font-bold text-yellow-600">{resources.gold}</p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-4 rounded">
+          <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Copper</p>
             <p className="text-2xl font-bold text-orange-600">{resources.copper}</p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-4 rounded">
+          <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Silver</p>
             <p className="text-2xl font-bold text-gray-400">{resources.silver}</p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-4 rounded">
+          <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Bronze</p>
             <p className="text-2xl font-bold text-amber-700">{resources.bronze}</p>
           </div>
@@ -127,8 +127,8 @@ export default function ResourcesTestView() {
 
       {/* Add Resources Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Add Resources</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <h2 className="mb-4 text-2xl font-semibold">Add Resources</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <Button onClick={handleAddCoins} variant="outline">
             + 100 Coins
           </Button>
@@ -152,8 +152,8 @@ export default function ResourcesTestView() {
 
       {/* Decrease Resources Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Decrease Resources</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <h2 className="mb-4 text-2xl font-semibold">Decrease Resources</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <Button onClick={handleDecreaseCoins} variant="outline">
             - 50 Coins
           </Button>
@@ -168,21 +168,21 @@ export default function ResourcesTestView() {
 
       {/* Products Section */}
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Shop - Test Purchases</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {FAKE_PRODUCTS.map(product => {
+        <h2 className="mb-4 text-2xl font-semibold">Shop - Test Purchases</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {FAKE_PRODUCTS.map((product) => {
             const isAffordable = canAfford(resources, product.cost);
             return (
               <div
                 key={product.id}
-                className={`p-4 rounded-lg border-2 ${
+                className={`rounded-lg border-2 p-4 ${
                   isAffordable
                     ? 'border-green-500 bg-green-50 dark:bg-green-950'
                     : 'border-red-500 bg-red-50 dark:bg-red-950'
                 }`}
               >
-                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-                <div className="text-sm mb-3 space-y-1">
+                <h3 className="mb-2 text-lg font-semibold">{product.name}</h3>
+                <div className="mb-3 space-y-1 text-sm">
                   {product.cost.coins > 0 && (
                     <p>
                       <span className="font-medium">Coins:</span> {product.cost.coins}

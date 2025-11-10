@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import type { DialogueLine, DialogueCharacter } from "~/types/dialogue";
-import { MAX_MESSAGE_HISTORY } from "~/constants/dialogue";
+import { useEffect, useRef } from 'react';
+import type { DialogueLine, DialogueCharacter } from '~/types/dialogue';
+import { MAX_MESSAGE_HISTORY } from '~/constants/dialogue';
 
 interface MessageHistoryProps {
   lines: DialogueLine[];
@@ -10,13 +10,7 @@ interface MessageHistoryProps {
   onClose: () => void;
 }
 
-export function MessageHistory({
-  lines,
-  characters,
-  currentIndex,
-  isOpen,
-  onClose,
-}: MessageHistoryProps) {
+export function MessageHistory({ lines, characters, currentIndex, isOpen, onClose }: MessageHistoryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -58,28 +52,18 @@ export function MessageHistory({
             const speakerName = getSpeakerName(line.speakerId);
             const isNarration = !speakerName;
             const prevLine = idx > 0 ? historyLines[idx - 1] : null;
-            const prevSpeakerName = prevLine
-              ? getSpeakerName(prevLine.speakerId)
-              : null;
+            const prevSpeakerName = prevLine ? getSpeakerName(prevLine.speakerId) : null;
             const isNarrationAfterDialogue = isNarration && prevSpeakerName;
 
             return (
               <div
                 key={line.id}
                 className={`mh-message ${
-                  isNarration ? "mh-narration" : "mh-dialogue"
-                } ${isNarrationAfterDialogue ? "mh-narration--after-dialogue" : ""}`}
+                  isNarration ? 'mh-narration' : 'mh-dialogue'
+                } ${isNarrationAfterDialogue ? 'mh-narration--after-dialogue' : ''}`}
               >
-                {speakerName && (
-                  <div className="mh-dialogue-name">{speakerName}</div>
-                )}
-                <div
-                  className={
-                    isNarration ? "mh-narration-text" : "mh-dialogue-message"
-                  }
-                >
-                  {line.text}
-                </div>
+                {speakerName && <div className="mh-dialogue-name">{speakerName}</div>}
+                <div className={isNarration ? 'mh-narration-text' : 'mh-dialogue-message'}>{line.text}</div>
               </div>
             );
           })}

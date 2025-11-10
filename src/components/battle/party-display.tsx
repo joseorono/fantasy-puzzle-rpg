@@ -52,9 +52,7 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
 
   // Show damage animation when this character is hit
   useEffect(() => {
-    if (lastDamage &&
-        lastDamage.target === 'party' &&
-        lastDamage.characterId === character.id) {
+    if (lastDamage && lastDamage.target === 'party' && lastDamage.characterId === character.id) {
       setDamageAmount(lastDamage.amount);
       setShowDamage(true);
       const timer = setTimeout(() => setShowDamage(false), 1000);
@@ -65,52 +63,50 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
   return (
     <div className="flex flex-col items-center gap-2">
       {/* Character sprite */}
-      <div className="relative group">
+      <div className="group relative">
         {/* Glow effect when skill is ready */}
-        {isSkillReady && (
-          <div className={cn('absolute inset-0 rounded-lg blur-xl animate-pulse', colors.glow)} />
-        )}
+        {isSkillReady && <div className={cn('absolute inset-0 animate-pulse rounded-lg blur-xl', colors.glow)} />}
 
         {/* Character container */}
         <div
           className={cn(
-            'relative w-14 h-16 sm:w-16 sm:h-20 md:w-18 md:h-22 rounded-lg border-2 sm:border-3 transition-all duration-300',
-            'hover:scale-110 cursor-pointer',
-            isDead ? 'bg-gray-600 border-gray-500 grayscale opacity-50' : colors.bg,
+            'relative h-16 w-14 rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-16 sm:border-3 md:h-22 md:w-18',
+            'cursor-pointer hover:scale-110',
+            isDead ? 'border-gray-500 bg-gray-600 opacity-50 grayscale' : colors.bg,
             !isDead && colors.border,
-            !isDead && isSkillReady && 'animate-bounce'
+            !isDead && isSkillReady && 'animate-bounce',
           )}
           style={{ imageRendering: 'pixelated' }}
         >
           {/* Chibi character representation */}
-          <div className={cn(
-            "absolute inset-0 flex flex-col items-center justify-center p-1",
-            isDead && "opacity-40"
-          )}>
+          <div className={cn('absolute inset-0 flex flex-col items-center justify-center p-1', isDead && 'opacity-40')}>
             {/* Head */}
-            <div className={cn(
-              "w-5 h-5 sm:w-6 sm:h-6 rounded-full border mb-0.5",
-              isDead ? "bg-gray-400 border-gray-500" : "bg-amber-200 border-amber-300"
-            )} />
+            <div
+              className={cn(
+                'mb-0.5 h-5 w-5 rounded-full border sm:h-6 sm:w-6',
+                isDead ? 'border-gray-500 bg-gray-400' : 'border-amber-300 bg-amber-200',
+              )}
+            />
 
             {/* Body with icon */}
-            <div className="flex-1 flex items-center justify-center">
-              <Icon className={cn(
-                "w-5 h-5 sm:w-6 sm:h-6 drop-shadow-lg",
-                isDead ? "text-gray-400" : "text-white"
-              )} strokeWidth={3} />
+            <div className="flex flex-1 items-center justify-center">
+              <Icon
+                className={cn('h-5 w-5 drop-shadow-lg sm:h-6 sm:w-6', isDead ? 'text-gray-400' : 'text-white')}
+                strokeWidth={3}
+              />
             </div>
 
             {/* Death indicator */}
             {isDead && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-2xl sm:text-3xl opacity-80">💀</div>
+                <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
               </div>
             )}
           </div>
 
           {/* Pixel border effect */}
-          <div className="absolute inset-0 rounded-lg pointer-events-none"
+          <div
+            className="pointer-events-none absolute inset-0 rounded-lg"
             style={{
               boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
             }}
@@ -118,32 +114,25 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
         </div>
 
         {/* HP indicator */}
-        <div className="absolute -top-1 -right-1 bg-gray-900 border border-gray-700 rounded px-1 py-0.5">
-          <span className="text-white text-[10px] font-bold pixel-font">
-            {character.currentHp}
-          </span>
+        <div className="absolute -top-1 -right-1 rounded border border-gray-700 bg-gray-900 px-1 py-0.5">
+          <span className="pixel-font text-[10px] font-bold text-white">{character.currentHp}</span>
         </div>
 
         {/* Damage number animation with 8bitcn styling */}
         {showDamage && (
-          <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 z-30 damage-number pointer-events-none">
-            <DamageDisplay
-              amount={damageAmount}
-              type="damage"
-              className="text-base sm:text-lg"
-            />
+          <div className="damage-number pointer-events-none absolute -top-8 left-1/2 z-30 -translate-x-1/2 sm:-top-10">
+            <DamageDisplay amount={damageAmount} type="damage" className="text-base sm:text-lg" />
           </div>
         )}
       </div>
 
       {/* Individual HP bar */}
-      <div className="w-full max-w-[70px] sm:max-w-[80px] mb-0.5">
-        <div className="relative h-1.5 sm:h-2 bg-gray-800 border border-gray-700 rounded-none">
+      <div className="mb-0.5 w-full max-w-[70px] sm:max-w-[80px]">
+        <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
           <div
             className={cn(
               'h-full transition-all duration-300',
-              healthPercentage > 50 ? 'bg-green-500' :
-              healthPercentage > 25 ? 'bg-yellow-500' : 'bg-red-500'
+              healthPercentage > 50 ? 'bg-green-500' : healthPercentage > 25 ? 'bg-yellow-500' : 'bg-red-500',
             )}
             style={{ width: `${healthPercentage}%` }}
           />
@@ -151,33 +140,32 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
       </div>
 
       {/* Character name */}
-      <div className={cn(
-        'text-[8px] sm:text-[10px] font-bold uppercase pixel-font',
-        isDead ? 'text-gray-500 line-through' : colors.text
-      )}>
+      <div
+        className={cn(
+          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          isDead ? 'text-gray-500 line-through' : colors.text,
+        )}
+      >
         {character.name}
         {isDead && <span className="ml-0.5 text-red-500">✝</span>}
       </div>
 
       {/* Skill cooldown bar */}
       <div className="w-full max-w-[70px] sm:max-w-[80px]">
-        <div className="text-[8px] sm:text-[9px] text-gray-400 mb-0.5 text-center pixel-font">
+        <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
           {isSkillReady ? 'READY!' : `CD: ${character.skillCooldown}`}
         </div>
-        <div className="relative h-2 sm:h-2.5 bg-gray-800 border border-gray-700 rounded-none">
+        <div className="relative h-2 rounded-none border border-gray-700 bg-gray-800 sm:h-2.5">
           <div
-            className={cn(
-              'h-full transition-all duration-300',
-              colors.cooldown,
-              isSkillReady && 'animate-pulse'
-            )}
+            className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           </div>
           {/* Pixel border effect */}
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="pointer-events-none absolute inset-0"
             style={{
               boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
             }}
@@ -187,7 +175,6 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
     </div>
   );
 }
-
 
 export function PartyDisplay() {
   const party = useAtomValue(partyAtom);
@@ -216,12 +203,12 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-between p-2 sm:p-3 md:p-4 bg-gradient-to-b from-slate-900/50 to-slate-950/70">
+    <div className="relative flex h-full flex-col items-center justify-between bg-gradient-to-b from-slate-900/50 to-slate-950/70 p-2 sm:p-3 md:p-4">
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
 
       {/* Party members grid */}
-      <div className="relative flex-1 flex items-center justify-center">
+      <div className="relative flex flex-1 items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} />
@@ -230,37 +217,37 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info */}
-      <div className="w-full max-w-xs px-2 relative z-10">
+      <div className="relative z-10 w-full max-w-xs px-2">
         <div className="text-center">
-          <h2 className="text-white pt-3 font-bold text-sm sm:text-base md:text-lg uppercase tracking-wider pixel-font">
+          <h2 className="pixel-font pt-3 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             ⚔️ HEROES ⚔️
           </h2>
         </div>
 
         {/* Party Health Bar */}
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-white font-bold text-xs sm:text-sm uppercase tracking-wider pixel-font">
-            HP
-          </span>
-          <span className="text-white font-bold text-xs sm:text-sm pixel-font">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
+          <span className="pixel-font text-xs font-bold text-white sm:text-sm">
             {Math.round(partyHealthPercentage)}%
           </span>
         </div>
-        <div className={cn(
-          "relative h-4 sm:h-5 md:h-6 bg-gray-800 border-2 sm:border-3 border-gray-700 rounded-none transition-all duration-300",
-          showPulse && "ring-4 ring-white/50 scale-105"
-        )}>
+        <div
+          className={cn(
+            'relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 transition-all duration-300 sm:h-5 sm:border-3 md:h-6',
+            showPulse && 'scale-105 ring-4 ring-white/50',
+          )}
+        >
           {/* Health bar fill */}
           <div
             className={cn(
-              'h-full transition-all duration-500 relative overflow-hidden bg-gradient-to-r',
+              'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
               getHealthBarColor(),
-              showPulse && 'animate-pulse'
+              showPulse && 'animate-pulse',
             )}
             style={{ width: `${partyHealthPercentage}%` }}
           >
             {/* Animated shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
             {/* Segmented bars effect */}
             <div className="absolute inset-0 flex">
@@ -270,7 +257,8 @@ export function PartyDisplay() {
             </div>
           </div>
           {/* Pixel border effect */}
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="pointer-events-none absolute inset-0"
             style={{
               boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2)',
             }}

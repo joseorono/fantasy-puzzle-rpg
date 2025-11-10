@@ -20,7 +20,7 @@ export const createResourcesSlice = (set: any): ResourcesSlice => ({
             state.resources = addResourcesLib(state.resources, toAdd);
           },
           false,
-          'resources/addResources'
+          'resources/addResources',
         ),
 
       reduceResources: (cost: Resources) =>
@@ -29,7 +29,7 @@ export const createResourcesSlice = (set: any): ResourcesSlice => ({
             state.resources = deductCost(state.resources, cost);
           },
           false,
-          'resources/reduceResources'
+          'resources/reduceResources',
         ),
 
       setResources: (resources: Resources) =>
@@ -38,7 +38,7 @@ export const createResourcesSlice = (set: any): ResourcesSlice => ({
             state.resources = resources;
           },
           false,
-          'resources/setResources'
+          'resources/setResources',
         ),
     },
   },
@@ -49,6 +49,6 @@ export const createResourcesSlice = (set: any): ResourcesSlice => ({
         state.resources = INITIAL_RESOURCES_STATE;
       },
       false,
-      'resources/reset'
+      'resources/reset',
     ),
 });
