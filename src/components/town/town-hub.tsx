@@ -36,12 +36,20 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
     }
     
     return (
-        <div>
-            <h1>Town Hub</h1>
-            <Button onClick={() => handleGoToPlace("blacksmith")}>Blacksmith</Button>
-            <Button onClick={() => handleGoToPlace("inn")}>Inn</Button>
-            <Button onClick={() => handleGoToPlace("item-store")}>Item Store</Button>
-            <Button onClick={onLeaveCallback}>Leave</Button>
+        <div className="town">
+            <div className="bg-town">
+            </div>
+            <div className="town-content flex flex-col items-center justify-center gap-4">
+                <h1>Town Hub</h1>
+                <div className="flex gap-4">
+                    <div className="leave-btn" onClick={onLeaveCallback}></div>
+                </div>
+                <div className="flex gap-4">
+                    <div className="plank-option" onClick={() => handleGoToPlace("blacksmith")}>Blacksmith</div>
+                    <div className="plank-option" onClick={() => handleGoToPlace("inn")}>Inn</div>
+                    <div className="plank-option" onClick={() => handleGoToPlace("item-store")}>Item Store</div>
+                </div>
+            </div>
         </div>
     );
 }

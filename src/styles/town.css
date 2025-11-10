@@ -1,0 +1,368 @@
+.town {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+.bg-town {
+    width: 100%;
+    height: 100%;
+    background-image: url('/public/assets/bg/bg-town-1.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); /* El efecto de desenfoque */
+    position: absolute;
+    z-index: 1;
+}
+.town-content {
+    position: relative;
+    z-index: 2;
+}
+
+.leave-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 128px;
+    height: 128px;
+    background-image: url('/public/assets/menu/back-button.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.leave-btn:hover {
+    background-image: url('/public/assets/menu/back-button-hover.png');
+}
+
+/* Blacksmith Styles */
+.blacksmith-container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    color: #fff;
+}
+
+.blacksmith-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.blacksmith-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.resources-display {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.blacksmith-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.blacksmith-tabs button {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.blacksmith-tabs button.active {
+    border-bottom-color: #ffd700;
+    color: #ffd700;
+}
+
+.blacksmith-tabs button:hover {
+    color: #ffd700;
+}
+
+/* Craft Section */
+.craft-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.equipment-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.equipment-filters button {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.equipment-filters button.active {
+    background: rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+.equipment-filters button:hover {
+    border-color: #ffd700;
+}
+
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    min-height: 200px;
+}
+
+.equipment-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.equipment-card:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 215, 0, 0.6);
+    transform: translateY(-2px);
+}
+
+.equipment-card.selected {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.equipment-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.equipment-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.equipment-name {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.equipment-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    flex: 1;
+}
+
+.equipment-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-label {
+    font-weight: bold;
+    color: rgba(255, 215, 0, 0.7);
+}
+
+.stat-value {
+    color: #fff;
+    min-width: 20px;
+    text-align: right;
+}
+
+.equipment-card-footer {
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.cost-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.7rem;
+}
+
+.cost-item {
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 2px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.cost-item.coins {
+    border-color: rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+}
+
+.cost-item.gold {
+    border-color: rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+}
+
+.cost-item.copper {
+    border-color: rgba(184, 115, 51, 0.5);
+    color: #b87333;
+}
+
+.cost-item.silver {
+    border-color: rgba(192, 192, 192, 0.5);
+    color: #c0c0c0;
+}
+
+.cost-item.bronze {
+    border-color: rgba(205, 127, 50, 0.5);
+    color: #cd7f32;
+}
+
+.equipment-details {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+}
+
+.equipment-details h2 {
+    margin: 0 0 10px 0;
+    color: #ffd700;
+}
+
+.equipment-details p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.cost-section {
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.cost-section h3 {
+    margin: 0 0 10px 0;
+    color: #ffd700;
+    font-size: 0.95rem;
+}
+
+.cost-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+/* Exchange Section */
+.exchange-section,
+.melt-section {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+
+.exchange-section h2,
+.melt-section h2 {
+    margin: 0 0 10px 0;
+    color: #ffd700;
+}
+
+.exchange-section p,
+.melt-section p {
+    margin: 0 0 20px 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.exchange-options,
+.melt-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.exchange-group {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.exchange-group h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.exchange-group button,
+.melt-options button {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.exchange-group button:hover:not(:disabled),
+.melt-options button:hover:not(:disabled) {
+    background: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.exchange-group button:disabled,
+.melt-options button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.5);
+}
