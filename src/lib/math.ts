@@ -10,6 +10,12 @@ export function randFloatInRange(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
+/**
+ * Randomly reduces a value given a variance.
+ * @param baseValue The base value to vary.
+ * @param variance The amount of variation to apply. Defaults to 0.
+ * @returns The downwarly varied value.
+ */
 export function getRandomlyVariedValue(baseValue: number, variance: number = 0) {
   // Only varies the number downwards
   if (variance === 0) {
