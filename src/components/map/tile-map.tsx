@@ -1,8 +1,6 @@
 // components/Tilemap.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TilemapProps } from '../../types/tilemap';
-// Character placeholder image path
-const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { DialogueScene } from '~/components/dialogue';
 import {
@@ -11,11 +9,10 @@ import {
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
 
-// Import your tilemap data (you might need to adjust the import)
 import tilemapData from '../map/demo-map';
 
-// Road tile IDs from the demo-map
-const ROAD_TILE_IDS = new Set([343, 344, 375, 376]);
+// Character placeholder image path
+const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 
 // Dialogue trigger coordinates
 const DIALOGUE_TRIGGERS = [
@@ -95,14 +92,11 @@ const Tilemap: React.FC<TilemapProps> = ({
     };
   }, []);
 
-  // Check if a position is on a road tile
+  // Check if a position is walkable (any non-zero tile in road layer)
   const isRoadTile = React.useCallback(
     (row: number, col: number): boolean => {
       const roadLayer = mapData.layers.find((layer) => layer.name === 'road');
-      if (!roadLayer) {
-        console.error('Road layer not found!');
-        return false;
-      }
+      if (!roadLayer) return false;
 
       // Check bounds
       if (row < 0 || row >= roadLayer.height) return false;
@@ -112,8 +106,8 @@ const Tilemap: React.FC<TilemapProps> = ({
       const dataIndex = row * roadLayer.width + col;
       const tileId = roadLayer.data[dataIndex];
 
-      // Check if it's a road tile
-      return ROAD_TILE_IDS.has(tileId);
+      // Any non-zero tile in the road layer is walkable
+      return tileId !== 0;
     },
     [mapData],
   );
@@ -122,23 +116,28 @@ const Tilemap: React.FC<TilemapProps> = ({
   useEffect(() => {
     const roadLayer = mapData.layers.find((layer) => layer.name === 'road');
     if (!roadLayer) {
+      console.error('❌ Road layer not found!');
       setDebugInfo('ERROR: Road layer not found!');
       return;
     }
 
-    // Search for first road tile
+    console.log(`🔍 Searching for road tiles in ${roadLayer.width}x${roadLayer.height} map...`);
+
+    // Search for first non-zero road tile
     for (let row = 0; row < roadLayer.height; row++) {
       for (let col = 0; col < roadLayer.width; col++) {
         const dataIndex = row * roadLayer.width + col;
         const tileId = roadLayer.data[dataIndex];
 
-        if (ROAD_TILE_IDS.has(tileId)) {
+        if (tileId !== 0) {
+          console.log(`✅ Starting position found: Row ${row}, Col ${col}, TileID ${tileId}`);
           setCharPosition({ row, col });
-          setDebugInfo(`Position: (${row}, ${col})`);
+          setDebugInfo(`On road at (${row}, ${col})`);
           return;
         }
       }
     }
+    console.error('❌ No road tiles found in map!');
     setDebugInfo('ERROR: No road tiles found!');
   }, [mapData]);
 
@@ -199,14 +198,19 @@ const Tilemap: React.FC<TilemapProps> = ({
         }
 
         // Only move if the new position is a road tile
-        if (isRoadTile(newRow, newCol)) {
-          setDebugInfo(`Position: (${newRow}, ${newCol})`);
+        const canMove = isRoadTile(newRow, newCol);
+        
+        if (canMove) {
+          console.log(`✅ Moving to (${newRow}, ${newCol})`);
+          setDebugInfo(`On road at (${newRow}, ${newCol})`);
 
           // Check for dialogue triggers
           checkDialogueTrigger(newRow, newCol);
 
           return { row: newRow, col: newCol };
         } else {
+          console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
+          setDebugInfo(`Blocked! Still at (${currentPos.row}, ${currentPos.col})`);
           return currentPos;
         }
       });
@@ -356,15 +360,17 @@ const Tilemap: React.FC<TilemapProps> = ({
 
   return (
     <>
-      <div className="tilemap-container">
-        <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
           <canvas
             ref={canvasRef}
             style={{
               border: '1px solid #ccc',
-              background: '#87CEEB', // Sky blue background for empty areas
+              background: '#87CEEB',
               imageRendering: 'pixelated',
               display: 'block',
+              width: `${mapData.width * tileSize}px`,
+              height: `${mapData.height * tileSize}px`,
             }}
           />
 
@@ -373,29 +379,30 @@ const Tilemap: React.FC<TilemapProps> = ({
             <div
               style={{
                 position: 'absolute',
-                left: `${charPosition.col * tileSize - tileSize}px`,
-                top: `${charPosition.row * tileSize - tileSize}px`,
-                width: `${tileSize * 2}px`,
-                height: `${tileSize * 3}px`,
+                left: `${charPosition.col * tileSize}px`,
+                top: `${charPosition.row * tileSize}px`,
+                width: `${tileSize}px`,
+                height: `${tileSize}px`,
                 backgroundImage: `url('${characterPlaceholder}')`,
-                backgroundSize: 'cover',
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
                 transition: 'left 0.2s ease-out, top 0.2s ease-out',
                 pointerEvents: 'none',
                 zIndex: 10,
-                boxShadow: '0 0 8px rgba(255, 255, 0, 0.3)',
-                border: '2px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               }}
             />
           )}
         </div>
 
-        <div className="character-info">
+        <div style={{ fontSize: '14px', fontFamily: 'monospace', minWidth: '250px', padding: '10px' }}>
           <strong>Character Position:</strong> Row {charPosition.row}, Col {charPosition.col}
           <br />
-          <strong>Controls:</strong> Arrow Keys or WASD to move (road tiles only)
+          <strong>Controls:</strong> Arrow Keys or WASD
           <br />
-          <strong>Debug:</strong> {debugInfo}
+          <strong>Status:</strong> {debugInfo}
         </div>
       </div>
 

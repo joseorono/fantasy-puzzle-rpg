@@ -95,7 +95,7 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
 
   return (
     <div
-      className="pointer-events-none absolute z-10 flex h-12 w-12 items-center justify-center transition-all duration-150 ease-out"
+      className="pointer-events-none absolute z-10 flex flex-1 items-center justify-center transition-all duration-150 ease-out"
       style={{
         top: `${topPosition}px`,
         left: `${leftPosition}px`,
@@ -105,3 +105,4 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
     </div>
   );
 }
+
