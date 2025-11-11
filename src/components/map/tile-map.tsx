@@ -3,11 +3,15 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TilemapProps } from '../../types/tilemap';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { DialogueScene } from '~/components/dialogue';
+import { NodeInteractionMenu } from './node-interaction-menu';
 import {
   TEST_DIALOGUE_SCENE,
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
+import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/map/interactive-nodes';
+import { useMapProgressActions } from '~/stores/game-store';
+import type { InteractiveMapNode } from '~/types/map-node';
 
 import tilemapData from '../map/demo-map';
 
@@ -48,6 +52,9 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
+  const [showNodeMenu, setShowNodeMenu] = useState(false);
+  const mapProgressActions = useMapProgressActions();
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -106,10 +113,21 @@ const Tilemap: React.FC<TilemapProps> = ({
       const dataIndex = row * roadLayer.width + col;
       const tileId = roadLayer.data[dataIndex];
 
+      // Check if there's a road tile
+      if (tileId === 0) return false;
+
+      // Check if there's an interactive node at this position
+      const node = getNodeAtPosition(row, col);
+      if (node && node.blocksMovement) {
+        // Node blocks movement - check if it's completed
+        const isCompleted = mapProgressActions.isNodeCompleted(node.type, node.id);
+        return isCompleted; // Can only walk through if completed
+      }
+
       // Any non-zero tile in the road layer is walkable
-      return tileId !== 0;
+      return true;
     },
-    [mapData],
+    [mapData, mapProgressActions],
   );
 
   // Verify starting position is valid on initialization
@@ -176,6 +194,16 @@ const Tilemap: React.FC<TilemapProps> = ({
     [visitedTriggers],
   );
 
+  // Check if character is standing on an interactive node
+  const checkInteractiveNode = React.useCallback((row: number, col: number) => {
+    const node = getNodeAtPosition(row, col);
+    if (node) {
+      console.log('Standing on interactive node:', node);
+      setCurrentNode(node);
+      setShowNodeMenu(true);
+    }
+  }, []);
+
   // Handle keyboard input for character movement
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -223,6 +251,9 @@ const Tilemap: React.FC<TilemapProps> = ({
           // Check for dialogue triggers
           checkDialogueTrigger(newRow, newCol);
 
+          // Check for interactive nodes
+          checkInteractiveNode(newRow, newCol);
+
           return { row: newRow, col: newCol };
         } else {
           console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
@@ -236,7 +267,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isRoadTile, checkDialogueTrigger]); // Add both dependencies
+  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode]);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
@@ -259,6 +290,65 @@ const Tilemap: React.FC<TilemapProps> = ({
   function handleDialogueComplete() {
     console.log('Dialogue scene completed!');
     setActiveDialogue(null);
+  }
+
+  // Node interaction handlers
+  function handleNodeFight() {
+    if (!currentNode) return;
+    console.log('Starting fight with:', currentNode.name);
+    
+    // Mark as completed (in real game, this would happen after winning the battle)
+    mapProgressActions.completeNode(currentNode.type, currentNode.id);
+    
+    // Close menu and clear current node
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+    
+    // Show feedback
+    alert(`Victory! You defeated ${currentNode.name}!`);
+    
+    // TODO: Navigate to battle screen instead of alert
+  }
+
+  function handleNodeEnter() {
+    if (!currentNode) return;
+    console.log('Entering:', currentNode.name);
+    
+    // Mark town as visited
+    if (currentNode.type === 'Town') {
+      mapProgressActions.completeNode(currentNode.type, currentNode.id);
+    }
+    
+    // Close menu and clear current node
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+    
+    // Show feedback
+    alert(`Entered ${currentNode.name}!`);
+    
+    // TODO: Navigate to town/dungeon screen instead of alert
+  }
+
+  function handleNodeViewDialogue() {
+    if (!currentNode || !currentNode.dialogueScene) return;
+    console.log('Viewing dialogue for:', currentNode.name);
+    // Map the dialogue scene key to the actual scene type
+    const sceneMap: Record<string, DialogueSceneType> = {
+      test: 'test',
+      simple: 'simple',
+      narrator: 'narrator',
+    };
+    const sceneType = sceneMap[currentNode.dialogueScene];
+    if (sceneType) {
+      setDialogueKey((k) => k + 1);
+      setActiveDialogue(sceneType);
+    }
+    // Don't close the menu - dialogue renders as overlay
+  }
+
+  function handleNodeMenuClose() {
+    setShowNodeMenu(false);
+    setCurrentNode(null);
   }
 
   // Draw the map and character
@@ -320,6 +410,81 @@ const Tilemap: React.FC<TilemapProps> = ({
       }
     });
 
+    // Draw interactive node markers
+    DEMO_MAP_NODES.forEach((node) => {
+      const isCompleted = mapProgressActions.isNodeCompleted(node.type, node.id);
+      const markerX = node.position.col * tileSize;
+      const markerY = node.position.row * tileSize;
+      const markerSize = tileSize;
+
+      // Calculate pulse effect (0.5 to 1.0)
+      const pulse = 0.5 + Math.sin(pulseAnimation) * 0.5;
+
+      // Color based on node type
+      let color: string;
+      let icon: string;
+      switch (node.type) {
+        case 'Battle':
+          color = isCompleted ? 'rgba(255, 100, 100, ' : 'rgba(220, 20, 60, ';
+          icon = '⚔';
+          break;
+        case 'Boss':
+          color = isCompleted ? 'rgba(200, 100, 255, ' : 'rgba(138, 43, 226, ';
+          icon = '👑';
+          break;
+        case 'Town':
+          color = isCompleted ? 'rgba(100, 150, 255, ' : 'rgba(30, 144, 255, ';
+          icon = '🏠';
+          break;
+        case 'Dungeon':
+          color = isCompleted ? 'rgba(150, 150, 150, ' : 'rgba(105, 105, 105, ';
+          icon = '💀';
+          break;
+      }
+
+      // Draw marker background
+      if (!isCompleted) {
+        // Pulsing glow for incomplete nodes
+        const glowSize = markerSize * (1 + pulse * 0.3);
+        const gradient = ctx.createRadialGradient(
+          markerX + markerSize / 2,
+          markerY + markerSize / 2,
+          0,
+          markerX + markerSize / 2,
+          markerY + markerSize / 2,
+          glowSize,
+        );
+        gradient.addColorStop(0, color + `${0.6 * pulse})`);
+        gradient.addColorStop(0.5, color + `${0.3 * pulse})`);
+        gradient.addColorStop(1, color + '0)');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(markerX - glowSize / 2, markerY - glowSize / 2, glowSize * 2, glowSize * 2);
+      }
+
+      // Draw marker background square
+      ctx.fillStyle = color + (isCompleted ? '0.4)' : '0.7)');
+      ctx.fillRect(markerX, markerY, markerSize, markerSize);
+
+      // Draw icon
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(icon, markerX + markerSize / 2, markerY + markerSize / 2);
+
+      // Draw border
+      ctx.strokeStyle = color + (isCompleted ? '0.6)' : `${0.8 + pulse * 0.2})`);
+      ctx.lineWidth = isCompleted ? 1 : 2;
+      ctx.strokeRect(markerX, markerY, markerSize, markerSize);
+
+      // Draw completion checkmark
+      if (isCompleted) {
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText('✓', markerX + markerSize - 4, markerY + 4);
+      }
+    });
+
     // Draw dialogue trigger markers
     DIALOGUE_TRIGGERS.forEach((trigger) => {
       const triggerKey = `${trigger.row},${trigger.col}`;
@@ -372,7 +537,17 @@ const Tilemap: React.FC<TilemapProps> = ({
         ctx.strokeRect(markerX, markerY, markerSize, markerSize);
       }
     });
-  }, [tileset, characterImage, mapData, tileSize, visibleLayers, charPosition, visitedTriggers, pulseAnimation]);
+  }, [
+    tileset,
+    characterImage,
+    mapData,
+    tileSize,
+    visibleLayers,
+    charPosition,
+    visitedTriggers,
+    pulseAnimation,
+    mapProgressActions,
+  ]);
 
   // Calculate scale factor for character positioning
   const canvasElement = canvasRef.current;
@@ -446,6 +621,18 @@ const Tilemap: React.FC<TilemapProps> = ({
         onAccept={handleAcceptDialogue}
         onDecline={handleDeclineDialogue}
       />
+
+      {/* Node interaction menu */}
+      {showNodeMenu && currentNode && (
+        <NodeInteractionMenu
+          node={currentNode}
+          isCompleted={mapProgressActions.isNodeCompleted(currentNode.type, currentNode.id)}
+          onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
+          onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
+          onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
+          onClose={handleNodeMenuClose}
+        />
+      )}
 
       {/* Active dialogue scenes */}
       {activeDialogue === 'test' && (

@@ -9,6 +9,8 @@ import type { InventorySlice } from './slices/inventory.types';
 import { createInventorySlice } from './slices/inventory';
 import type { RouterSlice } from './slices/router.types';
 import { createRouterSlice } from './slices/router';
+import type { MapProgressSlice } from './slices/map-progress.types';
+import { createMapProgressSlice } from './slices/map-progress';
 import { GAME_STORE_NAME } from '~/constants/game';
 
 /**
@@ -19,7 +21,8 @@ export type GameStore = {
   party: PartySlice['party'];
   inventory: InventorySlice['inventory'];
   router: RouterSlice['router'];
-  actions: ResourcesSlice['actions'] & PartySlice['actions'] & InventorySlice['actions'] & RouterSlice['actions'];
+  mapProgress: MapProgressSlice['mapProgress'];
+  actions: ResourcesSlice['actions'] & PartySlice['actions'] & InventorySlice['actions'] & RouterSlice['actions'] & MapProgressSlice['actions'];
   reset?: () => void;
 };
 
@@ -28,21 +31,24 @@ export type GameStore = {
  */
 export const useGameStore = create<GameStore>()(
   devtools(
-    immer((set) => {
+    immer((set, get) => {
       const resourcesSlice = createResourcesSlice(set);
       const partySlice = createPartySlice(set);
       const inventorySlice = createInventorySlice(set);
       const routerSlice = createRouterSlice(set);
+      const mapProgressSlice = createMapProgressSlice(set, get);
       return {
         ...resourcesSlice,
         ...partySlice,
         ...inventorySlice,
         ...routerSlice,
+        ...mapProgressSlice,
         actions: {
           ...resourcesSlice.actions,
           ...partySlice.actions,
           ...inventorySlice.actions,
           ...routerSlice.actions,
+          ...mapProgressSlice.actions,
         },
       };
     }),
@@ -102,3 +108,9 @@ export const useCurrentView = () => useGameStore((state) => state.router.current
  */
 export const useViewData = <T extends keyof import('~/types/routing').ViewDataMap>(view: T) =>
   useGameStore((state) => state.router.viewData[view]);
+
+/**
+ * Selector hooks for map progress slice
+ */
+export const useMapProgressState = () => useGameStore((state) => state.mapProgress);
+export const useMapProgressActions = () => useGameStore((state) => state.actions.mapProgress);
