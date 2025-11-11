@@ -3,7 +3,7 @@ import type { BaseSlice } from '../../types/store';
 /**
  * Map node types
  */
-export type MapNodeType = 'Town' | 'Battle' | 'Boss' | 'Dungeon';
+export type MapNodeType = 'Town' | 'Battle' | 'Boss' | 'Dungeon' | 'Quest' | 'Treasure' | 'Mystery' | 'Shop';
 
 /**
  * Progress tracking for individual nodes
@@ -20,6 +20,10 @@ export interface MapProgressState {
   bossesCompleted: NodeProgress;
   dungeonsCompleted: NodeProgress;
   townsVisited: NodeProgress;
+  questsCompleted: NodeProgress;
+  treasuresFound: NodeProgress;
+  mysteriesSolved: NodeProgress;
+  shopsVisited: NodeProgress;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Sword, Home, BookOpen, Crown, Skull } from 'lucide-react';
+import { Sword, Home, BookOpen, Crown, Skull, ScrollText, Gem, HelpCircle, ShoppingCart, Puzzle } from 'lucide-react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 
@@ -32,6 +32,12 @@ export function NodeInteractionMenu({
         return <Home className="h-5 w-5" />;
       case 'Dungeon':
         return <Skull className="h-5 w-5" />;
+      case 'Quest':
+        return <ScrollText className="h-5 w-5" />;
+      case 'Mystery':
+        return <HelpCircle className="h-5 w-5" />;
+      case 'Shop':
+        return <ShoppingCart className="h-5 w-5" />;
     }
   };
 
@@ -45,11 +51,21 @@ export function NodeInteractionMenu({
         return 'text-blue-600';
       case 'Dungeon':
         return 'text-gray-600';
+      case 'Quest':
+        return 'text-orange-600';
+      case 'Treasure':
+        return 'text-yellow-600';
+      case 'Mystery':
+        return 'text-purple-700';
+      case 'Shop':
+        return 'text-green-600';
     }
   };
 
   const canFight = node.type === 'Battle' || node.type === 'Boss';
-  const canEnter = node.type === 'Town' || node.type === 'Dungeon';
+  const canEnter = node.type === 'Town' || node.type === 'Dungeon' || node.type === 'Shop';
+  const canInteract =
+    node.type === 'Quest' || node.type === 'Treasure' || node.type === 'Mystery' || node.type === 'Puzzle';
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;
@@ -145,6 +161,18 @@ export function NodeInteractionMenu({
             <div className="flex items-center justify-center gap-1">
               <Home className="h-3 w-3" />
               <span>Enter</span>
+            </div>
+          </button>
+        )}
+
+        {canInteract && onEnter && (
+          <button
+            onClick={onEnter}
+            className="flex-1 rounded bg-purple-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-purple-700 active:scale-95"
+          >
+            <div className="flex items-center justify-center gap-1">
+              <BookOpen className="h-3 w-3" />
+              <span>Interact</span>
             </div>
           </button>
         )}

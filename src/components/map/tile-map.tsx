@@ -53,10 +53,10 @@ const Tilemap: React.FC<TilemapProps> = ({
   const animationFrameRef = useRef<number | undefined>(undefined);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
-  
+
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
-  
+
   // Get stable reference to isNodeCompleted function
   const isNodeCompleted = useGameStore((state) => state.actions.mapProgress.isNodeCompleted);
   const mapProgressActions = useMapProgressActions();
@@ -448,6 +448,22 @@ const Tilemap: React.FC<TilemapProps> = ({
           color = isCompleted ? 'rgba(150, 150, 150, ' : 'rgba(105, 105, 105, ';
           icon = '💀';
           break;
+        case 'Quest':
+          color = isCompleted ? 'rgba(255, 200, 100, ' : 'rgba(255, 165, 0, ';
+          icon = '📜';
+          break;
+        case 'Treasure':
+          color = isCompleted ? 'rgba(255, 255, 150, ' : 'rgba(255, 215, 0, ';
+          icon = '💎';
+          break;
+        case 'Mystery':
+          color = isCompleted ? 'rgba(200, 150, 255, ' : 'rgba(148, 0, 211, ';
+          icon = '❓';
+          break;
+        case 'Shop':
+          color = isCompleted ? 'rgba(150, 255, 150, ' : 'rgba(50, 205, 50, ';
+          icon = '🛒';
+          break;
       }
 
       // Draw marker background
@@ -565,8 +581,8 @@ const Tilemap: React.FC<TilemapProps> = ({
   const getCharacterScreenPosition = () => {
     if (!canvasElement) return { x: 0, y: 0 };
     const canvasRect = canvasElement.getBoundingClientRect();
-    const charX = (charPosition.col * tileSize) * scale;
-    const charY = (charPosition.row * tileSize) * scale;
+    const charX = charPosition.col * tileSize * scale;
+    const charY = charPosition.row * tileSize * scale;
     return {
       x: canvasRect.left + charX,
       y: canvasRect.top + charY,
