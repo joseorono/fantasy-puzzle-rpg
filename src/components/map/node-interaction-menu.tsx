@@ -1,4 +1,4 @@
-import { Sword, Home, BookOpen, Crown, Skull, ScrollText, Gem, HelpCircle, ShoppingCart, Puzzle } from 'lucide-react';
+import { Sword, Home, BookOpen, Crown, Skull, HelpCircle, ShoppingCart } from 'lucide-react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 
@@ -32,8 +32,6 @@ export function NodeInteractionMenu({
         return <Home className="h-5 w-5" />;
       case 'Dungeon':
         return <Skull className="h-5 w-5" />;
-      case 'Quest':
-        return <ScrollText className="h-5 w-5" />;
       case 'Mystery':
         return <HelpCircle className="h-5 w-5" />;
       case 'Shop':
@@ -51,8 +49,6 @@ export function NodeInteractionMenu({
         return 'text-blue-600';
       case 'Dungeon':
         return 'text-gray-600';
-      case 'Quest':
-        return 'text-orange-600';
       case 'Treasure':
         return 'text-yellow-600';
       case 'Mystery':
@@ -64,8 +60,7 @@ export function NodeInteractionMenu({
 
   const canFight = node.type === 'Battle' || node.type === 'Boss';
   const canEnter = node.type === 'Town' || node.type === 'Dungeon' || node.type === 'Shop';
-  const canInteract =
-    node.type === 'Quest' || node.type === 'Treasure' || node.type === 'Mystery' || node.type === 'Puzzle';
+  const canInteract = node.type === 'Treasure' || node.type === 'Mystery';
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;

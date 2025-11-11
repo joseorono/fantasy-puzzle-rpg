@@ -8,7 +8,6 @@ const INITIAL_MAP_PROGRESS_STATE = {
   bossesCompleted: {},
   dungeonsCompleted: {},
   townsVisited: {},
-  questsCompleted: {},
   treasuresFound: {},
   mysteriesSolved: {},
   shopsVisited: {},
@@ -41,9 +40,6 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
               case 'Town':
                 state.mapProgress.townsVisited[nodeId] = true;
                 break;
-              case 'Quest':
-                state.mapProgress.questsCompleted[nodeId] = true;
-                break;
               case 'Treasure':
                 state.mapProgress.treasuresFound[nodeId] = true;
                 break;
@@ -70,8 +66,6 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
             return state.mapProgress.dungeonsCompleted[nodeId] === true;
           case 'Town':
             return state.mapProgress.townsVisited[nodeId] === true;
-          case 'Quest':
-            return state.mapProgress.questsCompleted[nodeId] === true;
           case 'Treasure':
             return state.mapProgress.treasuresFound[nodeId] === true;
           case 'Mystery':

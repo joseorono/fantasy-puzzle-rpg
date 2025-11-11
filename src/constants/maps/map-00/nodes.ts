@@ -81,8 +81,8 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     description: 'A quiet village by the river',
   },
   {
-    id: 'quest_1',
-    type: 'Quest',
+    id: 'treasure_1',
+    type: 'Treasure',
     position: { row: 31, col: 16 },
     name: 'The Lost Artifact',
     dialogueScene: 'test',
