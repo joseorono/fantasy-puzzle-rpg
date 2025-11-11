@@ -1,4 +1,4 @@
-import { Sword, Home, BookOpen, X, Crown, Skull } from 'lucide-react';
+import { Sword, Home, BookOpen, Crown, Skull } from 'lucide-react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 
@@ -8,7 +8,7 @@ interface NodeInteractionMenuProps {
   onFight?: () => void;
   onEnter?: () => void;
   onViewDialogue?: () => void;
-  onClose: () => void;
+  characterPosition: { x: number; y: number }; // Pixel position on screen
 }
 
 /**
@@ -20,7 +20,7 @@ export function NodeInteractionMenu({
   onFight,
   onEnter,
   onViewDialogue,
-  onClose,
+  characterPosition,
 }: NodeInteractionMenuProps) {
   const getNodeIcon = (type: MapNodeType) => {
     switch (type) {
@@ -51,95 +51,115 @@ export function NodeInteractionMenu({
   const canFight = node.type === 'Battle' || node.type === 'Boss';
   const canEnter = node.type === 'Town' || node.type === 'Dungeon';
 
+  // Position tooltip to the right of character, or left if too close to edge
+  const tooltipWidth = 280;
+  const offset = 50;
+  const tooltipLeft = characterPosition.x + offset;
+  const shouldFlipLeft = tooltipLeft + tooltipWidth > window.innerWidth - 20;
+  const finalLeft = shouldFlipLeft ? characterPosition.x - tooltipWidth - offset : tooltipLeft;
+  const finalTop = Math.max(20, Math.min(characterPosition.y - 80, window.innerHeight - 350));
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative w-full max-w-md rounded-lg border-4 border-amber-900 bg-amber-50 p-6 shadow-2xl">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 rounded-full p-1 transition-colors hover:bg-amber-200"
-          aria-label="Close"
+    <div
+      className="fixed z-50 rounded-md border-2 border-amber-800 bg-amber-50 p-3 shadow-xl"
+      style={{
+        left: `${finalLeft}px`,
+        top: `${finalTop}px`,
+        width: `${tooltipWidth}px`,
+        pointerEvents: 'auto',
+      }}
+    >
+      {/* Arrow pointer pseudo-element */}
+      <div
+        className="absolute h-0 w-0 border-8"
+        style={{
+          [shouldFlipLeft ? 'right' : 'left']: '-16px',
+          top: '80px',
+          borderTopColor: 'transparent',
+          borderBottomColor: 'transparent',
+          [shouldFlipLeft ? 'borderLeftColor' : 'borderRightColor']: 'transparent',
+          [shouldFlipLeft ? 'borderRightColor' : 'borderLeftColor']: '#92400e',
+        }}
+      />
+      <div
+        className="absolute h-0 w-0 border-[7px]"
+        style={{
+          [shouldFlipLeft ? 'right' : 'left']: '-13px',
+          top: '81px',
+          borderTopColor: 'transparent',
+          borderBottomColor: 'transparent',
+          [shouldFlipLeft ? 'borderLeftColor' : 'borderRightColor']: 'transparent',
+          [shouldFlipLeft ? 'borderRightColor' : 'borderLeftColor']: '#fef3c7',
+        }}
+      />
+
+      {/* Node header */}
+      <div className="mb-2 flex items-center gap-2">
+        <div
+          className={`rounded-full bg-white p-1.5 shadow-sm ${isCompleted ? 'text-green-600' : getNodeColor(node.type)}`}
         >
-          <X className="h-5 w-5" />
-        </button>
-
-        {/* Node header */}
-        <div className="mb-4 flex items-center gap-3">
-          <div className={`rounded-full bg-white p-3 shadow-md ${getNodeColor(node.type)}`}>
-            {getNodeIcon(node.type)}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-amber-900">{node.name}</h2>
-            <p className="text-sm text-amber-700">{node.type}</p>
-          </div>
+          {getNodeIcon(node.type)}
         </div>
-
-        {/* Completion status */}
-        <div className="mb-4 rounded-md bg-white p-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-amber-900">Status:</span>
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-bold ${
-                isCompleted ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
-              }`}
-            >
-              {isCompleted ? 'Completed' : 'Not Completed'}
-            </span>
-          </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-bold text-amber-900">{node.name}</h2>
+          <p className="text-[10px] text-amber-700">{node.type}</p>
         </div>
+      </div>
 
-        {/* Description */}
-        {node.description && (
-          <div className="mb-4 rounded-md bg-white p-3 shadow-sm">
-            <p className="text-sm text-gray-700">{node.description}</p>
-          </div>
+      {/* Completion status */}
+      <div className="mb-2 rounded bg-white/60 px-2 py-1">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-semibold text-amber-900">Completed:</span>
+          <span className={`text-[10px] font-bold ${isCompleted ? 'text-green-600' : 'text-red-600'}`}>
+            {isCompleted ? 'True' : 'False'}
+          </span>
+        </div>
+      </div>
+
+      {/* Description */}
+      {node.description && (
+        <div className="mb-2 rounded bg-white/60 px-2 py-1.5">
+          <p className="text-[11px] leading-tight text-gray-700">{node.description}</p>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex gap-1.5">
+        {canFight && onFight && (
+          <button
+            onClick={onFight}
+            className="flex-1 rounded bg-red-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-red-700 active:scale-95"
+          >
+            <div className="flex items-center justify-center gap-1">
+              <Sword className="h-3 w-3" />
+              <span>Fight</span>
+            </div>
+          </button>
         )}
 
-        {/* Action buttons */}
-        <div className="space-y-2">
-          {canFight && onFight && (
-            <button
-              onClick={onFight}
-              className="w-full rounded-md bg-red-600 px-4 py-3 font-bold text-white shadow-md transition-all hover:bg-red-700 hover:shadow-lg active:scale-95"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Sword className="h-5 w-5" />
-                <span>{isCompleted ? 'Fight Again' : 'Fight'}</span>
-              </div>
-            </button>
-          )}
-
-          {canEnter && onEnter && (
-            <button
-              onClick={onEnter}
-              className="w-full rounded-md bg-blue-600 px-4 py-3 font-bold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Home className="h-5 w-5" />
-                <span>Enter {node.type}</span>
-              </div>
-            </button>
-          )}
-
-          {node.dialogueScene && onViewDialogue && (
-            <button
-              onClick={onViewDialogue}
-              className="w-full rounded-md bg-amber-600 px-4 py-3 font-bold text-white shadow-md transition-all hover:bg-amber-700 hover:shadow-lg active:scale-95"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                <span>View Dialogue</span>
-              </div>
-            </button>
-          )}
-
+        {canEnter && onEnter && (
           <button
-            onClick={onClose}
-            className="w-full rounded-md bg-gray-400 px-4 py-3 font-bold text-white shadow-md transition-all hover:bg-gray-500 hover:shadow-lg active:scale-95"
+            onClick={onEnter}
+            className="flex-1 rounded bg-blue-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
           >
-            Cancel
+            <div className="flex items-center justify-center gap-1">
+              <Home className="h-3 w-3" />
+              <span>Enter</span>
+            </div>
           </button>
-        </div>
+        )}
+
+        {node.dialogueScene && onViewDialogue && (
+          <button
+            onClick={onViewDialogue}
+            className="flex-1 rounded bg-amber-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-amber-700 active:scale-95"
+          >
+            <div className="flex items-center justify-center gap-1">
+              <BookOpen className="h-3 w-3" />
+              <span>Talk</span>
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );

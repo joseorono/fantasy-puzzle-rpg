@@ -250,6 +250,12 @@ const Tilemap: React.FC<TilemapProps> = ({
           console.log(`✅ Moving to (${newRow}, ${newCol})`);
           setDebugInfo(`On road at (${newRow}, ${newCol})`);
 
+          // Close node menu when moving
+          if (showNodeMenu) {
+            setShowNodeMenu(false);
+            setCurrentNode(null);
+          }
+
           // Check for dialogue triggers
           checkDialogueTrigger(newRow, newCol);
 
@@ -269,7 +275,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode]);
+  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, showNodeMenu]);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
@@ -555,6 +561,18 @@ const Tilemap: React.FC<TilemapProps> = ({
   const canvasElement = canvasRef.current;
   const scale = canvasElement ? canvasElement.offsetWidth / (mapData.width * tileSize) : 1;
 
+  // Calculate character screen position for tooltip
+  const getCharacterScreenPosition = () => {
+    if (!canvasElement) return { x: 0, y: 0 };
+    const canvasRect = canvasElement.getBoundingClientRect();
+    const charX = (charPosition.col * tileSize) * scale;
+    const charY = (charPosition.row * tileSize) * scale;
+    return {
+      x: canvasRect.left + charX,
+      y: canvasRect.top + charY,
+    };
+  };
+
   return (
     <>
       <div className="tilemap-container">
@@ -624,15 +642,15 @@ const Tilemap: React.FC<TilemapProps> = ({
         onDecline={handleDeclineDialogue}
       />
 
-      {/* Node interaction menu */}
-      {showNodeMenu && currentNode && (
+      {/* Node interaction tooltip */}
+      {showNodeMenu && currentNode && canvasElement && (
         <NodeInteractionMenu
           node={currentNode}
-          isCompleted={mapProgressActions.isNodeCompleted(currentNode.type, currentNode.id)}
+          isCompleted={isNodeCompleted(currentNode.type, currentNode.id)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
-          onClose={handleNodeMenuClose}
+          characterPosition={getCharacterScreenPosition()}
         />
       )}
 
