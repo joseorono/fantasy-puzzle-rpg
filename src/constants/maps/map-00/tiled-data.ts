@@ -1,4 +1,4 @@
-import type { TilemapData } from '../../types/tilemap';
+import type { TilemapData } from '../../../types/tilemap';
 
 export const demoMap: TilemapData = {
   compressionlevel: -1,

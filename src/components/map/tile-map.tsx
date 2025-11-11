@@ -9,11 +9,10 @@ import {
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
-import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/map/interactive-nodes';
-import { useMapProgressActions } from '~/stores/game-store';
+import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
+import { useMapProgressActions, useGameStore } from '~/stores/game-store';
 import type { InteractiveMapNode } from '~/types/map-node';
-
-import tilemapData from '../map/demo-map';
+import { demoMap } from '~/constants/maps/map-00/tiled-data';
 
 // Character placeholder image path
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
@@ -41,7 +40,7 @@ const Tilemap: React.FC<TilemapProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
-  const [mapData] = useState<TilemapData>(tilemapData);
+  const [mapData] = useState<TilemapData>(demoMap);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 58, col: 70 });
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -54,10 +53,13 @@ const Tilemap: React.FC<TilemapProps> = ({
   const animationFrameRef = useRef<number | undefined>(undefined);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
-  const mapProgressActions = useMapProgressActions();
-
+  
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
+  
+  // Get stable reference to isNodeCompleted function
+  const isNodeCompleted = useGameStore((state) => state.actions.mapProgress.isNodeCompleted);
+  const mapProgressActions = useMapProgressActions();
 
   // Pulse animation for markers
   useEffect(() => {
@@ -120,14 +122,14 @@ const Tilemap: React.FC<TilemapProps> = ({
       const node = getNodeAtPosition(row, col);
       if (node && node.blocksMovement) {
         // Node blocks movement - check if it's completed
-        const isCompleted = mapProgressActions.isNodeCompleted(node.type, node.id);
+        const isCompleted = isNodeCompleted(node.type, node.id);
         return isCompleted; // Can only walk through if completed
       }
 
       // Any non-zero tile in the road layer is walkable
       return true;
     },
-    [mapData, mapProgressActions],
+    [mapData, isNodeCompleted],
   );
 
   // Verify starting position is valid on initialization
@@ -296,36 +298,36 @@ const Tilemap: React.FC<TilemapProps> = ({
   function handleNodeFight() {
     if (!currentNode) return;
     console.log('Starting fight with:', currentNode.name);
-    
+
     // Mark as completed (in real game, this would happen after winning the battle)
     mapProgressActions.completeNode(currentNode.type, currentNode.id);
-    
+
     // Close menu and clear current node
     setShowNodeMenu(false);
     setCurrentNode(null);
-    
+
     // Show feedback
     alert(`Victory! You defeated ${currentNode.name}!`);
-    
+
     // TODO: Navigate to battle screen instead of alert
   }
 
   function handleNodeEnter() {
     if (!currentNode) return;
     console.log('Entering:', currentNode.name);
-    
+
     // Mark town as visited
     if (currentNode.type === 'Town') {
       mapProgressActions.completeNode(currentNode.type, currentNode.id);
     }
-    
+
     // Close menu and clear current node
     setShowNodeMenu(false);
     setCurrentNode(null);
-    
+
     // Show feedback
     alert(`Entered ${currentNode.name}!`);
-    
+
     // TODO: Navigate to town/dungeon screen instead of alert
   }
 
