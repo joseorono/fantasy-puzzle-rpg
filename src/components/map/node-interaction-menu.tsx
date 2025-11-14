@@ -34,8 +34,6 @@ export function NodeInteractionMenu({
         return <Skull className="h-5 w-5" />;
       case 'Mystery':
         return <HelpCircle className="h-5 w-5" />;
-      case 'Shop':
-        return <ShoppingCart className="h-5 w-5" />;
     }
   };
 
@@ -53,13 +51,11 @@ export function NodeInteractionMenu({
         return 'text-yellow-600';
       case 'Mystery':
         return 'text-purple-700';
-      case 'Shop':
-        return 'text-green-600';
     }
   };
 
   const canFight = node.type === 'Battle' || node.type === 'Boss';
-  const canEnter = node.type === 'Town' || node.type === 'Dungeon' || node.type === 'Shop';
+  const canEnter = node.type === 'Town' || node.type === 'Dungeon';
   const canInteract = node.type === 'Treasure' || node.type === 'Mystery';
 
   // Position tooltip to the right of character, or left if too close to edge

@@ -46,9 +46,6 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
               case 'Mystery':
                 state.mapProgress.mysteriesSolved[nodeId] = true;
                 break;
-              case 'Shop':
-                state.mapProgress.shopsVisited[nodeId] = true;
-                break;
             }
           },
           false,
@@ -70,8 +67,6 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
             return state.mapProgress.treasuresFound[nodeId] === true;
           case 'Mystery':
             return state.mapProgress.mysteriesSolved[nodeId] === true;
-          case 'Shop':
-            return state.mapProgress.shopsVisited[nodeId] === true;
           default:
             return false;
         }

@@ -130,14 +130,6 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     description: 'Highland warriors challenge you',
   },
   {
-    id: 'shop_1',
-    type: 'Shop',
-    position: { row: 16, col: 45 },
-    name: 'Wandering Merchant',
-    blocksMovement: false,
-    description: 'A traveling merchant with rare goods and equipment',
-  },
-  {
     id: 'battle_8',
     type: 'Battle',
     position: { row: 17, col: 52 },
