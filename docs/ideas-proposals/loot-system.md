@@ -17,3 +17,12 @@ Para el loot:
   - Cuando los pisas, obtienes los recursos, y el loot del piso desaparecese  no lo puedes agarrar mas, aun cuando entras y sales del mapa.
   - No podemos actualizar el store slice de los mapas a cada rato, deberia actualizarse todo al salir del mapa pero de resto hacerlo en estado global.
   - Al finalizar el mapa, debemos actualizar el store slice de los mapas.
+
+Para el loot table:
+El loot table tendria:
+
+EquipableItems: EquipableItemsData[],
+ConsumableItems: ConsumableItemsData[],
+resources: Resource
+
+Pueden ser arrays vacio y valores de Resources en 0 por default
