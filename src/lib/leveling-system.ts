@@ -36,33 +36,31 @@ export function calculateExpToNextLevel(level: number): number {
 /**
  * Returns a random stat from the character's potential stats
  *
- * @param character - The object representing the character
+ * @param potentialStats -  The object representing the character's potential stats
+ * @param statAmountToIncrease - The amount of stats to increase
  * @returns An object containing the stats to increase
  */
-export function getRandomPotentialStats(character: CharacterData, statAmountToIncrease: number): CoreRPGStats | null {
-  if (statAmountToIncrease === 0) return null;
-
-  // Retrieve all valid stats according to the character's potential stats
-  const validStats = Object.keys(character.potentialStats).filter(
-    (key) => character.potentialStats[key as StatType] > 0,
-  );
-  if (validStats.length === 0) return null;
-
+export function getRandomPotentialStats(potentialStats: CoreRPGStats, statAmountToIncrease: number): CoreRPGStats {
   let statIncreases = {
     pow: 0,
     vit: 0,
     spd: 0,
   };
+  if (statAmountToIncrease === 0) return statIncreases;
+
+  // Retrieve all valid stats according to the character's potential stats
+  const validStats = Object.keys(potentialStats).filter((key) => potentialStats[key as StatType] > 0);
+  if (validStats.length === 0) return statIncreases;
 
   // Increase the stats in the statIncreases object
   while (statAmountToIncrease > 0) {
     const randomStat = validStats[Math.floor(Math.random() * validStats.length)];
     statIncreases[randomStat as StatType] += 1;
     statAmountToIncrease -= 1;
-    character.potentialStats[randomStat as StatType] -= 1;
+    potentialStats[randomStat as StatType] -= 1;
 
     //Make sure potentialStats are not decreased below 0
-    if (character.potentialStats[randomStat as StatType] === 0) {
+    if (potentialStats[randomStat as StatType] === 0) {
       validStats.splice(validStats.indexOf(randomStat), 1);
     }
   }
