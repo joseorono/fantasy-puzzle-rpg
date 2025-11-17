@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
-import { levelUp } from '~/lib/leveling-system';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 
 interface LevelUpViewProps {
   character: CharacterData;
   availablePoints: number;
+  potentialStatPoints: CoreRPGStats;
   onConfirm: (allocatedStats: CoreRPGStats) => void;
   onBack: () => void;
 }
 
-export function LevelUpView({ character, availablePoints, onConfirm, onBack }: LevelUpViewProps) {
+export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm, onBack }: LevelUpViewProps) {
   const [pendingAllocations, setPendingAllocations] = useState<CoreRPGStats>({
     pow: 0,
     vit: 0,
@@ -21,6 +21,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
   const pointsSpent = pendingAllocations.pow + pendingAllocations.vit + pendingAllocations.spd;
   const pointsRemaining = availablePoints - pointsSpent;
   const hasPendingChanges = pointsSpent > 0;
+  const allPointsAllocated = pointsRemaining === 0;
 
   // Calculate preview stats
   const previewStats = {
@@ -51,7 +52,6 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
 
   function handleConfirm() {
     if (!hasPendingChanges) return;
-    levelUp(character, pendingAllocations, null, 1);
     onConfirm(pendingAllocations);
   }
 
@@ -147,21 +147,24 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
               <span className="stat-chip-label">POW</span>
               <span className="stat-chip-value">
                 {character.stats.pow}
-                {pendingAllocations.pow > 0 && ` +${pendingAllocations.pow}`}
+                {potentialStatPoints.pow + pendingAllocations.pow > 0 &&
+                  ` +${potentialStatPoints.pow + pendingAllocations.pow}`}
               </span>
             </div>
             <div className="stat-chip vit pixel-font text-xs">
               <span className="stat-chip-label">VIT</span>
               <span className="stat-chip-value">
                 {character.stats.vit}
-                {pendingAllocations.vit > 0 && ` +${pendingAllocations.vit}`}
+                {potentialStatPoints.vit + pendingAllocations.vit > 0 &&
+                  ` +${potentialStatPoints.vit + pendingAllocations.vit}`}
               </span>
             </div>
             <div className="stat-chip spd pixel-font text-xs">
               <span className="stat-chip-label">SPD</span>
               <span className="stat-chip-value">
                 {character.stats.spd}
-                {pendingAllocations.spd > 0 && ` +${pendingAllocations.spd}`}
+                {potentialStatPoints.spd + pendingAllocations.spd > 0 &&
+                  ` +${potentialStatPoints.spd + pendingAllocations.spd}`}
               </span>
             </div>
           </div>
@@ -189,10 +192,10 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
               </div>
               <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.pow}</span>
-                {pendingAllocations.pow > 0 && (
+                {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
                   <>
                     <span className="stat-arrow">→</span>
-                    <span className="stat-preview">{previewStats.pow}</span>
+                    <span className="stat-preview">{previewStats.pow + potentialStatPoints.pow}</span>
                   </>
                 )}
               </div>
@@ -232,17 +235,20 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
               </div>
               <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.vit}</span>
-                {pendingAllocations.vit > 0 && (
+                {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
                   <>
                     <span className="stat-arrow">→</span>
-                    <span className="stat-preview">{previewStats.vit}</span>
+                    <span className="stat-preview">{previewStats.vit + potentialStatPoints.vit}</span>
                   </>
                 )}
               </div>
             </div>
             <p className="stat-hint pixel-font text-xs">Increases your Maximum HP.</p>
             <div className="stat-meter">
-              <div className="stat-meter-fill vit" style={{ width: `${(previewStats.vit / maxStatValue) * 100}%` }} />
+              <div
+                className="stat-meter-fill vit"
+                style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / maxStatValue) * 100}%` }}
+              />
             </div>
             <div className="stat-controls">
               <button
@@ -275,17 +281,20 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
               </div>
               <div className="stat-values pixel-font text-xs">
                 <span className="stat-current">{character.stats.spd}</span>
-                {pendingAllocations.spd > 0 && (
+                {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
                   <>
                     <span className="stat-arrow">→</span>
-                    <span className="stat-preview">{previewStats.spd}</span>
+                    <span className="stat-preview">{previewStats.spd + potentialStatPoints.spd}</span>
                   </>
                 )}
               </div>
             </div>
             <p className="stat-hint pixel-font text-xs">Reduces skill cooldowns.</p>
             <div className="stat-meter">
-              <div className="stat-meter-fill spd" style={{ width: `${(previewStats.spd / maxStatValue) * 100}%` }} />
+              <div
+                className="stat-meter-fill spd"
+                style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / maxStatValue) * 100}%` }}
+              />
             </div>
             <div className="stat-controls">
               <button
@@ -312,7 +321,7 @@ export function LevelUpView({ character, availablePoints, onConfirm, onBack }: L
             <button
               className="action-button confirm pixel-font text-xs sm:text-sm"
               onClick={handleConfirm}
-              disabled={!hasPendingChanges}
+              disabled={!allPointsAllocated}
             >
               Confirm
             </button>
