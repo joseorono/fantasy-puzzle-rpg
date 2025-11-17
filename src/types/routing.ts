@@ -67,7 +67,7 @@ export interface InventoryViewData {
  * Data for level up demo view
  */
 export interface LevelUpDemoViewData {
-  // No specific data needed for demo
+  id: string;
 }
 
 /**

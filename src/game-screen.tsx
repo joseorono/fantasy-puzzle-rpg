@@ -12,6 +12,7 @@ import BattleScreen from '~/views/battle-screen';
 export default function GameScreen() {
   const currentView = useCurrentView();
   const townHubData = useViewData('town-hub');
+  const levelUpDemoData = useViewData('level-up-demo');
 
   switch (currentView) {
     case 'town-hub':
@@ -38,7 +39,7 @@ export default function GameScreen() {
       return <div>Level Up View - Coming Soon</div>;
 
     case 'level-up-demo':
-      return <LevelUpDemo />;
+      return <LevelUpDemo id={levelUpDemoData!.id} />;
 
     case 'inventory':
       // TODO: Implement inventory view

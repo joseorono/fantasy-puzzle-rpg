@@ -161,8 +161,8 @@ export function goToInventory(currentState: RouterState, data?: ViewDataMap['inv
 /**
  * Navigate to level up demo
  */
-export function goToLevelUpDemo(currentState: RouterState, data?: ViewDataMap['level-up-demo']): NavigationResult {
-  return prepareNavigation(currentState, 'level-up-demo', data ?? {});
+export function goToLevelUpDemo(currentState: RouterState, data: ViewDataMap['level-up-demo']): NavigationResult {
+  return prepareNavigation(currentState, 'level-up-demo', data);
 }
 
 /**

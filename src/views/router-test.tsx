@@ -5,7 +5,8 @@ import { useRouterActions, useRouterState } from '~/stores/game-store';
  */
 export default function RouterTestView() {
   const router = useRouterState();
-  const { goToTownHub, goToBattleDemo, goToMapDemo, goToDialogueDemo, goToDebug, goBack } = useRouterActions();
+  const { goToTownHub, goToBattleDemo, goToMapDemo, goToDialogueDemo, goToLevelUpDemo, goToDebug, goBack } =
+    useRouterActions();
 
   return (
     <div className="flex flex-col items-center justify-center gap-2.5 p-5">
@@ -58,6 +59,13 @@ export default function RouterTestView() {
           onClick={() => goToDialogueDemo({})}
         >
           Dialogue Demo
+        </button>
+
+        <button
+          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+          onClick={() => goToLevelUpDemo({ id: 'warrior' })}
+        >
+          Level Up Demo
         </button>
 
         <button
