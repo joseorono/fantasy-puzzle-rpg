@@ -1,54 +1,60 @@
 import { useState } from 'react';
 import { LevelUpView } from './level-up-view';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
-import { levelUp } from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
+import { useParty, usePartyActions } from '~/stores/game-store';
 
 /**
  * Demo component to test the Level Up Screen
  * This creates a mock character and allows testing the level up functionality
  */
-export function LevelUpDemo() {
-  const [character, setCharacter] = useState<CharacterData>({
-    id: 'demo-character',
-    name: 'Alistair the Brave',
-    class: 'warrior',
-    color: 'blue',
-    level: 1,
-    baseHp: 100,
-    maxHp: 200,
-    currentHp: 200,
-    stats: {
-      pow: 25,
-      vit: 20,
-      spd: 15,
-    },
-    potentialStats: {
-      pow: 50,
-      vit: 50,
-      spd: 50,
-    },
-    vitHpMultiplier: 5,
-    skillCooldown: 0,
-    maxCooldown: 8,
-    expToNextLevel: 1500,
-  });
-
+interface LevelUpDemoProps {
+  id: string;
+}
+export function LevelUpDemo({ id }: LevelUpDemoProps) {
+  const partyMembers = useParty();
+  const character = partyMembers.find((member) => member.id === id);
+  const partyActions = usePartyActions();
   const [availablePoints, setAvailablePoints] = useState(5);
   const [showDemo, setShowDemo] = useState(true);
 
+  if (!character) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'linear-gradient(135deg, #1a1d29 0%, #2d3142 100%)',
+          color: '#e0e0e0',
+          fontFamily: 'Cinzel, serif',
+          gap: '2rem',
+        }}
+      >
+        <h1 style={{ fontSize: '2rem', color: '#ffc107' }}>Character Not Found</h1>
+        <p>Could not find character with ID: {id}</p>
+      </div>
+    );
+  }
+
+  const charCopy: CharacterData = {
+    ...character,
+    stats: { ...character.stats },
+    potentialStats: { ...character.potentialStats },
+  };
+  const randomPotentialStats = getRandomPotentialStats(charCopy.potentialStats, 2);
+  console.log(randomPotentialStats);
   function handleConfirm(allocatedStats: CoreRPGStats) {
     // Apply the stat changes using the leveling system
-    setCharacter((prev) => {
-      const updatedCharacter = { ...prev };
-      levelUp(updatedCharacter, allocatedStats, null, 1);
-      return updatedCharacter;
-    });
+    const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, 1);
+
+    partyActions.updateCharacter(id, updatedCharacter);
 
     // Deduct the points
     const pointsUsed = allocatedStats.pow + allocatedStats.vit + allocatedStats.spd;
     setAvailablePoints((prev) => prev - pointsUsed);
-
-    alert(`Stats updated! POW +${allocatedStats.pow}, VIT +${allocatedStats.vit}, SPD +${allocatedStats.spd}`);
   }
 
   function handleBack() {
@@ -56,34 +62,11 @@ export function LevelUpDemo() {
   }
 
   function handleResetDemo() {
-    setCharacter({
-      id: 'demo-character',
-      name: 'Alistair the Brave',
-      class: 'warrior',
-      color: 'blue',
-      level: 5,
-      baseHp: 100,
-      maxHp: 200,
-      currentHp: 100,
-      stats: {
-        pow: 25,
-        vit: 20,
-        spd: 15,
-      },
-      potentialStats: {
-        pow: 50,
-        vit: 50,
-        spd: 50,
-      },
-      vitHpMultiplier: 5,
-      skillCooldown: 0,
-      maxCooldown: 8,
-      expToNextLevel: 1500,
-    });
+    if (!character) return;
+    partyActions.updateCharacter(id, character);
     setAvailablePoints(5);
     setShowDemo(true);
   }
-
   if (!showDemo) {
     return (
       <div
@@ -125,8 +108,9 @@ export function LevelUpDemo() {
 
   return (
     <LevelUpView
-      character={character}
+      character={charCopy}
       availablePoints={availablePoints}
+      potentialStatPoints={randomPotentialStats}
       onConfirm={handleConfirm}
       onBack={handleBack}
     />
