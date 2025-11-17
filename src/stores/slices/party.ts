@@ -29,6 +29,18 @@ export const createPartySlice = (set: any): PartySlice => ({
           'party/setParty',
         ),
 
+      updateCharacter: (characterId: string, character: CharacterData) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((member) => member.id === characterId);
+            if (index !== -1) {
+              state.party.members[index] = character;
+            }
+          },
+          false,
+          'party/updateCharacter',
+        ),
+
       fullyHealParty: () =>
         set(
           (state: PartySlice) => {
