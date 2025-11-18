@@ -3,16 +3,18 @@
     width: 100vw;
     position: relative;
 }
-.bg-town {
+.bg-town,
+.bg-shop {
     width: 100%;
     height: 100%;
     background-image: url('/assets/bg/bg-town-1.jpg');
     background-size: cover;
     background-position: center;
-    filter: blur(10px); /* El efecto de desenfoque */
+    filter: blur(6px);
     position: absolute;
     z-index: 1;
 }
+
 .town-content {
     position: relative;
     z-index: 3;
