@@ -24,13 +24,25 @@
     left: 20px;
     width: 128px;
     height: 128px;
-    background-image: url('/public/assets/menu/back-button.png');
+    background-image: url('/assets/menu/back-button.png');
     background-size: cover;
     background-position: center;
 }
 
 .leave-btn:hover {
-    background-image: url('/public/assets/menu/back-button-hover.png');
+    background-image: url('/assets/menu/back-button-hover.png');
+}
+
+.plank-option {
+    width: 260px;
+    height: 118px;
+    background-image: url('/assets/menu/plank-option-beta.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Blacksmith Styles */
