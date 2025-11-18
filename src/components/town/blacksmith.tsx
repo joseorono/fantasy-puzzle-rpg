@@ -112,39 +112,30 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             ))}
           </div>
 
-          {/* Equipment Grid */}
-          <div className="equipment-grid">
+          {/* Equipment List */}
+          <div className="equipment-list">
             {filteredEquipment.map((item) => (
               <div
                 key={item.id}
-                className={`equipment-card ${selectedItem?.id === item.id ? 'selected' : ''}`}
+                className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
                 onClick={() => setSelectedItem(item)}
               >
-                <div className="equipment-card-header">
-                  <div className="equipment-icon">⚔️</div>
-                  <div className="equipment-name">{item.name}</div>
-                </div>
-                <div className="equipment-card-body">
-                  <div className="equipment-stat">
-                    <span className="stat-label">POW:</span>
-                    <span className="stat-value">{item.pow}</span>
+                <div className="equipment-item-icon">⚔️</div>
+                <div className="equipment-item-content">
+                  <div className="equipment-item-header">
+                    <div className="equipment-item-name">{item.name}</div>
+                    <div className="equipment-item-cost">
+                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
+                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
+                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
+                      {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                    </div>
                   </div>
-                  <div className="equipment-stat">
-                    <span className="stat-label">VIT:</span>
-                    <span className="stat-value">{item.vit}</span>
-                  </div>
-                  <div className="equipment-stat">
-                    <span className="stat-label">SPD:</span>
-                    <span className="stat-value">{item.spd}</span>
-                  </div>
-                </div>
-                <div className="equipment-card-footer">
-                  <div className="cost-row">
-                    {item.cost.coins > 0 && <span className="cost-item coins">C:{item.cost.coins}</span>}
-                    {item.cost.gold > 0 && <span className="cost-item gold">G:{item.cost.gold}</span>}
-                    {item.cost.copper > 0 && <span className="cost-item copper">Cu:{item.cost.copper}</span>}
-                    {item.cost.silver > 0 && <span className="cost-item silver">S:{item.cost.silver}</span>}
-                    {item.cost.bronze > 0 && <span className="cost-item bronze">B:{item.cost.bronze}</span>}
+                  <div className="equipment-item-description">{item.description}</div>
+                  <div className="equipment-item-stats">
+                    <span className="stat-badge">POW: {item.pow}</span>
+                    <span className="stat-badge">VIT: {item.vit}</span>
+                    <span className="stat-badge">SPD: {item.spd}</span>
                   </div>
                 </div>
               </div>

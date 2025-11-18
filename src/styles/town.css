@@ -152,132 +152,136 @@
     border-color: #ffd700;
 }
 
-.equipment-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+/* Equipment List - Vertical Layout */
+.equipment-list {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     padding: 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     min-height: 200px;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
-.equipment-card {
+.equipment-list-item {
     background: rgba(0, 0, 0, 0.4);
     border: 2px solid rgba(255, 215, 0, 0.3);
     border-radius: 4px;
     display: flex;
-    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    overflow: hidden;
+    align-items: flex-start;
 }
 
-.equipment-card:hover {
+.equipment-list-item:hover {
     background: rgba(0, 0, 0, 0.5);
     border-color: rgba(255, 215, 0, 0.6);
-    transform: translateY(-2px);
+    transform: translateX(4px);
 }
 
-.equipment-card.selected {
+.equipment-list-item.selected {
     background: rgba(255, 215, 0, 0.15);
     border-color: #ffd700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
-.equipment-card-header {
+.equipment-item-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
     background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 4px;
 }
 
-.equipment-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
+.equipment-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.equipment-name {
+.equipment-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.equipment-item-name {
     font-weight: bold;
     color: #ffd700;
-    font-size: 0.9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1rem;
+}
+
+.equipment-item-cost {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.cost-badge {
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: bold;
     white-space: nowrap;
 }
 
-.equipment-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    flex: 1;
-}
-
-.equipment-stat {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.stat-label {
-    font-weight: bold;
-    color: rgba(255, 215, 0, 0.7);
-}
-
-.stat-value {
-    color: #fff;
-    min-width: 20px;
-    text-align: right;
-}
-
-.equipment-card-footer {
-    padding: 8px 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-top: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.cost-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    font-size: 0.7rem;
-}
-
-.cost-item {
-    padding: 2px 6px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 2px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.cost-item.coins {
-    border-color: rgba(255, 215, 0, 0.5);
+.cost-badge.gold {
+    border-color: rgba(255, 215, 0, 0.6);
     color: #ffd700;
 }
 
-.cost-item.gold {
-    border-color: rgba(255, 215, 0, 0.5);
-    color: #ffd700;
-}
-
-.cost-item.copper {
-    border-color: rgba(184, 115, 51, 0.5);
-    color: #b87333;
-}
-
-.cost-item.silver {
-    border-color: rgba(192, 192, 192, 0.5);
+.cost-badge.silver {
+    border-color: rgba(192, 192, 192, 0.6);
     color: #c0c0c0;
 }
 
-.cost-item.bronze {
-    border-color: rgba(205, 127, 50, 0.5);
+.cost-badge.copper {
+    border-color: rgba(184, 115, 51, 0.6);
+    color: #b87333;
+}
+
+.cost-badge.bronze {
+    border-color: rgba(205, 127, 50, 0.6);
     color: #cd7f32;
+}
+
+.equipment-item-description {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.equipment-item-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .equipment-details {
