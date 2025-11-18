@@ -397,3 +397,224 @@
     cursor: not-allowed;
     color: rgba(255, 255, 255, 0.5);
 }
+
+/* Inn Styles */
+.inn-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inn-info {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.inn-info h2 {
+    margin: 0 0 10px 0;
+    color: #ffd700;
+    font-size: 1.5rem;
+}
+
+.inn-info p {
+    margin: 0 0 15px 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.party-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.status-label {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-value {
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 3px;
+}
+
+.status-value.healthy {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.2);
+}
+
+.status-value.injured {
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.2);
+}
+
+.party-members-list {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.party-members-list h3 {
+    margin: 0 0 15px 0;
+    color: #ffd700;
+    font-size: 1.2rem;
+}
+
+.party-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.party-member-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.party-member-card:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-name {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 1rem;
+}
+
+.member-class {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: capitalize;
+}
+
+.member-level {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2px 8px;
+    background: rgba(255, 215, 0, 0.2);
+    border-radius: 3px;
+}
+
+.member-hp {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hp-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.hp-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.hp-bar {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.hp-bar.full {
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+}
+
+.hp-bar.medium {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.hp-bar.low {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.inn-actions {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.heal-button {
+    min-width: 250px;
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
+/* Item Store Styles */
+.store-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.store-info {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.store-info h2 {
+    margin: 0 0 10px 0;
+    color: #ffd700;
+    font-size: 1.5rem;
+}
+
+.store-info p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.item-count {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: normal;
+}
+
+.item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.buy-button {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+}
+
+.inventory-info {
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}

@@ -27,7 +27,7 @@ export default function RouterTestView() {
             goToTownHub({
               innCost: { coins: 20, gold: 0, silver: 0, bronze: 0, copper: 0 },
               itemsForSell: ['potion', 'sword'],
-              onLeaveCallback: () => {},
+              onLeaveCallback: () => goBack(),
             })
           }
         >
