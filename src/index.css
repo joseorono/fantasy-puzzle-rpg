@@ -185,6 +185,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground font-body;
     text-rendering: optimizeSpeed;
@@ -198,6 +199,12 @@
     background-color: brown;
   }
 
+  *,
+  *::before,
+  *::after {
+    image-rendering: pixelated;
+  }
+  
   #game-screen {
     background-color: var(--background);
     position: relative;
