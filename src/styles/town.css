@@ -63,8 +63,8 @@
     filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.2));
 }
 
-/* Blacksmith Styles */
-.blacksmith-container {
+/* Shop Styles (Generic for all shops) */
+.shop-container {
     padding: 20px;
     max-width: 1000px;
     margin: 0 auto;
@@ -73,6 +73,29 @@
     color: #fff;
 }
 
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.shop-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.blacksmith-container {
+    @extend .shop-container;
+}
+
+.blacksmith-header {
+    @extend .shop-header;
+}
+
+.blacksmith-header h1 {
+    @extend .shop-header h1;
+}
 .blacksmith-header {
     display: flex;
     justify-content: space-between;

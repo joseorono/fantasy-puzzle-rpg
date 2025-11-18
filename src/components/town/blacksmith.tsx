@@ -70,8 +70,8 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   };
 
   return (
-    <div className="blacksmith-container">
-      <div className="blacksmith-header">
+    <div className="shop-container">
+      <div className="shop-header">
         <Button onClick={onLeaveCallback}>Leave</Button>
         <h1>Blacksmith</h1>
       </div>
@@ -120,11 +120,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
           {/* Equipment List */}
           <div className="equipment-list">
             {filteredEquipment.map((item) => (
-              <div
-                key={item.id}
-                className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
-                onClick={() => setSelectedItem(item)}
-              >
+              <div key={item.id} className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}>
                 <div className="equipment-item-icon">⚔️</div>
                 <div className="equipment-item-content">
                   <div className="equipment-item-header">
@@ -141,41 +137,24 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                     <span className="stat-badge">POW: {item.pow}</span>
                     <span className="stat-badge">VIT: {item.vit}</span>
                     <span className="stat-badge">SPD: {item.spd}</span>
+                    {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
+                  </div>
+                  <div className="item-actions">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCraftItem(item);
+                      }}
+                      disabled={!canAfford(resources, item.cost)}
+                      className="craft-button"
+                    >
+                      {canAfford(resources, item.cost) ? 'Craft' : 'Cannot Afford'}
+                    </Button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Equipment Details */}
-          {selectedItem && (
-            <div className="equipment-details">
-              <h2>{selectedItem.name}</h2>
-              <p>{selectedItem.description}</p>
-
-              <div className="stats">
-                <div>Power: {selectedItem.pow}</div>
-                <div>Vitality: {selectedItem.vit}</div>
-                <div>Speed: {selectedItem.spd}</div>
-                {selectedItem.forClass && <div>For: {selectedItem.forClass}</div>}
-              </div>
-
-              <div className="cost-section">
-                <h3>Crafting Cost:</h3>
-                <div className="cost-display">
-                  {selectedItem.cost.coins > 0 && <div>Coins: {selectedItem.cost.coins}</div>}
-                  {selectedItem.cost.gold > 0 && <div>Gold: {selectedItem.cost.gold}</div>}
-                  {selectedItem.cost.copper > 0 && <div>Copper: {selectedItem.cost.copper}</div>}
-                  {selectedItem.cost.silver > 0 && <div>Silver: {selectedItem.cost.silver}</div>}
-                  {selectedItem.cost.bronze > 0 && <div>Bronze: {selectedItem.cost.bronze}</div>}
-                </div>
-              </div>
-
-              <Button onClick={() => handleCraftItem(selectedItem)} disabled={!canAfford(resources, selectedItem.cost)}>
-                {canAfford(resources, selectedItem.cost) ? 'Craft' : 'Cannot Afford'}
-              </Button>
-            </div>
-          )}
         </div>
       )}
 

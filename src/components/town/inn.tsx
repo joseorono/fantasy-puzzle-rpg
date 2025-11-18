@@ -25,8 +25,8 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
   };
 
   return (
-    <div className="blacksmith-container">
-      <div className="blacksmith-header">
+    <div className="shop-container">
+      <div className="shop-header">
         <Button onClick={onLeaveCallback}>Leave</Button>
         <h1>Inn</h1>
       </div>

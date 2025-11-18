@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { Button } from '../ui/8bit/button';
@@ -19,7 +18,6 @@ export default function ItemStore({
   const inventoryActions = useInventoryActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
-  const [selectedItem, setSelectedItem] = useState<ConsumableItemData | null>(null);
 
   const itemsData = getItemsFromIds(itemsForSell);
 
@@ -28,7 +26,6 @@ export default function ItemStore({
       soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
-      setSelectedItem(null);
     }
   };
 
@@ -37,8 +34,8 @@ export default function ItemStore({
   };
 
   return (
-    <div className="blacksmith-container">
-      <div className="blacksmith-header">
+    <div className="shop-container">
+      <div className="shop-header">
         <Button onClick={onLeaveCallback}>Leave</Button>
         <h1>Item Store</h1>
       </div>
@@ -66,11 +63,7 @@ export default function ItemStore({
             const canAffordItem = canAfford(resources, item.cost);
 
             return (
-              <div
-                key={item.id}
-                className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
-                onClick={() => setSelectedItem(item)}
-              >
+              <div key={item.id} className="equipment-list-item">
                 <div className="equipment-item-icon">🧪</div>
                 <div className="equipment-item-content">
                   <div className="equipment-item-header">
@@ -104,33 +97,6 @@ export default function ItemStore({
             );
           })}
         </div>
-
-        {/* Item Details */}
-        {selectedItem && (
-          <div className="equipment-details">
-            <h2>{selectedItem.name}</h2>
-            <p>{selectedItem.description}</p>
-
-            <div className="cost-section">
-              <h3>Price:</h3>
-              <div className="cost-display">
-                {selectedItem.cost.coins > 0 && <div>Coins: {selectedItem.cost.coins}</div>}
-                {selectedItem.cost.gold > 0 && <div>Gold: {selectedItem.cost.gold}</div>}
-                {selectedItem.cost.copper > 0 && <div>Copper: {selectedItem.cost.copper}</div>}
-                {selectedItem.cost.silver > 0 && <div>Silver: {selectedItem.cost.silver}</div>}
-                {selectedItem.cost.bronze > 0 && <div>Bronze: {selectedItem.cost.bronze}</div>}
-              </div>
-            </div>
-
-            <div className="inventory-info">
-              <strong>In Inventory:</strong> {getItemCount(selectedItem.id)}
-            </div>
-
-            <Button onClick={() => handleBuyItem(selectedItem)} disabled={!canAfford(resources, selectedItem.cost)}>
-              {canAfford(resources, selectedItem.cost) ? 'Buy' : 'Cannot Afford'}
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
