@@ -2,9 +2,39 @@
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
 
 export const assetList: string[] = [
+  // Portraits
   '/assets/portraits/Innkeeper_02.png',
   '/assets/portraits/Witch_03.png',
-  // '/favicon.png',
+
+  // Backgrounds
+  '/assets/bg/bg-blacksmith-1-2.jpg',
+  '/assets/bg/bg-blacksmith-1.jpg',
+  '/assets/bg/bg-town-1.jpg',
+  '/assets/bg/bg-town-2.jpg',
+  '/assets/bg/bgnoise-10-60-scroll.png',
+  '/assets/bg/bgnoise-bg-10-40-gray.webp',
+  '/assets/bg/desk-inn-1.jpg',
+  '/assets/bg/desk-inn-2.jpg',
+  '/assets/bg/desk-inn.jpg',
+  '/assets/bg/item-shop-bg1.jpg',
+  '/assets/bg/item-shop-bg2.jpg',
+  '/assets/bg/reception-desk.jpg',
+
+  // Menu assets
+  '/assets/menu/back-button-hover.png',
+  '/assets/menu/back-button.png',
+  '/assets/menu/plank-option-beta.png',
+  '/assets/menu/plank-option.png',
+  '/assets/menu/stick.png',
+
+  // Sprites
+  '/assets/sprite/character-placeholder.png',
+
+  // Tilesets
+  '/assets/tileset/demo-map.png',
+
+  // Transitions
+  '/assets/transitions/circle.svg',
 ];
 
 class AssetsService {
