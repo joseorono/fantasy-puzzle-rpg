@@ -3,6 +3,8 @@ import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
 import { canAfford } from '~/lib/resources';
 import { isPartyFullyHealed as checkPartyFullyHealed } from '~/lib/party-system';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 import { Button } from '../ui/8bit/button';
 
 export default function Inn({ price, onLeaveCallback }: { price: Resources; onLeaveCallback: () => void }) {
@@ -16,6 +18,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
   const handleFullyHealParty = () => {
     if (canAffordHealing) {
+      soundService.playSound(SoundNames.clickCoin);
       partyActions.fullyHealParty();
       resourcesActions.reduceResources(price);
     }

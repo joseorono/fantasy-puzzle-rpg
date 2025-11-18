@@ -5,6 +5,8 @@ import { Button } from '../ui/8bit/button';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford } from '~/lib/resources';
 import { getItemQuantity } from '~/lib/inventory';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 
 export default function ItemStore({
   itemsForSell,
@@ -23,6 +25,7 @@ export default function ItemStore({
 
   const handleBuyItem = (item: ConsumableItemData) => {
     if (canAfford(resources, item.cost)) {
+      soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
       setSelectedItem(null);
@@ -123,10 +126,7 @@ export default function ItemStore({
               <strong>In Inventory:</strong> {getItemCount(selectedItem.id)}
             </div>
 
-            <Button
-              onClick={() => handleBuyItem(selectedItem)}
-              disabled={!canAfford(resources, selectedItem.cost)}
-            >
+            <Button onClick={() => handleBuyItem(selectedItem)} disabled={!canAfford(resources, selectedItem.cost)}>
               {canAfford(resources, selectedItem.cost) ? 'Buy' : 'Cannot Afford'}
             </Button>
           </div>

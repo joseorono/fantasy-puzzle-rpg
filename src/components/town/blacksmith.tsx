@@ -3,6 +3,8 @@ import { Button } from '../ui/8bit/button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
@@ -36,6 +38,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
   const handleCraftItem = (item: EquipmentItemData) => {
     if (canAfford(resources, item.cost)) {
+      soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
       setSelectedItem(null);
@@ -49,6 +52,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   ) => {
     const cost = createResources({ [fromResource]: amount });
     if (canAfford(resources, cost)) {
+      soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(cost);
       resourcesActions.addResources(createResources({ [toResource]: amount }));
     }
@@ -57,6 +61,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const handleMeltCoinsToGold = (coinAmount: number) => {
     const cost = createResources({ coins: coinAmount });
     if (canAfford(resources, cost)) {
+      soundService.playSound(SoundNames.clickCoin);
       // Conversion rate: 10 coins = 1 gold
       const goldGain = Math.floor(coinAmount / 10);
       resourcesActions.reduceResources(cost);
