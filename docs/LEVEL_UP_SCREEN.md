@@ -92,4 +92,4 @@ function MyComponent() {
 - The component uses React state for pending allocations (no atoms/global state)
 - All calculations are performed in real-time as the user adjusts stats
 - The component follows the user's coding rules (function keyword, interfaces, etc.)
-- Portrait images are loaded from `/public/assets/portraits/`
+- Portrait images are loaded from `/assets/portraits/`
