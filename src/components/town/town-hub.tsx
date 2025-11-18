@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { Resources } from '~/types/resources';
-import type { ConsumableItemData } from '~/types';
 import type { townLocations } from '~/types/map';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';
 import type { ItemStoreParams } from '~/types';
-import { Button } from '../ui/8bit/button';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getRandomElement } from '~/lib/utils';
 
 interface TownHubProps {
   innCost: Resources;
@@ -16,14 +15,15 @@ interface TownHubProps {
   onLeaveCallback: () => void;
 }
 
+const townHubBgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
+
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
 
   // Play random background noise when entering town hub
   useEffect(() => {
     if (currentLocation === 'town-hub') {
-      const bgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer, SoundNames.bgNoiseMiner];
-      const randomSound = bgSounds[Math.floor(Math.random() * bgSounds.length)];
+      const randomSound = getRandomElement(townHubBgSounds);
       soundService.playSound(randomSound, 0.2, 0.1);
     }
   }, [currentLocation]);
