@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Resources } from '~/types/resources';
 import type { ConsumableItemData } from '~/types';
 import type { townLocations } from '~/types/map';
@@ -7,6 +7,8 @@ import Inn from './inn';
 import ItemStore from './item-store';
 import type { ItemStoreParams } from '~/types';
 import { Button } from '../ui/8bit/button';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 
 interface TownHubProps {
   innCost: Resources;
@@ -16,7 +18,18 @@ interface TownHubProps {
 
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
+
+  // Play random background noise when entering town hub
+  useEffect(() => {
+    if (currentLocation === 'town-hub') {
+      const bgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer, SoundNames.bgNoiseMiner];
+      const randomSound = bgSounds[Math.floor(Math.random() * bgSounds.length)];
+      soundService.playSound(randomSound, 0.2, 0.1);
+    }
+  }, [currentLocation]);
+
   const handleGoToPlace = (place: townLocations) => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.4, 0.1);
     setCurrentLocation(place);
   };
 
@@ -41,15 +54,15 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
           <div className="leave-btn" onClick={onLeaveCallback}></div>
         </div>
         <h1>Town Hub</h1>
-        <div className="flex relative flex-col gap-4 items-end mx-4">
+        <div className="relative mx-4 flex flex-col items-end gap-4">
           <div className="bg-post"></div>
-          <div className="plank-option mt-2" onClick={() => handleGoToPlace('blacksmith')}>
+          <div className="plank-option mt-2 cursor-pointer" onClick={() => handleGoToPlace('blacksmith')}>
             Blacksmith
           </div>
-          <div className="plank-option" onClick={() => handleGoToPlace('inn')}>
+          <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('inn')}>
             Inn
           </div>
-          <div className="plank-option" onClick={() => handleGoToPlace('item-store')}>
+          <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
             Item Store
           </div>
         </div>
