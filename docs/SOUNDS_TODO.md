@@ -1,3 +1,39 @@
 - [ ] Sound to play when clicking Play
-- [ ] Sound to play when opening the town hub
-- [ ]
+- [ ] Sound service: play sound sequence with sounds[] as argument
+- [ ] Town Hub:
+  - [ ] More sound(s) to play when opening the town hub
+  - [ ] Specific sound for each location:
+    - [ ] Blacksmith (clanking hammer)
+    - [ ] Inn (tavern noise + music)
+    - [ ] Item Store (clink clink)
+- [ ] Dialogue:
+  - [ ] Try existing dialogue text displaying at lower volume or try different one
+- [ ] Combat:
+  - [ ] Lower matching noise volume
+  - [ ] Make getMatchSoundVolume function that takes combo size as argument, setting min and max volume as constants
+- [ ] Item use sound (TBD)
+  - [ ] Attack sounds:
+    - [ ] Light melee attack
+    - [ ] Medium melee attack
+    - [ ] Heavy melee attack
+    - [ ] Ranged attack (maybe)
+    - [ ] Magic attack (maybe per spell?)
+    - [ ] Crit sound hopefully
+    - [ ] Healing
+- [ ] Death sound
+- [ ] Victory fanfare
+- [ ] Game over sound/Defeat sound (possibly two separate sounds)
+- [ ] Map:
+  - [ ] Bzzt - bad tile noise
+  - [ ] Contextual menus should play mechanicalClick sound at low volume
+  - [ ] Battle start sound
+  - [ ] Steps (screen transition/different levels w/e)
+- [ ] Loot:
+  - [ ] Pickups
+  - [ ] Treasure
+- [ ] Level up:
+  - [ ] Jingle
+  - [ ] Bar fill sound
+  - [ ] probably mechanicalClick for buttons too
+- [ ] Opening modal menus (maybe one for system menu one for game menu)
+- [ ] Closing modal menus (ditto)
