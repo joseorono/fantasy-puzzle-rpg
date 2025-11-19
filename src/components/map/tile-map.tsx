@@ -4,13 +4,18 @@ import type { TilemapData, TilemapProps } from '../../types/tilemap';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
+import { LootNotification } from './loot-notification';
 import {
   TEST_DIALOGUE_SCENE,
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
-import { useMapProgressActions, useGameStore } from '~/stores/game-store';
+import { useMapProgressActions, useGameStore, useInventoryActions, useResourcesActions } from '~/stores/game-store';
+import { addResources } from '~/lib/resources';
+import { additionWithMax } from '~/lib/math';
+import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
+import type { LootTable } from '~/types/loot';
 import type { InteractiveMapNode } from '~/types/map-node';
 import { demoMap } from '~/constants/maps/map-00/tiled-data';
 
@@ -53,6 +58,7 @@ const Tilemap: React.FC<TilemapProps> = ({
   const animationFrameRef = useRef<number | undefined>(undefined);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
+  const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -60,6 +66,10 @@ const Tilemap: React.FC<TilemapProps> = ({
   // Get stable reference to isNodeCompleted function
   const isNodeCompleted = useGameStore((state) => state.actions.mapProgress.isNodeCompleted);
   const mapProgressActions = useMapProgressActions();
+  const inventoryActions = useInventoryActions();
+  const resourcesActions = useResourcesActions();
+  const currentResources = useGameStore((state) => state.resources);
+  const currentInventory = useGameStore((state) => state.inventory);
 
   // Pulse animation for markers
   useEffect(() => {
@@ -337,6 +347,51 @@ const Tilemap: React.FC<TilemapProps> = ({
     // TODO: Navigate to town/dungeon screen instead of alert
   }
 
+  function handleNodeOpenChest() {
+    if (!currentNode || currentNode.type !== 'Treasure' || !currentNode.lootPayload) return;
+    console.log('Opening chest:', currentNode.name);
+
+    const loot = currentNode.lootPayload;
+
+    // Apply loot to player inventory and resources using math utilities
+    // Add equipment items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
+    loot.equipableItems.forEach((item) => {
+      const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
+      const currentQuantity = existingItem?.quantity ?? 0;
+      const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
+      const quantityToAdd = newQuantity - currentQuantity;
+      if (quantityToAdd > 0) {
+        inventoryActions.addItem(item.id, quantityToAdd);
+      }
+    });
+
+    // Add consumable items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
+    loot.consumableItems.forEach((item) => {
+      const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
+      const currentQuantity = existingItem?.quantity ?? 0;
+      const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
+      const quantityToAdd = newQuantity - currentQuantity;
+      if (quantityToAdd > 0) {
+        inventoryActions.addItem(item.id, quantityToAdd);
+      }
+    });
+
+    // Add resources using the addResources utility from lib/resources.ts
+    // This ensures proper arithmetic operations for currency
+    const newResources = addResources(currentResources, loot.resources);
+    resourcesActions.setResources(newResources);
+
+    // Mark treasure as looted
+    mapProgressActions.completeNode(currentNode.type, currentNode.id);
+
+    // Show loot notification
+    setCurrentLoot(loot);
+
+    // Close menu and clear current node
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+  }
+
   function handleNodeViewDialogue() {
     if (!currentNode || !currentNode.dialogueScene) return;
     console.log('Viewing dialogue for:', currentNode.name);
@@ -352,11 +407,6 @@ const Tilemap: React.FC<TilemapProps> = ({
       setActiveDialogue(sceneType);
     }
     // Don't close the menu - dialogue renders as overlay
-  }
-
-  function handleNodeMenuClose() {
-    setShowNodeMenu(false);
-    setCurrentNode(null);
   }
 
   // Draw the map and character
@@ -448,21 +498,13 @@ const Tilemap: React.FC<TilemapProps> = ({
           color = isCompleted ? 'rgba(150, 150, 150, ' : 'rgba(105, 105, 105, ';
           icon = '💀';
           break;
-        case 'Quest':
-          color = isCompleted ? 'rgba(255, 200, 100, ' : 'rgba(255, 165, 0, ';
-          icon = '📜';
-          break;
         case 'Treasure':
           color = isCompleted ? 'rgba(255, 255, 150, ' : 'rgba(255, 215, 0, ';
-          icon = '💎';
+          icon = isCompleted ? '📦' : '🎁';
           break;
         case 'Mystery':
           color = isCompleted ? 'rgba(200, 150, 255, ' : 'rgba(148, 0, 211, ';
           icon = '❓';
-          break;
-        case 'Shop':
-          color = isCompleted ? 'rgba(150, 255, 150, ' : 'rgba(50, 205, 50, ';
-          icon = '🛒';
           break;
       }
 
@@ -665,10 +707,14 @@ const Tilemap: React.FC<TilemapProps> = ({
           isCompleted={isNodeCompleted(currentNode.type, currentNode.id)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
+          onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={getCharacterScreenPosition()}
         />
       )}
+
+      {/* Loot notification */}
+      {currentLoot && <LootNotification loot={currentLoot} onClose={() => setCurrentLoot(null)} />}
 
       {/* Active dialogue scenes */}
       {activeDialogue === 'test' && (

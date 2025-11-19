@@ -1,4 +1,6 @@
 import type { InteractiveMapNode } from '~/types/map-node';
+import { createLootTable } from '~/types/loot';
+import { EquipmentItems, ConsumableItems } from '~/constants/inventory';
 
 /**
  * Interactive nodes on the demo map
@@ -84,18 +86,30 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     id: 'treasure_1',
     type: 'Treasure',
     position: { row: 31, col: 16 },
-    name: 'The Lost Artifact',
-    dialogueScene: 'test',
+    name: 'Ancient Chest',
     blocksMovement: false,
-    description: 'A mysterious stranger needs your help finding an ancient artifact',
+    description: 'A weathered chest containing ancient treasures',
+    lootPayload: createLootTable(
+      [EquipmentItems.find((item) => item.id === 'iron-sword')!],
+      [ConsumableItems.find((item) => item.id === 'potion')!],
+      { coins: 100, copper: 5, bronze: 3 },
+    ),
   },
   {
-    id: 'treasure_1',
+    id: 'treasure_2',
     type: 'Treasure',
     position: { row: 25, col: 16 },
     name: 'Hidden Treasure Chest',
     blocksMovement: false,
     description: 'Legends speak of treasure hidden in these ruins',
+    lootPayload: createLootTable(
+      [EquipmentItems.find((item) => item.id === 'bronze-daggers')!],
+      [
+        ConsumableItems.find((item) => item.id === 'potion')!,
+        ConsumableItems.find((item) => item.id === 'high-potion')!,
+      ],
+      { coins: 250, silver: 2, bronze: 5 },
+    ),
   },
   {
     id: 'mystery_1',

@@ -1,4 +1,5 @@
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
+import type { LootTable } from './loot';
 
 /**
  * Interactive map node definition
@@ -21,6 +22,8 @@ export interface InteractiveMapNode {
   blocksMovement: boolean;
   /** Optional description */
   description?: string;
+  /** Loot payload for Treasure nodes */
+  lootPayload?: LootTable;
 }
 
 /**
