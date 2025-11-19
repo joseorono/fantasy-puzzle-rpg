@@ -1,0 +1,107 @@
+:root {
+  --frame-thickness: 32px;
+}
+
+#window-frame {
+  display: grid;
+  grid-template-rows: var(--frame-thickness) 1fr var(--frame-thickness);
+  grid-template-columns: var(--frame-thickness) 1fr var(--frame-thickness);
+  width: 100dvw;
+  height: 100dvh;
+  gap: 0;
+}
+
+/* Top row */
+.wf-top {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--frame-thickness) 1fr var(--frame-thickness);
+  gap: 0;
+}
+
+/* Middle row */
+.wf-middle {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--frame-thickness) 1fr var(--frame-thickness);
+  gap: 0;
+}
+
+/* Bottom row */
+.wf-bottom {
+  grid-row: 3;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--frame-thickness) 1fr var(--frame-thickness);
+  gap: 0;
+}
+
+/* Corner styling */
+.wf-corner {
+  width: var(--frame-thickness);
+  height: var(--frame-thickness);
+  background-size: cover;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.wf-corner--top-left {
+  background-image: url('/assets/frame/frame1-upper-left-corner.png');
+}
+
+.wf-corner--top-right {
+  background-image: url('/assets/frame/frame1-upper-right-corner.png');
+}
+
+.wf-corner--bottom-left {
+  background-image: url('/assets/frame/frame1-lower-left-corner.png');
+}
+
+.wf-corner--bottom-right {
+  background-image: url('/assets/frame/frame1-lower-right-corner.png');
+}
+
+/* Edge styling */
+.wf-edge {
+  background-size: var(--frame-thickness) var(--frame-thickness);
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+.wf-edge--top {
+  background-image: url('/assets/frame/frame1-top-loop.png');
+  height: var(--frame-thickness);
+}
+
+.wf-edge--bottom {
+  background-image: url('/assets/frame/frame1-bottom-loop.png');
+  height: var(--frame-thickness);
+}
+
+.wf-edge--left {
+  background-image: url('/assets/frame/frame1-left.png');
+  width: var(--frame-thickness);
+  background-size: var(--frame-thickness) var(--frame-thickness);
+}
+
+.wf-edge--right {
+  background-image: url('/assets/frame/frame1-right.png');
+  width: var(--frame-thickness);
+  background-size: var(--frame-thickness) var(--frame-thickness);
+}
+
+/* Viewport styling */
+.wf-viewport {
+  background-color: var(--background);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Remove default #game-screen styles from index.css */
+#game-screen {
+  width: auto;
+  height: auto;
+}

@@ -204,23 +204,26 @@
   *::after {
     image-rendering: pixelated;
   }
-  
+
   #game-screen {
     background-color: var(--background);
     position: relative;
-    overflow-x: hidden;
+
     /* ToDo:
-      - This will change to hidden after we're done with the initial
-      debbuging stage and build up the actual views.
+        - This will change to hidden after we're done with the initial
+         debbuging stage and build up the actual views. */
+    /*
+          overflow-x: hidden;
+      overflow-y: auto;
+        width: 100dvw;
+        height: 100dvh;
     */
-    overflow-y: auto;
-    width: 100dvw;
-    height: 100dvh;
   }
 }
 
 /* Import organized styles */
 @import "./styles/fonts.css";
+@import "./styles/window-frame.css";
 @import "./styles/cursor.css";
 @import "./styles/utilities.css";
 @import "./styles/click-tracker-effect.css";
