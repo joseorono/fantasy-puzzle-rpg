@@ -213,9 +213,9 @@
         - This will change to hidden after we're done with the initial
          debbuging stage and build up the actual views. */
     /*
-          overflow-x: hidden;
+      overflow-x: hidden;
       overflow-y: auto;
-        width: 100dvw;
+      width: 100dvw;
         height: 100dvh;
     */
   }
