@@ -1,4 +1,4 @@
-import { Sword, Home, BookOpen, Crown, Skull, HelpCircle, ShoppingCart } from 'lucide-react';
+import { Sword, Home, BookOpen, Crown, Skull, HelpCircle, Package } from 'lucide-react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 
@@ -7,6 +7,7 @@ interface NodeInteractionMenuProps {
   isCompleted: boolean;
   onFight?: () => void;
   onEnter?: () => void;
+  onOpenChest?: () => void;
   onViewDialogue?: () => void;
   characterPosition: { x: number; y: number }; // Pixel position on screen
 }
@@ -19,6 +20,7 @@ export function NodeInteractionMenu({
   isCompleted,
   onFight,
   onEnter,
+  onOpenChest,
   onViewDialogue,
   characterPosition,
 }: NodeInteractionMenuProps) {
@@ -32,6 +34,8 @@ export function NodeInteractionMenu({
         return <Home className="h-5 w-5" />;
       case 'Dungeon':
         return <Skull className="h-5 w-5" />;
+      case 'Treasure':
+        return <Package className="h-5 w-5" />;
       case 'Mystery':
         return <HelpCircle className="h-5 w-5" />;
     }
@@ -56,7 +60,8 @@ export function NodeInteractionMenu({
 
   const canFight = node.type === 'Battle' || node.type === 'Boss';
   const canEnter = node.type === 'Town' || node.type === 'Dungeon';
-  const canInteract = node.type === 'Treasure' || node.type === 'Mystery';
+  const canOpenChest = node.type === 'Treasure' && !isCompleted;
+  const canInteract = node.type === 'Mystery';
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;
@@ -152,6 +157,18 @@ export function NodeInteractionMenu({
             <div className="flex items-center justify-center gap-1">
               <Home className="h-3 w-3" />
               <span>Enter</span>
+            </div>
+          </button>
+        )}
+
+        {canOpenChest && onOpenChest && (
+          <button
+            onClick={onOpenChest}
+            className="flex-1 rounded bg-yellow-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-yellow-700 active:scale-95"
+          >
+            <div className="flex items-center justify-center gap-1">
+              <Package className="h-3 w-3" />
+              <span>Open Chest</span>
             </div>
           </button>
         )}
