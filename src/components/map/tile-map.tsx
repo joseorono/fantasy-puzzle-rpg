@@ -5,17 +5,29 @@ import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
+import { FloorLootNotification } from './floor-loot-notification';
 import {
   TEST_DIALOGUE_SCENE,
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
-import { useMapProgressActions, useGameStore, useInventoryActions, useResourcesActions } from '~/stores/game-store';
+import { DEMO_FLOOR_LOOT, getFloorLootAtPosition } from '~/constants/maps/map-00/floor-loot';
+import {
+  useMapProgressActions,
+  useGameStore,
+  useInventoryActions,
+  useResourcesActions,
+  useFloorLootProgressActions,
+} from '~/stores/game-store';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import type { LootTable } from '~/types/loot';
+import type { Resources } from '~/types/resources';
+import { generateRandomResources } from '~/lib/floor-loot';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import { demoMap } from '~/constants/maps/map-00/tiled-data';
 
@@ -59,6 +71,7 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
+  const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -68,8 +81,12 @@ const Tilemap: React.FC<TilemapProps> = ({
   const mapProgressActions = useMapProgressActions();
   const inventoryActions = useInventoryActions();
   const resourcesActions = useResourcesActions();
+  const floorLootProgressActions = useFloorLootProgressActions();
   const currentResources = useGameStore((state) => state.resources);
   const currentInventory = useGameStore((state) => state.inventory);
+
+  // Map ID for floor loot tracking (hardcoded for demo map)
+  const currentMapId = 'map-00';
 
   // Pulse animation for markers
   useEffect(() => {
@@ -216,6 +233,41 @@ const Tilemap: React.FC<TilemapProps> = ({
     }
   }, []);
 
+  // Check and auto-collect floor loot
+  const checkFloorLoot = React.useCallback(
+    (row: number, col: number) => {
+      const floorLoot = getFloorLootAtPosition(row, col);
+
+      if (floorLoot) {
+        // Check if already collected
+        const isCollected = floorLootProgressActions.isFloorLootCollected(currentMapId, floorLoot.id);
+
+        if (!isCollected) {
+          console.log('Floor loot found:', floorLoot);
+
+          // Generate random resources based on max values
+          const generatedResources = generateRandomResources(floorLoot.maxValues);
+
+          // Add resources to player's global state immediately
+          const newResources = addResources(currentResources, generatedResources);
+          resourcesActions.setResources(newResources);
+
+          // Mark as collected in persistent state
+          floorLootProgressActions.collectFloorLoot(currentMapId, floorLoot.id);
+
+          // Play sound feedback
+          soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
+
+          // Show floating notification
+          setCollectedFloorLoot(generatedResources);
+
+          console.log('Collected floor loot:', generatedResources);
+        }
+      }
+    },
+    [currentMapId, currentResources, floorLootProgressActions, resourcesActions],
+  );
+
   // Handle keyboard input for character movement
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -272,6 +324,9 @@ const Tilemap: React.FC<TilemapProps> = ({
           // Check for interactive nodes
           checkInteractiveNode(newRow, newCol);
 
+          // Check for floor loot (auto-collect)
+          checkFloorLoot(newRow, newCol);
+
           return { row: newRow, col: newCol };
         } else {
           console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
@@ -285,7 +340,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, showNodeMenu]);
+  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, checkFloorLoot, showNodeMenu]);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
@@ -551,6 +606,40 @@ const Tilemap: React.FC<TilemapProps> = ({
       }
     });
 
+    // Draw floor loot markers
+    DEMO_FLOOR_LOOT.forEach((lootSpot) => {
+      const isCollected = floorLootProgressActions.isFloorLootCollected(currentMapId, lootSpot.id);
+
+      // Don't render if already collected
+      if (isCollected) return;
+
+      const markerX = lootSpot.position.col * tileSize;
+      const markerY = lootSpot.position.row * tileSize;
+      const markerSize = tileSize * 0.6; // Smaller than node markers
+      const centerX = markerX + tileSize / 2;
+      const centerY = markerY + tileSize / 2;
+
+      // Calculate gentle pulse effect
+      const pulse = 0.7 + Math.sin(pulseAnimation * 1.5) * 0.3;
+
+      // Draw subtle glow
+      const glowSize = markerSize * 1.2;
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowSize);
+      gradient.addColorStop(0, `rgba(255, 215, 0, ${0.4 * pulse})`);
+      gradient.addColorStop(0.7, `rgba(255, 215, 0, ${0.2 * pulse})`);
+      gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(centerX - glowSize, centerY - glowSize, glowSize * 2, glowSize * 2);
+
+      // Draw coin icon
+      ctx.fillStyle = `rgba(255, 215, 0, ${0.9 + pulse * 0.1})`;
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💰', centerX, centerY);
+    });
+
     // Draw dialogue trigger markers
     DIALOGUE_TRIGGERS.forEach((trigger) => {
       const triggerKey = `${trigger.row},${trigger.col}`;
@@ -613,6 +702,8 @@ const Tilemap: React.FC<TilemapProps> = ({
     visitedTriggers,
     pulseAnimation,
     mapProgressActions,
+    floorLootProgressActions,
+    currentMapId,
   ]);
 
   // Calculate scale factor for character positioning
@@ -715,6 +806,15 @@ const Tilemap: React.FC<TilemapProps> = ({
 
       {/* Loot notification */}
       {currentLoot && <LootNotification loot={currentLoot} onClose={() => setCurrentLoot(null)} />}
+
+      {/* Floor loot notification */}
+      {collectedFloorLoot && (
+        <FloorLootNotification
+          resources={collectedFloorLoot}
+          onClose={() => setCollectedFloorLoot(null)}
+          characterPosition={getCharacterScreenPosition()}
+        />
+      )}
 
       {/* Active dialogue scenes */}
       {activeDialogue === 'test' && (
