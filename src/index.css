@@ -229,6 +229,7 @@
 @import "./styles/click-tracker-effect.css";
 @import "./styles/animations.css";
 @import "./styles/global-animations.css";
+@import "./styles/scroll_bar.css";
 @import "./styles/dialogue.css";
 @import "./styles/battle-layout.css";
 @import "./styles/level-up-screen.css";

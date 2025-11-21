@@ -47,7 +47,7 @@ export function MessageHistory({ lines, characters, currentIndex, isOpen, onClos
           </button>
         </div>
 
-        <div className="mh-content" ref={contentRef}>
+        <div className="mh-content pixel-scrollbar" ref={contentRef}>
           {historyLines.map((line, idx) => {
             const speakerName = getSpeakerName(line.speakerId);
             const isNarration = !speakerName;

@@ -385,25 +385,6 @@ body.dialogue-active {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: #ffd700 rgba(255, 255, 255, 0.1);
-}
-
-.mh-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.mh-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.mh-content::-webkit-scrollbar-thumb {
-  background: #ffd700;
-  border-radius: 4px;
-}
-
-.mh-content::-webkit-scrollbar-thumb:hover {
-  background: #ffed4e;
 }
 
 /* Message Items */

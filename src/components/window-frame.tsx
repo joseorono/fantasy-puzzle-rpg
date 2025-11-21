@@ -1,6 +1,6 @@
 export default function WindowFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div id="window-frame">
+    <div id="window-frame" className="pixel-scrollbar">
       {/* Top Row */}
       <div className="wf-row wf-top">
         <div className="wf-corner wf-corner--top-left" />

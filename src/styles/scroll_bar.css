@@ -1,0 +1,27 @@
+/* Global pixel-art inspired scrollbar styles */
+
+/* Base scrollbar for WebKit browsers */
+.pixel-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(10, 10, 20, 0.9);
+  border-left: 2px solid #34110b;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e3a442;
+  border-left: 2px solid #f8d37b;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #f2c15a;
+}
+
+/* Firefox */
+.pixel-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e3a442 rgba(10, 10, 20, 0.9);
+}
+ 
