@@ -72,7 +72,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   return (
     <div className="shop-container">
       <div className="shop-header">
-        <Button onClick={onLeaveCallback}>Leave</Button>
+        <button className="leave-btn" onClick={onLeaveCallback}></button>
         <h1>Blacksmith</h1>
       </div>
 

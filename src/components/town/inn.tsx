@@ -27,7 +27,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
   return (
     <div className="shop-container">
       <div className="shop-header">
-        <Button onClick={onLeaveCallback}>Leave</Button>
+        <button className="leave-btn" onClick={onLeaveCallback}></button>
         <h1>Inn</h1>
       </div>
 

@@ -36,7 +36,7 @@ export default function ItemStore({
   return (
     <div className="shop-container">
       <div className="shop-header">
-        <Button onClick={onLeaveCallback}>Leave</Button>
+        <button className="leave-btn" onClick={onLeaveCallback}></button>
         <h1>Item Store</h1>
       </div>
 

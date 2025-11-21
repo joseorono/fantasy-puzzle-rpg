@@ -50,11 +50,11 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
     <div className="town">
       <div className="bg-town"></div>
       <div className="town-content flex items-start justify-between gap-4">
+      <div className="flex gap-4">
         <div className="flex gap-4">
           <div className="leave-btn" onClick={onLeaveCallback}></div>
         </div>
-        <h1>Town Hub</h1>
-        <div className="relative mx-4 flex flex-col items-end gap-4">
+        <div className="relative mx-[200px] flex flex-col items-end gap-4">
           <div className="bg-post"></div>
           <div className="plank-option mt-2 cursor-pointer" onClick={() => handleGoToPlace('blacksmith')}>
             Blacksmith
@@ -66,6 +66,8 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
             Item Store
           </div>
         </div>
+      </div>
+        <h1>Town Hub</h1>
       </div>
     </div>
   );
