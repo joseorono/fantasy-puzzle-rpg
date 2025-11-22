@@ -36,7 +36,13 @@ export function GameLoader(_props: GameLoaderProps) {
   }
 
   if (isReady) {
-    return <GameScreen />;
+    return (
+      <>
+        <WindowFrame>
+          <GameScreen />
+        </WindowFrame>
+      </>
+    );
   }
 
   return (
