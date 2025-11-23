@@ -9,7 +9,7 @@ export default function GlobalAnimationTest() {
   const handleCombo = () => triggerSequence(animations, () => console.log('All animations done!'));
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto flex max-w-xl flex-col gap-y-3">
       {animations.map((animationName) => (
         <button
           key={animationName}
