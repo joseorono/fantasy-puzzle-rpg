@@ -34,7 +34,7 @@
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   -webkit-mask-size: 50px 50px;
-  animation: global-view-transition-circle 0.8s ease-in-out;
+  animation: global-view-transition-circle 1.6s ease-in-out;
   will-change: mask-size, -webkit-mask-size;
 }
 
@@ -43,13 +43,23 @@
     mask-size: 50px 50px;
     -webkit-mask-size: 50px 50px;
   }
-  50% {
-    mask-size: 2000vh 2000vh;
-    -webkit-mask-size: 2000vh 2000vh;
+  15% {
+    mask-size: 100vh 100vh;
+    -webkit-mask-size: 100vh 100vh;
+  }
+
+  45% {
+    mask-size: 600vh 600vh;
+    -webkit-mask-size: 600vh 600vh;
+  }
+
+  85% {
+    mask-size: 90vh 90vh;
+    -webkit-mask-size: 90vh 90vh;
   }
   100% {
-    mask-size: 50px 50px;
-    -webkit-mask-size: 50px 50px;
+    mask-size: 25px 25px;
+    -webkit-mask-size: 25px 25px;
   }
 }
 
