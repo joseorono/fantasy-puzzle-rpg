@@ -100,8 +100,11 @@
   position: relative;
 }
 
-/* Remove default #game-screen styles from index.css */
+/* Constrain #game-screen to viewport size */
 #game-screen {
-  width: auto;
-  height: auto;
+  width: 100%;
+    height: 100%;
+    max-height: calc(100vh - var(--frame-thickness) * 2);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
