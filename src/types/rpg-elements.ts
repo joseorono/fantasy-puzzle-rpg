@@ -1,3 +1,5 @@
+import type { LootTable } from './loot';
+
 export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
 export type CharacterClass = 'warrior' | 'rogue' | 'mage' | 'healer';
@@ -39,4 +41,5 @@ export interface EnemyData extends BaseStats {
   sprite: string;
   attackInterval: number; // Base interval before SPD modifications
   attackDamage: number; // Base damage before POW modifications
+  lootTable: LootTable; // Loot dropped when defeated
 }

@@ -1,6 +1,7 @@
-import type { CharacterData, EnemyData, OrbType, StatType } from '~/types';
+import type { CharacterData, OrbType, StatType } from '~/types';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { calculateExpToNextLevel } from '~/lib/leveling-system';
+import { MOSS_GOLEM } from './enemies';
 
 // Board configuration
 export const BOARD_ROWS = 8;
@@ -135,22 +136,4 @@ export const INITIAL_PARTY: CharacterData[] = partyBase.map((char) => ({
 }));
 
 // Initial enemy setup
-export const INITIAL_ENEMY: EnemyData = {
-  id: 'moss-golem',
-  name: 'Moss Golem',
-  type: 'golem',
-  stats: {
-    pow: 10,
-    vit: 50,
-    spd: 0,
-  },
-  vitHpMultiplier: 5, // Standard enemy HP scaling
-  maxHp: calculateMaxHp(50, 50, 5),
-  currentHp: 0, // Will be set to maxHp on init
-  sprite: '🗿', // Placeholder - will be replaced with pixel art
-  attackInterval: 4000, // Base interval (4 seconds)
-  attackDamage: 20, // Base damage before POW modifier
-};
-
-// Set currentHp to maxHp
-INITIAL_ENEMY.currentHp = INITIAL_ENEMY.maxHp;
+export const INITIAL_ENEMY = MOSS_GOLEM;
