@@ -1,7 +1,7 @@
 import type { CharacterData, OrbType, StatType } from '~/types';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { calculateExpToNextLevel } from '~/lib/leveling-system';
-import { MOSS_GOLEM } from './enemies';
+import { MOSS_GOLEM } from './enemies/world-00';
 
 // Board configuration
 export const BOARD_ROWS = 8;
