@@ -90,9 +90,9 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     blocksMovement: false,
     description: 'A weathered chest containing ancient treasures',
     lootPayload: createLootTable(
-      [EquipmentItems.find((item) => item.id === 'iron-sword')!],
-      [ConsumableItems.find((item) => item.id === 'potion')!],
-      { coins: 100, copper: 5, bronze: 3 },
+      [{ item: EquipmentItems.find((item) => item.id === 'iron-sword')! }],
+      [{ item: ConsumableItems.find((item) => item.id === 'potion')! }],
+      { item: { coins: 100, copper: 5, bronze: 3 } },
     ),
   },
   {
@@ -103,12 +103,12 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     blocksMovement: false,
     description: 'Legends speak of treasure hidden in these ruins',
     lootPayload: createLootTable(
-      [EquipmentItems.find((item) => item.id === 'bronze-daggers')!],
+      [{ item: EquipmentItems.find((item) => item.id === 'bronze-daggers')! }],
       [
-        ConsumableItems.find((item) => item.id === 'potion')!,
-        ConsumableItems.find((item) => item.id === 'high-potion')!,
+        { item: ConsumableItems.find((item) => item.id === 'potion')! },
+        { item: ConsumableItems.find((item) => item.id === 'high-potion')! },
       ],
-      { coins: 250, silver: 2, bronze: 5 },
+      { item: { coins: 250, silver: 2, bronze: 5 } },
     ),
   },
   {

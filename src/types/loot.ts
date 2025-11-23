@@ -1,16 +1,25 @@
 import type { Resources } from './resources';
 import type { EquipmentItemData, ConsumableItemData } from './inventory';
+import type { ProbabilityNumber } from './number-types';
+
+/**
+ * Loot item with probability of being included
+ */
+export interface LootItem<T> {
+  item: T;
+  probability: ProbabilityNumber;
+}
 
 /**
  * Loot table structure for treasure chests and rewards
  */
 export interface LootTable {
-  /** Equipment items in the loot */
-  equipableItems: EquipmentItemData[];
-  /** Consumable items in the loot */
-  consumableItems: ConsumableItemData[];
-  /** Resources (currency) in the loot */
-  resources: Resources;
+  /** Equipment items in the loot with drop probabilities */
+  equipableItems: LootItem<EquipmentItemData>[];
+  /** Consumable items in the loot with drop probabilities */
+  consumableItems: LootItem<ConsumableItemData>[];
+  /** Resources (currency) in the loot with drop probabilities */
+  resources: LootItem<Resources>;
 }
 
 /**
@@ -21,32 +30,47 @@ export function createEmptyLootTable(): LootTable {
     equipableItems: [],
     consumableItems: [],
     resources: {
-      coins: 0,
-      gold: 0,
-      copper: 0,
-      silver: 0,
-      bronze: 0,
+      item: {
+        coins: 0,
+        gold: 0,
+        copper: 0,
+        silver: 0,
+        bronze: 0,
+      },
+      probability: 1 as ProbabilityNumber,
     },
   };
 }
 
 /**
  * Create a loot table with specified rewards
+ * @param equipableItems - Equipment items with optional probabilities (defaults to 1.0)
+ * @param consumableItems - Consumable items with optional probabilities (defaults to 1.0)
+ * @param resources - Resources with optional probability (defaults to 1.0)
  */
 export function createLootTable(
-  equipableItems: EquipmentItemData[] = [],
-  consumableItems: ConsumableItemData[] = [],
-  resources: Partial<Resources> = {},
+  equipableItems: Array<{ item: EquipmentItemData; probability?: ProbabilityNumber }> = [],
+  consumableItems: Array<{ item: ConsumableItemData; probability?: ProbabilityNumber }> = [],
+  resources: { item?: Partial<Resources>; probability?: ProbabilityNumber } = {},
 ): LootTable {
   return {
-    equipableItems,
-    consumableItems,
+    equipableItems: equipableItems.map((entry) => ({
+      item: entry.item,
+      probability: entry.probability ?? (1 as ProbabilityNumber),
+    })),
+    consumableItems: consumableItems.map((entry) => ({
+      item: entry.item,
+      probability: entry.probability ?? (1 as ProbabilityNumber),
+    })),
     resources: {
-      coins: resources.coins ?? 0,
-      gold: resources.gold ?? 0,
-      copper: resources.copper ?? 0,
-      silver: resources.silver ?? 0,
-      bronze: resources.bronze ?? 0,
+      item: {
+        coins: resources.item?.coins ?? 0,
+        gold: resources.item?.gold ?? 0,
+        copper: resources.item?.copper ?? 0,
+        silver: resources.item?.silver ?? 0,
+        bronze: resources.item?.bronze ?? 0,
+      },
+      probability: resources.probability ?? (1 as ProbabilityNumber),
     },
   };
 }

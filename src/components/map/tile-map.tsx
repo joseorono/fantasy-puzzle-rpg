@@ -22,10 +22,11 @@ import {
 } from '~/stores/game-store';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
+import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
-import { generateRandomResources } from '~/lib/floor-loot';
+import { generateRandomResources } from '~/lib/looting';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
@@ -410,7 +411,11 @@ const Tilemap: React.FC<TilemapProps> = ({
 
     // Apply loot to player inventory and resources using math utilities
     // Add equipment items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
-    loot.equipableItems.forEach((item) => {
+    loot.equipableItems.forEach((lootItem) => {
+      // Check probability to determine if item should be included
+      if (!randomBool(lootItem.probability)) return;
+
+      const item = lootItem.item;
       const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
       const currentQuantity = existingItem?.quantity ?? 0;
       const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
@@ -421,7 +426,11 @@ const Tilemap: React.FC<TilemapProps> = ({
     });
 
     // Add consumable items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
-    loot.consumableItems.forEach((item) => {
+    loot.consumableItems.forEach((lootItem) => {
+      // Check probability to determine if item should be included
+      if (!randomBool(lootItem.probability)) return;
+
+      const item = lootItem.item;
       const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
       const currentQuantity = existingItem?.quantity ?? 0;
       const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
@@ -433,8 +442,11 @@ const Tilemap: React.FC<TilemapProps> = ({
 
     // Add resources using the addResources utility from lib/resources.ts
     // This ensures proper arithmetic operations for currency
-    const newResources = addResources(currentResources, loot.resources);
-    resourcesActions.setResources(newResources);
+    // Check probability to determine if resources should be included
+    if (randomBool(loot.resources.probability)) {
+      const newResources = addResources(currentResources, loot.resources.item);
+      resourcesActions.setResources(newResources);
+    }
 
     // Mark treasure as looted
     mapProgressActions.completeNode(currentNode.type, currentNode.id);

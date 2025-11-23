@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Coins } from 'lucide-react';
 import type { Resources } from '~/types/resources';
-import { filterNonZeroResources } from '~/lib/floor-loot';
+import { filterNonZeroResources } from '~/lib/looting';
 
 interface FloorLootNotificationProps {
   resources: Resources;
