@@ -8,3 +8,7 @@ export type PositiveNumber = z.infer<typeof positiveNumber>;
 
 export const negativeNumber = z.number().negative().brand('NegativeNumber');
 export type NegativeNumber = z.infer<typeof negativeNumber>;
+
+export const probabilityNumber = z.number().min(0).max(1).brand('ProbabilityNumber');
+export type ProbabilityNumber = z.infer<typeof probabilityNumber>;
+
