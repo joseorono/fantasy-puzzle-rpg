@@ -38,9 +38,7 @@ export function GameLoader(_props: GameLoaderProps) {
   if (isReady) {
     return (
       <>
-        <WindowFrame>
-          <GameScreen />
-        </WindowFrame>
+        <GameScreen />
       </>
     );
   }
