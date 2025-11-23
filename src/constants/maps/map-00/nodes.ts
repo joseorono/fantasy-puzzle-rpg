@@ -1,6 +1,5 @@
 import type { InteractiveMapNode } from '~/types/map-node';
-import { createLootTable } from '~/types/loot';
-import { EquipmentItems, ConsumableItems } from '~/constants/inventory';
+import { ANCIENT_CHEST_LOOT, HIDDEN_TREASURE_CHEST_LOOT } from './loot-tables';
 
 /**
  * Interactive nodes on the demo map
@@ -89,11 +88,7 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     name: 'Ancient Chest',
     blocksMovement: false,
     description: 'A weathered chest containing ancient treasures',
-    lootPayload: createLootTable(
-      [{ item: EquipmentItems.find((item) => item.id === 'iron-sword')! }],
-      [{ item: ConsumableItems.find((item) => item.id === 'potion')! }],
-      { item: { coins: 100, copper: 5, bronze: 3 } },
-    ),
+    lootPayload: ANCIENT_CHEST_LOOT,
   },
   {
     id: 'treasure_2',
@@ -102,14 +97,7 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     name: 'Hidden Treasure Chest',
     blocksMovement: false,
     description: 'Legends speak of treasure hidden in these ruins',
-    lootPayload: createLootTable(
-      [{ item: EquipmentItems.find((item) => item.id === 'bronze-daggers')! }],
-      [
-        { item: ConsumableItems.find((item) => item.id === 'potion')! },
-        { item: ConsumableItems.find((item) => item.id === 'high-potion')! },
-      ],
-      { item: { coins: 250, silver: 2, bronze: 5 } },
-    ),
+    lootPayload: HIDDEN_TREASURE_CHEST_LOOT,
   },
   {
     id: 'mystery_1',
