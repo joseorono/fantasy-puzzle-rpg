@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '../ui/8bit/button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
@@ -24,6 +25,11 @@ function getEquipmentType(itemId: string): EquipmentType | null {
   return null;
 }
 
+const BLACKSMITH_BG_IMAGES = [
+  '/assets/bg/bg-blacksmith-1.jpg',
+  '/assets/bg/bg-blacksmith-1-2.jpg',
+];
+
 export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () => void }) {
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
@@ -32,6 +38,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
+
+  // Select random background image on component mount
+  const backgroundImage = useMemo(() => getRandomElement(BLACKSMITH_BG_IMAGES), []);
 
   // Filter equipment by type
   const filteredEquipment = EquipmentItems.filter((item) => getEquipmentType(item.id) === selectedEquipmentType);
@@ -70,11 +79,11 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   };
 
   return (
-    <div className="shop-container">
-      <div className="shop-header">
-        <button className="leave-btn" onClick={onLeaveCallback}></button>
+    <div className="blacksmith">
+      <div className="bg-blacksmith" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
+      <button className="leave-btn" onClick={onLeaveCallback}></button>
+      <div className="shop-container">
         <h1>Blacksmith</h1>
-      </div>
 
       {/* Resources Display */}
       <div className="resources-display">
@@ -208,6 +217,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
