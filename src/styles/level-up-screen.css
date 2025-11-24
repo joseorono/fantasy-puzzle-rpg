@@ -456,10 +456,18 @@
 }
 
 .stat-arrow {
-  color: #d4a574;
-    line-height: 1;
-    display: flex;
-    align-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.15rem;
+  line-height: 1;
+}
+
+.stat-arrow-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke: #ffd700;
+  stroke-width: 3;
 }
 
 .stat-preview {
