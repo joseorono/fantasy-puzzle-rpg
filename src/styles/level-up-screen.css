@@ -149,17 +149,23 @@
   letter-spacing: 0.5px;
 }
 
-.exp-bar-container,
-.hp-bar-container {
+.level-up-screen .exp-bar-container,
+.level-up-screen .hp-bar-container {
   background: rgba(10, 10, 20, 0.9);
   border: 2px solid #8b6914;
   border-radius: 8px;
-  height: 28px;
   position: relative;
   overflow: hidden;
   margin-bottom: 0.25rem;
 }
 
+.level-up-screen .exp-bar-container {
+  height: 22px;
+}
+
+.level-up-screen .hp-bar-container {
+  height: 26px;
+}
 .exp-bar {
   height: 100%;
   background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
