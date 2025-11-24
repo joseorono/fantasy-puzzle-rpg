@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowRightIcon } from 'lucide-react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
@@ -194,7 +195,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-current">{character.stats.pow}</span>
                 {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
                   <>
-                    <span className="stat-arrow">→</span>
+                    <span className="stat-arrow">
+                      <ArrowRightIcon className="stat-arrow-icon" />
+                    </span>
                     <span className="stat-preview">{previewStats.pow + potentialStatPoints.pow}</span>
                   </>
                 )}
@@ -237,7 +240,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-current">{character.stats.vit}</span>
                 {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
                   <>
-                    <span className="stat-arrow">→</span>
+                    <span className="stat-arrow">
+                      <ArrowRightIcon className="stat-arrow-icon" />
+                    </span>
                     <span className="stat-preview">{previewStats.vit + potentialStatPoints.vit}</span>
                   </>
                 )}
@@ -283,7 +288,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-current">{character.stats.spd}</span>
                 {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
                   <>
-                    <span className="stat-arrow">→</span>
+                    <span className="stat-arrow">
+                      <ArrowRightIcon className="stat-arrow-icon" />
+                    </span>
                     <span className="stat-preview">{previewStats.spd + potentialStatPoints.spd}</span>
                   </>
                 )}
