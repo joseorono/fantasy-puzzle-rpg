@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Resources } from '~/types/resources';
 import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
@@ -6,12 +7,22 @@ import { isPartyFullyHealed as checkPartyFullyHealed } from '~/lib/party-system'
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Button } from '../ui/8bit/button';
+import { getRandomElement } from '~/lib/utils';
+
+const INN_BG_IMAGES = [
+  '/assets/bg/desk-inn-1.jpg',
+  '/assets/bg/desk-inn-2.jpg',
+  '/assets/bg/desk-inn.jpg',
+];
 
 export default function Inn({ price, onLeaveCallback }: { price: Resources; onLeaveCallback: () => void }) {
   const partyActions = usePartyActions();
   const party = useParty();
   const resourcesActions = useResourcesActions();
   const resources = useResources();
+
+  // Select random background image on component mount
+  const backgroundImage = useMemo(() => getRandomElement(INN_BG_IMAGES), []);
 
   const isPartyFullyHealed = checkPartyFullyHealed(party);
   const canAffordHealing = canAfford(resources, price);
@@ -25,11 +36,11 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
   };
 
   return (
-    <div className="shop-container">
-      <div className="shop-header">
-        <button className="leave-btn" onClick={onLeaveCallback}></button>
+    <div className="inn">
+      <div className="bg-inn" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
+      <button className="leave-btn" onClick={onLeaveCallback}></button>
+      <div className="shop-container">
         <h1>Inn</h1>
-      </div>
 
       {/* Resources Display */}
       <div className="resources-display">
@@ -104,6 +115,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
                 : `Heal Party (${price.coins} coins)`}
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );

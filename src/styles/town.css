@@ -1,5 +1,7 @@
 .town,
-.blacksmith {
+.blacksmith,
+.item-store,
+.inn {
     height: 100vh;
     width: 100vw;
     position: relative;
@@ -7,7 +9,9 @@
 
 .bg-town,
 .bg-shop,
-.bg-blacksmith {
+.bg-blacksmith,
+.bg-item-store,
+.bg-inn {
     width: 100%;
     height: 100%;
     background-size: cover;

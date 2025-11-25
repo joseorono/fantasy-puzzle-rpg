@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { Button } from '../ui/8bit/button';
@@ -6,6 +7,12 @@ import { canAfford } from '~/lib/resources';
 import { getItemQuantity } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getRandomElement } from '~/lib/utils';
+
+const ITEM_STORE_BG_IMAGES = [
+  '/assets/bg/item-shop-bg1.jpg',
+  '/assets/bg/item-shop-bg2.jpg',
+];
 
 export default function ItemStore({
   itemsForSell,
@@ -18,6 +25,9 @@ export default function ItemStore({
   const inventoryActions = useInventoryActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
+
+  // Select random background image on component mount
+  const backgroundImage = useMemo(() => getRandomElement(ITEM_STORE_BG_IMAGES), []);
 
   const itemsData = getItemsFromIds(itemsForSell);
 
@@ -34,11 +44,11 @@ export default function ItemStore({
   };
 
   return (
-    <div className="shop-container">
-      <div className="shop-header">
-        <button className="leave-btn" onClick={onLeaveCallback}></button>
+    <div className="item-store">
+      <div className="bg-item-store" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
+      <button className="leave-btn" onClick={onLeaveCallback}></button>
+      <div className="shop-container">
         <h1>Item Store</h1>
-      </div>
 
       {/* Resources Display */}
       <div className="resources-display">
@@ -97,6 +107,7 @@ export default function ItemStore({
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );
