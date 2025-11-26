@@ -8,6 +8,7 @@ import { getItemQuantity } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
+import { TopBarResources } from '../ui/top-bar-resources';
 
 const ITEM_STORE_BG_IMAGES = [
   '/assets/bg/item-shop-bg1.jpg',
@@ -51,13 +52,7 @@ export default function ItemStore({
         <h1>Item Store</h1>
 
       {/* Resources Display */}
-      <div className="resources-display">
-        <div>Coins: {resources.coins}</div>
-        <div>Gold: {resources.gold}</div>
-        <div>Copper: {resources.copper}</div>
-        <div>Silver: {resources.silver}</div>
-        <div>Bronze: {resources.bronze}</div>
-      </div>
+      <TopBarResources resources={resources} />
 
       {/* Store Content */}
       <div className="store-content">

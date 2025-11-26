@@ -8,6 +8,8 @@ import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
+import { TopBarResources } from '~/components/ui/top-bar-resources';
+import { useResources } from '~/stores/game-store';
 
 interface TownHubProps {
   innCost: Resources;
@@ -19,6 +21,7 @@ const townHubBgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
+  const resources = useResources();
 
   // Play random background noise when entering town hub
   useEffect(() => {
@@ -49,6 +52,12 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
   return (
     <div className="town">
       <div className="bg-town"></div>
+      
+      {/* Top Bar Resources */}
+      <div className="town-resources-bar">
+        <TopBarResources resources={resources} />
+      </div>
+      
       <div className="town-content flex items-start justify-between gap-4">
       <div className="flex gap-4">
         <div className="flex gap-4">

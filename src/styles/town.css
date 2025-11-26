@@ -482,7 +482,16 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
     color: rgba(255, 255, 255, 0.5);
 }
 
-/* Inn Styles */
+/* Town Hub Styles */
+
+/* Town Resources Bar */
+.town-resources-bar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
 .inn-content {
 display: flex;
     flex-direction: column;

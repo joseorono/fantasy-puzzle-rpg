@@ -7,6 +7,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
+import { TopBarResources } from '../ui/top-bar-resources';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
 
@@ -86,13 +87,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <h1>Blacksmith</h1>
 
       {/* Resources Display */}
-      <div className="resources-display">
-        <div>Coins: {resources.coins}</div>
-        <div>Gold: {resources.gold}</div>
-        <div>Copper: {resources.copper}</div>
-        <div>Silver: {resources.silver}</div>
-        <div>Bronze: {resources.bronze}</div>
-      </div>
+      <TopBarResources resources={resources} />
 
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">

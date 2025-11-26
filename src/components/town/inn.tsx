@@ -8,6 +8,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Button } from '../ui/8bit/button';
 import { getRandomElement } from '~/lib/utils';
+import { TopBarResources } from '../ui/top-bar-resources';
 
 const INN_BG_IMAGES = [
   '/assets/bg/desk-inn-1.jpg',
@@ -43,13 +44,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
         <h1>Inn</h1>
 
       {/* Resources Display */}
-      <div className="resources-display">
-        <div>Coins: {resources.coins}</div>
-        <div>Gold: {resources.gold}</div>
-        <div>Copper: {resources.copper}</div>
-        <div>Silver: {resources.silver}</div>
-        <div>Bronze: {resources.bronze}</div>
-      </div>
+      <TopBarResources resources={resources} />
 
       {/* Inn Content */}
       <div className="inn-content">
