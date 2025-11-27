@@ -762,3 +762,123 @@ margin: 1rem 0;
 font-weight: 700;
     color: #d4a574;
 }
+
+/* Town Hub Dialogue Container Override */
+.town .dialogue-container {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 900px;
+  z-index: 5;
+}
+
+.town .dialogue-portraits {
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.town .dialogue-portraits .dialogue-portrait__image {
+  max-height: 300px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .town .dialogue-container {
+    bottom: 1rem;
+    width: 95%;
+  }
+
+  .town .dialogue-portraits .dialogue-portrait__image {
+    max-height: 150px;
+  }
+}
+
+/* Town Dialogue Section */
+.town-dialogue-section {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+  z-index: 5;
+}
+
+.dialogue-portrait__image {
+  max-height: 260px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.town-dialogue-section .dialogue-box {
+  width: 600px;
+  max-width: 90vw;
+}
+
+/* Town Hub Dialogue Container Override */
+.town .dialogue-container {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 900px;
+  z-index: 5;
+}
+
+.town .dialogue-portraits {
+  justify-content: flex-end;
+  margin-bottom: 0rem;
+  margin-right: 6rem;
+}
+
+.town .dialogue-portraits .dialogue-portrait__image {
+  max-height: 280px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .town-dialogue-section {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .portrait-container {
+    width: 200px;
+    height: 200px;
+  }
+
+  .portrait-container .dialogue-portrait__image {
+    max-height: 180px;
+  }
+
+  .town-dialogue-section .dialogue-box {
+    width: 100%;
+  }
+
+  .town .dialogue-container {
+    bottom: 1rem;
+    width: 95%;
+  }
+
+  .town .dialogue-portraits .dialogue-portrait__image {
+    max-height: 150px;
+  }
+}

@@ -10,6 +10,7 @@ import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import { TopBarResources } from '~/components/ui/top-bar-resources';
 import { useResources } from '~/stores/game-store';
+import { DialogueBox } from '~/components/dialogue/dialogue-box';
 
 interface TownHubProps {
   innCost: Resources;
@@ -21,6 +22,8 @@ const townHubBgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
+  const [dialogueText, setDialogueText] = useState('Welcome to the town! How can I help you today?');
+  const [isTyping, setIsTyping] = useState(false);
   const resources = useResources();
 
   // Play random background noise when entering town hub
@@ -77,6 +80,23 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
         </div>
       </div>
         <h1>Town Hub</h1>
+      </div>
+
+      {/* Portrait and Dialogue Section */}
+      <div className="dialogue-container">
+        <div className="dialogue-portraits">
+          <img 
+            src="/assets/portraits/Innkeeper_02.png" 
+            alt="Innkeeper" 
+            className="dialogue-portrait__image"
+          />
+        </div>
+        <DialogueBox
+          speakerName="Innkeeper"
+          text={dialogueText}
+          isTyping={isTyping}
+          showIndicator={true}
+        />
       </div>
     </div>
   );
