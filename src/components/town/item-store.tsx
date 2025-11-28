@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { Button } from '../ui/8bit/button';
@@ -10,6 +10,9 @@ import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
+import { DialogueBox } from '~/components/dialogue/dialogue-box';
+import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
+import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 
 const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
 
@@ -24,6 +27,8 @@ export default function ItemStore({
   const inventoryActions = useInventoryActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
+  const [dialogueText] = useState(() => getRandomElement(ITEM_SHOP_WELCOME_TEXT));
+  const [isTyping] = useState(false);
 
   // Select random background image on component mount
   const backgroundImage = useMemo(() => getRandomElement(ITEM_STORE_BG_IMAGES), []);
@@ -105,6 +110,14 @@ export default function ItemStore({
 
       {/* Marquee Footer - Outside shop container */}
       <MarqueeText type="item-shop" variant="marquee--golden" />
+
+      {/* Dialogue Section */}
+      <div className="dialogue-container">
+        <div className="dialogue-portraits">
+          <img src={SHOPKEEPER_CHAR.portrait} alt={SHOPKEEPER_CHAR.name} className="dialogue-portrait__image" />
+        </div>
+        <DialogueBox speakerName={SHOPKEEPER_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
+      </div>
     </div>
   );
 }

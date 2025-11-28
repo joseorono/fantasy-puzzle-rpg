@@ -9,6 +9,9 @@ import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
 import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
+import { DialogueBox } from '~/components/dialogue/dialogue-box';
+import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
+import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
 
@@ -33,6 +36,8 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
+  const [dialogueText] = useState(() => getRandomElement(BLACKSMITH_WELCOME_TEXT));
+  const [isTyping] = useState(false);
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
@@ -214,6 +219,14 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
       {/* Marquee Footer - Outside shop container */}
       <MarqueeText type="blacksmith" variant="marquee--golden" />
+
+      {/* Dialogue Section */}
+      <div className="dialogue-container">
+        <div className="dialogue-portraits">
+          <img src={BLACKSMITH_CHAR.portrait} alt={BLACKSMITH_CHAR.name} className="dialogue-portrait__image" />
+        </div>
+        <DialogueBox speakerName={BLACKSMITH_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
+      </div>
     </div>
   );
 }

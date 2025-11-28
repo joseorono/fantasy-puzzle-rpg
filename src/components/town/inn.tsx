@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Resources } from '~/types/resources';
 import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
@@ -10,6 +10,9 @@ import { Button } from '../ui/8bit/button';
 import { getRandomElement } from '~/lib/utils';
 import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
+import { DialogueBox } from '~/components/dialogue/dialogue-box';
+import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
+import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 
 const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
 
@@ -24,6 +27,8 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
   const isPartyFullyHealed = checkPartyFullyHealed(party);
   const canAffordHealing = canAfford(resources, price);
+  const [dialogueText] = useState(() => getRandomElement(INN_WELCOME_TEXT));
+  const [isTyping] = useState(false);
 
   const handleFullyHealParty = () => {
     if (canAffordHealing) {
@@ -112,6 +117,14 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
       {/* Marquee Footer - Outside shop container */}
       <MarqueeText type="inn" variant="marquee--golden" />
+
+      {/* Dialogue Section */}
+      <div className="dialogue-container">
+        <div className="dialogue-portraits">
+          <img src={INNKEEPER_CHAR.portrait} alt={INNKEEPER_CHAR.name} className="dialogue-portrait__image" />
+        </div>
+        <DialogueBox speakerName={INNKEEPER_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
+      </div>
     </div>
   );
 }
