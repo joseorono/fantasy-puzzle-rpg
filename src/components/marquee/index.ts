@@ -1,1 +1,1 @@
-export { MarqueeText } from './marquee';
+export { MarqueeText } from './marquee-text';

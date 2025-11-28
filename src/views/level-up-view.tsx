@@ -4,7 +4,7 @@ import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
-import { MarqueeText } from '~/components/marquee';
+import { MarqueeText } from '~/components/marquee/marquee-text';
 
 interface LevelUpViewProps {
   character: CharacterData;
@@ -359,8 +359,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
         </div>
 
         {/* Footer - Marquee Help Text */}
-        <footer>
-          <MarqueeText type="level-up" speed={40} pauseOnHover={true} />
+        <footer className="level-up-footer">
+          <MarqueeText type="level-up" speed={40} pauseOnHover={true} className="marquee-container--footer" />
         </footer>
       </div>
     </TooltipProvider>
