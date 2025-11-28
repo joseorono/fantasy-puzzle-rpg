@@ -11,6 +11,9 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  background-color: black;
+    /* background-color: #d27d2c; */
+    /* background-color: rgba(210, 125, 44, 0.4); */
 }
 
 .level-up-header {
