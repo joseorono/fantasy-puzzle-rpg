@@ -5,7 +5,7 @@ The project uses **react-fast-marquee** plus a thin wrapper component `MarqueeTe
 Path:
 - Component: `src/components/marquee/marquee-text.tsx`
 - Styles: `src/styles/marquee.css`
-- Text constants: `src/constants/dialogue/marquee-text.ts`
+- Text constants: `src/constants/flavor-text/marquee-text.ts`
 
 ## Component API
 
@@ -48,7 +48,7 @@ import { MarqueeText } from '~/components/marquee/marquee-text';
 
 `MarqueeText` reads from `MARQUEE_HELP_TEXT[type]`, which is a readonly record of string arrays. The array is joined with `" • "` and rendered as a single scrolling line.
 
-Text source: `src/constants/dialogue/marquee-text.ts`.
+Text source: `src/constants/flavor-text/marquee-text.ts`.
 
 ## CSS structure
 

@@ -8,6 +8,7 @@ import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
+import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
@@ -22,7 +23,7 @@ const townHubBgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
-  const [dialogueText, setDialogueText] = useState('Welcome to the town! How can I help you today?');
+  const [dialogueText, setDialogueText] = useState(() => getRandomElement(TOWN_WELCOME_TEXT));
   const [isTyping, setIsTyping] = useState(false);
   const resources = useResources();
 

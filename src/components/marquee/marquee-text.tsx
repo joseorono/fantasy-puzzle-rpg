@@ -1,6 +1,6 @@
 import Marquee from 'react-fast-marquee';
-import type { MarqueeTextTypes } from '~/constants/dialogue/marquee-text';
-import { MARQUEE_HELP_TEXT } from '~/constants/dialogue/marquee-text';
+import type { MarqueeTextTypes } from '~/constants/flavor-text/marquee-text';
+import { MARQUEE_HELP_TEXT } from '~/constants/flavor-text/marquee-text';
 import { cn } from '~/lib/utils';
 
 export type MarqueeStyle = 'marquee--gray' | 'marquee--clear' | 'marquee--golden';
