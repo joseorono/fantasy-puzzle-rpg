@@ -686,11 +686,11 @@ padding: 1.5rem;
     font-size: 1rem;
 }
 
-/* Item Store Styles */
-.store-content {
-display: flex;
+/* Item shop Styles */
+.shop-content {
+    display: flex;
     flex-direction: column;
-gap: 1.5rem;
+    gap: 1.5rem;
 }
 
 .store-info {

@@ -23,9 +23,9 @@ Item Shop, Blacksmith, and Inn.
 # Images
 You can use placeholder images for now, just make it work.
 
-# Item Store Ideas
+# Item Shop Ideas
 
-An item store where you can buy special consumables you can use in Battle.
+An item shop where you can buy special consumables you can use in Battle.
 
 We could add an additional, highlighted slot to the store: Special Offer.
 

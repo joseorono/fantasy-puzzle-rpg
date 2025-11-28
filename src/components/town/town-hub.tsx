@@ -75,7 +75,7 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
               Inn
             </div>
             <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
-              Item Store
+              Item Shop
             </div>
           </div>
         </div>

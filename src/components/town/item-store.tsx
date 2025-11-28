@@ -49,60 +49,60 @@ export default function ItemStore({
       <div className="bg-item-store" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
       <button className="leave-btn" onClick={onLeaveCallback}></button>
       <div className="shop-container">
-        <h1>Item Store</h1>
+        <h1>Item Shop</h1>
 
-      {/* Resources Display */}
-      <TopBarResources resources={resources} />
+        {/* Resources Display */}
+        <TopBarResources resources={resources} />
 
-      {/* Store Content */}
-      <div className="store-content">
-        <div className="store-info">
-          <h2>Consumable Items</h2>
-          <p>Purchase items to aid you in battle</p>
-        </div>
+        {/* Store Content */}
+        <div className="shop-content">
+          <div className="store-info">
+            <h2>Consumable Items</h2>
+            <p>Purchase items to aid you in battle</p>
+          </div>
 
-        {/* Items List */}
-        <div className="equipment-list">
-          {itemsData.map((item) => {
-            const itemCount = getItemCount(item.id);
-            const canAffordItem = canAfford(resources, item.cost);
+          {/* Items List */}
+          <div className="equipment-list">
+            {itemsData.map((item) => {
+              const itemCount = getItemCount(item.id);
+              const canAffordItem = canAfford(resources, item.cost);
 
-            return (
-              <div key={item.id} className="equipment-list-item">
-                <div className="equipment-item-icon">🧪</div>
-                <div className="equipment-item-content">
-                  <div className="equipment-item-header">
-                    <div className="equipment-item-name">
-                      {item.name}
-                      {itemCount > 0 && <span className="item-count"> (Owned: {itemCount})</span>}
+              return (
+                <div key={item.id} className="equipment-list-item">
+                  <div className="equipment-item-icon">🧪</div>
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">
+                        {item.name}
+                        {itemCount > 0 && <span className="item-count"> (Owned: {itemCount})</span>}
+                      </div>
+                      <div className="equipment-item-cost">
+                        {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
+                        {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
+                        {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
+                        {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
+                        {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                      </div>
                     </div>
-                    <div className="equipment-item-cost">
-                      {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
-                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                      {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                    <div className="equipment-item-description">{item.description}</div>
+                    <div className="item-actions">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBuyItem(item);
+                        }}
+                        disabled={!canAffordItem}
+                        className="buy-button"
+                      >
+                        {canAffordItem ? 'Buy' : 'Cannot Afford'}
+                      </Button>
                     </div>
-                  </div>
-                  <div className="equipment-item-description">{item.description}</div>
-                  <div className="item-actions">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBuyItem(item);
-                      }}
-                      disabled={!canAffordItem}
-                      className="buy-button"
-                    >
-                      {canAffordItem ? 'Buy' : 'Cannot Afford'}
-                    </Button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

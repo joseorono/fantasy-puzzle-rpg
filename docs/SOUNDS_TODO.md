@@ -5,7 +5,7 @@
   - [ ] Specific sound for each location:
     - [ ] Blacksmith (clanking hammer)
     - [ ] Inn (tavern noise + music)
-    - [ ] Item Store (clink clink)
+    - [ ] Item Shop (clink clink)
 - [ ] Dialogue:
   - [ ] Try existing dialogue text displaying at lower volume or try different one
 - [ ] Combat:
