@@ -3,7 +3,7 @@ import type { MarqueeTextTypes } from '~/constants/dialogue/marquee-text';
 import { MARQUEE_HELP_TEXT } from '~/constants/dialogue/marquee-text';
 import { cn } from '~/lib/utils';
 
-export type MarqueeStyle = 'marquee--gray' | 'marquee--clear';
+export type MarqueeStyle = 'marquee--gray' | 'marquee--clear' | 'marquee--golden';
 
 interface MarqueeProps {
   type: MarqueeTextTypes;

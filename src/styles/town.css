@@ -5,6 +5,8 @@
     height: 100%;
     width: 100%;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .bg-town,
@@ -93,6 +95,8 @@
     image-rendering: crisp-edges;
     position: relative;
     z-index: 3;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .shop-header {
@@ -233,9 +237,9 @@ border-color: #d4a574;
     gap: 1.5rem;
 }
 .equipment-list {
-display: flex;
+    display: flex;
     flex-direction: column;
-gap: 0.75rem;
+    gap: 0.75rem;
     padding: 1rem;
     background: linear-gradient(to bottom, #1a1008, #0a0604);
     border: 2px solid #8b6914;
@@ -243,7 +247,7 @@ gap: 0.75rem;
     min-height: 200px;
     max-height: 600px;
     overflow-y: auto;
-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .equipment-list-item {
@@ -675,9 +679,9 @@ border-radius: 6px;
 }
 
 .inn-actions {
-display: flex;
+    display: flex;
     justify-content: center;
-padding: 1.5rem;
+    padding: 1.5rem;
 }
 
 .heal-button {
@@ -694,7 +698,7 @@ padding: 1.5rem;
 }
 
 .store-info {
-padding: 1.5rem;
+    padding: 1.5rem;
     background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
     border: 2px solid #8b6914;
     border-radius: 8px;
@@ -702,24 +706,24 @@ padding: 1.5rem;
 }
 
 .store-info h2 {
-margin: 0 0 0.75rem 0;
+    margin: 0 0 0.75rem 0;
     color: #ffd700;
     font-size: 1.5rem;
-font-weight: 700;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 .store-info p {
-margin: 0;
-color: #d4a574;
+    margin: 0;
+    color: #d4a574;
     font-size: 0.9rem;
 }
 
 .item-count {
-font-size: 0.85rem;
-color: #8b6914;
+    font-size: 0.85rem;
+    color: #8b6914;
     font-weight: 700;
 }
 
