@@ -2,8 +2,8 @@
 .blacksmith,
 .item-store,
 .inn {
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     position: relative;
 }
 
@@ -648,12 +648,12 @@ font-size: 0.75rem;
 /* Town HP bars - match level-up screen style */
 .party-member-card .hp-bar-container {
     width: 100%;
-height: 20px;
+    height: 20px;
     background: rgba(10, 10, 20, 0.9);
     border: 2px solid #8b6914;
     border-radius: 8px;
     overflow: hidden;
-position: relative;
+    position: relative;
 }
 
 .party-member-card .hp-bar {
