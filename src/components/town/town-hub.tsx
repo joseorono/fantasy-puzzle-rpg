@@ -8,7 +8,7 @@ import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
-import { TopBarResources } from '~/components/ui/top-bar-resources';
+import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 

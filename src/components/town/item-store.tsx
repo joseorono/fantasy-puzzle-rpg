@@ -8,7 +8,7 @@ import { getItemQuantity } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
-import { TopBarResources } from '../ui/top-bar-resources';
+import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
 
 const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];

@@ -7,7 +7,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
-import { TopBarResources } from '../ui/top-bar-resources';
+import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';

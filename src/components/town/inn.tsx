@@ -8,7 +8,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Button } from '../ui/8bit/button';
 import { getRandomElement } from '~/lib/utils';
-import { TopBarResources } from '../ui/top-bar-resources';
+import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
 
 const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
