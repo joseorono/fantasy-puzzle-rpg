@@ -23,6 +23,12 @@
   pointer-events: none;
 }
 
+/* Tooltip arrow pointer */
+.tooltip-arrow {
+  fill: #d4a574;
+  stroke: #d4a574;
+  stroke-width: 2;
+}
 /* Golden rivet accent at corner */
 /*
 .tooltip-content::before {
