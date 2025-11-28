@@ -1,6 +1,7 @@
 import { Button } from '~/components/ui/button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
+import { MarqueeText } from '~/components/marquee';
 
 export default function TestView() {
   function handleClick() {
@@ -9,6 +10,7 @@ export default function TestView() {
 
   return (
     <TooltipProvider>
+      <MarqueeText type="general" />
       <div className="p-8">
         <h1 className="mb-4 text-3xl font-bold">Test View</h1>
         <Tooltip>
