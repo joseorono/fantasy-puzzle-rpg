@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { Button } from '../ui/8bit/button';
@@ -6,6 +7,14 @@ import { canAfford } from '~/lib/resources';
 import { getItemQuantity } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getRandomElement } from '~/lib/utils';
+import { TopBarResources } from './top-bar-resources';
+import { MarqueeText } from '../marquee/marquee-text';
+import { DialogueBox } from '~/components/dialogue/dialogue-box';
+import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
+import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
+
+const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
 
 export default function ItemStore({
   itemsForSell,
@@ -18,6 +27,11 @@ export default function ItemStore({
   const inventoryActions = useInventoryActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
+  const [dialogueText] = useState(() => getRandomElement(ITEM_SHOP_WELCOME_TEXT));
+  const [isTyping] = useState(false);
+
+  // Select random background image on component mount
+  const backgroundImage = useMemo(() => getRandomElement(ITEM_STORE_BG_IMAGES), []);
 
   const itemsData = getItemsFromIds(itemsForSell);
 
@@ -34,69 +48,75 @@ export default function ItemStore({
   };
 
   return (
-    <div className="shop-container">
-      <div className="shop-header">
-        <button className="leave-btn" onClick={onLeaveCallback}></button>
-        <h1>Item Store</h1>
-      </div>
+    <div className="item-store">
+      <div className="bg-item-store" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
+      <button className="leave-btn" onClick={onLeaveCallback}></button>
+      <div className="shop-container">
+        <h1>Item Shop</h1>
 
-      {/* Resources Display */}
-      <div className="resources-display">
-        <div>Coins: {resources.coins}</div>
-        <div>Gold: {resources.gold}</div>
-        <div>Copper: {resources.copper}</div>
-        <div>Silver: {resources.silver}</div>
-        <div>Bronze: {resources.bronze}</div>
-      </div>
+        {/* Resources Display */}
+        <TopBarResources resources={resources} />
 
-      {/* Store Content */}
-      <div className="store-content">
-        <div className="store-info">
-          <h2>Consumable Items</h2>
-          <p>Purchase items to aid you in battle</p>
-        </div>
+        {/* Store Content */}
+        <div className="shop-content">
+          <div className="store-info">
+            <h2>Consumable Items</h2>
+            <p>Purchase items to aid you in battle</p>
+          </div>
 
-        {/* Items List */}
-        <div className="equipment-list">
-          {itemsData.map((item) => {
-            const itemCount = getItemCount(item.id);
-            const canAffordItem = canAfford(resources, item.cost);
+          {/* Items List */}
+          <div className="equipment-list">
+            {itemsData.map((item) => {
+              const itemCount = getItemCount(item.id);
+              const canAffordItem = canAfford(resources, item.cost);
 
-            return (
-              <div key={item.id} className="equipment-list-item">
-                <div className="equipment-item-icon">🧪</div>
-                <div className="equipment-item-content">
-                  <div className="equipment-item-header">
-                    <div className="equipment-item-name">
-                      {item.name}
-                      {itemCount > 0 && <span className="item-count"> (Owned: {itemCount})</span>}
+              return (
+                <div key={item.id} className="equipment-list-item">
+                  <div className="equipment-item-icon">🧪</div>
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">
+                        {item.name}
+                        {itemCount > 0 && <span className="item-count"> (Owned: {itemCount})</span>}
+                      </div>
+                      <div className="equipment-item-cost">
+                        {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
+                        {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
+                        {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
+                        {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
+                        {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                      </div>
                     </div>
-                    <div className="equipment-item-cost">
-                      {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
-                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                      {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                    <div className="equipment-item-description">{item.description}</div>
+                    <div className="item-actions">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBuyItem(item);
+                        }}
+                        disabled={!canAffordItem}
+                        className="buy-button"
+                      >
+                        {canAffordItem ? 'Buy' : 'Cannot Afford'}
+                      </Button>
                     </div>
-                  </div>
-                  <div className="equipment-item-description">{item.description}</div>
-                  <div className="item-actions">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBuyItem(item);
-                      }}
-                      disabled={!canAffordItem}
-                      className="buy-button"
-                    >
-                      {canAffordItem ? 'Buy' : 'Cannot Afford'}
-                    </Button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+      </div>
+
+      {/* Marquee Footer - Outside shop container */}
+      <MarqueeText type="item-shop" variant="marquee--golden" />
+
+      {/* Dialogue Section */}
+      <div className="dialogue-container">
+        <div className="dialogue-portraits">
+          <img src={SHOPKEEPER_CHAR.portrait} alt={SHOPKEEPER_CHAR.name} className="dialogue-portrait__image" />
+        </div>
+        <DialogueBox speakerName={SHOPKEEPER_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function DemoMap() {
   const layersToShow = ['road', 'mountains', 'trees', 'signs'];
 
   return (
-    <div className="game-map">
+    <div className="game-view game-map">
       <div className="map-controls">
         <h3>Map Layers</h3>
         {layersToShow.map((layer) => (

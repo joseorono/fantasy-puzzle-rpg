@@ -44,7 +44,7 @@ export function GameLoader(_props: GameLoaderProps) {
   }
 
   return (
-    <div className="splash-screen">
+    <div className="game-view splash-screen">
       <div className="splash-screen__bg" />
       <div className="splash-screen__content">
         {isLoading && (

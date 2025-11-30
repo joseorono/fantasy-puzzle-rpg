@@ -1,6 +1,14 @@
 import type { DialogueCharacter } from '~/types/dialogue';
 
-export type DialogueCharacterId = 'innkeeper' | 'witch' | 'knight' | 'mage' | 'narrator' | 'mystery';
+export type DialogueCharacterId =
+  | 'innkeeper'
+  | 'witch'
+  | 'knight'
+  | 'mage'
+  | 'narrator'
+  | 'mystery'
+  | 'blacksmith'
+  | 'shopkeeper';
 
 export const INNKEEPER_CHAR: DialogueCharacter = {
   id: 'innkeeper',
@@ -41,4 +49,27 @@ export const MYSTERY_CHAR: DialogueCharacter = {
   side: 'center',
 };
 
-export const CharacterList: DialogueCharacterId[] = ['innkeeper', 'witch', 'knight', 'mage', 'narrator', 'mystery'];
+export const BLACKSMITH_CHAR: DialogueCharacter = {
+  id: 'blacksmith',
+  name: 'Blacksmith',
+  portrait: '/assets/portraits/Innkeeper_02.png',
+  side: 'left',
+};
+
+export const SHOPKEEPER_CHAR: DialogueCharacter = {
+  id: 'shopkeeper',
+  name: 'Shopkeeper',
+  portrait: '/assets/portraits/Innkeeper_02.png',
+  side: 'left',
+};
+
+export const CharacterList: DialogueCharacterId[] = [
+  'innkeeper',
+  'witch',
+  'knight',
+  'mage',
+  'narrator',
+  'mystery',
+  'blacksmith',
+  'shopkeeper',
+];

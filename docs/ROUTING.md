@@ -16,7 +16,7 @@ A store-based routing system for the game that provides full control over naviga
 
 ## Available Views
 
-- `town-hub` - Main town hub (contains blacksmith, inn, and item store as sub-locations)
+- `town-hub` - Main town hub (contains blacksmith, inn, and item Shop as sub-locations)
 - `battle-demo` - Battle demo screen
 - `map-demo` - Map demo
 - `dialogue-demo` - Dialogue demo
@@ -90,14 +90,14 @@ const { goToBattleDemo, setViewData } = useRouterActions();
 const prepareBattle = async () => {
   // Run async setup
   await loadEnemyData();
-  
+
   // Set data
   setViewData('battle-demo', {
     enemyId: 'dragon',
     location: 'Castle',
     canFlee: false,
   });
-  
+
   // Navigate
   goToBattleDemo({
     enemyId: 'dragon',

@@ -27,7 +27,7 @@ export const ANIMATION_CONFIG: Record<GlobalAnimationType, AnimationConfig> = {
     className: 'anim-fade-in-and-out',
   },
   'view-transition-circle': {
-    duration: 800,
+    duration: 1600,
     strategy: 'overlay',
     className: 'anim-view-transition-circle',
   },

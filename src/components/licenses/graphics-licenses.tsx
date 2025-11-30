@@ -33,6 +33,10 @@ export default function GraphicsLicensesDialogContent() {
             https://opengameart.org/content/medieval-game-button-pack
           </a>
         </p>
+        <p>
+          Golden UI - Bigger Than Ever edition, CC-BY-SA 3.0, by Buch.
+          <a href="https://opengameart.org/users/buch">https://opengameart.org/users/buch</a>
+        </p>
       </div>
     </>
   );

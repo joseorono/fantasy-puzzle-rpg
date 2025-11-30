@@ -1,0 +1,188 @@
+/* Top Bar Resources - Golden UI Inspired */
+
+.top-bar-resources {
+  position: relative;
+  padding: 1rem;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.top-bar-resources__container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Individual Resource Item */
+.top-bar-resource {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #d4a574;
+  border-radius: 16px;
+  min-width: 140px;
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+.top-bar-resource:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+/* Golden rivets */
+.top-bar-resource::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 8px;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+  border: 1px solid #8b6914;
+  border-radius: 50%;
+  box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.top-bar-resource::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+  border: 1px solid #8b6914;
+  border-radius: 50%;
+  box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Resource Icon */
+.top-bar-resource__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+/* Resource Content */
+.top-bar-resource__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+}
+
+.top-bar-resource__label {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #d4a574;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.top-bar-resource__value {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Resource Type Specific Styling */
+.top-bar-resource--coins .top-bar-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #ffd700, #ffed4e, #b8860b);
+}
+
+.top-bar-resource--coins .top-bar-resource__value {
+  color: #ffd700;
+}
+
+.top-bar-resource--gold .top-bar-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #ffd700, #daa520, #b8860b);
+}
+
+.top-bar-resource--gold .top-bar-resource__value {
+  color: #ffd700;
+}
+
+.top-bar-resource--silver .top-bar-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #c0c0c0, #a8a8a8, #808080);
+}
+
+.top-bar-resource--silver .top-bar-resource__value {
+  color: #c0c0c0;
+}
+
+.top-bar-resource--bronze .top-bar-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #cd7f32, #b8722c, #8b4513);
+}
+
+.top-bar-resource--bronze .top-bar-resource__value {
+  color: #cd7f32;
+}
+
+.top-bar-resource--copper .top-bar-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #b87333, #a0522d, #8b4513);
+}
+
+.top-bar-resource--copper .top-bar-resource__value {
+  color: #b87333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .top-bar-resources__container {
+    gap: 0.5rem;
+  }
+  
+  .top-bar-resource {
+    min-width: 80px;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .top-bar-resource__icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .top-bar-resource__label {
+    font-size: 0.625rem;
+  }
+  
+  .top-bar-resource__value {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-bar-resources__container {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  
+  .top-bar-resource {
+    width: 100%;
+    justify-content: center;
+  }
+}

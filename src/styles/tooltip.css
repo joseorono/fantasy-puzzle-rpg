@@ -1,0 +1,86 @@
+/* Tooltip Styles - Golden UI Theme */
+
+.tooltip-content {
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  max-width: 200px;
+  word-wrap: break-word;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* Tooltip arrow pointer */
+.tooltip-arrow {
+  fill: #d4a574;
+  stroke: #d4a574;
+  stroke-width: 2;
+}
+/* Golden rivet accent at corner */
+/*
+.tooltip-content::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+  border: 1px solid #8b6914;
+  border-radius: 50%;
+  box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.1);
+  top: -4px;
+  right: 12px;
+}
+  */
+
+/* Animation states */
+[data-state="open"] .tooltip-content {
+  animation: tooltip-fade-in 0.2s ease-out;
+}
+
+[data-state="closed"] .tooltip-content {
+  animation: tooltip-fade-out 0.15s ease-in;
+}
+
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tooltip-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tooltip-content {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    max-width: 160px;
+  }
+}

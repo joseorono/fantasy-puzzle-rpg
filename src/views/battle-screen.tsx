@@ -61,12 +61,12 @@ export default function BattleScreen() {
   }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="game-view overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Retro screen effect overlay */}
       <div className="retro-screen pointer-events-none fixed inset-0 z-50" />
 
-      {/* Main container - constrained max size */}
-      <div className="relative flex h-screen flex-col">
+      {/* Main container - constrained to game view height */}
+      <div className="relative flex h-full flex-col">
         {/* Header */}
         <header className="relative z-10 border-b-2 border-gray-700 bg-gradient-to-b from-gray-900/90 to-gray-900/70 px-2 py-1.5 sm:px-3 sm:py-2">
           <div className="flex items-center justify-between">

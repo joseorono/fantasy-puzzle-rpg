@@ -1,0 +1,71 @@
+/* Base Marquee Container */
+.marquee-container {
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.marquee-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.marquee-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+/* Ensure smooth rendering */
+.marquee-container * {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Variant: Gray (default) - with borders and background */
+.marquee-container.marquee--gray {
+  background: linear-gradient(135deg, #1a1d29 0%, #2d3142 100%);
+  border-top: 2px solid #8b6914;
+  border-bottom: 2px solid #8b6914;
+  padding: 0.5rem 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.marquee-container.marquee--gray .marquee-text {
+  color: #d4a574;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Variant: Clear - transparent with minimal styling */
+.marquee-container.marquee--clear {
+  background: transparent;
+  padding: 0.5rem 0;
+}
+
+.marquee-container.marquee--clear .marquee-text {
+  color: #d4a574;
+  text-shadow: none;
+}
+
+/* Variant: Golden - inspired by Golden UI with decorative elements */
+.marquee-container.marquee--golden {
+  position: relative;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border-top: 3px solid #d4a574;
+  border-bottom: 3px solid #d4a574;
+  padding: 0.75rem 1rem;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.marquee-container.marquee--golden .marquee-text {
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
