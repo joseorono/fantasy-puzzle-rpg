@@ -9,6 +9,15 @@ export enum SoundNames {
   shimmeringSuccessShort = 'shimmeringSuccessShort',
   shimmeringSuccessShorter = 'shimmeringSuccessShorter',
   match = 'match',
+  bottleClink = 'bottleClink',
+  uncork = 'uncork',
+  blacksmith = 'blacksmith',
+  blacksmithShorter = 'blacksmithShorter',
+  metalSharpening = 'metalSharpening',
+  wrong = 'wrong',
+  jingle = 'jingle',
+  beep = 'beep',
+  gameOver = 'gameOver',
 }
 
 export const soundFiles = {
@@ -22,4 +31,13 @@ export const soundFiles = {
   [SoundNames.shimmeringSuccessShort]: '/assets/audio/ui/shimmering-success-short.wav',
   [SoundNames.shimmeringSuccessShorter]: '/assets/audio/ui/shimmering-success-shorter.wav',
   [SoundNames.match]: '/assets/audio/ui/match.wav',
+  [SoundNames.bottleClink]: '/assets/audio/bottle-clink.wav',
+  [SoundNames.uncork]: '/assets/audio/uncork.wav',
+  [SoundNames.blacksmith]: '/assets/audio/blacksmith.wav',
+  [SoundNames.blacksmithShorter]: '/assets/audio/blacksmith-shorter.wav',
+  [SoundNames.metalSharpening]: '/assets/audio/metal-sharpening.wav',
+  [SoundNames.wrong]: '/assets/audio/wrong.mp3',
+  [SoundNames.jingle]: '/assets/audio/jingle.wav',
+  [SoundNames.beep]: '/assets/audio/beep.wav',
+  [SoundNames.gameOver]: '/assets/audio/game-over.mp3',
 };

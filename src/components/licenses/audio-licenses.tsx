@@ -77,6 +77,60 @@ export default function AudioLicensesDialogContent() {
             https://freesound.org/people/Philip_Berger/sounds/648212/
           </a>
         </p>
+
+        <p>
+          Bottles (bottle-clink), Creative Commons 0, TRP&nbsp;
+          <a href="https://freesound.org/people/TRP/sounds/576971/">https://freesound.org/people/TRP/sounds/576971/</a>
+        </p>
+
+        <p>
+          Uncork (uncork), CC Attribution 4.0, stereostereo&nbsp;
+          <a href="https://freesound.org/people/stereostereo/sounds/117352/">
+            https://freesound.org/people/stereostereo/sounds/117352/
+          </a>
+        </p>
+
+        <p>
+          Blacksmith & blacksmith-shorter (blacksmith), Creative Commons 0, bruno.auzet&nbsp;
+          <a href="https://freesound.org/people/bruno.auzet/sounds/640197/">
+            https://freesound.org/people/bruno.auzet/sounds/640197/
+          </a>
+        </p>
+
+        <p>
+          Metal-sharpening (metal-sharpening), Creative Commons 0, o_ciz&nbsp;
+          <a href="https://freesound.org/people/o_ciz/sounds/475423/">
+            https://freesound.org/people/o_ciz/sounds/475423/
+          </a>
+        </p>
+
+        <p>
+          Wrong (wrong), Creative Commons 0, Raclure&nbsp;
+          <a href="https://freesound.org/people/Raclure/sounds/483598/">
+            https://freesound.org/people/Raclure/sounds/483598/
+          </a>
+        </p>
+
+        <p>
+          RPG SFX #1 - Item Jingle (jingle), CC Attribution 4.0, Sirkoto51&nbsp;
+          <a href="https://freesound.org/people/Sirkoto51/sounds/346265/">
+            https://freesound.org/people/Sirkoto51/sounds/346265/
+          </a>
+        </p>
+
+        <p>
+          Menu screen mouse over (beep), CC Attribution 4.0, DrMinky&nbsp;
+          <a href="https://freesound.org/people/DrMinky/sounds/166186/">
+            https://freesound.org/people/DrMinky/sounds/166186/
+          </a>
+        </p>
+
+        <p>
+          Verloren.mp3 (game-over), Creative Commons 0, Kastenfrosch&nbsp;
+          <a href="https://freesound.org/people/Kastenfrosch/sounds/162457/">
+            https://freesound.org/people/Kastenfrosch/sounds/162457/
+          </a>
+        </p>
       </div>
     </>
   );
