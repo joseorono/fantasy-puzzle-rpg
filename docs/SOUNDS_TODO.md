@@ -5,21 +5,27 @@
   - [ ] Specific sound for each location:
     - [ ] Blacksmith (clanking hammer)
     - [ ] Inn (tavern noise + music)
-    - [ ] Item Store (clink clink)
+    - [ ] Item Store (bottles clink)
 - [ ] Dialogue:
   - [ ] Try existing dialogue text displaying at lower volume or try different one
 - [ ] Combat:
   - [ ] Lower matching noise volume
   - [ ] Make getMatchSoundVolume function that takes combo size as argument, setting min and max volume as constants
-- [ ] Item use sound (TBD)
-  - [ ] Attack sounds:
-    - [ ] Light melee attack
+  - [ ] Item use sound (TBD)
+  - [ ] Rogue:
+    - [ ] -Light melee attack
+    - [ ] -Flurry
+    - [ ] -Ranged attack (maybe)
+  - [ ] Warrior:
     - [ ] Medium melee attack
     - [ ] Heavy melee attack
-    - [ ] Ranged attack (maybe)
-    - [ ] Magic attack (maybe per spell?)
-    - [ ] Crit sound hopefully
+  - [ ] Mage:
+    - [ ] Fireball
+    - [ ] Heavier fireball
+  - [ ] Healer:
     - [ ] Healing
+    - [ ] Heavier healing
+  - [ ] Crit
 - [ ] Death sound
 - [ ] Victory fanfare
 - [ ] Game over sound/Defeat sound (possibly two separate sounds)
