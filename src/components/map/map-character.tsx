@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CharacterPosition, Direction, MapData } from '~/types/map';
 import { WALKABLE_TILES } from '~/constants/maps';
+import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
 
 interface MapCharacterProps {
   charLocation: CharacterPosition;
@@ -76,6 +77,11 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
       setPosition(newPosition);
       setDirection(newDirection);
       setIsMoving(true);
+
+      // Determine surface type and play footstep sound
+      const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
+      footstepSystem.setSurface(surfaceType);
+      footstepSystem.playFootstep();
 
       // Trigger scale animation for kinetic feedback
       setScale(0.92);

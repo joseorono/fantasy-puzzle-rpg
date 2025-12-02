@@ -31,6 +31,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import { demoMap } from '~/constants/maps/map-00/tiled-data';
+import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
 
 // Character placeholder image path
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
@@ -312,6 +313,11 @@ const Tilemap: React.FC<TilemapProps> = ({
         if (canMove) {
           console.log(`✅ Moving to (${newRow}, ${newCol})`);
           setDebugInfo(`On road at (${newRow}, ${newCol})`);
+
+          // Play footstep sound
+          const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
+          footstepSystem.setSurface(surfaceType);
+          footstepSystem.playFootstep();
 
           // Close node menu when moving
           if (showNodeMenu) {
