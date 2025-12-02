@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CharacterPosition, Direction, MapData } from '~/types/map';
 import { WALKABLE_TILES } from '~/constants/maps';
 
@@ -8,8 +8,34 @@ interface MapCharacterProps {
   onMove?: (newPosition: CharacterPosition) => void;
 }
 
+// Movement configuration - tunable parameters for feel
+const MOVEMENT_CONFIG = {
+  // Base movement speed (tiles per second)
+  baseSpeed: 6,
+  // Acceleration factor (how quickly we reach max speed)
+  acceleration: 0.15,
+  // Deceleration factor (how quickly we stop)
+  deceleration: 0.2,
+  // Animation transition duration (ms)
+  transitionDuration: 140,
+  // Easing function for smooth movement
+  easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  // Bounce animation intensity (0-1)
+  bounceIntensity: 0.8,
+  // Rotation tilt on movement (degrees)
+  tiltAngle: 2,
+};
+
 export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProps) {
   const [position, setPosition] = useState<CharacterPosition>(charLocation);
+  const [direction, setDirection] = useState<Direction | null>(null);
+  const [isMoving, setIsMoving] = useState(false);
+  const [scale, setScale] = useState(1);
+
+  // Track pressed keys for smooth continuous movement
+  const keysPressed = useRef<Set<string>>(new Set());
+  const movementTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Sync with external charLocation prop changes
   useEffect(() => {
@@ -26,11 +52,11 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
     return WALKABLE_TILES.has(tile);
   };
 
-  const moveCharacter = (direction: Direction) => {
+  const moveCharacter = (newDirection: Direction) => {
     let newRow = position.row;
     let newCol = position.col;
 
-    switch (direction) {
+    switch (newDirection) {
       case 'up':
         newRow -= 1;
         break;
@@ -48,60 +74,124 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
     if (isValidMove(newRow, newCol)) {
       const newPosition = { row: newRow, col: newCol };
       setPosition(newPosition);
+      setDirection(newDirection);
+      setIsMoving(true);
+
+      // Trigger scale animation for kinetic feedback
+      setScale(0.92);
+      setTimeout(() => setScale(1), MOVEMENT_CONFIG.transitionDuration);
+
       onMove?.(newPosition);
+
+      // Clear any existing timeout
+      if (movementTimeoutRef.current) {
+        clearTimeout(movementTimeoutRef.current);
+      }
+
+      // Set timeout to mark movement as complete
+      movementTimeoutRef.current = setTimeout(() => {
+        setIsMoving(false);
+      }, MOVEMENT_CONFIG.transitionDuration);
     }
   };
 
+  // Handle continuous movement with key tracking
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      // Prevent default scrolling behavior
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-        event.preventDefault();
-      }
+      const key = event.key.toLowerCase();
 
-      switch (event.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-          moveCharacter('up');
-          break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-          moveCharacter('down');
-          break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          moveCharacter('left');
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          moveCharacter('right');
-          break;
+      // Track key press
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
+        event.preventDefault();
+        keysPressed.current.add(key);
       }
     }
 
+    function handleKeyUp(event: KeyboardEvent) {
+      const key = event.key.toLowerCase();
+      keysPressed.current.delete(key);
+    }
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
-  });
+  }, []);
+
+  // Process movement input
+  useEffect(() => {
+    const processMovement = () => {
+      const keys = keysPressed.current;
+
+      // Determine intended direction from pressed keys
+      let intendedDirection: Direction | null = null;
+
+      if (keys.has('arrowup') || keys.has('w')) {
+        intendedDirection = 'up';
+      } else if (keys.has('arrowdown') || keys.has('s')) {
+        intendedDirection = 'down';
+      } else if (keys.has('arrowleft') || keys.has('a')) {
+        intendedDirection = 'left';
+      } else if (keys.has('arrowright') || keys.has('d')) {
+        intendedDirection = 'right';
+      }
+
+      // Move if direction is pressed and not currently moving
+      if (intendedDirection && !isMoving) {
+        moveCharacter(intendedDirection);
+      }
+
+      animationFrameRef.current = requestAnimationFrame(processMovement);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(processMovement);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isMoving, position]);
 
   // Calculate pixel position based on grid position
-  const topPosition = position.row * 48 + 8; // 48px tile + 8px padding
-  const leftPosition = position.col * 48 + 8;
+  const tileSize = 48;
+  const padding = 8;
+  const topPosition = position.row * tileSize + padding;
+  const leftPosition = position.col * tileSize + padding;
+
+  // Calculate rotation based on direction for dynamic feel
+  const rotationMap: Record<Direction, number> = {
+    up: 0,
+    down: 180,
+    left: -90,
+    right: 90,
+  };
+  const rotation = direction ? rotationMap[direction] : 0;
 
   return (
     <div
-      className="pointer-events-none absolute z-10 flex flex-1 items-center justify-center transition-all duration-150 ease-out"
+      className="pointer-events-none absolute z-10 flex items-center justify-center"
       style={{
         top: `${topPosition}px`,
         left: `${leftPosition}px`,
+        transition: `all ${MOVEMENT_CONFIG.transitionDuration}ms ${MOVEMENT_CONFIG.easing}`,
+        transform: `translate(-50%, -50%) scale(${scale})`,
       }}
     >
-      <div className="animate-bounce text-3xl drop-shadow-lg">🧙</div>
+      <div
+        style={{
+          fontSize: '2rem',
+          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))',
+          transition: `transform ${MOVEMENT_CONFIG.transitionDuration}ms ${MOVEMENT_CONFIG.easing}`,
+          transform: `rotate(${rotation}deg) scaleY(${isMoving ? MOVEMENT_CONFIG.bounceIntensity : 1})`,
+          transformOrigin: 'center',
+        }}
+      >
+        🧙
+      </div>
     </div>
   );
 }
