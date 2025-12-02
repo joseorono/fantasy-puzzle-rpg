@@ -407,6 +407,9 @@ const Tilemap: React.FC<TilemapProps> = ({
     if (!currentNode || currentNode.type !== 'Treasure' || !currentNode.lootPayload) return;
     console.log('Opening chest:', currentNode.name);
 
+    // Play chest opening sound immediately for instant feedback
+    soundService.playSound(SoundNames.bgNoiseMiner, 0.7, 0.1, 0.05);
+
     const loot = currentNode.lootPayload;
 
     // Apply loot to player inventory and resources using math utilities
