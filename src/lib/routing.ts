@@ -145,13 +145,6 @@ export function goToDialogueDemo(currentState: RouterState, data?: ViewDataMap['
 }
 
 /**
- * Navigate to level up with required data
- */
-export function goToLevelUp(currentState: RouterState, data: ViewDataMap['level-up']): NavigationResult {
-  return prepareNavigation(currentState, 'level-up', data);
-}
-
-/**
  * Navigate to inventory
  */
 export function goToInventory(currentState: RouterState, data?: ViewDataMap['inventory']): NavigationResult {
@@ -159,10 +152,10 @@ export function goToInventory(currentState: RouterState, data?: ViewDataMap['inv
 }
 
 /**
- * Navigate to level up demo
+ * Navigate to level up
  */
-export function goToLevelUpDemo(currentState: RouterState, data: ViewDataMap['level-up-demo']): NavigationResult {
-  return prepareNavigation(currentState, 'level-up-demo', data);
+export function goToLevelUp(currentState: RouterState, data: ViewDataMap['level-up']): NavigationResult {
+  return prepareNavigation(currentState, 'level-up', data);
 }
 
 /**
@@ -170,4 +163,11 @@ export function goToLevelUpDemo(currentState: RouterState, data: ViewDataMap['le
  */
 export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']): NavigationResult {
   return prepareNavigation(currentState, 'debug', data ?? {});
+}
+
+/**
+ * Navigate to battle rewards
+ */
+export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
+  return prepareNavigation(currentState, 'battle-rewards', data);
 }

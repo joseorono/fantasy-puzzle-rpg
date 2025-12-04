@@ -56,6 +56,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   function handleConfirm() {
     if (!hasPendingChanges) return;
     onConfirm(pendingAllocations);
+    onBack();
   }
 
   // Calculate HP percentage for display

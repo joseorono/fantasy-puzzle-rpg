@@ -38,14 +38,14 @@ export interface RouterSlice {
       goToInventory: (data?: ViewDataMap['inventory']) => void;
 
       /**
-       * Navigate to level up demo
-       */
-      goToLevelUpDemo: (data?: ViewDataMap['level-up-demo']) => void;
-
-      /**
        * Navigate to debug view
        */
       goToDebug: (data?: ViewDataMap['debug']) => void;
+
+      /**
+       * Navigate to battle rewards
+       */
+      goToBattleRewards: (data: ViewDataMap['battle-rewards']) => void;
 
       /**
        * Go back to previous view

@@ -10,8 +10,9 @@ import { useParty, usePartyActions } from '~/stores/game-store';
  */
 interface LevelUpDemoProps {
   id: string;
+  onComplete?: () => void;
 }
-export function LevelUpDemo({ id }: LevelUpDemoProps) {
+export function LevelUpDemo({ id, onComplete }: LevelUpDemoProps) {
   const partyMembers = useParty();
   const character = partyMembers.find((member) => member.id === id);
   const partyActions = usePartyActions();
@@ -59,6 +60,7 @@ export function LevelUpDemo({ id }: LevelUpDemoProps) {
 
   function handleBack() {
     setShowDemo(false);
+    onComplete?.();
   }
 
   function handleResetDemo() {

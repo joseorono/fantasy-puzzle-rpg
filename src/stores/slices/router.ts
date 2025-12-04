@@ -11,8 +11,8 @@ import {
   goToDialogueDemo as libGoToDialogueDemo,
   goToLevelUp as libGoToLevelUp,
   goToInventory as libGoToInventory,
-  goToLevelUpDemo as libGoToLevelUpDemo,
   goToDebug as libGoToDebug,
+  goToBattleRewards as libGoToBattleRewards,
 } from '~/lib/routing';
 
 /**
@@ -89,9 +89,9 @@ export function createRouterSlice(set: any): RouterSlice {
           });
         },
 
-        goToLevelUpDemo: (data) => {
+        goToDebug: (data) => {
           set((state: RouterSlice) => {
-            const result = libGoToLevelUpDemo(state.router, data);
+            const result = libGoToDebug(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {
@@ -100,9 +100,9 @@ export function createRouterSlice(set: any): RouterSlice {
           });
         },
 
-        goToDebug: (data) => {
+        goToBattleRewards: (data) => {
           set((state: RouterSlice) => {
-            const result = libGoToDebug(state.router, data);
+            const result = libGoToBattleRewards(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {

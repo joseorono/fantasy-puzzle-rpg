@@ -1,3 +1,5 @@
+import type { LootTable } from './loot';
+
 /**
  * Available views in the game
  */
@@ -9,7 +11,7 @@ export type ViewType =
   | 'level-up'
   | 'inventory'
   | 'debug'
-  | 'level-up-demo';
+  | 'battle-rewards';
 
 /**
  * Data for town hub view
@@ -50,13 +52,6 @@ export interface DialogueDemoViewData {
 }
 
 /**
- * Data for level up view
- */
-export interface LevelUpViewData {
-  characterId: string;
-}
-
-/**
  * Data for inventory view
  */
 export interface InventoryViewData {
@@ -64,9 +59,9 @@ export interface InventoryViewData {
 }
 
 /**
- * Data for level up demo view
+ * Data for level up view
  */
-export interface LevelUpDemoViewData {
+export interface LevelUpViewData {
   id: string;
 }
 
@@ -78,6 +73,14 @@ export interface DebugViewData {
 }
 
 /**
+ * Data for battle rewards view
+ */
+export interface BattleRewardsViewData {
+  lootTable: LootTable;
+  expReward: number;
+}
+
+/**
  * View data mapping
  */
 export interface ViewDataMap {
@@ -86,9 +89,9 @@ export interface ViewDataMap {
   'map-demo': MapDemoViewData;
   'dialogue-demo': DialogueDemoViewData;
   'level-up': LevelUpViewData;
-  'level-up-demo': LevelUpDemoViewData;
   inventory: InventoryViewData;
   debug: DebugViewData;
+  'battle-rewards': BattleRewardsViewData;
 }
 
 /**
@@ -99,9 +102,9 @@ export type RouteStatus = TownHubViewData &
   MapDemoViewData &
   DialogueDemoViewData &
   LevelUpViewData &
-  LevelUpDemoViewData &
   InventoryViewData &
-  DebugViewData;
+  DebugViewData &
+  BattleRewardsViewData;
 
 /**
  * Router state
