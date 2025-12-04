@@ -3,6 +3,7 @@ import TownHub from '~/components/town/town-hub';
 import DebugView from '~/views/debug-view';
 import { DialogueTestView } from './views/dialogue-test';
 import { LevelUpDemo } from './views/level-up-demo';
+import { BattleRewardsScreen } from './views/battle-rewards-screen';
 import DemoMap from './components/map/demo-map.tsx';
 import BattleScreen from '~/views/battle-screen';
 
@@ -12,7 +13,7 @@ import BattleScreen from '~/views/battle-screen';
 export default function GameScreen() {
   const currentView = useCurrentView();
   const townHubData = useViewData('town-hub');
-  const levelUpDemoData = useViewData('level-up-demo');
+  const levelUpData = useViewData('level-up');
 
   switch (currentView) {
     case 'town-hub':
@@ -35,11 +36,7 @@ export default function GameScreen() {
       return <DialogueTestView />;
 
     case 'level-up':
-      // TODO: Implement level-up view
-      return <div>Level Up View - Coming Soon</div>;
-
-    case 'level-up-demo':
-      return <LevelUpDemo id={levelUpDemoData!.id} />;
+      return <LevelUpDemo id={levelUpData!.id} />;
 
     case 'inventory':
       // TODO: Implement inventory view
@@ -47,6 +44,9 @@ export default function GameScreen() {
 
     case 'debug':
       return <DebugView />;
+
+    case 'battle-rewards':
+      return <BattleRewardsScreen />;
 
     default:
       return <div>Unknown View: {currentView}</div>;
