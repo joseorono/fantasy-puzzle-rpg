@@ -86,11 +86,14 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
     <div className="blacksmith">
       <div className="bg-blacksmith" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
       <button className="leave-btn" onClick={onLeaveCallback}></button>
+
+      {/* Top Bar Resources */}
+      <div className="town-resources-bar">
+        <TopBarResources resources={resources} />
+      </div>
+
       <div className="shop-container">
         <h1>Blacksmith</h1>
-
-        {/* Resources Display */}
-        <TopBarResources resources={resources} />
 
         {/* Tab Navigation */}
         <div className="blacksmith-tabs">

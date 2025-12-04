@@ -12,7 +12,7 @@
   display: flex;
   gap: 1.5rem;
   align-items: center;
-  justify-content: center;
+  justify-content: end;
   flex-wrap: wrap;
 }
 
@@ -185,4 +185,25 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+@media (max-width: 1440px) {
+    .top-bar-resources {
+        transform: scale(0.7);
+        padding: 0;
+    }
+    .town-resources-bar {
+        width: 100%;
+        display: flex;
+        justify-content: end;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 3;
+    }
+    .top-bar-resources__container {
+        margin-right: 0;
+    }
 }
