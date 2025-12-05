@@ -55,7 +55,7 @@
 
 /* Variant: Golden - inspired by Golden UI with decorative elements */
 .marquee-container.marquee--golden {
-  position: absolute;
+  position: relative;
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
   border-top: 3px solid #d4a574;
   border-bottom: 3px solid #d4a574;
@@ -63,10 +63,6 @@
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.5),
     0 4px 8px rgba(0, 0, 0, 0.4);
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 4;
 }
 
 .marquee-container.marquee--golden .marquee-text {
@@ -74,11 +70,3 @@
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
 }
 
-/* Blacksmith Marquee - Position at bottom */
-/* .blacksmith .marquee-container.marquee--golden {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 4;
-} */
