@@ -220,9 +220,6 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         )}
       </div>
 
-      {/* Marquee Footer - Outside shop container */}
-      <MarqueeText type="blacksmith" variant="marquee--golden" />
-
       {/* Dialogue Section */}
       <div className="dialogue-container">
         <div className="dialogue-portraits">
@@ -230,6 +227,10 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         </div>
         <DialogueBox speakerName={BLACKSMITH_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
       </div>
+      <footer>
+        {/* Marquee Footer - Outside shop container */}
+        <MarqueeText type="blacksmith" variant="marquee--golden" />
+      </footer>
     </div>
   );
 }
