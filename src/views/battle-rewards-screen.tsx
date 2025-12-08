@@ -20,7 +20,6 @@ export const rewardsStepAtom = atom(1);
 export function BattleRewardsScreen() {
   const [step, setStep] = useAtom(rewardsStepAtom);
   const battleRewardsData = useViewData('battle-rewards');
-  const partyMembers = useParty();
   const partyActions = usePartyActions();
   const routerActions = useRouterActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
@@ -43,9 +42,11 @@ export function BattleRewardsScreen() {
     return (
       <ExpBarFillingUp
         expReward={expReward}
-        onFinish={() => {
-          // Calculate pending level ups for all party members
-          const pending = calculateLevelUpsForParty(partyMembers, expReward);
+        onFinish={(updatedPartyMembers) => {
+          // Calculate pending level ups for all party members based on updated EXP
+          const pending = calculateLevelUpsForParty(updatedPartyMembers, expReward).filter(
+            (pendingLevelUp) => pendingLevelUp.pendingLevelUps > 0,
+          );
           setPendingLevelUps(pending);
           setCurrentLevelUpIndex(0);
           setStep(3);
@@ -96,8 +97,10 @@ export function BattleRewardsScreen() {
     }
 
     const currentPending = pendingLevelUps[currentLevelUpIndex];
+    const totalLevelUps = currentPending.pendingLevelUps;
+    const totalPoints = totalLevelUps * 2;
 
-    if (currentPending.pendingLevelUps === 0) {
+    if (totalLevelUps === 0) {
       // No level ups for this character, skip to next
       setCurrentLevelUpIndex((prev) => prev + 1);
       return null;
@@ -110,7 +113,7 @@ export function BattleRewardsScreen() {
         stats: { ...currentPending.character.stats },
         potentialStats: { ...currentPending.character.potentialStats },
       };
-      const random = getRandomPotentialStats(charCopy.potentialStats, 2);
+      const random = getRandomPotentialStats({ ...charCopy.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
 
@@ -120,10 +123,17 @@ export function BattleRewardsScreen() {
       potentialStats: { ...currentPending.character.potentialStats },
     };
 
+    const displayCharacter: CharacterData = {
+      ...charCopy,
+      level: charCopy.level + totalLevelUps,
+      expToNextLevel: currentPending.remainingExp,
+    };
+
     function handleConfirm(allocatedStats: CoreRPGStats) {
       if (!randomPotentialStats) return;
       // Apply the stat changes using the leveling system
-      const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, 1);
+      const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
+      updatedCharacter.expToNextLevel = currentPending.remainingExp;
       partyActions.updateCharacter(currentPending.charId, updatedCharacter);
       // Move to next character
       setCurrentLevelUpIndex((prev) => prev + 1);
@@ -138,8 +148,8 @@ export function BattleRewardsScreen() {
 
     return (
       <LevelUpView
-        character={charCopy}
-        availablePoints={5}
+        character={displayCharacter}
+        availablePoints={totalPoints}
         potentialStatPoints={randomPotentialStats || { pow: 0, vit: 0, spd: 0 }}
         onConfirm={handleConfirm}
         onBack={handleBack}
@@ -263,7 +273,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
  */
 interface ExpBarFillingUpProps {
   expReward: number;
-  onFinish: () => void;
+  onFinish: (updatedPartyMembers: CharacterData[]) => void;
 }
 
 function ExpBarFillingUp({ expReward, onFinish }: ExpBarFillingUpProps) {
@@ -272,16 +282,17 @@ function ExpBarFillingUp({ expReward, onFinish }: ExpBarFillingUpProps) {
   const [progress, setProgress] = useState(0);
 
   function handleContinue() {
-    // Apply exp to all party members
-    partyMembers.forEach((member) => {
-      const updatedMember = {
+    // Apply exp to all party members and compute the updated party snapshot
+    const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
+      const updatedMember: CharacterData = {
         ...member,
         expToNextLevel: member.expToNextLevel + expReward,
       };
       partyActions.updateCharacter(member.id, updatedMember);
+      return updatedMember;
     });
 
-    onFinish();
+    onFinish(updatedPartyMembers);
   }
 
   // Animate the exp bar

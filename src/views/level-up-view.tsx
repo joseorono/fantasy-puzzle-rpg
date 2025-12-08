@@ -56,6 +56,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   function handleConfirm() {
     if (!hasPendingChanges) return;
     onConfirm(pendingAllocations);
+    setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
     onBack();
   }
 
