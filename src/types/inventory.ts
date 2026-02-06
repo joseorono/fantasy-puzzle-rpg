@@ -19,7 +19,10 @@ export interface EquipmentItemData extends BaseItemData {
   forClass?: CharacterClass;
 }
 
-export interface ConsumableItemData extends BaseItemData {}
+export interface ConsumableItemData extends BaseItemData {
+  usableInBattle: boolean;
+  usableOutOfBattle: boolean;
+}
 
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];
 export type ItemStoreParams = Array<ConsumableItemIds>;
