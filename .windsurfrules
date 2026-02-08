@@ -41,3 +41,8 @@ Use refs only for direct DOM access.
 Use guard clauses (early returns) for error handling.
 
 
+# State Management
+- Do not introduce new state management libraries; use already-introduced packages (Zustand, Jotai) or useState. No prop drilling unless necessary AND optimal.
+- We use a Zustand store for global state in general, but we use Jotai for battles, so in combat, only use Jotai except for initial state setup.
+
+More generally, follow the conventions in the CLAUDE.md file.
