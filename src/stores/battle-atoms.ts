@@ -1,9 +1,16 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
-import { subtractionWithMin, additionWithMax } from '~/lib/math';
+import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
-import { calculatePartyCurrentHp, calculatePartyHpPercentage } from '~/lib/rpg-calculations';
+import { calculatePartyHpPercentage } from '~/lib/rpg-calculations';
+import {
+  getLivingMembers,
+  getHealableMembers,
+  damagePartyMember,
+  healPartyMember,
+  isPartyDefeated,
+} from '~/lib/party-system';
 import {
   createInitialBoard,
   hasMatchAtPosition,
@@ -91,28 +98,17 @@ export const checkSwapValidityAtom = atom(
 // Atom to damage party (targets random living hero)
 export const damagePartyAtom = atom(null, (get, set, damage: number) => {
   const currentState = get(battleStateAtom);
-  const party = [...currentState.party];
 
   // Get living party members
-  const livingMembers = party.filter((char) => char.currentHp > 0);
-  if (livingMembers.length === 0) return;
+  const living = getLivingMembers(currentState.party);
+  if (living.length === 0) return;
 
   // Select a random living hero to take damage
   // ToDo: Maybe make this a bit smarter? If it makes the game more fun.
-  const targetHero = getRandomElement(livingMembers);
+  const targetHero = getRandomElement(living);
 
-  // Find and damage the target hero
-  const heroIndex = party.findIndex((char) => char.id === targetHero.id);
-  if (heroIndex !== -1) {
-    party[heroIndex] = {
-      ...party[heroIndex],
-      currentHp: subtractionWithMin(party[heroIndex].currentHp, damage, 0),
-    };
-  }
-
-  // Check if party is defeated
-  const totalHp = calculatePartyCurrentHp(party);
-  const gameStatus = totalHp <= 0 ? 'lost' : 'playing';
+  const party = damagePartyMember(currentState.party, targetHero.id, damage);
+  const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
 
   set(battleStateAtom, {
     ...currentState,
@@ -177,23 +173,14 @@ export const removeMatchedOrbsAtom = atom(null, (get, set, matchedOrbIds: Set<st
 // Atom to heal the most damaged party member
 export const healPartyAtom = atom(null, (get, set, amount: number) => {
   const currentState = get(battleStateAtom);
-  const party = [...currentState.party];
 
-  // Find living party members that aren't at full HP
-  const healableMembers = party.filter((char) => char.currentHp > 0 && char.currentHp < char.maxHp);
-  if (healableMembers.length === 0) return;
+  // Find living party members that aren't at full HP, sorted by HP% ascending
+  const healable = getHealableMembers(currentState.party);
+  if (healable.length === 0) return;
 
   // Heal the member with the lowest HP percentage
-  healableMembers.sort((a, b) => a.currentHp / a.maxHp - b.currentHp / b.maxHp);
-  const targetHero = healableMembers[0];
-
-  const heroIndex = party.findIndex((char) => char.id === targetHero.id);
-  if (heroIndex !== -1) {
-    party[heroIndex] = {
-      ...party[heroIndex],
-      currentHp: additionWithMax(party[heroIndex].currentHp, amount, party[heroIndex].maxHp),
-    };
-  }
+  const targetHero = healable[0];
+  const party = healPartyMember(currentState.party, targetHero.id, amount);
 
   set(battleStateAtom, {
     ...currentState,
