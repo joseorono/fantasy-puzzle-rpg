@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRightIcon } from 'lucide-react';
+import { ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
@@ -103,7 +103,10 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   alt={character.name}
                   className="character-portrait-small pixel-art"
                 />
-                <div className="level-badge pixel-border pixel-font text-xs">{character.level}</div>
+                <div className="level-badge pixel-border pixel-font text-xs">
+                  {character.level}
+                  <ArrowUpIcon className="level-badge-arrow" />
+                </div>
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>
@@ -192,12 +195,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="info-icon cursor-help">ⓘ</span>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Increases your damage output</TooltipContent>
-                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.pow}</span>
@@ -211,7 +208,15 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   )}
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">Increases your damage output.</p>
+              <p className="stat-hint pixel-font text-xs">
+                Increases your ability power.{' '}
+                {/* <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="info-icon cursor-help">ⓘ</span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Increases your damage output</TooltipContent>
+                </Tooltip> */}
+              </p>
               <div className="stat-meter">
                 <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
               </div>
@@ -240,12 +245,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="info-icon cursor-help">ⓘ</span>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Increases your Maximum HP</TooltipContent>
-                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.vit}</span>
@@ -259,7 +258,15 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   )}
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">Increases your Maximum HP.</p>
+              <p className="stat-hint pixel-font text-xs">
+                Increases your Maximum HP.{' '}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="info-icon cursor-help">ⓘ</span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Increases your Maximum HP</TooltipContent>
+                </Tooltip>
+              </p>
               <div className="stat-meter">
                 <div
                   className="stat-meter-fill vit"
@@ -291,12 +298,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="info-icon cursor-help">ⓘ</span>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Reduces skill cooldowns</TooltipContent>
-                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.spd}</span>
@@ -310,7 +311,19 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   )}
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">Reduces skill cooldowns.</p>
+              <p className="stat-hint pixel-font text-xs">
+                Reduces skill cooldowns.{' '}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="info-icon cursor-help">ⓘ</span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    -Reduces ultimate skill cooldown
+                    <br />
+                    -Reduces item cooldowns in battle
+                  </TooltipContent>
+                </Tooltip>
+              </p>
               <div className="stat-meter">
                 <div
                   className="stat-meter-fill spd"
@@ -352,9 +365,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 disabled={!hasPendingChanges}
               >
                 Reset
-              </button>
-              <button className="action-button back pixel-font text-xs sm:text-sm" onClick={onBack}>
-                Back
               </button>
             </div>
           </div>
