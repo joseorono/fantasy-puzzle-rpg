@@ -83,6 +83,25 @@ export function calculateDamage(baseDamage: number, pow: number): number {
 }
 
 /**
+ * Calculates skill damage based on a multiplier, flat bonus, and POW stat.
+ * Formula: floor(|baseDamage * multiplier| * (1 + POW/100)) + flatDamageBonus
+ * @param baseDamage Base damage value for skills
+ * @param pow Power stat
+ * @param baseDamageMultiplier Skill-specific damage multiplier
+ * @param flatDamageBonus Flat bonus added after scaling (e.g., Rogue burst)
+ * @returns Final skill damage value
+ */
+export function calculateSkillDamage(
+  baseDamage: number,
+  pow: number,
+  baseDamageMultiplier: number,
+  flatDamageBonus: number,
+): number {
+  const scaledBase = Math.abs(baseDamage * baseDamageMultiplier);
+  return calculateDamage(scaledBase, pow) + flatDamageBonus;
+}
+
+/**
  * Calculates damage for a character's attack.
  * @param character Character data
  * @param baseDamage Base damage of the attack

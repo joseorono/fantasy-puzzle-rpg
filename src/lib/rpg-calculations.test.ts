@@ -191,6 +191,66 @@ describe('Damage Calculations', () => {
 });
 
 // ============================================================================
+// Skill Damage Calculations
+// ============================================================================
+
+describe('Skill Damage Calculations', () => {
+  test('Warrior Power Strike: 2x multiplier, no flat bonus', () => {
+    // baseDamage=15, pow=6, multiplier=2, flat=0
+    // scaledBase = |15 * 2| = 30
+    // calculateDamage(30, 6) = floor(30 * 106 / 100) = floor(31.8) = 31
+    // total = 31 + 0 = 31
+    const result = rpg.calculateSkillDamage(15, 6, 2, 0);
+    expect(result).toBe(31);
+  });
+
+  test('Rogue Assassinate: 1x multiplier, 30 flat bonus', () => {
+    // baseDamage=15, pow=20, multiplier=1, flat=30
+    // scaledBase = |15 * 1| = 15
+    // calculateDamage(15, 20) = floor(15 * 120 / 100) = floor(18) = 18
+    // total = 18 + 30 = 48
+    const result = rpg.calculateSkillDamage(15, 20, 1, 30);
+    expect(result).toBe(48);
+  });
+
+  test('Mage Arcane Blast: 3x multiplier, no flat bonus', () => {
+    // baseDamage=15, pow=25, multiplier=3, flat=0
+    // scaledBase = |15 * 3| = 45
+    // calculateDamage(45, 25) = floor(45 * 125 / 100) = floor(56.25) = 56
+    // total = 56 + 0 = 56
+    const result = rpg.calculateSkillDamage(15, 25, 3, 0);
+    expect(result).toBe(56);
+  });
+
+  test('Healer Divine Heal: 2x multiplier (heal amount)', () => {
+    // baseDamage=15, pow=10, multiplier=2, flat=0
+    // scaledBase = |15 * 2| = 30
+    // calculateDamage(30, 10) = floor(30 * 110 / 100) = floor(33) = 33
+    // total = 33 + 0 = 33
+    const result = rpg.calculateSkillDamage(15, 10, 2, 0);
+    expect(result).toBe(33);
+  });
+
+  test('Zero POW returns base scaled damage + flat bonus', () => {
+    const result = rpg.calculateSkillDamage(15, 0, 2, 10);
+    // scaledBase = 30, calculateDamage(30, 0) = 30, total = 30 + 10 = 40
+    expect(result).toBe(40);
+  });
+
+  test('Zero multiplier returns only flat bonus', () => {
+    const result = rpg.calculateSkillDamage(15, 20, 0, 30);
+    // scaledBase = 0, calculateDamage(0, 20) = 0, total = 0 + 30 = 30
+    expect(result).toBe(30);
+  });
+
+  test('High POW scales significantly', () => {
+    const result = rpg.calculateSkillDamage(15, 100, 2, 0);
+    // scaledBase = 30, calculateDamage(30, 100) = floor(30 * 200 / 100) = 60
+    expect(result).toBe(60);
+  });
+});
+
+// ============================================================================
 // Speed Calculations
 // ============================================================================
 

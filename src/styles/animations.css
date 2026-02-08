@@ -109,6 +109,30 @@
   animation: modal-slide-up 0.4s ease-out;
 }
 
+/* Skill activation flash + scale */
+@keyframes skill-activate {
+  0% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  30% {
+    filter: brightness(1.8);
+    transform: scale(1.15);
+  }
+  60% {
+    filter: brightness(1.3);
+    transform: scale(1.05);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+.skill-activate {
+  animation: skill-activate 0.6s ease-out;
+}
+
 /* Flash fade for damage impact */
 @keyframes flash-fade {
   0% {

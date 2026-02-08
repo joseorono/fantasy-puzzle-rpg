@@ -5,7 +5,8 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { GameOverModal } from '~/components/battle/game-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
-import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom } from '~/stores/battle-atoms';
+import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom, tickSkillCooldownsAtom } from '~/stores/battle-atoms';
+import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -17,6 +18,7 @@ export default function BattleScreen() {
   const enemy = useAtomValue(enemyAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const damageParty = useSetAtom(damagePartyAtom);
+  const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const [isMuted, setIsMuted] = useState(false);
 
   // Calculate actual attack interval with SPD modifier
@@ -60,6 +62,17 @@ export default function BattleScreen() {
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
+
+  // Skill cooldown tick loop
+  useEffect(() => {
+    if (gameStatus !== 'playing') return;
+
+    const interval = setInterval(() => {
+      tickSkillCooldowns(0.1);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [gameStatus, tickSkillCooldowns]);
 
   return (
     <div className="game-view overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -140,6 +153,7 @@ export default function BattleScreen() {
 
               <PartyDisplay />
               <DamageNumber target="party" />
+              <SkillActivationEffect />
             </div>
           </div>
 

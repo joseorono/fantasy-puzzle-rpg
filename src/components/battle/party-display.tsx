@@ -1,11 +1,15 @@
-import { useAtomValue } from 'jotai';
-import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom } from '~/stores/battle-atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom, activateSkillAtom } from '~/stores/battle-atoms';
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import { CHARACTER_ICONS, HEALTH_BAR_COLORS } from '~/constants/ui';
 import { calculatePercentage } from '~/lib/math';
+import { calculateCharacterCooldown } from '~/lib/rpg-calculations';
+import { SKILL_DEFINITIONS } from '~/constants/skills';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 
 // Character colors with cooldown property
 const characterColors = {
@@ -39,16 +43,27 @@ const characterColors = {
   },
 };
 
-function CharacterSprite({ character }: CharacterSpriteProps) {
+function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
   const colors = characterColors[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
   const healthPercentage = calculatePercentage(character.currentHp, character.maxHp);
-  const cooldownPercentage = ((character.maxCooldown - character.skillCooldown) / character.maxCooldown) * 100;
-  const isSkillReady = character.skillCooldown === 0;
+  const maxCooldownSeconds = calculateCharacterCooldown(character);
+  const cooldownPercentage = ((maxCooldownSeconds - character.skillCooldown) / maxCooldownSeconds) * 100;
+  const isSkillReady = character.skillCooldown <= 0;
   const isDead = character.currentHp <= 0;
+  const skill = SKILL_DEFINITIONS[character.class];
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
+  const [isActivating, setIsActivating] = useState(false);
+
+  function handleClick() {
+    if (isDead || !isSkillReady || !onActivateSkill) return;
+    onActivateSkill(character.id);
+    soundService.playSound(SoundNames.shimmeringSuccessShort);
+    setIsActivating(true);
+    setTimeout(() => setIsActivating(false), 600);
+  }
 
   // Show damage animation when this character is hit
   useEffect(() => {
@@ -69,12 +84,14 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
 
         {/* Character container */}
         <div
+          onClick={handleClick}
           className={cn(
             'relative h-16 w-14 rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-16 sm:border-3 md:h-22 md:w-18',
-            'cursor-pointer hover:scale-110',
             isDead ? 'border-gray-500 bg-gray-600 opacity-50 grayscale' : colors.bg,
             !isDead && colors.border,
-            !isDead && isSkillReady && 'animate-bounce',
+            !isDead && isSkillReady && 'animate-bounce cursor-pointer hover:scale-110',
+            !isDead && !isSkillReady && 'cursor-default',
+            isActivating && 'skill-activate',
           )}
           style={{ imageRendering: 'pixelated' }}
         >
@@ -153,7 +170,11 @@ function CharacterSprite({ character }: CharacterSpriteProps) {
       {/* Skill cooldown bar */}
       <div className="w-full max-w-[70px] sm:max-w-[80px]">
         <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
-          {isSkillReady ? 'READY!' : `CD: ${character.skillCooldown}`}
+          {isSkillReady ? (
+            <span className="text-amber-300">{skill.icon} {skill.name}</span>
+          ) : (
+            `CD: ${Math.ceil(character.skillCooldown)}s`
+          )}
         </div>
         <div className="relative h-2 rounded-none border border-gray-700 bg-gray-800 sm:h-2.5">
           <div
@@ -180,6 +201,7 @@ export function PartyDisplay() {
   const party = useAtomValue(partyAtom);
   const partyHealthPercentage = useAtomValue(partyHealthPercentageAtom);
   const lastMatchedType = useAtomValue(lastMatchedTypeAtom);
+  const activateSkill = useSetAtom(activateSkillAtom);
   const [showPulse, setShowPulse] = useState(false);
 
   // Trigger pulse animation when type changes
@@ -211,7 +233,7 @@ export function PartyDisplay() {
       <div className="relative flex flex-1 items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {party.map((character) => (
-            <CharacterSprite key={character.id} character={character} />
+            <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
           ))}
         </div>
       </div>

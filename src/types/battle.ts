@@ -20,6 +20,14 @@ export interface Match {
 
 export type BattleStatus = 'playing' | 'won' | 'lost';
 
+export interface SkillActivationEvent {
+  characterId: string;
+  skillName: string;
+  amount: number;
+  isHeal: boolean;
+  timestamp: number;
+}
+
 export interface BattleState {
   party: CharacterData[];
   enemy: EnemyData;
@@ -32,4 +40,5 @@ export interface BattleState {
   lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
   lastMatchedType: OrbType | null;
   enemyAttackTimestamp?: number | null;
+  lastSkillActivation: SkillActivationEvent | null;
 }

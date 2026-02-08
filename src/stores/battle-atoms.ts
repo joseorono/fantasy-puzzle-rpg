@@ -3,7 +3,8 @@ import type { BattleState } from '~/types/battle';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
-import { calculatePartyHpPercentage } from '~/lib/rpg-calculations';
+import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
+import { SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -23,9 +24,12 @@ import {
 const initialParty = INITIAL_PARTY;
 const initialEnemy = INITIAL_ENEMY;
 
-// Initial battle state
+// Initial battle state — skills start on cooldown
 const initialBattleState: BattleState = {
-  party: initialParty,
+  party: initialParty.map((char) => ({
+    ...char,
+    skillCooldown: calculateCharacterCooldown(char),
+  })),
   enemy: initialEnemy,
   board: createInitialBoard(),
   selectedOrb: null,
@@ -36,6 +40,7 @@ const initialBattleState: BattleState = {
   lastDamage: null,
   lastMatchedType: null,
   enemyAttackTimestamp: null,
+  lastSkillActivation: null,
 };
 
 // Jotai atoms
@@ -144,7 +149,11 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
 // Atom to reset battle
 export const resetBattleAtom = atom(null, (_get, set) => {
   set(battleStateAtom, {
-    party: initialParty.map((char) => ({ ...char, currentHp: char.maxHp, skillCooldown: 0 })),
+    party: initialParty.map((char) => ({
+      ...char,
+      currentHp: char.maxHp,
+      skillCooldown: calculateCharacterCooldown(char),
+    })),
     enemy: { ...initialEnemy, currentHp: initialEnemy.maxHp },
     board: createInitialBoard(),
     selectedOrb: null,
@@ -154,6 +163,7 @@ export const resetBattleAtom = atom(null, (_get, set) => {
     gameStatus: 'playing',
     lastDamage: null,
     lastMatchedType: null,
+    lastSkillActivation: null,
   });
 });
 
@@ -220,3 +230,70 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
+export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
+
+// Atom to tick skill cooldowns each frame
+export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+
+  const party = currentState.party.map((char) => {
+    if (char.currentHp <= 0 || char.skillCooldown <= 0) return char;
+    return {
+      ...char,
+      skillCooldown: Math.max(0, char.skillCooldown - deltaSeconds),
+    };
+  });
+
+  set(battleStateAtom, { ...currentState, party });
+});
+
+// Atom to activate a character's skill
+export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+
+  const character = currentState.party.find((c) => c.id === characterId);
+  if (!character || character.currentHp <= 0 || character.skillCooldown > 0) return;
+
+  const skill = SKILL_DEFINITIONS[character.class];
+  const amount = calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus);
+
+  let party = currentState.party;
+  let enemy = { ...currentState.enemy };
+  let gameStatus = currentState.gameStatus;
+
+  if (skill.target === 'enemy') {
+    enemy.currentHp = subtractionWithMin(enemy.currentHp, amount, 0);
+    if (enemy.currentHp <= 0) {
+      gameStatus = 'won';
+    }
+  } else {
+    // Heal the most damaged living ally
+    const healable = getHealableMembers(party);
+    if (healable.length > 0) {
+      party = healPartyMember(party, healable[0].id, amount);
+    }
+  }
+
+  // Put skill back on cooldown
+  party = party.map((char) =>
+    char.id === characterId
+      ? { ...char, skillCooldown: calculateCharacterCooldown(char) }
+      : char,
+  );
+
+  set(battleStateAtom, {
+    ...currentState,
+    party,
+    enemy,
+    gameStatus,
+    lastSkillActivation: {
+      characterId,
+      skillName: skill.name,
+      amount,
+      isHeal: skill.target === 'ally',
+      timestamp: Date.now(),
+    },
+  });
+});

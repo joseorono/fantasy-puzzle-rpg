@@ -16,6 +16,7 @@ export interface DamageNumberProps {
 // Character Sprite Component
 export interface CharacterSpriteProps {
   character: CharacterData;
+  onActivateSkill?: (characterId: string) => void;
 }
 
 // Orb Component
