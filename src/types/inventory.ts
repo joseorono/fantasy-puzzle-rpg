@@ -19,9 +19,16 @@ export interface EquipmentItemData extends BaseItemData {
   forClass?: CharacterClass;
 }
 
+export type ConsumableAction =
+  | { type: 'heal'; amount: number }
+  | { type: 'clear-row' }
+  | { type: 'clear-column' };
+
 export interface ConsumableItemData extends BaseItemData {
   usableInBattle: boolean;
   usableOutOfBattle: boolean;
+  action?: ConsumableAction;
+  icon: string;
 }
 
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];
