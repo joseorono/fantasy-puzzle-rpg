@@ -7,7 +7,7 @@ body {
 
 /* Override Tailwind's cursor-pointer class */
 .cursor-pointer {
-  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 16 16, auto !important;
+  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 8 8, auto !important;
 }
 
 /* Interactive elements - enhanced cursor effect */
@@ -18,7 +18,7 @@ input[type="button"]:hover,
 [onclick]:hover,
 a[href]:hover,
 .cursor-pointer:hover {
-  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 16 16, auto !important;
+  cursor: url('/assets/cursors/dwarven-gauntlet-cursor.png') 8 8, auto !important;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.2);
 }
 
