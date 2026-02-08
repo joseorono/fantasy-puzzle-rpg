@@ -209,12 +209,14 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
               </div>
               <p className="stat-hint pixel-font text-xs">
-                Increases your ability power.{' '}
+                {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}{' '}
                 {/* <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="info-icon cursor-help">ⓘ</span>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Increases your damage output</TooltipContent>
+                  <TooltipContent side="right">
+                    {character.class === 'healer' ? 'Increases your healing output' : 'Increases your damage output'}
+                  </TooltipContent>
                 </Tooltip> */}
               </p>
               <div className="stat-meter">
