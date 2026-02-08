@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npx vitest run:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(python:*)",
+      "Bash(identify:*)",
+      "Bash(node -e:*)",
+      "Bash(npm run test-filter:*)"
     ]
   }
 }
