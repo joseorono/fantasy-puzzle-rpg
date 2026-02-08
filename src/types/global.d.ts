@@ -55,6 +55,9 @@ declare module '*.webp' {
   export default value;
 }
 
+// Font declarations
+declare module '@fontsource/press-start-2p';
+
 // This export statement is required to make this file a module
 // and enable the global declarations above
 export {};
