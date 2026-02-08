@@ -438,7 +438,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stat-allocation-row:last-child {
+.stat-allocation-row:nth-last-child(2) {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
