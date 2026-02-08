@@ -159,19 +159,19 @@ export function calculateAttackInterval(baseInterval: number, spd: number): numb
  * @param spd Speed stat
  * @returns Calculated cooldown in seconds
  */
-export function calculateCooldown(baseCooldown: number, spd: number): number {
+export function calculateSkillCooldown(baseCooldown: number, spd: number): number {
   return baseCooldown / (1 + spd / 100);
 }
 
 /**
- * Calculates cooldown fill rate per second based on speed.
+ * Calculates skill cooldown fill rate per second based on speed.
  * Formula: (1 / cooldown) = fills per second
  * @param baseCooldown Base cooldown in seconds
  * @param spd Speed stat
  * @returns Fill rate per second (0-1 range)
  */
-export function calculateCooldownFillRate(baseCooldown: number, spd: number): number {
-  const actualCooldown = calculateCooldown(baseCooldown, spd);
+export function calculateSkillCooldownFillRate(baseCooldown: number, spd: number): number {
+  const actualCooldown = calculateSkillCooldown(baseCooldown, spd);
   return 1 / actualCooldown;
 }
 
@@ -190,7 +190,7 @@ export function calculateEnemyAttackInterval(enemy: EnemyData): number {
  * @returns Actual cooldown in seconds
  */
 export function calculateCharacterCooldown(character: CharacterData): number {
-  return calculateCooldown(character.maxCooldown, character.stats.spd);
+  return calculateSkillCooldown(character.maxCooldown, character.stats.spd);
 }
 
 // ============================================================================
@@ -220,7 +220,7 @@ export function calculatePartyCollectiveSpd(party: CharacterData[]): number {
  */
 export function calculateItemCooldownInMs(party: CharacterData[]): number {
   const collectiveSpd = calculatePartyCollectiveSpd(party);
-  return Math.floor(calculateCooldown(BASE_ITEM_COOLDOWN, collectiveSpd) * 1000);
+  return Math.floor((BASE_ITEM_COOLDOWN / (1 + collectiveSpd / 100)) * 1000);
 }
 
 // ============================================================================

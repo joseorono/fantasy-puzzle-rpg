@@ -210,23 +210,23 @@ describe('Speed Calculations', () => {
     expect(result).toBe(2000); // 4000 / 2 = 2000
   });
 
-  test('calculateCooldown: Base calculation', () => {
-    const result = rpg.calculateCooldown(3, 20);
+  test('calculateSkillCooldown: Base calculation', () => {
+    const result = rpg.calculateSkillCooldown(3, 20);
     expect(result).toBe(2.5); // 3 / (1 + 20/100) = 3 / 1.2 = 2.5
   });
 
-  test('calculateCooldown: Zero speed', () => {
-    const result = rpg.calculateCooldown(3, 0);
+  test('calculateSkillCooldown: Zero speed', () => {
+    const result = rpg.calculateSkillCooldown(3, 0);
     expect(result).toBe(3);
   });
 
-  test('calculateCooldownFillRate: Calculates per-second rate', () => {
-    const result = rpg.calculateCooldownFillRate(2, 0);
+  test('calculateSkillCooldownFillRate: Calculates per-second rate', () => {
+    const result = rpg.calculateSkillCooldownFillRate(2, 0);
     expect(result).toBe(0.5); // 1/2 = 0.5 fills per second
   });
 
-  test('calculateCooldownFillRate: With speed bonus', () => {
-    const result = rpg.calculateCooldownFillRate(2, 100);
+  test('calculateSkillCooldownFillRate: With speed bonus', () => {
+    const result = rpg.calculateSkillCooldownFillRate(2, 100);
     expect(result).toBe(1); // 1/(2/2) = 1 fill per second
   });
 
