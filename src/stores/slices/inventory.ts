@@ -5,7 +5,12 @@ import type { InventoryItem } from '~/lib/inventory';
 /**
  * Initial inventory state
  */
-const INITIAL_INVENTORY_STATE: InventoryItem[] = [{ itemId: 'potion', quantity: 3 }];
+const INITIAL_INVENTORY_STATE: InventoryItem[] = [
+  { itemId: 'potion', quantity: 3 },
+  { itemId: 'high-potion', quantity: 2 },
+  { itemId: 'row-clear', quantity: 2 },
+  { itemId: 'column-clear', quantity: 2 },
+];
 
 /**
  * Create the inventory slice

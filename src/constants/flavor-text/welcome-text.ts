@@ -35,7 +35,7 @@ export const INN_WELCOME_TEXT: ReadonlyArray<string> = [
 export const ITEM_SHOP_WELCOME_TEXT: ReadonlyArray<string> = [
   "Welcome to my little shop! I've got just the thing to help you on your journey.",
   'Feeling a bit bruised? My potions will patch you right up!',
-  'Take a look around! I have potions, high-potions, and even energy boosters.',
+  'Take a look around! I have potions, big potions, and even energy boosters.',
   'A wise adventurer is always well-stocked. What can I get for you today?',
   'That energy booster is a lifesaver in a tough fight. Highly recommended!',
   'Every purchase comes with a smile! Let me know if anything catches your eye.',

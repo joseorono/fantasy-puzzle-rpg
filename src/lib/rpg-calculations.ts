@@ -194,6 +194,36 @@ export function calculateCharacterCooldown(character: CharacterData): number {
 }
 
 // ============================================================================
+// Item Cooldown Calculations
+// ============================================================================
+
+/**
+ * Base cooldown for battle items in seconds.
+ */
+const BASE_ITEM_COOLDOWN = 10;
+
+/**
+ * Calculates the collective (sum) SPD of all party members.
+ * @param party Array of character data
+ * @returns Total SPD across all party members
+ */
+export function calculatePartyCollectiveSpd(party: CharacterData[]): number {
+  return party.reduce((total, char) => total + char.stats.spd, 0);
+}
+
+/**
+ * Calculates the shared item cooldown in milliseconds based on the party's collective SPD.
+ * Higher collective SPD = shorter cooldown.
+ * Formula: (BASE_ITEM_COOLDOWN / (1 + collectiveSPD / 100)) * 1000
+ * @param party Array of character data
+ * @returns Item cooldown in milliseconds
+ */
+export function calculateItemCooldownInMs(party: CharacterData[]): number {
+  const collectiveSpd = calculatePartyCollectiveSpd(party);
+  return Math.floor(calculateCooldown(BASE_ITEM_COOLDOWN, collectiveSpd) * 1000);
+}
+
+// ============================================================================
 // Stat Utilities
 // ============================================================================
 

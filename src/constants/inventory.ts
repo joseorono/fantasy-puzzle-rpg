@@ -259,21 +259,51 @@ export const EquipmentItems: EquipmentItemData[] = [
   },
 ];
 
-export const ConsumableItemIds = ['potion', 'high-potion', 'energy-booster'];
+export const ConsumableItemIds = ['potion', 'high-potion', 'row-clear', 'column-clear', 'energy-booster'];
 export const ConsumableItems: ConsumableItemData[] = [
   {
     id: 'potion',
     name: 'Potion',
     type: 'consumable',
-    description: 'Heals a little. Tastes like red.',
+    description: 'Heals 50 HP. Tastes like red.',
     cost: { coins: 50, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    usableInBattle: true,
+    usableOutOfBattle: true,
+    action: { type: 'heal', amount: 50 },
+    icon: '🧪',
   },
   {
     id: 'high-potion',
     name: 'High Potion',
     type: 'consumable',
-    description: 'Heals a lot. Tastes like really red.',
+    description: 'Heals 200 HP. Tastes like really red.',
     cost: { coins: 200, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    usableInBattle: true,
+    usableOutOfBattle: true,
+    action: { type: 'heal', amount: 200 },
+    icon: '⚗️',
+  },
+  {
+    id: 'row-clear',
+    name: 'Row Clear',
+    type: 'consumable',
+    description: 'Clears an entire row of orbs from the board.',
+    cost: { coins: 300, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    usableInBattle: true,
+    usableOutOfBattle: false,
+    action: { type: 'clear-row' },
+    icon: '➡️',
+  },
+  {
+    id: 'column-clear',
+    name: 'Column Clear',
+    type: 'consumable',
+    description: 'Clears an entire column of orbs from the board.',
+    cost: { coins: 300, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    usableInBattle: true,
+    usableOutOfBattle: false,
+    action: { type: 'clear-column' },
+    icon: '⬇️',
   },
   {
     id: 'energy-booster',
@@ -281,5 +311,8 @@ export const ConsumableItems: ConsumableItemData[] = [
     type: 'consumable',
     description: 'A jolt for the whole team. Fills 30% of the ultimate bar.',
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    usableInBattle: true,
+    usableOutOfBattle: false,
+    icon: '⚡',
   },
 ];

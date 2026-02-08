@@ -3,6 +3,7 @@ import { EnemyDisplay } from '~/components/battle/enemy-display';
 import { PartyDisplay } from '~/components/battle/party-display';
 import { Match3Board } from '~/components/battle/match3-board';
 import { GameOverModal } from '~/components/battle/game-over-modal';
+import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
 import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom } from '~/stores/battle-atoms';
 import { Button } from '~/components/ui/8bit/button';
@@ -149,8 +150,9 @@ export default function BattleScreen() {
               <div className="pixel-art absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InNtYWxsR3JpZCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3BhdHRlcm4+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ1cmwoI3NtYWxsR3JpZCkiLz48cGF0aCBkPSJNIDYwIDAgTCAwIDAgMCA2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')]" />
             </div>
 
-            <div className="relative mx-auto max-w-xl">
+            <div id="match3BoardContainer" className="relative mx-auto max-w-xl">
               <Match3Board />
+              <BattleItemBar />
             </div>
           </div>
         </div>

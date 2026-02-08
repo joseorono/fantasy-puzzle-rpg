@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
-import { subtractionWithMin } from '~/lib/math';
+import { subtractionWithMin, additionWithMax } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
 import { calculatePartyCurrentHp, calculatePartyHpPercentage } from '~/lib/rpg-calculations';
@@ -167,6 +167,61 @@ export const removeMatchedOrbsAtom = atom(null, (get, set, matchedOrbIds: Set<st
 
   const currentState = get(battleStateAtom);
   const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds);
+
+  set(battleStateAtom, {
+    ...currentState,
+    board: newBoard,
+  });
+});
+
+// Atom to heal the most damaged party member
+export const healPartyAtom = atom(null, (get, set, amount: number) => {
+  const currentState = get(battleStateAtom);
+  const party = [...currentState.party];
+
+  // Find living party members that aren't at full HP
+  const healableMembers = party.filter((char) => char.currentHp > 0 && char.currentHp < char.maxHp);
+  if (healableMembers.length === 0) return;
+
+  // Heal the member with the lowest HP percentage
+  healableMembers.sort((a, b) => a.currentHp / a.maxHp - b.currentHp / b.maxHp);
+  const targetHero = healableMembers[0];
+
+  const heroIndex = party.findIndex((char) => char.id === targetHero.id);
+  if (heroIndex !== -1) {
+    party[heroIndex] = {
+      ...party[heroIndex],
+      currentHp: additionWithMax(party[heroIndex].currentHp, amount, party[heroIndex].maxHp),
+    };
+  }
+
+  set(battleStateAtom, {
+    ...currentState,
+    party,
+  });
+});
+
+// Atom to clear an entire row of orbs
+export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
+  const currentState = get(battleStateAtom);
+  const board = currentState.board;
+
+  const orbIds = new Set(board[row].map((orb) => orb.id));
+  const newBoard = removeMatchedOrbsAndRefill(board, orbIds);
+
+  set(battleStateAtom, {
+    ...currentState,
+    board: newBoard,
+  });
+});
+
+// Atom to clear an entire column of orbs
+export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
+  const currentState = get(battleStateAtom);
+  const board = currentState.board;
+
+  const orbIds = new Set(board.map((row) => row[col].id));
+  const newBoard = removeMatchedOrbsAndRefill(board, orbIds);
 
   set(battleStateAtom, {
     ...currentState,
