@@ -10,7 +10,6 @@ export default function RouterTestView() {
     goToBattleDemo,
     goToMapDemo,
     goToDialogueDemo,
-    goToLevelUp,
     goToBattleRewards,
     goToDebug,
     goBack,
@@ -67,13 +66,6 @@ export default function RouterTestView() {
           onClick={() => goToDialogueDemo({})}
         >
           Dialogue Demo
-        </button>
-
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToLevelUp({ id: 'warrior' })}
-        >
-          Level Up
         </button>
 
         <button

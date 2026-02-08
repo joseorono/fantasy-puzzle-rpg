@@ -16,7 +16,6 @@ const {
   goToStore,
   goToInn,
   goToDialogue,
-  goToLevelUp,
   goToInventory,
   goToDebug,
   goBack,
@@ -58,11 +57,6 @@ goToInn({
 goToDialogue({
   sceneId: 'intro-scene',
   onComplete: () => console.log('Dialogue finished'),
-});
-
-// Level Up (required data)
-goToLevelUp({
-  characterId: 'warrior',
 });
 
 // Inventory
@@ -162,7 +156,6 @@ type ViewType =
   | 'store'
   | 'inn'
   | 'dialogue'
-  | 'level-up'
   | 'inventory'
   | 'debug';
 ```
@@ -174,4 +167,4 @@ type ViewType =
 - ✅ History automatically tracked
 - ✅ URL bar never changes
 - ✅ Can run async code before navigation
-- ⚠️ Some views require data (battle, store, inn, dialogue, level-up)
+- ⚠️ Some views require data (battle, store, inn, dialogue, battle-rewards)

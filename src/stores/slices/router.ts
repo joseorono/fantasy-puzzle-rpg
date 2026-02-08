@@ -9,7 +9,6 @@ import {
   goToBattleDemo as libGoToBattleDemo,
   goToMapDemo as libGoToMapDemo,
   goToDialogueDemo as libGoToDialogueDemo,
-  goToLevelUp as libGoToLevelUp,
   goToInventory as libGoToInventory,
   goToDebug as libGoToDebug,
   goToBattleRewards as libGoToBattleRewards,
@@ -59,17 +58,6 @@ export function createRouterSlice(set: any): RouterSlice {
         goToDialogueDemo: (data) => {
           set((state: RouterSlice) => {
             const result = libGoToDialogueDemo(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
-
-        goToLevelUp: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToLevelUp(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {

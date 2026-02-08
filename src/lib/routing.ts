@@ -152,13 +152,6 @@ export function goToInventory(currentState: RouterState, data?: ViewDataMap['inv
 }
 
 /**
- * Navigate to level up
- */
-export function goToLevelUp(currentState: RouterState, data: ViewDataMap['level-up']): NavigationResult {
-  return prepareNavigation(currentState, 'level-up', data);
-}
-
-/**
  * Navigate to debug view
  */
 export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']): NavigationResult {

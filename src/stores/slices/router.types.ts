@@ -28,11 +28,6 @@ export interface RouterSlice {
       goToDialogueDemo: (data?: ViewDataMap['dialogue-demo']) => void;
 
       /**
-       * Navigate to level up screen
-       */
-      goToLevelUp: (data: ViewDataMap['level-up']) => void;
-
-      /**
        * Navigate to inventory
        */
       goToInventory: (data?: ViewDataMap['inventory']) => void;

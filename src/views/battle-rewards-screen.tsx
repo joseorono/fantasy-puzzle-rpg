@@ -32,8 +32,15 @@ export function BattleRewardsScreen() {
 
   const { lootTable, expReward } = battleRewardsData;
 
-  // Step 1: Show item rewards
+  const coinsReceived = lootTable.resources?.item?.coins || 0;
+  const hasNoItems =
+    lootTable.equipableItems.length === 0 && lootTable.consumableItems.length === 0 && coinsReceived === 0;
+
+  // Step 1: Show item rewards (skip to step 2 if no items)
   if (step === 1) {
+    if (hasNoItems) {
+      return <SkipToStep2 setStep={setStep} />;
+    }
     return <ItemRewardsScreen lootTable={lootTable} onFinish={() => setStep(2)} />;
   }
 
@@ -157,6 +164,16 @@ export function BattleRewardsScreen() {
     );
   }
 
+  return null;
+}
+
+/**
+ * Helper component to skip item rewards and advance to EXP step
+ */
+function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
+  useEffect(() => {
+    setStep(2);
+  }, [setStep]);
   return null;
 }
 

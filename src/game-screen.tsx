@@ -2,7 +2,6 @@ import { useCurrentView, useViewData } from '~/stores/game-store';
 import TownHub from '~/components/town/town-hub';
 import DebugView from '~/views/debug-view';
 import { DialogueTestView } from './views/dialogue-test';
-import { LevelUpDemo } from './views/level-up-demo';
 import { BattleRewardsScreen } from './views/battle-rewards-screen';
 import DemoMap from './components/map/demo-map.tsx';
 import BattleScreen from '~/views/battle-screen';
@@ -13,7 +12,6 @@ import BattleScreen from '~/views/battle-screen';
 export default function GameScreen() {
   const currentView = useCurrentView();
   const townHubData = useViewData('town-hub');
-  const levelUpData = useViewData('level-up');
 
   switch (currentView) {
     case 'town-hub':
@@ -34,9 +32,6 @@ export default function GameScreen() {
 
     case 'dialogue-demo':
       return <DialogueTestView />;
-
-    case 'level-up':
-      return <LevelUpDemo id={levelUpData!.id} />;
 
     case 'inventory':
       // TODO: Implement inventory view

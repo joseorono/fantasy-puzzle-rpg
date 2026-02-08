@@ -104,7 +104,7 @@ src/
 ## Routing
 
 - Custom view-based router implemented in the Zustand store (`router` slice)
-- Navigate with actions: `goToTownHub()`, `goToBattle()`, `goToMap()`, `goToStore()`, `goToInn()`, `goToDialogue()`, `goToLevelUp()`, `goToInventory()`, `goToDebug()`, `goBack()`, `goBackTo()`
+- Navigate with actions: `goToTownHub()`, `goToBattle()`, `goToMap()`, `goToStore()`, `goToInn()`, `goToDialogue()`, `goToBattleRewards()`, `goToInventory()`, `goToDebug()`, `goBack()`, `goBackTo()`
 - Access via `useRouterActions()`, `useCurrentView()`, `useViewData()` from `~/stores/game-store`
 - See `docs/ROUTING_QUICK_REFERENCE.md` for full API
 

@@ -42,12 +42,7 @@ The design features:
 
 ## Testing
 
-Use the `LevelUpDemo` component (`/src/views/level-up-demo.tsx`) to test the level up screen:
-
-1. In `App.tsx`, uncomment `<LevelUpDemo />`
-2. The demo creates a mock character with 5 available points
-3. Test allocating points and confirming changes
-4. Use "Reset Demo" to restart
+The level-up screen is tested as part of the battle rewards flow in `BattleRewardsScreen`. Use the "Battle Rewards" button in the debug/router test view to trigger the full rewards flow (items, EXP, then level-ups).
 
 ## Dependencies
 

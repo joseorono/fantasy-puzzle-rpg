@@ -8,7 +8,6 @@ export type ViewType =
   | 'battle-demo'
   | 'map-demo'
   | 'dialogue-demo'
-  | 'level-up'
   | 'inventory'
   | 'debug'
   | 'battle-rewards';
@@ -59,13 +58,6 @@ export interface InventoryViewData {
 }
 
 /**
- * Data for level up view
- */
-export interface LevelUpViewData {
-  id: string;
-}
-
-/**
  * Data for debug view
  */
 export interface DebugViewData {
@@ -88,7 +80,6 @@ export interface ViewDataMap {
   'battle-demo': BattleViewData;
   'map-demo': MapDemoViewData;
   'dialogue-demo': DialogueDemoViewData;
-  'level-up': LevelUpViewData;
   inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
@@ -101,7 +92,6 @@ export type RouteStatus = TownHubViewData &
   BattleViewData &
   MapDemoViewData &
   DialogueDemoViewData &
-  LevelUpViewData &
   InventoryViewData &
   DebugViewData &
   BattleRewardsViewData;

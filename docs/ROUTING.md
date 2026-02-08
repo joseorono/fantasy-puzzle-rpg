@@ -20,7 +20,6 @@ A store-based routing system for the game that provides full control over naviga
 - `battle-demo` - Battle demo screen
 - `map-demo` - Map demo
 - `dialogue-demo` - Dialogue demo
-- `level-up` - Level up screen
 - `inventory` - Inventory management
 - `debug` - Debug/test view
 
@@ -126,7 +125,6 @@ Each view has a dedicated type-safe method:
 - `goToBattleDemo(data)` - Navigate to battle demo (data required)
 - `goToMapDemo(data?)` - Navigate to map demo
 - `goToDialogueDemo(data?)` - Navigate to dialogue demo
-- `goToLevelUp(data)` - Navigate to level up (data required)
 - `goToInventory(data?)` - Navigate to inventory
 - `goToDebug(data?)` - Navigate to debug view
 
@@ -299,7 +297,6 @@ The routing logic is separated into pure functions in `/src/lib/routing.ts`:
 - `goToBattleDemo(currentState, data)` - Navigate to battle demo
 - `goToMapDemo(currentState, data?)` - Navigate to map demo
 - `goToDialogueDemo(currentState, data?)` - Navigate to dialogue demo
-- `goToLevelUp(currentState, data)` - Navigate to level up
 - `goToInventory(currentState, data?)` - Navigate to inventory
 - `goToDebug(currentState, data?)` - Navigate to debug
 
