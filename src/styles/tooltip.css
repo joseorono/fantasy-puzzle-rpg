@@ -17,7 +17,7 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  max-width: 200px;
+  max-width: 20em;
   word-wrap: break-word;
   z-index: 50;
   pointer-events: none;
@@ -46,11 +46,11 @@
   */
 
 /* Animation states */
-[data-state="open"] .tooltip-content {
+[data-state='open'] .tooltip-content {
   animation: tooltip-fade-in 0.2s ease-out;
 }
 
-[data-state="closed"] .tooltip-content {
+[data-state='closed'] .tooltip-content {
   animation: tooltip-fade-out 0.15s ease-in;
 }
 

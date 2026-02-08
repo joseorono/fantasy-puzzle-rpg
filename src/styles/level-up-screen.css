@@ -12,8 +12,8 @@
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   background-color: black;
-    /* background-color: #d27d2c; */
-    /* background-color: rgba(210, 125, 44, 0.4); */
+  /* background-color: #d27d2c; */
+  /* background-color: rgba(210, 125, 44, 0.4); */
 }
 
 .level-up-header {
@@ -46,7 +46,9 @@
   border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 700;
-  box-shadow: 0 2px 0 #5e2f0d, 0 4px 4px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 2px 0 #5e2f0d,
+    0 4px 4px rgba(0, 0, 0, 0.4);
   line-height: 1;
 }
 
@@ -119,6 +121,34 @@
   font-weight: 700;
   font-size: 0.875rem;
   border: 2px solid #1a1d29;
+  animation: level-badge-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+}
+
+@keyframes level-badge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255, 193, 7, 1);
+  }
+}
+
+.level-badge-arrow {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  color: #1a1d29;
+  background: #ffc107;
+  border-radius: 50%;
+  padding: 3px;
+  border: 2px solid #1a1d29;
+  stroke-width: 3;
 }
 
 .character-name-class {
@@ -318,6 +348,7 @@
 
 .stat-chip-value {
   font-size: 1.25rem;
+  white-space: nowrap;
 }
 
 .pending-changes-banner {
@@ -447,7 +478,8 @@
 
 .info-icon {
   color: #8b6914;
-  font-size: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: bold;
   cursor: help;
 }
 
