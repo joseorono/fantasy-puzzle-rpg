@@ -24,6 +24,17 @@ export function PauseMenuStats() {
     <>
       <h2>Stats</h2>
       <div className="pause-menu-stats-layout">
+        <div className="pause-menu-party-roster">
+          {party.map((member) => (
+            <RosterCard
+              key={member.id}
+              member={member}
+              isActive={member.id === selectedId}
+              onClick={() => setSelectedId(member.id)}
+            />
+          ))}
+        </div>
+
         <div className="pause-menu-stats-main">
           <div className="pause-menu-stats-header">
             <div className={cn('pause-menu-stats-icon', colors.bg)}>
@@ -79,17 +90,6 @@ export function PauseMenuStats() {
             </div>
             <div className="pause-menu-stats-skill-desc">{skill.description}</div>
           </div>
-        </div>
-
-        <div className="pause-menu-party-roster">
-          {party.map((member) => (
-            <RosterCard
-              key={member.id}
-              member={member}
-              isActive={member.id === selectedId}
-              onClick={() => setSelectedId(member.id)}
-            />
-          ))}
         </div>
       </div>
     </>

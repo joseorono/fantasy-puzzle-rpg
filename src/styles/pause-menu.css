@@ -418,7 +418,6 @@
 
 .pause-menu-stats-main {
   flex: 1;
-  order: 1;
 }
 
 .pause-menu-stats-header {
@@ -521,7 +520,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  order: 0;
 }
 
 .pause-menu-roster-card {
