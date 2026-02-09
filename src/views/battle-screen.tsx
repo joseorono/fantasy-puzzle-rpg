@@ -7,6 +7,7 @@ import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
 import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemiesAtom, tickSkillCooldownsAtom } from '~/stores/battle-atoms';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
+import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -215,6 +216,9 @@ export default function BattleScreen() {
           />
         ))}
       </div>
+
+      {/* Ace Attorney-style skill burst overlay */}
+      <SkillBurstOverlay />
 
       {/* Game Over Modal */}
       <GameOverModal />
