@@ -5,7 +5,7 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { GameOverModal } from '~/components/battle/game-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
-import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemyAtom, tickSkillCooldownsAtom } from '~/stores/battle-atoms';
+import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemiesAtom, tickSkillCooldownsAtom } from '~/stores/battle-atoms';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
@@ -15,53 +15,82 @@ import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-ca
 export default function BattleScreen() {
   const battleState = useAtomValue(battleStateAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
-  const enemy = useAtomValue(enemyAtom);
+  const enemies = useAtomValue(enemiesAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Calculate actual attack interval with SPD modifier
-  const actualAttackInterval = calculateEnemyAttackInterval(enemy);
-  const attackIntervalSeconds = actualAttackInterval / 1000;
+  // Per-enemy attack timer tracking
+  const attackTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [nextAttackIn, setNextAttackIn] = useState(0);
+  const countdownTimersRef = useRef<Map<string, number>>(new Map());
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Calculate actual damage with POW modifier
-  const actualDamage = calculateEnemyDamage(enemy);
+  // Clear all enemy attack timers
+  function clearAllTimers() {
+    for (const timer of attackTimersRef.current.values()) {
+      clearInterval(timer);
+    }
+    attackTimersRef.current.clear();
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    countdownTimersRef.current.clear();
+  }
 
-  const [nextAttackIn, setNextAttackIn] = useState(attackIntervalSeconds);
-  const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Enemy attack timer
+  // Per-enemy attack timers
   useEffect(() => {
     if (gameStatus !== 'playing') {
-      // Clear timers when game is over
-      if (attackTimerRef.current) clearInterval(attackTimerRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
+      clearAllTimers();
       return;
     }
 
-    // Reset countdown
-    setNextAttackIn(attackIntervalSeconds);
+    // Clear existing timers before setting new ones
+    clearAllTimers();
 
-    // Countdown timer (updates every second)
-    countdownRef.current = setInterval(() => {
-      setNextAttackIn((prev) => {
-        if (prev <= 1) return attackIntervalSeconds;
-        return prev - 1;
-      });
+    const livingEnemies = enemies.filter((e) => e.currentHp > 0);
+
+    for (const enemy of livingEnemies) {
+      const interval = calculateEnemyAttackInterval(enemy);
+      const damage = calculateEnemyDamage(enemy);
+
+      // Initialize countdown
+      countdownTimersRef.current.set(enemy.id, interval / 1000);
+
+      // Set attack interval per enemy
+      const timer = setInterval(() => {
+        damageParty(damage, enemy.id);
+        countdownTimersRef.current.set(enemy.id, interval / 1000);
+      }, interval);
+
+      attackTimersRef.current.set(enemy.id, timer);
+    }
+
+    // Shared countdown tick — find soonest attack
+    countdownIntervalRef.current = setInterval(() => {
+      let minCountdown = Infinity;
+      for (const [id, remaining] of countdownTimersRef.current) {
+        const next = remaining - 1;
+        const enemy = enemies.find((e) => e.id === id);
+        if (enemy && enemy.currentHp > 0) {
+          const interval = calculateEnemyAttackInterval(enemy) / 1000;
+          countdownTimersRef.current.set(id, next <= 0 ? interval : next);
+          if (next < minCountdown && next > 0) minCountdown = next;
+        }
+      }
+      setNextAttackIn(minCountdown === Infinity ? 0 : Math.max(1, Math.ceil(minCountdown)));
     }, 1000);
 
-    // Attack timer
-    attackTimerRef.current = setInterval(() => {
-      damageParty(actualDamage);
-    }, actualAttackInterval);
+    // Initialize display
+    const minInterval = Math.min(
+      ...livingEnemies.map((e) => calculateEnemyAttackInterval(e)),
+    );
+    setNextAttackIn(Math.ceil(minInterval / 1000));
 
-    return () => {
-      if (attackTimerRef.current) clearInterval(attackTimerRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, [gameStatus, actualAttackInterval, actualDamage, damageParty, attackIntervalSeconds]);
+    return () => clearAllTimers();
+  }, [gameStatus, enemies, damageParty]);
 
   // Skill cooldown tick loop
   useEffect(() => {
@@ -139,7 +168,6 @@ export default function BattleScreen() {
               </div>
 
               <EnemyDisplay />
-              <DamageNumber target="enemy" />
             </div>
 
             {/* Right/Bottom section - Party */}

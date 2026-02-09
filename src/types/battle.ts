@@ -30,14 +30,15 @@ export interface SkillActivationEvent {
 
 export interface BattleState {
   party: CharacterData[];
-  enemy: EnemyData;
+  enemies: EnemyData[];
+  selectedEnemyId: string;
   board: Orb[][];
   selectedOrb: { row: number; col: number } | null;
   currentMatches: Match[];
   score: number;
   turn: number;
   gameStatus: BattleStatus;
-  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string } | null;
+  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string; enemyId?: string } | null;
   lastMatchedType: OrbType | null;
   enemyAttackTimestamp?: number | null;
   lastSkillActivation: SkillActivationEvent | null;

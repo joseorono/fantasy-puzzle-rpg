@@ -133,6 +133,16 @@
   animation: skill-activate 0.6s ease-out;
 }
 
+/* Subtle brightness pulse for selected enemy */
+@keyframes enemy-selected-blink {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+}
+
+.enemy-selected {
+  animation: enemy-selected-blink 2s ease-in-out infinite;
+}
+
 /* Flash fade for damage impact */
 @keyframes flash-fade {
   0% {

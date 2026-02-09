@@ -1,8 +1,9 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
+import type { EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
-import { INITIAL_PARTY, INITIAL_ENEMY } from '~/constants/game';
+import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/game';
 import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
 import { SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
@@ -22,7 +23,25 @@ import {
 
 // Use initial data from constants
 const initialParty = INITIAL_PARTY;
-const initialEnemy = INITIAL_ENEMY;
+const initialEnemies = INITIAL_ENEMIES;
+
+/**
+ * Returns the first living enemy's id, prioritizing enemies after currentId (wrapping around).
+ * Returns null if all enemies are dead.
+ */
+function getNextLivingEnemyId(enemies: EnemyData[], currentId: string): string | null {
+  const living = enemies.filter((e) => e.currentHp > 0);
+  if (living.length === 0) return null;
+
+  // Try to find a living enemy after the current one
+  const currentIndex = enemies.findIndex((e) => e.id === currentId);
+  for (let i = 1; i <= enemies.length; i++) {
+    const idx = (currentIndex + i) % enemies.length;
+    if (enemies[idx].currentHp > 0) return enemies[idx].id;
+  }
+
+  return living[0].id;
+}
 
 // Initial battle state — skills start on cooldown
 const initialBattleState: BattleState = {
@@ -30,7 +49,8 @@ const initialBattleState: BattleState = {
     ...char,
     skillCooldown: calculateCharacterCooldown(char),
   })),
-  enemy: initialEnemy,
+  enemies: initialEnemies.map((e) => ({ ...e, currentHp: e.maxHp })),
+  selectedEnemyId: initialEnemies[0].id,
   board: createInitialBoard(),
   selectedOrb: null,
   currentMatches: [],
@@ -46,7 +66,12 @@ const initialBattleState: BattleState = {
 // Jotai atoms
 export const battleStateAtom = atom<BattleState>(initialBattleState);
 export const partyAtom = atom((get) => get(battleStateAtom).party);
-export const enemyAtom = atom((get) => get(battleStateAtom).enemy);
+export const enemiesAtom = atom((get) => get(battleStateAtom).enemies);
+export const selectedEnemyIdAtom = atom((get) => get(battleStateAtom).selectedEnemyId);
+export const selectedEnemyAtom = atom((get) => {
+  const state = get(battleStateAtom);
+  return state.enemies.find((e) => e.id === state.selectedEnemyId) ?? state.enemies[0];
+});
 export const boardAtom = atom((get) => get(battleStateAtom).board);
 export const selectedOrbAtom = atom((get) => get(battleStateAtom).selectedOrb);
 export const currentMatchesAtom = atom((get) => get(battleStateAtom).currentMatches);
@@ -55,6 +80,14 @@ export const currentMatchesAtom = atom((get) => get(battleStateAtom).currentMatc
 export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
   return calculatePartyHpPercentage(party);
+});
+
+// Atom to select a target enemy
+export const selectEnemyAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  const enemy = currentState.enemies.find((e) => e.id === enemyId);
+  if (!enemy || enemy.currentHp <= 0) return;
+  set(battleStateAtom, { ...currentState, selectedEnemyId: enemyId });
 });
 
 // Atom to select an orb
@@ -101,7 +134,7 @@ export const checkSwapValidityAtom = atom(
 );
 
 // Atom to damage party (targets random living hero)
-export const damagePartyAtom = atom(null, (get, set, damage: number) => {
+export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEnemyId?: string) => {
   const currentState = get(battleStateAtom);
 
   // Get living party members
@@ -109,7 +142,6 @@ export const damagePartyAtom = atom(null, (get, set, damage: number) => {
   if (living.length === 0) return;
 
   // Select a random living hero to take damage
-  // ToDo: Maybe make this a bit smarter? If it makes the game more fun.
   const targetHero = getRandomElement(living);
 
   const party = damagePartyMember(currentState.party, targetHero.id, damage);
@@ -124,25 +156,39 @@ export const damagePartyAtom = atom(null, (get, set, damage: number) => {
       target: 'party',
       timestamp: Date.now(),
       characterId: targetHero.id,
+      enemyId: attackerEnemyId,
     },
   });
 });
 
-// Atom to damage enemy
+// Atom to damage the selected enemy
 export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   const currentState = get(battleStateAtom);
-  const enemy = { ...currentState.enemy };
+  const selectedId = currentState.selectedEnemyId;
 
-  enemy.currentHp = subtractionWithMin(enemy.currentHp, damage, 0);
+  const enemies = currentState.enemies.map((e) => {
+    if (e.id !== selectedId) return e;
+    return { ...e, currentHp: subtractionWithMin(e.currentHp, damage, 0) };
+  });
 
-  // Check if enemy is defeated
-  const gameStatus = enemy.currentHp <= 0 ? 'won' : 'playing';
+  // Check if selected enemy just died — auto-select next living enemy
+  const damagedEnemy = enemies.find((e) => e.id === selectedId)!;
+  let newSelectedId = selectedId;
+  if (damagedEnemy.currentHp <= 0) {
+    const nextId = getNextLivingEnemyId(enemies, selectedId);
+    if (nextId) newSelectedId = nextId;
+  }
+
+  // Check if ALL enemies are dead
+  const allDead = enemies.every((e) => e.currentHp <= 0);
+  const gameStatus = allDead ? 'won' : 'playing';
 
   set(battleStateAtom, {
     ...currentState,
-    enemy,
+    enemies,
+    selectedEnemyId: newSelectedId,
     gameStatus,
-    lastDamage: { amount: damage, target: 'enemy', timestamp: Date.now() },
+    lastDamage: { amount: damage, target: 'enemy', timestamp: Date.now(), enemyId: selectedId },
   });
 });
 
@@ -154,7 +200,8 @@ export const resetBattleAtom = atom(null, (_get, set) => {
       currentHp: char.maxHp,
       skillCooldown: calculateCharacterCooldown(char),
     })),
-    enemy: { ...initialEnemy, currentHp: initialEnemy.maxHp },
+    enemies: initialEnemies.map((e) => ({ ...e, currentHp: e.maxHp })),
+    selectedEnemyId: initialEnemies[0].id,
     board: createInitialBoard(),
     selectedOrb: null,
     currentMatches: [],
@@ -276,12 +323,26 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const amount = calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus);
 
   let party = currentState.party;
-  let enemy = { ...currentState.enemy };
+  let enemies = currentState.enemies;
+  let selectedEnemyId = currentState.selectedEnemyId;
   let gameStatus = currentState.gameStatus;
 
   if (skill.target === 'enemy') {
-    enemy.currentHp = subtractionWithMin(enemy.currentHp, amount, 0);
-    if (enemy.currentHp <= 0) {
+    // Damage the selected enemy
+    enemies = enemies.map((e) => {
+      if (e.id !== selectedEnemyId) return e;
+      return { ...e, currentHp: subtractionWithMin(e.currentHp, amount, 0) };
+    });
+
+    // Check if selected enemy just died — auto-select next
+    const damagedEnemy = enemies.find((e) => e.id === selectedEnemyId)!;
+    if (damagedEnemy.currentHp <= 0) {
+      const nextId = getNextLivingEnemyId(enemies, selectedEnemyId);
+      if (nextId) selectedEnemyId = nextId;
+    }
+
+    // Check if ALL enemies are dead
+    if (enemies.every((e) => e.currentHp <= 0)) {
       gameStatus = 'won';
     }
   } else {
@@ -302,7 +363,8 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   set(battleStateAtom, {
     ...currentState,
     party,
-    enemy,
+    enemies,
+    selectedEnemyId,
     gameStatus,
     lastSkillActivation: {
       characterId,

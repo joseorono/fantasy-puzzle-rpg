@@ -1,7 +1,7 @@
 import type { CharacterData, OrbType, StatType } from '~/types';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { calculateExpToNextLevel } from '~/lib/leveling-system';
-import { MOSS_GOLEM } from './enemies/world-00';
+import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 
 // Board configuration
 export const BOARD_ROWS = 8;
@@ -135,5 +135,9 @@ export const INITIAL_PARTY: CharacterData[] = partyBase.map((char) => ({
   currentHp: char.maxHp,
 }));
 
-// Initial enemy setup
-export const INITIAL_ENEMY = MOSS_GOLEM;
+// Initial enemy party setup
+export const INITIAL_ENEMIES = [
+  MOSS_GOLEM,
+  { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog A' },
+  { ...SWAMP_FROG, id: 'swamp-frog-2', name: 'Swamp Frog B' },
+];

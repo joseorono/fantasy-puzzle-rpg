@@ -1,87 +1,162 @@
-import { useAtomValue } from 'jotai';
-import { enemyAtom } from '~/stores/battle-atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { useState, useEffect } from 'react';
+import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
 import { calculatePercentage } from '~/lib/math';
+import { cn } from '~/lib/utils';
+import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import type { EnemyData } from '~/types/rpg-elements';
 
-export function EnemyDisplay() {
-  const enemy = useAtomValue(enemyAtom);
-  const enemyHealthPercentage = calculatePercentage(enemy.currentHp, enemy.maxHp);
+interface EnemySpriteProps {
+  enemy: EnemyData;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
+  const isDead = enemy.currentHp <= 0;
+  const healthPercentage = calculatePercentage(enemy.currentHp, enemy.maxHp);
+  const lastDamage = useAtomValue(lastDamageAtom);
+  const [showDamage, setShowDamage] = useState(false);
+  const [damageAmount, setDamageAmount] = useState(0);
+  const [animationKey, setAnimationKey] = useState(0);
+
+  // Show damage animation when this enemy is hit
+  useEffect(() => {
+    if (lastDamage && lastDamage.target === 'enemy' && lastDamage.enemyId === enemy.id) {
+      setDamageAmount(lastDamage.amount);
+      setShowDamage(true);
+      setAnimationKey((prev) => prev + 1);
+      const timer = setTimeout(() => setShowDamage(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastDamage, enemy.id]);
+
+  function handleClick() {
+    if (isDead) return;
+    onSelect();
+  }
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center bg-gradient-to-b from-emerald-900/30 to-emerald-950/50 p-2 sm:p-3 md:p-4">
-      {/* Enemy Sprite */}
-      <div className="relative flex flex-1 items-center justify-center">
-        {/* Enemy container with pixel art effect */}
-        <div className="relative">
-          {/* Glow effect */}
-          <div className="absolute inset-0 scale-150 rounded-full bg-emerald-500/20 blur-2xl" />
+    <div className="flex flex-col items-center gap-1">
+      {/* Enemy sprite container */}
+      <div className="group relative">
+        <div
+          onClick={handleClick}
+          className={cn(
+            'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
+            isDead
+              ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
+              : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
+            isSelected && !isDead && 'enemy-selected border-yellow-400',
+          )}
+          style={{ imageRendering: 'pixelated' }}
+        >
+          <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
 
-          {/* Enemy sprite placeholder - will be replaced with actual pixel art */}
-          <div className="relative flex h-24 w-24 items-center justify-center sm:h-32 sm:w-32 md:h-40 md:w-40">
-            {/* Pixel art style enemy */}
-            <div
-              className="relative h-full w-full rounded-lg border-4 border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800"
-              style={{ imageRendering: 'pixelated' }}
-            >
-              {/* Simple moss golem representation */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-pulse text-5xl opacity-90 sm:text-6xl md:text-7xl">🗿</div>
-              </div>
-
-              {/* Moss texture overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/30 via-transparent to-green-700/20" />
-
-              {/* Eyes */}
-              <div className="absolute top-1/3 left-1/3 h-2 w-2 rounded-full border border-yellow-600 bg-yellow-400 sm:h-3 sm:w-3" />
-              <div className="absolute top-1/3 right-1/3 h-2 w-2 rounded-full border border-yellow-600 bg-yellow-400 sm:h-3 sm:w-3" />
+          {/* Death indicator */}
+          {isDead && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Damage numbers placeholder */}
-        <div className="pixel-font absolute top-8 right-8 animate-ping text-4xl font-bold text-red-500 opacity-0">
-          -25
-        </div>
+        {/* Selected arrow indicator */}
+        {isSelected && !isDead && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-bounce text-sm text-yellow-400 sm:-top-5 sm:text-base">
+            ▼
+          </div>
+        )}
+
+        {/* Per-enemy damage number */}
+        {showDamage && (
+          <div
+            key={animationKey}
+            className="damage-number pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8"
+          >
+            <DamageDisplay
+              amount={damageAmount}
+              type={damageAmount > 20 ? 'critical' : 'damage'}
+              className="text-xl sm:text-2xl md:text-3xl"
+            />
+          </div>
+        )}
+
+        {/* Impact flash effect on hit */}
+        {showDamage && (
+          <div
+            key={`flash-${animationKey}`}
+            className="pointer-events-none absolute inset-0 rounded-lg bg-red-500/40"
+            style={{ animation: 'flash-fade 0.3s ease-out forwards' }}
+          />
+        )}
       </div>
 
-      {/* Enemy Info */}
-      <div className="w-full max-w-xs px-2">
-        <div className="mb-1.5 text-center sm:mb-2">
-          <h2 className="pixel-font mb-0.5 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
-            {enemy.name}
-          </h2>
-          <p className="pixel-font text-xs text-emerald-300 sm:text-sm">Level 5 {enemy.type}</p>
-        </div>
+      {/* Enemy name */}
+      <div
+        className={cn(
+          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          isDead ? 'text-gray-500 line-through' : 'text-emerald-300',
+        )}
+      >
+        {enemy.name}
+      </div>
 
-        {/* Enemy Health Bar */}
-        <div className="mb-1 flex items-center justify-between">
-          <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
-          <span className="pixel-font text-xs font-bold text-white sm:text-sm">
-            {enemy.currentHp} / {enemy.maxHp}
+      {/* HP bar */}
+      <div className="w-full max-w-[70px] sm:max-w-[85px] md:max-w-[100px]">
+        <div className="mb-0.5 flex items-center justify-between">
+          <span className="pixel-font text-[7px] text-gray-400 sm:text-[8px]">HP</span>
+          <span className="pixel-font text-[7px] font-bold text-white sm:text-[8px]">
+            {enemy.currentHp}/{enemy.maxHp}
           </span>
         </div>
-        <div className="relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 sm:h-5 sm:border-3 md:h-6">
-          {/* Health bar fill */}
+        <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
           <div
-            className="relative h-full overflow-hidden bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500"
-            style={{ width: `${enemyHealthPercentage}%` }}
-          >
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-            {/* Segmented bars effect */}
-            <div className="absolute inset-0 flex">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="flex-1 border-r border-red-900/50" />
-              ))}
-            </div>
-          </div>
-          {/* Pixel border effect */}
+            className={cn(
+              'h-full transition-all duration-300',
+              healthPercentage > 50 ? 'bg-red-500' : healthPercentage > 25 ? 'bg-orange-500' : 'bg-red-700',
+            )}
+            style={{ width: `${healthPercentage}%` }}
+          />
           <div
             className="pointer-events-none absolute inset-0"
             style={{
-              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2)',
+              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
             }}
           />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function EnemyDisplay() {
+  const enemies = useAtomValue(enemiesAtom);
+  const selectedEnemyId = useAtomValue(selectedEnemyIdAtom);
+  const selectEnemy = useSetAtom(selectEnemyAtom);
+
+  return (
+    <div className="relative flex h-full flex-col items-center justify-center bg-gradient-to-b from-emerald-900/30 to-emerald-950/50 p-2 sm:p-3 md:p-4">
+      {/* Enemy party grid */}
+      <div className="relative flex flex-1 items-center justify-center">
+        <div className="flex gap-3 sm:gap-4 md:gap-6">
+          {enemies.map((enemy) => (
+            <EnemySprite
+              key={enemy.id}
+              enemy={enemy}
+              isSelected={enemy.id === selectedEnemyId}
+              onSelect={() => selectEnemy(enemy.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Enemy section label */}
+      <div className="w-full max-w-xs px-2">
+        <div className="text-center">
+          <h2 className="pixel-font text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+            👾 ENEMIES 👾
+          </h2>
         </div>
       </div>
     </div>
