@@ -6,6 +6,7 @@ import {
   damageAllPartyMembers as damageAllPartyMembersLib,
 } from '~/lib/party-system';
 import type { CharacterData } from '~/types/rpg-elements';
+import type { EquipmentSlot } from '~/lib/equipment-system';
 
 /**
  * Create the party slice
@@ -64,6 +65,34 @@ export const createPartySlice = (set: any): PartySlice => ({
           },
           false,
           'party/damageAllPartyMembers',
+        ),
+      equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) =>
+        set(
+          (state: PartySlice) => {
+            const member = state.party.members.find((m) => m.id === characterId);
+            if (!member) return;
+            if (slot === 'weapon') {
+              member.equippedWeaponId = itemId;
+            } else {
+              member.equippedArmorId = itemId;
+            }
+          },
+          false,
+          'party/equipItem',
+        ),
+      unequipItem: (characterId: string, slot: EquipmentSlot) =>
+        set(
+          (state: PartySlice) => {
+            const member = state.party.members.find((m) => m.id === characterId);
+            if (!member) return;
+            if (slot === 'weapon') {
+              member.equippedWeaponId = undefined;
+            } else {
+              member.equippedArmorId = undefined;
+            }
+          },
+          false,
+          'party/unequipItem',
         ),
     },
   },

@@ -587,51 +587,236 @@
 
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 
-.pause-menu-equip-list {
+.pause-menu-equip-layout {
+  display: flex;
+  gap: 1rem;
+}
+
+.pause-menu-equip-main {
+  flex: 1;
+}
+
+.pause-menu-equip-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #8b6914;
+}
+
+/* Equip slots */
+.pause-menu-equip-slots {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.pause-menu-equip-item {
+.pause-menu-equip-slot-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
   background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
   border: 2px solid #8b6914;
-  border-radius: 8px;
+  border-radius: 6px;
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.pause-menu-equip-item:hover {
+.pause-menu-equip-slot-row:hover {
   border-color: #d4a574;
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
 }
 
-.pause-menu-equip-name {
-  font-size: 0.75rem;
+.pause-menu-equip-slot-row.active {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+.pause-menu-equip-slot-row .slot-label {
+  font-size: 0.65rem;
+  color: #d4a574;
+  font-weight: 700;
+  min-width: 60px;
+}
+
+.pause-menu-equip-slot-value {
+  flex: 1;
+  font-size: 0.7rem;
   color: #ffd700;
   font-weight: 700;
 }
 
-.pause-menu-equip-desc {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
+.pause-menu-equip-slot-value.empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
   font-style: italic;
 }
 
-.pause-menu-equip-stats {
-  display: flex;
-  gap: 0.4rem;
-  margin-top: 0.3rem;
+.pause-menu-equip-slot-remove {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 0.15rem 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
 }
 
-.pause-menu-equip-for {
-  font-size: 0.55rem;
+.pause-menu-equip-slot-remove:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Stat preview */
+.pause-menu-equip-preview {
+  padding: 0.75rem;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.pause-menu-equip-preview h3 {
+  font-size: 0.7rem;
   color: #d4a574;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.6rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
+}
+
+.pause-menu-equip-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 3px;
+  margin-bottom: 0.2rem;
+}
+
+.pause-menu-equip-preview-row:nth-child(even) {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.pause-menu-equip-preview-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 36px;
+}
+
+.pause-menu-equip-preview-base {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 28px;
+  text-align: right;
+}
+
+.pause-menu-equip-stat-diff {
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+.pause-menu-equip-stat-diff.positive {
+  color: #4ade80;
+}
+
+.pause-menu-equip-stat-diff.negative {
+  color: #ef4444;
+}
+
+.pause-menu-equip-preview-total {
+  font-size: 0.7rem;
+  color: #ffd700;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Available items list */
+.pause-menu-equip-available {
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pause-menu-equip-available h3 {
+  font-size: 0.7rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.6rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
+}
+
+.pause-menu-equip-empty {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.pause-menu-equip-available-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.pause-menu-equip-available-item:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.pause-menu-equip-available-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pause-menu-equip-available-name {
+  font-size: 0.7rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pause-menu-equip-available-stats {
+  display: flex;
+  gap: 0.4rem;
   margin-top: 0.2rem;
+}
+
+.pause-menu-equip-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 4px;
+  border: 2px solid #d4a574;
+  background: linear-gradient(to bottom, #c48040, #8b5523);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pause-menu-equip-btn:hover {
+  background: linear-gradient(to bottom, #e59c56, #9b5523);
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+  transform: translateY(-1px);
 }
 
 /* ─── Options Tab ────────────────────────────────────────────────────── */

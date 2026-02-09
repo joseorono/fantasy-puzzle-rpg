@@ -33,6 +33,8 @@ export interface CharacterData extends BaseStats {
   maxCooldown: number; // Base cooldown before SPD modifications
   level: number;
   expToNextLevel: number;
+  equippedWeaponId?: string;
+  equippedArmorId?: string;
 }
 
 // Enemy-specific stats

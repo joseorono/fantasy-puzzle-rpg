@@ -1,5 +1,6 @@
 import type { CharacterData } from '~/types/rpg-elements';
 import type { BaseSlice } from '../../types/store';
+import type { EquipmentSlot } from '~/lib/equipment-system';
 
 /**
  * Party state
@@ -17,6 +18,8 @@ export interface PartyActions {
   fullyHealParty: () => void;
   isPartyFullyHealed: () => boolean;
   damageAllPartyMembers: (damage: number, canDie: boolean) => void;
+  equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) => void;
+  unequipItem: (characterId: string, slot: EquipmentSlot) => void;
 }
 
 /**
