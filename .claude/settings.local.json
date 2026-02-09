@@ -8,7 +8,11 @@
       "Bash(identify:*)",
       "Bash(node -e:*)",
       "Bash(npm run test-filter:*)",
-      "Bash(npm run test-cli:*)"
+      "Bash(npm run test-cli:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm run build:*)",
+      "Bash(git stash:*)",
+      "Bash(npx vite build:*)"
     ]
   }
 }
