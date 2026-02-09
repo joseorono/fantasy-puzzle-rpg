@@ -49,5 +49,13 @@ export function randomBool(probabilityOfTrue: number): boolean {
   if (probabilityOfTrue < 0 || probabilityOfTrue > 1) {
     throw new Error('probabilityOfTrue must be between 0 and 1');
   }
+
+  if (probabilityOfTrue === 0) {
+    return false;
+  }
+  if (probabilityOfTrue === 1) {
+    return true;
+  }
+
   return Math.random() < probabilityOfTrue;
 }
