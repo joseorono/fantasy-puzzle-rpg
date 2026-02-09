@@ -1,6 +1,6 @@
 import type { CharacterClass } from '~/types/rpg-elements';
 
-export type SkillTarget = 'enemy' | 'ally';
+export type SkillTarget = 'enemy' | 'ally' | 'allAlly';
 
 export interface SkillDefinition {
   name: string;
@@ -44,10 +44,10 @@ export const SKILL_DEFINITIONS: Record<CharacterClass, SkillDefinition> = {
   },
   healer: {
     name: 'Divine Heal',
-    description: 'Heals the most damaged ally with a powerful restorative spell.',
+    description: 'Heals all party members with a powerful restorative spell.',
     icon: '💚',
     baseDamageMultiplier: 2,
     flatDamageBonus: 0,
-    target: 'ally',
+    target: 'allAlly',
   },
 };

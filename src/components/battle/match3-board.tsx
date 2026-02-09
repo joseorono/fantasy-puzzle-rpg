@@ -6,6 +6,7 @@ import {
   selectOrbAtom,
   swapOrbsAtom,
   damageEnemyAtom,
+  healPartyAtom,
   removeMatchedOrbsAtom,
   battleStateAtom,
   partyAtom,
@@ -99,6 +100,7 @@ export function Match3Board() {
   const selectOrb = useSetAtom(selectOrbAtom);
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
+  const healParty = useSetAtom(healPartyAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
   const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const setBattleState = useSetAtom(battleStateAtom);
@@ -219,9 +221,14 @@ export function Match3Board() {
         reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
       }
 
-      // Show highlight for a moment, then remove orbs
+      // Show highlight for a moment, then apply effect
       setTimeout(() => {
-        damageEnemy(totalDamage);
+        // Healer's default action heals the most damaged ally instead of dealing damage
+        if (matchingCharacter?.class === 'healer') {
+          healParty(totalDamage);
+        } else {
+          damageEnemy(totalDamage);
+        }
         soundService.playSound(SoundNames.match, 1, 0.1, 0.03);
       }, 200);
 

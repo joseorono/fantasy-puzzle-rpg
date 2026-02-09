@@ -11,6 +11,7 @@ import {
   getHealableMembers,
   damagePartyMember,
   healPartyMember,
+  healAllLivingPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
 import {
@@ -345,6 +346,9 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     if (enemies.every((e) => e.currentHp <= 0)) {
       gameStatus = 'won';
     }
+  } else if (skill.target === 'allAlly') {
+    // Heal all living party members by an equal amount
+    party = healAllLivingPartyMembers(party, amount);
   } else {
     // Heal the most damaged living ally
     const healable = getHealableMembers(party);
@@ -370,7 +374,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       characterId,
       skillName: skill.name,
       amount,
-      isHeal: skill.target === 'ally',
+      isHeal: skill.target === 'ally' || skill.target === 'allAlly',
       timestamp: Date.now(),
     },
   });

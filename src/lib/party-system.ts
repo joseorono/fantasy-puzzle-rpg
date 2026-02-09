@@ -83,6 +83,19 @@ export function healPartyMember(party: CharacterData[], characterId: string, amo
 }
 
 /**
+ * Heals all living party members by a given amount, clamped to each member's maxHp.
+ * More efficient than calling healPartyMember for each member individually.
+ * @param party - Array of party members
+ * @param amount - Amount of HP to restore to each living member
+ * @returns New party array with all living members healed
+ */
+export function healAllLivingPartyMembers(party: CharacterData[], amount: number): CharacterData[] {
+  return party.map((char) =>
+    char.currentHp > 0 ? { ...char, currentHp: additionWithMax(char.currentHp, amount, char.maxHp) } : char,
+  );
+}
+
+/**
  * Checks if the entire party is defeated (total HP <= 0).
  * @param party - Array of party members
  * @returns True if the party's collective HP is zero or less
