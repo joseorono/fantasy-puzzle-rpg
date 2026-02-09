@@ -1,4 +1,5 @@
 import { useRouterActions, useRouterState } from '~/stores/game-store';
+import { ConsumableItemIds } from '~/constants/inventory';
 
 /**
  * Router test view - demonstrates navigation
@@ -33,7 +34,7 @@ export default function RouterTestView() {
           onClick={() =>
             goToTownHub({
               innCost: { coins: 20, gold: 0, silver: 0, bronze: 0, copper: 0 },
-              itemsForSell: ['potion', 'sword'],
+              itemsForSell: [...ConsumableItemIds],
               onLeaveCallback: () => goBack(),
             })
           }

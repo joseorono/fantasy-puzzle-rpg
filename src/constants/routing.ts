@@ -1,4 +1,5 @@
 import type { RouterState, ViewType, TownHubViewData } from '~/types/routing';
+import { ConsumableItemIds } from '~/constants/inventory';
 
 /**
  * Default view on game start
@@ -16,7 +17,7 @@ export const DEFAULT_TOWN_HUB_DATA: TownHubViewData = {
     bronze: 0,
     copper: 0,
   },
-  itemsForSell: ['potion'],
+  itemsForSell: [...ConsumableItemIds],
   onLeaveCallback: () => {},
 };
 
