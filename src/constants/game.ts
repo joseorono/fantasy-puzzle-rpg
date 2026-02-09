@@ -54,7 +54,7 @@ const partyBase: CharacterData[] = [
     maxHp: calculateMaxHp(50, 20, 6),
     currentHp: 0,
     skillCooldown: 0,
-    maxCooldown: 3,
+    maxCooldown: 30,
   },
   {
     id: 'rogue',
@@ -78,7 +78,7 @@ const partyBase: CharacterData[] = [
     maxHp: calculateMaxHp(40, 10, 3),
     currentHp: 0,
     skillCooldown: 0,
-    maxCooldown: 2,
+    maxCooldown: 20,
   },
   {
     id: 'mage',
@@ -102,7 +102,7 @@ const partyBase: CharacterData[] = [
     maxHp: calculateMaxHp(35, 8, 4),
     currentHp: 0,
     skillCooldown: 0,
-    maxCooldown: 4,
+    maxCooldown: 50,
   },
   {
     id: 'healer',
@@ -126,7 +126,7 @@ const partyBase: CharacterData[] = [
     maxHp: calculateMaxHp(45, 18, 5),
     currentHp: 0,
     skillCooldown: 0,
-    maxCooldown: 3,
+    maxCooldown: 60,
   },
 ];
 
