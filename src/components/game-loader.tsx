@@ -4,6 +4,7 @@ import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 
 interface GameLoaderProps {}
 
@@ -39,6 +40,7 @@ export function GameLoader(_props: GameLoaderProps) {
     return (
       <>
         <GameScreen />
+        <PauseMenuOverlay />
       </>
     );
   }

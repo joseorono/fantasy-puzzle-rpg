@@ -1,0 +1,707 @@
+/* ─── Pause Menu ─────────────────────────────────────────────────────── */
+
+/* Backdrop overlay — positioned within #game-screen */
+.pause-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: pause-menu-fade-in 0.15s ease-out;
+}
+
+@keyframes pause-menu-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Main container — fills at least 75% of the game-screen height */
+.pause-menu {
+  width: 100%;
+  max-width: 900px;
+  min-height: 75%;
+  max-height: 95%;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #d4a574;
+  border-radius: 12px;
+  color: #e0e0e0;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: pause-menu-scale-in 0.15s ease-out;
+}
+
+@keyframes pause-menu-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Party Bar (top) ────────────────────────────────────────────────── */
+
+.pause-menu-party-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to bottom, #2a1810, #1a1008);
+  border-bottom: 2px solid #8b6914;
+  overflow-x: auto;
+}
+
+.pause-menu-party-member {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 6px;
+}
+
+.pause-menu-party-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.pause-menu-party-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pause-menu-party-name {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #ffd700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pause-menu-party-detail {
+  font-size: 0.5rem;
+  color: #d4a574;
+  white-space: nowrap;
+}
+
+.pause-menu-party-hp-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(10, 10, 20, 0.9);
+  border: 1px solid #8b6914;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.pause-menu-party-hp-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.pause-menu-party-hp-fill.full {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+}
+
+.pause-menu-party-hp-fill.medium {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.pause-menu-party-hp-fill.low {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+/* ─── Body (sidebar + content) ───────────────────────────────────────── */
+
+.pause-menu-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────── */
+
+.pause-menu-sidebar {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0;
+  border-right: 2px solid #8b6914;
+  background: linear-gradient(to bottom, #2a1810, #1a1008);
+  flex-shrink: 0;
+}
+
+.pause-menu-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: transparent;
+  border: none;
+  color: #d4a574;
+  font-weight: 700;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 3px solid transparent;
+}
+
+.pause-menu-nav-btn:hover {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.pause-menu-nav-btn.active {
+  color: #ffd700;
+  background: linear-gradient(to right, rgba(255, 215, 0, 0.15), transparent);
+  border-left-color: #ffd700;
+}
+
+.pause-menu-nav-spacer {
+  flex: 1;
+}
+
+.pause-menu-exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 3px solid transparent;
+}
+
+.pause-menu-exit-btn:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border-left-color: #ef4444;
+}
+
+/* ─── Content Area ───────────────────────────────────────────────────── */
+
+.pause-menu-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  min-width: 0;
+}
+
+.pause-menu-content h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Items Tab ──────────────────────────────────────────────────────── */
+
+.pause-menu-item-categories {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pause-menu-category-btn {
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(to bottom, #2a1810, #1a1008);
+  border: 2px solid #8b6914;
+  border-radius: 6px;
+  color: #d4a574;
+  font-weight: 700;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pause-menu-category-btn:hover {
+  border-color: #d4a574;
+}
+
+.pause-menu-category-btn.active {
+  background: linear-gradient(to bottom, #d48c46, #8b4513);
+  border-color: #ffd700;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.pause-menu-items-layout {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.pause-menu-item-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+.pause-menu-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  border: 1px solid transparent;
+}
+
+.pause-menu-item-row:hover {
+  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(212, 165, 116, 0.3);
+}
+
+.pause-menu-item-row.selected {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: #ffd700;
+}
+
+.pause-menu-item-name {
+  font-size: 0.7rem;
+  color: #e0e0e0;
+  font-weight: 700;
+}
+
+.pause-menu-item-qty {
+  font-size: 0.65rem;
+  color: #d4a574;
+  font-weight: 700;
+}
+
+.pause-menu-item-detail {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 1rem;
+  background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pause-menu-item-detail-name {
+  font-size: 0.85rem;
+  color: #ffd700;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pause-menu-item-detail-icon {
+  font-size: 2rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+}
+
+.pause-menu-item-detail-desc {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.pause-menu-item-detail-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.pause-menu-item-stat-badge {
+  padding: 0.2rem 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pause-menu-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #8b6914;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Use button in item detail panel */
+.pause-menu-use-btn {
+  margin-top: auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(to bottom, #d48c46, #8b4513);
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pause-menu-use-btn:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #e59c56, #9b5523);
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.pause-menu-use-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #8b6914;
+}
+
+/* ─── Stats Tab ──────────────────────────────────────────────────────── */
+
+.pause-menu-stats-layout {
+  display: flex;
+  gap: 1rem;
+}
+
+.pause-menu-stats-main {
+  flex: 1;
+  order: 1;
+}
+
+.pause-menu-stats-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #8b6914;
+}
+
+.pause-menu-stats-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.pause-menu-stats-name {
+  font-size: 1.1rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pause-menu-stats-class {
+  font-size: 0.65rem;
+  color: #d4a574;
+  text-transform: capitalize;
+}
+
+.pause-menu-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pause-menu-stats-section h3 {
+  font-size: 0.7rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.6rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
+}
+
+.pause-menu-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 3px;
+  margin-bottom: 0.25rem;
+}
+
+.pause-menu-stat-row:nth-child(even) {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.pause-menu-stat-label {
+  font-size: 0.65rem;
+  color: #d4a574;
+  font-weight: 700;
+}
+
+.pause-menu-stat-value {
+  font-size: 0.7rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pause-menu-stats-skill {
+  padding: 0.75rem;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+}
+
+.pause-menu-stats-skill-name {
+  font-size: 0.75rem;
+  color: #ffd700;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.pause-menu-stats-skill-desc {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+/* Party roster (right side of stats) */
+.pause-menu-party-roster {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  order: 0;
+}
+
+.pause-menu-roster-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(139, 105, 20, 0.5);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pause-menu-roster-card:hover {
+  border-color: #d4a574;
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.pause-menu-roster-card.active {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.pause-menu-roster-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.pause-menu-roster-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pause-menu-roster-name {
+  font-size: 0.6rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pause-menu-roster-detail {
+  font-size: 0.5rem;
+  color: #d4a574;
+}
+
+.pause-menu-roster-hp {
+  width: 100%;
+  height: 4px;
+  background: rgba(10, 10, 20, 0.9);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.pause-menu-roster-hp-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* ─── Equip Tab ──────────────────────────────────────────────────────── */
+
+.pause-menu-equip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pause-menu-equip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.pause-menu-equip-item:hover {
+  border-color: #d4a574;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+}
+
+.pause-menu-equip-name {
+  font-size: 0.75rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pause-menu-equip-desc {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+.pause-menu-equip-stats {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.pause-menu-equip-for {
+  font-size: 0.55rem;
+  color: #d4a574;
+  text-transform: capitalize;
+  margin-top: 0.2rem;
+}
+
+/* ─── Options Tab ────────────────────────────────────────────────────── */
+
+.pause-menu-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 400px;
+}
+
+.pause-menu-option-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pause-menu-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pause-menu-option-label {
+  font-size: 0.75rem;
+  color: #d4a574;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pause-menu-option-value {
+  font-size: 0.7rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+/* ─── Placeholder Tabs ───────────────────────────────────────────────── */
+
+.pause-menu-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  gap: 1rem;
+}
+
+.pause-menu-placeholder-icon {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.pause-menu-placeholder-text {
+  font-size: 0.75rem;
+  color: #8b6914;
+  text-align: center;
+}
+
+/* ─── Gold display (bottom of items) ─────────────────────────────────── */
+
+.pause-menu-gold-display {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(139, 105, 20, 0.5);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffd700;
+}
