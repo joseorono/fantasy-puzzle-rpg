@@ -1,0 +1,407 @@
+/* Battle Rewards Screen Styles */
+
+.battle-rewards-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #e0e0e0;
+  font-family: monospace;
+  overflow: hidden;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+}
+
+/* First Step - EXP GAINED Screen */
+.exp-gained-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem;
+}
+
+.exp-gained-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.exp-gained-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: monospace;
+}
+
+.exp-gained-amount {
+  font-size: 1.5rem;
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  margin-top: 0.5rem;
+}
+
+.character-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  flex: 1;
+  margin-bottom: 2rem;
+}
+
+.character-card {
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #d4a574;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  display: flex;
+  gap: 1rem;
+  position: relative;
+}
+
+.character-portrait {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  border: 3px solid #d4a574;
+  object-fit: cover;
+  position: relative;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.character-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.character-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  margin: 0 0 0.25rem 0;
+}
+
+.character-level {
+  font-size: 0.875rem;
+  color: #d4a574;
+  margin: 0 0 0.5rem 0;
+}
+
+.exp-gained-text {
+  font-size: 0.875rem;
+  color: #ffd700;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.exp-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #d4a574;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.exp-progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #ffd700, #ffed4e);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+.level-up-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  border: 2px solid #ffd700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.gold-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #d4a574;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.gold-icon {
+  width: 32px;
+  height: 32px;
+  background: radial-gradient(circle, #ffd700, #ffed4e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #3d2817;
+  font-weight: 900;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.gold-amount {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.finish-button {
+  align-self: center;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border: 3px solid #ffd700;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+  font-family: monospace;
+}
+
+.finish-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.finish-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Second Step - VICTORY! LOOT SUMMARY */
+.victory-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(212, 165, 116, 0.1) 2px,
+    rgba(212, 165, 116, 0.1) 4px
+  );
+}
+
+.victory-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.victory-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: monospace;
+}
+
+.gold-summary {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.gold-box {
+  flex: 1;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #ffd700;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.gold-box-title {
+  font-size: 0.875rem;
+  color: #d4a574;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gold-box-amount {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  margin: 0;
+}
+
+.items-found-container {
+  flex: 1;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 3px solid #d4a574;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  margin-bottom: 2rem;
+}
+
+.items-found-header {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 2px solid #d4a574;
+  padding-bottom: 0.5rem;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.3);
+  font-family: monospace;
+}
+
+.item-entry:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  color: #e0e0e0;
+  font-size: 0.875rem;
+}
+
+.item-quantity {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.item-type {
+  color: #d4a574;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.continue-button {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border: 3px solid #ffd700;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.continue-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.continue-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.arrow-icon {
+  font-size: 1.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .character-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gold-summary {
+    flex-direction: column;
+  }
+
+  .exp-gained-title,
+  .victory-title {
+    font-size: 2rem;
+  }
+}
+

@@ -1,14 +1,14 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 /*
   ---break---
   */
-@plugin "tailwindcss-animate";
+@plugin 'tailwindcss-animate';
 /*
   ---break---
 */
 
-@plugin "@tailwindcss/forms";
-@plugin "@tailwindcss/typography";
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -50,7 +50,7 @@
   --sidebar-accent: oklch(0.97 0.001 106.424);
   --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
   --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.709 0.01 56.259)
+  --sidebar-ring: oklch(0.709 0.01 56.259);
 }
 
 /*
@@ -68,7 +68,7 @@
   --font-sans: var(--font-sans, system-ui, sans-serif);
   --font-serif: var(--font-serif, Georgia, serif);
   --font-mono: var(--font-mono, monospace);
-  --font-pixel: "Press Start 2P", "Courier New", monospace;
+  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
   --font-body: var(--font-pixel);
   --font-marquee: var(--font-pixel);
   --font-dialogue: var(--font-pixel);
@@ -107,7 +107,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Custom colors from config */
-  --color-white: #F5F6FA;
+  --color-white: #f5f6fa;
   --color-blue-50: #eff4ff;
   --color-blue-100: #dbe6fe;
   --color-blue-200: #bfd3fe;
@@ -222,19 +222,19 @@
 }
 
 /* Import organized styles */
-@import "./styles/fonts.css";
-@import "./styles/window-frame.css";
-@import "./styles/cursor.css";
-@import "./styles/utilities.css";
-@import "./styles/click-tracker-effect.css";
-@import "./styles/animations.css";
-@import "./styles/global-animations.css";
-@import "./styles/scroll_bar.css";
-@import "./styles/dialogue.css";
-@import "./styles/battle-layout.css";
-@import "./styles/level-up-screen.css";
-@import "./styles/loader.css";
-@import "./styles/marquee.css";
-@import "./styles/town.css";
-@import "./styles/top-bar-resources.css";
-
+@import './styles/fonts.css';
+@import './styles/window-frame.css';
+@import './styles/cursor.css';
+@import './styles/utilities.css';
+@import './styles/click-tracker-effect.css';
+@import './styles/animations.css';
+@import './styles/global-animations.css';
+@import './styles/scroll_bar.css';
+@import './styles/dialogue.css';
+@import './styles/battle-layout.css';
+@import './styles/battle-rewards-screen.css';
+@import './styles/level-up-screen.css';
+@import './styles/loader.css';
+@import './styles/marquee.css';
+@import './styles/town.css';
+@import './styles/top-bar-resources.css';
