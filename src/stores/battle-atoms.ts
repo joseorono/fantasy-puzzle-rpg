@@ -3,9 +3,8 @@ import type { BattleState } from '~/types/battle';
 import type { EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
-import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/game';
+import { INITIAL_PARTY, INITIAL_ENEMIES, SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/party';
 import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
-import { SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
   getLivingMembers,
   getHealableMembers,

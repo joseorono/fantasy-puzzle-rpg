@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParty, usePartyActions } from '~/stores/game-store';
 import { fullyHealParty, isPartyFullyHealed, damageAllPartyMembers } from '~/lib/party-system';
-import { INITIAL_PARTY } from '~/constants/game';
+import { INITIAL_PARTY } from '~/constants/party';
 
 interface TestResult {
   name: string;

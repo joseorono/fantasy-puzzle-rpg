@@ -41,3 +41,6 @@ export const soundFiles = {
   [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.wav',
   [SoundNames.uncork]: '/assets/audio/ui/uncork.wav',
 };
+
+// Background sounds for the town hub (randomly selected on entry)
+export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];

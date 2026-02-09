@@ -4,48 +4,16 @@ import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
-import { CHARACTER_ICONS, HEALTH_BAR_COLORS } from '~/constants/ui';
+import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
 import { calculatePercentage } from '~/lib/math';
 import { calculateCharacterCooldown } from '~/lib/rpg-calculations';
-import { SKILL_DEFINITIONS } from '~/constants/skills';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 
-// Character colors with cooldown property
-const characterColors = {
-  warrior: {
-    bg: 'bg-blue-600',
-    border: 'border-blue-500',
-    glow: 'shadow-[0_0_20px_rgba(37,99,235,0.6)]',
-    text: 'text-blue-300',
-    cooldown: 'bg-blue-400',
-  },
-  rogue: {
-    bg: 'bg-green-600',
-    border: 'border-green-500',
-    glow: 'shadow-[0_0_20px_rgba(22,163,74,0.6)]',
-    text: 'text-green-300',
-    cooldown: 'bg-green-400',
-  },
-  mage: {
-    bg: 'bg-purple-600',
-    border: 'border-purple-500',
-    glow: 'shadow-[0_0_20px_rgba(147,51,234,0.6)]',
-    text: 'text-purple-300',
-    cooldown: 'bg-purple-400',
-  },
-  healer: {
-    bg: 'bg-yellow-500',
-    border: 'border-yellow-400',
-    glow: 'shadow-[0_0_20px_rgba(234,179,8,0.6)]',
-    text: 'text-yellow-300',
-    cooldown: 'bg-yellow-400',
-  },
-};
 
 function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
-  const colors = characterColors[character.class];
+  const colors = CHARACTER_BATTLE_COLORS[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
   const healthPercentage = calculatePercentage(character.currentHp, character.maxHp);
   const maxCooldownSeconds = calculateCharacterCooldown(character);

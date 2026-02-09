@@ -6,7 +6,7 @@ import Inn from './inn';
 import ItemStore from './item-store';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_HUB_BG_SOUNDS } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
@@ -19,8 +19,6 @@ interface TownHubProps {
   onLeaveCallback: () => void;
 }
 
-const townHubBgSounds = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
-
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
   const [dialogueText, setDialogueText] = useState(() => getRandomElement(TOWN_WELCOME_TEXT));
@@ -30,7 +28,7 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
   // Play random background noise when entering town hub
   useEffect(() => {
     if (currentLocation === 'town-hub') {
-      const randomSound = getRandomElement(townHubBgSounds);
+      const randomSound = getRandomElement(TOWN_HUB_BG_SOUNDS);
       soundService.playSound(randomSound, 0.2, 0.1);
     }
   }, [currentLocation]);

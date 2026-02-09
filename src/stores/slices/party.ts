@@ -1,5 +1,5 @@
 import type { PartySlice } from './party.types';
-import { INITIAL_PARTY } from '~/constants/game';
+import { INITIAL_PARTY } from '~/constants/party';
 import {
   fullyHealParty as fullyHealPartyLib,
   isPartyFullyHealed,

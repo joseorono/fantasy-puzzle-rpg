@@ -1,6 +1,6 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
-import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/game';
+import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/party';
 /**
  * Leveling System
  *

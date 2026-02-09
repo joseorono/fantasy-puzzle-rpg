@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { lastSkillActivationAtom, partyAtom } from '~/stores/battle-atoms';
-import { CHARACTER_ICONS } from '~/constants/ui';
+import { CHARACTER_ICONS, SKILL_BURST_COLORS, SKILL_BURST_DURATION_MS } from '~/constants/party';
 import type { CharacterClass } from '~/types/rpg-elements';
-
-const BURST_DURATION_MS = 650;
-
-const BURST_COLORS: Record<CharacterClass, { bg: string; light: string }> = {
-  warrior: { bg: 'rgba(37, 99, 235, 0.85)', light: 'rgba(147, 197, 253, 0.5)' },
-  rogue: { bg: 'rgba(22, 163, 74, 0.85)', light: 'rgba(134, 239, 172, 0.5)' },
-  mage: { bg: 'rgba(147, 51, 234, 0.85)', light: 'rgba(216, 180, 254, 0.5)' },
-  healer: { bg: 'rgba(202, 138, 4, 0.85)', light: 'rgba(253, 224, 71, 0.5)' },
-};
 
 export function SkillBurstOverlay() {
   const lastSkillActivation = useAtomValue(lastSkillActivationAtom);
@@ -38,14 +29,14 @@ export function SkillBurstOverlay() {
 
     const timer = setTimeout(() => {
       setVisible(false);
-    }, BURST_DURATION_MS);
+    }, SKILL_BURST_DURATION_MS);
 
     return () => clearTimeout(timer);
   }, [lastSkillActivation]);
 
   if (!visible || !displayData) return null;
 
-  const colors = BURST_COLORS[displayData.characterClass];
+  const colors = SKILL_BURST_COLORS[displayData.characterClass];
   const Icon = CHARACTER_ICONS[displayData.characterClass];
 
   return (
