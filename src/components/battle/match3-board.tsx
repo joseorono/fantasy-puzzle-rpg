@@ -9,12 +9,14 @@ import {
   removeMatchedOrbsAtom,
   battleStateAtom,
   partyAtom,
+  reduceSkillCooldownAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
 import { calculateMatchDamage } from '~/lib/rpg-calculations';
 import { BASE_MATCH_DAMAGE } from '~/constants/game';
+import { COOLDOWN_REDUCTION_PER_ORB } from '~/constants/skills';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
@@ -98,6 +100,7 @@ export function Match3Board() {
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
+  const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [invalidSwap, setInvalidSwap] = useState<{
@@ -209,6 +212,12 @@ export function Match3Board() {
 
       // Calculate damage using RPG system (includes combo multiplier and POW bonus)
       const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);
+
+      // Reduce the matching character's skill cooldown based on orbs matched
+      if (matchingCharacter) {
+        const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
+        reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
+      }
 
       // Show highlight for a moment, then remove orbs
       setTimeout(() => {

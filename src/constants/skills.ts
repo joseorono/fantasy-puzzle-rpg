@@ -14,6 +14,9 @@ export interface SkillDefinition {
 /** Base damage value used for skill calculations */
 export const BASE_SKILL_DAMAGE = 15;
 
+/** Seconds of cooldown reduction per matched orb of a character's color */
+export const COOLDOWN_REDUCTION_PER_ORB = 0.3;
+
 export const SKILL_DEFINITIONS: Record<CharacterClass, SkillDefinition> = {
   warrior: {
     name: 'Power Strike',

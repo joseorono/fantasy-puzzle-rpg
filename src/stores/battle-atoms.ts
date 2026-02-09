@@ -232,6 +232,22 @@ export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
 
+// Atom to reduce a specific character's skill cooldown (e.g. from matching their color orbs)
+export const reduceSkillCooldownAtom = atom(null, (get, set, characterId: string, amount: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+
+  const party = currentState.party.map((char) => {
+    if (char.id !== characterId || char.currentHp <= 0 || char.skillCooldown <= 0) return char;
+    return {
+      ...char,
+      skillCooldown: Math.max(0, char.skillCooldown - amount),
+    };
+  });
+
+  set(battleStateAtom, { ...currentState, party });
+});
+
 // Atom to tick skill cooldowns each frame
 export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);
