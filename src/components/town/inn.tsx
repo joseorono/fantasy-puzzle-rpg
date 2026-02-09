@@ -4,6 +4,9 @@ import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
 import { canAfford } from '~/lib/resources';
 import { isPartyFullyHealed as checkPartyFullyHealed } from '~/lib/party-system';
+import { calculatePercentage } from '~/lib/math';
+import { getHpThreshold } from '~/lib/rpg-calculations';
+import { HP_THRESHOLD_CLASS } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Button } from '../ui/8bit/button';
@@ -66,8 +69,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
             <h3>Party Members</h3>
             <div className="party-members-grid">
               {party.map((member) => {
-                const hpPercentage = (member.currentHp / member.maxHp) * 100;
-                const isFullHealth = member.currentHp === member.maxHp;
+                const hpPercentage = calculatePercentage(member.currentHp, member.maxHp);
 
                 return (
                   <div key={member.id} className="party-member-card">
@@ -87,7 +89,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
                       </div>
                       <div className="hp-bar-container">
                         <div
-                          className={`hp-bar ${isFullHealth ? 'full' : hpPercentage > 50 ? 'medium' : 'low'}`}
+                          className={`hp-bar ${HP_THRESHOLD_CLASS[getHpThreshold(hpPercentage)]}`}
                           style={{ width: `${hpPercentage}%` }}
                         />
                       </div>

@@ -2,6 +2,8 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect } from 'react';
 import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
 import { calculatePercentage } from '~/lib/math';
+import { getHpThreshold } from '~/lib/rpg-calculations';
+import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import type { EnemyData } from '~/types/rpg-elements';
@@ -114,7 +116,7 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           <div
             className={cn(
               'h-full transition-all duration-300',
-              healthPercentage > 50 ? 'bg-red-500' : healthPercentage > 25 ? 'bg-orange-500' : 'bg-red-700',
+              ENEMY_HP_THRESHOLD_BG[getHpThreshold(healthPercentage)],
             )}
             style={{ width: `${healthPercentage}%` }}
           />

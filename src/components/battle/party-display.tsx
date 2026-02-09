@@ -5,8 +5,9 @@ import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
+import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
 import { calculatePercentage } from '~/lib/math';
-import { calculateCharacterCooldown } from '~/lib/rpg-calculations';
+import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 
@@ -117,7 +118,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
           <div
             className={cn(
               'h-full transition-all duration-300',
-              healthPercentage > 50 ? 'bg-green-500' : healthPercentage > 25 ? 'bg-yellow-500' : 'bg-red-500',
+              HP_THRESHOLD_BG[getHpThreshold(healthPercentage)],
             )}
             style={{ width: `${healthPercentage}%` }}
           />
@@ -186,10 +187,7 @@ export function PartyDisplay() {
     if (lastMatchedType && lastMatchedType !== 'gray') {
       return HEALTH_BAR_COLORS[lastMatchedType];
     }
-    // Default color based on health percentage
-    if (partyHealthPercentage > 50) return 'from-green-600 to-green-500';
-    if (partyHealthPercentage > 25) return 'from-yellow-600 to-yellow-500';
-    return 'from-red-600 to-red-500';
+    return HP_THRESHOLD_GRADIENT[getHpThreshold(partyHealthPercentage)];
   };
 
   return (

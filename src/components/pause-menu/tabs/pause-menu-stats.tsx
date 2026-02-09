@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useParty } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constants/party';
-import { calculateMaxHp, calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
+import { HP_THRESHOLD_HEX } from '~/constants/ui';
+import { calculateMaxHp, calculateDamage, calculateSkillCooldown, getHpThreshold } from '~/lib/rpg-calculations';
+import { calculatePercentage } from '~/lib/math';
 import { cn } from '~/lib/utils';
 import type { CharacterData } from '~/types/rpg-elements';
 
@@ -105,13 +107,7 @@ interface RosterCardProps {
 function RosterCard({ member, isActive, onClick }: RosterCardProps) {
   const colors = CHARACTER_COLORS[member.class];
   const Icon = CHARACTER_ICONS[member.class];
-  const hpPct = Math.round((member.currentHp / member.maxHp) * 100);
-
-  function getHpColor(): string {
-    if (hpPct > 50) return '#4ade80';
-    if (hpPct > 25) return '#fbbf24';
-    return '#ef4444';
-  }
+  const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
 
   return (
     <div
@@ -129,7 +125,7 @@ function RosterCard({ member, isActive, onClick }: RosterCardProps) {
         <div className="pause-menu-roster-hp">
           <div
             className="pause-menu-roster-hp-fill"
-            style={{ width: `${hpPct}%`, background: getHpColor() }}
+            style={{ width: `${hpPct}%`, background: HP_THRESHOLD_HEX[getHpThreshold(hpPct)] }}
           />
         </div>
       </div>
