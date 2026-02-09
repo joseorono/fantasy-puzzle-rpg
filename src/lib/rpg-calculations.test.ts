@@ -302,6 +302,38 @@ describe('Speed Calculations', () => {
 });
 
 // ============================================================================
+// HP Threshold
+// ============================================================================
+
+describe('HP Threshold', () => {
+  test('getHpThreshold: Returns high above 50%', () => {
+    expect(rpg.getHpThreshold(100)).toBe('high');
+    expect(rpg.getHpThreshold(75)).toBe('high');
+    expect(rpg.getHpThreshold(51)).toBe('high');
+  });
+
+  test('getHpThreshold: Returns medium between 26-50%', () => {
+    expect(rpg.getHpThreshold(50)).toBe('medium');
+    expect(rpg.getHpThreshold(40)).toBe('medium');
+    expect(rpg.getHpThreshold(26)).toBe('medium');
+  });
+
+  test('getHpThreshold: Returns low at 25% and below', () => {
+    expect(rpg.getHpThreshold(25)).toBe('low');
+    expect(rpg.getHpThreshold(10)).toBe('low');
+    expect(rpg.getHpThreshold(0)).toBe('low');
+  });
+
+  test('getHpThreshold: Boundary at exactly 50 is medium', () => {
+    expect(rpg.getHpThreshold(50)).toBe('medium');
+  });
+
+  test('getHpThreshold: Boundary at exactly 25 is low', () => {
+    expect(rpg.getHpThreshold(25)).toBe('low');
+  });
+});
+
+// ============================================================================
 // Stat Utilities
 // ============================================================================
 

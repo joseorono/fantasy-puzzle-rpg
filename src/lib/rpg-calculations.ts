@@ -243,6 +243,24 @@ export function calculateItemCooldownInMs(party: CharacterData[]): number {
 }
 
 // ============================================================================
+// HP Threshold
+// ============================================================================
+
+export type HpThreshold = 'high' | 'medium' | 'low';
+
+/**
+ * Returns a threshold tier based on an HP percentage.
+ * Used across UI components to determine HP bar colors/classes.
+ * @param percentage HP percentage (0-100)
+ * @returns 'high' if >50%, 'medium' if >25%, 'low' otherwise
+ */
+export function getHpThreshold(percentage: number): HpThreshold {
+  if (percentage > 50) return 'high';
+  if (percentage > 25) return 'medium';
+  return 'low';
+}
+
+// ============================================================================
 // Stat Utilities
 // ============================================================================
 
