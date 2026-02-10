@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { loaderService } from '~/services/loader-service';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
-import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
+import { StartMenu } from '~/components/start-menu';
 
 interface GameLoaderProps {}
 
@@ -12,6 +11,7 @@ export function GameLoader(_props: GameLoaderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [showStartMenu, setShowStartMenu] = useState(false);
 
   useEffect(() => {
     if (loaderService.shouldPreload()) {
@@ -20,6 +20,7 @@ export function GameLoader(_props: GameLoaderProps) {
         .preloadEverything()
         .then(() => {
           setIsLoading(false);
+          setShowStartMenu(true);
         })
         .catch((error) => {
           console.error('Failed to loa d game assets:', error);
@@ -28,11 +29,11 @@ export function GameLoader(_props: GameLoaderProps) {
         });
     } else if (loaderService.isLoaded) {
       setIsLoading(false);
+      setShowStartMenu(true);
     }
   }, []);
 
-  function handlePlayClick() {
-    soundService.playSound(SoundNames.shimmeringSuccessShort);
+  function handleStartMenuClick() {
     setIsReady(true);
   }
 
@@ -42,6 +43,14 @@ export function GameLoader(_props: GameLoaderProps) {
         <GameScreen />
         <PauseMenuOverlay />
       </>
+    );
+  }
+
+  if (showStartMenu && !isLoading && !hasError) {
+    return (
+      <div className="game-view start-menu-view">
+        <StartMenu onStartClick={handleStartMenuClick} />
+      </div>
     );
   }
 
@@ -57,11 +66,6 @@ export function GameLoader(_props: GameLoaderProps) {
         )}
         {hasError && (
           <div className="text-xl text-red-500">There was an error loading the game. Please refresh and try again.</div>
-        )}
-        {!isLoading && !hasError && (
-          <button onClick={handlePlayClick} disabled={isLoading} className="splash-screen__button">
-            Play!
-          </button>
         )}
       </div>
     </div>
