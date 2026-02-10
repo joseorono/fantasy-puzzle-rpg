@@ -876,15 +876,97 @@
   text-align: center;
 }
 
-/* ─── Gold display (bottom of items) ─────────────────────────────────── */
+/* ─── Compact resource bar (bottom of items) ────────────────────────── */
 
-.pause-menu-gold-display {
+.pause-menu-resources-bar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.5rem;
   padding: 0.5rem 0;
   margin-top: 0.5rem;
   border-top: 1px solid rgba(139, 105, 20, 0.5);
+  background: linear-gradient(180deg, rgba(30, 20, 10, 0.3) 0%, rgba(20, 14, 6, 0.3) 100%);
+  border-radius: 4px;
+  padding: 0.375rem 0.5rem;
+}
+
+.pause-menu-resource {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(180deg, #3a2a1a 0%, #2a1e12 50%, #1e150c 100%);
+  border: 1px solid #8b6914;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 215, 0, 0.08);
+}
+
+.pause-menu-resource__icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.4), inset 1px 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.pause-menu-resource__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.pause-menu-resource__label {
+  font-family: monospace;
+  font-size: 0.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #c8b06e;
+  letter-spacing: 0.03em;
+}
+
+.pause-menu-resource__value {
+  font-family: monospace;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: bold;
+}
+
+/* Resource type colors */
+.pause-menu-resource--coins .pause-menu-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #ffd700, #ffed4e, #b8860b);
+}
+.pause-menu-resource--coins .pause-menu-resource__value {
   color: #ffd700;
+}
+
+.pause-menu-resource--gold .pause-menu-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #ffd700, #daa520, #b8860b);
+}
+.pause-menu-resource--gold .pause-menu-resource__value {
+  color: #ffd700;
+}
+
+.pause-menu-resource--silver .pause-menu-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #c0c0c0, #a8a8a8, #808080);
+}
+.pause-menu-resource--silver .pause-menu-resource__value {
+  color: #c0c0c0;
+}
+
+.pause-menu-resource--bronze .pause-menu-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #cd7f32, #b8722c, #8b4513);
+}
+.pause-menu-resource--bronze .pause-menu-resource__value {
+  color: #cd7f32;
+}
+
+.pause-menu-resource--copper .pause-menu-resource__icon {
+  background: radial-gradient(circle at 30% 30%, #b87333, #a0522d, #8b4513);
+}
+.pause-menu-resource--copper .pause-menu-resource__value {
+  color: #b87333;
 }

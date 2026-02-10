@@ -157,8 +157,22 @@ export function PauseMenuItems() {
           )}
         </div>
       </div>
-      <div className="pause-menu-gold-display">
-        Coins: {resources.coins}
+      <div className="pause-menu-resources-bar">
+        {[
+          { key: 'coins', label: 'Coins', value: resources.coins },
+          { key: 'gold', label: 'Gold', value: resources.gold },
+          { key: 'silver', label: 'Silver', value: resources.silver },
+          { key: 'bronze', label: 'Bronze', value: resources.bronze },
+          { key: 'copper', label: 'Copper', value: resources.copper },
+        ].map((item) => (
+          <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>
+            <div className="pause-menu-resource__icon"></div>
+            <div className="pause-menu-resource__content">
+              <span className="pause-menu-resource__label">{item.label}</span>
+              <span className="pause-menu-resource__value">{item.value.toLocaleString()}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );
