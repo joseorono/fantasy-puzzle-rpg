@@ -3,15 +3,15 @@
 - [ ] Town Hub:
   - [x] More sound(s) to play when opening the town hub
   - [ ] Specific sound for each location:
-    - [ ] Blacksmith (clanking hammer)
+    - [x] Blacksmith (clanking hammer)
     - [ ] Inn (tavern noise + music)
-    - [ ] Item Store (bottle clink)
+    - [x] Item Store (bottle clink)
 - [ ] Dialogue:
-  - [ ] Try existing dialogue text displaying at lower volume or try different one
+  - [x] Try existing dialogue text displaying at lower volume or try different one
 - [ ] Combat:
-  - [ ] Lower matching noise volume
+  - [x] Lower matching noise volume
   - [ ] Make getMatchSoundVolume function that takes combo size as argument, setting min and max volume as constants
-  - [ ] Item use sound (TBD)
+  - [x] Item use sound (TBD)
   - [ ] Rogue:
     - [ ] -Light melee attack
     - [ ] -Flurry
@@ -28,16 +28,16 @@
   - [ ] Crit
 - [ ] Death sound
 - [ ] Victory fanfare
-- [ ] Game over sound/Defeat sound (possibly two separate sounds)
+- [x] Game over sound/Defeat sound (possibly two separate sounds)
 - [ ] Map:
   - [ ] Bzzt - bad tile noise
-  - [ ] Contextual menus should play mechanicalClick sound at low volume
+  - [x] Contextual menus should play mechanicalClick sound at low volume
   - [ ] Battle start sound
   - [x] Steps (screen transition/different levels w/e)
 - [ ] Loot:
   - [x] Pickups
   - [x] Treasure
-- [ ] Level up:
+- [ ] Level up: (leave these to Edd)
   - [ ] Jingle
   - [ ] Bar fill sound
   - [ ] probably mechanicalClick for buttons too
@@ -53,9 +53,14 @@
 - `clickCoin` → `/assets/audio/click-coin.mp3`
 - `mechanicalClick` → `/assets/audio/ui/mechanical-click.wav`
 - `shimmeringSuccessShort` → `/assets/audio/ui/shimmering-success-short.wav`
+- `shimmeringSuccessShorter` → `/assets/audio/ui/shimmering-success-shorter.wav`
 - `match` → `/assets/audio/ui/match.wav`
 - `bottleClink` → `/assets/audio/bg-noise/bottle-clink.wav`
 - `uncork` → `/assets/audio/ui/uncork.wav`
+- `blacksmith` → `/assets/audio/bg-noise/blacksmith.wav`
+- `metalSharpening` → `/assets/audio/bg-noise/metal-sharpening.wav`
+- `wrong` → `/assets/audio/ui/wrong.mp3`
+- `jingle` → `/assets/audio/bg-noise/jingle.wav`
 - `beep` → `/assets/audio/ui/beep.wav`
 - `gameOver` → `/assets/audio/ui/game-over.mp3`
 
