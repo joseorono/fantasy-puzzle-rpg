@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
-import { useParty, usePartyActions, useRouterActions, useViewData } from '~/stores/game-store';
+import {
+  useParty,
+  usePartyActions,
+  useRouterActions,
+  useViewData,
+  useResources,
+  useResourcesActions,
+  useInventoryActions,
+} from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
 import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
+import type { LootTable } from '~/types/loot';
 
 /**
  * Atom to track the current step in the battle rewards flow
@@ -50,6 +59,7 @@ export function BattleRewardsScreen() {
       {step === 2 && (
         <ExpBarFillingUp
           expReward={expReward}
+          coinsReceived={coinsReceived}
           onFinish={(updatedPartyMembers) => {
             // Calculate pending level ups for all party members based on updated EXP
             const pending = calculateLevelUpsForParty(updatedPartyMembers, expReward).filter(
@@ -149,7 +159,16 @@ export function BattleRewardsScreen() {
           }
 
           function handleBack() {
-            // Move to next character
+            if (!randomPotentialStats) return;
+            // Apply level-up with only random stats (no player allocation)
+            const updatedCharacter = levelUp(
+              charCopy,
+              { pow: 0, vit: 0, spd: 0 },
+              randomPotentialStats,
+              totalLevelUps,
+            );
+            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
           }
@@ -182,13 +201,40 @@ function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
  * Component to display item rewards
  */
 interface ItemRewardsScreenProps {
-  lootTable: any;
+  lootTable: LootTable;
   onFinish: () => void;
 }
 
 function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
   const coinsReceived = lootTable.resources?.item?.coins || 0;
-  const totalCoins = 42850; // This should come from game state, hardcoded for now
+  const resources = useResources();
+  const resourcesActions = useResourcesActions();
+  const inventoryActions = useInventoryActions();
+
+  function handleContinue() {
+    // Add coins to resources store
+    if (coinsReceived > 0) {
+      resourcesActions.addResources({
+        coins: coinsReceived,
+        gold: lootTable.resources?.item?.gold || 0,
+        silver: lootTable.resources?.item?.silver || 0,
+        bronze: lootTable.resources?.item?.bronze || 0,
+        copper: lootTable.resources?.item?.copper || 0,
+      });
+    }
+
+    // Add equipment items to inventory
+    for (const entry of lootTable.equipableItems) {
+      inventoryActions.addItem(entry.item.id, 1);
+    }
+
+    // Add consumable items to inventory
+    for (const entry of lootTable.consumableItems) {
+      inventoryActions.addItem(entry.item.id, 1);
+    }
+
+    onFinish();
+  }
 
   return (
     <div className="victory-container">
@@ -203,25 +249,25 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </div>
         <div className="gold-box">
           <div className="gold-box-title">Total Gold Balance</div>
-          <div className="gold-box-amount">{totalCoins.toLocaleString()}</div>
+          <div className="gold-box-amount">{(resources.coins + coinsReceived).toLocaleString()}</div>
         </div>
       </div>
 
       <div className="items-found-container">
         <h2 className="items-found-header">Items Found</h2>
         <ul className="item-list">
-          {lootTable.equipableItems?.map((item: any, index: number) => (
+          {lootTable.equipableItems?.map((item, index) => (
             <li key={`equip-${index}`} className="item-entry">
               <span className="item-name">
-                {item.probability || 1}x {item.item?.name || 'Equipment'}
+                1x {item.item?.name || 'Equipment'}
                 <span className="item-type">EQUIPMENT</span>
               </span>
             </li>
           ))}
-          {lootTable.consumableItems?.map((item: any, index: number) => (
+          {lootTable.consumableItems?.map((item, index) => (
             <li key={`consumable-${index}`} className="item-entry">
               <span className="item-name">
-                {item.probability || 1}x {item.item?.name || 'Consumable'}
+                1x {item.item?.name || 'Consumable'}
                 <span className="item-type">CONSUMABLE</span>
               </span>
             </li>
@@ -229,7 +275,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <button onClick={onFinish} className="continue-button">
+      <button onClick={handleContinue} className="continue-button">
         Continue
         <span className="arrow-icon">→</span>
       </button>
@@ -242,13 +288,24 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
  */
 interface ExpBarFillingUpProps {
   expReward: number;
+  coinsReceived: number;
   onFinish: (updatedPartyMembers: CharacterData[]) => void;
 }
 
-function ExpBarFillingUp({ expReward, onFinish }: ExpBarFillingUpProps) {
+function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUpProps) {
   const partyMembers = useParty();
   const partyActions = usePartyActions();
   const [progress, setProgress] = useState(0);
+
+  // Pre-calculate which characters will level up
+  const [levelUpSet] = useState(() => {
+    const preview = partyMembers.map((member) => ({
+      ...member,
+      expToNextLevel: member.expToNextLevel + expReward,
+    }));
+    const pending = calculateLevelUpsForParty(preview, expReward);
+    return new Set(pending.filter((p) => p.pendingLevelUps > 0).map((p) => p.charId));
+  });
 
   function handleContinue() {
     // Apply exp to all party members and compute the updated party snapshot
@@ -288,32 +345,29 @@ function ExpBarFillingUp({ expReward, onFinish }: ExpBarFillingUpProps) {
       </header>
 
       <div className="character-cards-grid">
-        {partyMembers.slice(0, 4).map((member) => {
-          const shouldLevelUp = Math.random() > 0.5; // Random level up for demo
-          return (
-            <div key={member.id} className="character-card">
-              <img
-                src="/assets/portraits/Innkeeper_02.png"
-                alt={member.name}
-                className="character-portrait pixel-art"
-              />
-              <div className="character-info">
-                <h3 className="character-name">{member.name}</h3>
-                <div className="character-level">Lv {member.level}</div>
-                <div className="exp-gained-text">EXP +{expReward}</div>
-                <div className="exp-progress-bar">
-                  <div className="exp-progress-fill" style={{ width: `${progress}%` }} />
-                </div>
+        {partyMembers.slice(0, 4).map((member) => (
+          <div key={member.id} className="character-card">
+            <img
+              src="/assets/portraits/Innkeeper_02.png"
+              alt={member.name}
+              className="character-portrait pixel-art"
+            />
+            <div className="character-info">
+              <h3 className="character-name">{member.name}</h3>
+              <div className="character-level">Lv {member.level}</div>
+              <div className="exp-gained-text">EXP +{expReward}</div>
+              <div className="exp-progress-bar">
+                <div className="exp-progress-fill" style={{ width: `${progress}%` }} />
               </div>
-              {shouldLevelUp && <div className="level-up-badge">LEVEL UP!</div>}
             </div>
-          );
-        })}
+            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP!</div>}
+          </div>
+        ))}
       </div>
 
       <div className="gold-section">
         <div className="gold-icon">₵</div>
-        <div className="gold-amount">GOLD OBTAINED {Math.floor(expReward * 0.8)}</div>
+        <div className="gold-amount">GOLD OBTAINED {coinsReceived.toLocaleString()}</div>
       </div>
 
       <button onClick={handleContinue} className="finish-button">
