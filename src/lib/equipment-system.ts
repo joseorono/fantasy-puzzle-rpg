@@ -95,6 +95,37 @@ export function getEffectiveStats(character: CharacterData): CoreRPGStats {
 }
 
 /**
+ * Returns effective max HP for a character, including equipment VIT bonuses.
+ * Unlike calculateEntityMaxHp in rpg-calculations, this does NOT modify
+ * the stored maxHp — it's for battle/display contexts only.
+ * @param character Character data
+ * @returns Effective max HP with equipment VIT bonuses applied
+ */
+export function getEffectiveMaxHp(character: CharacterData): number {
+  const bonuses = getEquipmentBonuses(character);
+  return character.maxHp + bonuses.vit * character.vitHpMultiplier;
+}
+
+/**
+ * Returns a copy of each party member with equipment bonuses baked into
+ * their stats and maxHp.
+ * @param party Array of character data
+ * @returns New array with effective stats and maxHp applied
+ */
+export function getPartyWithEffectiveStats(party: CharacterData[]): CharacterData[] {
+  return party.map((char) => {
+    const effectiveStats = getEffectiveStats(char);
+    const effectiveMaxHp = getEffectiveMaxHp(char);
+    return {
+      ...char,
+      stats: effectiveStats,
+      maxHp: effectiveMaxHp,
+      currentHp: Math.min(char.currentHp, effectiveMaxHp),
+    };
+  });
+}
+
+/**
  * Get available equipment items for a given slot and character,
  * respecting class restrictions and deducting equipped counts from inventory quantity.
  */

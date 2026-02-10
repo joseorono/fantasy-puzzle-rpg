@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParty } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constants/party';
-import { calculateMaxHp, calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
+import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
+import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { cn } from '~/lib/utils';
 import { RosterCard } from '~/components/pause-menu/roster-card';
 
@@ -16,9 +17,10 @@ export function PauseMenuStats() {
   const Icon = CHARACTER_ICONS[selected.class];
   const skill = SKILL_DEFINITIONS[selected.class];
 
-  const maxHp = calculateMaxHp(selected.baseHp, selected.stats.vit, selected.vitHpMultiplier);
-  const attackDmg = calculateDamage(10, selected.stats.pow);
-  const cooldown = calculateSkillCooldown(selected.maxCooldown, selected.stats.spd);
+  const effectiveStats = getEffectiveStats(selected);
+  const maxHp = getEffectiveMaxHp(selected);
+  const attackDmg = calculateDamage(10, effectiveStats.pow);
+  const cooldown = calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd);
 
   return (
     <>
@@ -53,15 +55,15 @@ export function PauseMenuStats() {
               <h3>Core Stats</h3>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">POW</span>
-                <span className="pause-menu-stat-value">{selected.stats.pow}</span>
+                <span className="pause-menu-stat-value">{effectiveStats.pow}</span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">VIT</span>
-                <span className="pause-menu-stat-value">{selected.stats.vit}</span>
+                <span className="pause-menu-stat-value">{effectiveStats.vit}</span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">SPD</span>
-                <span className="pause-menu-stat-value">{selected.stats.spd}</span>
+                <span className="pause-menu-stat-value">{effectiveStats.spd}</span>
               </div>
             </div>
 

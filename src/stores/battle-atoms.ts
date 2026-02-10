@@ -5,6 +5,7 @@ import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES, SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/party';
 import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
+import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -43,9 +44,12 @@ function getNextLivingEnemyId(enemies: EnemyData[], currentId: string): string |
   return living[0].id;
 }
 
+// Bake equipment bonuses into stats/maxHp once at init so we don't
+// recalculate them on every damage/cooldown call during combat.
+const battleParty = getPartyWithEffectiveStats(initialParty);
 // Initial battle state — skills start on cooldown
 const initialBattleState: BattleState = {
-  party: initialParty.map((char) => ({
+  party: battleParty.map((char) => ({
     ...char,
     skillCooldown: calculateCharacterCooldown(char),
   })),
@@ -194,8 +198,10 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
 
 // Atom to reset battle
 export const resetBattleAtom = atom(null, (_get, set) => {
+  // Bake equipment bonuses so combat reads pre-computed values
+  const resetParty = getPartyWithEffectiveStats(initialParty);
   set(battleStateAtom, {
-    party: initialParty.map((char) => ({
+    party: resetParty.map((char) => ({
       ...char,
       currentHp: char.maxHp,
       skillCooldown: calculateCharacterCooldown(char),
