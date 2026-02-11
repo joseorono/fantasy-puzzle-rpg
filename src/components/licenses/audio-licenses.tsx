@@ -131,6 +131,10 @@ export default function AudioLicensesDialogContent() {
             https://freesound.org/people/Kastenfrosch/sounds/162457/
           </a>
         </p>
+        <p>
+          Combat Music by guillermochicasonido (combatMusic) -- License: Attribution 4.0
+          <a href="https://freesound.org/s/691651/">https://freesound.org/s/691651/</a>
+        </p>
       </div>
     </>
   );
