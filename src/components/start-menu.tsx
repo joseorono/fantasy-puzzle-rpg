@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { MainMenu } from './main-menu';
 
 interface StartMenuProps {
   onStartClick: () => void;
@@ -9,6 +10,7 @@ interface StartMenuProps {
 export function StartMenu({ onStartClick }: StartMenuProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [showMainMenu, setShowMainMenu] = useState(false);
 
   useEffect(() => {
     if (!isLoading) return;
@@ -28,13 +30,34 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
 
   const handleStartClick = () => {
     soundService.playSound(SoundNames.shimmeringSuccessShort);
+    setShowMainMenu(true);
+  };
+
+  const handleNewGame = () => {
     onStartClick();
   };
+
+  const handleLoadGame = () => {
+    console.log('Load Game clicked');
+  };
+
+  const handleCredits = () => {
+    console.log('Credits clicked');
+  };
+
+  const handleQuit = () => {
+    console.log('Quit clicked');
+  };
+
+  if (showMainMenu) {
+    return (
+      <MainMenu onNewGame={handleNewGame} onLoadGame={handleLoadGame} onCredits={handleCredits} onQuit={handleQuit} />
+    );
+  }
 
   return (
     <div className="start-menu">
       <div className="start-menu__bg" />
-      <img src="/assets/menu/start/start.menu.png" alt="Start Menu" className="start-menu__image" />
 
       <div className="start-menu__loading-section">
         {isLoading && (

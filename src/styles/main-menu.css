@@ -1,0 +1,277 @@
+/* ==========================================
+   MAIN MENU
+   ========================================== */
+
+.game-view.main-menu-view {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.main-menu {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.main-menu__bg {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a0f0a 0%, #2d1810 50%, #1a0f0a 100%);
+  z-index: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255, 100, 50, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(50, 100, 255, 0.1) 0%, transparent 50%);
+}
+
+.main-menu__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  z-index: 2;
+  position: relative;
+  padding: 2rem;
+}
+
+/* ==========================================
+   TITLE SECTION
+   ========================================== */
+
+.main-menu__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+  animation: main-menu-title-fade-in 0.8s ease-out;
+}
+
+@keyframes main-menu-title-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.main-menu__title-text {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.5),
+    0 0 40px rgba(255, 100, 50, 0.3);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.2;
+}
+
+.main-menu__subtitle {
+  font-size: 1.5rem;
+  color: #87ceeb;
+  text-shadow:
+    2px 2px 0 rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(135, 206, 235, 0.4);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ==========================================
+   BUTTONS SECTION
+   ========================================== */
+
+.main-menu__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  animation: main-menu-buttons-fade-in 1s ease-out 0.3s both;
+}
+
+@keyframes main-menu-buttons-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   MENU BUTTON
+   ========================================== */
+
+.main-menu__button {
+  position: relative;
+  width: 320px;
+  max-width: 90%;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f5f5f5;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  background: linear-gradient(180deg, #3d2817 0%, #2a1810 50%, #1a0f0a 100%);
+  border: 4px solid #d4a574;
+  border-radius: 0;
+  position: relative;
+  box-shadow:
+    0 0 20px rgba(212, 165, 116, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Press Start 2P', monospace;
+  overflow: hidden;
+}
+
+.main-menu__button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.main-menu__button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 50%, rgba(212, 165, 116, 0.1) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.main-menu__button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #4d3827 0%, #3a2820 50%, #2a1f1a 100%);
+  border-color: #ffd700;
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.6),
+    0 10px 20px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+.main-menu__button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.main-menu__button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    0 0 15px rgba(255, 215, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.1);
+}
+
+.main-menu__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow:
+    0 0 10px rgba(212, 165, 116, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================
+   DECORATIVE ELEMENTS
+   ========================================== */
+
+.main-menu__button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #d4a574, #ffd700, #d4a574);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 2px;
+}
+
+.main-menu__button:hover:not(:disabled)::before {
+  opacity: 0.3;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+  .main-menu__title-text {
+    font-size: 2.5rem;
+  }
+
+  .main-menu__subtitle {
+    font-size: 1rem;
+  }
+
+  .main-menu__content {
+    gap: 2.5rem;
+  }
+
+  .main-menu__button {
+    width: 280px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  .main-menu__buttons {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-menu__title-text {
+    font-size: 1.8rem;
+  }
+
+  .main-menu__subtitle {
+    font-size: 0.8rem;
+  }
+
+  .main-menu__button {
+    width: 240px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border: 3px solid #d4a574;
+  }
+}
