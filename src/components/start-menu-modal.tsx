@@ -60,11 +60,11 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
               <button className="main-menu__button" onClick={handleStartGame}>
                 Start Game
               </button>
-              <button className="main-menu__button" onClick={handleOpenOptions}>
-                Options
-              </button>
               <button className="main-menu__button" onClick={handleOpenLoad}>
                 Load Game
+              </button>
+              <button className="main-menu__button" onClick={handleOpenOptions}>
+                Options
               </button>
               <button className="main-menu__button" onClick={() => handleMenuClick(onQuit)}>
                 Settings
@@ -102,3 +102,4 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
     </>
   );
 }
+

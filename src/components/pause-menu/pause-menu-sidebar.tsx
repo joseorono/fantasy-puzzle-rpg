@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
@@ -16,6 +17,7 @@ const TABS: { id: PauseMenuTab; label: string; icon: typeof Package }[] = [
 
 export function PauseMenuSidebar() {
   const { activeTab, selectTab, close } = usePauseMenu();
+  const activeButtonRef = useRef<HTMLButtonElement>(null);
 
   function handleTabClick(tab: PauseMenuTab) {
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
@@ -27,15 +29,38 @@ export function PauseMenuSidebar() {
     close();
   }
 
+  function handleKeyDown(e: KeyboardEvent) {
+    const currentIndex = TABS.findIndex((tab) => tab.id === activeTab);
+
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const direction = e.key === 'ArrowUp' ? -1 : 1;
+      const nextIndex = (currentIndex + direction + TABS.length) % TABS.length;
+      handleTabClick(TABS[nextIndex].id);
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab]);
+
+  useEffect(() => {
+    activeButtonRef.current?.focus();
+  }, [activeTab]);
+
   return (
     <div className="pause-menu-sidebar">
       {TABS.map((tab) => {
         const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
-            className={cn('pause-menu-nav-btn', activeTab === tab.id && 'active')}
+            ref={isActive ? activeButtonRef : null}
+            className={cn('pause-menu-nav-btn', isActive && 'active')}
             onClick={() => handleTabClick(tab.id)}
+            aria-current={isActive ? 'page' : undefined}
           >
             <Icon size={14} />
             {tab.label}
