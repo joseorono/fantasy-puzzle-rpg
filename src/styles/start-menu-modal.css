@@ -1,0 +1,170 @@
+/* ==========================================
+   START MENU MODAL OVERLAY
+   ========================================== */
+
+.start-menu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+.start-menu-modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 700px;
+  background: linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%);
+  border: 4px solid #d4a574;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow:
+    0 0 30px rgba(212, 165, 116, 0.4),
+    0 20px 40px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: modal-appear 0.3s ease-out;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.start-menu-modal-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(180deg, #3d2817 0%, #2a1810 100%);
+  border: 2px solid #d4a574;
+  border-radius: 4px;
+  color: #d4a574;
+  font-weight: bold;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.start-menu-modal-back:hover {
+  background: linear-gradient(180deg, #4d3827 0%, #3a2820 100%);
+  border-color: #ffd700;
+  color: #ffd700;
+  transform: translateX(-2px);
+}
+
+.start-menu-modal-back:active {
+  transform: translateX(0);
+}
+
+/* ==========================================
+   OPTIONS WRAPPER
+   ========================================== */
+
+.start-menu-modal-options {
+  background: linear-gradient(135deg, #1a0f0a 0%, #2a1810 100%);
+  border: 2px solid #8b6914;
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+.start-menu-modal-options h2 {
+  margin-top: 0;
+  color: #ffd700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ==========================================
+   LOAD WRAPPER
+   ========================================== */
+
+.start-menu-modal-load {
+  background: linear-gradient(135deg, #1a0f0a 0%, #2a1810 100%);
+  border: 2px solid #8b6914;
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+.start-menu-modal-load h2 {
+  margin-top: 0;
+  color: #ffd700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+  .start-menu-modal-content {
+    width: 95%;
+    max-width: 500px;
+    padding: 1.5rem;
+  }
+
+  .start-menu-modal-back {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .start-menu-modal-options,
+  .start-menu-modal-load {
+    padding: 1rem;
+  }
+
+  .start-menu-modal-options h2,
+  .start-menu-modal-load h2 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .start-menu-modal-overlay {
+    padding: 1rem;
+  }
+
+  .start-menu-modal-content {
+    width: 100%;
+    border: 3px solid #d4a574;
+    padding: 1rem;
+    max-height: 90vh;
+  }
+
+  .start-menu-modal-back {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .start-menu-modal-options,
+  .start-menu-modal-load {
+    padding: 0.75rem;
+  }
+
+  .start-menu-modal-options h2,
+  .start-menu-modal-load h2 {
+    font-size: 0.9rem;
+  }
+}

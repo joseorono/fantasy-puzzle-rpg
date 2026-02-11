@@ -237,6 +237,7 @@
 @import './styles/loader.css';
 @import './styles/start-menu.css';
 @import './styles/main-menu.css';
+@import './styles/start-menu-modal.css';
 @import './styles/marquee.css';
 @import './styles/town.css';
 @import './styles/top-bar-resources.css';

@@ -30,7 +30,7 @@
   height: 100%;
   background: linear-gradient(135deg, #1a0f0a 0%, #2d1810 50%, #1a0f0a 100%);
   z-index: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 50%, rgba(255, 100, 50, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 50%, rgba(50, 100, 255, 0.1) 0%, transparent 50%);
 }
@@ -127,7 +127,7 @@
 
 .main-menu__button {
   position: relative;
-  width: 320px;
+  width: 380px;
   max-width: 90%;
   padding: 1rem 2rem;
   font-size: 1.5rem;
@@ -170,7 +170,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, transparent 50%),
     linear-gradient(45deg, transparent 50%, rgba(212, 165, 116, 0.1) 100%);
   pointer-events: none;
@@ -275,3 +275,4 @@
     border: 3px solid #d4a574;
   }
 }
+
