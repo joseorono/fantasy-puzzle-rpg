@@ -1,4 +1,4 @@
-import type { MapData, TileType } from '~/types/map';
+import type { MapData, TileType } from '~/types/map-node';
 
 // Tile type constants
 export const GRASS: TileType = 'grass';

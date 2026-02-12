@@ -1,5 +1,5 @@
-import type { FloorLootSpot } from '~/types/floor-loot';
-import { createFloorLootSpot } from '~/types/floor-loot';
+import type { FloorLootSpot } from '~/types/map-node';
+import { createFloorLootSpot } from '~/lib/loot';
 
 /**
  * Floor loot spots on the demo map

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Resources } from '~/types/resources';
-import type { townLocations } from '~/types/map';
+import type { townLocations } from '~/types/map-node';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';

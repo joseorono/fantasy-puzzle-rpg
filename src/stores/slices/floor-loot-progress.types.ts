@@ -1,4 +1,9 @@
-import type { BaseSlice } from '~/types/store';
+/**
+ * Base interface for all store slices
+ */
+interface BaseSlice {
+  reset?: () => void;
+}
 
 /**
  * Floor loot progress state - tracks which floor loot spots have been collected

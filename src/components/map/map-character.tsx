@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CharacterPosition, Direction, MapData } from '~/types/map';
+import type { CharacterPosition, Direction, MapData } from '~/types/map-node';
 import { WALKABLE_TILES } from '~/constants/maps';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
 

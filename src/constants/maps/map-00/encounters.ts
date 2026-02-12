@@ -1,4 +1,4 @@
-import type { EncounterDefinition } from '~/types/encounter';
+import type { EncounterDefinition } from '~/types/map-node';
 import { MOSS_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 
 /**
