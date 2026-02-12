@@ -144,6 +144,7 @@ src/
 ## Important Notes
 
 - The project uses ES modules (`"type": "module"` in package.json)
+- When refining functions in the lib directory, use JSDoc.
 - TypeScript strict mode is enabled; do not weaken it
 - Do not introduce new state management libraries
 - Do not handle version control — we'll commit and push changes ourselves
