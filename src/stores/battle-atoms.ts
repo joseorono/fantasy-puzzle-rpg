@@ -1,11 +1,10 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
-import type { EnemyData } from '~/types/rpg-elements';
+import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES, SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/party';
 import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
-import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -14,8 +13,9 @@ import {
   healAllLivingPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
+import { getNextLivingEnemyId } from '~/lib/enemy-system';
+import { createBattleState } from '~/lib/battle-setup';
 import {
-  createInitialBoard,
   hasMatchAtPosition,
   swapOrbs,
   isValidSwap,
@@ -26,46 +26,8 @@ import {
 const initialParty = INITIAL_PARTY;
 const initialEnemies = INITIAL_ENEMIES;
 
-/**
- * Returns the first living enemy's id, prioritizing enemies after currentId (wrapping around).
- * Returns null if all enemies are dead.
- */
-function getNextLivingEnemyId(enemies: EnemyData[], currentId: string): string | null {
-  const living = enemies.filter((e) => e.currentHp > 0);
-  if (living.length === 0) return null;
-
-  // Try to find a living enemy after the current one
-  const currentIndex = enemies.findIndex((e) => e.id === currentId);
-  for (let i = 1; i <= enemies.length; i++) {
-    const idx = (currentIndex + i) % enemies.length;
-    if (enemies[idx].currentHp > 0) return enemies[idx].id;
-  }
-
-  return living[0].id;
-}
-
-// Bake equipment bonuses into stats/maxHp once at init so we don't
-// recalculate them on every damage/cooldown call during combat.
-const battleParty = getPartyWithEffectiveStats(initialParty);
-// Initial battle state — skills start on cooldown
-const initialBattleState: BattleState = {
-  party: battleParty.map((char) => ({
-    ...char,
-    skillCooldown: calculateCharacterCooldown(char),
-  })),
-  enemies: initialEnemies.map((e) => ({ ...e, currentHp: e.maxHp })),
-  selectedEnemyId: initialEnemies[0].id,
-  board: createInitialBoard(),
-  selectedOrb: null,
-  currentMatches: [],
-  score: 0,
-  turn: 1,
-  gameStatus: 'playing',
-  lastDamage: null,
-  lastMatchedType: null,
-  enemyAttackTimestamp: null,
-  lastSkillActivation: null,
-};
+// Build the default battle state using the shared factory
+const initialBattleState: BattleState = createBattleState(initialParty, initialEnemies);
 
 // Jotai atoms
 export const battleStateAtom = atom<BattleState>(initialBattleState);
@@ -196,28 +158,22 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   });
 });
 
-// Atom to reset battle
-export const resetBattleAtom = atom(null, (_get, set) => {
-  // Bake equipment bonuses so combat reads pre-computed values
-  const resetParty = getPartyWithEffectiveStats(initialParty);
-  set(battleStateAtom, {
-    party: resetParty.map((char) => ({
-      ...char,
-      currentHp: char.maxHp,
-      skillCooldown: calculateCharacterCooldown(char),
-    })),
-    enemies: initialEnemies.map((e) => ({ ...e, currentHp: e.maxHp })),
-    selectedEnemyId: initialEnemies[0].id,
-    board: createInitialBoard(),
-    selectedOrb: null,
-    currentMatches: [],
-    score: 0,
-    turn: 1,
-    gameStatus: 'playing',
-    lastDamage: null,
-    lastMatchedType: null,
-    lastSkillActivation: null,
-  });
+/**
+ * Setup a new battle with specific enemies and party.
+ * Call this before navigating to the battle view to configure the encounter.
+ */
+export const setupBattleAtom = atom(
+  null,
+  (_get, set, params: { enemies: EnemyData[]; party: CharacterData[] }) => {
+    set(battleStateAtom, createBattleState(params.party, params.enemies));
+  },
+);
+
+// Atom to reset battle (replays the current encounter)
+export const resetBattleAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  // Re-use the current encounter's enemies so a mid-battle reset replays the same fight
+  set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
 });
 
 // Atom to remove matched orbs and refill board
