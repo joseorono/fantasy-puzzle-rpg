@@ -6,11 +6,10 @@ import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
-import {
-  TEST_DIALOGUE_SCENE,
-  SIMPLE_DIALOGUE_SCENE,
-  CUTSCENE_WITH_NARRATOR,
-} from '~/constants/dialogue/scenes/test-scene';
+import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
+import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
+import { useSetAtom } from 'jotai';
+import { setupBattleAtom } from '~/stores/battle-atoms';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
 import { DEMO_FLOOR_LOOT, getFloorLootAtPosition } from '~/constants/maps/map-00/floor-loot';
 import {
@@ -19,6 +18,8 @@ import {
   useInventoryActions,
   useResourcesActions,
   useFloorLootProgressActions,
+  useRouterActions,
+  useParty,
 } from '~/stores/game-store';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
@@ -46,7 +47,7 @@ const DIALOGUE_TRIGGERS = [
   { row: 13, col: 71, scene: 'narrator' },
 ] as const;
 
-type DialogueSceneType = 'test' | 'simple' | 'narrator';
+type DialogueSceneKey = string;
 
 interface CharacterPosition {
   row: number;
@@ -65,8 +66,9 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
   const [showTriggerModal, setShowTriggerModal] = useState(false);
-  const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneType | null>(null);
-  const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
+  const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
+  const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
+  const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -86,6 +88,10 @@ const Tilemap: React.FC<TilemapProps> = ({
   const floorLootProgressActions = useFloorLootProgressActions();
   const currentResources = useGameStore((state) => state.resources);
   const currentInventory = useGameStore((state) => state.inventory);
+
+  const routerActions = useRouterActions();
+  const partyMembers = useParty();
+  const setupBattle = useSetAtom(setupBattleAtom);
 
   // Map ID for floor loot tracking (hardcoded for demo map)
   const currentMapId = 'map-00';
@@ -370,6 +376,27 @@ const Tilemap: React.FC<TilemapProps> = ({
   function handleDialogueComplete() {
     console.log('Dialogue scene completed!');
     setActiveDialogue(null);
+
+    // If a fight was pending after dialogue, start it now
+    if (pendingFightNodeId) {
+      const nodeId = pendingFightNodeId;
+      setPendingFightNodeId(null);
+      startBattle(nodeId);
+    }
+  }
+
+  /**
+   * Start a battle for the given encounter, setting up atoms and navigating.
+   */
+  function startBattle(nodeId: string) {
+    const encounter = getEncounterForNode(nodeId);
+    if (!encounter) {
+      console.warn('No encounter found for node:', nodeId);
+      return;
+    }
+
+    setupBattle({ enemies: encounter.enemies, party: partyMembers });
+    routerActions.goToBattleDemo({ enemyId: nodeId, location: 'map-00' });
   }
 
   // Node interaction handlers
@@ -377,17 +404,23 @@ const Tilemap: React.FC<TilemapProps> = ({
     if (!currentNode) return;
     console.log('Starting fight with:', currentNode.name);
 
-    // Mark as completed (in real game, this would happen after winning the battle)
+    // Mark node as completed (rewards screen can re-check if needed)
     mapProgressActions.completeNode(currentNode.type, currentNode.id);
 
-    // Close menu and clear current node
+    // Close menu
     setShowNodeMenu(false);
     setCurrentNode(null);
 
-    // Show feedback
-    alert(`Victory! You defeated ${currentNode.name}!`);
+    // If the node has a pre-fight dialogue, play it first
+    if (currentNode.dialogueScene && MAP_00_DIALOGUE_SCENES[currentNode.dialogueScene]) {
+      setPendingFightNodeId(currentNode.id);
+      setDialogueKey((k) => k + 1);
+      setActiveDialogue(currentNode.dialogueScene);
+      return;
+    }
 
-    // TODO: Navigate to battle screen instead of alert
+    // No dialogue — go straight to battle
+    startBattle(currentNode.id);
   }
 
   function handleNodeEnter() {
@@ -471,16 +504,10 @@ const Tilemap: React.FC<TilemapProps> = ({
   function handleNodeViewDialogue() {
     if (!currentNode || !currentNode.dialogueScene) return;
     console.log('Viewing dialogue for:', currentNode.name);
-    // Map the dialogue scene key to the actual scene type
-    const sceneMap: Record<string, DialogueSceneType> = {
-      test: 'test',
-      simple: 'simple',
-      narrator: 'narrator',
-    };
-    const sceneType = sceneMap[currentNode.dialogueScene];
-    if (sceneType) {
+    const scene = MAP_00_DIALOGUE_SCENES[currentNode.dialogueScene];
+    if (scene) {
       setDialogueKey((k) => k + 1);
-      setActiveDialogue(sceneType);
+      setActiveDialogue(currentNode.dialogueScene);
     }
     // Don't close the menu - dialogue renders as overlay
   }
@@ -838,16 +865,12 @@ const Tilemap: React.FC<TilemapProps> = ({
       )}
 
       {/* Active dialogue scenes */}
-      {activeDialogue === 'test' && (
-        <DialogueScene key={dialogueKey} scene={TEST_DIALOGUE_SCENE} onComplete={handleDialogueComplete} />
-      )}
-
-      {activeDialogue === 'simple' && (
-        <DialogueScene key={dialogueKey} scene={SIMPLE_DIALOGUE_SCENE} onComplete={handleDialogueComplete} />
-      )}
-
-      {activeDialogue === 'narrator' && (
-        <DialogueScene key={dialogueKey} scene={CUTSCENE_WITH_NARRATOR} onComplete={handleDialogueComplete} />
+      {activeDialogue && MAP_00_DIALOGUE_SCENES[activeDialogue] && (
+        <DialogueScene
+          key={dialogueKey}
+          scene={MAP_00_DIALOGUE_SCENES[activeDialogue]}
+          onComplete={handleDialogueComplete}
+        />
       )}
     </>
   );
