@@ -1,16 +1,28 @@
-import { useAtomValue, useSetAtom } from 'jotai';
-import { gameStatusAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { useAtomValue } from 'jotai';
+import { gameStatusAtom, enemiesAtom } from '~/stores/battle-atoms';
+import { useRouterActions } from '~/stores/game-store';
 import { Button } from '~/components/ui/8bit/button';
-import { Trophy, Skull, RotateCcw } from 'lucide-react';
+import { Trophy, Skull, ArrowRight } from 'lucide-react';
 import { cn } from '~/lib/utils';
+import { combineLootFromEnemies } from '~/lib/loot';
 
 export function GameOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
-  const resetBattle = useSetAtom(resetBattleAtom);
+  const enemies = useAtomValue(enemiesAtom);
+  const { goToBattleRewards, goBack } = useRouterActions();
 
   if (gameStatus === 'playing') return null;
 
   const isVictory = gameStatus === 'won';
+
+  function handleContinue() {
+    if (isVictory) {
+      const { lootTable, expReward } = combineLootFromEnemies(enemies);
+      goToBattleRewards({ lootTable, expReward });
+    } else {
+      goBack();
+    }
+  }
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm duration-500">
@@ -115,7 +127,7 @@ export function GameOverModal() {
 
           {/* Button */}
           <Button
-            onClick={() => resetBattle()}
+            onClick={handleContinue}
             size="default"
             className={cn(
               'pixel-font-alt w-full gap-2 text-sm sm:text-base',
@@ -124,8 +136,8 @@ export function GameOverModal() {
                 : 'bg-red-900 text-white hover:bg-red-950',
             )}
           >
-            <RotateCcw className="h-5 w-5" />
-            NEW GAME
+            <ArrowRight className="h-5 w-5" />
+            CONTINUE
           </Button>
         </div>
 
