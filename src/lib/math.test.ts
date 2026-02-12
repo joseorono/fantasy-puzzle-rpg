@@ -184,5 +184,7 @@ test('calculatePercentage works', () => {
 
   // Negative values
   expect(math.calculatePercentage(-50, 100)).toBe(-50);
-  expect(math.calculatePercentage(50, -100)).toBe(-50);
+
+  // Negative total treated same as zero (safe division)
+  expect(math.calculatePercentage(50, -100)).toBe(0);
 });

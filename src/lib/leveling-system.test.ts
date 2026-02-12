@@ -26,19 +26,19 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   skillCooldown: 0,
   maxCooldown: 10,
   level: 1,
-  expToNextLevel: Math.exp(1),
+  expToNextLevel: 1,
   ...overrides,
 });
 
 describe('calculateExpToNextLevel', () => {
-  it('should return exponential value for given level', () => {
-    expect(levelingSystem.calculateExpToNextLevel(1)).toBeCloseTo(Math.exp(1), 5);
-    expect(levelingSystem.calculateExpToNextLevel(2)).toBeCloseTo(Math.exp(2), 5);
-    expect(levelingSystem.calculateExpToNextLevel(5)).toBeCloseTo(Math.exp(5), 5);
+  it('should return level squared (truncated) for given level', () => {
+    expect(levelingSystem.calculateExpToNextLevel(1)).toBe(1);
+    expect(levelingSystem.calculateExpToNextLevel(2)).toBe(4);
+    expect(levelingSystem.calculateExpToNextLevel(5)).toBe(25);
   });
 
-  it('should return 1 for level 0', () => {
-    expect(levelingSystem.calculateExpToNextLevel(0)).toBe(1);
+  it('should return 0 for level 0', () => {
+    expect(levelingSystem.calculateExpToNextLevel(0)).toBe(0);
   });
 
   it('should increase with level', () => {
@@ -52,38 +52,36 @@ describe('calculateExpToNextLevel', () => {
 });
 
 describe('getRandomPotentialStats', () => {
-  it('should return null when statAmountToIncrease is 0', () => {
+  it('should return zeroed stats when statAmountToIncrease is 0', () => {
     const character = createTestCharacter();
-    const result = levelingSystem.getRandomPotentialStats(character, 0);
-    expect(result).toBeNull();
+    const result = levelingSystem.getRandomPotentialStats(character.potentialStats, 0);
+    expect(result).toEqual({ pow: 0, vit: 0, spd: 0 });
   });
 
-  it('should return null when no potential stats available', () => {
+  it('should return zeroed stats when no potential stats available', () => {
     const character = createTestCharacter({
       potentialStats: { pow: 0, vit: 0, spd: 0 },
     });
-    const result = levelingSystem.getRandomPotentialStats(character, 1);
-    expect(result).toBeNull();
+    const result = levelingSystem.getRandomPotentialStats(character.potentialStats, 1);
+    expect(result).toEqual({ pow: 0, vit: 0, spd: 0 });
   });
 
   it('should return stat increases object with correct total', () => {
     const character = createTestCharacter();
-    const result = levelingSystem.getRandomPotentialStats(character, 1);
+    const result = levelingSystem.getRandomPotentialStats(character.potentialStats, 1);
 
-    expect(result).not.toBeNull();
     expect(result).toHaveProperty('pow');
     expect(result).toHaveProperty('vit');
     expect(result).toHaveProperty('spd');
-    const totalIncrease = result!.pow + result!.vit + result!.spd;
+    const totalIncrease = result.pow + result.vit + result.spd;
     expect(totalIncrease).toBe(1);
   });
 
   it('should distribute multiple stat increases', () => {
     const character = createTestCharacter();
-    const result = levelingSystem.getRandomPotentialStats(character, 3);
+    const result = levelingSystem.getRandomPotentialStats(character.potentialStats, 3);
 
-    expect(result).not.toBeNull();
-    const totalIncrease = result!.pow + result!.vit + result!.spd;
+    const totalIncrease = result.pow + result.vit + result.spd;
     expect(totalIncrease).toBe(3);
   });
 
@@ -91,18 +89,17 @@ describe('getRandomPotentialStats', () => {
     const character = createTestCharacter({
       potentialStats: { pow: 0, vit: 20, spd: 0 },
     });
-    const result = levelingSystem.getRandomPotentialStats(character, 1);
+    const result = levelingSystem.getRandomPotentialStats(character.potentialStats, 1);
 
-    expect(result).not.toBeNull();
-    expect(result!.vit).toBe(1);
-    expect(result!.pow).toBe(0);
-    expect(result!.spd).toBe(0);
+    expect(result.vit).toBe(1);
+    expect(result.pow).toBe(0);
+    expect(result.spd).toBe(0);
   });
 
   it('should decrease potential stats', () => {
     const character = createTestCharacter();
     const initialPotential = { ...character.potentialStats };
-    levelingSystem.getRandomPotentialStats(character, 2);
+    levelingSystem.getRandomPotentialStats(character.potentialStats, 2);
 
     const totalDecrease =
       initialPotential.pow -
@@ -196,7 +193,7 @@ describe('levelUp', () => {
 
     levelingSystem.levelUp(character, chosenStats, null, 2);
 
-    expect(character.expToNextLevel).toBeCloseTo(Math.exp(character.level), 5);
+    expect(character.expToNextLevel).toBe(levelingSystem.calculateExpToNextLevel(character.level));
   });
 
   it('should recalculate maxHp when vit is increased (chosen stat)', () => {
