@@ -160,7 +160,28 @@ export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']
 
 /**
  * Navigate to battle rewards
+ * Preserves the pre-battle previousView so that goBack() from rewards
+ * returns to the view before battle (map, town, etc.) instead of back to battle.
  */
 export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
-  return prepareNavigation(currentState, 'battle-rewards', data);
+  if (!canNavigate(currentState, 'battle-rewards')) {
+    return {
+      success: false,
+      error: `Cannot navigate from ${currentState.currentView} to battle-rewards`,
+    };
+  }
+
+  const nextState: RouterState = {
+    currentView: 'battle-rewards',
+    previousView: currentState.previousView, // keep pre-battle view, not battle
+    viewData: {
+      ...currentState.viewData,
+      'battle-rewards': data,
+    },
+  };
+
+  return {
+    success: true,
+    nextState,
+  };
 }
