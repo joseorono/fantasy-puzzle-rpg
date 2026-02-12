@@ -2,6 +2,7 @@
 export * from './rpg-elements';
 export * from './battle';
 export * from './components';
+export * from './encounter';
 export * from './number-types';
 export * from './map';
 export * from './inventory';
