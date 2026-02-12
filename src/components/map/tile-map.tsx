@@ -27,7 +27,7 @@ import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
-import { generateRandomResources } from '~/lib/looting';
+import { generateRandomResources } from '~/lib/loot';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
