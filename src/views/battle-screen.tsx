@@ -5,13 +5,22 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { GameOverModal } from '~/components/battle/game-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
-import { battleStateAtom, resetBattleAtom, damagePartyAtom, gameStatusAtom, enemiesAtom, tickSkillCooldownsAtom } from '~/stores/battle-atoms';
+import {
+  battleStateAtom,
+  resetBattleAtom,
+  damagePartyAtom,
+  gameStatusAtom,
+  enemiesAtom,
+  tickSkillCooldownsAtom,
+} from '~/stores/battle-atoms';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
 import { Button } from '~/components/ui/8bit/button';
 import { RotateCcw, Volume2, VolumeX, Swords } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 
 export default function BattleScreen() {
   const battleState = useAtomValue(battleStateAtom);
@@ -85,9 +94,7 @@ export default function BattleScreen() {
     }, 1000);
 
     // Initialize display
-    const minInterval = Math.min(
-      ...livingEnemies.map((e) => calculateEnemyAttackInterval(e)),
-    );
+    const minInterval = Math.min(...livingEnemies.map((e) => calculateEnemyAttackInterval(e)));
     setNextAttackIn(Math.ceil(minInterval / 1000));
 
     return () => clearAllTimers();
@@ -103,6 +110,14 @@ export default function BattleScreen() {
 
     return () => clearInterval(interval);
   }, [gameStatus, tickSkillCooldowns]);
+
+  // Combat music
+  useEffect(() => {
+    soundService.startMusic(SoundNames.combatMusic, 0.5);
+    return () => {
+      soundService.stopMusic(SoundNames.combatMusic);
+    };
+  }, []);
 
   return (
     <div className="game-view overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
