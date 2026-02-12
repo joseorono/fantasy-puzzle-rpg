@@ -13,6 +13,8 @@
     "test": "vitest --ui",
     "test-filter": "vitest --reporter verbose --testNamePattern",
     "coverage": "vitest run --coverage",
+    "bench": "vitest bench --ui",
+    "bench-cli": "vitest bench --run --reporter verbose",
     "prettier-format": "prettier --config .prettierrc --write src/**/*.ts src/**/*.tsx",
     "prettier-watch": "onchange src/**/*.ts src/**/*.tsx -- prettier --write {{changed}}",
     "visualize-bundle": "vite-bundle-visualizer & vite-bundle-visualizer -t sunburst & vite-bundle-visualizer -t network",

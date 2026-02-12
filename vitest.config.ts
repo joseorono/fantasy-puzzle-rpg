@@ -12,5 +12,8 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul' // or 'v8'
     },
+    benchmark: {
+      include: ['src/lib/**/*.bench.ts'],
+    },
   },
 })
