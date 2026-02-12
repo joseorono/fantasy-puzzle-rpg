@@ -19,12 +19,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 2rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
 }
 
 .exp-gained-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .exp-gained-title {
@@ -48,9 +51,8 @@
 .character-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  flex: 1;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .character-card {
@@ -67,7 +69,7 @@
   position: relative;
 }
 
-.character-portrait {
+.character-card .character-portrait {
   width: 80px;
   height: 80px;
   border-radius: 8px;
@@ -79,14 +81,14 @@
   image-rendering: crisp-edges;
 }
 
-.character-info {
+.character-card .character-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.character-name {
+.character-card .character-name {
   font-size: 1rem;
   font-weight: 700;
   color: #ffd700;
@@ -94,13 +96,13 @@
   margin: 0 0 0.25rem 0;
 }
 
-.character-level {
+.character-card .character-level {
   font-size: 0.875rem;
   color: #d4a574;
   margin: 0 0 0.5rem 0;
 }
 
-.exp-gained-text {
+.character-card .exp-gained-text {
   font-size: 0.875rem;
   color: #ffd700;
   font-weight: 700;
@@ -155,11 +157,12 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
   border: 3px solid #d4a574;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -189,10 +192,11 @@
 
 .finish-button {
   align-self: center;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   border: 3px solid #ffd700;
   border-radius: 8px;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 900;
   color: #fff;
@@ -225,7 +229,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 2rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: #2a1810;
   background-image: repeating-linear-gradient(
     0deg,
     transparent,
@@ -237,7 +243,8 @@
 
 .victory-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .victory-title {
@@ -253,8 +260,9 @@
 
 .gold-summary {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .gold-box {
@@ -288,6 +296,7 @@
 
 .items-found-container {
   flex: 1;
+  min-height: 80px;
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
   border: 3px solid #d4a574;
   border-radius: 12px;
@@ -297,7 +306,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .items-found-header {
@@ -351,10 +360,11 @@
 
 .continue-button {
   align-self: flex-end;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   border: 3px solid #ffd700;
   border-radius: 8px;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 900;
   color: #fff;
@@ -391,17 +401,64 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .exp-gained-container,
+  .victory-container {
+    padding: 1rem;
+  }
+
   .character-cards-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .gold-summary {
     flex-direction: column;
+    gap: 0.5rem;
   }
 
   .exp-gained-title,
   .victory-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .gold-amount {
+    font-size: 1.125rem;
+  }
+
+  .character-card .character-portrait {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-height: 600px) {
+  .exp-gained-container,
+  .victory-container {
+    padding: 0.75rem;
+  }
+
+  .exp-gained-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .exp-gained-title,
+  .victory-title {
+    font-size: 1.5rem;
+  }
+
+  .character-cards-grid {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .character-card {
+    padding: 0.5rem;
+  }
+
+  .gold-section {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 }
 
