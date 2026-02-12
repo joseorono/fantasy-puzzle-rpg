@@ -337,6 +337,32 @@ describe('HP Threshold', () => {
 // Stat Utilities
 // ============================================================================
 
+describe('Item Cooldown', () => {
+  const party: CharacterData[] = [
+    { ...mockCharacter, stats: { pow: 20, vit: 15, spd: 10 } },
+    { ...mockCharacter, id: 'c2', stats: { pow: 10, vit: 10, spd: 20 } },
+    { ...mockCharacter, id: 'c3', stats: { pow: 5, vit: 5, spd: 30 } },
+  ];
+
+  test('calculatePartyCollectiveSpd: Sums SPD across party', () => {
+    expect(rpg.calculatePartyCollectiveSpd(party)).toBe(60);
+  });
+
+  test('calculatePartyCollectiveSpd: Empty party returns 0', () => {
+    expect(rpg.calculatePartyCollectiveSpd([])).toBe(0);
+  });
+
+  test('calculateItemCooldownInMs: Reduces cooldown with higher SPD', () => {
+    const result = rpg.calculateItemCooldownInMs(party);
+    expect(result).toBe(6250); // floor(10000 / (1 + 60/100)) = floor(10000/1.6) = 6250
+  });
+
+  test('calculateItemCooldownInMs: Zero SPD returns base cooldown', () => {
+    const zeroSpdParty = [{ ...mockCharacter, stats: { pow: 0, vit: 0, spd: 0 } }];
+    expect(rpg.calculateItemCooldownInMs(zeroSpdParty)).toBe(10000);
+  });
+});
+
 describe('Stat Utilities', () => {
   test('createStats: Creates with defaults', () => {
     const result = rpg.createStats();

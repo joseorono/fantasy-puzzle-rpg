@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterData } from '~/types/rpg-elements';
 import {
   fullyHealParty,
+  isPartyFullyHealed,
   damageAllPartyMembers,
   getLivingMembers,
   getHealableMembers,
   damagePartyMember,
   healPartyMember,
+  healAllLivingPartyMembers,
   isPartyDefeated,
 } from './party-system';
 
@@ -78,6 +80,20 @@ describe('party system utilities', () => {
       fullyHealParty(testParty);
       expect(testParty[0].currentHp).toBe(50);
       expect(testParty).toEqual(original);
+    });
+  });
+
+  describe('isPartyFullyHealed', () => {
+    it('should return false when any member is not at full HP', () => {
+      expect(isPartyFullyHealed(testParty)).toBe(false);
+    });
+
+    it('should return true when all members are at full HP', () => {
+      const fullParty = [
+        createTestCharacter({ currentHp: 100, maxHp: 100 }),
+        createTestCharacter({ currentHp: 60, maxHp: 60 }),
+      ];
+      expect(isPartyFullyHealed(fullParty)).toBe(true);
     });
   });
 
@@ -286,6 +302,25 @@ describe('party system utilities', () => {
       expect(result[0].currentHp).toBe(50);
       expect(result[1].currentHp).toBe(30);
       expect(result[2].currentHp).toBe(20);
+    });
+  });
+
+  describe('healAllLivingPartyMembers', () => {
+    it('should heal all living members clamped to maxHp', () => {
+      const result = healAllLivingPartyMembers(testParty, 999);
+      expect(result[0].currentHp).toBe(100);
+      expect(result[1].currentHp).toBe(60);
+      expect(result[2].currentHp).toBe(50);
+    });
+
+    it('should not heal dead members', () => {
+      const party = [
+        createTestCharacter({ id: 'dead', currentHp: 0, maxHp: 100 }),
+        createTestCharacter({ id: 'alive', currentHp: 10, maxHp: 50 }),
+      ];
+      const result = healAllLivingPartyMembers(party, 25);
+      expect(result[0].currentHp).toBe(0);
+      expect(result[1].currentHp).toBe(35);
     });
   });
 

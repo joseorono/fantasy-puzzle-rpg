@@ -4,6 +4,8 @@ import {
   canEquip,
   getEquipmentBonuses,
   getEffectiveStats,
+  getEffectiveMaxHp,
+  getPartyWithEffectiveStats,
   getAvailableEquipmentForSlot,
   findEquipmentItem,
 } from './equipment-system';
@@ -150,6 +152,48 @@ describe('getEffectiveStats', () => {
     // iron-sword: pow +5, vit +2, spd +0
     // iron-armor: pow +0, vit +10, spd -2
     expect(getEffectiveStats(char)).toEqual({ pow: 15, vit: 32, spd: 3 });
+  });
+});
+
+describe('getEffectiveMaxHp', () => {
+  it('returns base maxHp when nothing is equipped', () => {
+    const char = makeCharacter();
+    expect(getEffectiveMaxHp(char)).toBe(170); // 170 + 0
+  });
+
+  it('includes VIT bonus from equipment', () => {
+    const char = makeCharacter({
+      equippedWeaponId: 'iron-sword',
+      equippedArmorId: 'iron-armor',
+    });
+    // iron-sword vit +2, iron-armor vit +10 = +12 vit, multiplier 6
+    expect(getEffectiveMaxHp(char)).toBe(170 + 12 * 6);
+  });
+});
+
+describe('getPartyWithEffectiveStats', () => {
+  it('bakes equipment bonuses into stats and maxHp', () => {
+    const party = [
+      makeCharacter({ equippedWeaponId: 'iron-sword', equippedArmorId: 'iron-armor' }),
+      makeCharacter({ id: 'bare' }),
+    ];
+    const result = getPartyWithEffectiveStats(party);
+
+    // First char: base pow 10 + sword 5 = 15, base vit 20 + sword 2 + armor 10 = 32
+    expect(result[0].stats.pow).toBe(15);
+    expect(result[0].stats.vit).toBe(32);
+    expect(result[0].maxHp).toBe(170 + 12 * 6);
+
+    // Second char: unchanged
+    expect(result[1].stats.pow).toBe(10);
+    expect(result[1].maxHp).toBe(170);
+  });
+
+  it('clamps currentHp to effective maxHp', () => {
+    // A char whose currentHp exceeds what effective maxHp would be (edge case with negative vit equipment)
+    const char = makeCharacter({ currentHp: 170, maxHp: 170 });
+    const result = getPartyWithEffectiveStats([char]);
+    expect(result[0].currentHp).toBeLessThanOrEqual(result[0].maxHp);
   });
 });
 

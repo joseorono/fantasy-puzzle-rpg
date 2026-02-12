@@ -8,7 +8,12 @@ import {
   hasItem,
   getUniqueItemCount,
   getTotalItemCount,
+  filterInventoryByType,
+  sortInventoryByName,
+  sortInventoryByQuantity,
 } from './inventory';
+import { EquipmentItems, ConsumableItems } from '~/constants/inventory';
+import type { BaseItemData } from '~/types/inventory';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 
 const emptyInventory: InventoryItem[] = [];
@@ -156,6 +161,72 @@ describe('inventory utilities', () => {
     it('should return 1 for single item', () => {
       const inventory: InventoryItem[] = [{ itemId: 'potion', quantity: 50 }];
       expect(getUniqueItemCount(inventory)).toBe(1);
+    });
+  });
+
+  describe('filterInventoryByType', () => {
+    const allItems: BaseItemData[] = [...EquipmentItems, ...ConsumableItems];
+    const mixedInventory: InventoryItem[] = [
+      { itemId: 'potion', quantity: 5 },
+      { itemId: 'iron-sword', quantity: 1 },
+      { itemId: 'high-potion', quantity: 3 },
+    ];
+
+    it('should filter equipment items only', () => {
+      const result = filterInventoryByType(mixedInventory, allItems, 'equipment');
+      expect(result).toHaveLength(1);
+      expect(result[0].itemId).toBe('iron-sword');
+    });
+
+    it('should filter consumable items only', () => {
+      const result = filterInventoryByType(mixedInventory, allItems, 'consumable');
+      expect(result).toHaveLength(2);
+    });
+
+    it('should return empty for type with no matches', () => {
+      const result = filterInventoryByType(mixedInventory, allItems, 'key');
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('sortInventoryByName', () => {
+    const allItems: BaseItemData[] = [...EquipmentItems, ...ConsumableItems];
+
+    it('should sort items alphabetically by name', () => {
+      const inventory: InventoryItem[] = [
+        { itemId: 'iron-sword', quantity: 1 },
+        { itemId: 'bronze-armor', quantity: 2 },
+        { itemId: 'iron-armor', quantity: 1 },
+      ];
+      const result = sortInventoryByName(inventory, allItems);
+      expect(result[0].itemId).toBe('bronze-armor');
+      expect(result[1].itemId).toBe('iron-armor');
+      expect(result[2].itemId).toBe('iron-sword');
+    });
+
+    it('should not mutate original', () => {
+      const inventory: InventoryItem[] = [
+        { itemId: 'iron-sword', quantity: 1 },
+        { itemId: 'bronze-armor', quantity: 2 },
+      ];
+      const original = [...inventory];
+      sortInventoryByName(inventory, allItems);
+      expect(inventory).toEqual(original);
+    });
+  });
+
+  describe('sortInventoryByQuantity', () => {
+    it('should sort by quantity descending', () => {
+      const result = sortInventoryByQuantity(testInventory);
+      expect(result[0].quantity).toBe(5);
+      expect(result[1].quantity).toBe(2);
+      expect(result[2].quantity).toBe(1);
+    });
+
+    it('should not mutate original', () => {
+      const original = [...testInventory];
+      sortInventoryByQuantity(testInventory);
+      expect(testInventory).toEqual(original);
     });
   });
 
