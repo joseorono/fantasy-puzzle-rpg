@@ -37,6 +37,7 @@
 - [ ] Loot:
   - [x] Pickups
   - [x] Treasure
+  - [ ] Open Chest (maybe 1-2 sounds)
 - [ ] Level up: (leave these to Edd)
   - [ ] Jingle
   - [ ] Bar fill sound
