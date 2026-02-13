@@ -1,0 +1,42 @@
+appId: com.fantasy-puzzle-rpg.app
+productName: Fantasy Puzzle RPG
+directories:
+  buildResources: assets
+  output: dist
+
+files:
+  - from: dist/renderer
+    to: .
+  - from: dist/main
+    to: .
+  - from: node_modules
+    to: node_modules
+
+win:
+  target:
+    - nsis
+    - portable
+  certificateFile: null
+  certificatePassword: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.games
+  hardenedRuntime: true
+  gatekeeperAssess: false
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Game
+
+publish: null

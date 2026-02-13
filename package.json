@@ -3,10 +3,15 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "main": "dist/main/main.cjs",
   "scripts": {
     "dev": "vite",
     "dev-expose-host": "vite --host",
+    "dev:electron": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron:start\"",
+    "electron:start": "cross-env NODE_ENV=development electron .",
     "build": "tsc -b && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json && vite build && vite build --config vite.config.electron.ts",
+    "package:electron": "npm run build:electron && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview",
     "test-cli": "vitest --run --reporter verbose",
@@ -55,6 +60,10 @@
     "@vitest/ui": "^3.2.4",
     "babel-plugin-react-compiler": "^19.1.0-rc.3",
     "baseline-browser-mapping": "^2.9.19",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^40.4.0",
+    "electron-builder": "^26.7.0",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
@@ -67,6 +76,7 @@
     "vite": "^7.1.7",
     "vite-bundle-analyzer": "^1.2.3",
     "vite-bundle-visualizer": "^1.2.1",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wait-on": "^9.0.4"
   }
 }
