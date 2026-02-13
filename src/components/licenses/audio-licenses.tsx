@@ -135,6 +135,22 @@ export default function AudioLicensesDialogContent() {
           Combat Music by guillermochicasonido (combatMusic) -- License: Attribution 4.0
           <a href="https://freesound.org/s/691651/">https://freesound.org/s/691651/</a>
         </p>
+
+        <p>
+          Epic Cinematic Adventure (short version 2) (startMenu-music) by AudioCoffee -- License: Attribution
+          NonCommercial 4.0
+          <a href="https://freesound.org/s/712646/">https://freesound.org/s/712646/</a>
+        </p>
+
+        <p>
+          Boss fight by Victor_Natas (boss-fight-music) -- License: Attribution 4.0
+          <a href="https://freesound.org/s/721472/">https://freesound.org/s/721472/</a>
+        </p>
+
+        <p>
+          Anime Fight Music Loop #1 by Sirkoto51 (fight-music) -- License: Attribution 4.0
+          <a href="https://freesound.org/s/414214/">https://freesound.org/s/414214/</a>
+        </p>
       </div>
     </>
   );

@@ -19,6 +19,7 @@ export enum SoundNames {
   beep = 'beep',
   gameOver = 'gameOver',
   combatMusic = 'combatMusic',
+  startMenuMusic = 'startMenuMusic',
 }
 
 export const soundFiles = {
@@ -42,6 +43,7 @@ export const soundFiles = {
   [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.wav',
   [SoundNames.uncork]: '/assets/audio/ui/uncork.wav',
   [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.wav',
+  [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.wav',
 };
 
 // Background sounds for the town hub (randomly selected on entry)

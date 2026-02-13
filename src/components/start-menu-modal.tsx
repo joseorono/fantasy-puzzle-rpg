@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { activeMenuTabAtom } from '~/stores/pause-menu-atoms';
 import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
 import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
+import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Play, FolderOpen, Settings, LogOut } from 'lucide-react';
@@ -14,11 +15,18 @@ interface StartMenuModalProps {
   onQuit: () => void;
 }
 
-type ModalTab = 'main' | 'options' | 'load' | 'settings';
+type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
 
 export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
   const [, setPauseMenuTab] = useAtom(activeMenuTabAtom);
+
+  useEffect(() => {
+    soundService.startMusic(SoundNames.startMenuMusic, 0.5);
+    return () => {
+      soundService.stopMusic(SoundNames.startMenuMusic);
+    };
+  }, []);
 
   const handleMenuClick = (callback: () => void, soundName: SoundNames = SoundNames.mechanicalClick) => {
     soundService.playSound(soundName, 0.4, 0.1);
@@ -26,6 +34,7 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
   };
 
   const handleStartGame = () => {
+    soundService.stopMusic(SoundNames.startMenuMusic);
     handleMenuClick(onStartGame, SoundNames.shimmeringSuccessShort);
   };
 
@@ -37,8 +46,12 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
 
   const handleOpenLoad = () => {
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
-    setPauseMenuTab('load');
     setActiveTab('load');
+  };
+
+  const handleOpenSave = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setActiveTab('save');
   };
 
   const handleBackToMain = () => {
@@ -101,6 +114,19 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
             </button>
             <div className="start-menu-modal-load">
               <PauseMenuLoad />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'save' && (
+        <div className="start-menu-modal-overlay">
+          <div className="start-menu-modal-content">
+            <button className="start-menu-modal-back" onClick={handleBackToMain}>
+              ← Back
+            </button>
+            <div className="start-menu-modal-save">
+              <PauseMenuSave />
             </div>
           </div>
         </div>
