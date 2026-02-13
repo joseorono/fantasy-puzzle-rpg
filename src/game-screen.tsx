@@ -1,35 +1,32 @@
 import { useCurrentView, useViewData } from '~/stores/game-store';
+
 import TownHub from '~/components/town/town-hub';
+
 import DebugView from '~/views/debug-view';
+
 import { DialogueTestView } from './views/dialogue-test';
+
 import { BattleRewardsScreen } from './views/battle-rewards-screen';
+
 import DemoMap from './components/map/demo-map.tsx';
+
 import BattleScreen from '~/views/battle-screen';
-import { PauseButton } from '~/components/pause-button';
 
 /**
+
  * Main game screen component that renders views based on router state
+
  */
+
 export default function GameScreen() {
   const currentView = useCurrentView();
+
   const townHubData = useViewData('town-hub');
 
-  // Views where pause menu should not be accessible
-  const noPauseViews: (typeof currentView)[] = ['battle-rewards'];
-  const showPauseButton = !noPauseViews.includes(currentView);
-
-  return (
-    <>
-      {showPauseButton && <PauseButton />}
-      {renderView(currentView, townHubData)}
-    </>
-  );
-}
-
-function renderView(currentView: ReturnType<typeof useCurrentView>, townHubData: any) {
   switch (currentView) {
     case 'town-hub':
       // townHubData is guaranteed to exist from INITIAL_ROUTER_STATE
+
       return (
         <TownHub
           innCost={townHubData!.innCost}
@@ -49,6 +46,7 @@ function renderView(currentView: ReturnType<typeof useCurrentView>, townHubData:
 
     case 'inventory':
       // TODO: Implement inventory view
+
       return <div>Inventory View - Coming Soon</div>;
 
     case 'debug':

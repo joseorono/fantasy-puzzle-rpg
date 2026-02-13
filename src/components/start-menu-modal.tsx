@@ -5,6 +5,7 @@ import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
 import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { Play, FolderOpen, Settings, LogOut } from 'lucide-react';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -13,7 +14,7 @@ interface StartMenuModalProps {
   onQuit: () => void;
 }
 
-type ModalTab = 'main' | 'options' | 'load';
+type ModalTab = 'main' | 'options' | 'load' | 'settings';
 
 export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
@@ -45,6 +46,11 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
     setActiveTab('main');
   };
 
+  const handleOpenSettings = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setActiveTab('settings');
+  };
+
   return (
     <>
       {activeTab === 'main' && (
@@ -53,24 +59,24 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
           <div className="main-menu__content">
             <div className="main-menu__title">
               <h1 className="main-menu__title-text">Fantasy Puzzle RPG</h1>
-              <p className="main-menu__subtitle">Proudly Supporting transeconomic communities</p>
             </div>
 
             <div className="main-menu__buttons">
               <button className="main-menu__button" onClick={handleStartGame}>
+                <Play size={20} />
                 Start Game
               </button>
               <button className="main-menu__button" onClick={handleOpenLoad}>
+                <FolderOpen size={20} />
                 Load Game
               </button>
-              <button className="main-menu__button" onClick={handleOpenOptions}>
-                Options
-              </button>
               <button className="main-menu__button" onClick={() => handleMenuClick(onQuit)}>
-                Settings
+                <LogOut size={20} />
+                Quit
               </button>
             </div>
           </div>
+          <button className="main-menu__settings-icon" onClick={handleOpenSettings} />
         </div>
       )}
 
@@ -95,6 +101,19 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
             </button>
             <div className="start-menu-modal-load">
               <PauseMenuLoad />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="start-menu-modal-overlay">
+          <div className="start-menu-modal-content">
+            <button className="start-menu-modal-back" onClick={handleBackToMain}>
+              ← Back
+            </button>
+            <div className="start-menu-modal-settings">
+              <PauseMenuOptions />
             </div>
           </div>
         </div>
