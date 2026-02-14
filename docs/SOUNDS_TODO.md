@@ -13,9 +13,9 @@
   - [ ] Make getMatchSoundVolume function that takes combo size as argument, setting min and max volume as constants
   - [x] Item use sound (TBD)
   - [ ] Rogue:
-    - [ ] -Light melee attack
-    - [ ] -Flurry
-    - [ ] -Ranged attack (maybe)
+    - [ ] Light melee attack
+    - [ ] Flurry
+    - [ ] Ranged attack (maybe)
   - [ ] Warrior:
     - [ ] Medium melee attack
     - [ ] Heavy melee attack
