@@ -21,6 +21,7 @@ import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getMatchSoundVolume } from '~/lib/battle-system';
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
@@ -228,7 +229,7 @@ export function Match3Board() {
         } else {
           damageEnemy(totalDamage);
         }
-        soundService.playSound(SoundNames.match, 1, 0.1, 0.03);
+        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
       }, 200);
 
       // Remove matched orbs after animation - this will trigger a new board state

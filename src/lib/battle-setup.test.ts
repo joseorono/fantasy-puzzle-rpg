@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { createBattleState } from './battle-setup';
+import { createBattleState } from './battle-system';
 
 const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterData => ({
   id: 'test-warrior',

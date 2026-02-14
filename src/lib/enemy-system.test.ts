@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { EnemyData } from '~/types/rpg-elements';
-import { getNextLivingEnemyId } from './enemy-system';
+import { getNextLivingEnemyId } from './battle-system';
 
 const createTestEnemy = (overrides: Partial<EnemyData> = {}): EnemyData =>
   ({

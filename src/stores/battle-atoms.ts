@@ -13,8 +13,7 @@ import {
   healAllLivingPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
-import { getNextLivingEnemyId } from '~/lib/enemy-system';
-import { createBattleState } from '~/lib/battle-setup';
+import { getNextLivingEnemyId, createBattleState } from '~/lib/battle-system';
 import {
   hasMatchAtPosition,
   swapOrbs,
