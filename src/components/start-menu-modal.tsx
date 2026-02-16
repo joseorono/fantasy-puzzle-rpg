@@ -22,7 +22,7 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
   const [, setPauseMenuTab] = useAtom(activeMenuTabAtom);
 
   useEffect(() => {
-    soundService.startMusic(SoundNames.startMenuMusic, 0.2);
+    soundService.startMusic(SoundNames.startMenuMusic, 0.15);
     return () => {
       soundService.stopMusic(SoundNames.startMenuMusic);
     };
