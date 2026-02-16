@@ -26,7 +26,8 @@
     - [ ] Healing
     - [ ] Heavier healing
   - [ ] Crit
-- [ ] Death sound
+- [ ] Ally Death Voicelines
+- [ ] Generic Enemy Death Sounds
 - [ ] Victory fanfare
 - [x] Game over sound/Defeat sound (possibly two separate sounds)
 - [ ] Map:
