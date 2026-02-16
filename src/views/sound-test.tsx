@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
 import { Button } from '~/components/ui/button';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { Slider as EightBitSlider } from '~/components/ui/8bit/slider';
 
 interface LabeledSliderProps {
@@ -36,7 +38,9 @@ export default function SoundTestView() {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isAudioLoaded, setIsAudioLoaded] = useState<boolean>(soundService.audioLoaded === true);
   const [isPreloading, setIsPreloading] = useState<boolean>(false);
-  const [globalVolume, setGlobalVolume] = useState<number>(1);
+  const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
+  const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
+  const [sfxVolume, setSfxVolume] = useAtom(sfxVolumeAtom);
   const [playVolume, setPlayVolume] = useState<number>(1);
   const [playVariance, setPlayVariance] = useState<number>(0);
 
@@ -62,9 +66,19 @@ export default function SoundTestView() {
     return true;
   };
 
-  const handleSetGlobalVolume = (next: number) => {
-    setGlobalVolume(next);
-    soundService.setGlobalVolume(next);
+  const handleMasterChange = (next: number) => {
+    setMasterVolume(next);
+    soundService.setGlobalVolume(next / 100);
+  };
+
+  const handleMusicChange = (next: number) => {
+    setMusicVolume(next);
+    soundService.setMusicVolume(next / 100);
+  };
+
+  const handleSfxChange = (next: number) => {
+    setSfxVolume(next);
+    soundService.setSfxVolume(next / 100);
   };
 
   const handleToggleMute = () => {
@@ -95,7 +109,9 @@ export default function SoundTestView() {
       </div>
 
       <div className="max-w-xl space-y-3">
-        <LabeledSlider label="Global Volume" value={globalVolume} onChange={handleSetGlobalVolume} />
+        <LabeledSlider label="Master Volume" value={masterVolume} min={0} max={100} step={1} onChange={handleMasterChange} />
+        <LabeledSlider label="Music Volume" value={musicVolume} min={0} max={100} step={1} onChange={handleMusicChange} />
+        <LabeledSlider label="SFX Volume" value={sfxVolume} min={0} max={100} step={1} onChange={handleSfxChange} />
         <LabeledSlider label="Play Volume" value={playVolume} onChange={setPlayVolume} />
         <LabeledSlider label="Play Variance" value={playVariance} onChange={setPlayVariance} />
       </div>
