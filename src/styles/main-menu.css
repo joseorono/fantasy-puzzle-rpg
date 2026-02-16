@@ -270,13 +270,15 @@
   right: 20px;
   width: 64px;
   height: 64px;
+  background-color: transparent;
   background-image: url('/assets/menu/start/settings-icon.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
+  transform-origin: bottom right;
   z-index: 10;
   padding: 0;
 }
