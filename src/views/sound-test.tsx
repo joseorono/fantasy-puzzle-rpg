@@ -47,7 +47,9 @@ export default function SoundTestView() {
   useEffect(() => {
     try {
       setIsMuted(soundService.isMuted());
-    } catch {}
+    } catch {
+      // isMuted() can throw if AudioContext isn't ready yet
+    }
     // Do NOT auto-preload here to respect user gesture requirements for AudioContext
     setIsAudioLoaded(soundService.audioLoaded === true);
   }, []);
