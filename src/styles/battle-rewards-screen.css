@@ -24,13 +24,27 @@
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
 }
 
+.exp-gained-container>.character-cards-grid {
+  flex: 1;
+  min-height: 0;
+}
 .exp-gained-header {
   text-align: center;
   margin-bottom: 1rem;
   flex-shrink: 0;
 }
 
-.exp-gained-title {
+.rewards-section-eyebrow {
+  margin: 0;
+  font-size: 0.875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d4a574;
+  font-weight: 700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.rewards-section-title {
   font-size: 2.5rem;
   font-weight: 900;
   color: #ffd700;
@@ -41,6 +55,15 @@
   font-family: monospace;
 }
 
+.rewards-section-subtitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 .exp-gained-amount {
   font-size: 1.5rem;
   color: #ffd700;
@@ -86,6 +109,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: transparent;
 }
 
 .character-card .character-name {
@@ -128,8 +152,8 @@
 
 .level-up-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 4px;
+    right: 4px;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   color: #fff;
   padding: 0.25rem 0.5rem;
@@ -154,40 +178,21 @@
 
 .gold-section {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 1rem;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-  border: 3px solid #d4a574;
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  flex-shrink: 0;
-  box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.gold-icon {
-  width: 32px;
-  height: 32px;
-  background: radial-gradient(circle, #ffd700, #ffed4e);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: #3d2817;
-  font-weight: 900;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+.reward-resource-card {
+  flex: 1;
+  max-width: 320px;
+  backdrop-filter: blur(2px);
+  border-radius: 16px;
+  border: 3px solid rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.85) 0%, rgba(42, 24, 16, 0.85) 100%);
 }
 
-.gold-amount {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+.gold-section-card {
+  max-width: none;
 }
 
 .finish-button {
@@ -263,35 +268,6 @@
   gap: 1rem;
   margin-bottom: 1rem;
   flex-shrink: 0;
-}
-
-.gold-box {
-  flex: 1;
-  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-  border: 3px solid #ffd700;
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.gold-box-title {
-  font-size: 0.875rem;
-  color: #d4a574;
-  margin: 0 0 0.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.gold-box-amount {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  margin: 0;
 }
 
 .items-found-container {
@@ -447,6 +423,10 @@
     font-size: 1.5rem;
   }
 
+    .exp-gained-amount {
+      font-size: 1.125rem;
+      margin-top: 0.25rem;
+    }
   .character-cards-grid {
     gap: 0.5rem;
     margin-bottom: 0.75rem;
@@ -454,11 +434,34 @@
 
   .character-card {
     padding: 0.5rem;
+    gap: 0.5rem;
+    }
+    
+    .character-card .character-portrait {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .character-card .character-name {
+      font-size: 0.8125rem;
+    }
+    
+    .character-card .character-level {
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .character-card .exp-gained-text {
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
   }
 
   .gold-section {
     margin-bottom: 0.75rem;
     padding: 0.5rem 0.75rem;
   }
+.gold-amount {
+  font-size: 1.125rem;
+}
 }
 

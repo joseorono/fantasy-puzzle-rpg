@@ -205,6 +205,32 @@ interface ItemRewardsScreenProps {
   onFinish: () => void;
 }
 
+interface RewardResourceCardProps {
+  label: string;
+  value: number;
+  prefix?: string;
+  className?: string;
+}
+
+function RewardResourceCard({ label, value, prefix = '', className }: RewardResourceCardProps) {
+  const classes = ['reward-resource-card', 'top-bar-resource', 'top-bar-resource--coins', className]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div className={classes}>
+      <div className="top-bar-resource__icon" />
+      <div className="top-bar-resource__content">
+        <span className="top-bar-resource__label">{label}</span>
+        <span className="top-bar-resource__value">
+          {prefix}
+          {value.toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
   const coinsReceived = lootTable.resources?.item?.coins || 0;
   const resources = useResources();
@@ -239,22 +265,17 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
   return (
     <div className="victory-container">
       <header className="victory-header">
-        <h1 className="victory-title">Victory! Loot Summary</h1>
+        <p className="rewards-section-eyebrow">Victory</p>
+        <h1 className="victory-title rewards-section-title">Loot Summary</h1>
       </header>
 
       <div className="gold-summary">
-        <div className="gold-box">
-          <div className="gold-box-title">Gold Earned</div>
-          <div className="gold-box-amount">+{coinsReceived.toLocaleString()}</div>
-        </div>
-        <div className="gold-box">
-          <div className="gold-box-title">Total Gold Balance</div>
-          <div className="gold-box-amount">{(resources.coins + coinsReceived).toLocaleString()}</div>
-        </div>
+        <RewardResourceCard label="Coins Earned" value={coinsReceived} prefix="+" />
+        <RewardResourceCard label="New Balance" value={resources.coins + coinsReceived} />
       </div>
 
       <div className="items-found-container">
-        <h2 className="items-found-header">Items Found</h2>
+        <h2 className="items-found-header rewards-section-subtitle">Items Found</h2>
         <ul className="item-list">
           {lootTable.equipableItems?.map((item, index) => (
             <li key={`equip-${index}`} className="item-entry">
@@ -340,18 +361,15 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
   return (
     <div className="exp-gained-container">
       <header className="exp-gained-header">
-        <h1 className="exp-gained-title">EXP GAINED</h1>
-        <div className="exp-gained-amount">{expReward}</div>
+        <p className="rewards-section-eyebrow">Battle Report</p>
+        <h1 className="exp-gained-title rewards-section-title">Exp Gained</h1>
+        <div className="exp-gained-amount">+{expReward.toLocaleString()}</div>
       </header>
 
       <div className="character-cards-grid">
         {partyMembers.slice(0, 4).map((member) => (
           <div key={member.id} className="character-card">
-            <img
-              src="/assets/portraits/Innkeeper_02.png"
-              alt={member.name}
-              className="character-portrait pixel-art"
-            />
+            <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
             <div className="character-info">
               <h3 className="character-name">{member.name}</h3>
               <div className="character-level">Lv {member.level}</div>
@@ -366,8 +384,7 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
       </div>
 
       <div className="gold-section">
-        <div className="gold-icon">₵</div>
-        <div className="gold-amount">GOLD OBTAINED {coinsReceived.toLocaleString()}</div>
+        <RewardResourceCard label="Coins Obtained" value={coinsReceived} prefix="+" className="gold-section-card" />
       </div>
 
       <button onClick={handleContinue} className="finish-button">

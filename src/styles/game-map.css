@@ -87,7 +87,7 @@
   }
 }
 
-.character-info {
+.tilemap-container .character-info {
   font-size: 0.875rem;
   font-family: monospace;
   background: rgba(255, 255, 255, 0.9);
@@ -99,7 +99,7 @@
 }
 
 @media (min-width: 1024px) {
-  .character-info {
+  .tilemap-container .character-info {
     min-width: 250px;
     max-width: 300px;
   }
