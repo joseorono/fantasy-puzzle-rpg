@@ -4,13 +4,12 @@ import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { Play, FolderOpen, LogOut, ArrowLeft } from 'lucide-react';
+import { Play, FolderOpen, ArrowLeft } from 'lucide-react';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
   onLoadGame: () => void;
   onCredits: () => void;
-  onQuit: () => void;
 }
 
 type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
@@ -22,7 +21,7 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
-export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: StartMenuModalProps) {
+export function StartMenuModal({ onStartGame, onLoadGame, onCredits }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
 
   useEffect(() => {
@@ -75,10 +74,6 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
           <button className="main-menu__button" onClick={handleOpenLoad}>
             <FolderOpen size={20} />
             Load Game
-          </button>
-          <button className="main-menu__button" onClick={() => handleMenuClick(onQuit)}>
-            <LogOut size={20} />
-            Quit
           </button>
         </div>
       </div>

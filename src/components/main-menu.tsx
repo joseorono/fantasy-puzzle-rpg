@@ -4,13 +4,12 @@ interface MainMenuProps {
   onNewGame: () => void;
   onLoadGame: () => void;
   onCredits: () => void;
-  onQuit: () => void;
 }
 
-export function MainMenu({ onNewGame, onLoadGame, onCredits, onQuit }: MainMenuProps) {
+export function MainMenu({ onNewGame, onLoadGame, onCredits }: MainMenuProps) {
   return (
     <div className="game-view main-menu-view">
-      <StartMenuModal onStartGame={onNewGame} onLoadGame={onLoadGame} onCredits={onCredits} onQuit={onQuit} />
+      <StartMenuModal onStartGame={onNewGame} onLoadGame={onLoadGame} onCredits={onCredits} />
     </div>
   );
 }

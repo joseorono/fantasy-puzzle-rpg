@@ -45,14 +45,8 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
     console.log('Credits clicked');
   };
 
-  const handleQuit = () => {
-    console.log('Quit clicked');
-  };
-
   if (showMainMenu) {
-    return (
-      <MainMenu onNewGame={handleNewGame} onLoadGame={handleLoadGame} onCredits={handleCredits} onQuit={handleQuit} />
-    );
+    return <MainMenu onNewGame={handleNewGame} onLoadGame={handleLoadGame} onCredits={handleCredits} />;
   }
 
   return (
