@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useAtom } from 'jotai';
-import { activeMenuTabAtom } from '~/stores/pause-menu-atoms';
 import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
 import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { Play, FolderOpen, Settings, LogOut } from 'lucide-react';
+import { Play, FolderOpen, LogOut, ArrowLeft } from 'lucide-react';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -17,9 +15,15 @@ interface StartMenuModalProps {
 
 type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
 
+const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
+  options: 'Options',
+  load: 'Load Game',
+  save: 'Save Game',
+  settings: 'Settings',
+};
+
 export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
-  const [, setPauseMenuTab] = useAtom(activeMenuTabAtom);
 
   useEffect(() => {
     soundService.startMusic(SoundNames.startMenuMusic, 0.15);
@@ -38,20 +42,9 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
     handleMenuClick(onStartGame, SoundNames.shimmeringSuccessShort);
   };
 
-  const handleOpenOptions = () => {
-    soundService.playSound(SoundNames.mechanicalClick, 0.5);
-    setPauseMenuTab('options');
-    setActiveTab('options');
-  };
-
   const handleOpenLoad = () => {
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
     setActiveTab('load');
-  };
-
-  const handleOpenSave = () => {
-    soundService.playSound(SoundNames.mechanicalClick, 0.5);
-    setActiveTab('save');
   };
 
   const handleBackToMain = () => {
@@ -64,87 +57,64 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits, onQuit }: S
     setActiveTab('settings');
   };
 
+  const isModalOpen = activeTab !== 'main';
+
   return (
-    <>
-      {activeTab === 'main' && (
-        <div className="main-menu">
-          <div className="main-menu__bg" />
-          <div className="main-menu__content">
-            <div className="main-menu__title">
-              <h1 className="main-menu__title-text">Fantasy Puzzle RPG</h1>
-            </div>
+    <div className="main-menu">
+      <div className="main-menu__bg" />
+      <div className="main-menu__content">
+        <div className="main-menu__title">
+          <h1 className="main-menu__title-text">Fantasy Puzzle RPG</h1>
+        </div>
 
-            <div className="main-menu__buttons">
-              <button className="main-menu__button" onClick={handleStartGame}>
-                <Play size={20} />
-                Start Game
+        <div className="main-menu__buttons">
+          <button className="main-menu__button" onClick={handleStartGame}>
+            <Play size={20} />
+            Start Game
+          </button>
+          <button className="main-menu__button" onClick={handleOpenLoad}>
+            <FolderOpen size={20} />
+            Load Game
+          </button>
+          <button className="main-menu__button" onClick={() => handleMenuClick(onQuit)}>
+            <LogOut size={20} />
+            Quit
+          </button>
+        </div>
+      </div>
+      <button className="main-menu__settings-icon" onClick={handleOpenSettings} />
+
+      {isModalOpen && (
+        <div className="start-menu-modal-backdrop" onClick={handleBackToMain}>
+          <div className="start-menu-modal-panel" onClick={(e) => e.stopPropagation()}>
+            {/* Golden frame corner decorations */}
+            <div className="start-menu-modal-corner start-menu-modal-corner--tl" />
+            <div className="start-menu-modal-corner start-menu-modal-corner--tr" />
+            <div className="start-menu-modal-corner start-menu-modal-corner--bl" />
+            <div className="start-menu-modal-corner start-menu-modal-corner--br" />
+
+            {/* Header bar */}
+            <div className="start-menu-modal-header">
+              <button className="start-menu-modal-back" onClick={handleBackToMain}>
+                <ArrowLeft size={14} />
+                Back
               </button>
-              <button className="main-menu__button" onClick={handleOpenLoad}>
-                <FolderOpen size={20} />
-                Load Game
-              </button>
-              <button className="main-menu__button" onClick={() => handleMenuClick(onQuit)}>
-                <LogOut size={20} />
-                Quit
-              </button>
+              <h2 className="start-menu-modal-title">{TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}</h2>
             </div>
-          </div>
-          <button className="main-menu__settings-icon" onClick={handleOpenSettings} />
-        </div>
-      )}
 
-      {activeTab === 'options' && (
-        <div className="start-menu-modal-overlay">
-          <div className="start-menu-modal-content">
-            <button className="start-menu-modal-back" onClick={handleBackToMain}>
-              ← Back
-            </button>
-            <div className="start-menu-modal-options">
-              <PauseMenuOptions />
-            </div>
-          </div>
-        </div>
-      )}
+            {/* Divider */}
+            <div className="start-menu-modal-divider" />
 
-      {activeTab === 'load' && (
-        <div className="start-menu-modal-overlay">
-          <div className="start-menu-modal-content">
-            <button className="start-menu-modal-back" onClick={handleBackToMain}>
-              ← Back
-            </button>
-            <div className="start-menu-modal-load">
-              <PauseMenuLoad />
+            {/* Content */}
+            <div className="start-menu-modal-body">
+              {activeTab === 'options' && <PauseMenuOptions />}
+              {activeTab === 'load' && <PauseMenuLoad />}
+              {activeTab === 'save' && <PauseMenuSave />}
+              {activeTab === 'settings' && <PauseMenuOptions />}
             </div>
           </div>
         </div>
       )}
-
-      {activeTab === 'save' && (
-        <div className="start-menu-modal-overlay">
-          <div className="start-menu-modal-content">
-            <button className="start-menu-modal-back" onClick={handleBackToMain}>
-              ← Back
-            </button>
-            <div className="start-menu-modal-save">
-              <PauseMenuSave />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'settings' && (
-        <div className="start-menu-modal-overlay">
-          <div className="start-menu-modal-content">
-            <button className="start-menu-modal-back" onClick={handleBackToMain}>
-              ← Back
-            </button>
-            <div className="start-menu-modal-settings">
-              <PauseMenuOptions />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
-
