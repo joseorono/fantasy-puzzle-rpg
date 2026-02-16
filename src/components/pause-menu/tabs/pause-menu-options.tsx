@@ -15,11 +15,15 @@ export function PauseMenuOptions() {
   }
 
   function handleMusicChange(value: number[]) {
-    setMusicVolume(value[0]);
+    const vol = value[0];
+    setMusicVolume(vol);
+    soundService.setMusicVolume(vol / 100);
   }
 
   function handleSfxChange(value: number[]) {
-    setSfxVolume(value[0]);
+    const vol = value[0];
+    setSfxVolume(vol);
+    soundService.setSfxVolume(vol / 100);
   }
 
   return (
