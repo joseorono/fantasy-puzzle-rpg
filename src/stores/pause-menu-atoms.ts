@@ -11,3 +11,5 @@ export const activeMenuTabAtom = atom<PauseMenuTab>(PAUSE_MENU_TABS[0]);
 export const masterVolumeAtom = atomWithStorage('fpg-master-volume', 100);
 export const musicVolumeAtom = atomWithStorage('fpg-music-volume', 80);
 export const sfxVolumeAtom = atomWithStorage('fpg-sfx-volume', 80);
+
+// ToDo: For saving, use saveSlotAtom1, saveSlotAtom2, saveSlotAtom3..

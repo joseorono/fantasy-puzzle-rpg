@@ -79,6 +79,8 @@ export function getNextLivingEnemyId(enemies: EnemyData[], currentId: string): s
  * @returns A volume value between MIN_MATCH_SOUND_VOLUME and MAX_MATCH_SOUND_VOLUME.
  */
 export function getMatchSoundVolume(comboSize: number): number {
+  // TODO: use constants and rename all the mislabel 'combo'
+  // stuff to match size.
   const MIN_COMBO = 3;
   const MAX_COMBO = 5;
   const clamped = Math.max(MIN_COMBO, Math.min(MAX_COMBO, comboSize));
