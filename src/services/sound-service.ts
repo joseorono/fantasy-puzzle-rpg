@@ -4,6 +4,12 @@ import { betweenZeroAndOne, getRandomlyVariedValue } from '~/lib/math';
 import { SoundNames } from '~/constants/audio';
 import { soundFiles } from '~/constants/audio';
 
+interface MusicPlayOptions {
+  fadeIn?: boolean;
+  /** Duration of fade-in in milliseconds. Defaults to 1000. */
+  fadeInDurationMs?: number;
+}
+
 class SoundService {
   private static instance: SoundService;
 
@@ -14,16 +20,43 @@ class SoundService {
   public audioLoaded: boolean = false;
   public isPreloading: boolean = false;
   public globalVolume: number = 1; //between 0 and 1;
+  public musicVolume: number = 1; //between 0 and 1;
+  public sfxVolume: number = 1; //between 0 and 1;
+
+  private activeMusicInstances = new Map<
+    SoundNames,
+    { mediaInstance: { volume: number }; baseVolume: number }
+  >();
 
   constructor() {
     if (!SoundService.instance) {
       console.log('created new instance of sound service');
       this.globalVolume = 1;
+      this.musicVolume = 1;
+      this.sfxVolume = 1;
       this.audioLoaded = false;
       this.isPreloading = false;
+      this.initVolumeFromStorage();
       SoundService.instance = this;
     }
     return SoundService.instance;
+  }
+
+  /**
+   * Reads persisted volume settings from localStorage (written by Jotai atomWithStorage)
+   * and applies them so the SoundService starts with the user's saved preferences.
+   */
+  private initVolumeFromStorage() {
+    try {
+      const master = JSON.parse(localStorage.getItem('fpg-master-volume') ?? '100');
+      const music = JSON.parse(localStorage.getItem('fpg-music-volume') ?? '80');
+      const sfx = JSON.parse(localStorage.getItem('fpg-sfx-volume') ?? '80');
+      this.globalVolume = betweenZeroAndOne(master / 100, 'master');
+      this.musicVolume = betweenZeroAndOne(music / 100, 'music');
+      this.sfxVolume = betweenZeroAndOne(sfx / 100, 'sfx');
+    } catch {
+      // Use defaults if localStorage values are invalid
+    }
   }
 
   shouldPreload(): boolean {
@@ -52,6 +85,7 @@ class SoundService {
           loaded: (_) => {
             this.audioLoaded = true;
             this.isPreloading = false;
+            sound.context.volume = this.globalVolume;
             console.log('sound service loaded successfully');
             resolve(true);
           },
@@ -72,7 +106,7 @@ class SoundService {
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
     sound.play(alias, {
-      volume: getRandomlyVariedValue(volume, volVariance),
+      volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
       speed: getRandomlyVariedValue(1, spdVariance),
     });
   }
@@ -83,29 +117,83 @@ class SoundService {
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
     sound.play(alias, {
-      volume: getRandomlyVariedValue(volume, volVariance),
+      volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
       speed: getRandomlyVariedValue(1, spdVariance),
     });
   }
 
-  startMusic(alias: SoundNames, volume: number = 1) {
+  startMusic(alias: SoundNames, volume: number = 1, options?: MusicPlayOptions) {
     volume = betweenZeroAndOne(volume, 'volume');
-    sound.play(alias, {
-      volume: volume,
-      loop: true,
-    });
+
+    const fadeIn = options?.fadeIn ?? false;
+    const fadeInDurationMs = options?.fadeInDurationMs ?? 1000;
+    const adjustedVolume = volume * this.musicVolume;
+
+    const trackInstance = (mediaInstance: { volume: number }) => {
+      this.activeMusicInstances.set(alias, { mediaInstance, baseVolume: volume });
+    };
+
+    if (!fadeIn) {
+      const instance = sound.play(alias, { volume: adjustedVolume, loop: true });
+      if (instance instanceof Promise) {
+        instance.then(trackInstance);
+      } else {
+        trackInstance(instance);
+      }
+      return;
+    }
+
+    const instance = sound.play(alias, { volume: 0, loop: true });
+
+    // sound.play can return IMediaInstance or Promise<IMediaInstance>
+    const applyFade = (mediaInstance: { volume: number }) => {
+      trackInstance(mediaInstance);
+      const stepIntervalMs = 50;
+      const steps = Math.max(1, fadeInDurationMs / stepIntervalMs);
+      const volumeStep = adjustedVolume / steps;
+      let currentStep = 0;
+
+      const intervalId = setInterval(() => {
+        currentStep++;
+        mediaInstance.volume = Math.min(adjustedVolume, volumeStep * currentStep);
+
+        if (currentStep >= steps) {
+          mediaInstance.volume = adjustedVolume;
+          clearInterval(intervalId);
+        }
+      }, stepIntervalMs);
+    };
+
+    if (instance instanceof Promise) {
+      instance.then(applyFade);
+    } else {
+      applyFade(instance);
+    }
   }
 
   stopMusic(alias: SoundNames) {
     sound.stop(alias);
+    this.activeMusicInstances.delete(alias);
   }
 
   setGlobalVolume(volume: number) {
     volume = betweenZeroAndOne(volume, 'volume');
-    //sets current sounds volume
+    this.globalVolume = volume;
     sound.volumeAll = volume;
-    //sets following sounds maximum volume;
     sound.context.volume = volume;
+  }
+
+  setMusicVolume(volume: number) {
+    volume = betweenZeroAndOne(volume, 'volume');
+    this.musicVolume = volume;
+    for (const [, entry] of this.activeMusicInstances) {
+      entry.mediaInstance.volume = entry.baseVolume * volume;
+    }
+  }
+
+  setSfxVolume(volume: number) {
+    volume = betweenZeroAndOne(volume, 'volume');
+    this.sfxVolume = volume;
   }
 
   muteAll() {
