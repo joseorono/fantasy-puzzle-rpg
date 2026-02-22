@@ -53,7 +53,16 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           )}
           style={{ imageRendering: 'pixelated' }}
         >
-          <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+          {enemy.sprite.startsWith('/') ? (
+            <img
+              src={enemy.sprite}
+              alt={enemy.name}
+              className="h-full w-full"
+              style={{ imageRendering: 'pixelated', backgroundSize: 'contain', objectFit: 'contain' }}
+            />
+          ) : (
+            <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+          )}
 
           {/* Death indicator */}
           {isDead && (
