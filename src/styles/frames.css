@@ -2,6 +2,12 @@
   --frame-thickness: 32px;
 }
 
+/*
+=========================================================
+    Window Frame
+=========================================================
+*/
+
 #window-frame {
   display: grid;
   grid-template-rows: var(--frame-thickness) 1fr var(--frame-thickness);
