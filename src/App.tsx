@@ -1,7 +1,7 @@
 import MouseTracker from '~/components/effects/mouse-tracker';
 import { GameLoader } from '~/components/game-loader';
 import { GlobalAnimationProvider } from '~/components/global-animations-system';
-import WindowFrame from '~/components/window-frame';
+import WindowFrame from '~/components/frames/window-frame';
 
 function App() {
   return (
