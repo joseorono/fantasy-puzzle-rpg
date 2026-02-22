@@ -120,7 +120,7 @@ export default function BattleScreen() {
   }, []);
 
   return (
-    <div className="game-view overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="game-view overflow-hidden">
       {/* Retro screen effect overlay */}
       <div className="retro-screen pointer-events-none fixed inset-0 z-50" />
 
@@ -175,26 +175,26 @@ export default function BattleScreen() {
         <div className="battleContainer">
           <div className="battleArea">
             {/* Left/Top section - Enemy */}
-            <div className="enemySection relative border-b-4 border-gray-700 lg:border-r-4 lg:border-b-0">
-              {/* Animated background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-emerald-950/30" />
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 h-64 w-64 animate-pulse rounded-full bg-green-500 blur-3xl" />
-                <div className="absolute right-0 bottom-0 h-96 w-96 animate-pulse rounded-full bg-emerald-600 blur-3xl delay-1000" />
-              </div>
-
+            <div
+              className="enemySection relative border-b-4 border-gray-700 lg:border-r-4 lg:border-b-0"
+              style={{
+                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
               <EnemyDisplay />
             </div>
 
             {/* Right/Bottom section - Party */}
-            <div className="partySection relative">
-              {/* Animated background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/10 to-purple-900/20" />
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 right-0 h-64 w-64 animate-pulse rounded-full bg-blue-500 blur-3xl" />
-                <div className="absolute bottom-0 left-0 h-96 w-96 animate-pulse rounded-full bg-purple-600 blur-3xl delay-1000" />
-              </div>
-
+            <div
+              className="partySection relative"
+              style={{
+                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
               <PartyDisplay />
               <DamageNumber target="party" />
               <SkillActivationEffect />
