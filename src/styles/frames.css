@@ -114,3 +114,105 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+/*
+=========================================================
+    Board Frame (16px variant)
+=========================================================
+*/
+
+.bf-frame {
+  --bf-thickness: 16px;
+  display: grid;
+  grid-template-rows: var(--bf-thickness) 1fr var(--bf-thickness);
+  grid-template-columns: var(--bf-thickness) 1fr var(--bf-thickness);
+  gap: 0;
+}
+
+/* Top row */
+.bf-top {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--bf-thickness) 1fr var(--bf-thickness);
+  gap: 0;
+}
+
+/* Middle row */
+.bf-middle {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--bf-thickness) 1fr var(--bf-thickness);
+  gap: 0;
+}
+
+/* Bottom row */
+.bf-bottom {
+  grid-row: 3;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--bf-thickness) 1fr var(--bf-thickness);
+  gap: 0;
+}
+
+/* Corner styling */
+.bf-corner {
+  width: var(--bf-thickness);
+  height: var(--bf-thickness);
+  background-size: cover;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.bf-corner--top-left {
+  background-image: url('/assets/frame/frame1-upper-left-corner.png');
+}
+
+.bf-corner--top-right {
+  background-image: url('/assets/frame/frame1-upper-right-corner.png');
+}
+
+.bf-corner--bottom-left {
+  background-image: url('/assets/frame/frame1-lower-left-corner.png');
+}
+
+.bf-corner--bottom-right {
+  background-image: url('/assets/frame/frame1-lower-right-corner.png');
+}
+
+/* Edge styling */
+.bf-edge {
+  background-size: var(--bf-thickness) var(--bf-thickness);
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+.bf-edge--top {
+  background-image: url('/assets/frame/frame1-top-loop.png');
+  height: var(--bf-thickness);
+}
+
+.bf-edge--bottom {
+  background-image: url('/assets/frame/frame1-bottom-loop.png');
+  height: var(--bf-thickness);
+}
+
+.bf-edge--left {
+  background-image: url('/assets/frame/frame1-left.png');
+  width: var(--bf-thickness);
+  background-size: var(--bf-thickness) var(--bf-thickness);
+}
+
+.bf-edge--right {
+  background-image: url('/assets/frame/frame1-right.png');
+  width: var(--bf-thickness);
+  background-size: var(--bf-thickness) var(--bf-thickness);
+}
+
+/* Viewport styling */
+.bf-viewport {
+  background-color: var(--background);
+  overflow: hidden;
+  position: relative;
+}
