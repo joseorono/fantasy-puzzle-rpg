@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
+import NumberFlow from '@number-flow/react';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 import {
   useParty,
   usePartyActions,
@@ -217,9 +224,16 @@ function RewardResourceCard({ label, value, prefix = '', className }: RewardReso
       <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost" />
       <div className="top-bar-resource__content">
         <span className="top-bar-resource__label">{label}</span>
-        <span className="top-bar-resource__value">
-          {prefix}
-          {value.toLocaleString()}
+        <span className="top-bar-resource__value number-flow-container">
+          <NumberFlow
+            value={value}
+            format={INTEGER_FORMAT}
+            prefix={prefix}
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
         </span>
       </div>
     </div>
@@ -358,7 +372,17 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
       <header className="exp-gained-header">
         <p className="rewards-section-eyebrow">Battle Report</p>
         <h1 className="exp-gained-title rewards-section-title">Exp Gained</h1>
-        <div className="exp-gained-amount">+{expReward.toLocaleString()}</div>
+        <div className="exp-gained-amount number-flow-container">
+          <NumberFlow
+            value={expReward}
+            format={INTEGER_FORMAT}
+            prefix="+"
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+        </div>
       </header>
 
       <div className="character-cards-grid">
