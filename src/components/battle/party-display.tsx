@@ -16,6 +16,8 @@ import { calculatePercentage } from '~/lib/math';
 import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import NumberFlow from '@number-flow/react';
+import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING } from '~/constants/number-flow';
 
 function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
@@ -110,7 +112,14 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
 
         {/* HP indicator */}
         <div className="absolute -top-1 -right-1 rounded border border-gray-700 bg-gray-900 px-1 py-0.5">
-          <span className="pixel-font text-[10px] font-bold text-white">{character.currentHp}</span>
+          <span className="pixel-font text-[10px] font-bold text-white">
+            <NumberFlow
+              value={character.currentHp}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+          </span>
         </div>
 
         {/* Damage number animation with 8bitcn styling */}
@@ -221,7 +230,13 @@ export function PartyDisplay() {
         <div className="mb-1 flex items-center justify-between">
           <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
           <span className="pixel-font text-xs font-bold text-white sm:text-sm">
-            {Math.round(partyHealthPercentage)}%
+            <NumberFlow
+              value={Math.round(partyHealthPercentage)}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+            %
           </span>
         </div>
         <div

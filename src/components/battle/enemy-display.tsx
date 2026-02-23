@@ -7,6 +7,8 @@ import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import type { EnemyData } from '~/types/rpg-elements';
+import NumberFlow from '@number-flow/react';
+import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING } from '~/constants/number-flow';
 
 interface EnemySpriteProps {
   enemy: EnemyData;
@@ -113,7 +115,19 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
         <div className="mb-0.5 flex items-center justify-between">
           <span className="pixel-font text-[7px] text-gray-400 sm:text-[8px]">HP</span>
           <span className="pixel-font text-[7px] font-bold text-white sm:text-[8px]">
-            {enemy.currentHp}/{enemy.maxHp}
+            <NumberFlow
+              value={enemy.currentHp}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+            /
+            <NumberFlow
+              value={enemy.maxHp}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
           </span>
         </div>
         <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
