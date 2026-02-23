@@ -1,22 +1,18 @@
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Swords, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '../ui/8bit/button';
-import type { BattleState } from '~/types/battle';
+import { battleStateAtom, resetBattleAtom } from '~/stores/battle-atoms';
 
 interface BattleTopBarProps {
-  battleState: BattleState;
   nextAttackIn: number;
-  isMuted: boolean;
-  onToggleMute: () => void;
-  onResetBattle: () => void;
 }
 
-export function BattleTopBar({
-  battleState,
-  nextAttackIn,
-  isMuted,
-  onToggleMute,
-  onResetBattle,
-}: BattleTopBarProps) {
+export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
+  const battleState = useAtomValue(battleStateAtom);
+  const resetBattle = useSetAtom(resetBattleAtom);
+  const [isMuted, setIsMuted] = useState(false);
+
   return (
     <header
       id="battle-top-bar"
@@ -44,7 +40,7 @@ export function BattleTopBar({
           <Button
             size="icon"
             variant="outline"
-            onClick={onToggleMute}
+            onClick={() => setIsMuted(!isMuted)}
             className="h-7 w-7 bg-gray-800 hover:bg-gray-700 sm:h-8 sm:w-8"
           >
             {isMuted ? (
@@ -56,7 +52,7 @@ export function BattleTopBar({
           <Button
             size="icon"
             variant="outline"
-            onClick={onResetBattle}
+            onClick={resetBattle}
             className="h-7 w-7 bg-gray-800 hover:bg-gray-700 sm:h-8 sm:w-8"
           >
             <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />

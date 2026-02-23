@@ -6,8 +6,6 @@ import { GameOverModal } from '~/components/battle/game-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
 import {
-  battleStateAtom,
-  resetBattleAtom,
   damagePartyAtom,
   gameStatusAtom,
   enemiesAtom,
@@ -22,13 +20,10 @@ import { SoundNames } from '~/constants/audio';
 import { BattleTopBar } from '~/components/battle/battle-top-bar';
 
 export default function BattleScreen() {
-  const battleState = useAtomValue(battleStateAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
   const enemies = useAtomValue(enemiesAtom);
-  const resetBattle = useSetAtom(resetBattleAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
-  const [isMuted, setIsMuted] = useState(false);
 
   // Per-enemy attack timer tracking
   const attackTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -125,13 +120,7 @@ export default function BattleScreen() {
 
       {/* Main container - constrained to game view height */}
       <div className="relative flex h-full flex-col">
-        <BattleTopBar
-          battleState={battleState}
-          nextAttackIn={nextAttackIn}
-          isMuted={isMuted}
-          onToggleMute={() => setIsMuted(!isMuted)}
-          onResetBattle={resetBattle}
-        />
+        <BattleTopBar nextAttackIn={nextAttackIn} />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
