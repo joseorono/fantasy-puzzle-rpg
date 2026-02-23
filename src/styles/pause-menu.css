@@ -938,37 +938,22 @@
 }
 
 /* Resource type colors */
-.pause-menu-resource--coins .pause-menu-resource__icon {
-  background: radial-gradient(circle at 30% 30%, #ffd700, #ffed4e, #b8860b);
-}
 .pause-menu-resource--coins .pause-menu-resource__value {
   color: #ffd700;
 }
 
-.pause-menu-resource--gold .pause-menu-resource__icon {
-  background: radial-gradient(circle at 30% 30%, #ffd700, #daa520, #b8860b);
-}
 .pause-menu-resource--gold .pause-menu-resource__value {
   color: #ffd700;
 }
 
-.pause-menu-resource--silver .pause-menu-resource__icon {
-  background: radial-gradient(circle at 30% 30%, #c0c0c0, #a8a8a8, #808080);
-}
 .pause-menu-resource--silver .pause-menu-resource__value {
   color: #c0c0c0;
 }
 
-.pause-menu-resource--bronze .pause-menu-resource__icon {
-  background: radial-gradient(circle at 30% 30%, #cd7f32, #b8722c, #8b4513);
-}
 .pause-menu-resource--bronze .pause-menu-resource__value {
   color: #cd7f32;
 }
 
-.pause-menu-resource--copper .pause-menu-resource__icon {
-  background: radial-gradient(circle at 30% 30%, #b87333, #a0522d, #8b4513);
-}
 .pause-menu-resource--copper .pause-menu-resource__value {
   color: #b87333;
 }

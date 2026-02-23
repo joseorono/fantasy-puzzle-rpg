@@ -43,7 +43,7 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       <div className="top-bar-resources__container mr-14">
         {resourceItems.map((item) => (
           <div key={item.key} className={`top-bar-resource ${item.className}`}>
-            <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost"></div>
+            <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost icon-24to32"></div>
             <div className="top-bar-resource__content">
               <span className="top-bar-resource__label">{item.label}</span>
               <span className="top-bar-resource__value">{item.value.toLocaleString()}</span>
