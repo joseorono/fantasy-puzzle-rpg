@@ -212,7 +212,7 @@ export function Match3Board() {
       const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
       const characterPow = matchingCharacter?.stats.pow ?? 0;
 
-      // Calculate damage using RPG system (includes combo multiplier and POW bonus)
+      // Calculate damage using RPG system (includes match size multiplier and POW bonus)
       const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);
 
       // Reduce the matching character's skill cooldown based on orbs matched
@@ -323,7 +323,7 @@ export function Match3Board() {
       {/* Match indicator */}
       {highlightedMatches.size > 0 && (
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
-          {highlightedMatches.size >= 5 ? '5x COMBO!' : `${highlightedMatches.size} MATCH!`}
+          {highlightedMatches.size >= 5 ? '5x MATCH!' : `${highlightedMatches.size} MATCH!`}
         </div>
       )}
     </div>

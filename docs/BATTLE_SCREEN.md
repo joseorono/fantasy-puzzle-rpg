@@ -27,7 +27,7 @@ Each character is color-coded to match their orbs:
 - **Orb Types**: Blue, Green, Purple, Yellow, and Gray (neutral)
 - **Board Size**: 8x6 grid
 - **Match Detection**: Automatic highlighting of 3+ matches
-- **Special Combos**: 5-match combos show multiplier effects
+- **Large Matches**: 5+ match size shows multiplier effects
 - **Interactions**: Click to select, click adjacent orb to swap
 
 ### 🎯 Game Mechanics

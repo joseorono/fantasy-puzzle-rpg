@@ -49,6 +49,6 @@ export const soundFiles = {
 // Background sounds for the town hub (randomly selected on entry)
 export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
-// Volume range for match-3 combo sounds (scaled by combo size)
+// Volume range for match-3 sounds (scaled by match size)
 export const MIN_MATCH_SOUND_VOLUME = 0.6;
 export const MAX_MATCH_SOUND_VOLUME = 1;

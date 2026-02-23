@@ -156,9 +156,9 @@ describe('Damage Calculations', () => {
     expect(result).toBe(10);
   });
 
-  test('calculateMatchDamage: 5-match combo multiplier', () => {
+  test('calculateMatchDamage: 5-match multiplier', () => {
     const result = rpg.calculateMatchDamage(5, 10, 0);
-    expect(result).toBe(17); // 10 * 1.7 (combo multiplier)
+    expect(result).toBe(17); // 10 * 1.7 (match size multiplier)
   });
 
   test('calculateMatchDamage: With power bonus', () => {

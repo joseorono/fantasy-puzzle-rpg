@@ -81,8 +81,8 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 ### Match-3 Damage
 ```typescript
 baseDamage = 10
-comboMultiplier = matchSize >= 5 ? 2 : 1
-damage = baseDamage * comboMultiplier * (1 + POW/100)
+matchMultiplier = matchSize >= 5 ? 2 : 1
+damage = baseDamage * matchMultiplier * (1 + POW/100)
 ```
 
 **Examples**:
@@ -111,7 +111,7 @@ Located in `src/lib/rpg-calculations.ts`:
 - `calculateDamage(baseDamage, pow)` - Apply POW modifier to damage
 - `calculateCharacterDamage(character, baseDamage)` - Character damage with POW
 - `calculateEnemyDamage(enemy)` - Enemy damage with POW
-- `calculateMatchDamage(matchSize, baseDamage, pow)` - Match-3 damage with combos
+- `calculateMatchDamage(matchSize, baseDamage, pow)` - Match-3 damage with match size multiplier
 
 ### Speed Functions
 - `calculateAttackInterval(baseInterval, spd)` - Attack interval with SPD
@@ -160,7 +160,7 @@ Refer to the source file for the complete and up-to-date type definitions.
 - **Damage**: 22 (up from 20 base)
 - **Attack Interval**: 4 seconds (unchanged)
 - **Time to defeat party**: ~20 attacks (80 seconds)
-- **Matches needed to win**: 15-30 depending on combos and character POW
+- **Matches needed to win**: 15-30 depending on match size and character POW
 
 ### Stat Scaling
 - **POW**: Linear scaling, 1% damage per point

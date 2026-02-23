@@ -14,7 +14,7 @@ The battle screen now features a fully functional combat system with enemy attac
 ### Player Attack System
 - **Match-3 Damage**: Making matches deals damage to the enemy
   - **3-4 Match**: 10 damage
-  - **5+ Match**: 20 damage (2x multiplier with "5x COMBO!" indicator)
+  - **5+ Match**: 20 damage (2x multiplier with "5x MATCH!" indicator)
 - **Damage Numbers**: Animated floating damage numbers appear when damage is dealt
   - Red numbers for enemy damage
   - Orange numbers for party damage
@@ -108,7 +108,7 @@ The battle screen now features a fully functional combat system with enemy attac
 
 2. **Match3Board** (`src/components/battle/match3-board.tsx`)
    - Damage calculation on matches
-   - Combo multiplier for 5+ matches
+   - Match size multiplier for 5+ matches
 
 3. **Battle Store** (`src/stores/battle-store.ts`)
    - Game status tracking
@@ -166,7 +166,7 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
 
 ### Time to Defeat
 - **Without healing**: ~16 enemy attacks to lose (64 seconds)
-- **To win**: Need 15-30 matches depending on combos
+- **To win**: Need 15-30 matches depending on match size and character POW
 - **Average battle**: 30-50 seconds
 
 ### Orb Type System

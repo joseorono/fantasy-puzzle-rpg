@@ -72,18 +72,16 @@ export function getNextLivingEnemyId(enemies: EnemyData[], currentId: string): s
 }
 
 /**
- * Returns a volume level scaled by combo size.
+ * Returns a volume level scaled by match size.
  * A 3-orb match returns MIN_MATCH_SOUND_VOLUME, a 5-orb match returns MAX_MATCH_SOUND_VOLUME,
  * and values in between are linearly interpolated.
- * @param comboSize The number of orbs matched (typically 3-5).
+ * @param matchSize The number of orbs matched (typically 3-5).
  * @returns A volume value between MIN_MATCH_SOUND_VOLUME and MAX_MATCH_SOUND_VOLUME.
  */
-export function getMatchSoundVolume(comboSize: number): number {
-  // TODO: use constants and rename all the mislabel 'combo'
-  // stuff to match size.
-  const MIN_COMBO = 3;
-  const MAX_COMBO = 5;
-  const clamped = Math.max(MIN_COMBO, Math.min(MAX_COMBO, comboSize));
-  const t = (clamped - MIN_COMBO) / (MAX_COMBO - MIN_COMBO);
+export function getMatchSoundVolume(matchSize: number): number {
+  const MIN_MATCH_SIZE = 3;
+  const MAX_MATCH_SIZE = 5;
+  const clamped = Math.max(MIN_MATCH_SIZE, Math.min(MAX_MATCH_SIZE, matchSize));
+  const t = (clamped - MIN_MATCH_SIZE) / (MAX_MATCH_SIZE - MIN_MATCH_SIZE);
   return MIN_MATCH_SOUND_VOLUME + t * (MAX_MATCH_SOUND_VOLUME - MIN_MATCH_SOUND_VOLUME);
 }
