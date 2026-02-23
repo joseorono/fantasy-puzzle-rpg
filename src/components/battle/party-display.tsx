@@ -1,5 +1,11 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { partyAtom, partyHealthPercentageAtom, lastMatchedTypeAtom, lastDamageAtom, activateSkillAtom } from '~/stores/battle-atoms';
+import {
+  partyAtom,
+  partyHealthPercentageAtom,
+  lastMatchedTypeAtom,
+  lastDamageAtom,
+  activateSkillAtom,
+} from '~/stores/battle-atoms';
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
@@ -10,7 +16,6 @@ import { calculatePercentage } from '~/lib/math';
 import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-
 
 function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
@@ -116,10 +121,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       <div className="mb-0.5 w-full max-w-[70px] sm:max-w-[80px]">
         <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
           <div
-            className={cn(
-              'h-full transition-all duration-300',
-              HP_THRESHOLD_BG[getHpThreshold(healthPercentage)],
-            )}
+            className={cn('h-full transition-all duration-300', HP_THRESHOLD_BG[getHpThreshold(healthPercentage)])}
             style={{ width: `${healthPercentage}%` }}
           />
         </div>
@@ -140,7 +142,9 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       <div className="w-full max-w-[70px] sm:max-w-[80px]">
         <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
           {isSkillReady ? (
-            <span className="text-amber-300">{skill.icon} {skill.name}</span>
+            <span className="text-amber-300">
+              {skill.icon} {skill.name}
+            </span>
           ) : (
             `CD: ${Math.ceil(character.skillCooldown)}s`
           )}
@@ -191,10 +195,7 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-between bg-gradient-to-b from-slate-900/50 to-slate-950/70 p-2 sm:p-3 md:p-4">
-      {/* Decorative background */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
-
+    <div className="relative flex h-full flex-col items-center justify-between p-2 sm:p-3 md:p-4">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">

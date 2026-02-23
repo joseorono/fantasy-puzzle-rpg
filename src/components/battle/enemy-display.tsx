@@ -50,10 +50,14 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
               ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
               : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
             isSelected && !isDead && 'enemy-selected border-yellow-400',
+            'enemy-sprite-container',
           )}
-          style={{ imageRendering: 'pixelated' }}
         >
-          <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+          {enemy.sprite.startsWith('/') ? (
+            <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
+          ) : (
+            <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+          )}
 
           {/* Death indicator */}
           {isDead && (
@@ -138,7 +142,7 @@ export function EnemyDisplay() {
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center bg-gradient-to-b from-emerald-900/30 to-emerald-950/50 p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-full flex-col items-center justify-center p-2 sm:p-3 md:p-4">
       {/* Enemy party grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="flex gap-3 sm:gap-4 md:gap-6">
@@ -157,7 +161,7 @@ export function EnemyDisplay() {
       <div className="w-full max-w-xs px-2">
         <div className="text-center">
           <h2 className="pixel-font text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
-            👾 ENEMIES 👾
+            ENEMIES
           </h2>
         </div>
       </div>

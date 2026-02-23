@@ -17,7 +17,7 @@ export const MOSS_GOLEM: EnemyData = {
   vitHpMultiplier: 5, // Standard enemy HP scaling
   maxHp: calculateMaxHp(50, 50, 5),
   currentHp: 0, // Will be set to maxHp on init
-  sprite: '🗿', // Placeholder - will be replaced with pixel art
+  sprite: '/assets/enemy-sprites/gollux_idle.png',
   attackInterval: 4000, // Base interval (4 seconds)
   attackDamage: 20, // Base damage before POW modifier
   lootTable: MOSS_GOLEM_LOOT,
@@ -42,7 +42,7 @@ export const SWAMP_FROG: EnemyData = {
   vitHpMultiplier: 3,
   maxHp: calculateMaxHp(20, 10, 3),
   currentHp: 0,
-  sprite: '🐸',
+  sprite: '/assets/enemy-sprites/frogger_idle.png',
   attackInterval: 3000, // Faster attacks (3 seconds)
   attackDamage: 8, // Low damage
   lootTable: SWAMP_FROG_LOOT,
