@@ -1,4 +1,3 @@
-
 .battleContainer {
   display: flex;
   flex-direction: column;
@@ -29,7 +28,7 @@
     flex-direction: row;
     gap: 0;
   }
-  
+
   /* Left column: Enemy and Party stacked vertically */
   .battleArea {
     display: flex;
@@ -38,19 +37,19 @@
     min-width: 0;
     gap: 0;
   }
-  
+
   .enemySection {
     flex: 1;
     min-height: 0;
     border-bottom: 2px solid rgb(55, 65, 81);
     border-right: none !important;
   }
-  
+
   .partySection {
     flex: 1;
     min-height: 0;
   }
-  
+
   /* Right column: Board */
   .boardSection {
     flex: 0 0 45%;
@@ -68,7 +67,7 @@
     flex-direction: row;
     gap: 0;
   }
-  
+
   .battleArea {
     display: flex;
     flex-direction: column;
@@ -76,19 +75,19 @@
     min-width: 0;
     gap: 0;
   }
-  
+
   .enemySection {
     flex: 1;
     min-height: 0;
     border-bottom: 2px solid rgb(55, 65, 81);
     border-right: none !important;
   }
-  
+
   .partySection {
     flex: 1;
     min-height: 0;
   }
-  
+
   .boardSection {
     flex: 0 0 45%;
     width: 45%;
@@ -117,4 +116,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+#boardSection::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/assets/bg/battle/simple_battle_background.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(6px);
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+#boardSection > * {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.board-pattern-layer {
+  z-index: 2;
+}
+
+.boardSection .pixel-art {
+  z-index: 2;
+}
+
+.boardSection > * {
+  pointer-events: auto;
 }
