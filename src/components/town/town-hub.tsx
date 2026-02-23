@@ -78,7 +78,6 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
             </div>
           </div>
         </div>
-        <h1>Town Hub</h1>
       </div>
 
       {/* Portrait and Dialogue Section */}
