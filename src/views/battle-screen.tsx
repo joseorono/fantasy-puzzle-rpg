@@ -127,7 +127,10 @@ export default function BattleScreen() {
       {/* Main container - constrained to game view height */}
       <div className="relative flex h-full flex-col">
         {/* Header */}
-        <header className="relative z-10 border-b-2 border-gray-700 bg-gradient-to-b from-gray-900/90 to-gray-900/70 px-2 py-1.5 sm:px-3 sm:py-2">
+        <header
+          id="battle-top-bar"
+          className="relative z-10 border-b-2 border-gray-700 bg-gradient-to-b from-gray-900/90 to-gray-900/70 px-2 py-1.5 sm:px-3 sm:py-2"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="pixel-font-alt text-base font-bold text-white sm:text-lg md:text-xl">BATTLE</h1>
