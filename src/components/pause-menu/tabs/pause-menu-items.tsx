@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useInventory, useResources, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
 import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
 import { filterInventoryByType, getItemQuantity } from '~/lib/inventory';
-import { getHealableMembers, healPartyMember } from '~/lib/party-system';
+import { getHealableMembers, getDeadMembers, healPartyMember } from '~/lib/party-system';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -43,7 +43,7 @@ export function PauseMenuItems() {
   function canUseItem(item: ConsumableItemData): boolean {
     if (!item.action) return false;
     if (item.action.type === 'heal') {
-      return getHealableMembers(party).length > 0;
+      return getHealableMembers(party).length > 0 || getDeadMembers(party).length > 0;
     }
     return false;
   }
@@ -52,12 +52,21 @@ export function PauseMenuItems() {
     if (!item.action || !canUseItem(item)) return;
 
     if (item.action.type === 'heal') {
-      const healable = getHealableMembers(party);
-      if (healable.length === 0) return;
+      // Prioritize reviving dead members, then heal most damaged living member
+      const dead = getDeadMembers(party);
+      if (dead.length > 0) {
+        const target = dead[0];
+        const reviveAmount = 1 + item.action.amount;
+        const healed = healPartyMember(party, target.id, reviveAmount);
+        partyActions.setParty(healed);
+      } else {
+        const healable = getHealableMembers(party);
+        if (healable.length === 0) return;
+        const target = healable[0];
+        const healed = healPartyMember(party, target.id, item.action.amount);
+        partyActions.setParty(healed);
+      }
 
-      const target = healable[0];
-      const healed = healPartyMember(party, target.id, item.action.amount);
-      partyActions.setParty(healed);
       inventoryActions.removeItem(item.id);
       soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6);
 
