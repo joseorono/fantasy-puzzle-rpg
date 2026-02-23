@@ -161,7 +161,7 @@ export default function PartyTestView() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className={result.passed ? 'text-green-400' : 'text-red-400'}>
-                          {result.passed ? '✓' : '✗'}
+                          {result.passed ? 'PASS' : 'FAIL'}
                         </span>
                         <h3 className="font-semibold text-white">{result.name}</h3>
                       </div>

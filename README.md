@@ -2,7 +2,7 @@
 
 A cozy fantasy Match-3 RPG battle system with pixel art aesthetics, built with React, TypeScript, and Vite.
 
-## 🎮 Features
+## Features
 
 - **Match-3 Combat System**: Strategic puzzle-based battles with real-time combat
 - **Party Management**: Four unique character classes (Warrior, Rogue, Mage, Healer)
@@ -11,7 +11,7 @@ A cozy fantasy Match-3 RPG battle system with pixel art aesthetics, built with R
 - **Type-Safe**: Full TypeScript implementation with comprehensive type system
 - **State Management**: Reactive state with Jotai atoms
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Install dependencies
@@ -27,12 +27,12 @@ npm run build
 npm run preview
 ```
 
-## 📚 Documentation
+## Documentation
 
 - [Battle Screen](./docs/BATTLE_SCREEN.md) - UI components and layout
 - [Combat System](./docs/COMBAT_SYSTEM.md) - Game mechanics and balance
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **React 19** with TypeScript
 - **Vite** for fast development and building
@@ -41,7 +41,7 @@ npm run preview
 - **Lucide React** for icons
 - **React Compiler** for optimized rendering
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -55,7 +55,7 @@ src/
 └── lib/             # Utility functions
 ```
 
-## 🎯 Type System
+## Type System
 
 The project uses a well-organized type system:
 

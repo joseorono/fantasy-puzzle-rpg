@@ -59,7 +59,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
             <div className="party-status">
               <span className="status-label">Party Status:</span>
               <span className={`status-value ${isPartyFullyHealed ? 'healthy' : 'injured'}`}>
-                {isPartyFullyHealed ? '✓ Fully Healed' : '⚠ Needs Healing'}
+                {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
               </span>
             </div>
           </div>
