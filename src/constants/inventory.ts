@@ -259,7 +259,7 @@ export const EquipmentItems: EquipmentItemData[] = [
   },
 ];
 
-export const ConsumableItemIds = ['potion', 'high-potion', 'row-clear', 'column-clear', 'energy-booster'];
+export const ConsumableItemIds = ['potion', 'high-potion', 'row-clear', 'column-clear', 'energy-potion'];
 export const ConsumableItems: ConsumableItemData[] = [
   {
     id: 'potion',
@@ -308,13 +308,14 @@ export const ConsumableItems: ConsumableItemData[] = [
     icon: '⬇️',
   },
   {
-    id: 'energy-booster',
-    name: 'Energy Booster',
+    id: 'energy-potion',
+    name: 'Energy Potion',
     type: 'consumable',
     description: 'A jolt for the whole team. Fills 30% of the ultimate bar.',
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
+    action: { type: 'fill-ultimate', amount: 0.3 },
     icon: '⚡',
   },
 ];

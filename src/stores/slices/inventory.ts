@@ -10,6 +10,7 @@ const INITIAL_INVENTORY_STATE: InventoryItem[] = [
   { itemId: 'high-potion', quantity: 2 },
   { itemId: 'row-clear', quantity: 2 },
   { itemId: 'column-clear', quantity: 2 },
+  { itemId: 'energy-potion', quantity: 1 },
 ];
 
 /**

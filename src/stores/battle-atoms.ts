@@ -271,6 +271,24 @@ export const reduceSkillCooldownAtom = atom(null, (get, set, characterId: string
   set(battleStateAtom, { ...currentState, party });
 });
 
+// Atom to fill all party members' ultimate bars by a percentage of their max cooldown
+export const fillPartyUltimateAtom = atom(null, (get, set, amount: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+
+  const party = currentState.party.map((char) => {
+    if (char.currentHp <= 0 || char.skillCooldown <= 0) return char;
+    const maxCooldown = calculateCharacterCooldown(char);
+    const reduction = maxCooldown * amount;
+    return {
+      ...char,
+      skillCooldown: Math.max(0, char.skillCooldown - reduction),
+    };
+  });
+
+  set(battleStateAtom, { ...currentState, party });
+});
+
 // Atom to tick skill cooldowns each frame
 export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);

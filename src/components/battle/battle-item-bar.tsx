@@ -5,6 +5,7 @@ import {
   healPartyAtom,
   clearBoardRowAtom,
   clearBoardColumnAtom,
+  fillPartyUltimateAtom,
   gameStatusAtom,
   partyAtom,
 } from '~/stores/battle-atoms';
@@ -22,6 +23,7 @@ export function BattleItemBar() {
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
+  const fillUltimate = useSetAtom(fillPartyUltimateAtom);
 
   const cooldownDuration = calculateItemCooldownInMs(party);
 
@@ -69,6 +71,9 @@ export function BattleItemBar() {
         break;
       case 'clear-column':
         clearColumn(Math.floor(Math.random() * BOARD_COLS));
+        break;
+      case 'fill-ultimate':
+        fillUltimate(item.action.amount);
         break;
     }
 
