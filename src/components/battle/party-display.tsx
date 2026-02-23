@@ -207,7 +207,7 @@ export function PartyDisplay() {
       <div className="relative z-10 w-full max-w-xs px-2">
         <div className="text-center">
           <h2 className="pixel-font pt-3 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
-            ⚔️ HEROES ⚔️
+            HEROES
           </h2>
         </div>
 
