@@ -46,6 +46,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
     <button
       onClick={onSelect}
       className={cn(
+        `orb-${orb.type}`,
         'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11',
         'cursor-pointer border-2 sm:border-3',
         'hover:scale-110 active:scale-95',
@@ -284,10 +285,20 @@ export function Match3Board() {
     }
   };
 
+  // Determine which orb colors belong to dead characters
+  const deadColorClasses = party
+    .filter((char) => char.currentHp <= 0 && char.color !== 'gray')
+    .map((char) => `dead-${char.color}`);
+
   return (
     <div className="flex flex-1 justify-center">
       {/* Board container with pixel art border */}
-      <div className="relative rounded-lg border-2 border-amber-700 bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:border-3 sm:p-3 md:p-4">
+      <div
+        className={cn(
+          'match3BoardContainer relative rounded-lg border-2 border-amber-700 bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:border-3 sm:p-3 md:p-4',
+          deadColorClasses,
+        )}
+      >
         {/* Decorative corners */}
         <div className="absolute -top-2 -left-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
         <div className="absolute -top-2 -right-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />

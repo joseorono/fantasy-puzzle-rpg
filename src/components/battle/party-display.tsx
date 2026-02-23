@@ -90,7 +90,11 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
             {/* Death indicator */}
             {isDead && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
+                <img
+                  src="/assets/icons/skull-frostyrabbid.png"
+                  alt="Dead"
+                  className="h-10 w-10 opacity-80 sm:h-12 sm:w-12"
+                />
               </div>
             )}
           </div>
