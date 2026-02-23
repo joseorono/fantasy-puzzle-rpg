@@ -28,6 +28,13 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          RPG Icons, Bought from frosty rabbid&nbsp;
+          <a href="https://frosty-rabbid.itch.io/rpg-items-collection">
+            https://frosty-rabbid.itch.io/rpg-items-collection
+          </a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack
