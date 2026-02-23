@@ -64,3 +64,13 @@
   --icon-x: -336;
   --icon-y: -120;
 }
+
+.icon-battle-smallPotion {
+  /* coords ~30,102 (approx 1*24, 4*24 + 6px adjustment) */
+  background-position: -24px -96px;
+}
+
+.icon-battle-largePotion {
+  /* coords ~52,99 */
+  background-position: -52px -99px;
+}

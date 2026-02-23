@@ -102,7 +102,11 @@ export function BattleItemBar() {
                 : 'cursor-pointer border-amber-600 bg-gradient-to-b from-amber-900/80 to-amber-950/90 hover:border-amber-400 hover:from-amber-800/80 hover:to-amber-900/90 active:scale-95'
             }`}
           >
-            <span className="text-lg sm:text-xl">{item.icon}</span>
+            {item.iconClass ? (
+              <div className={item.iconClass} aria-hidden="true" />
+            ) : (
+              <span className="text-lg sm:text-xl">{item.icon}</span>
+            )}
             <span
               className={`pixel-font text-[10px] font-bold sm:text-xs ${isEmpty ? 'text-gray-500' : 'text-amber-200'}`}
             >
