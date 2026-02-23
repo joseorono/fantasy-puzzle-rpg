@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { EnemyDisplay } from '~/components/battle/enemy-display';
 import { PartyDisplay } from '~/components/battle/party-display';
 import { Match3Board } from '~/components/battle/match3-board';
-import { GameOverModal } from '~/components/battle/game-over-modal';
+import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
 import {
@@ -190,7 +190,7 @@ export default function BattleScreen() {
       <SkillBurstOverlay />
 
       {/* Game Over Modal */}
-      <GameOverModal />
+      <BattleOverModal />
     </div>
   );
 }

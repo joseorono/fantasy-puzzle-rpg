@@ -402,6 +402,8 @@
 
 @import './styles/battle-top-bar.css';
 
+@import './styles/battle-over-modal.css';
+
 @import './styles/battle-rewards-screen.css';
 
 @import './styles/level-up-screen.css';
