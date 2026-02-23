@@ -1,14 +1,11 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect } from 'react';
 import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
-import { calculatePercentage } from '~/lib/math';
-import { getHpThreshold } from '~/lib/rpg-calculations';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
+import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import type { EnemyData } from '~/types/rpg-elements';
-import NumberFlow from '@number-flow/react';
-import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING } from '~/constants/number-flow';
 
 interface EnemySpriteProps {
   enemy: EnemyData;
@@ -18,7 +15,6 @@ interface EnemySpriteProps {
 
 function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
   const isDead = enemy.currentHp <= 0;
-  const healthPercentage = calculatePercentage(enemy.currentHp, enemy.maxHp);
   const lastDamage = useAtomValue(lastDamageAtom);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
@@ -111,41 +107,12 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
       </div>
 
       {/* HP bar */}
-      <div className="w-full max-w-[70px] sm:max-w-[85px] md:max-w-[100px]">
-        <div className="mb-0.5 flex items-center justify-between">
-          <span className="pixel-font text-[7px] text-gray-400 sm:text-[8px]">HP</span>
-          <span className="pixel-font text-[7px] font-bold text-white sm:text-[8px]">
-            <NumberFlow
-              value={enemy.currentHp}
-              spinTiming={SNAPPY_SPIN_TIMING}
-              transformTiming={SNAPPY_TRANSFORM_TIMING}
-              opacityTiming={SNAPPY_OPACITY_TIMING}
-            />
-            /
-            <NumberFlow
-              value={enemy.maxHp}
-              spinTiming={SNAPPY_SPIN_TIMING}
-              transformTiming={SNAPPY_TRANSFORM_TIMING}
-              opacityTiming={SNAPPY_OPACITY_TIMING}
-            />
-          </span>
-        </div>
-        <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
-          <div
-            className={cn(
-              'h-full transition-all duration-300',
-              ENEMY_HP_THRESHOLD_BG[getHpThreshold(healthPercentage)],
-            )}
-            style={{ width: `${healthPercentage}%` }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-            }}
-          />
-        </div>
-      </div>
+      <BattleHpBar
+        currentHp={enemy.currentHp}
+        maxHp={enemy.maxHp}
+        thresholdColors={ENEMY_HP_THRESHOLD_BG}
+        className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
+      />
     </div>
   );
 }

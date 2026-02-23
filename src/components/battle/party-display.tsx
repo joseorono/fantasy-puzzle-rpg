@@ -12,8 +12,8 @@ import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui/8bit/damage-display';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
 import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
-import { calculatePercentage } from '~/lib/math';
 import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
+import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import NumberFlow from '@number-flow/react';
@@ -23,7 +23,6 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
   const colors = CHARACTER_BATTLE_COLORS[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
-  const healthPercentage = calculatePercentage(character.currentHp, character.maxHp);
   const maxCooldownSeconds = calculateCharacterCooldown(character);
   const cooldownPercentage = ((maxCooldownSeconds - character.skillCooldown) / maxCooldownSeconds) * 100;
   const isSkillReady = character.skillCooldown <= 0;
@@ -110,18 +109,6 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
           />
         </div>
 
-        {/* HP indicator */}
-        <div className="absolute -top-1 -right-1 rounded border border-gray-700 bg-gray-900 px-1 py-0.5">
-          <span className="pixel-font text-[10px] font-bold text-white">
-            <NumberFlow
-              value={character.currentHp}
-              spinTiming={SNAPPY_SPIN_TIMING}
-              transformTiming={SNAPPY_TRANSFORM_TIMING}
-              opacityTiming={SNAPPY_OPACITY_TIMING}
-            />
-          </span>
-        </div>
-
         {/* Damage number animation with 8bitcn styling */}
         {showDamage && (
           <div className="damage-number pointer-events-none absolute -top-8 left-1/2 z-30 -translate-x-1/2 sm:-top-10">
@@ -131,14 +118,12 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       </div>
 
       {/* Individual HP bar */}
-      <div className="mb-0.5 w-full max-w-[70px] sm:max-w-[80px]">
-        <div className="relative h-1.5 rounded-none border border-gray-700 bg-gray-800 sm:h-2">
-          <div
-            className={cn('h-full transition-all duration-300', HP_THRESHOLD_BG[getHpThreshold(healthPercentage)])}
-            style={{ width: `${healthPercentage}%` }}
-          />
-        </div>
-      </div>
+      <BattleHpBar
+        currentHp={character.currentHp}
+        maxHp={character.maxHp}
+        thresholdColors={HP_THRESHOLD_BG}
+        className="mb-0.5 max-w-[70px] sm:max-w-[80px]"
+      />
 
       {/* Character name */}
       <div
