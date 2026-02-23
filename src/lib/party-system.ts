@@ -57,6 +57,15 @@ export function getHealableMembers(party: CharacterData[]): CharacterData[] {
 }
 
 /**
+ * Returns party members that are dead (currentHp <= 0).
+ * @param party - Array of party members
+ * @returns Filtered array of dead members
+ */
+export function getDeadMembers(party: CharacterData[]): CharacterData[] {
+  return party.filter((char) => char.currentHp <= 0);
+}
+
+/**
  * Applies damage to a specific party member by ID, clamped to 0.
  * @param party - Array of party members
  * @param characterId - ID of the member to damage
@@ -93,6 +102,30 @@ export function healAllLivingPartyMembers(party: CharacterData[], amount: number
   return party.map((char) =>
     char.currentHp > 0 ? { ...char, currentHp: additionWithMax(char.currentHp, amount, char.maxHp) } : char,
   );
+}
+
+/**
+ * Heals all living party members and revives dead members.
+ * Living members receive the full heal amount; dead members are revived with reviveAmount HP.
+ * @param party - Array of party members
+ * @param healAmount - Amount of HP to restore to each living member
+ * @param reviveAmount - Amount of HP dead members are revived with
+ * @returns New party array with living members healed and dead members revived
+ */
+export function healAndReviveAllPartyMembers(
+  party: CharacterData[],
+  healAmount: number,
+  reviveAmount: number,
+): CharacterData[] {
+  return party.map((char) => {
+    if (char.currentHp > 0) {
+      return { ...char, currentHp: additionWithMax(char.currentHp, healAmount, char.maxHp) };
+    }
+    if (reviveAmount > 0) {
+      return { ...char, currentHp: Math.min(reviveAmount, char.maxHp) };
+    }
+    return char;
+  });
 }
 
 /**

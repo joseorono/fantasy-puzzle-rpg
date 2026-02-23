@@ -62,7 +62,7 @@ export function BattleItemBar() {
 
     switch (item.action.type) {
       case 'heal':
-        healParty(item.action.amount);
+        healParty({ amount: item.action.amount, source: 'potion' });
         break;
       case 'clear-row':
         clearRow(Math.floor(Math.random() * BOARD_ROWS));

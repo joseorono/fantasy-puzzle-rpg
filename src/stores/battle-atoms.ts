@@ -8,9 +8,10 @@ import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillD
 import {
   getLivingMembers,
   getHealableMembers,
+  getDeadMembers,
   damagePartyMember,
   healPartyMember,
-  healAllLivingPartyMembers,
+  healAndReviveAllPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
 import { getNextLivingEnemyId, createBattleState } from '~/lib/battle-system';
@@ -188,23 +189,37 @@ export const removeMatchedOrbsAtom = atom(null, (get, set, matchedOrbIds: Set<st
   });
 });
 
-// Atom to heal the most damaged party member
-export const healPartyAtom = atom(null, (get, set, amount: number) => {
-  const currentState = get(battleStateAtom);
+// Atom to heal the most damaged party member (revives dead members first)
+export const healPartyAtom = atom(
+  null,
+  (get, set, params: { amount: number; source: 'match' | 'potion' }) => {
+    const currentState = get(battleStateAtom);
+    const { amount, source } = params;
 
-  // Find living party members that aren't at full HP, sorted by HP% ascending
-  const healable = getHealableMembers(currentState.party);
-  if (healable.length === 0) return;
+    // Dead members take priority — revive the first one found
+    const dead = getDeadMembers(currentState.party);
+    if (dead.length > 0) {
+      const target = dead[0];
+      // Healer match: double healing. Potion: 1 HP + potion amount.
+      const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
+      const party = healPartyMember(currentState.party, target.id, reviveAmount);
+      set(battleStateAtom, { ...currentState, party });
+      return;
+    }
 
-  // Heal the member with the lowest HP percentage
-  const targetHero = healable[0];
-  const party = healPartyMember(currentState.party, targetHero.id, amount);
+    // Otherwise heal the most damaged living member
+    const healable = getHealableMembers(currentState.party);
+    if (healable.length === 0) return;
 
-  set(battleStateAtom, {
-    ...currentState,
-    party,
-  });
-});
+    const targetHero = healable[0];
+    const party = healPartyMember(currentState.party, targetHero.id, amount);
+
+    set(battleStateAtom, {
+      ...currentState,
+      party,
+    });
+  },
+);
 
 // Atom to clear an entire row of orbs
 export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
@@ -307,8 +322,8 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       gameStatus = 'won';
     }
   } else if (skill.target === 'allAlly') {
-    // Heal all living party members by an equal amount
-    party = healAllLivingPartyMembers(party, amount);
+    // Heal all living party members and revive dead ones with half healing
+    party = healAndReviveAllPartyMembers(party, amount, Math.floor(amount / 2));
   } else {
     // Heal the most damaged living ally
     const healable = getHealableMembers(party);

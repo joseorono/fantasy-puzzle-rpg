@@ -226,7 +226,7 @@ export function Match3Board() {
       setTimeout(() => {
         // Healer's default action heals the most damaged ally instead of dealing damage
         if (matchingCharacter?.class === 'healer') {
-          healParty(totalDamage);
+          healParty({ amount: totalDamage, source: 'match' });
         } else {
           damageEnemy(totalDamage);
         }
