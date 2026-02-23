@@ -6,35 +6,35 @@ interface TopBarResourcesProps {
 
 export function TopBarResources({ resources }: TopBarResourcesProps) {
   const resourceItems = [
-    { 
-      key: 'coins' as keyof Resources, 
-      label: 'Coins', 
+    {
+      key: 'coins' as keyof Resources,
+      label: 'Coins',
       value: resources.coins,
-      className: 'top-bar-resource--coins'
+      className: 'top-bar-resource--coins',
     },
-    { 
-      key: 'gold' as keyof Resources, 
-      label: 'Gold', 
+    {
+      key: 'gold' as keyof Resources,
+      label: 'Gold',
       value: resources.gold,
-      className: 'top-bar-resource--gold'
+      className: 'top-bar-resource--gold',
     },
-    { 
-      key: 'silver' as keyof Resources, 
-      label: 'Silver', 
+    {
+      key: 'silver' as keyof Resources,
+      label: 'Silver',
       value: resources.silver,
-      className: 'top-bar-resource--silver'
+      className: 'top-bar-resource--silver',
     },
-    { 
-      key: 'bronze' as keyof Resources, 
-      label: 'Bronze', 
+    {
+      key: 'bronze' as keyof Resources,
+      label: 'Bronze',
       value: resources.bronze,
-      className: 'top-bar-resource--bronze'
+      className: 'top-bar-resource--bronze',
     },
-    { 
-      key: 'copper' as keyof Resources, 
-      label: 'Copper', 
+    {
+      key: 'copper' as keyof Resources,
+      label: 'Copper',
       value: resources.copper,
-      className: 'top-bar-resource--copper'
+      className: 'top-bar-resource--copper',
     },
   ];
 
@@ -43,7 +43,7 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       <div className="top-bar-resources__container mr-14">
         {resourceItems.map((item) => (
           <div key={item.key} className={`top-bar-resource ${item.className}`}>
-            <div className="top-bar-resource__icon"></div>
+            <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost"></div>
             <div className="top-bar-resource__content">
               <span className="top-bar-resource__label">{item.label}</span>
               <span className="top-bar-resource__value">{item.value.toLocaleString()}</span>

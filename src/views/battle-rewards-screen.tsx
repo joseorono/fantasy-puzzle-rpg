@@ -161,12 +161,7 @@ export function BattleRewardsScreen() {
           function handleBack() {
             if (!randomPotentialStats) return;
             // Apply level-up with only random stats (no player allocation)
-            const updatedCharacter = levelUp(
-              charCopy,
-              { pow: 0, vit: 0, spd: 0 },
-              randomPotentialStats,
-              totalLevelUps,
-            );
+            const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
             updatedCharacter.expToNextLevel = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
@@ -219,7 +214,7 @@ function RewardResourceCard({ label, value, prefix = '', className }: RewardReso
 
   return (
     <div className={classes}>
-      <div className="top-bar-resource__icon" />
+      <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost" />
       <div className="top-bar-resource__content">
         <span className="top-bar-resource__label">{label}</span>
         <span className="top-bar-resource__value">

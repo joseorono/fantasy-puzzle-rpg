@@ -1,0 +1,28 @@
+/* Generic icon sizing */
+.icon-16 {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.icon-24 {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Sprite sheet base */
+.icon-sprite-frost-24 {
+  background-image: url('/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png');
+  background-size: auto;
+}
+
+/* Specific icons (24x24 grid positions) */
+.icon-resource-frost {
+  /* coords ~340,124 (14*24, 5*24) */
+  background-position: -336px -120px;
+}

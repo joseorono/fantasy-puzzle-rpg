@@ -30,9 +30,7 @@ export function PauseMenuItems() {
 
   const filteredInventory = filterInventoryByType(inventory, ALL_ITEMS, category);
 
-  const selectedItem = selectedItemId
-    ? ALL_ITEMS.find((item) => item.id === selectedItemId)
-    : null;
+  const selectedItem = selectedItemId ? ALL_ITEMS.find((item) => item.id === selectedItemId) : null;
 
   function getItemData(itemId: string): BaseItemData | undefined {
     return ALL_ITEMS.find((item) => item.id === itemId);
@@ -89,9 +87,7 @@ export function PauseMenuItems() {
       </div>
       <div className="pause-menu-items-layout">
         <div className="pause-menu-item-list">
-          {filteredInventory.length === 0 && (
-            <div className="pause-menu-empty">No items</div>
-          )}
+          {filteredInventory.length === 0 && <div className="pause-menu-empty">No items</div>}
           {filteredInventory.map((invItem) => {
             const itemData = getItemData(invItem.itemId);
             if (!itemData) return null;
@@ -111,9 +107,7 @@ export function PauseMenuItems() {
           {selectedItem ? (
             <>
               {'icon' in selectedItem && (
-                <div className="pause-menu-item-detail-icon">
-                  {(selectedItem as ConsumableItemData).icon}
-                </div>
+                <div className="pause-menu-item-detail-icon">{(selectedItem as ConsumableItemData).icon}</div>
               )}
               <div className="pause-menu-item-detail-name">{selectedItem.name}</div>
               <div className="pause-menu-item-detail-desc">{selectedItem.description}</div>
@@ -139,9 +133,7 @@ export function PauseMenuItems() {
                   )}
                 </div>
               )}
-              <div className="pause-menu-item-detail-desc">
-                Owned: {getItemQuantity(inventory, selectedItem.id)}
-              </div>
+              <div className="pause-menu-item-detail-desc">Owned: {getItemQuantity(inventory, selectedItem.id)}</div>
               {isUsableConsumable(selectedItem) && (
                 <button
                   className="pause-menu-use-btn"
@@ -166,7 +158,7 @@ export function PauseMenuItems() {
           { key: 'copper', label: 'Copper', value: resources.copper },
         ].map((item) => (
           <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>
-            <div className="pause-menu-resource__icon"></div>
+            <div className="pause-menu-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost"></div>
             <div className="pause-menu-resource__content">
               <span className="pause-menu-resource__label">{item.label}</span>
               <span className="pause-menu-resource__value">{item.value.toLocaleString()}</span>
