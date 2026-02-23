@@ -6,4 +6,28 @@
   image-rendering: pixelated;
   object-fit: contain;
 }
-/* css code */
+/* ─── Dead Character Orb Styles ──────────────────────────────────────
+   When a character dies, their orb color on the board appears disabled.
+   The match3BoardContainer receives a `dead-<color>` class per dead character,
+   and each orb has an `orb-<color>` class for targeting. */
+
+.match3BoardContainer.dead-blue .orb-blue,
+.match3BoardContainer.dead-green .orb-green,
+.match3BoardContainer.dead-purple .orb-purple,
+.match3BoardContainer.dead-yellow .orb-yellow {
+  position: relative;
+  filter: grayscale(0.4) brightness(0.75);
+  opacity: 0.65;
+}
+
+.match3BoardContainer.dead-blue .orb-blue::after,
+.match3BoardContainer.dead-green .orb-green::after,
+.match3BoardContainer.dead-purple .orb-purple::after,
+.match3BoardContainer.dead-yellow .orb-yellow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/icons/skull-frostyrabbid.png') center / 90% no-repeat;
+  pointer-events: none;
+  opacity: 0.85;
+}
