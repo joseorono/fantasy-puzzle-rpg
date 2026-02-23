@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
+import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 interface LevelUpViewProps {
   character: CharacterData;
@@ -88,11 +95,21 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           <div className="points-remaining pixel-font text-xs">
             <span className="star-icon">★</span>
             <span>Points Remaining:</span>
-            <span className="points-value">{pointsRemaining}</span>
+            <span className="points-value number-flow-container">
+              <NumberFlow
+                value={pointsRemaining}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
           </div>
         </header>
 
         {/* Main Content */}
+        <NumberFlowGroup>
         <div className="level-up-content">
           {/* Left Column - Character Info & Derived Stats */}
           <div className="character-info-panel">
@@ -131,9 +148,19 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <div className="bar-text pixel-font text-xs">
                   {character.currentHp}/{character.maxHp}
                   {maxHpDelta !== 0 && (
-                    <span className="bar-text-delta" style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}>
-                      {maxHpDelta > 0 ? ' +' : ''}
-                      {maxHpDelta}
+                    <span
+                      className="bar-text-delta number-flow-container"
+                      style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
+                    >
+                      <NumberFlow
+                        value={maxHpDelta}
+                        format={INTEGER_FORMAT}
+                        prefix={maxHpDelta > 0 ? ' +' : ' '}
+                        trend={1}
+                        spinTiming={SNAPPY_SPIN_TIMING}
+                        transformTiming={SNAPPY_TRANSFORM_TIMING}
+                        opacityTiming={SNAPPY_OPACITY_TIMING}
+                      />
                     </span>
                   )}
                 </div>
@@ -154,26 +181,53 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             <div className="stat-chips">
               <div className="stat-chip pow pixel-font text-xs">
                 <span className="stat-chip-label">POW</span>
-                <span className="stat-chip-value">
+                <span className="stat-chip-value number-flow-container">
                   {character.stats.pow}
-                  {potentialStatPoints.pow + pendingAllocations.pow > 0 &&
-                    ` +${potentialStatPoints.pow + pendingAllocations.pow}`}
+                  {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
+                    <NumberFlow
+                      value={potentialStatPoints.pow + pendingAllocations.pow}
+                      format={INTEGER_FORMAT}
+                      prefix=" +"
+                      trend={1}
+                      spinTiming={SNAPPY_SPIN_TIMING}
+                      transformTiming={SNAPPY_TRANSFORM_TIMING}
+                      opacityTiming={SNAPPY_OPACITY_TIMING}
+                    />
+                  )}
                 </span>
               </div>
               <div className="stat-chip vit pixel-font text-xs">
                 <span className="stat-chip-label">VIT</span>
-                <span className="stat-chip-value">
+                <span className="stat-chip-value number-flow-container">
                   {character.stats.vit}
-                  {potentialStatPoints.vit + pendingAllocations.vit > 0 &&
-                    ` +${potentialStatPoints.vit + pendingAllocations.vit}`}
+                  {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
+                    <NumberFlow
+                      value={potentialStatPoints.vit + pendingAllocations.vit}
+                      format={INTEGER_FORMAT}
+                      prefix=" +"
+                      trend={1}
+                      spinTiming={SNAPPY_SPIN_TIMING}
+                      transformTiming={SNAPPY_TRANSFORM_TIMING}
+                      opacityTiming={SNAPPY_OPACITY_TIMING}
+                    />
+                  )}
                 </span>
               </div>
               <div className="stat-chip spd pixel-font text-xs">
                 <span className="stat-chip-label">SPD</span>
-                <span className="stat-chip-value">
+                <span className="stat-chip-value number-flow-container">
                   {character.stats.spd}
-                  {potentialStatPoints.spd + pendingAllocations.spd > 0 &&
-                    ` +${potentialStatPoints.spd + pendingAllocations.spd}`}
+                  {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
+                    <NumberFlow
+                      value={potentialStatPoints.spd + pendingAllocations.spd}
+                      format={INTEGER_FORMAT}
+                      prefix=" +"
+                      trend={1}
+                      spinTiming={SNAPPY_SPIN_TIMING}
+                      transformTiming={SNAPPY_TRANSFORM_TIMING}
+                      opacityTiming={SNAPPY_OPACITY_TIMING}
+                    />
+                  )}
                 </span>
               </div>
             </div>
@@ -203,7 +257,16 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       <span className="stat-arrow">
                         <ArrowRightIcon className="stat-arrow-icon" />
                       </span>
-                      <span className="stat-preview">{previewStats.pow + potentialStatPoints.pow}</span>
+                      <span className="stat-preview number-flow-container">
+                        <NumberFlow
+                          value={previewStats.pow + potentialStatPoints.pow}
+                          format={INTEGER_FORMAT}
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
                     </>
                   )}
                 </div>
@@ -255,7 +318,16 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       <span className="stat-arrow">
                         <ArrowRightIcon className="stat-arrow-icon" />
                       </span>
-                      <span className="stat-preview">{previewStats.vit + potentialStatPoints.vit}</span>
+                      <span className="stat-preview number-flow-container">
+                        <NumberFlow
+                          value={previewStats.vit + potentialStatPoints.vit}
+                          format={INTEGER_FORMAT}
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
                     </>
                   )}
                 </div>
@@ -308,7 +380,16 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       <span className="stat-arrow">
                         <ArrowRightIcon className="stat-arrow-icon" />
                       </span>
-                      <span className="stat-preview">{previewStats.spd + potentialStatPoints.spd}</span>
+                      <span className="stat-preview number-flow-container">
+                        <NumberFlow
+                          value={previewStats.spd + potentialStatPoints.spd}
+                          format={INTEGER_FORMAT}
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
                     </>
                   )}
                 </div>
@@ -371,6 +452,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             </div>
           </div>
         </div>
+        </NumberFlowGroup>
 
         {/* Footer - Marquee Help Text */}
         <footer className="level-up-footer">

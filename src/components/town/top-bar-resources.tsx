@@ -1,4 +1,11 @@
+import NumberFlow from '@number-flow/react';
 import type { Resources } from '~/types/resources';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 interface TopBarResourcesProps {
   resources: Resources;
@@ -46,7 +53,15 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
             <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost icon-24to32"></div>
             <div className="top-bar-resource__content">
               <span className="top-bar-resource__label">{item.label}</span>
-              <span className="top-bar-resource__value">{item.value.toLocaleString()}</span>
+              <span className="top-bar-resource__value number-flow-container">
+                <NumberFlow
+                  value={item.value}
+                  format={INTEGER_FORMAT}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+              </span>
             </div>
           </div>
         ))}

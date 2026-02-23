@@ -1,6 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
+import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 import {
   healPartyAtom,
   clearBoardRowAtom,
@@ -113,9 +120,17 @@ export function BattleItemBar() {
               <span className="text-lg sm:text-xl">{item.icon}</span>
             )}
             <span
-              className={`pixel-font text-[10px] font-bold sm:text-xs ${isEmpty ? 'text-gray-500' : 'text-amber-200'}`}
+              className={`pixel-font text-[10px] font-bold sm:text-xs number-flow-container ${isEmpty ? 'text-gray-500' : 'text-amber-200'}`}
             >
-              {quantity}
+              <NumberFlow
+                value={quantity}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                animated={!isEmpty}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
             </span>
 
             {/* Cooldown pie overlay */}

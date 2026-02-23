@@ -1,0 +1,24 @@
+/* NumberFlow Styling for Pixel-Art Aesthetic */
+
+/*
+ * Ensure tabular-nums on containers that hold NumberFlow
+ * so digit widths are consistent during animation.
+ * This inherits into the shadow DOM.
+ */
+.number-flow-container {
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+/*
+ * NumberFlow renders as a custom element (number-flow-react).
+ * font-family inherits into the shadow DOM host, so placing
+ * NumberFlow inside a .pixel-font parent is sufficient.
+ *
+ * Adjust the mask gradient height to be smaller for the pixel aesthetic.
+ */
+number-flow-react {
+  --number-flow-mask-height: 0.15em;
+  --number-flow-char-height: 1em;
+}

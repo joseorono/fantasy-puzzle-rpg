@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react';
 import type { CharacterData } from '~/types/rpg-elements';
 import {
   calculateMaxHp,
@@ -7,6 +8,13 @@ import {
   calculateItemCooldownInMs,
 } from '~/lib/rpg-calculations';
 import { useParty } from '~/stores/game-store';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+  DECIMAL_2_FORMAT,
+} from '~/constants/number-flow';
 
 interface DerivedStatsDisplayProps {
   character: CharacterData;
@@ -51,28 +59,83 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Max HP</span>
-        <div className="derived-stat-value pixel-font text-xs">
-          {previewMaxHp}
-          {maxHpDelta !== 0 && <span className="stat-delta">+{maxHpDelta}</span>}
+        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+          <NumberFlow
+            value={previewMaxHp}
+            format={INTEGER_FORMAT}
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+          {maxHpDelta !== 0 && (
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={maxHpDelta}
+                format={INTEGER_FORMAT}
+                prefix="+"
+                trend={1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          )}
         </div>
       </div>
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Skill Cooldown Fill Rate</span>
-        <div className="derived-stat-value pixel-font text-xs">
-          {(previewFillRate * 100).toFixed(2)}%/s
-          {fillRateDelta !== 0 && <span className="stat-delta">+{(fillRateDelta * 100).toFixed(2)}%</span>}
+        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+          <NumberFlow
+            value={previewFillRate * 100}
+            format={DECIMAL_2_FORMAT}
+            suffix="%/s"
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+          {fillRateDelta !== 0 && (
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={fillRateDelta * 100}
+                format={DECIMAL_2_FORMAT}
+                prefix="+"
+                suffix="%"
+                trend={1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          )}
         </div>
       </div>
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Skill Cooldown Fill Time</span>
-        <div className="derived-stat-value pixel-font text-xs">
-          {previewCooldown.toFixed(2)}s
+        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+          <NumberFlow
+            value={previewCooldown}
+            format={DECIMAL_2_FORMAT}
+            suffix="s"
+            trend={-1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
           {cooldownDelta !== 0 && (
-            <span className="stat-delta">
-              {cooldownDelta > 0 ? '+' : ''}
-              {cooldownDelta.toFixed(2)}
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={cooldownDelta}
+                format={DECIMAL_2_FORMAT}
+                prefix={cooldownDelta > 0 ? '+' : ''}
+                trend={cooldownDelta > 0 ? 1 : -1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
             </span>
           )}
         </div>
@@ -80,12 +143,27 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Item Cooldown</span>
-        <div className="derived-stat-value pixel-font text-xs">
-          {(previewItemCooldown / 1000).toFixed(2)}s
+        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+          <NumberFlow
+            value={previewItemCooldown / 1000}
+            format={DECIMAL_2_FORMAT}
+            suffix="s"
+            trend={-1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
           {itemCooldownDelta !== 0 && (
-            <span className="stat-delta">
-              {itemCooldownDelta > 0 ? '+' : ''}
-              {(itemCooldownDelta / 1000).toFixed(2)}
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={itemCooldownDelta / 1000}
+                format={DECIMAL_2_FORMAT}
+                prefix={itemCooldownDelta > 0 ? '+' : ''}
+                trend={itemCooldownDelta > 0 ? 1 : -1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
             </span>
           )}
         </div>
@@ -93,9 +171,28 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">{powerLabel}</span>
-        <div className="derived-stat-value pixel-font text-xs">
-          {previewPower}
-          {powerDelta !== 0 && <span className="stat-delta">+{powerDelta}</span>}
+        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+          <NumberFlow
+            value={previewPower}
+            format={INTEGER_FORMAT}
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+          {powerDelta !== 0 && (
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={powerDelta}
+                format={INTEGER_FORMAT}
+                prefix="+"
+                trend={1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          )}
         </div>
       </div>
     </div>

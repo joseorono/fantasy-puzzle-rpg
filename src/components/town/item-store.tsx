@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { Button } from '../ui/8bit/button';
@@ -13,6 +14,12 @@ import { MarqueeText } from '../marquee/marquee-text';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
 
@@ -77,7 +84,20 @@ export default function ItemStore({
                     <div className="equipment-item-header">
                       <div className="equipment-item-name">
                         {item.name}
-                        {itemCount > 0 && <span className="item-count"> (Owned: {itemCount})</span>}
+                        {itemCount > 0 && (
+                          <span className="item-count number-flow-container">
+                            {' '}(Owned:{' '}
+                            <NumberFlow
+                              value={itemCount}
+                              format={INTEGER_FORMAT}
+                              trend={1}
+                              spinTiming={SNAPPY_SPIN_TIMING}
+                              transformTiming={SNAPPY_TRANSFORM_TIMING}
+                              opacityTiming={SNAPPY_OPACITY_TIMING}
+                            />
+                            )
+                          </span>
+                        )}
                       </div>
                       <div className="equipment-item-cost">
                         {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
