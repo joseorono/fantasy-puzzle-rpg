@@ -36,13 +36,13 @@
    ========================================== */
 
 .loader__loading-text {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 0 #000;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  animation: loader-pulse 1.5s ease-in-out infinite;
+  letter-spacing: 0.15em;
+  animation: loader-pulse 2s ease-in-out infinite;
 }
 
 @keyframes loader-pulse {
@@ -51,29 +51,31 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 }
 
 /* ==========================================
-   PROGRESS BAR
+   PROGRESS BAR (SNES RPG Gauge)
    ========================================== */
 
 .loader__progress-bar-container {
   width: 100%;
-  height: 24px;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  height: 28px;
+  background: #1a1008;
   border: 3px solid #d4a574;
-  border-radius: 8px;
-  overflow: hidden;
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+    /* Recessed bevel - dark top-left, bright bottom-right */
+    inset 0 2px 0 0 #0a0604,
+    inset 0 -2px 0 0 #8b6914,
+    inset 2px 0 0 0 #0a0604,
+    inset -2px 0 0 0 #8b6914;
+  overflow: hidden;
+  position: relative;
 }
 
 /* ==========================================
-   PROGRESS BAR ANIMATION
+   PROGRESS BAR FILL + ANIMATION
    ========================================== */
 
 @keyframes progress-bar-width-growth {
@@ -87,11 +89,28 @@
 
 .loop-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
-  box-shadow:
-    0 0 10px rgba(255, 215, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: #ffd700;
+  box-shadow: inset 0 -2px 0 0 #b8960a, inset 0 2px 0 0 #ffed4e;
   animation: progress-bar-width-growth 1s linear infinite;
+  position: relative;
+}
+
+/* Segment lines */
+.loop-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 10px,
+    rgba(0, 0, 0, 0.18) 10px,
+    rgba(0, 0, 0, 0.18) 12px
+  );
+  pointer-events: none;
 }
 
 /* ==========================================

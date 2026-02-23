@@ -64,7 +64,7 @@ export function GameLoader(_props: GameLoaderProps) {
       <div className="splash-screen__content">
         {isLoading && (
           <>
-            <p className="loader__loading-text">Loading...</p>
+            <p className="loader__loading-text">Now Loading...</p>
             <LoopingProgressBar durationInMs={1000} />
           </>
         )}
