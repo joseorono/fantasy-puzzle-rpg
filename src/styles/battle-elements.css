@@ -1,0 +1,9 @@
+.enemy-sprite-container {
+  image-rendering: pixelated;
+}
+
+.enemy-sprite-image {
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+/* css code */

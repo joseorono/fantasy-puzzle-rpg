@@ -50,16 +50,11 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
               ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
               : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
             isSelected && !isDead && 'enemy-selected border-yellow-400',
+            'enemy-sprite-container',
           )}
-          style={{ imageRendering: 'pixelated' }}
         >
           {enemy.sprite.startsWith('/') ? (
-            <img
-              src={enemy.sprite}
-              alt={enemy.name}
-              className="h-full w-full"
-              style={{ imageRendering: 'pixelated', backgroundSize: 'contain', objectFit: 'contain' }}
-            />
+            <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
           ) : (
             <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
           )}
