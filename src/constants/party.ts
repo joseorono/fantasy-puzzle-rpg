@@ -8,6 +8,10 @@ import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
 
 export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 
+// Battle scoring constants
+export const BASE_MATCH_SCORE = 10; // Base score for any match
+export const MATCH_SIZE_BONUS_MULTIPLIER = 5; // Extra points per orb beyond 3
+
 // Default EXP needed for level 1 characters
 export const EXP_TO_LEVEL_ONE = calculateExpToNextLevel(1);
 export const LEVELING_UP_HEALS_CHARACTER = true;

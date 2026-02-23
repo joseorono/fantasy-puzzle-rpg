@@ -305,6 +305,24 @@ export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number
   set(battleStateAtom, { ...currentState, party });
 });
 
+// Atom to increment turn counter
+export const incrementTurnAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, {
+    ...currentState,
+    turn: currentState.turn + 1,
+  });
+});
+
+// Atom to add score
+export const addScoreAtom = atom(null, (get, set, points: number) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, {
+    ...currentState,
+    score: currentState.score + points,
+  });
+});
+
 // Atom to activate a character's skill
 export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const currentState = get(battleStateAtom);

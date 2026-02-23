@@ -11,12 +11,19 @@ import {
   battleStateAtom,
   partyAtom,
   reduceSkillCooldownAtom,
+  incrementTurnAtom,
+  addScoreAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
 import { calculateMatchDamage } from '~/lib/rpg-calculations';
-import { BASE_MATCH_DAMAGE, COOLDOWN_REDUCTION_PER_ORB } from '~/constants/party';
+import {
+  BASE_MATCH_DAMAGE,
+  COOLDOWN_REDUCTION_PER_ORB,
+  BASE_MATCH_SCORE,
+  MATCH_SIZE_BONUS_MULTIPLIER,
+} from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
@@ -104,6 +111,8 @@ export function Match3Board() {
   const healParty = useSetAtom(healPartyAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
   const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
+  const incrementTurn = useSetAtom(incrementTurnAtom);
+  const addScore = useSetAtom(addScoreAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [invalidSwap, setInvalidSwap] = useState<{
@@ -184,6 +193,11 @@ export function Match3Board() {
 
     // Deal damage and remove orbs when matches are found
     if (matches.size > 0) {
+      // Calculate and add score based on match size
+      const matchSizeBonus = (matches.size - 3) * MATCH_SIZE_BONUS_MULTIPLIER; // Extra points for matches larger than 3
+      const totalScore = BASE_MATCH_SCORE + matchSizeBonus;
+      addScore(totalScore);
+
       // Clear any existing timer
       if (processingTimerRef.current) {
         clearTimeout(processingTimerRef.current);
@@ -265,7 +279,9 @@ export function Match3Board() {
         const wasValid = swapOrbs(selectedOrb, { row, col });
 
         if (wasValid) {
-          // Valid swap - processing flag will be cleared when matches are processed
+          // Valid swap - increment turn counter
+          incrementTurn();
+          // processing flag will be cleared when matches are processed
           setIsProcessingSwap(false);
         } else {
           // Invalid swap - show shake animation and keep selection
