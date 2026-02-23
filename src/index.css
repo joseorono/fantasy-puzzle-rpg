@@ -400,6 +400,8 @@
 
 @import './styles/battle-elements.css';
 
+@import './styles/battle-top-bar.css';
+
 @import './styles/battle-rewards-screen.css';
 
 @import './styles/level-up-screen.css';
