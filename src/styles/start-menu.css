@@ -56,59 +56,6 @@
   padding: 0 2rem;
 }
 
-.start-menu__loading-text {
-  font-size: 1.5rem;
-  color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  animation: start-menu-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes start-menu-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.start-menu__progress-bar-container {
-  width: 100%;
-  height: 24px;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
-  border: 3px solid #d4a574;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.start-menu__progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
-  width: 0%;
-  transition: width 0.2s ease;
-  box-shadow:
-    0 0 10px rgba(255, 215, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.start-menu__progress-text {
-  font-size: 1rem;
-  color: #d4a574;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-
 /* ==========================================
    START BUTTON
    ========================================== */
@@ -220,19 +167,10 @@
     max-height: 50vh;
   }
 
-  .start-menu__loading-text {
-    font-size: 1.2rem;
-  }
-
   .start-menu__button {
     font-size: 1.5rem;
     padding: 0.75rem 1.5rem;
     width: 240px;
-  }
-
-  .start-menu__progress-bar-container {
-    height: 20px;
-    border: 2px solid #d4a574;
   }
 }
 

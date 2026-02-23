@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { loaderService } from '~/services/loader-service';
+import { MIN_LOAD_TIME_MS } from '~/constants/game';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 import { StartMenu } from '~/components/start-menu';
 
 interface GameLoaderProps {}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function GameLoader(_props: GameLoaderProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,14 +21,13 @@ export function GameLoader(_props: GameLoaderProps) {
   useEffect(() => {
     if (loaderService.shouldPreload()) {
       loaderService.isPreloading = true;
-      loaderService
-        .preloadEverything()
+      Promise.all([loaderService.preloadEverything(), delay(MIN_LOAD_TIME_MS)])
         .then(() => {
           setIsLoading(false);
           setShowStartMenu(true);
         })
         .catch((error) => {
-          console.error('Failed to loa d game assets:', error);
+          console.error('Failed to load game assets:', error);
           setHasError(true);
           setIsLoading(false);
         });
@@ -60,7 +64,7 @@ export function GameLoader(_props: GameLoaderProps) {
       <div className="splash-screen__content">
         {isLoading && (
           <>
-            <h1 className="text-4xl text-white">Loading...</h1>
+            <p className="loader__loading-text">Loading...</p>
             <LoopingProgressBar durationInMs={1000} />
           </>
         )}
