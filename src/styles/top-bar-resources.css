@@ -80,15 +80,9 @@
 
 /* Resource Icon */
 .top-bar-resource__icon {
-  width: 24px;
-  height: 24px;
   flex-shrink: 0;
-  background: transparent;
   border: none;
   box-shadow: none;
-  background-repeat: no-repeat;
-  background-position: center;
-  image-rendering: pixelated;
 }
 
 /* Resource Content */

@@ -15,16 +15,54 @@
   image-rendering: pixelated;
 }
 
-/* Sprite sheet base */
+/* Sprite sheet base (384×264 native, 24px grid) */
 .icon-sprite-frost-24 {
+  --sprite-cols: 384;
+  --sprite-rows: 264;
+  --sprite-cell: 24;
   background-image: url('/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png');
-  background-size: auto;
+  background-size: calc(var(--sprite-cols) * 1px) calc(var(--sprite-rows) * 1px);
+  background-position: calc(var(--icon-x) * 1px) calc(var(--icon-y) * 1px);
 }
 
-/* Specific icons (24x24 grid positions) */
+/*
+ * Scale adapters — pixel-perfect upscaling for sprite icons.
+ *
+ * Usage: .icon-sprite-frost-24.icon-resource-frost.icon-24to32
+ *
+ * The source size is baked into the class name so adapters work
+ * with any sprite sheet that sets --sprite-cols, --sprite-rows,
+ * and --sprite-cell. The adapter overrides width/height,
+ * background-size, and background-position proportionally.
+ */
+.icon-24to32 {
+  --scale: calc(32 / 24);
+  width: 32px;
+  height: 32px;
+  background-size:
+    calc(var(--sprite-cols) * var(--scale) * 1px)
+    calc(var(--sprite-rows) * var(--scale) * 1px);
+  background-position:
+    calc(var(--icon-x) * var(--scale) * 1px)
+    calc(var(--icon-y) * var(--scale) * 1px);
+}
+
+.icon-24to48 {
+  --scale: calc(48 / 24);
+  width: 48px;
+  height: 48px;
+  background-size:
+    calc(var(--sprite-cols) * var(--scale) * 1px)
+    calc(var(--sprite-rows) * var(--scale) * 1px);
+  background-position:
+    calc(var(--icon-x) * var(--scale) * 1px)
+    calc(var(--icon-y) * var(--scale) * 1px);
+}
+
+/* Specific icons — grid positions stored as unitless custom properties */
 .icon-resource-frost {
-  /* coords ~340,124 (14*24, 5*24) */
-  background-position: -336px -120px;
+  --icon-x: -336;
+  --icon-y: -120;
 }
 
 .icon-battle-smallPotion {
