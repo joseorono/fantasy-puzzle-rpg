@@ -1,8 +1,15 @@
 import { useState } from 'react';
+import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { RosterCard } from '~/components/pause-menu/roster-card';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 import {
   type EquipmentSlot,
   findEquipmentItem,
@@ -186,18 +193,29 @@ function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewPro
           <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
             {stat.toUpperCase()}
           </span>
-          <span className="pause-menu-equip-preview-base">{baseStats[stat]}</span>
+          <span className="pause-menu-equip-preview-base number-flow-container">
+            <NumberFlow value={baseStats[stat]} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+          </span>
           {bonuses[stat] !== 0 && (
             <span
               className={cn(
-                'pause-menu-equip-stat-diff',
+                'pause-menu-equip-stat-diff number-flow-container',
                 bonuses[stat] > 0 ? 'positive' : 'negative',
               )}
             >
-              {bonuses[stat] > 0 ? '+' : ''}{bonuses[stat]}
+              <NumberFlow
+                value={bonuses[stat]}
+                format={INTEGER_FORMAT}
+                prefix={bonuses[stat] > 0 ? '+' : ''}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
             </span>
           )}
-          <span className="pause-menu-equip-preview-total">{effective[stat]}</span>
+          <span className="pause-menu-equip-preview-total number-flow-container">
+            <NumberFlow value={effective[stat]} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+          </span>
         </div>
       ))}
     </div>

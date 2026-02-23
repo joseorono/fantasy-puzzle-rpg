@@ -1,9 +1,16 @@
+import NumberFlow from '@number-flow/react';
 import { useParty } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { HP_THRESHOLD_CLASS } from '~/constants/ui';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { calculatePercentage } from '~/lib/math';
 import { cn } from '~/lib/utils';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 export function PauseMenuPartyBar() {
   const party = useParty();
@@ -22,8 +29,23 @@ export function PauseMenuPartyBar() {
             </div>
             <div className="pause-menu-party-info">
               <div className="pause-menu-party-name">{member.name}</div>
-              <div className="pause-menu-party-detail">
-                Lv.{member.level} · HP {member.currentHp}/{member.maxHp}
+              <div className="pause-menu-party-detail number-flow-container">
+                Lv.{member.level} · HP{' '}
+                <NumberFlow
+                  value={member.currentHp}
+                  format={INTEGER_FORMAT}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+                /
+                <NumberFlow
+                  value={member.maxHp}
+                  format={INTEGER_FORMAT}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
               </div>
               <div className="pause-menu-party-hp-bar">
                 <div

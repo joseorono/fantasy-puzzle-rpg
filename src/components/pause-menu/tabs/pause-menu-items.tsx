@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import NumberFlow from '@number-flow/react';
 import { useInventory, useResources, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
 import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
 import { filterInventoryByType, getItemQuantity } from '~/lib/inventory';
@@ -8,6 +9,12 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { BaseItemData } from '~/types/inventory';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 type ItemCategory = 'consumable' | 'equipment' | 'key';
 
@@ -107,7 +114,16 @@ export function PauseMenuItems() {
                 onClick={() => setSelectedItemId(invItem.itemId)}
               >
                 <span className="pause-menu-item-name">{itemData.name}</span>
-                <span className="pause-menu-item-qty">x{invItem.quantity}</span>
+                <span className="pause-menu-item-qty number-flow-container">
+                  x<NumberFlow
+                    value={invItem.quantity}
+                    format={INTEGER_FORMAT}
+                    trend={-1}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
+                </span>
               </div>
             );
           })}
@@ -142,7 +158,17 @@ export function PauseMenuItems() {
                   )}
                 </div>
               )}
-              <div className="pause-menu-item-detail-desc">Owned: {getItemQuantity(inventory, selectedItem.id)}</div>
+              <div className="pause-menu-item-detail-desc number-flow-container">
+                Owned:{' '}
+                <NumberFlow
+                  value={getItemQuantity(inventory, selectedItem.id)}
+                  format={INTEGER_FORMAT}
+                  trend={-1}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+              </div>
               {isUsableConsumable(selectedItem) && (
                 <button
                   className="pause-menu-use-btn"
@@ -170,7 +196,15 @@ export function PauseMenuItems() {
             <div className="pause-menu-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost"></div>
             <div className="pause-menu-resource__content">
               <span className="pause-menu-resource__label">{item.label}</span>
-              <span className="pause-menu-resource__value">{item.value.toLocaleString()}</span>
+              <span className="pause-menu-resource__value number-flow-container">
+                <NumberFlow
+                  value={item.value}
+                  format={INTEGER_FORMAT}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+              </span>
             </div>
           </div>
         ))}
