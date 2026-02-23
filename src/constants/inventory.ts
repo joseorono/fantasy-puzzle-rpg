@@ -271,7 +271,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: true,
     action: { type: 'heal', amount: 50 },
     icon: '🧪',
-    iconClass: 'icon-24 icon-sprite-frost-24 icon-battle-smallPotion',
+    iconClass: 'icon-24 icon-sprite-frost-24 icon-battle-smallPotion icon-24to32',
   },
   {
     id: 'high-potion',
@@ -283,7 +283,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: true,
     action: { type: 'heal', amount: 200 },
     icon: '⚗️',
-    iconClass: 'icon-24 icon-sprite-frost-24 icon-battle-largePotion',
+    iconClass: 'icon-24 icon-sprite-frost-24 icon-battle-largePotion icon-24to32',
   },
   {
     id: 'row-clear',
