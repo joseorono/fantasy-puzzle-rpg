@@ -16,7 +16,13 @@
       "Bash(powershell -Command:*)",
       "Bash(npm ls:*)",
       "Bash(npm install:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(head:*)",
+      "Bash(file:*)",
+      "Bash(cd:*)",
+      "WebFetch(domain:number-flow.barvian.me)"
     ]
   }
 }
