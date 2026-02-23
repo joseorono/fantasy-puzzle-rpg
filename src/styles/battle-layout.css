@@ -135,17 +135,9 @@
 #boardSection > * {
   position: relative;
   z-index: 1;
+}
+
+.board-pattern-layer,
+#boardSection::before {
   pointer-events: none;
-}
-
-.board-pattern-layer {
-  z-index: 2;
-}
-
-.boardSection .pixel-art {
-  z-index: 2;
-}
-
-.boardSection > * {
-  pointer-events: auto;
 }
