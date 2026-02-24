@@ -35,6 +35,13 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Pixel Art Wooden Font, by Narik and SoulOfKiran&nbsp;
+          <a href="https://soulofkiran.itch.io/pixel-art-wooden-font-v1">
+            https://soulofkiran.itch.io/pixel-art-wooden-font-v1
+          </a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack
