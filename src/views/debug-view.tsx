@@ -13,8 +13,6 @@ export default function DebugView() {
   const dividerClasses = 'my-4 border-b border-gray-200';
   return (
     <>
-      <TestView />
-      <hr className={dividerClasses} />
       <GlobalAnimationTest />
       <hr className={dividerClasses} />
       <RouterTestView />
@@ -26,6 +24,8 @@ export default function DebugView() {
       <ResourcesTestView />
       <hr className={dividerClasses} />
       <SoundTestView />
+      <hr className={dividerClasses} />
+      <TestView />
     </>
   );
 }
