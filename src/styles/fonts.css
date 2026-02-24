@@ -17,3 +17,39 @@
     2px 2px 0px rgba(0, 0, 0, 0.8),
     1px 1px 0px rgba(0, 0, 0, 0.5);
 }
+
+/*
+==================================
+    Bitmap Font Base Styles
+==================================
+
+  Container sets per-font variables:
+    --bf-img    background-image url
+    --bf-cw     rendered character width
+    --bf-ch     rendered character height
+    --bf-sw     rendered sheet width
+    --bf-sh     rendered sheet height
+*/
+
+.bf-text {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.bf-char {
+  display: inline-block;
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  width: var(--bf-cw);
+  height: var(--bf-ch);
+  background-image: var(--bf-img);
+  background-size: var(--bf-sw) var(--bf-sh);
+}
+
+.bf-blank {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--bf-cw);
+  height: var(--bf-ch);
+}
