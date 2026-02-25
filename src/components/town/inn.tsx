@@ -45,87 +45,90 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
     <div className="inn">
       <div className="bg-inn" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
       <button className="leave-btn" onClick={onLeaveCallback}></button>
-      <div className="shop-container">
-        <h1>Inn</h1>
 
-        {/* Resources Display */}
+      {/* Top Bar Resources */}
+      <div className="town-resources-bar">
         <TopBarResources resources={resources} />
+      </div>
 
-        {/* Inn Content */}
-        <div className="inn-content">
-          <div className="inn-info">
-            <h2>Rest & Recover</h2>
-            <p>Restore your party to full health for {price.coins} coins</p>
-            <div className="party-status">
-              <span className="status-label">Party Status:</span>
-              <span className={`status-value ${isPartyFullyHealed ? 'healthy' : 'injured'}`}>
-                {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
-              </span>
+      {/* Main layout: portrait sidebar + shop content */}
+      <div className="shop-layout">
+        <div className="shop-portrait-sidebar">
+          <img src={INNKEEPER_CHAR.portrait} alt={INNKEEPER_CHAR.name} className="shop-portrait__image" />
+        </div>
+
+        <div className="shop-container">
+          {/* Inn Content */}
+          <div className="inn-content">
+            <div className="inn-info">
+              <h2>Rest & Recover</h2>
+              <p>Restore your party to full health for {price.coins} coins</p>
+              <div className="party-status">
+                <span className="status-label">Party Status:</span>
+                <span className={`status-value ${isPartyFullyHealed ? 'healthy' : 'injured'}`}>
+                  {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* Party Members Display */}
-          <div className="party-members-list">
-            <h3>Party Members</h3>
-            <div className="party-members-grid">
-              {party.map((member) => {
-                const hpPercentage = calculatePercentage(member.currentHp, member.maxHp);
+            {/* Party Members Display */}
+            <div className="party-members-list">
+              <h3>Party Members</h3>
+              <div className="party-members-grid">
+                {party.map((member) => {
+                  const hpPercentage = calculatePercentage(member.currentHp, member.maxHp);
 
-                return (
-                  <div key={member.id} className="party-member-card">
-                    <div className="member-header">
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-class">{member.class}</div>
+                  return (
+                    <div key={member.id} className="party-member-card">
+                      <div className="member-header">
+                        <div className="member-info">
+                          <div className="member-name">{member.name}</div>
+                          <div className="member-class">{member.class}</div>
+                        </div>
+                        <div className="member-level">Lv. {member.level}</div>
                       </div>
-                      <div className="member-level">Lv. {member.level}</div>
+                      <div className="member-hp">
+                        <div className="hp-label">
+                          <span>HP</span>
+                          <span>
+                            {member.currentHp} / {member.maxHp}
+                          </span>
+                        </div>
+                        <div className="hp-bar-container">
+                          <div
+                            className={`hp-bar ${HP_THRESHOLD_CLASS[getHpThreshold(hpPercentage)]}`}
+                            style={{ width: `${hpPercentage}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="member-hp">
-                      <div className="hp-label">
-                        <span>HP</span>
-                        <span>
-                          {member.currentHp} / {member.maxHp}
-                        </span>
-                      </div>
-                      <div className="hp-bar-container">
-                        <div
-                          className={`hp-bar ${HP_THRESHOLD_CLASS[getHpThreshold(hpPercentage)]}`}
-                          style={{ width: `${hpPercentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Heal Button */}
-          <div className="inn-actions">
-            <Button
-              onClick={handleFullyHealParty}
-              disabled={isPartyFullyHealed || !canAffordHealing}
-              className="heal-button"
-            >
-              {isPartyFullyHealed
-                ? 'Party is Fully Healed'
-                : !canAffordHealing
-                  ? 'Not Enough Coins'
-                  : `Heal Party (${price.coins} coins)`}
-            </Button>
+            {/* Heal Button */}
+            <div className="inn-actions">
+              <Button
+                onClick={handleFullyHealParty}
+                disabled={isPartyFullyHealed || !canAffordHealing}
+                className="heal-button"
+              >
+                {isPartyFullyHealed
+                  ? 'Party is Fully Healed'
+                  : !canAffordHealing
+                    ? 'Not Enough Coins'
+                    : `Heal Party (${price.coins} coins)`}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Marquee Footer - Outside shop container */}
-      <MarqueeText type="inn" variant="marquee--golden" />
-
-      {/* Dialogue Section */}
-      <div className="dialogue-container">
-        <div className="dialogue-portraits">
-          <img src={INNKEEPER_CHAR.portrait} alt={INNKEEPER_CHAR.name} className="dialogue-portrait__image" />
-        </div>
+      {/* Bottom section: dialogue + marquee */}
+      <div className="shop-bottom">
         <DialogueBox speakerName={INNKEEPER_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
+        <MarqueeText type="inn" variant="marquee--golden" />
       </div>
     </div>
   );

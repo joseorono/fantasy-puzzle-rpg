@@ -184,9 +184,10 @@
     margin: 0;
     padding: 0;
     position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 3;
+    top: 0;
+    right: 0;
+    left: auto;
+    z-index: 10;
   }
   .top-bar-resources__container {
     margin-right: 0;

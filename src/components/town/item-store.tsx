@@ -59,87 +59,91 @@ export default function ItemStore({
     <div className="item-store">
       <div className="bg-item-store" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
       <button className="leave-btn" onClick={onLeaveCallback}></button>
-      <div className="shop-container">
-        <h1>Item Shop</h1>
 
-        {/* Resources Display */}
+      {/* Top Bar Resources */}
+      <div className="town-resources-bar">
         <TopBarResources resources={resources} />
+      </div>
 
-        {/* Store Content */}
-        <div className="shop-content">
-          <div className="store-info">
-            <h2>Consumable Items</h2>
-            <p>Purchase items to aid you in battle</p>
-          </div>
+      {/* Main layout: portrait sidebar + shop content */}
+      <div className="shop-layout">
+        <div className="shop-portrait-sidebar">
+          <img src={SHOPKEEPER_CHAR.portrait} alt={SHOPKEEPER_CHAR.name} className="shop-portrait__image" />
+        </div>
 
-          {/* Items List */}
-          <div className="equipment-list">
-            {itemsData.map((item) => {
-              const itemCount = getItemCount(item.id);
-              const canAffordItem = canAfford(resources, item.cost);
+        <div className="shop-container">
+          {/* Store Content */}
+          <div className="shop-content">
+            <div className="store-info">
+              <h2>Consumable Items</h2>
+              <p>Purchase items to aid you in battle</p>
+            </div>
 
-              return (
-                <div key={item.id} className="equipment-list-item">
-                  <div className="equipment-item-icon">
-                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                  </div>
-                  <div className="equipment-item-content">
-                    <div className="equipment-item-header">
-                      <div className="equipment-item-name">
-                        {item.name}
-                        {itemCount > 0 && (
-                          <span className="item-count number-flow-container">
-                            {' '}(Owned:{' '}
-                            <NumberFlow
-                              value={itemCount}
-                              format={INTEGER_FORMAT}
-                              trend={1}
-                              spinTiming={SNAPPY_SPIN_TIMING}
-                              transformTiming={SNAPPY_TRANSFORM_TIMING}
-                              opacityTiming={SNAPPY_OPACITY_TIMING}
-                            />
-                            )
-                          </span>
-                        )}
+            {/* Items List */}
+            <div className="equipment-list">
+              {itemsData.map((item) => {
+                const itemCount = getItemCount(item.id);
+                const canAffordItem = canAfford(resources, item.cost);
+
+                return (
+                  <div key={item.id} className="equipment-list-item">
+                    <div className="equipment-item-icon">
+                      {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                    </div>
+                    <div className="equipment-item-content">
+                      <div className="equipment-item-header">
+                        <div className="equipment-item-name">
+                          {item.name}
+                          {itemCount > 0 && (
+                            <span className="item-count number-flow-container">
+                              {' '}
+                              (Owned:{' '}
+                              <NumberFlow
+                                value={itemCount}
+                                format={INTEGER_FORMAT}
+                                trend={1}
+                                spinTiming={SNAPPY_SPIN_TIMING}
+                                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                                opacityTiming={SNAPPY_OPACITY_TIMING}
+                              />
+                              )
+                            </span>
+                          )}
+                        </div>
+                        <div className="equipment-item-cost">
+                          {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
+                          {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
+                          {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
+                          {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
+                          {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
+                        </div>
                       </div>
-                      <div className="equipment-item-cost">
-                        {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
-                        {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                        {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                        {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                        {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
+                      <div className="equipment-item-description">{item.description}</div>
+                      <div className="item-actions">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBuyItem(item);
+                          }}
+                          disabled={!canAffordItem}
+                          className="buy-button"
+                        >
+                          {canAffordItem ? 'Buy' : 'Cannot Afford'}
+                        </Button>
                       </div>
                     </div>
-                    <div className="equipment-item-description">{item.description}</div>
-                    <div className="item-actions">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBuyItem(item);
-                        }}
-                        disabled={!canAffordItem}
-                        className="buy-button"
-                      >
-                        {canAffordItem ? 'Buy' : 'Cannot Afford'}
-                      </Button>
-                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Marquee Footer - Outside shop container */}
-      <MarqueeText type="item-shop" variant="marquee--golden" />
-
-      {/* Dialogue Section */}
-      <div className="dialogue-container">
-        <div className="dialogue-portraits">
-          <img src={SHOPKEEPER_CHAR.portrait} alt={SHOPKEEPER_CHAR.name} className="dialogue-portrait__image" />
-        </div>
+      {/* Bottom section: dialogue + marquee */}
+      <div className="shop-bottom">
         <DialogueBox speakerName={SHOPKEEPER_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
+        <MarqueeText type="item-shop" variant="marquee--golden" />
       </div>
     </div>
   );

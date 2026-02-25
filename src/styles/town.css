@@ -36,14 +36,14 @@
 
 .leave-btn {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 128px;
-    height: 138px;
+    top: 16px;
+    left: 16px;
+    width: 80px;
+    height: 86px;
     background-image: url('/assets/menu/back-button.png');
     background-size: cover;
     background-position: center;
-    z-index: 1;
+    z-index: 10;
 }
 
 .leave-btn:hover {
@@ -78,14 +78,41 @@
     filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.2));
 }
 
+/* Shop Layout - Main content + Portrait sidebar (right) */
+.shop-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    z-index: 3;
+    padding-left: 108px; /* clear the back button */
+    gap: 0;
+}
+
+.shop-portrait-sidebar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 200px;
+    padding: 1rem;
+    padding-bottom: 0;
+    order: 2; /* portrait goes to the right */
+}
+
+.shop-portrait-sidebar .shop-portrait__image {
+    max-height: 280px;
+    width: auto;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
 /* Shop Styles (Generic for all shops) */
 .shop-container {
     padding: 1.5rem;
     width: 100%;
-    max-width: 60vw;
-    height: 100%;
-    max-height: 50vh;
-    margin: 0.8rem;
     background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
     border: 3px solid #d4a574;
     border-radius: 12px;
@@ -98,11 +125,46 @@
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     position: relative;
-    z-index: 3;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    top: 130px;
-    left: 109px;
+    margin: 0.8rem;
+    order: 1; /* content on the left */
+}
+
+/* Shop bottom section - dialogue + marquee */
+.shop-bottom {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0.25rem 1rem;
+}
+
+.shop-bottom .dialogue-box {
+    width: 100%;
+    max-width: 800px;
+    padding: 0.75rem 1.5rem;
+}
+
+.shop-bottom .dialogue-box__speaker {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.shop-bottom .dialogue-box__text {
+    min-height: unset;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.shop-bottom .dialogue-box__footer {
+    margin-top: 0.25rem;
+}
+
+.shop-bottom .marquee {
+    width: 100%;
 }
 
 .shop-header {
@@ -124,28 +186,6 @@
     letter-spacing: 0.1em;
 }
 
-.blacksmith-container {
-    @extend .shop-container;
-}
-
-.blacksmith-header {
-    @extend .shop-header;
-}
-
-.blacksmith-header h1 {
-    @extend .shop-header h1;
-}
-.blacksmith-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.blacksmith-header h1 {
-    font-size: 2rem;
-    margin: 0;
-}
 
 .resources-display {
     display: grid;
@@ -786,70 +826,9 @@ font-weight: 700;
 
 .town .dialogue-portraits {
   justify-content: flex-end;
-  margin-bottom: 1.5rem;
-  margin: 0 auto;
+  margin: 0 auto 0;
   width: 60%;
-  margin-bottom: 0rem;
   margin-right: 3rem;
-}
-
-.town .dialogue-portraits .dialogue-portrait__image {
-  max-height: 300px;
-  width: auto;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .town .dialogue-container {
-    bottom: 1rem;
-    width: 95%;
-  }
-
-  .town .dialogue-portraits .dialogue-portrait__image {
-    max-height: 150px;
-  }
-}
-
-/* Town Dialogue Section */
-.town-dialogue-section {
-  position: absolute;
-  bottom: 2rem;
-  right: 2rem;
-  width: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: flex-end;
-  z-index: 5;
-}
-
-.dialogue-portrait__image {
-  max-height: 260px;
-  width: auto;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-}
-
-.town-dialogue-section .dialogue-box {
-  width: 600px;
-  max-width: 90vw;
-}
-
-/* Town Hub Dialogue Container Override */
-.town .dialogue-container {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 900px;
-  z-index: 5;
 }
 
 .town .dialogue-portraits .dialogue-portrait__image {
@@ -863,24 +842,6 @@ font-weight: 700;
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .town-dialogue-section {
-    right: 1rem;
-    bottom: 1rem;
-  }
-
-  .portrait-container {
-    width: 200px;
-    height: 200px;
-  }
-
-  .portrait-container .dialogue-portrait__image {
-    max-height: 180px;
-  }
-
-  .town-dialogue-section .dialogue-box {
-    width: 100%;
-  }
-
   .town .dialogue-container {
     bottom: 1rem;
     width: 95%;
@@ -891,53 +852,45 @@ font-weight: 700;
   }
 }
 
-@media (max-width:1280px) {
-    .leave-btn {
-        width: 98px;
-        height: 104px;
-    }
-
+@media (max-width: 1280px) {
     .plank-option {
         width: 218px;
         height: 95px;
     }
 }
 
-/* Blacksmith Dialogue Container Override */
-.blacksmith .dialogue-container {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 900px;
-  z-index: 5;
+@media (max-width: 900px) {
+    .shop-portrait-sidebar {
+        width: 140px;
+    }
+
+    .shop-portrait-sidebar .shop-portrait__image {
+        max-height: 180px;
+    }
 }
 
-.blacksmith .dialogue-portraits {
-  justify-content: flex-end;
-  margin-bottom: 0rem;
-  margin-right: 6rem;
-}
+@media (max-width: 640px) {
+    .shop-layout {
+        flex-direction: column;
+        padding-left: 0;
+        padding-top: 120px; /* clear back button vertically instead */
+    }
 
-.blacksmith .dialogue-portraits .dialogue-portrait__image {
-  max-height: 280px;
-  width: auto;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-}
+    .shop-portrait-sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: flex-end;
+        padding: 0.5rem 1rem;
+        order: 2;
+    }
 
-/* Blacksmith Resources Bar Override */
-.blacksmith .town-resources-bar {
-    width: 100%;
-    display: flex;
-    justify-content: end;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 10;
+    .shop-portrait-sidebar .shop-portrait__image {
+        max-height: 120px;
+    }
+
+    .shop-container {
+        margin: 0.5rem;
+        order: 1;
+    }
 }
