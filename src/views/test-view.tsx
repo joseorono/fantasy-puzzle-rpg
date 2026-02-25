@@ -2,8 +2,8 @@ import { Button } from '~/components/ui/button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
-import { NarikRedwood } from '~/components/bitmap-fonts/narik-redwood';
-import { NarikWood } from '~/components/bitmap-fonts/narik-wood';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 export default function TestView() {
   function handleClick() {
@@ -34,21 +34,21 @@ export default function TestView() {
         </div>
         {/* Bitmap Font: Narik Redwood */}
         <div className="mt-6 flex flex-col gap-4">
-          <NarikRedwood text="HELLO WORLD" size={1} />
-          <NarikRedwood text="Hello World" size={2} />
-          <NarikRedwood text="abcdefghijkl" size={3} />
-          <NarikRedwood text="Score: 12345" size={4} />
-          <NarikRedwood text="BITMAP 5x" size={5} />
-          <NarikRedwood text="Big Text" size={8} />
+          <NarikRedwoodBitFont text="HELLO WORLD" size={1} />
+          <NarikRedwoodBitFont text="Hello World" size={2} />
+          <NarikRedwoodBitFont text="abcdefghijkl" size={3} />
+          <NarikRedwoodBitFont text="Score: 12345" size={4} />
+          <NarikRedwoodBitFont text="BITMAP 5x" size={5} />
+          <NarikRedwoodBitFont text="Big Text" size={8} />
         </div>
         {/* Bitmap Font: Narik Wood */}
         <div className="mt-6 flex flex-col gap-4">
-          <NarikWood text="HELLO WORLD" size={1} />
-          <NarikWood text="Hello World" size={2} />
-          <NarikWood text="abcdefghijkl" size={3} />
-          <NarikWood text="Score: 12345" size={4} />
-          <NarikWood text="BITMAP 5x" size={5} />
-          <NarikWood text="Big Text" size={8} />
+          <NarikWoodBitFont text="HELLO WORLD" size={1} />
+          <NarikWoodBitFont text="Hello World" size={2} />
+          <NarikWoodBitFont text="abcdefghijkl" size={3} />
+          <NarikWoodBitFont text="Score: 12345" size={4} />
+          <NarikWoodBitFont text="BITMAP 5x" size={5} />
+          <NarikWoodBitFont text="Big Text" size={8} />
         </div>
       </div>
     </TooltipProvider>

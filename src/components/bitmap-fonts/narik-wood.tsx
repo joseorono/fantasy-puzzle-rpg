@@ -23,14 +23,6 @@ const CONFIG: BitmapFontConfig = {
 const CHAR_MAP = buildCharMap(CONFIG.charset, CONFIG.cols);
 const SHEET_ROWS = Math.ceil(CONFIG.charset.length / CONFIG.cols);
 
-export function NarikWood({ text, size }: BitmapTextProps) {
-  return (
-    <BitmapText
-      text={text}
-      size={size}
-      config={CONFIG}
-      charMap={CHAR_MAP}
-      sheetRows={SHEET_ROWS}
-    />
-  );
+export function NarikWoodBitFont({ text, size }: BitmapTextProps) {
+  return <BitmapText text={text} size={size} config={CONFIG} charMap={CHAR_MAP} sheetRows={SHEET_ROWS} />;
 }
