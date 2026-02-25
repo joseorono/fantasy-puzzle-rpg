@@ -7,6 +7,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { TopBarResources } from './top-bar-resources';
 import { MarqueeText } from '../marquee/marquee-text';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
@@ -131,7 +132,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <div className="equipment-list">
               {filteredEquipment.map((item) => (
                 <div key={item.id} className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}>
-                  <div className="equipment-item-icon">⚔️</div>
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                  </div>
                   <div className="equipment-item-content">
                     <div className="equipment-item-header">
                       <div className="equipment-item-name">{item.name}</div>

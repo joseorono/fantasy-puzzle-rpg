@@ -22,7 +22,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 0,
     forClass: 'warrior',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 2 },
-    iconName: null,
+    iconName: 'ironSword',
   },
   {
     id: 'iron-daggers',
@@ -34,7 +34,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 3,
     forClass: 'rogue',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, iron: 2 },
-    iconName: null,
+    iconName: 'dagger',
   },
   {
     id: 'iron-staff',
@@ -46,7 +46,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 1,
     forClass: 'mage',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 3 },
-    iconName: null,
+    iconName: 'ironStaff',
   },
   {
     id: 'iron-armor',
@@ -57,7 +57,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 10,
     spd: -2,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 3 },
-    iconName: null,
+    iconName: 'ironArmor',
   },
 
   // --- Bronze Tier ---
@@ -71,7 +71,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 0,
     forClass: 'warrior',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
-    iconName: null,
+    iconName: 'shortSword',
   },
   {
     id: 'bronze-daggers',
@@ -83,7 +83,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 5,
     forClass: 'rogue',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, iron: 6 },
-    iconName: null,
+    iconName: 'knifeBlue',
   },
   {
     id: 'bronze-staff',
@@ -95,7 +95,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 2,
     forClass: 'mage',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
-    iconName: null,
+    iconName: 'woodStaff',
   },
   {
     id: 'bronze-armor',
@@ -106,7 +106,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 15,
     spd: -3,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 0, iron: 10 },
-    iconName: null,
+    iconName: 'chainmail',
   },
 
   // --- Silver Tier ---
@@ -120,7 +120,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 4,
     forClass: 'warrior',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 6, iron: 4 },
-    iconName: null,
+    iconName: 'longSword',
   },
   {
     id: 'silver-daggers',
@@ -132,7 +132,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 8,
     forClass: 'rogue',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 5, iron: 3 },
-    iconName: null,
+    iconName: 'silverDagger',
   },
   {
     id: 'silver-staff',
@@ -144,7 +144,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 5,
     forClass: 'mage',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, iron: 4 },
-    iconName: null,
+    iconName: 'mageStaff',
   },
   {
     id: 'silver-armor',
@@ -155,7 +155,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 22,
     spd: -1,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 10, iron: 5 },
-    iconName: null,
+    iconName: 'steelArmor',
   },
 
   // --- Steel Tier ---
@@ -169,7 +169,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 1,
     forClass: 'warrior',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 4, iron: 0 },
-    iconName: null,
+    iconName: 'broadsword',
   },
   {
     id: 'steel-daggers',
@@ -181,7 +181,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 10,
     forClass: 'rogue',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 4, iron: 0 },
-    iconName: null,
+    iconName: 'rapier',
   },
   {
     id: 'steel-staff',
@@ -193,7 +193,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 4,
     forClass: 'mage',
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 5, iron: 0 },
-    iconName: null,
+    iconName: 'crystalStaff',
   },
   {
     id: 'steel-armor',
@@ -204,7 +204,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 30,
     spd: 0,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 6, iron: 0 },
-    iconName: null,
+    iconName: 'plateArmor',
   },
 
   // --- Gold Tier ---
@@ -218,7 +218,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: -4,
     forClass: 'warrior',
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
-    iconName: null,
+    iconName: 'flameSword',
   },
   {
     id: 'golden-dirks',
@@ -230,7 +230,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 12,
     forClass: 'rogue',
     cost: { coins: CRAFTING_FEE, gold: 3, copper: 0, silver: 5, iron: 0 },
-    iconName: null,
+    iconName: 'goldDagger',
   },
   {
     id: 'golden-scepter',
@@ -242,7 +242,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     spd: 6,
     forClass: 'mage',
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
-    iconName: null,
+    iconName: 'scepter',
   },
   {
     id: 'golden-plate-armor',
@@ -253,7 +253,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 40,
     spd: -5,
     cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 8, iron: 0 },
-    iconName: null,
+    iconName: 'goldArmor',
   },
 
   // --- Legendary & Joke Tier ---
@@ -266,7 +266,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 45,
     spd: 0,
     cost: { coins: CRAFTING_FEE, gold: 8, copper: 0, silver: 12, iron: 0 },
-    iconName: null,
+    iconName: 'goldArmor',
   },
   {
     id: 'gold-armor',
@@ -277,7 +277,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: -5,
     cost: { coins: CRAFTING_FEE, gold: 10, copper: 0, silver: 0, iron: 0 },
-    iconName: null,
+    iconName: 'goldArmor',
   },
 ];
 
@@ -317,7 +317,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'clear-row' },
     icon: '➡️',
-    iconName: null,
+    iconName: 'arrow',
   },
   {
     id: 'column-clear',
@@ -329,7 +329,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'clear-column' },
     icon: '⬇️',
-    iconName: null,
+    iconName: 'bolt',
   },
   {
     id: 'energy-potion',
@@ -341,7 +341,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'fill-ultimate', amount: 0.3 },
     icon: '⚡',
-    iconName: null,
+    iconName: 'yellowPotion',
   },
 ];
 

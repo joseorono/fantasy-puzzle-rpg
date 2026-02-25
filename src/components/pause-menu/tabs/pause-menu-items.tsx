@@ -114,6 +114,9 @@ export function PauseMenuItems() {
                 className={cn('pause-menu-item-row', selectedItemId === invItem.itemId && 'selected')}
                 onClick={() => setSelectedItemId(invItem.itemId)}
               >
+                <span className="pause-menu-item-icon-slot">
+                  {itemData.iconName && <FrostyRpgIcon name={itemData.iconName} size={24} />}
+                </span>
                 <span className="pause-menu-item-name">{itemData.name}</span>
                 <span className="pause-menu-item-qty number-flow-container">
                   x
@@ -133,8 +136,14 @@ export function PauseMenuItems() {
         <div className="pause-menu-item-detail">
           {selectedItem ? (
             <>
-              {'icon' in selectedItem && (
-                <div className="pause-menu-item-detail-icon">{(selectedItem as ConsumableItemData).icon}</div>
+              {selectedItem.iconName ? (
+                <div className="pause-menu-item-detail-icon">
+                  <FrostyRpgIcon name={selectedItem.iconName} size={48} />
+                </div>
+              ) : (
+                'icon' in selectedItem && (
+                  <div className="pause-menu-item-detail-icon">{(selectedItem as ConsumableItemData).icon}</div>
+                )
               )}
               <div className="pause-menu-item-detail-name">{selectedItem.name}</div>
               <div className="pause-menu-item-detail-desc">{selectedItem.description}</div>

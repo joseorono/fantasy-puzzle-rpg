@@ -19,6 +19,7 @@ import {
   getAvailableEquipmentForSlot,
 } from '~/lib/equipment-system';
 import type { EquipmentItemData } from '~/types/inventory';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 
 const STAT_COLORS = {
   pow: '#e53935',
@@ -160,6 +161,9 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
       onClick={onToggle}
     >
       <span className="slot-label">{label}</span>
+      <span className="pause-menu-item-icon-slot">
+        {item?.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
+      </span>
       <span className={cn('pause-menu-equip-slot-value', !item && 'empty')}>
         {item ? item.name : '— Empty —'}
       </span>
@@ -230,6 +234,9 @@ interface EquipAvailableItemProps {
 function EquipAvailableItem({ item, onEquip }: EquipAvailableItemProps) {
   return (
     <div className="pause-menu-equip-available-item">
+      <span className="pause-menu-item-icon-slot">
+        {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
+      </span>
       <div className="pause-menu-equip-available-info">
         <div className="pause-menu-equip-available-name">{item.name}</div>
         <div className="pause-menu-equip-available-stats">

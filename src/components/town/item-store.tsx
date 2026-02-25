@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { Button } from '../ui/8bit/button';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford } from '~/lib/resources';
@@ -79,7 +80,9 @@ export default function ItemStore({
 
               return (
                 <div key={item.id} className="equipment-list-item">
-                  <div className="equipment-item-icon">🧪</div>
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                  </div>
                   <div className="equipment-item-content">
                     <div className="equipment-item-header">
                       <div className="equipment-item-name">
