@@ -116,7 +116,8 @@ export function PauseMenuItems() {
               >
                 <span className="pause-menu-item-name">{itemData.name}</span>
                 <span className="pause-menu-item-qty number-flow-container">
-                  x<NumberFlow
+                  x
+                  <NumberFlow
                     value={invItem.quantity}
                     format={INTEGER_FORMAT}
                     trend={-1}
@@ -187,14 +188,14 @@ export function PauseMenuItems() {
       </div>
       <div className="pause-menu-resources-bar">
         {[
-          { key: 'coins', label: 'Coins', value: resources.coins },
-          { key: 'gold', label: 'Gold', value: resources.gold },
-          { key: 'silver', label: 'Silver', value: resources.silver },
-          { key: 'iron', label: 'Iron', value: resources.iron },
-          { key: 'copper', label: 'Copper', value: resources.copper },
+          { key: 'coins', label: 'Coins', value: resources.coins, iconName: 'coinPurse' as const },
+          { key: 'gold', label: 'Gold', value: resources.gold, iconName: 'goldBar' as const },
+          { key: 'silver', label: 'Silver', value: resources.silver, iconName: 'silverBar' as const },
+          { key: 'iron', label: 'Iron', value: resources.iron, iconName: 'ironBar' as const },
+          { key: 'copper', label: 'Copper', value: resources.copper, iconName: 'copperBar' as const },
         ].map((item) => (
           <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>
-            <FrostyRpgIcon name="coinPurse" size={24} className="pause-menu-resource__icon" />
+            <FrostyRpgIcon name={item.iconName} size={24} className="pause-menu-resource__icon" />
             <div className="pause-menu-resource__content">
               <span className="pause-menu-resource__label">{item.label}</span>
               <span className="pause-menu-resource__value number-flow-container">

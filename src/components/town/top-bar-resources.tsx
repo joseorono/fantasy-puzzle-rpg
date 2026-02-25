@@ -19,30 +19,35 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       label: 'Coins',
       value: resources.coins,
       className: 'top-bar-resource--coins',
+      iconName: 'coinPurse' as const,
     },
     {
       key: 'gold' as keyof Resources,
       label: 'Gold',
       value: resources.gold,
       className: 'top-bar-resource--gold',
+      iconName: 'goldBar' as const,
     },
     {
       key: 'silver' as keyof Resources,
       label: 'Silver',
       value: resources.silver,
       className: 'top-bar-resource--silver',
+      iconName: 'silverBar' as const,
     },
     {
       key: 'iron' as keyof Resources,
       label: 'Iron',
       value: resources.iron,
       className: 'top-bar-resource--iron',
+      iconName: 'ironBar' as const,
     },
     {
       key: 'copper' as keyof Resources,
       label: 'Copper',
       value: resources.copper,
       className: 'top-bar-resource--copper',
+      iconName: 'copperBar' as const,
     },
   ];
 
@@ -51,7 +56,7 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       <div className="top-bar-resources__container mr-14">
         {resourceItems.map((item) => (
           <div key={item.key} className={`top-bar-resource ${item.className}`}>
-            <FrostyRpgIcon name="coinPurse" size={32} className="top-bar-resource__icon" />
+            <FrostyRpgIcon name={item.iconName} size={32} className="top-bar-resource__icon" />
             <div className="top-bar-resource__content">
               <span className="top-bar-resource__label">{item.label}</span>
               <span className="top-bar-resource__value number-flow-container">
