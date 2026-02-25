@@ -20,7 +20,7 @@ export interface TownHubViewData {
     coins: number;
     gold: number;
     silver: number;
-    bronze: number;
+    iron: number;
     copper: number;
   };
   itemsForSell: string[];

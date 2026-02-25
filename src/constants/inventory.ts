@@ -21,7 +21,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 0,
     forClass: 'warrior',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, bronze: 2 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 2 },
     iconName: null,
   },
   {
@@ -33,7 +33,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 3,
     forClass: 'rogue',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, bronze: 2 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, iron: 2 },
     iconName: null,
   },
   {
@@ -45,7 +45,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 1,
     forClass: 'mage',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, bronze: 3 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 3 },
     iconName: null,
   },
   {
@@ -56,7 +56,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 10,
     spd: -2,
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, bronze: 3 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 3 },
     iconName: null,
   },
 
@@ -70,7 +70,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 3,
     spd: 0,
     forClass: 'warrior',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, bronze: 8 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
     iconName: null,
   },
   {
@@ -82,7 +82,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 5,
     forClass: 'rogue',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, bronze: 6 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, iron: 6 },
     iconName: null,
   },
   {
@@ -94,7 +94,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 2,
     forClass: 'mage',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, bronze: 8 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
     iconName: null,
   },
   {
@@ -105,7 +105,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 15,
     spd: -3,
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 0, bronze: 10 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 0, iron: 10 },
     iconName: null,
   },
 
@@ -119,7 +119,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 4,
     forClass: 'warrior',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 6, bronze: 4 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 6, iron: 4 },
     iconName: null,
   },
   {
@@ -131,7 +131,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 8,
     forClass: 'rogue',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 5, bronze: 3 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 5, iron: 3 },
     iconName: null,
   },
   {
@@ -143,7 +143,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 5,
     forClass: 'mage',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, bronze: 4 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, iron: 4 },
     iconName: null,
   },
   {
@@ -154,7 +154,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 22,
     spd: -1,
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 10, bronze: 5 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 10, iron: 5 },
     iconName: null,
   },
 
@@ -168,7 +168,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 4,
     spd: 1,
     forClass: 'warrior',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 4, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 4, iron: 0 },
     iconName: null,
   },
   {
@@ -180,7 +180,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 10,
     forClass: 'rogue',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 4, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 4, iron: 0 },
     iconName: null,
   },
   {
@@ -192,7 +192,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 4,
     forClass: 'mage',
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 5, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 5, iron: 0 },
     iconName: null,
   },
   {
@@ -203,7 +203,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 30,
     spd: 0,
-    cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 6, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 6, iron: 0 },
     iconName: null,
   },
 
@@ -217,7 +217,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 6,
     spd: -4,
     forClass: 'warrior',
-    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
     iconName: null,
   },
   {
@@ -229,7 +229,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 12,
     forClass: 'rogue',
-    cost: { coins: CRAFTING_FEE, gold: 3, copper: 0, silver: 5, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 3, copper: 0, silver: 5, iron: 0 },
     iconName: null,
   },
   {
@@ -241,7 +241,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 5,
     spd: 6,
     forClass: 'mage',
-    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
     iconName: null,
   },
   {
@@ -252,7 +252,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 40,
     spd: -5,
-    cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 8, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 8, iron: 0 },
     iconName: null,
   },
 
@@ -265,7 +265,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 5,
     vit: 45,
     spd: 0,
-    cost: { coins: CRAFTING_FEE, gold: 8, copper: 0, silver: 12, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 8, copper: 0, silver: 12, iron: 0 },
     iconName: null,
   },
   {
@@ -276,7 +276,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     pow: 0,
     vit: 1,
     spd: -5,
-    cost: { coins: CRAFTING_FEE, gold: 10, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: CRAFTING_FEE, gold: 10, copper: 0, silver: 0, iron: 0 },
     iconName: null,
   },
 ];
@@ -288,7 +288,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Potion',
     type: 'consumable',
     description: 'Heals 50 HP. Tastes like red.',
-    cost: { coins: 50, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: 50, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: true,
     action: { type: 'heal', amount: 50 },
@@ -300,7 +300,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'High Potion',
     type: 'consumable',
     description: 'Heals 200 HP. Tastes like really red.',
-    cost: { coins: 200, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: 200, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: true,
     action: { type: 'heal', amount: 200 },
@@ -312,7 +312,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Row Clear',
     type: 'consumable',
     description: 'Clears an entire row of orbs from the board.',
-    cost: { coins: 300, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
     action: { type: 'clear-row' },
@@ -324,7 +324,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Column Clear',
     type: 'consumable',
     description: 'Clears an entire column of orbs from the board.',
-    cost: { coins: 300, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
     action: { type: 'clear-column' },
@@ -336,7 +336,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Energy Potion',
     type: 'consumable',
     description: 'A jolt for the whole team. Fills 30% of the ultimate bar.',
-    cost: { coins: 400, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    cost: { coins: 400, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
     action: { type: 'fill-ultimate', amount: 0.3 },
@@ -344,3 +344,4 @@ export const ConsumableItems: ConsumableItemData[] = [
     iconName: null,
   },
 ];
+

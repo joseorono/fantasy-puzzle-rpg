@@ -16,7 +16,7 @@ export function createResources(overrides: Partial<Resources> = {}): Resources {
     gold: 0,
     copper: 0,
     silver: 0,
-    bronze: 0,
+    iron: 0,
     ...overrides,
   };
 }
@@ -33,7 +33,7 @@ export function canAfford(available: Resources, cost: Resources): boolean {
     available.gold >= cost.gold &&
     available.copper >= cost.copper &&
     available.silver >= cost.silver &&
-    available.bronze >= cost.bronze
+    available.iron >= cost.iron
   );
 }
 
@@ -49,7 +49,7 @@ export function deductCost(available: Resources, cost: Resources): Resources {
     gold: Math.max(0, available.gold - cost.gold),
     copper: Math.max(0, available.copper - cost.copper),
     silver: Math.max(0, available.silver - cost.silver),
-    bronze: Math.max(0, available.bronze - cost.bronze),
+    iron: Math.max(0, available.iron - cost.iron),
   };
 }
 
@@ -65,7 +65,7 @@ export function addResources(available: Resources, reward: Resources): Resources
     gold: available.gold + reward.gold,
     copper: available.copper + reward.copper,
     silver: available.silver + reward.silver,
-    bronze: available.bronze + reward.bronze,
+    iron: available.iron + reward.iron,
   };
 }
 

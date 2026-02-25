@@ -104,7 +104,7 @@ export default function ItemStore({
                         {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
                         {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
                         {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                        {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                        {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
                       </div>
                     </div>
                     <div className="equipment-item-description">{item.description}</div>

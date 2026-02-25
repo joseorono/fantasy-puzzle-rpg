@@ -28,7 +28,7 @@ const FAKE_PRODUCTS: Product[] = [
   {
     id: 'ring',
     name: 'Enchanted Ring',
-    cost: createResources({ gold: 50, copper: 20, bronze: 10 }),
+    cost: createResources({ gold: 50, copper: 20, iron: 10 }),
   },
 ];
 
@@ -52,8 +52,8 @@ export default function ResourcesTestView() {
     addResources(createResources({ silver: 25 }));
   }
 
-  function handleAddBronze() {
-    addResources(createResources({ bronze: 75 }));
+  function handleAddIron() {
+    addResources(createResources({ iron: 75 }));
   }
 
   function handleAddAll() {
@@ -63,7 +63,7 @@ export default function ResourcesTestView() {
         gold: 10,
         copper: 50,
         silver: 25,
-        bronze: 75,
+        iron: 75,
       }),
     );
   }
@@ -83,7 +83,7 @@ export default function ResourcesTestView() {
         gold: 5,
         copper: 25,
         silver: 10,
-        bronze: 30,
+        iron: 30,
       }),
     );
   }
@@ -119,8 +119,8 @@ export default function ResourcesTestView() {
             <p className="text-2xl font-bold text-gray-400">{resources.silver}</p>
           </div>
           <div className="rounded bg-white p-4 dark:bg-slate-800">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Bronze</p>
-            <p className="text-2xl font-bold text-amber-700">{resources.bronze}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Iron</p>
+            <p className="text-2xl font-bold text-amber-700">{resources.iron}</p>
           </div>
         </div>
       </div>
@@ -141,8 +141,8 @@ export default function ResourcesTestView() {
           <Button onClick={handleAddSilver} variant="outline">
             + 25 Silver
           </Button>
-          <Button onClick={handleAddBronze} variant="outline">
-            + 75 Bronze
+          <Button onClick={handleAddIron} variant="outline">
+            + 75 Iron
           </Button>
           <Button onClick={handleAddAll} className="bg-green-600 hover:bg-green-700">
             Add All
@@ -203,9 +203,9 @@ export default function ResourcesTestView() {
                       <span className="font-medium">Silver:</span> {product.cost.silver}
                     </p>
                   )}
-                  {product.cost.bronze > 0 && (
+                  {product.cost.iron > 0 && (
                     <p>
-                      <span className="font-medium">Bronze:</span> {product.cost.bronze}
+                      <span className="font-medium">Iron:</span> {product.cost.iron}
                     </p>
                   )}
                 </div>

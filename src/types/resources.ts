@@ -10,5 +10,5 @@ export interface Resources {
   gold: number;
   copper: number;
   silver: number;
-  bronze: number;
+  iron: number;
 }

@@ -348,9 +348,9 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
     color: #b87333;
 }
 
-.cost-badge.bronze {
-    border-color: rgba(205, 127, 50, 0.6);
-    color: #cd7f32;
+.cost-badge.iron {
+    border-color: rgba(113, 121, 126, 0.6);
+    color: #71797E;
 }
 
 .equipment-item-description {

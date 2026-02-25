@@ -139,7 +139,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                         {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
                         {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
                         {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                        {item.cost.bronze > 0 && <span className="cost-badge bronze">🟤 {item.cost.bronze}</span>}
+                        {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
                       </div>
                     </div>
                     <div className="equipment-item-description">{item.description}</div>
@@ -183,9 +183,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               </div>
 
               <div className="exchange-group">
-                <h3>Bronze to Silver</h3>
-                <Button onClick={() => handleExchangeResources('bronze', 'silver', 5)} disabled={resources.bronze < 5}>
-                  Exchange 5 Bronze for 1 Silver
+                <h3>Iron to Silver</h3>
+                <Button onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
+                  Exchange 5 Iron for 1 Silver
                 </Button>
               </div>
 

@@ -12,12 +12,12 @@ export const DEMO_FLOOR_LOOT: FloorLootSpot[] = [
   }),
   createFloorLootSpot('floor_loot_2', 45, 70, {
     coins: 30,
-    bronze: 2,
+    iron: 2,
   }),
   createFloorLootSpot('floor_loot_3', 37, 71, {
     coins: 75,
     copper: 5,
-    bronze: 1,
+    iron: 1,
   }),
   createFloorLootSpot('floor_loot_4', 31, 79, {
     coins: 100,
@@ -29,7 +29,7 @@ export const DEMO_FLOOR_LOOT: FloorLootSpot[] = [
   }),
   createFloorLootSpot('floor_loot_6', 44, 54, {
     coins: 120,
-    bronze: 3,
+    iron: 3,
     silver: 1,
   }),
   createFloorLootSpot('floor_loot_7', 39, 40, {
@@ -44,7 +44,7 @@ export const DEMO_FLOOR_LOOT: FloorLootSpot[] = [
   createFloorLootSpot('floor_loot_9', 47, 25, {
     coins: 90,
     copper: 5,
-    bronze: 2,
+    iron: 2,
   }),
   createFloorLootSpot('floor_loot_10', 34, 18, {
     coins: 110,
@@ -58,13 +58,13 @@ export const DEMO_FLOOR_LOOT: FloorLootSpot[] = [
   }),
   createFloorLootSpot('floor_loot_12', 20, 22, {
     coins: 85,
-    bronze: 4,
+    iron: 4,
     copper: 2,
   }),
   createFloorLootSpot('floor_loot_13', 16, 44, {
     coins: 130,
     silver: 1,
-    bronze: 3,
+    iron: 3,
   }),
 ];
 

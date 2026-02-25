@@ -33,10 +33,10 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       className: 'top-bar-resource--silver',
     },
     {
-      key: 'bronze' as keyof Resources,
-      label: 'Bronze',
-      value: resources.bronze,
-      className: 'top-bar-resource--bronze',
+      key: 'iron' as keyof Resources,
+      label: 'Iron',
+      value: resources.iron,
+      className: 'top-bar-resource--iron',
     },
     {
       key: 'copper' as keyof Resources,

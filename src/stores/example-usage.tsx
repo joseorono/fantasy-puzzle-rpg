@@ -21,7 +21,7 @@ export function ResourcesDisplay() {
         <div>Gold: {resources.gold}</div>
         <div>Copper: {resources.copper}</div>
         <div>Silver: {resources.silver}</div>
-        <div>Bronze: {resources.bronze}</div>
+        <div>Iron: {resources.iron}</div>
       </div>
 
       <div className="flex gap-2">

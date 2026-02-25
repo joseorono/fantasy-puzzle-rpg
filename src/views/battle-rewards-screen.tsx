@@ -254,7 +254,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         coins: coinsReceived,
         gold: lootTable.resources?.item?.gold || 0,
         silver: lootTable.resources?.item?.silver || 0,
-        bronze: lootTable.resources?.item?.bronze || 0,
+        iron: lootTable.resources?.item?.iron || 0,
         copper: lootTable.resources?.item?.copper || 0,
       });
     }

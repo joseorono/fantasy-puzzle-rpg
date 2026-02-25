@@ -33,7 +33,7 @@ export default function RouterTestView() {
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
           onClick={() =>
             goToTownHub({
-              innCost: { coins: 20, gold: 0, silver: 0, bronze: 0, copper: 0 },
+              innCost: { coins: 20, gold: 0, silver: 0, iron: 0, copper: 0 },
               itemsForSell: [...ConsumableItemIds],
               onLeaveCallback: () => goBack(),
             })
@@ -81,7 +81,7 @@ export default function RouterTestView() {
                       name: 'Iron Sword',
                       type: 'equipment',
                       description: 'A sturdy iron sword',
-                      cost: { coins: 50, gold: 0, silver: 0, bronze: 0, copper: 0 },
+                      cost: { coins: 50, gold: 0, silver: 0, iron: 0, copper: 0 },
                     } as any,
                     probability: 1 as any,
                   },
@@ -91,7 +91,7 @@ export default function RouterTestView() {
                       name: 'Steel Shield',
                       type: 'equipment',
                       description: 'A protective steel shield',
-                      cost: { coins: 75, gold: 0, silver: 0, bronze: 0, copper: 0 },
+                      cost: { coins: 75, gold: 0, silver: 0, iron: 0, copper: 0 },
                     } as any,
                     probability: 1 as any,
                   },
@@ -103,7 +103,7 @@ export default function RouterTestView() {
                       name: 'Health Potion',
                       type: 'consumable',
                       description: 'Restores HP',
-                      cost: { coins: 20, gold: 0, silver: 0, bronze: 0, copper: 0 },
+                      cost: { coins: 20, gold: 0, silver: 0, iron: 0, copper: 0 },
                     } as any,
                     probability: 3 as any,
                   },
@@ -113,13 +113,13 @@ export default function RouterTestView() {
                       name: 'Mana Elixir',
                       type: 'consumable',
                       description: 'Restores MP',
-                      cost: { coins: 30, gold: 0, silver: 0, bronze: 0, copper: 0 },
+                      cost: { coins: 30, gold: 0, silver: 0, iron: 0, copper: 0 },
                     } as any,
                     probability: 2 as any,
                   },
                 ],
                 resources: {
-                  item: { coins: 100, gold: 0, silver: 0, bronze: 0, copper: 0 },
+                  item: { coins: 100, gold: 0, silver: 0, iron: 0, copper: 0 },
                   probability: 1 as any,
                 },
               },

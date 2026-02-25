@@ -190,7 +190,7 @@ export function PauseMenuItems() {
           { key: 'coins', label: 'Coins', value: resources.coins },
           { key: 'gold', label: 'Gold', value: resources.gold },
           { key: 'silver', label: 'Silver', value: resources.silver },
-          { key: 'bronze', label: 'Bronze', value: resources.bronze },
+          { key: 'iron', label: 'Iron', value: resources.iron },
           { key: 'copper', label: 'Copper', value: resources.copper },
         ].map((item) => (
           <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>

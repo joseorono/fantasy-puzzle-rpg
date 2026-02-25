@@ -7,7 +7,7 @@ const fullResources: Resources = {
   gold: 100,
   copper: 100,
   silver: 100,
-  bronze: 100,
+  iron: 100,
 };
 
 const cost: Resources = createResources({ gold: 50, coins: 30 });

@@ -29,7 +29,7 @@ const mockSword = {
   type: 'weapon',
   slot: 'weapon',
   stats: { pow: 3, vit: 0, spd: 0 },
-  price: { coins: 50, gold: 0, copper: 0, silver: 0, bronze: 0 },
+  price: { coins: 50, gold: 0, copper: 0, silver: 0, iron: 0 },
   description: 'A basic iron sword',
   flavorText: '',
 } as unknown as EquipmentItemData;
@@ -40,7 +40,7 @@ const mockShield = {
   type: 'armor',
   slot: 'armor',
   stats: { pow: 0, vit: 2, spd: 0 },
-  price: { coins: 30, gold: 0, copper: 0, silver: 0, bronze: 0 },
+  price: { coins: 30, gold: 0, copper: 0, silver: 0, iron: 0 },
   description: 'A basic wooden shield',
   flavorText: '',
 } as unknown as EquipmentItemData;
@@ -64,7 +64,7 @@ describe('combineLootFromEnemies', () => {
       gold: 0,
       copper: 0,
       silver: 0,
-      bronze: 0,
+      iron: 0,
     });
   });
 
@@ -81,7 +81,7 @@ describe('combineLootFromEnemies', () => {
       gold: 5,
       copper: 0,
       silver: 0,
-      bronze: 0,
+      iron: 0,
     });
   });
 
@@ -100,12 +100,12 @@ describe('combineLootFromEnemies', () => {
     const enemies = [
       createEnemy({
         lootTable: createLootTable([], [], {
-          item: { coins: 10, gold: 5, copper: 3, silver: 1, bronze: 2 },
+          item: { coins: 10, gold: 5, copper: 3, silver: 1, iron: 2 },
         }),
       }),
       createEnemy({
         lootTable: createLootTable([], [], {
-          item: { coins: 20, gold: 10, copper: 7, silver: 4, bronze: 8 },
+          item: { coins: 20, gold: 10, copper: 7, silver: 4, iron: 8 },
         }),
       }),
     ];
@@ -116,7 +116,7 @@ describe('combineLootFromEnemies', () => {
       gold: 15,
       copper: 10,
       silver: 5,
-      bronze: 10,
+      iron: 10,
     });
   });
 

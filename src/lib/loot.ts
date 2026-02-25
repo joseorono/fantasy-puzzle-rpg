@@ -13,7 +13,7 @@ import { randIntInRange } from './math';
  * into a single loot table and total expReward.
  *
  * Equipment and consumable loot items are concatenated from all enemies.
- * Resource amounts (coins, gold, copper, silver, bronze) are summed.
+ * Resource amounts (coins, gold, copper, silver, iron) are summed.
  * The combined resources probability is set to 1 (guaranteed drop).
  *
  * @param enemies - Array of defeated enemies whose loot should be merged
@@ -41,10 +41,10 @@ export function combineLootFromEnemies(enemies: EnemyData[]): {
         gold: acc.gold + r.gold,
         copper: acc.copper + r.copper,
         silver: acc.silver + r.silver,
-        bronze: acc.bronze + r.bronze,
+        iron: acc.iron + r.iron,
       };
     },
-    { coins: 0, gold: 0, copper: 0, silver: 0, bronze: 0 },
+    { coins: 0, gold: 0, copper: 0, silver: 0, iron: 0 },
   );
 
   return {
@@ -84,7 +84,7 @@ export function createFloorLootSpot(
       gold: maxValues.gold ?? 0,
       copper: maxValues.copper ?? 0,
       silver: maxValues.silver ?? 0,
-      bronze: maxValues.bronze ?? 0,
+      iron: maxValues.iron ?? 0,
     },
   };
 }
@@ -100,7 +100,7 @@ export function generateRandomResources(maxValues: Resources): Resources {
     gold: maxValues.gold > 0 ? randIntInRange(0, maxValues.gold) : 0,
     copper: maxValues.copper > 0 ? randIntInRange(0, maxValues.copper) : 0,
     silver: maxValues.silver > 0 ? randIntInRange(0, maxValues.silver) : 0,
-    bronze: maxValues.bronze > 0 ? randIntInRange(0, maxValues.bronze) : 0,
+    iron: maxValues.iron > 0 ? randIntInRange(0, maxValues.iron) : 0,
   };
 }
 
@@ -128,7 +128,7 @@ export function getFloorLootAtPosition(
  */
 export function hasNonZeroResources(resources: Resources): boolean {
   return (
-    resources.coins > 0 || resources.gold > 0 || resources.copper > 0 || resources.silver > 0 || resources.bronze > 0
+    resources.coins > 0 || resources.gold > 0 || resources.copper > 0 || resources.silver > 0 || resources.iron > 0
   );
 }
 
@@ -143,6 +143,6 @@ export function filterNonZeroResources(resources: Resources): Partial<Resources>
   if (resources.gold > 0) filtered.gold = resources.gold;
   if (resources.copper > 0) filtered.copper = resources.copper;
   if (resources.silver > 0) filtered.silver = resources.silver;
-  if (resources.bronze > 0) filtered.bronze = resources.bronze;
+  if (resources.iron > 0) filtered.iron = resources.iron;
   return filtered;
 }

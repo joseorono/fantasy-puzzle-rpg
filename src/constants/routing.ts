@@ -14,7 +14,7 @@ export const DEFAULT_TOWN_HUB_DATA: TownHubViewData = {
     coins: 10,
     gold: 0,
     silver: 0,
-    bronze: 0,
+    iron: 0,
     copper: 0,
   },
   itemsForSell: [...ConsumableItemIds],

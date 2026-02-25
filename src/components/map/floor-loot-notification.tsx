@@ -70,7 +70,7 @@ export function FloorLootNotification({ resources, onClose, characterPosition }:
                 {key === 'gold' && `${value} gold`}
                 {key === 'copper' && `${value} copper`}
                 {key === 'silver' && `${value} silver`}
-                {key === 'bronze' && `${value} bronze`}
+                {key === 'iron' && `${value} iron`}
               </span>
             ))}
           </div>

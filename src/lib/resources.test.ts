@@ -15,7 +15,7 @@ const fullResources: Resources = {
   gold: 100,
   copper: 100,
   silver: 100,
-  bronze: 100,
+  iron: 100,
 };
 
 describe('resource utilities', () => {
@@ -64,7 +64,7 @@ describe('resource utilities', () => {
       expect(result.coins).toBe(80);
       expect(result.copper).toBe(90);
       expect(result.silver).toBe(100);
-      expect(result.bronze).toBe(100);
+      expect(result.iron).toBe(100);
     });
 
     it('should preserve unspecified resources', () => {
@@ -72,7 +72,7 @@ describe('resource utilities', () => {
       expect(result.coins).toBe(100);
       expect(result.copper).toBe(100);
       expect(result.silver).toBe(100);
-      expect(result.bronze).toBe(100);
+      expect(result.iron).toBe(100);
     });
   });
 
@@ -89,7 +89,7 @@ describe('resource utilities', () => {
       expect(result.coins).toBe(125);
       expect(result.copper).toBe(110);
       expect(result.silver).toBe(100);
-      expect(result.bronze).toBe(100);
+      expect(result.iron).toBe(100);
     });
 
     it('should handle adding zero', () => {
@@ -102,7 +102,7 @@ describe('resource utilities', () => {
       expect(result.coins).toBe(100);
       expect(result.copper).toBe(100);
       expect(result.silver).toBe(100);
-      expect(result.bronze).toBe(100);
+      expect(result.iron).toBe(100);
     });
   });
 
@@ -144,12 +144,12 @@ describe('resource utilities', () => {
     });
 
     it('should cap at MAX_AMOUNT_PER_ITEM', () => {
-      const resources: Resources = { coins: 10000, gold: 10000, copper: 10000, silver: 10000, bronze: 10000 };
+      const resources: Resources = { coins: 10000, gold: 10000, copper: 10000, silver: 10000, iron: 10000 };
       expect(howManyCanAfford(resources, createResources({ gold: 1 }))).toBe(99);
     });
 
     it('should floor the result', () => {
-      const resources: Resources = { coins: 100, gold: 100, copper: 100, silver: 100, bronze: 100 };
+      const resources: Resources = { coins: 100, gold: 100, copper: 100, silver: 100, iron: 100 };
       expect(howManyCanAfford(resources, createResources({ gold: 30 }))).toBe(3);
     });
 

@@ -34,7 +34,7 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
     loot.resources.item.gold > 0 ||
     loot.resources.item.copper > 0 ||
     loot.resources.item.silver > 0 ||
-    loot.resources.item.bronze > 0;
+    loot.resources.item.iron > 0;
 
   return (
     <div
@@ -99,8 +99,8 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
               {loot.resources.item.silver > 0 && (
                 <span className="text-[11px] text-gray-700">Silver: {loot.resources.item.silver}</span>
               )}
-              {loot.resources.item.bronze > 0 && (
-                <span className="text-[11px] text-gray-700">Bronze: {loot.resources.item.bronze}</span>
+              {loot.resources.item.iron > 0 && (
+                <span className="text-[11px] text-gray-700">Iron: {loot.resources.item.iron}</span>
               )}
             </div>
           </div>
