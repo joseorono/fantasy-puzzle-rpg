@@ -1,18 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/8bit/button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { getRandomElement } from '~/lib/utils';
 import type { EquipmentItemData } from '~/types';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import { TopBarResources } from './top-bar-resources';
-import { MarqueeText } from '../marquee/marquee-text';
-import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
+import { TownLocationLayout } from './town-location-layout';
 
 type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
 
@@ -37,15 +34,10 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
-  const [dialogueText] = useState(() => getRandomElement(BLACKSMITH_WELCOME_TEXT));
-  const [isTyping] = useState(false);
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
-
-  // Select random background image on component mount
-  const backgroundImage = useMemo(() => getRandomElement(BLACKSMITH_BG_IMAGES), []);
 
   // Filter equipment by type
   const filteredEquipment = EquipmentItems.filter((item) => getEquipmentType(item.id) === selectedEquipmentType);
@@ -84,161 +76,140 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   };
 
   return (
-    <div className="blacksmith">
-      <div className="bg-blacksmith" style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
-      <button className="leave-btn" onClick={onLeaveCallback}></button>
-
-      {/* Top Bar Resources */}
-      <div className="town-resources-bar">
-        <TopBarResources resources={resources} />
+    <TownLocationLayout
+      locationClass="blacksmith"
+      bgClass="bg-blacksmith"
+      bgImages={BLACKSMITH_BG_IMAGES}
+      character={BLACKSMITH_CHAR}
+      welcomeTexts={BLACKSMITH_WELCOME_TEXT}
+      marqueeType="blacksmith"
+      onLeave={onLeaveCallback}
+    >
+      {/* Tab Navigation */}
+      <div className="blacksmith-tabs">
+        <Button onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
+          Craft
+        </Button>
+        <Button onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
+          Exchange
+        </Button>
+        <Button onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
+          Melt
+        </Button>
       </div>
 
-      {/* Main layout: portrait sidebar + shop content */}
-      <div className="shop-layout">
-        <div className="shop-portrait-sidebar">
-          <img src={BLACKSMITH_CHAR.portrait} alt={BLACKSMITH_CHAR.name} className="shop-portrait__image" />
-        </div>
-
-        <div className="shop-container">
-          {/* Tab Navigation */}
-          <div className="blacksmith-tabs">
-            <Button onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
-              Craft
-            </Button>
-            <Button onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
-              Exchange
-            </Button>
-            <Button onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
-              Melt
-            </Button>
+      {/* Craft Tab */}
+      {selectedTab === 'craft' && (
+        <div className="craft-section">
+          {/* Equipment Type Filters */}
+          <div className="equipment-filters">
+            {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
+              <Button
+                key={type}
+                onClick={() => {
+                  setSelectedEquipmentType(type);
+                  setSelectedItem(null);
+                }}
+                className={selectedEquipmentType === type ? 'active' : ''}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
 
-          {/* Craft Tab */}
-          {selectedTab === 'craft' && (
-            <div className="craft-section">
-              {/* Equipment Type Filters */}
-              <div className="equipment-filters">
-                {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
-                  <Button
-                    key={type}
-                    onClick={() => {
-                      setSelectedEquipmentType(type);
-                      setSelectedItem(null);
-                    }}
-                    className={selectedEquipmentType === type ? 'active' : ''}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-
-              {/* Equipment List */}
-              <div className="equipment-list">
-                {filteredEquipment.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
-                  >
-                    <div className="equipment-item-icon">
-                      {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                    </div>
-                    <div className="equipment-item-content">
-                      <div className="equipment-item-header">
-                        <div className="equipment-item-name">{item.name}</div>
-                        <div className="equipment-item-cost">
-                          {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                          {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                          {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                          {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
-                        </div>
-                      </div>
-                      <div className="equipment-item-description">{item.description}</div>
-                      <div className="equipment-item-stats">
-                        <span className="stat-badge">POW: {item.pow}</span>
-                        <span className="stat-badge">VIT: {item.vit}</span>
-                        <span className="stat-badge">SPD: {item.spd}</span>
-                        {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
-                      </div>
-                      <div className="item-actions">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCraftItem(item);
-                          }}
-                          disabled={!canAfford(resources, item.cost)}
-                          className="craft-button"
-                        >
-                          {canAfford(resources, item.cost) ? 'Craft' : 'Cannot Afford'}
-                        </Button>
-                      </div>
+          {/* Equipment List */}
+          <div className="equipment-list">
+            {filteredEquipment.map((item) => (
+              <div key={item.id} className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}>
+                <div className="equipment-item-icon">
+                  {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                </div>
+                <div className="equipment-item-content">
+                  <div className="equipment-item-header">
+                    <div className="equipment-item-name">{item.name}</div>
+                    <div className="equipment-item-cost">
+                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
+                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
+                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
+                      {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Exchange Tab */}
-          {selectedTab === 'exchange' && (
-            <div className="exchange-section">
-              <h2>Exchange Resources</h2>
-              <p>Convert resources at 1:1 ratio</p>
-
-              <div className="exchange-options">
-                <div className="exchange-group">
-                  <h3>Copper to Silver</h3>
-                  <Button
-                    onClick={() => handleExchangeResources('copper', 'silver', 5)}
-                    disabled={resources.copper < 5}
-                  >
-                    Exchange 5 Copper for 1 Silver
-                  </Button>
-                </div>
-
-                <div className="exchange-group">
-                  <h3>Iron to Silver</h3>
-                  <Button onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
-                    Exchange 5 Iron for 1 Silver
-                  </Button>
-                </div>
-
-                <div className="exchange-group">
-                  <h3>Silver to Gold</h3>
-                  <Button onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
-                    Exchange 5 Silver for 1 Gold
-                  </Button>
+                  <div className="equipment-item-description">{item.description}</div>
+                  <div className="equipment-item-stats">
+                    <span className="stat-badge">POW: {item.pow}</span>
+                    <span className="stat-badge">VIT: {item.vit}</span>
+                    <span className="stat-badge">SPD: {item.spd}</span>
+                    {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
+                  </div>
+                  <div className="item-actions">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCraftItem(item);
+                      }}
+                      disabled={!canAfford(resources, item.cost)}
+                      className="craft-button"
+                    >
+                      {canAfford(resources, item.cost) ? 'Craft' : 'Cannot Afford'}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Melt Tab */}
-          {selectedTab === 'melt' && (
-            <div className="melt-section">
-              <h2>Melt Coins to Gold</h2>
-              <p>Convert coins into gold (10 coins = 1 gold)</p>
-
-              <div className="melt-options">
-                <Button onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
-                  Melt 10 Coins → 1 Gold
-                </Button>
-                <Button onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
-                  Melt 50 Coins → 5 Gold
-                </Button>
-                <Button onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
-                  Melt 100 Coins → 10 Gold
-                </Button>
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Bottom section: dialogue + marquee */}
-      <div className="shop-bottom">
-        <DialogueBox speakerName={BLACKSMITH_CHAR.name} text={dialogueText} isTyping={isTyping} showIndicator={true} />
-        <MarqueeText type="blacksmith" variant="marquee--golden" />
-      </div>
-    </div>
+      {/* Exchange Tab */}
+      {selectedTab === 'exchange' && (
+        <div className="exchange-section">
+          <h2>Exchange Resources</h2>
+          <p>Convert resources at 1:1 ratio</p>
+
+          <div className="exchange-options">
+            <div className="exchange-group">
+              <h3>Copper to Silver</h3>
+              <Button onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
+                Exchange 5 Copper for 1 Silver
+              </Button>
+            </div>
+
+            <div className="exchange-group">
+              <h3>Iron to Silver</h3>
+              <Button onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
+                Exchange 5 Iron for 1 Silver
+              </Button>
+            </div>
+
+            <div className="exchange-group">
+              <h3>Silver to Gold</h3>
+              <Button onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
+                Exchange 5 Silver for 1 Gold
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Melt Tab */}
+      {selectedTab === 'melt' && (
+        <div className="melt-section">
+          <h2>Melt Coins to Gold</h2>
+          <p>Convert coins into gold (10 coins = 1 gold)</p>
+
+          <div className="melt-options">
+            <Button onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
+              Melt 10 Coins → 1 Gold
+            </Button>
+            <Button onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
+              Melt 50 Coins → 5 Gold
+            </Button>
+            <Button onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
+              Melt 100 Coins → 10 Gold
+            </Button>
+          </div>
+        </div>
+      )}
+    </TownLocationLayout>
   );
 }
