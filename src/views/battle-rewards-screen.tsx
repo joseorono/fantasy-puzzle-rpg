@@ -23,6 +23,7 @@ import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 
 /**
  * Atom to track the current step in the battle rewards flow
@@ -221,7 +222,7 @@ function RewardResourceCard({ label, value, prefix = '', className }: RewardReso
 
   return (
     <div className={classes}>
-      <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost" />
+      <FrostyRpgIcon name="coinPurse" size={24} className="top-bar-resource__icon" />
       <div className="top-bar-resource__content">
         <span className="top-bar-resource__label">{label}</span>
         <span className="top-bar-resource__value number-flow-container">

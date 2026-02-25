@@ -1,5 +1,6 @@
 import NumberFlow from '@number-flow/react';
 import type { Resources } from '~/types/resources';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -50,7 +51,7 @@ export function TopBarResources({ resources }: TopBarResourcesProps) {
       <div className="top-bar-resources__container mr-14">
         {resourceItems.map((item) => (
           <div key={item.key} className={`top-bar-resource ${item.className}`}>
-            <div className="top-bar-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost icon-24to32"></div>
+            <FrostyRpgIcon name="coinPurse" size={32} className="top-bar-resource__icon" />
             <div className="top-bar-resource__content">
               <span className="top-bar-resource__label">{item.label}</span>
               <span className="top-bar-resource__value number-flow-container">

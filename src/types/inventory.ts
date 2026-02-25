@@ -1,5 +1,6 @@
 import type { Resources } from './resources';
 import type { CharacterClass } from './rpg-elements';
+import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ConsumableItemIds } from '~/constants/inventory';
 
 export type ItemTypes = 'equipment' | 'consumable' | 'key';
@@ -10,6 +11,7 @@ export interface BaseItemData {
   type: ItemTypes;
   description: string;
   cost: Resources;
+  iconName: Nullable<FrostyRpgIconName>;
 }
 
 export interface EquipmentItemData extends BaseItemData {
@@ -30,7 +32,6 @@ export interface ConsumableItemData extends BaseItemData {
   usableOutOfBattle: boolean;
   action?: ConsumableAction;
   icon: string;
-  iconClass?: string;
 }
 
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];

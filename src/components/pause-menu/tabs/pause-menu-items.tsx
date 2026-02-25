@@ -8,6 +8,7 @@ import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { BaseItemData } from '~/types/inventory';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
   SNAPPY_SPIN_TIMING,
@@ -193,7 +194,7 @@ export function PauseMenuItems() {
           { key: 'copper', label: 'Copper', value: resources.copper },
         ].map((item) => (
           <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>
-            <div className="pause-menu-resource__icon icon-24 icon-sprite-frost-24 icon-resource-frost"></div>
+            <FrostyRpgIcon name="coinPurse" size={24} className="pause-menu-resource__icon" />
             <div className="pause-menu-resource__content">
               <span className="pause-menu-resource__label">{item.label}</span>
               <span className="pause-menu-resource__value number-flow-container">

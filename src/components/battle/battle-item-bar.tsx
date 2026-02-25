@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -114,8 +115,8 @@ export function BattleItemBar() {
                 : 'cursor-pointer border-amber-600 bg-gradient-to-b from-amber-900/80 to-amber-950/90 hover:border-amber-400 hover:from-amber-800/80 hover:to-amber-900/90 active:scale-95'
             }`}
           >
-            {item.iconClass ? (
-              <div className={item.iconClass} aria-hidden="true" />
+            {item.iconName ? (
+              <FrostyRpgIcon name={item.iconName} size={32} />
             ) : (
               <span className="text-lg sm:text-xl">{item.icon}</span>
             )}
