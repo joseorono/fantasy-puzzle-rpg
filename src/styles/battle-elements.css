@@ -21,30 +21,36 @@
   border-radius: 9999px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.3) 20%,
-    transparent 20%,
-    transparent 45%,
-    rgba(0, 0, 0, 0.15) 45%,
-    rgba(0, 0, 0, 0.15) 70%,
-    rgba(0, 0, 0, 0.3) 70%
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.25) 18%,
+    rgba(220, 220, 220, 0.18) 18%,
+    rgba(220, 220, 220, 0.18) 32%,
+    transparent 32%,
+    transparent 48%,
+    rgba(0, 0, 0, 0.15) 48%,
+    rgba(0, 0, 0, 0.15) 72%,
+    rgba(0, 0, 0, 0.32) 72%
   );
   pointer-events: none;
   z-index: 1;
 }
 
-/* Crisp pixel highlight at top-left */
-.boardOrb::after {
+/* Chunky stepped highlight blocks (no single white pixel) */
+/* .boardOrb::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.7);
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 50%, rgba(240, 240, 240, 0.16) 50% 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0 60%, rgba(235, 235, 235, 0.14) 60% 100%);
+  border-radius: 4px;
+  mix-blend-mode: screen;
   pointer-events: none;
   z-index: 2;
-}
+} */
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,
