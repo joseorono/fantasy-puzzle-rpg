@@ -66,18 +66,13 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
         isInvalidSwap && 'shake ring-4 ring-red-500',
         isNew && 'fall-in',
       )}
-      style={{
-        imageRendering: 'pixelated',
-      }}
     >
-      {/* Shine effect */}
-      <div className="absolute top-0.5 left-0.5 h-2 w-2 rounded-full bg-white/40 blur-sm" />
-
-      {/* Pixel border effect */}
+      {/* Hard-stepped pixel bevel */}
       <div
         className="absolute inset-0 rounded-full"
         style={{
-          boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3)',
+          boxShadow:
+            'inset 0 2px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(0,0,0,0.4), inset 2px 0 0 rgba(255,255,255,0.2), inset -2px 0 0 rgba(0,0,0,0.2)',
         }}
       />
 
