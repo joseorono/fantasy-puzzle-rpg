@@ -54,6 +54,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
     <button
       onClick={onSelect}
       className={cn(
+        'boardOrb',
         `orb-${orb.type}`,
         'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11',
         'cursor-pointer border-2 sm:border-3',
