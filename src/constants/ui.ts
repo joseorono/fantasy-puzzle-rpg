@@ -3,11 +3,11 @@ import type { HpThreshold } from '~/lib/rpg-calculations';
 
 // Orb type classes for styling
 export const ORB_TYPE_CLASSES: Record<OrbType, string> = {
-  blue: 'bg-blue-500 shadow-[2px_2px_0px_rgba(30,64,175,0.8)] border-blue-700',
-  green: 'bg-green-500 shadow-[2px_2px_0px_rgba(22,101,52,0.8)] border-green-700',
-  purple: 'bg-purple-500 shadow-[2px_2px_0px_rgba(88,28,135,0.8)] border-purple-700',
-  yellow: 'bg-yellow-500 shadow-[2px_2px_0px_rgba(133,77,14,0.8)] border-yellow-700',
-  gray: 'bg-gray-400 shadow-[2px_2px_0px_rgba(75,85,99,0.8)] border-gray-600',
+  blue: '[--orb-color:#3b82f6] [--orb-img:url(/assets/orbs/orb_blue.png)]',
+  green: '[--orb-color:#22c55e] [--orb-img:url(/assets/orbs/orb_green.png)]',
+  purple: '[--orb-color:#a855f7] [--orb-img:url(/assets/orbs/orb_purple.png)]',
+  yellow: '[--orb-color:#eab308] [--orb-img:url(/assets/orbs/orb_yellow.png)]',
+  red: '[--orb-color:#ef4444] [--orb-img:url(/assets/orbs/orb_red.png)]',
 };
 
 // Orb glow effects
@@ -16,7 +16,7 @@ export const ORB_GLOW_CLASSES: Record<OrbType, string> = {
   green: 'shadow-[0_0_20px_rgba(34,197,94,0.8)]',
   purple: 'shadow-[0_0_20px_rgba(168,85,247,0.8)]',
   yellow: 'shadow-[0_0_20px_rgba(234,179,8,0.8)]',
-  gray: 'shadow-[0_0_20px_rgba(156,163,175,0.5)]',
+  red: 'shadow-[0_0_20px_rgba(239,68,68,0.7)]',
 };
 
 // ─── HP Threshold Colors ────────────────────────────────────────────
