@@ -109,10 +109,10 @@
 /* Constrain #game-screen to viewport size */
 #game-screen {
   width: 100%;
-    height: 100%;
-    max-height: calc(100vh - var(--frame-thickness) * 2);
-    overflow-y: auto;
-    overflow-x: hidden;
+  height: 100%;
+  max-height: calc(100vh - var(--frame-thickness) * 2);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /*
@@ -323,7 +323,6 @@
 
 /* Viewport styling */
 .f05a-viewport {
-  background-color: #D09C8E;
   overflow: hidden;
   position: relative;
 }

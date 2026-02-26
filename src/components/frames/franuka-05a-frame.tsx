@@ -11,9 +11,7 @@ export default function Franuka05aFrame({ children }: { children: React.ReactNod
       {/* Middle Row */}
       <div className="f05a-row f05a-middle">
         <div className="f05a-edge f05a-edge--left" />
-        <div className="f05a-viewport">
-          {children}
-        </div>
+        <div className="f05a-viewport bg-gradient-to-b from-amber-900/80 to-amber-950/90">{children}</div>
         <div className="f05a-edge f05a-edge--right" />
       </div>
 
