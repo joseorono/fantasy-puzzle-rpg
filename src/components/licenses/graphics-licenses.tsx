@@ -42,6 +42,20 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Free Pixel Art RPG UI, by allcreatinghere&nbsp;
+          <a href="https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack">
+            https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack
+          </a>
+        </p>
+
+        <p>
+          UI User Interface MEGA PACK, by Toffecraft, and many other graphics bought from them&nbsp;
+          <a href="https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack">
+            https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack
+          </a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack
