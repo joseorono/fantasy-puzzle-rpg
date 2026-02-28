@@ -325,4 +325,8 @@
 .f05a-viewport {
   overflow: hidden;
   position: relative;
+  background-image: url('/assets/bg/bg-board-2.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
 }
