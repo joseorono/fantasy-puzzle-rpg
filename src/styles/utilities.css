@@ -266,3 +266,62 @@
     0px 9px
   );
 }
+
+/* ─── CRT & Retro Effects ─────────────────────────────────────────── */
+
+.crt-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle scanline overlay */
+.crt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.03) 1px,
+      rgba(0, 0, 0, 0.03) 2px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animated text glow for that retro terminal feel */
+.crt-text-glow {
+  text-shadow:
+    2px 2px 0 rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(255, 215, 0, 0.4),
+    0 0 20px rgba(255, 215, 0, 0.2);
+  animation: crt-text-glow-anim 3s ease-in-out infinite alternate;
+}
+
+@keyframes crt-text-glow-anim {
+  0% {
+    text-shadow:
+      2px 2px 0 rgba(0, 0, 0, 0.8),
+      0 0 10px rgba(255, 215, 0, 0.4),
+      0 0 20px rgba(255, 215, 0, 0.2);
+  }
+
+  100% {
+    text-shadow:
+      2px 2px 0 rgba(0, 0, 0, 0.8),
+      0 0 15px rgba(255, 215, 0, 0.6),
+      0 0 30px rgba(255, 215, 0, 0.3);
+  }
+}
+
+/* Subtle top highlight for panels and badges */
+.crt-top-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
+  z-index: 2;
+}

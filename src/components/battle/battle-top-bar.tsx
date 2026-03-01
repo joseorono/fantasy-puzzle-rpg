@@ -13,22 +13,22 @@ export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
   const [isMuted, setIsMuted] = useState(false);
 
   return (
-    <header id="battle-top-bar">
+    <header id="battle-top-bar" className="crt-container crt-overlay">
       <div className="btb-inner">
         <div className="btb-stats">
-          <h1 className="btb-title pixel-font-alt">BATTLE</h1>
+          <h1 className="btb-title crt-text-glow pixel-font-alt">BATTLE</h1>
 
-          <div className="btb-badge">
+          <div className="btb-badge crt-top-highlight">
             <span className="btb-badge-label pixel-font">TURN:</span>
             <span className="btb-badge-value pixel-font">{battleState.turn}</span>
           </div>
 
-          <div className="btb-badge">
+          <div className="btb-badge crt-top-highlight">
             <span className="btb-badge-label pixel-font">SCORE:</span>
             <span className="btb-badge-value btb-badge-value--gold pixel-font">{battleState.score}</span>
           </div>
 
-          <div className="btb-atk-badge">
+          <div className="btb-atk-badge crt-top-highlight">
             <Swords className="btb-atk-icon" />
             <span className="btb-atk-label pixel-font">ATK:</span>
             <span className="btb-atk-value pixel-font">{nextAttackIn}s</span>
@@ -36,10 +36,10 @@ export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
         </div>
 
         <div className="btb-actions">
-          <button className="btb-btn" onClick={() => setIsMuted(!isMuted)}>
+          <button className="btb-btn crt-top-highlight" onClick={() => setIsMuted(!isMuted)}>
             {isMuted ? <VolumeX className="btb-btn-icon" /> : <Volume2 className="btb-btn-icon" />}
           </button>
-          <button className="btb-btn" onClick={resetBattle}>
+          <button className="btb-btn crt-top-highlight" onClick={resetBattle}>
             <RotateCcw className="btb-btn-icon" />
           </button>
         </div>

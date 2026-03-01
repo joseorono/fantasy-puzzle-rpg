@@ -25,7 +25,7 @@ export function BattleOverModal() {
 
   return (
     <div className="gom-backdrop">
-      <div className={cn('gom-modal', isVictory ? 'gom-modal--victory' : 'gom-modal--defeat')}>
+      <div className={cn('gom-modal crt-container crt-overlay', isVictory ? 'gom-modal--victory' : 'gom-modal--defeat')}>
         <div className="gom-content">
           {/* Icon medallion */}
           <div className={cn('gom-icon', isVictory ? 'gom-icon--victory' : 'gom-icon--defeat')}>
@@ -38,7 +38,7 @@ export function BattleOverModal() {
 
           {/* Title */}
           <div className="gom-title-group">
-            <h2 className={cn('gom-title pixel-font-alt', isVictory ? 'gom-title--victory' : 'gom-title--defeat')}>
+            <h2 className={cn('gom-title crt-text-glow pixel-font-alt', isVictory ? 'gom-title--victory' : 'gom-title--defeat')}>
               {isVictory ? 'VICTORY!' : 'DEFEAT!'}
             </h2>
             <p className="gom-subtitle pixel-font">
@@ -67,7 +67,7 @@ export function BattleOverModal() {
           {/* Continue button */}
           <button
             onClick={handleContinue}
-            className={cn('gom-btn pixel-font-alt', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
+            className={cn('gom-btn crt-top-highlight pixel-font-alt', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
           >
             <ArrowRight className="h-5 w-5" />
             CONTINUE
