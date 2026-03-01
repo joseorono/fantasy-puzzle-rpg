@@ -158,7 +158,12 @@
   flex-shrink: 0;
 }
 
+.pause-menu-sidebar .cursor-corners {
+  width: 100%;
+}
+
 .pause-menu-nav-btn {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -192,6 +197,7 @@
 }
 
 .pause-menu-exit-btn {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
