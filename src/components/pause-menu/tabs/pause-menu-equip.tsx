@@ -13,13 +13,13 @@ import {
 import {
   type EquipmentSlot,
   findEquipmentItem,
-  canEquip,
   getEquipmentBonuses,
   getEffectiveStats,
   getAvailableEquipmentForSlot,
 } from '~/lib/equipment-system';
 import type { EquipmentItemData } from '~/types/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
 const STAT_COLORS = {
   pow: '#e53935',
@@ -156,17 +156,12 @@ interface EquipSlotRowProps {
 
 function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotRowProps) {
   return (
-    <div
-      className={cn('pause-menu-equip-slot-row', isActive && 'active')}
-      onClick={onToggle}
-    >
+    <div className={cn('pause-menu-equip-slot-row', isActive && 'active')} onClick={onToggle}>
       <span className="slot-label">{label}</span>
       <span className="pause-menu-item-icon-slot">
         {item?.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
       </span>
-      <span className={cn('pause-menu-equip-slot-value', !item && 'empty')}>
-        {item ? item.name : '— Empty —'}
-      </span>
+      <span className={cn('pause-menu-equip-slot-value', !item && 'empty')}>{item ? item.name : '— Empty —'}</span>
       {item && (
         <button
           className="pause-menu-equip-slot-remove"
@@ -174,8 +169,9 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
             e.stopPropagation();
             onUnequip();
           }}
+          title="Unequip"
         >
-          ✕
+          X
         </button>
       )}
     </div>
@@ -233,33 +229,35 @@ interface EquipAvailableItemProps {
 
 function EquipAvailableItem({ item, onEquip }: EquipAvailableItemProps) {
   return (
-    <div className="pause-menu-equip-available-item">
-      <span className="pause-menu-item-icon-slot">
-        {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
-      </span>
-      <div className="pause-menu-equip-available-info">
-        <div className="pause-menu-equip-available-name">{item.name}</div>
-        <div className="pause-menu-equip-available-stats">
-          {item.pow !== 0 && (
-            <span className="pause-menu-item-stat-badge">
-              POW {item.pow > 0 ? '+' : ''}{item.pow}
-            </span>
-          )}
-          {item.vit !== 0 && (
-            <span className="pause-menu-item-stat-badge">
-              VIT {item.vit > 0 ? '+' : ''}{item.vit}
-            </span>
-          )}
-          {item.spd !== 0 && (
-            <span className="pause-menu-item-stat-badge">
-              SPD {item.spd > 0 ? '+' : ''}{item.spd}
-            </span>
-          )}
+    <ToffecBeigeCornersWrapper className="pause-menu-equip-available-item">
+      <div className="pause-menu-equip-available-clickable" onClick={onEquip}>
+        <span className="pause-menu-item-icon-slot">
+          {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
+        </span>
+        <div className="pause-menu-equip-available-info">
+          <div className="pause-menu-equip-available-name">{item.name}</div>
+          <div className="pause-menu-equip-available-stats">
+            {item.pow !== 0 && (
+              <span className="pause-menu-item-stat-badge">
+                POW {item.pow > 0 ? '+' : ''}
+                {item.pow}
+              </span>
+            )}
+            {item.vit !== 0 && (
+              <span className="pause-menu-item-stat-badge">
+                VIT {item.vit > 0 ? '+' : ''}
+                {item.vit}
+              </span>
+            )}
+            {item.spd !== 0 && (
+              <span className="pause-menu-item-stat-badge">
+                SPD {item.spd > 0 ? '+' : ''}
+                {item.spd}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <button className="pause-menu-equip-btn" onClick={onEquip}>
-        Equip
-      </button>
-    </div>
+    </ToffecBeigeCornersWrapper>
   );
 }
