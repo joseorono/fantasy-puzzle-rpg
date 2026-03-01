@@ -29,6 +29,7 @@ import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
+import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
@@ -308,43 +309,34 @@ export function Match3Board() {
 
   return (
     <div className="flex flex-1 justify-center">
-      {/* Board container with pixel art border */}
-      <div
-        className={cn(
-          'match3BoardContainer relative rounded-lg border-2 border-amber-700 bg-gradient-to-b from-amber-900/40 to-amber-950/60 p-2 sm:border-3 sm:p-3 md:p-4',
-          deadColorClasses,
-        )}
-      >
-        {/* Decorative corners */}
-        <div className="absolute -top-2 -left-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
-        <div className="absolute -top-2 -right-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
-        <div className="absolute -bottom-2 -left-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
-        <div className="absolute -right-2 -bottom-2 h-4 w-4 border-2 border-amber-400 bg-amber-600" />
-
-        {/* Board grid */}
-        <div className="flex flex-col justify-around gap-2">
-          {board.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
-              {row.map((orb) => (
-                <OrbComponent
-                  key={orb.id}
-                  orb={{
-                    ...orb,
-                    isHighlighted: highlightedMatches.has(orb.id),
-                  }}
-                  isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
-                  isInvalidSwap={
-                    invalidSwap !== null &&
-                    ((invalidSwap.from.row === orb.row && invalidSwap.from.col === orb.col) ||
-                      (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
-                  }
-                  isNew={newOrbIds.has(orb.id)}
-                  onSelect={() => handleOrbClick(orb.row, orb.col)}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+      {/* Board container */}
+      <div className={cn('match3BoardContainer', deadColorClasses)}>
+        <Franuka05aFrame>
+          {/* Board grid */}
+          <div className="flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
+            {board.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
+                {row.map((orb) => (
+                  <OrbComponent
+                    key={orb.id}
+                    orb={{
+                      ...orb,
+                      isHighlighted: highlightedMatches.has(orb.id),
+                    }}
+                    isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
+                    isInvalidSwap={
+                      invalidSwap !== null &&
+                      ((invalidSwap.from.row === orb.row && invalidSwap.from.col === orb.col) ||
+                        (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
+                    }
+                    isNew={newOrbIds.has(orb.id)}
+                    onSelect={() => handleOrbClick(orb.row, orb.col)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </Franuka05aFrame>
       </div>
 
       {/* Match indicator */}

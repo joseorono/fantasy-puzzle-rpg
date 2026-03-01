@@ -1,14 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import {
-  SNAPPY_SPIN_TIMING,
-  SNAPPY_TRANSFORM_TIMING,
-  SNAPPY_OPACITY_TIMING,
-  INTEGER_FORMAT,
-} from '~/constants/number-flow';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import {
   healPartyAtom,
   clearBoardRowAtom,
@@ -109,10 +103,10 @@ export function BattleItemBar() {
             onClick={() => handleUseItem(item)}
             disabled={isDisabled}
             title={`${item.name}: ${item.description}`}
-            className={`relative flex flex-col items-center justify-center overflow-hidden rounded border-2 px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
+            className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
               isEmpty || gameStatus !== 'playing'
-                ? 'cursor-not-allowed border-gray-700 bg-gray-800/50 opacity-40'
-                : 'cursor-pointer border-amber-600 bg-gradient-to-b from-amber-900/80 to-amber-950/90 hover:border-amber-400 hover:from-amber-800/80 hover:to-amber-900/90 active:scale-95'
+                ? 'cursor-not-allowed opacity-40'
+                : 'cursor-pointer hover:scale-105 active:scale-95'
             }`}
           >
             {item.iconName ? (
@@ -120,19 +114,9 @@ export function BattleItemBar() {
             ) : (
               <span className="text-lg sm:text-xl">{item.icon}</span>
             )}
-            <span
-              className={`pixel-font text-[10px] font-bold sm:text-xs number-flow-container ${isEmpty ? 'text-gray-500' : 'text-amber-200'}`}
-            >
-              <NumberFlow
-                value={quantity}
-                format={INTEGER_FORMAT}
-                trend={-1}
-                animated={!isEmpty}
-                spinTiming={SNAPPY_SPIN_TIMING}
-                transformTiming={SNAPPY_TRANSFORM_TIMING}
-                opacityTiming={SNAPPY_OPACITY_TIMING}
-              />
-            </span>
+            <div className={isEmpty ? 'opacity-50' : ''}>
+              <NarikWoodBitFont text={String(quantity)} size={1} />
+            </div>
 
             {/* Cooldown pie overlay */}
             {isOnCooldown && !isEmpty && (

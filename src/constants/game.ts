@@ -16,7 +16,6 @@ export const MIN_MATCH_LENGTH = 3;
 /** Minimum time (ms) the loading screen is shown, regardless of actual load speed. */
 export const MIN_LOAD_TIME_MS = 1000;
 
-
 /**
  * Store configuration
  */

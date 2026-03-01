@@ -109,10 +109,10 @@
 /* Constrain #game-screen to viewport size */
 #game-screen {
   width: 100%;
-    height: 100%;
-    max-height: calc(100vh - var(--frame-thickness) * 2);
-    overflow-y: auto;
-    overflow-x: hidden;
+  height: 100%;
+  max-height: calc(100vh - var(--frame-thickness) * 2);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /*
@@ -215,4 +215,118 @@
   background-color: var(--background);
   overflow: hidden;
   position: relative;
+}
+
+/*
+=========================================================
+    Franuka 05a Frame
+=========================================================
+*/
+
+.f05a-frame {
+  --f05a-side: 15px;
+  --f05a-top: 18px;
+  --f05a-bottom: 15px;
+  display: grid;
+  grid-template-rows: var(--f05a-top) 1fr var(--f05a-bottom);
+  grid-template-columns: var(--f05a-side) 1fr var(--f05a-side);
+  gap: 0;
+}
+
+/* Top row */
+.f05a-top {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--f05a-side) 1fr var(--f05a-side);
+  gap: 0;
+}
+
+/* Middle row */
+.f05a-middle {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--f05a-side) 1fr var(--f05a-side);
+  gap: 0;
+}
+
+/* Bottom row */
+.f05a-bottom {
+  grid-row: 3;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--f05a-side) 1fr var(--f05a-side);
+  gap: 0;
+}
+
+/* Corner styling */
+.f05a-corner {
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.f05a-corner--top-left {
+  width: var(--f05a-side);
+  height: var(--f05a-top);
+  background-image: url('/assets/frame/franuka-05a/frame-top-left-corner.png');
+}
+
+.f05a-corner--top-right {
+  width: var(--f05a-side);
+  height: var(--f05a-top);
+  background-image: url('/assets/frame/franuka-05a/frame-top-right-corner.png');
+}
+
+.f05a-corner--bottom-left {
+  width: var(--f05a-side);
+  height: var(--f05a-bottom);
+  background-image: url('/assets/frame/franuka-05a/frame-bottom-left-corner.png');
+}
+
+.f05a-corner--bottom-right {
+  width: var(--f05a-side);
+  height: var(--f05a-bottom);
+  background-image: url('/assets/frame/franuka-05a/frame-bottom-right-corner.png');
+}
+
+/* Edge styling */
+.f05a-edge {
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+.f05a-edge--top {
+  background-image: url('/assets/frame/franuka-05a/frame-loop-top.png');
+  height: var(--f05a-top);
+  background-size: auto var(--f05a-top);
+}
+
+.f05a-edge--bottom {
+  background-image: url('/assets/frame/franuka-05a/frame-loop-bottom.png');
+  height: var(--f05a-bottom);
+  background-size: auto var(--f05a-bottom);
+}
+
+.f05a-edge--left {
+  background-image: url('/assets/frame/franuka-05a/frame-loop-left.png');
+  width: var(--f05a-side);
+  background-size: var(--f05a-side) auto;
+}
+
+.f05a-edge--right {
+  background-image: url('/assets/frame/franuka-05a/frame-loop-right.png');
+  width: var(--f05a-side);
+  background-size: var(--f05a-side) auto;
+}
+
+/* Viewport styling */
+.f05a-viewport {
+  overflow: hidden;
+  position: relative;
+  background-image: url('/assets/bg/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
 }
