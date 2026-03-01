@@ -15,6 +15,7 @@ import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import type { ConsumableItemData } from '~/types';
 
 export function BattleItemBar() {
@@ -98,36 +99,37 @@ export function BattleItemBar() {
         const isDisabled = isEmpty || gameStatus !== 'playing' || isOnCooldown;
 
         return (
-          <button
-            key={item.id}
-            onClick={() => handleUseItem(item)}
-            disabled={isDisabled}
-            title={`${item.name}: ${item.description}`}
-            className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-              isEmpty || gameStatus !== 'playing'
-                ? 'cursor-not-allowed opacity-40'
-                : 'cursor-pointer hover:scale-105 active:scale-95'
-            }`}
-          >
-            {item.iconName ? (
-              <FrostyRpgIcon name={item.iconName} size={32} />
-            ) : (
-              <span className="text-lg sm:text-xl">{item.icon}</span>
-            )}
-            <div className={isEmpty ? 'opacity-50' : ''}>
-              <NarikWoodBitFont text={String(quantity)} size={1} />
-            </div>
+          <ToffecBeigeCornersWrapper key={item.id}>
+            <button
+              onClick={() => handleUseItem(item)}
+              disabled={isDisabled}
+              title={`${item.name}: ${item.description}`}
+              className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
+                isEmpty || gameStatus !== 'playing'
+                  ? 'cursor-not-allowed opacity-40'
+                  : 'cursor-pointer hover:scale-105 active:scale-95'
+              }`}
+            >
+              {item.iconName ? (
+                <FrostyRpgIcon name={item.iconName} size={32} />
+              ) : (
+                <span className="text-lg sm:text-xl">{item.icon}</span>
+              )}
+              <div className={isEmpty ? 'opacity-50' : ''}>
+                <NarikWoodBitFont text={String(quantity)} size={1} />
+              </div>
 
-            {/* Cooldown pie overlay */}
-            {isOnCooldown && !isEmpty && (
-              <div
-                className="pointer-events-none absolute inset-0 rounded"
-                style={{
-                  background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                }}
-              />
-            )}
-          </button>
+              {/* Cooldown pie overlay */}
+              {isOnCooldown && !isEmpty && (
+                <div
+                  className="pointer-events-none absolute inset-0 rounded"
+                  style={{
+                    background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
+                  }}
+                />
+              )}
+            </button>
+          </ToffecBeigeCornersWrapper>
         );
       })}
     </div>
