@@ -21,7 +21,6 @@ import {
 import type { EquipmentItemData } from '~/types/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 const STAT_COLORS = {
   pow: '#e53935',
@@ -155,20 +154,16 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
       </span>
       <span className={cn('pause-menu-equip-slot-value', !item && 'empty')}>{item ? item.name : '— Empty —'}</span>
       {item && (
-        <Tooltip>
-          <TooltipTrigger>
-            <button
-              className="pause-menu-equip-slot-remove"
-              onClick={(e) => {
-                e.stopPropagation();
-                onUnequip();
-              }}
-            >
-              X
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Unequip</TooltipContent>
-        </Tooltip>
+        <button
+          className="pause-menu-equip-slot-remove"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUnequip();
+          }}
+          title="Unequip"
+        >
+          X
+        </button>
       )}
     </div>
   );
