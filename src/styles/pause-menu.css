@@ -675,21 +675,35 @@
 }
 
 .pause-menu-equip-slot-remove {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.5);
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  padding: 0.15rem 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #8b6914;
+  background: transparent;
+  border: 1px solid #8b6914;
+  border-radius: 1px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  padding: 0;
+  margin-left: 0.5rem;
+  opacity: 0.6;
+  transition: all 0.1s steps(2);
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
   line-height: 1;
 }
 
 .pause-menu-equip-slot-remove:hover {
-  color: #ef4444;
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  opacity: 1;
+  color: #ffd700;
+  border-color: #d4a574;
+  background: rgba(212, 165, 116, 0.1);
+}
+
+.pause-menu-equip-slot-remove:active {
+  background: #8b6914;
+  color: #1a1008;
 }
 
 /* Stat preview */
@@ -788,17 +802,22 @@
 }
 
 .pause-menu-equip-available-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  width: 100%;
   border-radius: 4px;
   transition: background 0.15s ease;
 }
 
+.pause-menu-equip-available-clickable {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
 .pause-menu-equip-available-item:hover {
-  background: rgba(255, 215, 0, 0.05);
+  background: rgba(255, 215, 0, 0.08);
 }
 
 .pause-menu-equip-available-info {
