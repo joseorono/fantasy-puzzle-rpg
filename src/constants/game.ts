@@ -19,5 +19,5 @@ export const MIN_LOAD_TIME_MS = 1000;
 /**
  * Store configuration
  */
-export const GAME_STORE_VERSION = 2;
+export const GAME_STORE_VERSION = 1;
 export const GAME_STORE_NAME = 'puzzlerpg';
