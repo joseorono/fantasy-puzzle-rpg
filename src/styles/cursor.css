@@ -48,3 +48,146 @@ a[href]:hover,
     filter: drop-shadow(0 0 16px rgba(255, 255, 255, 1)) brightness(1.4);
   }
 }
+
+/*
+=========================================================
+    Cursor Corners — Base
+=========================================================
+*/
+
+.cursor-corners {
+  --cursor-corner-size: 10px;
+  --cursor-corner-inset: -2px;
+  --cursor-corner-nudge: 2px;
+  position: relative;
+}
+
+.cursor-corners .cursor-corner {
+  position: absolute;
+  width: var(--cursor-corner-size);
+  height: var(--cursor-corner-size);
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  z-index: 10;
+}
+
+/* Show corners on hover */
+.cursor-corners:hover .cursor-corner {
+  opacity: 1;
+}
+
+/* Corner positions */
+.cursor-corner--tl {
+  top: var(--cursor-corner-inset);
+  left: var(--cursor-corner-inset);
+}
+
+.cursor-corner--tr {
+  top: var(--cursor-corner-inset);
+  right: var(--cursor-corner-inset);
+}
+
+.cursor-corner--bl {
+  bottom: var(--cursor-corner-inset);
+  left: var(--cursor-corner-inset);
+}
+
+.cursor-corner--br {
+  bottom: var(--cursor-corner-inset);
+  right: var(--cursor-corner-inset);
+}
+
+/* Hover animation — corners nudge inward after a brief pause */
+.cursor-corners:hover .cursor-corner--tl {
+  animation: cursor-nudge-tl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners:hover .cursor-corner--tr {
+  animation: cursor-nudge-tr 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners:hover .cursor-corner--bl {
+  animation: cursor-nudge-bl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners:hover .cursor-corner--br {
+  animation: cursor-nudge-br 1.2s ease-in-out 0.3s infinite;
+}
+
+@keyframes cursor-nudge-tl {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(
+      var(--cursor-corner-nudge),
+      var(--cursor-corner-nudge)
+    );
+  }
+}
+
+@keyframes cursor-nudge-tr {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(
+      calc(-1 * var(--cursor-corner-nudge)),
+      var(--cursor-corner-nudge)
+    );
+  }
+}
+
+@keyframes cursor-nudge-bl {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(
+      var(--cursor-corner-nudge),
+      calc(-1 * var(--cursor-corner-nudge))
+    );
+  }
+}
+
+@keyframes cursor-nudge-br {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(
+      calc(-1 * var(--cursor-corner-nudge)),
+      calc(-1 * var(--cursor-corner-nudge))
+    );
+  }
+}
+
+/*
+=========================================================
+    Cursor Corners — Toffeec Beige
+=========================================================
+*/
+
+.cursor-corners--toffeec-beige .cursor-corner--tl {
+  background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-topleft.png');
+}
+
+.cursor-corners--toffeec-beige .cursor-corner--tr {
+  background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-topright.png');
+}
+
+.cursor-corners--toffeec-beige .cursor-corner--bl {
+  background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomleft.png');
+}
+
+.cursor-corners--toffeec-beige .cursor-corner--br {
+  background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png');
+}
