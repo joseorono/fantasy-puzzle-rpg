@@ -3,16 +3,19 @@ import { cn } from '~/lib/utils';
 interface ToffecBeigeCornersWrapperProps {
   children: React.ReactNode;
   className?: string;
+  alwaysVisible?: boolean;
 }
 
 function ToffecBeigeCornersWrapper({
   children,
   className,
+  alwaysVisible,
 }: ToffecBeigeCornersWrapperProps) {
   return (
     <div
       className={cn(
         'cursor-corners cursor-corners--toffeec-beige',
+        alwaysVisible && 'cursor-corners--always-visible',
         className,
       )}
     >
