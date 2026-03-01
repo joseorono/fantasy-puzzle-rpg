@@ -195,13 +195,13 @@ describe('Damage Calculations', () => {
 // ============================================================================
 
 describe('Skill Damage Calculations', () => {
-  test('Warrior Power Strike: 2x multiplier, no flat bonus', () => {
-    // baseDamage=15, pow=6, multiplier=2, flat=0
-    // scaledBase = |15 * 2| = 30
-    // calculateDamage(30, 6) = floor(30 * 106 / 100) = floor(31.8) = 31
-    // total = 31 + 0 = 31
-    const result = rpg.calculateSkillDamage(15, 6, 2, 0);
-    expect(result).toBe(31);
+  test('Warrior Power Strike: 3x multiplier, 10 flat bonus', () => {
+    // baseDamage=15, pow=15, multiplier=3, flat=10
+    // scaledBase = |15 * 3| = 45
+    // calculateDamage(45, 15) = floor(45 * 115 / 100) = floor(51.75) = 51
+    // total = 51 + 10 = 61
+    const result = rpg.calculateSkillDamage(15, 15, 3, 10);
+    expect(result).toBe(61);
   });
 
   test('Rogue Assassinate: 1x multiplier, 30 flat bonus', () => {
@@ -213,22 +213,22 @@ describe('Skill Damage Calculations', () => {
     expect(result).toBe(48);
   });
 
-  test('Mage Arcane Blast: 3x multiplier, no flat bonus', () => {
-    // baseDamage=15, pow=25, multiplier=3, flat=0
-    // scaledBase = |15 * 3| = 45
-    // calculateDamage(45, 25) = floor(45 * 125 / 100) = floor(56.25) = 56
-    // total = 56 + 0 = 56
-    const result = rpg.calculateSkillDamage(15, 25, 3, 0);
-    expect(result).toBe(56);
+  test('Mage Arcane Blast: 5x multiplier, no flat bonus', () => {
+    // baseDamage=15, pow=25, multiplier=5, flat=0
+    // scaledBase = |15 * 5| = 75
+    // calculateDamage(75, 25) = floor(75 * 125 / 100) = floor(93.75) = 93
+    // total = 93 + 0 = 93
+    const result = rpg.calculateSkillDamage(15, 25, 5, 0);
+    expect(result).toBe(93);
   });
 
-  test('Healer Divine Heal: 2x multiplier (heal amount)', () => {
-    // baseDamage=15, pow=10, multiplier=2, flat=0
-    // scaledBase = |15 * 2| = 30
-    // calculateDamage(30, 10) = floor(30 * 110 / 100) = floor(33) = 33
-    // total = 33 + 0 = 33
-    const result = rpg.calculateSkillDamage(15, 10, 2, 0);
-    expect(result).toBe(33);
+  test('Healer Divine Heal: 4x multiplier (heal amount)', () => {
+    // baseDamage=15, pow=10, multiplier=4, flat=0
+    // scaledBase = |15 * 4| = 60
+    // calculateDamage(60, 10) = floor(60 * 110 / 100) = floor(66) = 66
+    // total = 66 + 0 = 66
+    const result = rpg.calculateSkillDamage(15, 10, 4, 0);
+    expect(result).toBe(66);
   });
 
   test('Zero POW returns base scaled damage + flat bonus', () => {

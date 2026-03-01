@@ -34,26 +34,26 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 
 ### Warrior (Blue)
 - **POW**: 15 - Moderate damage
-- **VIT**: 20 - High HP (150 total)
+- **VIT**: 20 - High HP (170 total)
 - **SPD**: 5 - Slow cooldown
 - **Role**: Tank with high survivability
-- **Base HP**: 50 + (20 * 5) = **150 HP**
+- **Base HP**: 50 + (20 * 6) = **170 HP**
 - **Cooldown**: 3 seconds → **2.86s** with SPD
 
 ### Rogue (Green)
 - **POW**: 20 - High damage
-- **VIT**: 10 - Low HP (90 total)
+- **VIT**: 10 - Low HP (70 total)
 - **SPD**: 25 - Very fast cooldown
 - **Role**: Glass cannon with fast abilities
-- **Base HP**: 40 + (10 * 5) = **90 HP**
+- **Base HP**: 40 + (10 * 3) = **70 HP**
 - **Cooldown**: 2 seconds → **1.6s** with SPD
 
 ### Mage (Purple)
 - **POW**: 25 - Highest damage
-- **VIT**: 8 - Lowest HP (75 total)
+- **VIT**: 8 - Lowest HP (67 total)
 - **SPD**: 10 - Moderate cooldown
 - **Role**: High burst damage, fragile
-- **Base HP**: 35 + (8 * 5) = **75 HP**
+- **Base HP**: 35 + (8 * 4) = **67 HP**
 - **Cooldown**: 4 seconds → **3.64s** with SPD
 
 ### Healer (Yellow)
@@ -64,7 +64,7 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 - **Base HP**: 45 + (18 * 5) = **135 HP**
 - **Cooldown**: 3 seconds → **2.68s** with SPD
 
-**Total Party HP**: 450 HP
+**Total Party HP**: 442 HP
 
 ## Enemy Stats
 
@@ -149,7 +149,7 @@ Refer to the source file for the complete and up-to-date type definitions.
 ## Balance Notes
 
 ### Party Composition
-- **Total HP**: 450 (up from 390)
+- **Total HP**: 442 (up from 390)
 - **Average POW**: 17.5
 - **Damage Range**: 11-13 per 3-match (depending on character)
 - **Fastest Cooldown**: Rogue at 1.6s
