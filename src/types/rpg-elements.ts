@@ -1,6 +1,6 @@
 import type { LootTable } from './loot';
 
-export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'red';
+export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
 export type CharacterClass = 'warrior' | 'rogue' | 'mage' | 'healer';
 

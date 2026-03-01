@@ -5,7 +5,7 @@ export const BOARD_ROWS = 8;
 export const BOARD_COLS = 6;
 
 // Orb types
-export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'red'];
+export const ORB_TYPES: OrbType[] = ['blue', 'green', 'purple', 'yellow', 'gray'];
 
 // Stat types
 export const STAT_TYPES: StatType[] = ['pow', 'vit', 'spd'];
