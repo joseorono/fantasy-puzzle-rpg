@@ -11,6 +11,7 @@ import { SoundNames } from '~/constants/audio';
 import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -103,16 +104,18 @@ export default function ItemStore({
                   </div>
                   <div className="equipment-item-description">{item.description}</div>
                   <div className="item-actions">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBuyItem(item);
-                      }}
-                      disabled={!canAffordItem}
-                      className="buy-button"
-                    >
-                      {canAffordItem ? 'Buy' : 'Cannot Afford'}
-                    </Button>
+                    <ToffecBeigeCornersWrapper>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBuyItem(item);
+                        }}
+                        disabled={!canAffordItem}
+                        className="buy-button"
+                      >
+                        {canAffordItem ? 'Buy' : 'Cannot Afford'}
+                      </Button>
+                    </ToffecBeigeCornersWrapper>
                   </div>
                 </div>
               </div>

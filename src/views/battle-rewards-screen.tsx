@@ -24,6 +24,7 @@ import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
 /**
  * Atom to track the current step in the battle rewards flow
@@ -100,24 +101,26 @@ export function BattleRewardsScreen() {
                 }}
               >
                 <h1 style={{ fontSize: '2rem', color: '#ffc107' }}>All Level Ups Complete!</h1>
-                <button
-                  onClick={() => {
-                    setStep(1);
-                    routerActions.goBack();
-                  }}
-                  style={{
-                    padding: '1rem 2rem',
-                    background: '#ffc107',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#1a1d29',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Continue
-                </button>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    onClick={() => {
+                      setStep(1);
+                      routerActions.goBack();
+                    }}
+                    style={{
+                      padding: '1rem 2rem',
+                      background: '#ffc107',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#1a1d29',
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Continue
+                  </button>
+                </ToffecBeigeCornersWrapper>
               </div>
             );
           }
@@ -306,10 +309,12 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <button onClick={handleContinue} className="continue-button">
-        Continue
-        <span className="arrow-icon">→</span>
-      </button>
+      <ToffecBeigeCornersWrapper className="self-end">
+        <button onClick={handleContinue} className="continue-button">
+          Continue
+          <span className="arrow-icon">→</span>
+        </button>
+      </ToffecBeigeCornersWrapper>
     </div>
   );
 }
@@ -407,9 +412,11 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
         <RewardResourceCard label="Coins Obtained" value={coinsReceived} prefix="+" className="gold-section-card" />
       </div>
 
-      <button onClick={handleContinue} className="finish-button">
-        FINISH
-      </button>
+      <ToffecBeigeCornersWrapper className="self-center">
+        <button onClick={handleContinue} className="finish-button">
+          FINISH
+        </button>
+      </ToffecBeigeCornersWrapper>
     </div>
   );
 }

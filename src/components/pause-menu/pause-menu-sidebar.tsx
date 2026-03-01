@@ -5,6 +5,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
 import { Package, Shield, BarChart3, Settings, Save, FolderOpen, LogOut } from 'lucide-react';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
 const TABS: { id: PauseMenuTab; label: string; icon: typeof Package }[] = [
   { id: 'items', label: 'Items', icon: Package },
@@ -55,23 +56,26 @@ export function PauseMenuSidebar() {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
-          <button
-            key={tab.id}
-            ref={isActive ? activeButtonRef : null}
-            className={cn('pause-menu-nav-btn', isActive && 'active')}
-            onClick={() => handleTabClick(tab.id)}
-            aria-current={isActive ? 'page' : undefined}
-          >
-            <Icon size={14} />
-            {tab.label}
-          </button>
+          <ToffecBeigeCornersWrapper key={tab.id}>
+            <button
+              ref={isActive ? activeButtonRef : null}
+              className={cn('pause-menu-nav-btn', isActive && 'active')}
+              onClick={() => handleTabClick(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <Icon size={14} />
+              {tab.label}
+            </button>
+          </ToffecBeigeCornersWrapper>
         );
       })}
       <div className="pause-menu-nav-spacer" />
-      <button className="pause-menu-exit-btn" onClick={handleExit}>
-        <LogOut size={14} />
-        Exit
-      </button>
+      <ToffecBeigeCornersWrapper>
+        <button className="pause-menu-exit-btn" onClick={handleExit}>
+          <LogOut size={14} />
+          Exit
+        </button>
+      </ToffecBeigeCornersWrapper>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Play, FolderOpen, ArrowLeft } from 'lucide-react';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -90,10 +91,12 @@ export function StartMenuModal({ onStartGame, onLoadGame, onCredits }: StartMenu
 
             {/* Header bar */}
             <div className="start-menu-modal-header">
-              <button className="start-menu-modal-back" onClick={handleBackToMain}>
-                <ArrowLeft size={14} />
-                Back
-              </button>
+              <ToffecBeigeCornersWrapper>
+                <button className="start-menu-modal-back" onClick={handleBackToMain}>
+                  <ArrowLeft size={14} />
+                  Back
+                </button>
+              </ToffecBeigeCornersWrapper>
               <h2 className="start-menu-modal-title">{TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}</h2>
             </div>
 

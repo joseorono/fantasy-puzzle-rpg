@@ -6,6 +6,7 @@ import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -286,22 +287,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
               </div>
               <div className="stat-controls">
-                <button
-                  className="stat-button minus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleDecreaseStat('pow')}
-                  disabled={pendingAllocations.pow === 0}
-                  aria-label="Decrease Power"
-                >
-                  −
-                </button>
-                <button
-                  className="stat-button plus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleIncreaseStat('pow')}
-                  disabled={pointsRemaining === 0}
-                  aria-label="Increase Power"
-                >
-                  +
-                </button>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleDecreaseStat('pow')}
+                    disabled={pendingAllocations.pow === 0}
+                    aria-label="Decrease Power"
+                  >
+                    −
+                  </button>
+                </ToffecBeigeCornersWrapper>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleIncreaseStat('pow')}
+                    disabled={pointsRemaining === 0}
+                    aria-label="Increase Power"
+                  >
+                    +
+                  </button>
+                </ToffecBeigeCornersWrapper>
               </div>
             </div>
 
@@ -348,22 +353,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 />
               </div>
               <div className="stat-controls">
-                <button
-                  className="stat-button minus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleDecreaseStat('vit')}
-                  disabled={pendingAllocations.vit === 0}
-                  aria-label="Decrease Vitality"
-                >
-                  −
-                </button>
-                <button
-                  className="stat-button plus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleIncreaseStat('vit')}
-                  disabled={pointsRemaining === 0}
-                  aria-label="Increase Vitality"
-                >
-                  +
-                </button>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleDecreaseStat('vit')}
+                    disabled={pendingAllocations.vit === 0}
+                    aria-label="Decrease Vitality"
+                  >
+                    −
+                  </button>
+                </ToffecBeigeCornersWrapper>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleIncreaseStat('vit')}
+                    disabled={pointsRemaining === 0}
+                    aria-label="Increase Vitality"
+                  >
+                    +
+                  </button>
+                </ToffecBeigeCornersWrapper>
               </div>
             </div>
 
@@ -414,41 +423,49 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 />
               </div>
               <div className="stat-controls">
-                <button
-                  className="stat-button minus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleDecreaseStat('spd')}
-                  disabled={pendingAllocations.spd === 0}
-                  aria-label="Decrease Speed"
-                >
-                  −
-                </button>
-                <button
-                  className="stat-button plus pixel-font text-xs sm:text-sm"
-                  onClick={() => handleIncreaseStat('spd')}
-                  disabled={pointsRemaining === 0}
-                  aria-label="Increase Speed"
-                >
-                  +
-                </button>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleDecreaseStat('spd')}
+                    disabled={pendingAllocations.spd === 0}
+                    aria-label="Decrease Speed"
+                  >
+                    −
+                  </button>
+                </ToffecBeigeCornersWrapper>
+                <ToffecBeigeCornersWrapper>
+                  <button
+                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                    onClick={() => handleIncreaseStat('spd')}
+                    disabled={pointsRemaining === 0}
+                    aria-label="Increase Speed"
+                  >
+                    +
+                  </button>
+                </ToffecBeigeCornersWrapper>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="allocation-actions">
-              <button
-                className="action-button confirm pixel-font text-xs sm:text-sm"
-                onClick={handleConfirm}
-                disabled={!allPointsAllocated}
-              >
-                Confirm
-              </button>
-              <button
-                className="action-button reset pixel-font text-xs sm:text-sm"
-                onClick={handleReset}
-                disabled={!hasPendingChanges}
-              >
-                Reset
-              </button>
+              <ToffecBeigeCornersWrapper>
+                <button
+                  className="action-button confirm pixel-font text-xs sm:text-sm"
+                  onClick={handleConfirm}
+                  disabled={!allPointsAllocated}
+                >
+                  Confirm
+                </button>
+              </ToffecBeigeCornersWrapper>
+              <ToffecBeigeCornersWrapper>
+                <button
+                  className="action-button reset pixel-font text-xs sm:text-sm"
+                  onClick={handleReset}
+                  disabled={!hasPendingChanges}
+                >
+                  Reset
+                </button>
+              </ToffecBeigeCornersWrapper>
             </div>
           </div>
         </div>

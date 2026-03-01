@@ -12,6 +12,7 @@ import { Button } from '../ui/8bit/button';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
 const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
 
@@ -62,29 +63,31 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
               const hpPercentage = calculatePercentage(member.currentHp, member.maxHp);
 
               return (
-                <div key={member.id} className="party-member-card">
-                  <div className="member-header">
-                    <div className="member-info">
-                      <div className="member-name">{member.name}</div>
-                      <div className="member-class">{member.class}</div>
+                <ToffecBeigeCornersWrapper key={member.id}>
+                  <div className="party-member-card">
+                    <div className="member-header">
+                      <div className="member-info">
+                        <div className="member-name">{member.name}</div>
+                        <div className="member-class">{member.class}</div>
+                      </div>
+                      <div className="member-level">Lv. {member.level}</div>
                     </div>
-                    <div className="member-level">Lv. {member.level}</div>
+                    <div className="member-hp">
+                      <div className="hp-label">
+                        <span>HP</span>
+                        <span>
+                          {member.currentHp} / {member.maxHp}
+                        </span>
+                      </div>
+                      <div className="hp-bar-container">
+                        <div
+                          className={`hp-bar ${HP_THRESHOLD_CLASS[getHpThreshold(hpPercentage)]}`}
+                          style={{ width: `${hpPercentage}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="member-hp">
-                    <div className="hp-label">
-                      <span>HP</span>
-                      <span>
-                        {member.currentHp} / {member.maxHp}
-                      </span>
-                    </div>
-                    <div className="hp-bar-container">
-                      <div
-                        className={`hp-bar ${HP_THRESHOLD_CLASS[getHpThreshold(hpPercentage)]}`}
-                        style={{ width: `${hpPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                </ToffecBeigeCornersWrapper>
               );
             })}
           </div>
@@ -92,17 +95,19 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
         {/* Heal Button */}
         <div className="inn-actions">
-          <Button
-            onClick={handleFullyHealParty}
-            disabled={isPartyFullyHealed || !canAffordHealing}
-            className="heal-button"
-          >
-            {isPartyFullyHealed
-              ? 'Party is Fully Healed'
-              : !canAffordHealing
-                ? 'Not Enough Coins'
-                : `Heal Party (${price.coins} coins)`}
-          </Button>
+          <ToffecBeigeCornersWrapper>
+            <Button
+              onClick={handleFullyHealParty}
+              disabled={isPartyFullyHealed || !canAffordHealing}
+              className="heal-button"
+            >
+              {isPartyFullyHealed
+                ? 'Party is Fully Healed'
+                : !canAffordHealing
+                  ? 'Not Enough Coins'
+                  : `Heal Party (${price.coins} coins)`}
+            </Button>
+          </ToffecBeigeCornersWrapper>
         </div>
       </div>
     </TownLocationLayout>
