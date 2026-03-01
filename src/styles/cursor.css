@@ -81,6 +81,12 @@ a[href]:hover,
   opacity: 1;
 }
 
+/* Always-visible corners — no fade transition, animation only on hover */
+.cursor-corners--always-visible .cursor-corner {
+  opacity: 1;
+  transition: none;
+}
+
 /* Corner positions */
 .cursor-corner--tl {
   top: var(--cursor-corner-inset);
