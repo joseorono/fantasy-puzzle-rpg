@@ -31,14 +31,14 @@ const makeChar = (overrides: Partial<CharacterData> = {}): CharacterData => ({
 });
 
 const warrior = makeChar({ equippedWeaponId: 'iron-sword', equippedArmorId: 'iron-armor' });
-const rogue = makeChar({ id: 'rogue', class: 'rogue', color: 'green', equippedWeaponId: 'iron-daggers' });
+const rogue = makeChar({ id: 'rogue', class: 'rogue', color: 'green', equippedWeaponId: 'iron-short-bow' });
 const bareChar = makeChar();
 
 const threeParty: CharacterData[] = [warrior, rogue, makeChar({ id: 'mage', class: 'mage', color: 'purple' })];
 
 const inventory: InventoryItem[] = [
   { itemId: 'iron-sword', quantity: 2 },
-  { itemId: 'iron-daggers', quantity: 1 },
+  { itemId: 'iron-short-bow', quantity: 1 },
   { itemId: 'iron-staff', quantity: 1 },
   { itemId: 'iron-armor', quantity: 2 },
   { itemId: 'bronze-armor', quantity: 1 },

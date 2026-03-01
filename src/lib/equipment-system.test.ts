@@ -40,9 +40,9 @@ describe('getEquipmentSlot', () => {
     expect(getEquipmentSlot('golden-broadsword')).toBe('weapon');
   });
 
-  it('returns weapon for dagger/dirk items', () => {
-    expect(getEquipmentSlot('iron-daggers')).toBe('weapon');
-    expect(getEquipmentSlot('golden-dirks')).toBe('weapon');
+  it('returns weapon for bow items', () => {
+    expect(getEquipmentSlot('iron-short-bow')).toBe('weapon');
+    expect(getEquipmentSlot('golden-war-bow')).toBe('weapon');
   });
 
   it('returns weapon for staff/scepter items', () => {
@@ -70,16 +70,16 @@ describe('canEquip', () => {
     expect(canEquip(warrior, sword)).toBe(true);
   });
 
-  it('prevents warrior from equipping daggers', () => {
+  it('prevents warrior from equipping bows', () => {
     const warrior = makeCharacter({ class: 'warrior' });
-    const daggers = findEquipmentItem('iron-daggers')!;
-    expect(canEquip(warrior, daggers)).toBe(false);
+    const bows = findEquipmentItem('iron-short-bow')!;
+    expect(canEquip(warrior, bows)).toBe(false);
   });
 
-  it('allows rogue to equip daggers', () => {
+  it('allows rogue to equip bows', () => {
     const rogue = makeCharacter({ id: 'rogue', class: 'rogue', color: 'green' });
-    const daggers = findEquipmentItem('iron-daggers')!;
-    expect(canEquip(rogue, daggers)).toBe(true);
+    const bows = findEquipmentItem('iron-short-bow')!;
+    expect(canEquip(rogue, bows)).toBe(true);
   });
 
   it('allows mage to equip staffs', () => {
@@ -101,10 +101,10 @@ describe('canEquip', () => {
   it('prevents healer from equipping weapons (no healer weapons exist)', () => {
     const healer = makeCharacter({ id: 'healer', class: 'healer', color: 'yellow' });
     const sword = findEquipmentItem('iron-sword')!;
-    const daggers = findEquipmentItem('iron-daggers')!;
+    const bows = findEquipmentItem('iron-short-bow')!;
     const staff = findEquipmentItem('iron-staff')!;
     expect(canEquip(healer, sword)).toBe(false);
-    expect(canEquip(healer, daggers)).toBe(false);
+    expect(canEquip(healer, bows)).toBe(false);
     expect(canEquip(healer, staff)).toBe(false);
   });
 });
@@ -205,7 +205,7 @@ describe('getAvailableEquipmentForSlot', () => {
   it('returns only weapons matching character class', () => {
     const inventory: InventoryItem[] = [
       { itemId: 'iron-sword', quantity: 1 },
-      { itemId: 'iron-daggers', quantity: 1 },
+      { itemId: 'iron-short-bow', quantity: 1 },
       { itemId: 'iron-staff', quantity: 1 },
     ];
     const result = getAvailableEquipmentForSlot('weapon', warrior, [warrior], inventory);
@@ -225,7 +225,7 @@ describe('getAvailableEquipmentForSlot', () => {
   it('returns no weapons for healer', () => {
     const inventory: InventoryItem[] = [
       { itemId: 'iron-sword', quantity: 1 },
-      { itemId: 'iron-daggers', quantity: 1 },
+      { itemId: 'iron-short-bow', quantity: 1 },
       { itemId: 'iron-staff', quantity: 1 },
     ];
     const result = getAvailableEquipmentForSlot('weapon', healer, [healer], inventory);
@@ -239,24 +239,24 @@ describe('getAvailableEquipmentForSlot', () => {
   });
 
   it('respects quantity limits when another character has it equipped', () => {
-    const rogueWithDagger = { ...rogue, equippedWeaponId: 'iron-daggers' };
-    const inventory: InventoryItem[] = [{ itemId: 'iron-daggers', quantity: 1 }];
+    const rogueWithDagger = { ...rogue, equippedWeaponId: 'iron-short-bow' };
+    const inventory: InventoryItem[] = [{ itemId: 'iron-short-bow', quantity: 1 }];
     const anotherRogue = makeCharacter({ id: 'rogue-2', class: 'rogue', color: 'green' });
     const party = [rogueWithDagger, anotherRogue];
 
-    // rogue-2 should NOT see iron-daggers because rogue already has it equipped and qty is 1
+    // rogue-2 should NOT see iron-short-bow because rogue already has it equipped and qty is 1
     const result = getAvailableEquipmentForSlot('weapon', anotherRogue, party, inventory);
-    expect(result.find((i) => i.id === 'iron-daggers')).toBeUndefined();
+    expect(result.find((i) => i.id === 'iron-short-bow')).toBeUndefined();
   });
 
   it('allows equipping if quantity exceeds equipped count', () => {
-    const rogueWithDagger = { ...rogue, equippedWeaponId: 'iron-daggers' };
-    const inventory: InventoryItem[] = [{ itemId: 'iron-daggers', quantity: 2 }];
+    const rogueWithDagger = { ...rogue, equippedWeaponId: 'iron-short-bow' };
+    const inventory: InventoryItem[] = [{ itemId: 'iron-short-bow', quantity: 2 }];
     const anotherRogue = makeCharacter({ id: 'rogue-2', class: 'rogue', color: 'green' });
     const party = [rogueWithDagger, anotherRogue];
 
-    // rogue-2 SHOULD see iron-daggers because qty is 2 and only 1 is equipped
+    // rogue-2 SHOULD see iron-short-bow because qty is 2 and only 1 is equipped
     const result = getAvailableEquipmentForSlot('weapon', anotherRogue, party, inventory);
-    expect(result.find((i) => i.id === 'iron-daggers')).toBeDefined();
+    expect(result.find((i) => i.id === 'iron-short-bow')).toBeDefined();
   });
 });

@@ -12,18 +12,18 @@ import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 
-type EquipmentType = 'sword' | 'dagger' | 'staff' | 'armor';
+type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
 const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   sword: 'Swords',
-  dagger: 'Daggers',
+  bow: 'Bows',
   staff: 'Staves',
   armor: 'Armor',
 };
 
 function getEquipmentType(itemId: string): EquipmentType | null {
   if (itemId.includes('sword') || itemId.includes('broadsword')) return 'sword';
-  if (itemId.includes('dagger') || itemId.includes('dirk')) return 'dagger';
+  if (itemId.includes('bow')) return 'bow';
   if (itemId.includes('staff') || itemId.includes('scepter')) return 'staff';
   if (itemId.includes('armor') || itemId.includes('plate')) return 'armor';
   return null;

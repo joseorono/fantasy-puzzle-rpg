@@ -36,7 +36,7 @@ export const ANCIENT_CHEST_LOOT: LootTable = {
 export const HIDDEN_TREASURE_CHEST_LOOT: LootTable = {
   equipableItems: [
     {
-      item: EquipmentItems.find((item) => item.id === 'bronze-daggers')!,
+      item: EquipmentItems.find((item) => item.id === 'bronze-recurve-bow')!,
       probability: 1 as ProbabilityNumber,
     },
   ],

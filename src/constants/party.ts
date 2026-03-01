@@ -259,8 +259,8 @@ export const SKILL_DEFINITIONS: Record<CharacterClass, SkillDefinition> = {
   },
   rogue: {
     name: 'Assassinate',
-    description: 'A precise strike with moderate damage plus a burst of flat bonus damage.',
-    icon: '🗡️',
+    description: 'A precise shot targeting a vital point for a burst of damage.',
+    icon: '🏹',
     baseDamageMultiplier: 1,
     flatDamageBonus: 30,
     target: 'enemy',

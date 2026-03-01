@@ -25,7 +25,7 @@ const largeInventory: InventoryItem[] = [
   { itemId: 'potion', quantity: 50 },
   { itemId: 'high-potion', quantity: 20 },
   { itemId: 'iron-sword', quantity: 1 },
-  { itemId: 'iron-daggers', quantity: 1 },
+  { itemId: 'iron-short-bow', quantity: 1 },
   { itemId: 'iron-staff', quantity: 1 },
   { itemId: 'iron-armor', quantity: 2 },
   { itemId: 'bronze-sword', quantity: 1 },

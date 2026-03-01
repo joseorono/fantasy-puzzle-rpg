@@ -17,8 +17,7 @@ export function getEquipmentSlot(itemId: string): EquipmentSlot | null {
   if (
     itemId.includes('sword') ||
     itemId.includes('broadsword') ||
-    itemId.includes('dagger') ||
-    itemId.includes('dirk') ||
+    itemId.includes('bow') ||
     itemId.includes('staff') ||
     itemId.includes('scepter')
   ) {
