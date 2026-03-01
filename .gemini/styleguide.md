@@ -1,0 +1,1 @@
+Just follow the CLAUDE.md rules in the root of the project.
