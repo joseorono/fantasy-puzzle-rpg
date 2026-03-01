@@ -2,22 +2,25 @@
   image-rendering: pixelated;
 }
 
+/* ─── Battle Item Bar Slots ─────────────────────────────────────────
+   Individual item slots styled to match the board's background. */
+
+.battle-item-slot {
+  background-image: url('/assets/bg/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 2px solid rgba(180, 83, 9, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
 .enemy-sprite-image {
   image-rendering: pixelated;
   object-fit: contain;
 }
-
-/* ─── Pixelated 16-bit Orb Styles ───────────────────────────────────── */
-
-.boardOrb {
-  image-rendering: pixelated;
-  position: relative;
-  background: var(--orb-img, none) center / 100% 100% no-repeat;
-  background-color: transparent;
-  box-shadow: none;
-  border: 0;
-}
-
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,
@@ -26,8 +29,7 @@
 .match3BoardContainer.dead-blue .orb-blue,
 .match3BoardContainer.dead-green .orb-green,
 .match3BoardContainer.dead-purple .orb-purple,
-.match3BoardContainer.dead-yellow .orb-yellow,
-.match3BoardContainer.dead-red .orb-red {
+.match3BoardContainer.dead-yellow .orb-yellow {
   position: relative;
   filter: grayscale(0.4) brightness(0.75);
   opacity: 0.65;
@@ -36,8 +38,7 @@
 .match3BoardContainer.dead-blue .orb-blue::after,
 .match3BoardContainer.dead-green .orb-green::after,
 .match3BoardContainer.dead-purple .orb-purple::after,
-.match3BoardContainer.dead-yellow .orb-yellow::after,
-.match3BoardContainer.dead-red .orb-red::after {
+.match3BoardContainer.dead-yellow .orb-yellow::after {
   content: '';
   position: absolute;
   inset: 0;
