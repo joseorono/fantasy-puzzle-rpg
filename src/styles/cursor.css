@@ -60,6 +60,7 @@ a[href]:hover,
   --cursor-corner-inset: -2px;
   --cursor-corner-nudge: 2px;
   position: relative;
+  width: fit-content;
 }
 
 .cursor-corners .cursor-corner {
