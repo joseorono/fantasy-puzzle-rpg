@@ -85,44 +85,10 @@ export function BattleRewardsScreen() {
       {step === 3 &&
         (() => {
           if (currentLevelUpIndex >= pendingLevelUps.length) {
-            // All level ups complete, go back or to next screen
-            return (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100vh',
-                  background: 'linear-gradient(135deg, #1a1d29 0%, #2d3142 100%)',
-                  color: '#e0e0e0',
-                  fontFamily: 'Cinzel, serif',
-                  gap: '2rem',
-                }}
-              >
-                <h1 style={{ fontSize: '2rem', color: '#ffc107' }}>All Level Ups Complete!</h1>
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    onClick={() => {
-                      setStep(1);
-                      routerActions.goBack();
-                    }}
-                    style={{
-                      padding: '1rem 2rem',
-                      background: '#ffc107',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#1a1d29',
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Continue
-                  </button>
-                </ToffecBeigeCornersWrapper>
-              </div>
-            );
+            // All level ups complete, go back immediately
+            setStep(1);
+            routerActions.goBack();
+            return null;
           }
 
           const currentPending = pendingLevelUps[currentLevelUpIndex];
