@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { lastSkillActivationAtom } from '~/stores/battle-atoms';
-import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import { DamageDisplay } from '~/components/ui-custom/damage-display';
 
 export function SkillActivationEffect() {
   const lastSkillActivation = useAtomValue(lastSkillActivationAtom);

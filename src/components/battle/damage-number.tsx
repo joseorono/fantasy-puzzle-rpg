@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { lastDamageAtom } from '~/stores/battle-atoms';
 import { cn } from '~/lib/utils';
-import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import type { DamageNumberProps } from '~/types/components';
 
 export function DamageNumber({ target }: DamageNumberProps) {

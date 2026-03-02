@@ -4,7 +4,7 @@ import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } fro
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
-import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import type { EnemyData } from '~/types/rpg-elements';
 
 interface EnemySpriteProps {

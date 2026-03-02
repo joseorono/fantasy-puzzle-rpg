@@ -9,7 +9,7 @@ import {
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
-import { DamageDisplay } from '~/components/ui/8bit/damage-display';
+import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
 import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
 import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
