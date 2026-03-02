@@ -226,27 +226,37 @@ export function Match3Board() {
 
       // Find the character that matches this orb type to apply their POW bonus
       const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
+      const isCharacterDead = matchingCharacter && matchingCharacter.currentHp <= 0;
       const characterPow = matchingCharacter?.stats.pow ?? 0;
 
       // Calculate damage using RPG system (includes match size multiplier and POW bonus)
       const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);
 
-      // Reduce the matching character's skill cooldown based on orbs matched
-      if (matchingCharacter) {
-        const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
-        reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
-      }
-
-      // Show highlight for a moment, then apply effect
-      setTimeout(() => {
-        // Healer's default action heals the most damaged ally instead of dealing damage
-        if (matchingCharacter?.class === 'healer') {
-          healParty({ amount: totalDamage, source: 'match' });
-        } else {
-          damageEnemy(totalDamage);
+      // Actions are only performed if the character is alive (or it's a neutral match)
+      if (!isCharacterDead) {
+        // Reduce the matching character's skill cooldown based on orbs matched
+        if (matchingCharacter) {
+          const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
+          reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
         }
-        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
-      }, 200);
+
+        // Show highlight for a moment, then apply effect
+        setTimeout(() => {
+          // Healer's default action heals the most damaged ally instead of dealing damage
+          if (matchingCharacter?.class === 'healer') {
+            healParty({ amount: totalDamage, source: 'match' });
+          } else {
+            damageEnemy(totalDamage);
+          }
+          soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
+        }, 200);
+      } else {
+        // Character is dead - still play a muted/different sound to indicate "empty" match
+        // Lower volume (0.4x) and higher pitch variance (0.15 instead of 0.03)
+        setTimeout(() => {
+          soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size) * 0.4, 0.1, 0.15);
+        }, 200);
+      }
 
       // Remove matched orbs after animation - this will trigger a new board state
       // which will cause this effect to run again and check for new matches
