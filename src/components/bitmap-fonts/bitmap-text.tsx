@@ -83,22 +83,25 @@ export function BitmapText({
   } as React.CSSProperties;
 
   return (
-    <span className="bf-text" style={containerStyle} role="img" aria-label={text}>
-      {Array.from(text).map((char, i) => {
-        const pos = charMap.get(char);
-        if (!pos) {
-          return <span key={i} className="bf-blank" />;
-        }
-        return (
-          <span
-            key={i}
-            className="bf-char"
-            style={{
-              backgroundPosition: `${-pos[0] * cw}px ${-pos[1] * ch}px`,
-            }}
-          />
-        );
-      })}
+    <span className="bf-text" style={containerStyle}>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {Array.from(text).map((char, i) => {
+          const pos = charMap.get(char);
+          if (!pos) {
+            return <span key={i} className="bf-blank" />;
+          }
+          return (
+            <span
+              key={i}
+              className="bf-char"
+              style={{
+                backgroundPosition: `${-pos[0] * cw}px ${-pos[1] * ch}px`,
+              }}
+            />
+          );
+        })}
+      </span>
     </span>
   );
 }
