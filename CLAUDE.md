@@ -150,3 +150,4 @@ src/
 - Do not handle version control — we'll commit and push changes ourselves
 - The `main` branch is the primary branch
 - Documentation for game systems lives in `docs/`
+- Do not run build or dev commands to test your code, I will do that for you.
