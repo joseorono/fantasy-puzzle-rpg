@@ -23,6 +23,7 @@ import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
+import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -51,9 +52,16 @@ export function BattleRewardsScreen() {
 
   const { lootTable, expReward } = battleRewardsData;
 
-  const coinsReceived = lootTable.resources?.item?.coins || 0;
+  const earnedResources: Resources = {
+    coins: lootTable.resources?.item?.coins || 0,
+    gold: lootTable.resources?.item?.gold || 0,
+    silver: lootTable.resources?.item?.silver || 0,
+    iron: lootTable.resources?.item?.iron || 0,
+    copper: lootTable.resources?.item?.copper || 0,
+  };
+  const hasAnyResources = Object.values(earnedResources).some((v) => v > 0);
   const hasNoItems =
-    lootTable.equipableItems.length === 0 && lootTable.consumableItems.length === 0 && coinsReceived === 0;
+    lootTable.equipableItems.length === 0 && lootTable.consumableItems.length === 0 && !hasAnyResources;
 
   return (
     <div className="level-up-screen">
@@ -69,7 +77,7 @@ export function BattleRewardsScreen() {
       {step === 2 && (
         <ExpBarFillingUp
           expReward={expReward}
-          coinsReceived={coinsReceived}
+          earnedResources={earnedResources}
           onFinish={(updatedPartyMembers) => {
             // Calculate pending level ups for all party members based on updated EXP
             const pending = calculateLevelUpsForParty(updatedPartyMembers, expReward).filter(
@@ -178,55 +186,83 @@ interface ItemRewardsScreenProps {
   onFinish: () => void;
 }
 
-interface RewardResourceCardProps {
-  label: string;
-  value: number;
-  prefix?: string;
-  className?: string;
+const RESOURCE_CONFIG = [
+  { key: 'coins' as keyof Resources, label: 'Coins', iconName: 'coinPurse' as const, colorClass: 'rewards-resource-row--coins' },
+  { key: 'gold' as keyof Resources, label: 'Gold', iconName: 'goldBar' as const, colorClass: 'rewards-resource-row--gold' },
+  { key: 'silver' as keyof Resources, label: 'Silver', iconName: 'silverBar' as const, colorClass: 'rewards-resource-row--silver' },
+  { key: 'iron' as keyof Resources, label: 'Iron', iconName: 'ironBar' as const, colorClass: 'rewards-resource-row--iron' },
+  { key: 'copper' as keyof Resources, label: 'Copper', iconName: 'copperBar' as const, colorClass: 'rewards-resource-row--copper' },
+];
+
+interface RewardsResourcesPanelProps {
+  earnedResources: Resources;
+  currentResources?: Resources;
 }
 
-function RewardResourceCard({ label, value, prefix = '', className }: RewardResourceCardProps) {
-  const classes = ['reward-resource-card', 'top-bar-resource', 'top-bar-resource--coins', className]
-    .filter(Boolean)
-    .join(' ');
+function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
+  const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
+
+  if (activeResources.length === 0) return null;
 
   return (
-    <div className={classes}>
-      <FrostyRpgIcon name="coinPurse" size={24} className="top-bar-resource__icon" />
-      <div className="top-bar-resource__content">
-        <span className="top-bar-resource__label">{label}</span>
-        <span className="top-bar-resource__value number-flow-container">
-          <NumberFlow
-            value={value}
-            format={INTEGER_FORMAT}
-            prefix={prefix}
-            trend={1}
-            spinTiming={SNAPPY_SPIN_TIMING}
-            transformTiming={SNAPPY_TRANSFORM_TIMING}
-            opacityTiming={SNAPPY_OPACITY_TIMING}
-          />
-        </span>
-      </div>
+    <div className="rewards-resources-panel">
+      {activeResources.map((r) => (
+        <div key={r.key} className={`rewards-resource-card rewards-resource-card--${r.key}`}>
+          <FrostyRpgIcon name={r.iconName} size={24} className="rewards-resource-card__icon" />
+          <div className="rewards-resource-card__content">
+            <span className="rewards-resource-card__label">{r.label}</span>
+            <div className="rewards-resource-card__values">
+              <span className="rewards-resource-card__earned number-flow-container">
+                <NumberFlow
+                  value={earnedResources[r.key]}
+                  format={INTEGER_FORMAT}
+                  prefix="+"
+                  trend={1}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+              </span>
+              {currentResources && (
+                <>
+                  <span className="rewards-resource-card__arrow">{'\u2192'}</span>
+                  <span className="rewards-resource-card__balance number-flow-container">
+                    <NumberFlow
+                      value={currentResources[r.key] + earnedResources[r.key]}
+                      format={INTEGER_FORMAT}
+                      trend={1}
+                      spinTiming={SNAPPY_SPIN_TIMING}
+                      transformTiming={SNAPPY_TRANSFORM_TIMING}
+                      opacityTiming={SNAPPY_OPACITY_TIMING}
+                    />
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
-  const coinsReceived = lootTable.resources?.item?.coins || 0;
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
 
+  const earnedResources: Resources = {
+    coins: lootTable.resources?.item?.coins || 0,
+    gold: lootTable.resources?.item?.gold || 0,
+    silver: lootTable.resources?.item?.silver || 0,
+    iron: lootTable.resources?.item?.iron || 0,
+    copper: lootTable.resources?.item?.copper || 0,
+  };
+
   function handleContinue() {
-    // Add coins to resources store
-    if (coinsReceived > 0) {
-      resourcesActions.addResources({
-        coins: coinsReceived,
-        gold: lootTable.resources?.item?.gold || 0,
-        silver: lootTable.resources?.item?.silver || 0,
-        iron: lootTable.resources?.item?.iron || 0,
-        copper: lootTable.resources?.item?.copper || 0,
-      });
+    // Add resources to store
+    if (Object.values(earnedResources).some((v) => v > 0)) {
+      resourcesActions.addResources(earnedResources);
     }
 
     // Add equipment items to inventory
@@ -251,10 +287,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </h1>
       </header>
 
-      <div className="gold-summary">
-        <RewardResourceCard label="Coins Earned" value={coinsReceived} prefix="+" />
-        <RewardResourceCard label="New Balance" value={resources.coins + coinsReceived} />
-      </div>
+      <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
 
       <div className="items-found-container">
         <h2 className="items-found-header rewards-section-subtitle">
@@ -301,11 +334,11 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
  */
 interface ExpBarFillingUpProps {
   expReward: number;
-  coinsReceived: number;
+  earnedResources: Resources;
   onFinish: (updatedPartyMembers: CharacterData[]) => void;
 }
 
-function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUpProps) {
+function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFillingUpProps) {
   const partyMembers = useParty();
   const partyActions = usePartyActions();
   const [progress, setProgress] = useState(0);
@@ -387,9 +420,7 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
         ))}
       </div>
 
-      <div className="gold-section">
-        <RewardResourceCard label="Coins Obtained" value={coinsReceived} prefix="+" className="gold-section-card" />
-      </div>
+      <RewardsResourcesPanel earnedResources={earnedResources} />
 
       <ToffecBeigeCornersWrapper className="self-center">
         <button onClick={handleContinue} className="finish-button">
