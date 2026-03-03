@@ -321,6 +321,21 @@
   background-size: var(--f05a-side) auto;
 }
 
+/*
+  Franuka 05a Bottom Bar — separator-only variant
+*/
+.f05a-bottom-bar {
+  --f05a-side: 15px;
+  --f05a-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.f05a-bottom-bar__edge {
+  height: var(--f05a-bottom);
+}
+
 /* Viewport styling */
 .f05a-viewport {
   overflow: hidden;
