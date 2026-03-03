@@ -83,7 +83,7 @@ export default function RouterTestView() {
                   { item: ConsumableItems.find((c) => c.id === 'potion')! },
                   { item: ConsumableItems.find((c) => c.id === 'energy-potion')! },
                 ],
-                { item: { coins: 100 } },
+                { item: { coins: 100, gold: 3, silver: 12, iron: 5, copper: 8 } },
               ),
               expReward: 250,
             })
