@@ -12,6 +12,8 @@ import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 
 interface TownHubProps {
   innCost: Resources;
@@ -68,13 +70,13 @@ export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: Town
           <div className="relative mx-[200px] flex flex-col items-end gap-4">
             <div className="bg-post"></div>
             <div className="plank-option mt-2 cursor-pointer" onClick={() => handleGoToPlace('blacksmith')}>
-              Blacksmith
+              <NarikWoodBitFont text="BLACKSMITH" size={1} />
             </div>
             <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('inn')}>
-              Inn
+              <NarikWoodBitFont text="INN" size={1} />
             </div>
             <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
-              Item Shop
+              <NarikWoodBitFont text="ITEM SHOP" size={1} />
             </div>
           </div>
         </div>
