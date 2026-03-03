@@ -22,7 +22,8 @@
       "Bash(head:*)",
       "Bash(file:*)",
       "Bash(cd:*)",
-      "WebFetch(domain:number-flow.barvian.me)"
+      "WebFetch(domain:number-flow.barvian.me)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
