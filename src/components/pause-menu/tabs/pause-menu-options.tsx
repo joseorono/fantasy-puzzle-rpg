@@ -2,6 +2,7 @@ import { useAtom } from 'jotai';
 import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { Slider } from '~/components/ui/8bit/slider';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 
 export function PauseMenuOptions() {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
@@ -28,20 +29,16 @@ export function PauseMenuOptions() {
 
   return (
     <>
-      <h2>Options</h2>
+      <h2 className="mb-4">
+        <NarikRedwoodBitFont text="OPTIONS" size={1.2} />
+      </h2>
       <div className="pause-menu-options-list">
         <div className="pause-menu-option-row">
           <div className="pause-menu-option-header">
             <span className="pause-menu-option-label">Master Volume</span>
             <span className="pause-menu-option-value">{masterVolume}%</span>
           </div>
-          <Slider
-            value={[masterVolume]}
-            onValueChange={handleMasterChange}
-            min={0}
-            max={100}
-            step={1}
-          />
+          <Slider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} />
         </div>
 
         <div className="pause-menu-option-row">
@@ -49,13 +46,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Music Volume</span>
             <span className="pause-menu-option-value">{musicVolume}%</span>
           </div>
-          <Slider
-            value={[musicVolume]}
-            onValueChange={handleMusicChange}
-            min={0}
-            max={100}
-            step={1}
-          />
+          <Slider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} />
         </div>
 
         <div className="pause-menu-option-row">
@@ -63,13 +54,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">SFX Volume</span>
             <span className="pause-menu-option-value">{sfxVolume}%</span>
           </div>
-          <Slider
-            value={[sfxVolume]}
-            onValueChange={handleSfxChange}
-            min={0}
-            max={100}
-            step={1}
-          />
+          <Slider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} />
         </div>
       </div>
     </>

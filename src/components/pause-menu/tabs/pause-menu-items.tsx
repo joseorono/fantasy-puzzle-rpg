@@ -9,6 +9,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { BaseItemData } from '~/types/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
   SNAPPY_SPIN_TIMING,
@@ -87,7 +88,9 @@ export function PauseMenuItems() {
 
   return (
     <>
-      <h2>Items</h2>
+      <h2 className="mb-4">
+        <NarikRedwoodBitFont text="ITEMS" size={1.2} />
+      </h2>
       <div className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
           <button

@@ -2,6 +2,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { Swords, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { battleStateAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 interface BattleTopBarProps {
   nextAttackIn: number;
@@ -16,7 +17,9 @@ export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
     <header id="battle-top-bar" className="crt-container crt-overlay">
       <div className="btb-inner">
         <div className="btb-stats">
-          <h1 className="btb-title crt-text-glow pixel-font-alt">BATTLE</h1>
+          <h1 className="btb-title crt-text-glow">
+            <NarikWoodBitFont text="BATTLE" size={1} />
+          </h1>
 
           <div className="btb-badge crt-top-highlight">
             <span className="btb-badge-label pixel-font">TURN:</span>

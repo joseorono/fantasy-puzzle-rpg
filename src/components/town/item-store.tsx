@@ -61,10 +61,7 @@ export default function ItemStore({
       <div className="shop-content">
         <div className="store-info">
           <h2>
-            <span className="sr-only">Consumable Items</span>
-            <span aria-hidden="true">
-              <NarikWoodBitFont text="CONSUMABLE ITEMS" size={2} />
-            </span>
+            <NarikWoodBitFont text="CONSUMABLE ITEMS" size={2} />
           </h2>
           <p>Purchase items to aid you in battle</p>
         </div>

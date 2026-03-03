@@ -25,6 +25,7 @@ import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 /**
  * Atom to track the current step in the battle rewards flow
@@ -245,7 +246,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
     <div className="victory-container">
       <header className="victory-header">
         <p className="rewards-section-eyebrow">Victory</p>
-        <h1 className="victory-title rewards-section-title">Loot Summary</h1>
+        <h1 className="victory-title rewards-section-title">
+          <NarikWoodBitFont text="Loot Summary" size={2} />
+        </h1>
       </header>
 
       <div className="gold-summary">
@@ -254,7 +257,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
       </div>
 
       <div className="items-found-container">
-        <h2 className="items-found-header rewards-section-subtitle">Items Found</h2>
+        <h2 className="items-found-header rewards-section-subtitle">
+          <NarikWoodBitFont text="Items Found" size={1.2} />
+        </h2>
         <ul className="item-list">
           {lootTable.equipableItems?.map((item, index) => (
             <li key={`equip-${index}`} className="item-entry">
@@ -343,7 +348,9 @@ function ExpBarFillingUp({ expReward, coinsReceived, onFinish }: ExpBarFillingUp
     <div className="exp-gained-container">
       <header className="exp-gained-header">
         <p className="rewards-section-eyebrow">Battle Report</p>
-        <h1 className="exp-gained-title rewards-section-title">Exp Gained</h1>
+        <h1 className="exp-gained-title rewards-section-title">
+          <NarikWoodBitFont text="Exp Gained" size={2} />
+        </h1>
         <div className="exp-gained-amount number-flow-container">
           <NumberFlow
             value={expReward}

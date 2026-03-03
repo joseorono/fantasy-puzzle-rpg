@@ -4,6 +4,7 @@ import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { RosterCard } from '~/components/pause-menu/roster-card';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -42,16 +43,10 @@ export function PauseMenuEquip() {
   const bonuses = getEquipmentBonuses(selected);
   const effective = getEffectiveStats(selected);
 
-  const equippedWeapon = selected.equippedWeaponId
-    ? findEquipmentItem(selected.equippedWeaponId)
-    : undefined;
-  const equippedArmor = selected.equippedArmorId
-    ? findEquipmentItem(selected.equippedArmorId)
-    : undefined;
+  const equippedWeapon = selected.equippedWeaponId ? findEquipmentItem(selected.equippedWeaponId) : undefined;
+  const equippedArmor = selected.equippedArmorId ? findEquipmentItem(selected.equippedArmorId) : undefined;
 
-  const availableItems = selectedSlot
-    ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory)
-    : [];
+  const availableItems = selectedSlot ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory) : [];
 
   function handleSelectCharacter(id: string) {
     setSelectedId(id);
@@ -75,7 +70,9 @@ export function PauseMenuEquip() {
 
   return (
     <>
-      <h2>Equip</h2>
+      <h2 className="mb-4">
+        <NarikRedwoodBitFont text="EQUIP" size={1.2} />
+      </h2>
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (
@@ -122,20 +119,14 @@ export function PauseMenuEquip() {
 
           {selectedSlot && (
             <div className="pause-menu-equip-available">
-              <h3>
-                Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}
-              </h3>
+              <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
               {availableItems.length === 0 ? (
                 <div className="pause-menu-equip-empty">
                   No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
                 </div>
               ) : (
                 availableItems.map((item) => (
-                  <EquipAvailableItem
-                    key={item.id}
-                    item={item}
-                    onEquip={() => handleEquip(item.id)}
-                  />
+                  <EquipAvailableItem key={item.id} item={item} onEquip={() => handleEquip(item.id)} />
                 ))
               )}
             </div>

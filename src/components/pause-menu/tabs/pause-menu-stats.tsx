@@ -6,6 +6,7 @@ import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations'
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { cn } from '~/lib/utils';
 import { RosterCard } from '~/components/pause-menu/roster-card';
+import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -32,7 +33,9 @@ export function PauseMenuStats() {
 
   return (
     <>
-      <h2>Stats</h2>
+      <h2 className="mb-4">
+        <NarikRedwoodBitFont text="STATS" size={1.2} />
+      </h2>
       <div className="pause-menu-stats-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (
@@ -64,19 +67,37 @@ export function PauseMenuStats() {
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">POW</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={effectiveStats.pow} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={effectiveStats.pow}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">VIT</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={effectiveStats.vit} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={effectiveStats.vit}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">SPD</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={effectiveStats.spd} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={effectiveStats.spd}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
             </div>
@@ -86,21 +107,46 @@ export function PauseMenuStats() {
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">HP</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={selected.currentHp} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={selected.currentHp}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                   {' / '}
-                  <NumberFlow value={maxHp} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={maxHp}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">Attack</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={attackDmg} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={attackDmg}
+                    format={INTEGER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
               <div className="pause-menu-stat-row">
                 <span className="pause-menu-stat-label">Cooldown</span>
                 <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow value={cooldown} format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }} suffix="s" spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
+                  <NumberFlow
+                    value={cooldown}
+                    format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+                    suffix="s"
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
                 </span>
               </div>
             </div>
