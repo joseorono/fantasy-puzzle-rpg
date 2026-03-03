@@ -12,6 +12,7 @@ import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -59,7 +60,12 @@ export default function ItemStore({
     >
       <div className="shop-content">
         <div className="store-info">
-          <h2>Consumable Items</h2>
+          <h2>
+            <span className="sr-only">Consumable Items</span>
+            <span aria-hidden="true">
+              <NarikWoodBitFont text="CONSUMABLE ITEMS" size={2} />
+            </span>
+          </h2>
           <p>Purchase items to aid you in battle</p>
         </div>
 

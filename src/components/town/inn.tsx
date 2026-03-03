@@ -13,6 +13,7 @@ import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
 
@@ -45,7 +46,12 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
     >
       <div className="inn-content">
         <div className="inn-info">
-          <h2>Rest & Recover</h2>
+          <h2>
+            <span className="sr-only">Rest & Recover</span>
+            <span aria-hidden="true">
+              <NarikWoodBitFont text="REST AND RECOVER" size={2} />
+            </span>
+          </h2>
           <p>Restore your party to full health for {price.coins} coins</p>
           <div className="party-status">
             <span className="status-label">Party Status:</span>
@@ -57,7 +63,12 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
         {/* Party Members Display */}
         <div className="party-members-list">
-          <h3>Party Members</h3>
+          <h3>
+            <span className="sr-only">Party Members</span>
+            <span aria-hidden="true">
+              <NarikWoodBitFont text="PARTY MEMBERS" size={1} />
+            </span>
+          </h3>
           <div className="party-members-grid">
             {party.map((member) => {
               const hpPercentage = calculatePercentage(member.currentHp, member.maxHp);

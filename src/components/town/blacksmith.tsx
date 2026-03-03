@@ -11,6 +11,7 @@ import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
@@ -172,12 +173,22 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {/* Exchange Tab */}
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
-          <h2>Exchange Resources</h2>
+          <h2>
+            <span className="sr-only">Exchange Resources</span>
+            <span aria-hidden="true">
+              <NarikWoodBitFont text="EXCHANGE RESOURCES" size={2} />
+            </span>
+          </h2>
           <p>Convert resources at 1:1 ratio</p>
 
           <div className="exchange-options">
             <div className="exchange-group">
-              <h3>Copper to Silver</h3>
+              <h3>
+                <span className="sr-only">Copper to Silver</span>
+                <span aria-hidden="true">
+                  <NarikWoodBitFont text="COPPER TO SILVER" size={1} />
+                </span>
+              </h3>
               <ToffecBeigeCornersWrapper>
                 <Button onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
                   Exchange 5 Copper for 1 Silver
@@ -186,7 +197,12 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             </div>
 
             <div className="exchange-group">
-              <h3>Iron to Silver</h3>
+              <h3>
+                <span className="sr-only">Iron to Silver</span>
+                <span aria-hidden="true">
+                  <NarikWoodBitFont text="IRON TO SILVER" size={1} />
+                </span>
+              </h3>
               <ToffecBeigeCornersWrapper>
                 <Button onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
                   Exchange 5 Iron for 1 Silver
@@ -195,7 +211,12 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             </div>
 
             <div className="exchange-group">
-              <h3>Silver to Gold</h3>
+              <h3>
+                <span className="sr-only">Silver to Gold</span>
+                <span aria-hidden="true">
+                  <NarikWoodBitFont text="SILVER TO GOLD" size={1} />
+                </span>
+              </h3>
               <ToffecBeigeCornersWrapper>
                 <Button onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
                   Exchange 5 Silver for 1 Gold
@@ -209,7 +230,12 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {/* Melt Tab */}
       {selectedTab === 'melt' && (
         <div className="melt-section">
-          <h2>Melt Coins to Gold</h2>
+          <h2>
+            <span className="sr-only">Melt Coins to Gold</span>
+            <span aria-hidden="true">
+              <NarikWoodBitFont text="MELT COINS TO GOLD" size={2} />
+            </span>
+          </h2>
           <p>Convert coins into gold (10 coins = 1 gold)</p>
 
           <div className="melt-options">
