@@ -1,5 +1,6 @@
 import NumberFlow from '@number-flow/react';
 import type { CharacterData } from '~/types/rpg-elements';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import {
   calculateMaxHp,
   calculateSkillCooldownFillRate,
@@ -55,11 +56,13 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
   return (
     <div className="derived-stats">
-      <h3 className="derived-stats-title pixel-font text-sm sm:text-base">Derived Stats</h3>
+      <h3 className="derived-stats-title">
+        <NarikWoodBitFont text="Derived Stats" size={1} />
+      </h3>
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Max HP</span>
-        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
           <NumberFlow
             value={previewMaxHp}
             format={INTEGER_FORMAT}
@@ -86,7 +89,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Skill Cooldown Fill Rate</span>
-        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
           <NumberFlow
             value={previewFillRate * 100}
             format={DECIMAL_2_FORMAT}
@@ -115,7 +118,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Skill Cooldown Fill Time</span>
-        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
           <NumberFlow
             value={previewCooldown}
             format={DECIMAL_2_FORMAT}
@@ -143,7 +146,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Item Cooldown</span>
-        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
           <NumberFlow
             value={previewItemCooldown / 1000}
             format={DECIMAL_2_FORMAT}
@@ -171,7 +174,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">{powerLabel}</span>
-        <div className="derived-stat-value pixel-font text-xs number-flow-container">
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
           <NumberFlow
             value={previewPower}
             format={INTEGER_FORMAT}

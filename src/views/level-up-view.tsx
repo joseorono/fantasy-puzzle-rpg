@@ -138,7 +138,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
 
               <div className="progress-section">
-                <div className="stat-label pixel-font text-xs">EXP</div>
+                <div className="stat-label">
+                  <NarikWoodBitFont text="EXP" size={1} />
+                </div>
                 <div className="exp-bar-container">
                   <div className="exp-bar" style={{ width: `${expPercentage}%` }} />
                   <div className="bar-text pixel-font text-xs">
@@ -148,7 +150,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
 
               <div className="progress-section">
-                <div className="stat-label pixel-font text-xs">HP</div>
+                <div className="stat-label">
+                  <NarikWoodBitFont text="HP" size={1} />
+                </div>
                 <div className="hp-bar-container">
                   <div className="hp-bar" style={{ width: `${hpPercentage}%` }} />
                   <div className="bar-text pixel-font text-xs">
@@ -239,16 +243,18 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
 
               {hasPendingChanges && (
-                <div className="pending-changes-banner pixel-font text-xs">
-                  <p className="pending-changes-text">Confirm to apply changes</p>
-                  <p className="pending-changes-hint">Use Reset to undo pending points</p>
+                <div className="pending-changes-banner pixel-font">
+                  <span className="pending-changes-text">Confirm to apply</span>
+                  <span className="pending-changes-hint">· Reset to undo</span>
                 </div>
               )}
             </div>
 
             {/* Right Column - Stat Allocation */}
             <div className="stat-allocation-panel">
-              <h2 className="allocation-title pixel-font text-sm sm:text-base">Allocate Points</h2>
+              <h2 className="allocation-title">
+                <NarikWoodBitFont text="Allocate Points" size={1.2} />
+              </h2>
 
               {/* Power Stat */}
               <div className="stat-allocation-row">
