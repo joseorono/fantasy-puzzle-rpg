@@ -263,6 +263,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         <ul className="item-list">
           {lootTable.equipableItems?.map((item, index) => (
             <li key={`equip-${index}`} className="item-entry">
+              <div className="item-entry-icon">
+                {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
+              </div>
               <span className="item-name">
                 1x {item.item?.name || 'Equipment'}
                 <span className="item-type">EQUIPMENT</span>
@@ -271,6 +274,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
           ))}
           {lootTable.consumableItems?.map((item, index) => (
             <li key={`consumable-${index}`} className="item-entry">
+              <div className="item-entry-icon">
+                {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
+              </div>
               <span className="item-name">
                 1x {item.item?.name || 'Consumable'}
                 <span className="item-type">CONSUMABLE</span>
