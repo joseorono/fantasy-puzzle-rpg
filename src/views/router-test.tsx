@@ -1,5 +1,6 @@
 import { useRouterActions, useRouterState } from '~/stores/game-store';
-import { ConsumableItemIds } from '~/constants/inventory';
+import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
+import { createLootTable } from '~/types/loot';
 
 /**
  * Router test view - demonstrates navigation
@@ -73,56 +74,17 @@ export default function RouterTestView() {
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
           onClick={() =>
             goToBattleRewards({
-              lootTable: {
-                equipableItems: [
-                  {
-                    item: {
-                      id: 'iron-sword',
-                      name: 'Iron Sword',
-                      type: 'equipment',
-                      description: 'A sturdy iron sword',
-                      cost: { coins: 50, gold: 0, silver: 0, iron: 0, copper: 0 },
-                    } as any,
-                    probability: 1 as any,
-                  },
-                  {
-                    item: {
-                      id: 'steel-shield',
-                      name: 'Steel Shield',
-                      type: 'equipment',
-                      description: 'A protective steel shield',
-                      cost: { coins: 75, gold: 0, silver: 0, iron: 0, copper: 0 },
-                    } as any,
-                    probability: 1 as any,
-                  },
+              lootTable: createLootTable(
+                [
+                  { item: EquipmentItems.find((e) => e.id === 'iron-sword')! },
+                  { item: EquipmentItems.find((e) => e.id === 'iron-armor')! },
                 ],
-                consumableItems: [
-                  {
-                    item: {
-                      id: 'health-potion',
-                      name: 'Health Potion',
-                      type: 'consumable',
-                      description: 'Restores HP',
-                      cost: { coins: 20, gold: 0, silver: 0, iron: 0, copper: 0 },
-                    } as any,
-                    probability: 3 as any,
-                  },
-                  {
-                    item: {
-                      id: 'mana-elixir',
-                      name: 'Mana Elixir',
-                      type: 'consumable',
-                      description: 'Restores MP',
-                      cost: { coins: 30, gold: 0, silver: 0, iron: 0, copper: 0 },
-                    } as any,
-                    probability: 2 as any,
-                  },
+                [
+                  { item: ConsumableItems.find((c) => c.id === 'potion')! },
+                  { item: ConsumableItems.find((c) => c.id === 'energy-potion')! },
                 ],
-                resources: {
-                  item: { coins: 100, gold: 0, silver: 0, iron: 0, copper: 0 },
-                  probability: 1 as any,
-                },
-              },
+                { item: { coins: 100 } },
+              ),
               expReward: 250,
             })
           }
