@@ -16,6 +16,7 @@ import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import type { ConsumableItemData } from '~/types';
 
 export function BattleItemBar() {
@@ -100,16 +101,17 @@ export function BattleItemBar() {
 
         return (
           <ToffecBeigeCornersWrapper key={item.id}>
-            <button
-              onClick={() => handleUseItem(item)}
-              disabled={isDisabled}
-              title={`${item.name}: ${item.description}`}
-              className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-                isEmpty || gameStatus !== 'playing'
-                  ? 'cursor-not-allowed opacity-40'
-                  : 'cursor-pointer hover:scale-105 active:scale-95'
-              }`}
-            >
+            <Tooltip>
+              <TooltipTrigger>
+                <button
+                  onClick={() => handleUseItem(item)}
+                  disabled={isDisabled}
+                  className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
+                    isEmpty || gameStatus !== 'playing'
+                      ? 'cursor-not-allowed opacity-40'
+                      : 'cursor-pointer hover:scale-105 active:scale-95'
+                  }`}
+                >
               {item.iconName ? (
                 <FrostyRpgIcon name={item.iconName} size={32} />
               ) : (
@@ -129,6 +131,9 @@ export function BattleItemBar() {
                 />
               )}
             </button>
+              </TooltipTrigger>
+              <TooltipContent>{item.name}: {item.description}</TooltipContent>
+            </Tooltip>
           </ToffecBeigeCornersWrapper>
         );
       })}
