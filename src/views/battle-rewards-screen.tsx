@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { atom } from 'jotai';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
@@ -27,11 +26,7 @@ import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-
-/**
- * Atom to track the current step in the battle rewards flow
- */
-export const rewardsStepAtom = atom(1);
+import { rewardsStepAtom } from '~/constants/battle-rewards';
 
 /**
  * Battle Rewards Screen View

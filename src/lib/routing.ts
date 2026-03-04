@@ -3,7 +3,7 @@ import type { RouterState, ViewType, ViewDataMap, NavigationResult } from '~/typ
 /**
  * Validates if a view transition is allowed
  */
-export function canNavigate(_currentState: RouterState, _targetView: ViewType): boolean {
+export function canNavigate(): boolean {
   // Always allow navigation for now
   // Add custom validation logic here if needed (e.g., prevent going to battle from certain views)
   return true;
@@ -17,7 +17,7 @@ export function prepareNavigation<T extends ViewType>(
   targetView: T,
   viewData?: ViewDataMap[T],
 ): NavigationResult {
-  if (!canNavigate(currentState, targetView)) {
+  if (!canNavigate()) {
     return {
       success: false,
       error: `Cannot navigate from ${currentState.currentView} to ${targetView}`,

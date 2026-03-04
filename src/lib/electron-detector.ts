@@ -18,7 +18,7 @@ export const isElectron = (): boolean => {
     ) {
       return true;
     }
-  } catch (error) {
+  } catch {
     // If any reference errors occur, we're probably not in Electron
     return false;
   }

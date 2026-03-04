@@ -7,9 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export const noop = () => {};
 
-export function shuffleArray(argArray: any[]) {
+export function shuffleArray<T>(argArray: T[]) {
   // Durstenfeld shuffle array
-  let array = argArray.slice(); // Copy the array, don't mutate the original
+  const array = argArray.slice(); // Copy the array, don't mutate the original
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -29,8 +29,8 @@ export function auxSleepFor(ms: number): Promise<void> {
  * @returns {Record<string, any>} - A new object with the same keys as the input
  * object, but with the values transformed by the map function.
  */
-export function auxObjectMap(object: Record<string, any>, mapFn: (arg: any) => any): Record<string, any> {
-  return Object.keys(object).reduce(function (result: any, key: any) {
+export function auxObjectMap<T, U>(object: Record<string, T>, mapFn: (arg: T) => U): Record<string, U> {
+  return Object.keys(object).reduce(function (result: Record<string, U>, key: string) {
     result[key] = mapFn(object[key]);
     return result;
   }, {});

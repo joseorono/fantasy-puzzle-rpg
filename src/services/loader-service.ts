@@ -23,7 +23,7 @@ class LoaderService {
       soundService.preloadAudios(),
       // this.delayMock(2000),
     ])
-      .then((_) => {
+      .then(() => {
         console.log('Everything has been loaded successfully');
         this.isLoaded = true;
       })

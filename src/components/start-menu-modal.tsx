@@ -9,8 +9,6 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 
 interface StartMenuModalProps {
   onStartGame: () => void;
-  onLoadGame: () => void;
-  onCredits: () => void;
 }
 
 type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
@@ -22,7 +20,7 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
-export function StartMenuModal({ onStartGame, onLoadGame, onCredits }: StartMenuModalProps) {
+export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
 
   useEffect(() => {

@@ -76,13 +76,13 @@ class SoundService {
       }
       try {
         this.isPreloading = true;
-        let soundsList: Record<string, string> = {};
+        const soundsList: Record<string, string> = {};
         for (const [key, val] of Object.entries(soundFiles)) {
           soundsList[key] = val;
         }
         sound.add(soundsList, {
           preload: true,
-          loaded: (_) => {
+          loaded: () => {
             this.audioLoaded = true;
             this.isPreloading = false;
             sound.context.volume = this.globalVolume;

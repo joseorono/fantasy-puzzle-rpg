@@ -10,7 +10,6 @@ import {
   findEquipmentItem,
 } from './equipment-system';
 import type { CharacterData } from '~/types/rpg-elements';
-import type { EquipmentItemData } from '~/types/inventory';
 import type { InventoryItem } from '~/lib/inventory';
 
 // Helpers to create minimal test characters

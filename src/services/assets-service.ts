@@ -58,7 +58,7 @@ class AssetsService {
 
   preloadImage = (src: string) =>
     new Promise((resolve, reject) => {
-      let img = new Image();
+      const img = new Image();
       img.onload = resolve;
       img.onerror = reject;
       img.src = src;
@@ -71,7 +71,7 @@ class AssetsService {
     }
     this.isPreloading = true;
     await Promise.all(srcs.map(this.preloadImage))
-      .then((_) => {
+      .then(() => {
         console.log('all assets loaded successfully');
         this.assetsLoaded = true;
       })

@@ -12,7 +12,6 @@ import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 
 interface TownHubProps {
@@ -23,8 +22,8 @@ interface TownHubProps {
 
 export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
-  const [dialogueText, setDialogueText] = useState(() => getRandomElement(TOWN_WELCOME_TEXT));
-  const [isTyping, setIsTyping] = useState(false);
+  const dialogueText = useState(() => getRandomElement(TOWN_WELCOME_TEXT))[0];
+  const isTyping = useState(false)[0];
   const resources = useResources();
 
   // Play random background noise when entering town hub

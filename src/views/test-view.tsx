@@ -74,8 +74,8 @@ export default function TestView() {
                 <FrostyRpgIcon name="coinPurse" size={32} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <FrostyRpgIcon name="scroll" size={32} />
-                <FrostyRpgIcon name="goldKey" size={32} />
+                <FrostyRpgIcon name="bookRed" size={32} />
+                <FrostyRpgIcon name="silverKey" size={32} />
                 <FrostyRpgIcon name="skull" size={32} />
                 <FrostyRpgIcon name="compass" size={32} />
                 <FrostyRpgIcon name="ring" size={32} />
@@ -87,7 +87,7 @@ export default function TestView() {
                 <FrostyRpgIcon name="shortSword" size={32} />
                 <FrostyRpgIcon name="flameSword" size={32} />
                 <FrostyRpgIcon name="battleAxe" size={32} />
-                <FrostyRpgIcon name="longBow" size={32} />
+                <FrostyRpgIcon name="longbow" size={32} />
                 <FrostyRpgIcon name="mageStaff" size={32} />
                 <FrostyRpgIcon name="ironArmor" size={32} />
                 <FrostyRpgIcon name="steelHelm" size={32} />

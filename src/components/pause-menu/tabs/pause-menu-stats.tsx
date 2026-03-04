@@ -12,7 +12,6 @@ import {
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
   INTEGER_FORMAT,
-  DECIMAL_2_FORMAT,
 } from '~/constants/number-flow';
 
 export function PauseMenuStats() {
