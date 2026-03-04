@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAtom } from 'jotai';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
@@ -26,20 +25,45 @@ import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { rewardsStepAtom } from '~/constants/battle-rewards';
 
 /**
  * Battle Rewards Screen View
  * Shows loot, then exp bar, then level ups for all party members
  */
 export function BattleRewardsScreen() {
-  const [step, setStep] = useAtom(rewardsStepAtom);
+  const [step, setStep] = useState(1);
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
   const routerActions = useRouterActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
   const [randomPotentialStats, setRandomPotentialStats] = useState<CoreRPGStats | null>(null);
+
+  // Handle completion of all level-ups in step 3
+  useEffect(() => {
+    if (step !== 3) return;
+
+    // No level-ups or all level-ups complete - navigate back
+    if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
+      setStep(1);
+      routerActions.goBack();
+      return;
+    }
+
+    // Skip characters with 0 pending level-ups
+    const currentPending = pendingLevelUps[currentLevelUpIndex];
+    if (currentPending && currentPending.pendingLevelUps === 0) {
+      setCurrentLevelUpIndex((prev) => prev + 1);
+      return;
+    }
+
+    // Generate random potential stats for current character if needed
+    if (currentPending && currentPending.pendingLevelUps > 0 && !randomPotentialStats) {
+      const totalPoints = currentPending.pendingLevelUps * 2;
+      const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
+      setRandomPotentialStats(random);
+    }
+  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, setStep, routerActions]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
@@ -88,33 +112,19 @@ export function BattleRewardsScreen() {
       {/* Step 3: Show level ups for each party member */}
       {step === 3 &&
         (() => {
+          // Wait for useEffect to handle edge cases
           if (currentLevelUpIndex >= pendingLevelUps.length) {
-            // All level ups complete, go back immediately
-            setStep(1);
-            routerActions.goBack();
             return null;
           }
 
           const currentPending = pendingLevelUps[currentLevelUpIndex];
-          const totalLevelUps = currentPending.pendingLevelUps;
-          const totalPoints = totalLevelUps * 2;
-
-          if (totalLevelUps === 0) {
-            // No level ups for this character, skip to next
-            setCurrentLevelUpIndex((prev) => prev + 1);
+          if (!currentPending || currentPending.pendingLevelUps === 0 || !randomPotentialStats) {
+            // useEffect will handle skipping or generating stats
             return null;
           }
 
-          // Generate random potential stats for this character if not already done
-          if (!randomPotentialStats) {
-            const charCopy: CharacterData = {
-              ...currentPending.character,
-              stats: { ...currentPending.character.stats },
-              potentialStats: { ...currentPending.character.potentialStats },
-            };
-            const random = getRandomPotentialStats({ ...charCopy.potentialStats }, totalPoints);
-            setRandomPotentialStats(random);
-          }
+          const totalLevelUps = currentPending.pendingLevelUps;
+          const totalPoints = totalLevelUps * 2;
 
           const charCopy: CharacterData = {
             ...currentPending.character,
@@ -182,11 +192,36 @@ interface ItemRewardsScreenProps {
 }
 
 const RESOURCE_CONFIG = [
-  { key: 'coins' as keyof Resources, label: 'Coins', iconName: 'coinPurse' as const, colorClass: 'rewards-resource-row--coins' },
-  { key: 'gold' as keyof Resources, label: 'Gold', iconName: 'goldBar' as const, colorClass: 'rewards-resource-row--gold' },
-  { key: 'silver' as keyof Resources, label: 'Silver', iconName: 'silverBar' as const, colorClass: 'rewards-resource-row--silver' },
-  { key: 'iron' as keyof Resources, label: 'Iron', iconName: 'ironBar' as const, colorClass: 'rewards-resource-row--iron' },
-  { key: 'copper' as keyof Resources, label: 'Copper', iconName: 'copperBar' as const, colorClass: 'rewards-resource-row--copper' },
+  {
+    key: 'coins' as keyof Resources,
+    label: 'Coins',
+    iconName: 'coinPurse' as const,
+    colorClass: 'rewards-resource-row--coins',
+  },
+  {
+    key: 'gold' as keyof Resources,
+    label: 'Gold',
+    iconName: 'goldBar' as const,
+    colorClass: 'rewards-resource-row--gold',
+  },
+  {
+    key: 'silver' as keyof Resources,
+    label: 'Silver',
+    iconName: 'silverBar' as const,
+    colorClass: 'rewards-resource-row--silver',
+  },
+  {
+    key: 'iron' as keyof Resources,
+    label: 'Iron',
+    iconName: 'ironBar' as const,
+    colorClass: 'rewards-resource-row--iron',
+  },
+  {
+    key: 'copper' as keyof Resources,
+    label: 'Copper',
+    iconName: 'copperBar' as const,
+    colorClass: 'rewards-resource-row--copper',
+  },
 ];
 
 interface RewardsResourcesPanelProps {
