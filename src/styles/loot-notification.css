@@ -1,0 +1,90 @@
+/* Loot Notification — Floating map chest popup */
+
+.loot-notification {
+  background-image: url('/assets/bg/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  border: 3px solid #d4a574;
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.loot-notification__header {
+  text-align: center;
+  padding-bottom: 0.625rem;
+  margin-bottom: 0.625rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.5);
+}
+
+.loot-notification__section {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  padding: 0.375rem 0.625rem;
+  margin-bottom: 0.375rem;
+}
+
+.loot-notification__section-label {
+  font-size: 0.5rem;
+  font-weight: bold;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  margin: 0 0 0.25rem 0;
+}
+
+.loot-notification__item {
+  font-family: monospace;
+  font-size: 0.725rem;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  margin: 0;
+}
+
+.loot-notification__resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.125rem 0.5rem;
+}
+
+.loot-notification__divider {
+  border: none;
+  border-top: 2px solid rgba(212, 165, 116, 0.4);
+  margin: 0.625rem 0 0;
+}
+
+.loot-notification__dismiss {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.5rem;
+  font-family: inherit;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  padding: 0.375rem 0;
+  background: none;
+  border: none;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  transition:
+    color 0.2s ease,
+    text-shadow 0.2s ease;
+}
+
+.loot-notification__dismiss:hover {
+  color: #fff;
+  text-shadow:
+    0 0 10px rgba(255, 215, 0, 0.9),
+    1px 1px 0 rgba(0, 0, 0, 0.8);
+}

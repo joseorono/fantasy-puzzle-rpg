@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Package, Coins } from 'lucide-react';
 import type { LootTable } from '~/types/loot';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
 
 interface LootNotificationProps {
   loot: LootTable;
@@ -8,8 +9,8 @@ interface LootNotificationProps {
 }
 
 /**
- * Non-blocking floating notification showing loot rewards
- * Appears at the top-right of the screen and auto-dismisses
+ * Non-blocking floating notification showing loot rewards.
+ * Appears at the top-right of the screen and auto-dismisses after LOOT_NOTIFICATION_DISMISS_MS.
  */
 export function LootNotification({ loot, onClose }: LootNotificationProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -18,14 +19,19 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
     // Fade in
     setTimeout(() => setIsVisible(true), 50);
 
-    // Auto-dismiss after 4 seconds
+    // Auto-dismiss after configured duration
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 300); // Wait for fade-out animation
-    }, 4000);
+      setTimeout(onClose, 500);
+    }, LOOT_NOTIFICATION_DISMISS_MS);
 
     return () => clearTimeout(timer);
   }, [onClose]);
+
+  function handleDismiss() {
+    setIsVisible(false);
+    setTimeout(onClose, 500);
+  }
 
   const hasEquipment = loot.equipableItems.length > 0;
   const hasConsumables = loot.consumableItems.length > 0;
@@ -38,87 +44,66 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
 
   return (
     <div
-      className={`fixed top-20 right-4 z-50 w-80 rounded-lg border-2 border-amber-800 bg-amber-50 p-4 shadow-2xl transition-all duration-300 ${
+      className={`loot-notification absolute top-4 right-4 z-50 w-72 transition-all duration-500 ${
         isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}
-      style={{ pointerEvents: 'auto' }}
     >
       {/* Header */}
-      <div className="mb-3 flex items-center gap-2 border-b-2 border-amber-800 pb-2">
-        <Package className="h-5 w-5 text-amber-900" />
-        <h3 className="text-sm font-bold text-amber-900">Treasure Found!</h3>
+      <div className="loot-notification__header">
+        <NarikWoodBitFont text="Treasure Found" size={1.2} />
       </div>
 
       {/* Loot contents */}
-      <div className="space-y-2">
-        {/* Equipment */}
-        {hasEquipment && (
-          <div className="rounded bg-white/60 p-2">
-            <p className="mb-1 text-[10px] font-bold text-amber-900">Equipment:</p>
-            <ul className="space-y-0.5">
-              {loot.equipableItems.map((lootItem, idx) => (
-                <li key={idx} className="text-[11px] text-gray-700">
-                  • {lootItem.item.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      {hasEquipment && (
+        <div className="loot-notification__section">
+          <p className="loot-notification__section-label">Equipment</p>
+          {loot.equipableItems.map((lootItem, idx) => (
+            <p key={idx} className="loot-notification__item">
+              {'\u2022'} {lootItem.item.name}
+            </p>
+          ))}
+        </div>
+      )}
 
-        {/* Consumables */}
-        {hasConsumables && (
-          <div className="rounded bg-white/60 p-2">
-            <p className="mb-1 text-[10px] font-bold text-amber-900">Items:</p>
-            <ul className="space-y-0.5">
-              {loot.consumableItems.map((lootItem, idx) => (
-                <li key={idx} className="text-[11px] text-gray-700">
-                  • {lootItem.item.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      {hasConsumables && (
+        <div className="loot-notification__section">
+          <p className="loot-notification__section-label">Items</p>
+          {loot.consumableItems.map((lootItem, idx) => (
+            <p key={idx} className="loot-notification__item">
+              {'\u2022'} {lootItem.item.name}
+            </p>
+          ))}
+        </div>
+      )}
 
-        {/* Resources */}
-        {hasResources && (
-          <div className="rounded bg-white/60 p-2">
-            <div className="flex items-center gap-1.5 text-amber-900">
-              <Coins className="h-4 w-4" />
-              <p className="text-[10px] font-bold">Resources:</p>
-            </div>
-            <div className="mt-1 grid grid-cols-2 gap-1">
-              {loot.resources.item.coins > 0 && (
-                <span className="text-[11px] text-gray-700">Coins: {loot.resources.item.coins}</span>
-              )}
-              {loot.resources.item.gold > 0 && (
-                <span className="text-[11px] text-gray-700">Gold: {loot.resources.item.gold}</span>
-              )}
-              {loot.resources.item.copper > 0 && (
-                <span className="text-[11px] text-gray-700">Copper: {loot.resources.item.copper}</span>
-              )}
-              {loot.resources.item.silver > 0 && (
-                <span className="text-[11px] text-gray-700">Silver: {loot.resources.item.silver}</span>
-              )}
-              {loot.resources.item.iron > 0 && (
-                <span className="text-[11px] text-gray-700">Iron: {loot.resources.item.iron}</span>
-              )}
-            </div>
+      {hasResources && (
+        <div className="loot-notification__section">
+          <p className="loot-notification__section-label">Resources</p>
+          <div className="loot-notification__resources-grid">
+            {loot.resources.item.coins > 0 && (
+              <span className="loot-notification__item">Coins: {loot.resources.item.coins}</span>
+            )}
+            {loot.resources.item.gold > 0 && (
+              <span className="loot-notification__item">Gold: {loot.resources.item.gold}</span>
+            )}
+            {loot.resources.item.copper > 0 && (
+              <span className="loot-notification__item">Copper: {loot.resources.item.copper}</span>
+            )}
+            {loot.resources.item.silver > 0 && (
+              <span className="loot-notification__item">Silver: {loot.resources.item.silver}</span>
+            )}
+            {loot.resources.item.iron > 0 && (
+              <span className="loot-notification__item">Iron: {loot.resources.item.iron}</span>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Close hint */}
-      <div className="mt-2 text-center">
-        <button
-          onClick={() => {
-            setIsVisible(false);
-            setTimeout(onClose, 300);
-          }}
-          className="text-[10px] text-amber-700 hover:text-amber-900"
-        >
-          Click to dismiss
-        </button>
-      </div>
+      {/* Dismiss */}
+      <hr className="loot-notification__divider" />
+      <button onClick={handleDismiss} className="loot-notification__dismiss">
+        [ Click to dismiss ]
+      </button>
     </div>
   );
 }
