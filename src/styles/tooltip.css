@@ -10,7 +10,7 @@
     background: rgba(0, 0, 0, 0.3);
   max-width: 20em;
   word-wrap: break-word;
-  z-index: 50;
+  z-index: 1100;
   pointer-events: none;
 }
 
