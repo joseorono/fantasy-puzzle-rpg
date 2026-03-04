@@ -62,7 +62,10 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(demoMap);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
-  const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 58, col: 70 });
+  const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
+    const saved = useGameStore.getState().mapProgress.characterPosition;
+    return saved ?? { row: 58, col: 70 };
+  });
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
   const [showTriggerModal, setShowTriggerModal] = useState(false);
@@ -212,6 +215,18 @@ const Tilemap: React.FC<TilemapProps> = ({
     setDebugInfo('ERROR: No road tiles found!');
   }, [mapData]);
 
+  // Persist character position to store on unmount so it survives view transitions
+  const charPositionRef = useRef(charPosition);
+  charPositionRef.current = charPosition;
+  useEffect(() => {
+    // Persist character position to store on unmount
+    // so it survives view transitions
+    return () => {
+      mapProgressActions.setCharacterPosition(charPositionRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Check if character reached a dialogue trigger
   const checkDialogueTrigger = React.useCallback(
     (row: number, col: number) => {
@@ -353,7 +368,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, checkFloorLoot, showNodeMenu]);
+  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, checkFloorLoot, showNodeMenu, mapData]);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {

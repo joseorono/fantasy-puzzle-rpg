@@ -101,6 +101,12 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
     }
   };
 
+  // Refs for the rAF loop to always access latest values without stale closures
+  const moveCharacterRef = useRef(moveCharacter);
+  moveCharacterRef.current = moveCharacter;
+  const isMovingRef = useRef(isMoving);
+  isMovingRef.current = isMoving;
+
   // Handle continuous movement with key tracking
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -146,8 +152,8 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
       }
 
       // Move if direction is pressed and not currently moving
-      if (intendedDirection && !isMoving) {
-        moveCharacter(intendedDirection);
+      if (intendedDirection && !isMovingRef.current) {
+        moveCharacterRef.current(intendedDirection);
       }
 
       animationFrameRef.current = requestAnimationFrame(processMovement);
@@ -160,7 +166,7 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMoving, position]);
+  }, []);
 
   // Calculate pixel position based on grid position
   const tileSize = 48;
