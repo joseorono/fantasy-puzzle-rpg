@@ -1,4 +1,5 @@
 import { ArrowUpIcon } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 interface DialogueBoxProps {
   speakerName?: string;
@@ -27,18 +28,22 @@ export function DialogueBox({
       <div className="dialogue-box__footer">
         {!isTyping && showIndicator && <div className="dialogue-box__indicator" aria-label="Continue" />}
         {onOpenHistory && (
-          <button
-            className="dialogue-box__button dialogue-box__history-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenHistory();
-            }}
-            title="Open Message History (or scroll up)"
-          >
-            {/* TODO: Change this icon */}
-            <ArrowUpIcon className="h-4 w-4" />
-            Message Log
-          </button>
+          <Tooltip>
+            <TooltipTrigger>
+              <button
+                className="dialogue-box__button dialogue-box__history-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenHistory();
+                }}
+              >
+                {/* TODO: Change this icon */}
+                <ArrowUpIcon className="h-4 w-4" />
+                Message Log
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Message History (scroll up)</TooltipContent>
+          </Tooltip>
         )}
       </div>
     </div>
