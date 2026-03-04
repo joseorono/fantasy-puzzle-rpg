@@ -1,6 +1,6 @@
 import { Button } from '~/components/ui/button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '~/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -13,7 +13,7 @@ export default function TestView() {
   }
 
   return (
-    <TooltipProvider>
+    <>
       <MarqueeText type="general" variant="marquee--gray" />
       <MarqueeText type="general" variant="marquee--clear" />
       <div id="test-view" className="p-8">
@@ -97,6 +97,6 @@ export default function TestView() {
           </Franuka05aFrame>
         </div>
       </div>
-    </TooltipProvider>
+    </>
   );
 }
