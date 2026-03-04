@@ -22,6 +22,7 @@ export interface MapProgressState {
   townsVisited: NodeProgress;
   treasuresFound: NodeProgress;
   mysteriesSolved: NodeProgress;
+  characterPosition: { row: number; col: number } | null;
 }
 
 /**
@@ -31,6 +32,7 @@ export interface MapProgressActions {
   completeNode: (nodeType: MapNodeType, nodeId: string) => void;
   isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean;
   resetProgress: () => void;
+  setCharacterPosition: (position: { row: number; col: number }) => void;
 }
 
 /**
