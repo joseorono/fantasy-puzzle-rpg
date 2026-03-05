@@ -138,6 +138,13 @@ export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-d
 }
 
 /**
+ * Navigate to map demo 2
+ */
+export function goToMapDemo2(currentState: RouterState, data?: ViewDataMap['map-demo-2']): NavigationResult {
+  return prepareNavigation(currentState, 'map-demo-2', data ?? {});
+}
+
+/**
  * Navigate to dialogue demo
  */
 export function goToDialogueDemo(currentState: RouterState, data?: ViewDataMap['dialogue-demo']): NavigationResult {

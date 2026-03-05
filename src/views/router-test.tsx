@@ -11,6 +11,7 @@ export default function RouterTestView() {
     goToTownHub,
     goToBattleDemo,
     goToMapDemo,
+    goToMapDemo2,
     goToDialogueDemo,
     goToBattleRewards,
     goToDebug,
@@ -61,6 +62,13 @@ export default function RouterTestView() {
           onClick={() => goToMapDemo()}
         >
           Map Demo
+        </button>
+
+        <button
+          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+          onClick={() => goToMapDemo2()}
+        >
+          Map Demo 2
         </button>
 
         <button

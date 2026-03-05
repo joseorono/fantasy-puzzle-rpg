@@ -48,3 +48,10 @@ export interface TilemapProps {
   tilesetImage: string;
   visibleLayers?: string[];
 }
+
+export interface TiledMapConfig {
+  tilesetImage: string;
+  displayMapName: string;
+  walkableLayers: string[];
+  visibleLayers: string[];
+}

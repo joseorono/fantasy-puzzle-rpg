@@ -9,6 +9,7 @@ import { DialogueTestView } from './views/dialogue-test';
 import { BattleRewardsScreen } from './views/battle-rewards-screen';
 
 import DemoMap from './components/map/demo-map.tsx';
+import DemoMap2 from './components/map/demo-map-2.tsx';
 
 import BattleScreen from '~/views/battle-screen';
 
@@ -40,6 +41,9 @@ export default function GameScreen() {
 
     case 'map-demo':
       return <DemoMap />;
+
+    case 'map-demo-2':
+      return <DemoMap2 />;
 
     case 'dialogue-demo':
       return <DialogueTestView />;
