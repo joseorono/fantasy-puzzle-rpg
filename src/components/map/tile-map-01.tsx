@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { TilemapData, TilemapProps } from '../../types/tilemap';
+import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
@@ -9,10 +9,12 @@ interface CharacterPosition {
   col: number;
 }
 
-const TilemapMap01: React.FC<TilemapProps> = ({
-  tilesetImage,
-  visibleLayers = ['not-walkable', 'walkable', 'walkable-2'],
-}) => {
+interface TilemapMap01Props {
+  config: TiledMapConfig;
+}
+
+const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
+  const { tilesetImage, displayMapName, walkableLayers, visibleLayers } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(newMap);
@@ -47,34 +49,32 @@ const TilemapMap01: React.FC<TilemapProps> = ({
     };
   }, []);
 
-  // Check if a position is walkable (walkable or walkable-2 layer has a tile)
+  // Check if a position is walkable based on walkableLayers config
   const isWalkable = React.useCallback(
     (row: number, col: number): boolean => {
-      const walkableLayer = mapData.layers.find((layer) => layer.name === 'walkable');
-      const walkable2Layer = mapData.layers.find((layer) => layer.name === 'walkable-2');
-
       // Check bounds
-      const width = walkableLayer?.width || mapData.width;
-      const height = walkableLayer?.height || mapData.height;
-      if (row < 0 || row >= height) return false;
-      if (col < 0 || col >= width) return false;
+      if (row < 0 || row >= mapData.height) return false;
+      if (col < 0 || col >= mapData.width) return false;
 
-      const dataIndex = row * width + col;
+      const dataIndex = row * mapData.width + col;
 
-      // Check if there's a walkable tile in either walkable layer
-      const walkableTile = walkableLayer?.data[dataIndex] || 0;
-      const walkable2Tile = walkable2Layer?.data[dataIndex] || 0;
+      // Check if any walkable layer has a tile at this position
+      for (const layerName of walkableLayers) {
+        const layer = mapData.layers.find((l) => l.name === layerName);
+        if (layer && layer.data[dataIndex] !== 0) {
+          return true;
+        }
+      }
 
-      return walkableTile !== 0 || walkable2Tile !== 0;
+      return false;
     },
-    [mapData],
+    [mapData, walkableLayers],
   );
 
   // Verify starting position is valid on initialization
   useEffect(() => {
-    const walkableLayer = mapData.layers.find((layer) => layer.name === 'walkable');
-    if (!walkableLayer) {
-      console.error('❌ Walkable layer not found!');
+    if (walkableLayers.length === 0) {
+      console.error('❌ No walkable layers configured!');
       return;
     }
 
@@ -88,8 +88,8 @@ const TilemapMap01: React.FC<TilemapProps> = ({
 
     // Find nearest walkable tile
     console.log(`🔍 Searching for nearest walkable tile...`);
-    for (let row = 0; row < walkableLayer.height; row++) {
-      for (let col = 0; col < walkableLayer.width; col++) {
+    for (let row = 0; row < mapData.height; row++) {
+      for (let col = 0; col < mapData.width; col++) {
         if (isWalkable(row, col)) {
           console.log(`✅ Fallback position found: Row ${row}, Col ${col}`);
           setCharPosition({ row, col });
@@ -98,7 +98,7 @@ const TilemapMap01: React.FC<TilemapProps> = ({
       }
     }
     console.error('❌ No walkable tiles found in map!');
-  }, [mapData, isWalkable]);
+  }, [mapData, isWalkable, walkableLayers]);
 
   // Handle keyboard input for character movement
   useEffect(() => {
@@ -239,6 +239,7 @@ const TilemapMap01: React.FC<TilemapProps> = ({
 
   return (
     <div className="tilemap-container">
+      <h2 className="map-title">{displayMapName}</h2>
       <div className="canvas-wrapper">
         <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
       </div>
