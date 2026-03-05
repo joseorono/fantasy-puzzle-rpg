@@ -1,4 +1,5 @@
 import { Button } from '~/components/ui/button';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
 import { getItemQuantity } from '~/lib/inventory';
 import { EquipmentItems, ConsumableItems } from '~/constants/inventory';
@@ -42,12 +43,16 @@ export default function InventoryTestView() {
 
   return (
     <div className="mx-auto max-w-6xl p-8">
-      <h1 className="mb-8 text-4xl font-bold">Inventory Test</h1>
+      <h1 className="mb-8 text-4xl font-bold">
+        <NarikWoodBitFont text="Inventory Test" size={1.4} />
+      </h1>
 
       {/* Current Inventory Display */}
       <div className="mb-8 rounded-lg bg-slate-100 p-6 dark:bg-slate-900">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Current Inventory</h2>
+          <h2 className="text-2xl font-semibold">
+            <NarikWoodBitFont text="Current Inventory" size={1.2} />
+          </h2>
           <Button onClick={handleClearInventory} variant="outline" className="bg-red-600 text-white hover:bg-red-700">
             Clear All
           </Button>
@@ -63,7 +68,9 @@ export default function InventoryTestView() {
                 className="rounded-lg border-2 border-slate-300 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
               >
                 <div className="mb-2 flex items-start justify-between">
-                  <h3 className="text-lg font-semibold">{item.name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    <NarikWoodBitFont text={item.name} size={1} />
+                  </h3>
                   <span className="text-2xl font-bold text-blue-600">×{item.quantity}</span>
                 </div>
                 <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
@@ -89,11 +96,15 @@ export default function InventoryTestView() {
 
       {/* Add Items Section */}
       <div className="mb-8">
-        <h2 className="mb-4 text-2xl font-semibold">Add Items to Inventory</h2>
+        <h2 className="mb-4 text-2xl font-semibold">
+          <NarikWoodBitFont text="Add Items to Inventory" size={1.2} />
+        </h2>
 
         {/* Consumables */}
         <div className="mb-6">
-          <h3 className="mb-3 text-xl font-semibold text-green-600">Consumables</h3>
+          <h3 className="mb-3 text-xl font-semibold text-green-600">
+            <NarikWoodBitFont text="Consumables" size={1} />
+          </h3>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {ConsumableItems.map((item) => {
               const currentQty = getItemQuantity(inventory, item.id);
@@ -122,7 +133,9 @@ export default function InventoryTestView() {
 
         {/* Equipment */}
         <div>
-          <h3 className="mb-3 text-xl font-semibold text-purple-600">Equipment</h3>
+          <h3 className="mb-3 text-xl font-semibold text-purple-600">
+            <NarikWoodBitFont text="Equipment" size={1} />
+          </h3>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {EquipmentItems.slice(0, 9).map((item) => {
               const currentQty = getItemQuantity(inventory, item.id);
@@ -156,7 +169,9 @@ export default function InventoryTestView() {
 
       {/* Inventory Stats */}
       <div className="rounded-lg bg-slate-100 p-6 dark:bg-slate-900">
-        <h2 className="mb-4 text-2xl font-semibold">Inventory Stats</h2>
+        <h2 className="mb-4 text-2xl font-semibold">
+          <NarikWoodBitFont text="Inventory Stats" size={1.2} />
+        </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="rounded bg-white p-4 dark:bg-slate-800">
             <p className="text-sm text-gray-600 dark:text-gray-400">Unique Items</p>
