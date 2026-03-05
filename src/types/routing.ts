@@ -7,6 +7,7 @@ export type ViewType =
   | 'town-hub'
   | 'battle-demo'
   | 'map-demo'
+  | 'map-demo-2'
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
@@ -40,6 +41,13 @@ export interface BattleViewData {
  * Data for map demo view
  */
 export interface MapDemoViewData {
+  // No specific data needed for demo
+}
+
+/**
+ * Data for map demo 2 view
+ */
+export interface MapDemo2ViewData {
   // No specific data needed for demo
 }
 
@@ -79,6 +87,7 @@ export interface ViewDataMap {
   'town-hub': TownHubViewData;
   'battle-demo': BattleViewData;
   'map-demo': MapDemoViewData;
+  'map-demo-2': MapDemo2ViewData;
   'dialogue-demo': DialogueDemoViewData;
   inventory: InventoryViewData;
   debug: DebugViewData;
@@ -91,6 +100,7 @@ export interface ViewDataMap {
 export type RouteStatus = TownHubViewData &
   BattleViewData &
   MapDemoViewData &
+  MapDemo2ViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &

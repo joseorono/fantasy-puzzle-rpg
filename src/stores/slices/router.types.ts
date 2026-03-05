@@ -23,6 +23,11 @@ export interface RouterSlice {
       goToMapDemo: (data?: ViewDataMap['map-demo']) => void;
 
       /**
+       * Navigate to map demo 2
+       */
+      goToMapDemo2: (data?: ViewDataMap['map-demo-2']) => void;
+
+      /**
        * Navigate to dialogue demo
        */
       goToDialogueDemo: (data?: ViewDataMap['dialogue-demo']) => void;
