@@ -18,7 +18,6 @@ const TilemapMap01: React.FC<TilemapProps> = ({
   const [mapData] = useState<TilemapData>(newMap);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 30, col: 45 });
-  const [debugInfo, setDebugInfo] = useState<string>('');
 
   const tileSize = mapData.tilewidth || 16;
 
@@ -76,7 +75,6 @@ const TilemapMap01: React.FC<TilemapProps> = ({
     const walkableLayer = mapData.layers.find((layer) => layer.name === 'walkable');
     if (!walkableLayer) {
       console.error('❌ Walkable layer not found!');
-      setDebugInfo('ERROR: Walkable layer not found!');
       return;
     }
 
@@ -85,7 +83,6 @@ const TilemapMap01: React.FC<TilemapProps> = ({
 
     if (isWalkable(startRow, startCol)) {
       console.log(`✅ Starting position (${startRow}, ${startCol}) is valid`);
-      setDebugInfo(`Position: (${startRow}, ${startCol})`);
       return;
     }
 
@@ -96,13 +93,11 @@ const TilemapMap01: React.FC<TilemapProps> = ({
         if (isWalkable(row, col)) {
           console.log(`✅ Fallback position found: Row ${row}, Col ${col}`);
           setCharPosition({ row, col });
-          setDebugInfo(`Position: (${row}, ${col})`);
           return;
         }
       }
     }
     console.error('❌ No walkable tiles found in map!');
-    setDebugInfo('ERROR: No walkable tiles found!');
   }, [mapData, isWalkable]);
 
   // Handle keyboard input for character movement
@@ -138,9 +133,6 @@ const TilemapMap01: React.FC<TilemapProps> = ({
 
       if (isWalkable(newRow, newCol)) {
         setCharPosition({ row: newRow, col: newCol });
-        setDebugInfo(`Position: (${newRow}, ${newCol})`);
-      } else {
-        setDebugInfo(`Blocked at (${newRow}, ${newCol})`);
       }
     }
 
@@ -247,7 +239,6 @@ const TilemapMap01: React.FC<TilemapProps> = ({
 
   return (
     <div className="tilemap-container">
-      <div className="debug-info">{debugInfo}</div>
       <div className="canvas-wrapper">
         <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
       </div>
