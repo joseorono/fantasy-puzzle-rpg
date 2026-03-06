@@ -54,9 +54,12 @@ interface CharacterPosition {
   col: number;
 }
 
+const DEFAULT_PLAYER_POSITION = { x: 70, y: 58 };
+
 const Tilemap: React.FC<TilemapProps> = ({
   tilesetImage,
   visibleLayers = ['snow', 'road', 'mountains', 'trees', 'signs'],
+  defaultPlayerPosition = DEFAULT_PLAYER_POSITION,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
@@ -64,7 +67,7 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPosition;
-    return saved ?? { row: 58, col: 70 };
+    return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
@@ -190,8 +193,15 @@ const Tilemap: React.FC<TilemapProps> = ({
       return;
     }
 
-    const startRow = 58;
-    const startCol = 70;
+    // Check store for saved position first (used when returning from combat)
+    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const startRow = savedPosition?.row ?? defaultPlayerPosition.y;
+    const startCol = savedPosition?.col ?? defaultPlayerPosition.x;
+
+    // Update charPosition if store had a saved position
+    if (savedPosition) {
+      setCharPosition(savedPosition);
+    }
 
     // Check if starting position is valid
     if (startRow >= 0 && startRow < roadLayer.height && startCol >= 0 && startCol < roadLayer.width) {
@@ -224,7 +234,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     }
     console.error('❌ No road tiles found in map!');
     setDebugInfo('ERROR: No road tiles found!');
-  }, [mapData]);
+  }, [mapData, defaultPlayerPosition]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);

@@ -7,6 +7,7 @@ const MAP_CONFIG: TiledMapConfig = {
   displayMapName: 'The Forgotten Halls',
   walkableLayers: ['walkable', 'walkable-2'],
   visibleLayers: ['not-walkable', 'walkable', 'walkable-2'],
+  defaultPlayerPosition: { x: 10, y: 10 },
 };
 
 export default function DemoMap2() {

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
+import { useGameStore, useMapProgressActions } from '~/stores/game-store';
 
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 
@@ -14,12 +15,17 @@ interface TilemapMap01Props {
 }
 
 const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
-  const { tilesetImage, displayMapName, walkableLayers, visibleLayers } = config;
+  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(newMap);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
-  const [charPosition, setCharPosition] = useState<CharacterPosition>({ row: 30, col: 45 });
+  const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
+    const saved = useGameStore.getState().mapProgress.characterPosition;
+    return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
+  });
+
+  const mapProgressActions = useMapProgressActions();
 
   const tileSize = mapData.tilewidth || 16;
 
@@ -78,8 +84,15 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       return;
     }
 
-    const startRow = 30;
-    const startCol = 45;
+    // Check store for saved position first (used when returning from combat)
+    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const startRow = savedPosition?.row ?? defaultPlayerPosition.y;
+    const startCol = savedPosition?.col ?? defaultPlayerPosition.x;
+
+    // Update charPosition if store had a saved position
+    if (savedPosition) {
+      setCharPosition(savedPosition);
+    }
 
     if (isWalkable(startRow, startCol)) {
       console.log(`✅ Starting position (${startRow}, ${startCol}) is valid`);
@@ -98,7 +111,7 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       }
     }
     console.error('❌ No walkable tiles found in map!');
-  }, [mapData, isWalkable, walkableLayers]);
+  }, [mapData, isWalkable, walkableLayers, defaultPlayerPosition]);
 
   // Handle keyboard input for character movement
   useEffect(() => {
@@ -236,6 +249,15 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       parent.scrollTo({ left: scrollX, top: scrollY, behavior: 'smooth' });
     }
   }, [charPosition, tileSize]);
+
+  // Persist character position to store on unmount so it survives view transitions
+  const charPositionRef = useRef(charPosition);
+  charPositionRef.current = charPosition;
+  useEffect(() => {
+    return () => {
+      mapProgressActions.setCharacterPosition(charPositionRef.current);
+    };
+  }, [mapProgressActions]);
 
   return (
     <div className="tilemap-container">
