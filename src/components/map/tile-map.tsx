@@ -75,6 +75,8 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const [enableTransition, setEnableTransition] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
@@ -98,6 +100,15 @@ const Tilemap: React.FC<TilemapProps> = ({
 
   // Map ID for floor loot tracking (hardcoded for demo map)
   const currentMapId = 'map-00';
+
+  // Enable transitions after canvas is ready to prevent slide on mount
+  useEffect(() => {
+    if (!canvasReady) return;
+    const frameId = requestAnimationFrame(() => {
+      setEnableTransition(true);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, [canvasReady]);
 
   // Pulse animation for markers
   useEffect(() => {
@@ -534,6 +545,11 @@ const Tilemap: React.FC<TilemapProps> = ({
 
     if (!canvas || !ctx || !tileset) return;
 
+    // Mark canvas as ready after first successful draw
+    if (!canvasReady) {
+      setCanvasReady(true);
+    }
+
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -767,6 +783,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     mapProgressActions,
     floorLootProgressActions,
     currentMapId,
+    canvasReady,
   ]);
 
   // Calculate scale factor for character positioning
@@ -814,7 +831,7 @@ const Tilemap: React.FC<TilemapProps> = ({
           />
 
           {/* Character rendered as HTML element for smooth CSS transitions */}
-          {characterImage && canvasElement && (
+          {characterImage && canvasReady && (
             <div
               style={{
                 position: 'absolute',
@@ -829,7 +846,7 @@ const Tilemap: React.FC<TilemapProps> = ({
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
-                transition: 'left 0.2s ease-out, top 0.2s ease-out',
+                transition: enableTransition ? 'left 0.2s ease-out, top 0.2s ease-out' : 'none',
                 pointerEvents: 'none',
                 zIndex: 10,
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
