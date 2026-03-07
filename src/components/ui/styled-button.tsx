@@ -1,116 +1,39 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '~/lib/utils';
 
-interface StyledButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  hexColor: string;
-  textColor?: string;
-  isCircle?: boolean;
+const styledButtonVariants = cva(
+  'styled-button inline-flex items-center justify-center rounded-full border-none cursor-pointer font-bold uppercase tracking-wide select-none outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none',
+  {
+    variants: {
+      variant: {
+        tan: 'styled-button--tan',
+        mauve: 'styled-button--mauve',
+        orange: 'styled-button--orange',
+        cream: 'styled-button--cream',
+        gray: 'styled-button--gray',
+      },
+      size: {
+        default: 'styled-button--pill px-6 py-3 min-h-12 text-sm',
+        sm: 'styled-button--pill px-4 py-2 min-h-10 text-xs',
+        lg: 'styled-button--pill px-8 py-4 min-h-14 text-base',
+        circle: 'styled-button--circle w-12 h-12 min-w-12 min-h-12 text-base',
+        'circle-sm': 'styled-button--circle w-10 h-10 min-w-10 min-h-10 text-sm',
+        'circle-lg': 'styled-button--circle w-14 h-14 min-w-14 min-h-14 text-lg',
+      },
+    },
+    defaultVariants: {
+      variant: 'tan',
+      size: 'default',
+    },
+  },
+);
+
+interface StyledButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof styledButtonVariants> {}
+
+export function StyledButton({ className, variant, size, ...props }: StyledButtonProps) {
+  return <button className={cn(styledButtonVariants({ variant, size, className }))} {...props} />;
 }
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : null;
-}
-
-function darkenColor(hex: string, factor: number = 0.4): string {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return hex;
-
-  const darkened = {
-    r: Math.max(0, Math.floor(rgb.r * (1 - factor))),
-    g: Math.max(0, Math.floor(rgb.g * (1 - factor))),
-    b: Math.max(0, Math.floor(rgb.b * (1 - factor))),
-  };
-
-  return `#${darkened.r.toString(16).padStart(2, '0')}${darkened.g.toString(16).padStart(2, '0')}${darkened.b.toString(16).padStart(2, '0')}`;
-}
-
-export function StyledButton({
-  children,
-  hexColor,
-  textColor = 'rgb(145, 92, 54)',
-  isCircle = false,
-  className = '',
-  ...props
-}: StyledButtonProps) {
-  const borderColor = darkenColor(hexColor, 0.35);
-
-  const baseStyles: React.CSSProperties = {
-    backgroundColor: hexColor,
-    color: textColor,
-    borderRadius: '9999px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontFamily: 'var(--font-body, system-ui)',
-    fontSize: isCircle ? '1rem' : '0.875rem',
-    transition: 'all 0.15s ease',
-    boxShadow: `0 4px 0 ${borderColor}, inset 0 -2px 0 rgba(0, 0, 0, 0.2)`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    userSelect: 'none',
-    outline: 'none',
-  };
-
-  const sizeStyles: React.CSSProperties = isCircle
-    ? {
-        width: '48px',
-        height: '48px',
-        minWidth: '48px',
-        minHeight: '48px',
-      }
-    : {
-        paddingLeft: '1.5rem',
-        paddingRight: '1.5rem',
-        paddingTop: '0.75rem',
-        paddingBottom: '0.75rem',
-        minHeight: '48px',
-      };
-
-  const hoverStyles: React.CSSProperties = {
-    transform: 'translateY(2px)',
-    boxShadow: `0 2px 0 ${borderColor}, inset 0 -2px 0 rgba(0, 0, 0, 0.2)`,
-  };
-
-  const activeStyles: React.CSSProperties = {
-    transform: 'translateY(4px)',
-    boxShadow: `0 0 0 ${borderColor}, inset 0 -2px 0 rgba(0, 0, 0, 0.2)`,
-  };
-
-  return (
-    <button
-      style={{
-        ...baseStyles,
-        ...sizeStyles,
-      }}
-      onMouseEnter={(e) => {
-        Object.assign(e.currentTarget.style, hoverStyles);
-      }}
-      onMouseLeave={(e) => {
-        Object.assign(e.currentTarget.style, {
-          transform: 'translateY(0)',
-          boxShadow: `0 4px 0 ${borderColor}, inset 0 -2px 0 rgba(0, 0, 0, 0.2)`,
-        });
-      }}
-      onMouseDown={(e) => {
-        Object.assign(e.currentTarget.style, activeStyles);
-      }}
-      onMouseUp={(e) => {
-        Object.assign(e.currentTarget.style, hoverStyles);
-      }}
-      className={className}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
+export { styledButtonVariants };

@@ -1,54 +1,69 @@
 /* StyledButton Component Styles */
 
 .styled-button {
-  border-radius: 9999px;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
   font-family: var(--font-body, system-ui);
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  user-select: none;
-  outline: none;
-  position: relative;
-}
-
-/* Pill-shaped (default) */
-.styled-button:not(.styled-button--circle) {
-  font-size: 0.875rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  min-height: 48px;
-}
-
-/* Circle variant */
-.styled-button--circle {
-  font-size: 1rem;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  color: rgb(145, 92, 54);
 }
 
 /* Hover state */
-.styled-button:hover:not(:active) {
+.styled-button:hover:not(:disabled) {
   transform: translateY(2px);
 }
 
-/* Active state */
-.styled-button:active {
-  transform: translateY(4px);
+.styled-button:hover:not(:disabled).styled-button--tan {
+  box-shadow: 0 2px 0 #6b4a35, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Disabled state */
-.styled-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
+.styled-button:hover:not(:disabled).styled-button--mauve {
+  box-shadow: 0 2px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.styled-button:hover:not(:disabled).styled-button--orange {
+  box-shadow: 0 2px 0 #7a4a15, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.styled-button:hover:not(:disabled).styled-button--cream {
+  box-shadow: 0 2px 0 #8a7a65, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.styled-button:hover:not(:disabled).styled-button--gray {
+  box-shadow: 0 2px 0 #4a4540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Active state */
+.styled-button:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 transparent, inset 0 -2px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ========== COLOR VARIANTS ========== */
+
+/* Tan variant (Row 1 from image) */
+.styled-button--tan {
+  background-color: #a07050;
+  box-shadow: 0 4px 0 #6b4a35, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Mauve variant (Row 2 from image) */
+.styled-button--mauve {
+  background-color: #705060;
+  box-shadow: 0 4px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Orange variant (Row 3 from image) */
+.styled-button--orange {
+  background-color: #c07020;
+  box-shadow: 0 4px 0 #7a4a15, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Cream variant (Row 4 from image) */
+.styled-button--cream {
+  background-color: #d9c7ac;
+  box-shadow: 0 4px 0 #8a7a65, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Gray variant */
+.styled-button--gray {
+  background-color: #807570;
+  box-shadow: 0 4px 0 #4a4540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }

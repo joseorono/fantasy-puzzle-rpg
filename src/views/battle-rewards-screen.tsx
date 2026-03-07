@@ -349,7 +349,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <StyledButton hexColor="#D9C7AC" onClick={handleContinue} className="self-end">
+      <StyledButton variant="cream" onClick={handleContinue} className="self-end">
         Continue →
       </StyledButton>
     </div>
@@ -449,7 +449,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
-      <StyledButton hexColor="#D9C7AC" onClick={handleContinue} className="self-center">
+      <StyledButton variant="cream" onClick={handleContinue} className="self-center">
         Finish
       </StyledButton>
     </div>

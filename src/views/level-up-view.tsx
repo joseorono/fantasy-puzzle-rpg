@@ -463,7 +463,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <TooltipTrigger asChild>
                   <div>
                     <StyledButton
-                      hexColor="#D9C7AC"
+                      variant="cream"
                       onClick={handleConfirm}
                       disabled={!allPointsAllocated}
                     >
@@ -474,7 +474,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
               <StyledButton
-                hexColor="#A07151"
+                variant="tan"
                 onClick={handleReset}
                 disabled={!hasPendingChanges}
               >

@@ -9,81 +9,77 @@ export default function StyledButtonDemo() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-8">
       <div className="mx-auto max-w-4xl">
         <h1 className="mb-2 text-4xl font-bold text-white">StyledButton Component Demo</h1>
-        <p className="mb-8 text-slate-300">Reusable pixel-art pill-shaped buttons with color variants</p>
+        <p className="mb-8 text-slate-300">Reusable pixel-art pill-shaped buttons with cva variants</p>
 
-        {/* Brown/Tan Colors */}
+        {/* Color Variants */}
         <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-white">Brown & Tan Variants</h2>
+          <h2 className="mb-6 text-2xl font-bold text-white">Color Variants</h2>
           <div className="flex flex-wrap gap-6">
-            <StyledButton hexColor="#A07151" onClick={handleClick}>
-              Next
+            <StyledButton variant="tan" onClick={handleClick}>
+              Tan
             </StyledButton>
-            <StyledButton hexColor="#8B6F47" onClick={handleClick}>
-              Continue
+            <StyledButton variant="mauve" onClick={handleClick}>
+              Mauve
             </StyledButton>
-            <StyledButton hexColor="#6B5344" onClick={handleClick}>
-              Confirm
+            <StyledButton variant="orange" onClick={handleClick}>
+              Orange
             </StyledButton>
-            <StyledButton hexColor="#A07151" isCircle={true} onClick={handleClick}>
-              →
+            <StyledButton variant="cream" onClick={handleClick}>
+              Cream
+            </StyledButton>
+            <StyledButton variant="gray" onClick={handleClick}>
+              Gray
             </StyledButton>
           </div>
         </section>
 
-        {/* Cream/Beige Colors */}
+        {/* Size Variants */}
         <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-white">Cream & Beige Variants</h2>
-          <div className="flex flex-wrap gap-6">
-            <StyledButton hexColor="#D9C7AC" onClick={handleClick}>
-              Finish
-            </StyledButton>
-            <StyledButton hexColor="#E8DCC8" onClick={handleClick}>
-              Accept
-            </StyledButton>
-            <StyledButton hexColor="#C9B89A" onClick={handleClick}>
-              Submit
-            </StyledButton>
-            <StyledButton hexColor="#D9C7AC" isCircle={true} onClick={handleClick}>
-              ✓
-            </StyledButton>
+          <h2 className="mb-6 text-2xl font-bold text-white">Size Variants (Pill)</h2>
+          <div className="flex flex-wrap items-center gap-6">
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Small</p>
+              <StyledButton variant="tan" size="sm" onClick={handleClick}>
+                Small
+              </StyledButton>
+            </div>
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Default</p>
+              <StyledButton variant="tan" onClick={handleClick}>
+                Default
+              </StyledButton>
+            </div>
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Large</p>
+              <StyledButton variant="tan" size="lg" onClick={handleClick}>
+                Large
+              </StyledButton>
+            </div>
           </div>
         </section>
 
-        {/* Orange Colors */}
+        {/* Circle Variants */}
         <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-white">Orange Variants</h2>
-          <div className="flex flex-wrap gap-6">
-            <StyledButton hexColor="#C06F21" onClick={handleClick}>
-              Proceed
-            </StyledButton>
-            <StyledButton hexColor="#D9841F" onClick={handleClick}>
-              Execute
-            </StyledButton>
-            <StyledButton hexColor="#B8621A" onClick={handleClick}>
-              Activate
-            </StyledButton>
-            <StyledButton hexColor="#C06F21" isCircle={true} onClick={handleClick}>
-              ⚡
-            </StyledButton>
-          </div>
-        </section>
-
-        {/* Gray Colors */}
-        <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-white">Gray Variants</h2>
-          <div className="flex flex-wrap gap-6">
-            <StyledButton hexColor="#8B8680" onClick={handleClick}>
-              Neutral
-            </StyledButton>
-            <StyledButton hexColor="#9D9691" onClick={handleClick}>
-              Standard
-            </StyledButton>
-            <StyledButton hexColor="#7A7570" onClick={handleClick}>
-              Default
-            </StyledButton>
-            <StyledButton hexColor="#8B8680" isCircle={true} onClick={handleClick}>
-              ◆
-            </StyledButton>
+          <h2 className="mb-6 text-2xl font-bold text-white">Circle Variants</h2>
+          <div className="flex flex-wrap items-center gap-6">
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Circle SM</p>
+              <StyledButton variant="tan" size="circle-sm" onClick={handleClick}>
+                →
+              </StyledButton>
+            </div>
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Circle</p>
+              <StyledButton variant="orange" size="circle" onClick={handleClick}>
+                ⚡
+              </StyledButton>
+            </div>
+            <div>
+              <p className="mb-2 text-sm text-slate-400">Circle LG</p>
+              <StyledButton variant="cream" size="circle-lg" onClick={handleClick}>
+                ✓
+              </StyledButton>
+            </div>
           </div>
         </section>
 
@@ -91,34 +87,34 @@ export default function StyledButtonDemo() {
         <section className="mb-12">
           <h2 className="mb-6 text-2xl font-bold text-white">Disabled State</h2>
           <div className="flex flex-wrap gap-6">
-            <StyledButton hexColor="#A07151" onClick={handleClick} disabled>
+            <StyledButton variant="tan" onClick={handleClick} disabled>
               Disabled
             </StyledButton>
-            <StyledButton hexColor="#D9C7AC" onClick={handleClick} disabled>
+            <StyledButton variant="cream" onClick={handleClick} disabled>
               Disabled
             </StyledButton>
-            <StyledButton hexColor="#C06F21" isCircle={true} onClick={handleClick} disabled>
+            <StyledButton variant="orange" size="circle" onClick={handleClick} disabled>
               ✗
             </StyledButton>
           </div>
         </section>
 
-        {/* Size Comparison */}
+        {/* Usage Examples */}
         <section>
-          <h2 className="mb-6 text-2xl font-bold text-white">Size Comparison</h2>
-          <div className="flex flex-wrap items-center gap-6">
-            <div>
-              <p className="mb-2 text-sm text-slate-400">Pill (Default)</p>
-              <StyledButton hexColor="#A07151" onClick={handleClick}>
-                Next
-              </StyledButton>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-slate-400">Circle</p>
-              <StyledButton hexColor="#A07151" isCircle={true} onClick={handleClick}>
-                →
-              </StyledButton>
-            </div>
+          <h2 className="mb-6 text-2xl font-bold text-white">Common Usage</h2>
+          <div className="flex flex-wrap gap-6">
+            <StyledButton variant="cream" onClick={handleClick}>
+              Continue →
+            </StyledButton>
+            <StyledButton variant="tan" onClick={handleClick}>
+              Reset
+            </StyledButton>
+            <StyledButton variant="orange" onClick={handleClick}>
+              Confirm
+            </StyledButton>
+            <StyledButton variant="mauve" onClick={handleClick}>
+              Cancel
+            </StyledButton>
           </div>
         </section>
       </div>

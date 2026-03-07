@@ -67,7 +67,7 @@ export function BattleOverModal() {
 
           {/* Continue button */}
           <StyledButton
-            hexColor={isVictory ? '#D9C7AC' : '#8B6F47'}
+            variant={isVictory ? 'cream' : 'tan'}
             onClick={handleContinue}
             className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
           >
