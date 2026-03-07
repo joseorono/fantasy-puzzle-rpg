@@ -8,7 +8,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-
+import { RetroDivider } from '~/components/ui-custom/retro-divider';
 
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -57,7 +57,7 @@ export function BattleOverModal() {
             </div>
 
             {/* Divider */}
-            <hr className={cn('gom-divider', isVictory ? 'gom-divider--victory' : 'gom-divider--defeat')} />
+            <RetroDivider variant={isVictory ? 'victory' : 'defeat'} />
 
             {/* Message */}
             <div className={cn('gom-message pixel-font', isVictory ? 'gom-message--victory' : 'gom-message--defeat')}>
@@ -74,15 +74,16 @@ export function BattleOverModal() {
               )}
             </div>
 
-          {/* Continue button */}
-          <ToffecButton
-            variant={isVictory ? 'cream' : 'tan'}
-            onClick={handleContinue}
-            className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
-          >
-            Continue →
-          </ToffecButton>
-        </div>
+            {/* Continue button */}
+            <ToffecButton
+              variant={isVictory ? 'cream' : 'tan'}
+              onClick={handleContinue}
+              className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
+            >
+              Continue →
+            </ToffecButton>
+          </div>
+        </ToffecBeigeCornersWrapper>
 
         {/* Victory sparkles */}
         {isVictory && (
