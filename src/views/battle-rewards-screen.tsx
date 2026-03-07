@@ -350,7 +350,7 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
       </div>
 
       <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
-        Continue →
+        Continue
       </ToffecButton>
     </div>
   );
