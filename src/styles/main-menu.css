@@ -72,18 +72,11 @@
 }
 
 .main-menu__title-text {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #ffd700;
-  text-shadow:
-    3px 3px 0 rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(255, 215, 0, 0.6),
-    0 0 40px rgba(255, 100, 50, 0.4);
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-family: 'Press Start 2P', monospace;
   line-height: 1.2;
+  display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .main-menu__subtitle {

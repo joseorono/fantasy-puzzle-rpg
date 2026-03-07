@@ -123,17 +123,11 @@
 .start-menu-modal-title {
   flex: 1;
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ffd700;
-  text-shadow:
-    1px 1px 0 rgba(0, 0, 0, 0.9),
-    0 0 8px rgba(255, 215, 0, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-family: 'Press Start 2P', monospace;
   text-align: center;
   padding-right: 60px; /* offset for centered look with back button */
+  display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ==========================================
@@ -148,13 +142,9 @@
   background: linear-gradient(180deg, #4a3420 0%, #2e1e12 100%);
   border: 2px solid #c8872e;
   border-radius: 4px;
-  color: #ffd700;
-  font-size: 0.7rem;
-  font-weight: bold;
-  font-family: 'Press Start 2P', monospace;
+  color: #e0e0e0;
   cursor: pointer;
   transition: all 0.15s ease;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
   flex-shrink: 0;
   white-space: nowrap;
 }

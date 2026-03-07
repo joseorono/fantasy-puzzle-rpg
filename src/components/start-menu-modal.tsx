@@ -6,6 +6,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Play, FolderOpen, ArrowLeft } from 'lucide-react';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -62,7 +63,9 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       <div className="main-menu__bg" />
       <div className="main-menu__content">
         <div className="main-menu__title">
-          <h1 className="main-menu__title-text">Fantasy Puzzle RPG</h1>
+          <h1 className="main-menu__title-text">
+            <NarikWoodBitFont text="Fantasy Puzzle RPG" size={3.5} />
+          </h1>
         </div>
 
         <div className="main-menu__buttons">
@@ -92,10 +95,12 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
               <ToffecBeigeCornersWrapper>
                 <button className="start-menu-modal-back" onClick={handleBackToMain}>
                   <ArrowLeft size={14} />
-                  Back
+                  <span style={{ fontSize: '0.7rem' }}>Back</span>
                 </button>
               </ToffecBeigeCornersWrapper>
-              <h2 className="start-menu-modal-title">{TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}</h2>
+              <h2 className="start-menu-modal-title">
+                <NarikWoodBitFont text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]} size={0.9} />
+              </h2>
             </div>
 
             {/* Divider */}
