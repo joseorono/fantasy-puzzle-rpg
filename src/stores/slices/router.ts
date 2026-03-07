@@ -15,7 +15,7 @@ import {
   goToDebug as libGoToDebug,
   goToBattleRewards as libGoToBattleRewards,
 } from '~/lib/routing';
-import { battleStateAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { battleStateAtom, resetStaleBattleAtom } from '~/stores/battle-atoms';
 
 /**
  * Creates the router slice for the game store
@@ -43,7 +43,7 @@ export function createRouterSlice(set: any): RouterSlice {
           // before goToBattleDemo(), which already sets gameStatus to 'playing'.
           const jotaiStore = getDefaultStore();
           if (jotaiStore.get(battleStateAtom).gameStatus !== 'playing') {
-            jotaiStore.set(resetBattleAtom);
+            jotaiStore.set(resetStaleBattleAtom);
           }
 
           set((state: RouterSlice) => {
