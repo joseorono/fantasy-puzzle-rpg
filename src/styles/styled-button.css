@@ -1,0 +1,54 @@
+/* StyledButton Component Styles */
+
+.styled-button {
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: var(--font-body, system-ui);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+  outline: none;
+  position: relative;
+}
+
+/* Pill-shaped (default) */
+.styled-button:not(.styled-button--circle) {
+  font-size: 0.875rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  min-height: 48px;
+}
+
+/* Circle variant */
+.styled-button--circle {
+  font-size: 1rem;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+/* Hover state */
+.styled-button:hover:not(:active) {
+  transform: translateY(2px);
+}
+
+/* Active state */
+.styled-button:active {
+  transform: translateY(4px);
+}
+
+/* Disabled state */
+.styled-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}

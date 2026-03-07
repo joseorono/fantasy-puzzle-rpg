@@ -23,8 +23,8 @@ import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { StyledButton } from '~/components/ui/styled-button';
 
 /**
  * Battle Rewards Screen View
@@ -349,12 +349,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <ToffecBeigeCornersWrapper className="self-end">
-        <button onClick={handleContinue} className="continue-button">
-          Continue
-          <span className="arrow-icon">→</span>
-        </button>
-      </ToffecBeigeCornersWrapper>
+      <StyledButton hexColor="#D9C7AC" onClick={handleContinue} className="self-end">
+        Continue →
+      </StyledButton>
     </div>
   );
 }
@@ -452,11 +449,9 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
-      <ToffecBeigeCornersWrapper className="self-center">
-        <button onClick={handleContinue} className="finish-button">
-          FINISH
-        </button>
-      </ToffecBeigeCornersWrapper>
+      <StyledButton hexColor="#D9C7AC" onClick={handleContinue} className="self-center">
+        Finish
+      </StyledButton>
     </div>
   );
 }

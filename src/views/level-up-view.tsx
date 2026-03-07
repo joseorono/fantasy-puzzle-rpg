@@ -9,6 +9,7 @@ import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { StyledButton } from '~/components/ui/styled-button';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -460,27 +461,25 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             <div className="allocation-actions">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToffecBeigeCornersWrapper>
-                    <button
-                      className="action-button confirm pixel-font text-xs sm:text-sm"
+                  <div>
+                    <StyledButton
+                      hexColor="#D9C7AC"
                       onClick={handleConfirm}
                       disabled={!allPointsAllocated}
                     >
                       Confirm
-                    </button>
-                  </ToffecBeigeCornersWrapper>
+                    </StyledButton>
+                  </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecBeigeCornersWrapper>
-                <button
-                  className="action-button reset pixel-font text-xs sm:text-sm"
-                  onClick={handleReset}
-                  disabled={!hasPendingChanges}
-                >
-                  Reset
-                </button>
-              </ToffecBeigeCornersWrapper>
+              <StyledButton
+                hexColor="#A07151"
+                onClick={handleReset}
+                disabled={!hasPendingChanges}
+              >
+                Reset
+              </StyledButton>
             </div>
           </div>
         </div>

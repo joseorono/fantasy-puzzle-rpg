@@ -1,9 +1,10 @@
 import { useAtomValue } from 'jotai';
 import { gameStatusAtom, enemiesAtom } from '~/stores/battle-atoms';
 import { useRouterActions } from '~/stores/game-store';
-import { Trophy, Skull, ArrowRight } from 'lucide-react';
+import { Trophy, Skull } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { combineLootFromEnemies } from '~/lib/loot';
+import { StyledButton } from '~/components/ui/styled-button';
 
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -65,13 +66,13 @@ export function BattleOverModal() {
           </div>
 
           {/* Continue button */}
-          <button
+          <StyledButton
+            hexColor={isVictory ? '#D9C7AC' : '#8B6F47'}
             onClick={handleContinue}
-            className={cn('gom-btn crt-top-highlight pixel-font-alt', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
+            className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
           >
-            <ArrowRight className="h-5 w-5" />
-            CONTINUE
-          </button>
+            Continue →
+          </StyledButton>
         </div>
 
         {/* Victory sparkles */}
