@@ -1,4 +1,4 @@
-import { Button } from '~/components/ui/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { useResources, useResourcesActions } from '~/stores/game-store';
 import { canAfford, createResources } from '~/lib/resources';
 import type { Resources } from '~/types/resources';
@@ -129,24 +129,24 @@ export default function ResourcesTestView() {
       <div className="mb-8">
         <h2 className="mb-4 text-2xl font-semibold">Add Resources</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          <Button onClick={handleAddCoins} variant="outline">
+          <ToffecButton variant="tan" onClick={handleAddCoins}>
             + 100 Coins
-          </Button>
-          <Button onClick={handleAddGold} variant="outline">
+          </ToffecButton>
+          <ToffecButton variant="tan" onClick={handleAddGold}>
             + 10 Gold
-          </Button>
-          <Button onClick={handleAddCopper} variant="outline">
+          </ToffecButton>
+          <ToffecButton variant="tan" onClick={handleAddCopper}>
             + 50 Copper
-          </Button>
-          <Button onClick={handleAddSilver} variant="outline">
+          </ToffecButton>
+          <ToffecButton variant="tan" onClick={handleAddSilver}>
             + 25 Silver
-          </Button>
-          <Button onClick={handleAddIron} variant="outline">
+          </ToffecButton>
+          <ToffecButton variant="tan" onClick={handleAddIron}>
             + 75 Iron
-          </Button>
-          <Button onClick={handleAddAll} className="bg-green-600 hover:bg-green-700">
+          </ToffecButton>
+          <ToffecButton variant="orange" onClick={handleAddAll}>
             Add All
-          </Button>
+          </ToffecButton>
         </div>
       </div>
 
@@ -154,15 +154,15 @@ export default function ResourcesTestView() {
       <div className="mb-8">
         <h2 className="mb-4 text-2xl font-semibold">Decrease Resources</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          <Button onClick={handleDecreaseCoins} variant="outline">
+          <ToffecButton variant="gray" onClick={handleDecreaseCoins}>
             - 50 Coins
-          </Button>
-          <Button onClick={handleDecreaseGold} variant="outline">
+          </ToffecButton>
+          <ToffecButton variant="gray" onClick={handleDecreaseGold}>
             - 5 Gold
-          </Button>
-          <Button onClick={handleDecreaseAll} className="bg-red-600 hover:bg-red-700">
+          </ToffecButton>
+          <ToffecButton variant="gray" onClick={handleDecreaseAll}>
             Decrease All
-          </Button>
+          </ToffecButton>
         </div>
       </div>
 
@@ -209,13 +209,14 @@ export default function ResourcesTestView() {
                     </p>
                   )}
                 </div>
-                <Button
+                <ToffecButton
+                  variant="tan"
                   onClick={() => handleBuyProduct(product)}
                   disabled={!isAffordable}
                   className={isAffordable ? 'w-full' : 'w-full'}
                 >
                   {isAffordable ? 'Buy' : 'Cannot Afford'}
-                </Button>
+                </ToffecButton>
               </div>
             );
           })}

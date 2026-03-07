@@ -9,7 +9,7 @@ import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { StyledButton } from '~/components/ui/styled-button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -462,24 +462,24 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <StyledButton
+                    <ToffecButton
                       variant="cream"
                       onClick={handleConfirm}
                       disabled={!allPointsAllocated}
                     >
                       Confirm
-                    </StyledButton>
+                    </ToffecButton>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <StyledButton
+              <ToffecButton
                 variant="tan"
                 onClick={handleReset}
                 disabled={!hasPendingChanges}
               >
                 Reset
-              </StyledButton>
+              </ToffecButton>
             </div>
           </div>
         </div>

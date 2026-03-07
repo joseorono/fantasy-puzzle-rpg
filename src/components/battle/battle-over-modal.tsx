@@ -4,10 +4,11 @@ import { useRouterActions } from '~/stores/game-store';
 import { Trophy, Skull } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { combineLootFromEnemies } from '~/lib/loot';
-import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
+
 
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -73,19 +74,15 @@ export function BattleOverModal() {
               )}
             </div>
 
-            {/* Continue button — sensitize variant for bg-board */}
-            <FancyBorderPixelButton
-              onClick={handleContinue}
-              className="gom-continue-btn"
-              fillColor={isVictory ? '#c8a84e' : '#8b3a3a'}
-              textColor={isVictory ? '#3a2a0a' : '#f0d0d0'}
-              frameOuterColor={isVictory ? '#7a5c1a' : '#4a1515'}
-              frameInnerColor={isVictory ? '#e8d48a' : '#c06060'}
-            >
-              Continue
-            </FancyBorderPixelButton>
-          </div>
-        </ToffecBeigeCornersWrapper>
+          {/* Continue button */}
+          <ToffecButton
+            variant={isVictory ? 'cream' : 'tan'}
+            onClick={handleContinue}
+            className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
+          >
+            Continue →
+          </ToffecButton>
+        </div>
 
         {/* Victory sparkles */}
         {isVictory && (

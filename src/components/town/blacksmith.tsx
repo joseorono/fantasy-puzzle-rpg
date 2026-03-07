@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '../ui/8bit/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
@@ -90,19 +90,19 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
         <ToffecBeigeCornersWrapper>
-          <Button onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
+          <ToffecButton variant="tan" onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
             Craft
-          </Button>
+          </ToffecButton>
         </ToffecBeigeCornersWrapper>
         <ToffecBeigeCornersWrapper>
-          <Button onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
+          <ToffecButton variant="tan" onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
             Exchange
-          </Button>
+          </ToffecButton>
         </ToffecBeigeCornersWrapper>
         <ToffecBeigeCornersWrapper>
-          <Button onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
+          <ToffecButton variant="tan" onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
             Melt
-          </Button>
+          </ToffecButton>
         </ToffecBeigeCornersWrapper>
       </div>
 
@@ -112,7 +112,8 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
-              <Button
+              <ToffecButton
+                variant="tan"
                 key={type}
                 onClick={() => {
                   setSelectedEquipmentType(type);
@@ -121,7 +122,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 className={selectedEquipmentType === type ? 'active' : ''}
               >
                 {label}
-              </Button>
+              </ToffecButton>
             ))}
           </div>
 
@@ -151,7 +152,8 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                   </div>
                   <div className="item-actions">
                     <ToffecBeigeCornersWrapper>
-                      <Button
+                      <ToffecButton
+                        variant="orange"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCraftItem(item);
@@ -160,7 +162,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                         className="craft-button"
                       >
                         {canAfford(resources, item.cost) ? 'Craft' : 'Cannot Afford'}
-                      </Button>
+                      </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
                 </div>
@@ -184,9 +186,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="COPPER TO SILVER" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <Button onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
+                <ToffecButton variant="orange" onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
                   Exchange 5 Copper for 1 Silver
-                </Button>
+                </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
 
@@ -195,9 +197,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="IRON TO SILVER" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <Button onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
+                <ToffecButton variant="orange" onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
                   Exchange 5 Iron for 1 Silver
-                </Button>
+                </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
 
@@ -206,9 +208,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="SILVER TO GOLD" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <Button onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
+                <ToffecButton variant="orange" onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
                   Exchange 5 Silver for 1 Gold
-                </Button>
+                </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
           </div>
@@ -225,19 +227,19 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
           <div className="melt-options">
             <ToffecBeigeCornersWrapper>
-              <Button onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
+              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
                 Melt 10 Coins → 1 Gold
-              </Button>
+              </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <Button onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
+              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
                 Melt 50 Coins → 5 Gold
-              </Button>
+              </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <Button onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
+              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
                 Melt 100 Coins → 10 Gold
-              </Button>
+              </ToffecButton>
             </ToffecBeigeCornersWrapper>
           </div>
         </div>

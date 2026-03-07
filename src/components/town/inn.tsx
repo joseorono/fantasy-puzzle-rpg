@@ -8,7 +8,7 @@ import { getHpThreshold } from '~/lib/rpg-calculations';
 import { HP_THRESHOLD_CLASS } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { Button } from '../ui/8bit/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
@@ -101,7 +101,8 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
         {/* Heal Button */}
         <div className="inn-actions">
           <ToffecBeigeCornersWrapper>
-            <Button
+            <ToffecButton
+              variant="cream"
               onClick={handleFullyHealParty}
               disabled={isPartyFullyHealed || !canAffordHealing}
               className="heal-button"
@@ -111,7 +112,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
                 : !canAffordHealing
                   ? 'Not Enough Coins'
                   : `Heal Party (${price.coins} coins)`}
-            </Button>
+            </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>
       </div>

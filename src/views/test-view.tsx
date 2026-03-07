@@ -1,4 +1,4 @@
-import { Button } from '~/components/ui/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
@@ -20,7 +20,7 @@ export default function TestView() {
         <h1 className="mb-4 text-3xl font-bold">Test View</h1>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button onClick={handleClick}>Test Button</Button>
+            <ToffecButton onClick={handleClick}>Test Button</ToffecButton>
           </TooltipTrigger>
           <TooltipContent side="right">Click to test the button functionality</TooltipContent>
         </Tooltip>
