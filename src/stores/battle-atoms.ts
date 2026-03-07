@@ -170,11 +170,18 @@ export const setupBattleAtom = atom(
   },
 );
 
+// Atom to reset a stale battle, preserving the current party progression
+export const resetStaleBattleAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus === 'playing') return;
+  set(battleStateAtom, createBattleState(currentState.party, currentState.enemies));
+});
+
 // Atom to reset battle (replays the current encounter)
 export const resetBattleAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
   // Re-use the current encounter's enemies so a mid-battle reset replays the same fight
-  set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
+  set(battleStateAtom, createBattleState(currentState.party, currentState.enemies));
 });
 
 // Atom to remove matched orbs and refill board
