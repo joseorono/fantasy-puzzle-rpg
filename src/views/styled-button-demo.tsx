@@ -104,7 +104,7 @@ export default function ToffecButtonDemo() {
           <h2 className="mb-6 text-2xl font-bold text-white">Common Usage</h2>
           <div className="flex flex-wrap gap-6">
             <ToffecButton variant="cream" onClick={handleClick}>
-              Continue →
+              Continue
             </ToffecButton>
             <ToffecButton variant="tan" onClick={handleClick}>
               Reset
