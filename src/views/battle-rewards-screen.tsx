@@ -24,7 +24,7 @@ import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { StyledButton } from '~/components/ui/styled-button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
 /**
  * Battle Rewards Screen View
@@ -349,9 +349,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <StyledButton variant="cream" onClick={handleContinue} className="self-end">
+      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
         Continue →
-      </StyledButton>
+      </ToffecButton>
     </div>
   );
 }
@@ -449,9 +449,9 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
-      <StyledButton variant="cream" onClick={handleContinue} className="self-center">
+      <ToffecButton variant="cream" onClick={handleContinue} className="self-center">
         Finish
-      </StyledButton>
+      </ToffecButton>
     </div>
   );
 }

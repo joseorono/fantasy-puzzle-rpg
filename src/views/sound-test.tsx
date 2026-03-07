@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
-import { Button } from '~/components/ui/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
@@ -101,10 +101,10 @@ export default function SoundTestView() {
       <h2 className="text-xl font-bold">Sound Service Test</h2>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={handlePreload} disabled={isPreloading || isAudioLoaded}>
+        <ToffecButton variant="gray" onClick={handlePreload} disabled={isPreloading || isAudioLoaded}>
           {isPreloading ? 'Preloading…' : isAudioLoaded ? 'Audio Loaded' : 'Preload Audio'}
-        </Button>
-        <Button onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</Button>
+        </ToffecButton>
+        <ToffecButton variant="gray" onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</ToffecButton>
         <div className="rounded bg-neutral-200 px-2 py-1 text-sm text-neutral-800">
           Loaded: {isAudioLoaded ? 'yes' : 'no'}
         </div>
@@ -124,7 +124,8 @@ export default function SoundTestView() {
           {soundNameList.map((alias) => (
             <div key={alias} className="flex items-center justify-between gap-2 rounded border px-2 py-2">
               <div className="truncate text-sm">{alias}</div>
-              <Button
+              <ToffecButton
+                variant="gray"
                 disabled={!isAudioLoaded || isPreloading}
                 onClick={async () => {
                   await ensureLoaded();
@@ -132,7 +133,7 @@ export default function SoundTestView() {
                 }}
               >
                 Play
-              </Button>
+              </ToffecButton>
             </div>
           ))}
         </div>
@@ -145,7 +146,8 @@ export default function SoundTestView() {
             <div key={alias + '-loop'} className="flex items-center justify-between gap-2 rounded border px-2 py-2">
               <div className="truncate text-sm">{alias}</div>
               <div className="flex gap-2">
-                <Button
+                <ToffecButton
+                  variant="gray"
                   disabled={!isAudioLoaded || isPreloading}
                   onClick={async () => {
                     await ensureLoaded();
@@ -153,8 +155,8 @@ export default function SoundTestView() {
                   }}
                 >
                   Start
-                </Button>
-                <Button onClick={() => soundService.stopMusic(alias as SoundNames)}>Stop</Button>
+                </ToffecButton>
+                <ToffecButton onClick={() => soundService.stopMusic(alias as SoundNames)}>Stop</ToffecButton>
               </div>
             </div>
           ))}

@@ -1,37 +1,37 @@
-/* StyledButton Component Styles */
+/* ToffecButton Component Styles */
 
-.styled-button {
+.toffec-button {
   font-family: var(--font-body, system-ui);
   color: rgb(145, 92, 54);
 }
 
 /* Hover state */
-.styled-button:hover:not(:disabled) {
+.toffec-button:hover:not(:disabled) {
   transform: translateY(2px);
 }
 
-.styled-button:hover:not(:disabled).styled-button--tan {
+.toffec-button:hover:not(:disabled).toffec-button--tan {
   box-shadow: 0 2px 0 #6b4a35, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.styled-button:hover:not(:disabled).styled-button--mauve {
+.toffec-button:hover:not(:disabled).toffec-button--mauve {
   box-shadow: 0 2px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.styled-button:hover:not(:disabled).styled-button--orange {
+.toffec-button:hover:not(:disabled).toffec-button--orange {
   box-shadow: 0 2px 0 #7a4a15, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.styled-button:hover:not(:disabled).styled-button--cream {
+.toffec-button:hover:not(:disabled).toffec-button--cream {
   box-shadow: 0 2px 0 #8a7a65, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.styled-button:hover:not(:disabled).styled-button--gray {
+.toffec-button:hover:not(:disabled).toffec-button--gray {
   box-shadow: 0 2px 0 #4a4540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Active state */
-.styled-button:active:not(:disabled) {
+.toffec-button:active:not(:disabled) {
   transform: translateY(4px);
   box-shadow: 0 0 0 transparent, inset 0 -2px 0 rgba(0, 0, 0, 0.2) !important;
 }
@@ -39,31 +39,31 @@
 /* ========== COLOR VARIANTS ========== */
 
 /* Tan variant (Row 1 from image) */
-.styled-button--tan {
+.toffec-button--tan {
   background-color: #a07050;
   box-shadow: 0 4px 0 #6b4a35, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Mauve variant (Row 2 from image) */
-.styled-button--mauve {
+.toffec-button--mauve {
   background-color: #705060;
   box-shadow: 0 4px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Orange variant (Row 3 from image) */
-.styled-button--orange {
+.toffec-button--orange {
   background-color: #c07020;
   box-shadow: 0 4px 0 #7a4a15, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Cream variant (Row 4 from image) */
-.styled-button--cream {
+.toffec-button--cream {
   background-color: #d9c7ac;
   box-shadow: 0 4px 0 #8a7a65, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Gray variant */
-.styled-button--gray {
+.toffec-button--gray {
   background-color: #807570;
   box-shadow: 0 4px 0 #4a4540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }

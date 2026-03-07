@@ -1,4 +1,4 @@
-import { Button } from '~/components/ui/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
 import { getItemQuantity } from '~/lib/inventory';
@@ -53,9 +53,9 @@ export default function InventoryTestView() {
           <h2 className="text-2xl font-semibold">
             <NarikWoodBitFont text="Current Inventory" size={1.2} />
           </h2>
-          <Button onClick={handleClearInventory} variant="outline" className="bg-red-600 text-white hover:bg-red-700">
+          <ToffecButton variant="gray" onClick={handleClearInventory}>
             Clear All
-          </Button>
+          </ToffecButton>
         </div>
 
         {inventoryItems.length === 0 ? (
@@ -78,15 +78,15 @@ export default function InventoryTestView() {
                   <span className="font-medium">Type:</span> {item.type}
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => handleRemoveItem(item.id)} size="sm" variant="outline">
+                  <ToffecButton variant="gray" onClick={() => handleRemoveItem(item.id)}>
                     - 1
-                  </Button>
-                  <Button onClick={() => handleAddItem(item.id)} size="sm" variant="outline">
+                  </ToffecButton>
+                  <ToffecButton variant="tan" onClick={() => handleAddItem(item.id)}>
                     + 1
-                  </Button>
-                  <Button onClick={() => handleAddMultiple(item.id)} size="sm" variant="outline">
+                  </ToffecButton>
+                  <ToffecButton variant="tan" onClick={() => handleAddMultiple(item.id)}>
                     + 5
-                  </Button>
+                  </ToffecButton>
                 </div>
               </div>
             ))}
@@ -118,12 +118,12 @@ export default function InventoryTestView() {
                     <span className="text-sm text-gray-500">({currentQty})</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => handleAddItem(item.id)} size="sm" className="flex-1">
+                    <ToffecButton onClick={() => handleAddItem(item.id)} size="sm" className="flex-1">
                       Add 1
-                    </Button>
-                    <Button onClick={() => handleAddMultiple(item.id)} size="sm" variant="outline" className="flex-1">
+                    </ToffecButton>
+                    <ToffecButton onClick={() => handleAddMultiple(item.id)} size="sm" variant="tan" className="flex-1">
                       Add 5
-                    </Button>
+                    </ToffecButton>
                   </div>
                 </div>
               );
@@ -153,12 +153,12 @@ export default function InventoryTestView() {
                     POW: {item.pow} VIT: {item.vit} SPD: {item.spd}
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => handleAddItem(item.id)} size="sm" className="flex-1">
+                    <ToffecButton onClick={() => handleAddItem(item.id)} size="sm" className="flex-1">
                       Add 1
-                    </Button>
-                    <Button onClick={() => handleAddMultiple(item.id)} size="sm" variant="outline" className="flex-1">
+                    </ToffecButton>
+                    <ToffecButton onClick={() => handleAddMultiple(item.id)} size="sm" variant="tan" className="flex-1">
                       Add 5
-                    </Button>
+                    </ToffecButton>
                   </div>
                 </div>
               );

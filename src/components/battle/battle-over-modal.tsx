@@ -4,7 +4,7 @@ import { useRouterActions } from '~/stores/game-store';
 import { Trophy, Skull } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { combineLootFromEnemies } from '~/lib/loot';
-import { StyledButton } from '~/components/ui/styled-button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -66,13 +66,13 @@ export function BattleOverModal() {
           </div>
 
           {/* Continue button */}
-          <StyledButton
+          <ToffecButton
             variant={isVictory ? 'cream' : 'tan'}
             onClick={handleContinue}
             className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
           >
             Continue →
-          </StyledButton>
+          </ToffecButton>
         </div>
 
         {/* Victory sparkles */}

@@ -2,7 +2,7 @@ import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import { Button } from '../ui/8bit/button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford } from '~/lib/resources';
 import { getItemQuantity } from '~/lib/inventory';
@@ -108,7 +108,8 @@ export default function ItemStore({
                   <div className="equipment-item-description">{item.description}</div>
                   <div className="item-actions">
                     <ToffecBeigeCornersWrapper>
-                      <Button
+                      <ToffecButton
+                        variant="orange"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleBuyItem(item);
@@ -117,7 +118,7 @@ export default function ItemStore({
                         className="buy-button"
                       >
                         {canAffordItem ? 'Buy' : 'Cannot Afford'}
-                      </Button>
+                      </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
                 </div>
