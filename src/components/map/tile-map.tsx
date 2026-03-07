@@ -54,9 +54,12 @@ interface CharacterPosition {
   col: number;
 }
 
+const DEFAULT_PLAYER_POSITION = { x: 70, y: 58 };
+
 const Tilemap: React.FC<TilemapProps> = ({
   tilesetImage,
   visibleLayers = ['snow', 'road', 'mountains', 'trees', 'signs'],
+  defaultPlayerPosition = DEFAULT_PLAYER_POSITION,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
@@ -64,7 +67,7 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPosition;
-    return saved ?? { row: 58, col: 70 };
+    return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
@@ -75,6 +78,8 @@ const Tilemap: React.FC<TilemapProps> = ({
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const [enableTransition, setEnableTransition] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
@@ -98,6 +103,15 @@ const Tilemap: React.FC<TilemapProps> = ({
 
   // Map ID for floor loot tracking (hardcoded for demo map)
   const currentMapId = 'map-00';
+
+  // Enable transitions after canvas is ready to prevent slide on mount
+  useEffect(() => {
+    if (!canvasReady) return;
+    const frameId = requestAnimationFrame(() => {
+      setEnableTransition(true);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, [canvasReady]);
 
   // Pulse animation for markers
   useEffect(() => {
@@ -179,8 +193,15 @@ const Tilemap: React.FC<TilemapProps> = ({
       return;
     }
 
-    const startRow = 58;
-    const startCol = 70;
+    // Check store for saved position first (used when returning from combat)
+    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const startRow = savedPosition?.row ?? defaultPlayerPosition.y;
+    const startCol = savedPosition?.col ?? defaultPlayerPosition.x;
+
+    // Update charPosition if store had a saved position
+    if (savedPosition) {
+      setCharPosition(savedPosition);
+    }
 
     // Check if starting position is valid
     if (startRow >= 0 && startRow < roadLayer.height && startCol >= 0 && startCol < roadLayer.width) {
@@ -213,7 +234,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     }
     console.error('❌ No road tiles found in map!');
     setDebugInfo('ERROR: No road tiles found!');
-  }, [mapData]);
+  }, [mapData, defaultPlayerPosition]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);
@@ -534,6 +555,11 @@ const Tilemap: React.FC<TilemapProps> = ({
 
     if (!canvas || !ctx || !tileset) return;
 
+    // Mark canvas as ready after first successful draw
+    if (!canvasReady) {
+      setCanvasReady(true);
+    }
+
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -767,6 +793,7 @@ const Tilemap: React.FC<TilemapProps> = ({
     mapProgressActions,
     floorLootProgressActions,
     currentMapId,
+    canvasReady,
   ]);
 
   // Calculate scale factor for character positioning
@@ -814,7 +841,7 @@ const Tilemap: React.FC<TilemapProps> = ({
           />
 
           {/* Character rendered as HTML element for smooth CSS transitions */}
-          {characterImage && canvasElement && (
+          {characterImage && canvasReady && (
             <div
               style={{
                 position: 'absolute',
@@ -829,7 +856,7 @@ const Tilemap: React.FC<TilemapProps> = ({
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
-                transition: 'left 0.2s ease-out, top 0.2s ease-out',
+                transition: enableTransition ? 'left 0.2s ease-out, top 0.2s ease-out' : 'none',
                 pointerEvents: 'none',
                 zIndex: 10,
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
