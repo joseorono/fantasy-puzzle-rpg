@@ -1,8 +1,9 @@
-import { useAtomValue, useSetAtom } from 'jotai';
-import { Swords, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { useAtomValue } from 'jotai';
+import { Swords, Volume2, VolumeX } from 'lucide-react';
 import { useState } from 'react';
-import { battleStateAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { battleStateAtom } from '~/stores/battle-atoms';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { soundService } from '~/services/sound-service';
 
 interface BattleTopBarProps {
   nextAttackIn: number;
@@ -10,8 +11,16 @@ interface BattleTopBarProps {
 
 export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
   const battleState = useAtomValue(battleStateAtom);
-  const resetBattle = useSetAtom(resetBattleAtom);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => soundService.isMuted());
+
+  function toggleMute() {
+    if (isMuted) {
+      soundService.unmuteAll();
+    } else {
+      soundService.muteAll();
+    }
+    setIsMuted(!isMuted);
+  }
 
   return (
     <header id="battle-top-bar" className="crt-container crt-overlay">
@@ -39,11 +48,11 @@ export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
         </div>
 
         <div className="btb-actions">
-          <button className="btb-btn crt-top-highlight" onClick={() => setIsMuted(!isMuted)}>
+          <button
+            className="btb-btn crt-top-highlight"
+            onClick={toggleMute}
+          >
             {isMuted ? <VolumeX className="btb-btn-icon" /> : <Volume2 className="btb-btn-icon" />}
-          </button>
-          <button className="btb-btn crt-top-highlight" onClick={resetBattle}>
-            <RotateCcw className="btb-btn-icon" />
           </button>
         </div>
       </div>
