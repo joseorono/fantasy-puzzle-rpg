@@ -14,13 +14,13 @@ export const STAT_TYPES: StatType[] = ['pow', 'vit', 'spd'];
 export const MIN_MATCH_LENGTH = 3;
 
 /** Minimum time (ms) the loading screen is shown, regardless of actual load speed. */
-export const MIN_LOAD_TIME_MS = 1000;
+export const MIN_LOAD_TIME_MS = 800;
 
 /** Duration (ms) before the loot notification auto-dismisses with a fade-out. */
-export const LOOT_NOTIFICATION_DISMISS_MS = 10000;
+export const LOOT_NOTIFICATION_DISMISS_MS = 3000;
 
 /** Duration (ms) before the floor loot notification auto-dismisses with a fade-out. */
-export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 3000;
+export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 1500;
 
 /**
  * Store configuration
