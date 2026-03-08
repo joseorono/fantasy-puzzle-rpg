@@ -1,0 +1,238 @@
+/* ─── Node Interaction Menu ──────────────────────────────────────────── */
+
+.nim {
+  background-image: url('/assets/bg/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  image-rendering: pixelated;
+  border: 3px solid #d4a574;
+  padding: 0.875rem 1rem;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 8px 20px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
+  pointer-events: auto;
+}
+
+/* ─── Arrow pointer ─────────────────────────────────────────────────── */
+
+.nim-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+}
+
+.nim-arrow--left {
+  border-right-color: #d4a574;
+}
+
+.nim-arrow--right {
+  border-left-color: #d4a574;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────── */
+
+.nim-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.5);
+}
+
+.nim-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nim-icon-wrapper img {
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
+}
+
+.nim-title {
+  font-size: 0.75rem;
+  color: #ffd700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nim-type {
+  font-size: 0.5rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Info panels ───────────────────────────────────────────────────── */
+
+.nim-status {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  padding: 0.375rem 0.625rem;
+  margin-bottom: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nim-status-label {
+  font-size: 0.5rem;
+  font-weight: bold;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.nim-status-value {
+  font-size: 0.5rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.nim-status-value--true {
+  color: #5dba3b;
+}
+
+.nim-status-value--false {
+  color: #e74c3c;
+}
+
+.nim-description {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  padding: 0.375rem 0.625rem;
+  margin-bottom: 0.375rem;
+}
+
+.nim-description p {
+  font-family: monospace;
+  font-size: 0.625rem;
+  line-height: 1.5;
+  color: #ccc;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  margin: 0;
+}
+
+/* ─── Action buttons ────────────────────────────────────────────────── */
+
+.nim-actions {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.nim-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.625rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  border: 2px solid;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.nim-btn:hover {
+  transform: translateY(-1px);
+}
+
+.nim-btn:active {
+  transform: translateY(1px);
+}
+
+.nim-btn img {
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
+}
+
+/* Fight */
+.nim-btn--fight {
+  background: linear-gradient(to bottom, #8b2020, #4a1010);
+  border-color: #c0392b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nim-btn--fight:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(192, 57, 43, 0.4);
+}
+
+/* Enter (town/dungeon) */
+.nim-btn--enter {
+  background: linear-gradient(to bottom, #2c5f8a, #1a3a5c);
+  border-color: #4a90c4;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nim-btn--enter:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(74, 144, 196, 0.4);
+}
+
+/* Open chest */
+.nim-btn--chest {
+  background: linear-gradient(to bottom, #8b6914, #5c3a1e);
+  border-color: #d4a574;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nim-btn--chest:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(212, 165, 116, 0.4);
+}
+
+/* Interact (mystery) */
+.nim-btn--interact {
+  background: linear-gradient(to bottom, #5c2d82, #3a1a54);
+  border-color: #8e44ad;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nim-btn--interact:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(142, 68, 173, 0.4);
+}
+
+/* Talk (dialogue) */
+.nim-btn--talk {
+  background: linear-gradient(to bottom, #d48c46, #8b4513);
+  border-color: #ffd700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nim-btn--talk:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(255, 215, 0, 0.3);
+}
