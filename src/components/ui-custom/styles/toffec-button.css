@@ -2,7 +2,13 @@
 
 .toffec-button {
   font-family: var(--font-body, system-ui);
+  color: #2a1a0e;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.toffec-button:disabled {
   color: rgb(145, 92, 54);
+  text-shadow: none;
 }
 
 /* Hover state */
