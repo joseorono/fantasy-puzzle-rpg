@@ -14,7 +14,7 @@ export default function MouseTracker() {
     const handleTrackMouse = (e: MouseEvent) => {
       // console.log('Mouse Moved');
 
-      mouseTracker?.setAttribute('style', 'top: ' + (e.pageY - 40) + 'px; left:' + (e.pageX - 40) + 'px;');
+      mouseTracker?.setAttribute('style', 'top: ' + (e.clientY - 40) + 'px; left:' + (e.clientX - 40) + 'px;');
     };
 
     const playAnimOnClick = () => {

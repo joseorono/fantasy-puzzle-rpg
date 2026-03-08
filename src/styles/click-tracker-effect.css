@@ -16,12 +16,12 @@
   background-color: black;
   border: none;
   border-radius: 50%;
-  position: absolute;
+  position: fixed;
   transition-duration: 200ms;
   transition-timing-function: ease-out;
   animation: clickAnimAnim 0.5s;
   pointer-events: none;
-  z-index: 1;
+  z-index: 9999;
 }
 .clickAnim::after {
   content: '';
