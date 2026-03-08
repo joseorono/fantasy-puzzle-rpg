@@ -2,6 +2,7 @@ import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { Position } from '~/types/geometry';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
@@ -96,38 +97,38 @@ export function NodeInteractionMenu({
       {/* Action buttons */}
       <div className="nim-actions">
         {canFight && onFight && (
-          <button onClick={onFight} className="nim-btn nim-btn--fight pixel-font">
+          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onFight}>
             <FrostyRpgIcon name="broadsword" size={16} />
             Fight
-          </button>
+          </ToffecButton>
         )}
 
         {canEnter && onEnter && (
-          <button onClick={onEnter} className="nim-btn nim-btn--enter pixel-font">
+          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onEnter}>
             <FrostyRpgIcon name="lantern" size={16} />
             Enter
-          </button>
+          </ToffecButton>
         )}
 
         {canOpenChest && onOpenChest && (
-          <button onClick={onOpenChest} className="nim-btn nim-btn--chest pixel-font">
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
             <FrostyRpgIcon name="openChest" size={16} />
             Open
-          </button>
+          </ToffecButton>
         )}
 
         {canInteract && onEnter && (
-          <button onClick={onEnter} className="nim-btn nim-btn--interact pixel-font">
+          <ToffecButton variant="mauve" size="sm" className="nim-btn" onClick={onEnter}>
             <FrostyRpgIcon name="orbPurple" size={16} />
             Interact
-          </button>
+          </ToffecButton>
         )}
 
         {node.dialogueScene && onViewDialogue && (
-          <button onClick={onViewDialogue} className="nim-btn nim-btn--talk pixel-font">
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onViewDialogue}>
             <FrostyRpgIcon name="openBook" size={16} />
             Talk
-          </button>
+          </ToffecButton>
         )}
       </div>
     </div>
