@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Resources } from '~/types/resources';
+import type { Position } from '~/types/geometry';
 import { filterNonZeroResources } from '~/lib/loot';
 import { FLOOR_LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
 
 interface FloorLootNotificationProps {
   resources: Resources;
   onClose: () => void;
-  characterPosition: { x: number; y: number };
+  characterPosition: Position;
 }
 
 /**

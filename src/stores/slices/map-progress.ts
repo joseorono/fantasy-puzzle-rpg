@@ -73,7 +73,7 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
         }
       },
 
-      setCharacterPosition: (position: { row: number; col: number }) =>
+      setCharacterPosition: (position) =>
         set(
           (state: MapProgressSlice) => {
             state.mapProgress.characterPosition = position;

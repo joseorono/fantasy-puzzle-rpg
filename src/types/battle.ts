@@ -1,4 +1,5 @@
 import type { CharacterData, EnemyData, OrbType } from './rpg-elements';
+import type { GridPosition } from './geometry';
 
 export type ActionTarget = 'party' | 'enemy';
 
@@ -33,7 +34,7 @@ export interface BattleState {
   enemies: EnemyData[];
   selectedEnemyId: string;
   board: Orb[][];
-  selectedOrb: { row: number; col: number } | null;
+  selectedOrb: GridPosition | null;
   currentMatches: Match[];
   score: number;
   turn: number;

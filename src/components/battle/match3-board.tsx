@@ -15,6 +15,7 @@ import {
   addScoreAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
+import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
 import { calculateMatchDamage } from '~/lib/rpg-calculations';
@@ -117,8 +118,8 @@ export function Match3Board() {
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [invalidSwap, setInvalidSwap] = useState<{
-    from: { row: number; col: number };
-    to: { row: number; col: number };
+    from: GridPosition;
+    to: GridPosition;
   } | null>(null);
   const [isProcessingSwap, setIsProcessingSwap] = useState(false);
   const [newOrbIds, setNewOrbIds] = useState<Set<string>>(new Set());

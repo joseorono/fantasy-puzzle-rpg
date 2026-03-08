@@ -1,4 +1,5 @@
 import type { Orb } from '~/types/battle';
+import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import { getRandomElement } from '~/lib/utils';
 import { ORB_TYPES, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
@@ -86,8 +87,8 @@ export function createInitialBoard(rows: number = BOARD_ROWS, cols: number = BOA
  */
 export function swapOrbs(
   board: Orb[][],
-  from: { row: number; col: number },
-  to: { row: number; col: number },
+  from: GridPosition,
+  to: GridPosition,
 ): Orb[][] {
   const newBoard = board.map((row) => [...row]);
 
@@ -115,8 +116,8 @@ export function swapOrbs(
  */
 export function isValidSwap(
   board: Orb[][],
-  from: { row: number; col: number },
-  to: { row: number; col: number },
+  from: GridPosition,
+  to: GridPosition,
 ): boolean {
   const testBoard = swapOrbs(board, from, to);
   return hasMatchAtPosition(testBoard, from.row, from.col) || hasMatchAtPosition(testBoard, to.row, to.col);

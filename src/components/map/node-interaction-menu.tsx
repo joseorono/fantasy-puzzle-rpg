@@ -1,6 +1,7 @@
 import { Sword, Home, BookOpen, Crown, Skull, HelpCircle, Package } from 'lucide-react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
+import type { Position } from '~/types/geometry';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
@@ -9,7 +10,7 @@ interface NodeInteractionMenuProps {
   onEnter?: () => void;
   onOpenChest?: () => void;
   onViewDialogue?: () => void;
-  characterPosition: { x: number; y: number }; // Pixel position on screen
+  characterPosition: Position;
 }
 
 /**

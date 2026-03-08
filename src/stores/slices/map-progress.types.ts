@@ -1,4 +1,5 @@
 import type { BaseSlice } from '../../types/store';
+import type { GridPosition } from '../../types/geometry';
 
 /**
  * Map node types
@@ -22,7 +23,7 @@ export interface MapProgressState {
   townsVisited: NodeProgress;
   treasuresFound: NodeProgress;
   mysteriesSolved: NodeProgress;
-  characterPosition: { row: number; col: number } | null;
+  characterPosition: GridPosition | null;
 }
 
 /**
@@ -32,7 +33,7 @@ export interface MapProgressActions {
   completeNode: (nodeType: MapNodeType, nodeId: string) => void;
   isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean;
   resetProgress: () => void;
-  setCharacterPosition: (position: { row: number; col: number }) => void;
+  setCharacterPosition: (position: GridPosition) => void;
 }
 
 /**

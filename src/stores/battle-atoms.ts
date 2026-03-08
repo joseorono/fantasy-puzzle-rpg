@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import type { BattleState } from '~/types/battle';
+import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
@@ -57,7 +58,7 @@ export const selectEnemyAtom = atom(null, (get, set, enemyId: string) => {
 });
 
 // Atom to select an orb
-export const selectOrbAtom = atom(null, (get, set, position: { row: number; col: number } | null) => {
+export const selectOrbAtom = atom(null, (get, set, position: GridPosition | null) => {
   const currentState = get(battleStateAtom);
   set(battleStateAtom, {
     ...currentState,
@@ -68,7 +69,7 @@ export const selectOrbAtom = atom(null, (get, set, position: { row: number; col:
 // Atom to swap orbs (with match validation)
 export const swapOrbsAtom = atom(
   null,
-  (get, set, from: { row: number; col: number }, to: { row: number; col: number }) => {
+  (get, set, from: GridPosition, to: GridPosition) => {
     const currentState = get(battleStateAtom);
     const newBoard = swapOrbs(currentState.board, from, to);
 
@@ -93,7 +94,7 @@ export const swapOrbsAtom = atom(
 // Atom to check if a swap would be valid (for preview)
 export const checkSwapValidityAtom = atom(
   null,
-  (get, _set, from: { row: number; col: number }, to: { row: number; col: number }): boolean => {
+  (get, _set, from: GridPosition, to: GridPosition): boolean => {
     const currentState = get(battleStateAtom);
     return isValidSwap(currentState.board, from, to);
   },

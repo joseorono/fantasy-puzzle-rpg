@@ -1,4 +1,6 @@
 // types/tilemap.ts
+import type { Position } from './geometry';
+
 export interface TilemapLayer {
   data: number[];
   height: number;
@@ -47,7 +49,7 @@ export interface TilemapData {
 export interface TilemapProps {
   tilesetImage: string;
   visibleLayers?: string[];
-  defaultPlayerPosition?: { x: number; y: number };
+  defaultPlayerPosition?: Position;
 }
 
 export interface TiledMapConfig {
@@ -55,5 +57,5 @@ export interface TiledMapConfig {
   displayMapName: string;
   walkableLayers: string[];
   visibleLayers: string[];
-  defaultPlayerPosition: { x: number; y: number };
+  defaultPlayerPosition: Position;
 }
