@@ -4,7 +4,6 @@ import { useRouterActions } from '~/stores/game-store';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { combineLootFromEnemies } from '~/lib/loot';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -31,7 +30,6 @@ export function BattleOverModal() {
   return (
     <div className="gom-backdrop">
       <div className={cn('gom-modal', isVictory ? 'gom-modal--victory' : 'gom-modal--defeat')}>
-        <ToffecBeigeCornersWrapper className="gom-corners-wrapper">
           <div className="gom-content">
             {/* Icon medallion */}
             <div className={cn('gom-icon', isVictory ? 'gom-icon--victory' : 'gom-icon--defeat')}>
@@ -79,7 +77,6 @@ export function BattleOverModal() {
               Continue
             </ToffecButton>
           </div>
-        </ToffecBeigeCornersWrapper>
 
         {/* Victory sparkles */}
         {isVictory && (
