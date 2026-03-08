@@ -1,8 +1,8 @@
 import { useAtomValue } from 'jotai';
 import { gameStatusAtom, enemiesAtom } from '~/stores/battle-atoms';
 import { useRouterActions } from '~/stores/game-store';
-import { Trophy, Skull } from 'lucide-react';
 import { cn } from '~/lib/utils';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { combineLootFromEnemies } from '~/lib/loot';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -31,15 +31,11 @@ export function BattleOverModal() {
   return (
     <div className="gom-backdrop">
       <div className={cn('gom-modal', isVictory ? 'gom-modal--victory' : 'gom-modal--defeat')}>
-        <ToffecBeigeCornersWrapper alwaysVisible className="gom-corners-wrapper">
+        <ToffecBeigeCornersWrapper className="gom-corners-wrapper">
           <div className="gom-content">
             {/* Icon medallion */}
             <div className={cn('gom-icon', isVictory ? 'gom-icon--victory' : 'gom-icon--defeat')}>
-              {isVictory ? (
-                <Trophy className="h-8 w-8 sm:h-10 sm:w-10" strokeWidth={2.5} />
-              ) : (
-                <Skull className="h-8 w-8 sm:h-10 sm:w-10" strokeWidth={2.5} />
-              )}
+              <FrostyRpgIcon name={isVictory ? 'necklace' : 'skull'} size={40} />
             </div>
 
             {/* Title — bitmap font */}
