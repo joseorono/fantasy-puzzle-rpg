@@ -71,13 +71,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 4px;
 }
 
 @media (min-width: 640px) {
-  .gom-content {
-    gap: 1.25rem;
-  }
 
   .gom-modal {
     padding: 2rem 1.5rem;
