@@ -188,8 +188,7 @@
 
 .pause-menu-nav-btn.active {
   color: #ffd700;
-  background: linear-gradient(to right, rgba(255, 215, 0, 0.15), transparent);
-  border-left-color: #ffd700;
+  background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
 }
 
 .pause-menu-nav-spacer {
@@ -269,7 +268,7 @@
   background: linear-gradient(to bottom, #d48c46, #8b4513);
   border-color: #ffd700;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
 }
 
 .pause-menu-items-layout {
@@ -560,7 +559,7 @@
 .pause-menu-roster-card.active {
   border-color: #ffd700;
   background: rgba(255, 215, 0, 0.1);
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.15);
 }
 
 .pause-menu-roster-icon {
