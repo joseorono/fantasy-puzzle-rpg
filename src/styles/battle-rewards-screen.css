@@ -7,7 +7,7 @@
   height: 100%;
   padding: 1rem 1.5rem;
   overflow: hidden;
-  background-image: url('/assets/bg/bg-board-2.png');
+  background-image: url('/assets/bg/looping/bg-board-2.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
@@ -59,7 +59,7 @@
 }
 
 .character-card {
-  background-image: url('/assets/bg/bg-board.png');
+  background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
@@ -175,7 +175,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-image: url('/assets/bg/bg-board.png');
+  background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
@@ -316,7 +316,7 @@
   height: 100%;
   padding: 1rem 1.5rem;
   overflow: hidden;
-  background-image: url('/assets/bg/bg-board-2.png');
+  background-image: url('/assets/bg/looping/bg-board-2.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
@@ -338,7 +338,7 @@
 .items-found-container {
   flex: 1;
   min-height: 0;
-  background-image: url('/assets/bg/bg-board.png');
+  background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;

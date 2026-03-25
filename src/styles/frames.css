@@ -340,7 +340,7 @@
 .f05a-viewport {
   overflow: hidden;
   position: relative;
-  background-image: url('/assets/bg/bg-board.png');
+  background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   /* The tileset is original 16x16, adjust background size to set how pixelated it should be */
   /* background-size: 50px 50px; */
