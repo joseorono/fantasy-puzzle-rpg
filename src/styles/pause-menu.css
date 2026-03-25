@@ -64,30 +64,61 @@
   overflow-x: auto;
 }
 
-.pause-menu-party-member {
-  flex: 1;
-  min-width: 0;
+/* ─── Party Member Card (reusable) ──────────────────────────────────── */
+
+.party-member-card {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(212, 165, 116, 0.3);
   border-radius: 6px;
 }
 
-.pause-menu-party-icon {
-  width: 32px;
-  height: 32px;
+.party-member-card--bar {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid rgba(212, 165, 116, 0.3);
+}
+
+.party-member-card--roster {
+  padding: 0.5rem;
+  border: 2px solid rgba(139, 105, 20, 0.5);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.party-member-card--roster:hover {
+  border-color: #d4a574;
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.party-member-card--roster.active {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.15);
+}
+
+.party-member-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
-.pause-menu-party-info {
+.party-member-card--bar .party-member-card__icon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.party-member-card--roster .party-member-card__icon {
+  width: 28px;
+  height: 28px;
+}
+
+.party-member-card__info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -95,7 +126,7 @@
   gap: 2px;
 }
 
-.pause-menu-party-name {
+.party-member-card__name {
   font-size: 0.6rem;
   font-weight: 700;
   color: #ffd700;
@@ -104,37 +135,46 @@
   text-overflow: ellipsis;
 }
 
-.pause-menu-party-detail {
+.party-member-card__detail {
   font-size: 0.5rem;
   color: #d4a574;
   white-space: nowrap;
 }
 
-.pause-menu-party-hp-bar {
+.party-member-card__hp-bar {
   width: 100%;
-  height: 6px;
   background: rgba(10, 10, 20, 0.9);
-  border: 1px solid #8b6914;
   border-radius: 3px;
   overflow: hidden;
   margin-top: 2px;
 }
 
-.pause-menu-party-hp-fill {
+.party-member-card--bar .party-member-card__hp-bar {
+  height: 6px;
+  border: 1px solid #8b6914;
+}
+
+.party-member-card--roster .party-member-card__hp-bar {
+  height: 4px;
+  border-radius: 2px;
+  margin-top: 3px;
+}
+
+.party-member-card__hp-fill {
   height: 100%;
   border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-.pause-menu-party-hp-fill.full {
+.party-member-card__hp-fill.full {
   background: linear-gradient(90deg, #4ade80, #22c55e);
 }
 
-.pause-menu-party-hp-fill.medium {
+.party-member-card__hp-fill.medium {
   background: linear-gradient(90deg, #fbbf24, #f59e0b);
 }
 
-.pause-menu-party-hp-fill.low {
+.party-member-card__hp-fill.low {
   background: linear-gradient(90deg, #ef4444, #dc2626);
 }
 
@@ -539,68 +579,6 @@
   gap: 0.5rem;
 }
 
-.pause-menu-roster-card {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(139, 105, 20, 0.5);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.pause-menu-roster-card:hover {
-  border-color: #d4a574;
-  background: rgba(255, 215, 0, 0.05);
-}
-
-.pause-menu-roster-card.active {
-  border-color: #ffd700;
-  background: rgba(255, 215, 0, 0.1);
-  box-shadow: 0 0 4px rgba(255, 215, 0, 0.15);
-}
-
-.pause-menu-roster-icon {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.pause-menu-roster-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.pause-menu-roster-name {
-  font-size: 0.6rem;
-  color: #ffd700;
-  font-weight: 700;
-}
-
-.pause-menu-roster-detail {
-  font-size: 0.5rem;
-  color: #d4a574;
-}
-
-.pause-menu-roster-hp {
-  width: 100%;
-  height: 4px;
-  background: rgba(10, 10, 20, 0.9);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 3px;
-}
-
-.pause-menu-roster-hp-fill {
-  height: 100%;
-  border-radius: 2px;
-}
 
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 

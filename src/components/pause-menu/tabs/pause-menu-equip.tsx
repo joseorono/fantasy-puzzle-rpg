@@ -3,7 +3,7 @@ import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
-import { RosterCard } from '~/components/pause-menu/roster-card';
+import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
@@ -77,9 +77,10 @@ export function PauseMenuEquip() {
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (
-            <RosterCard
+            <PartyMemberCard
               key={member.id}
               member={member}
+              variant="roster"
               isActive={member.id === selectedId}
               onClick={() => handleSelectCharacter(member.id)}
             />

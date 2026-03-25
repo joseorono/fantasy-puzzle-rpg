@@ -5,7 +5,7 @@ import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constant
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { cn } from '~/lib/utils';
-import { RosterCard } from '~/components/pause-menu/roster-card';
+import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
@@ -38,9 +38,10 @@ export function PauseMenuStats() {
       <div className="pause-menu-stats-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (
-            <RosterCard
+            <PartyMemberCard
               key={member.id}
               member={member}
+              variant="roster"
               isActive={member.id === selectedId}
               onClick={() => setSelectedId(member.id)}
             />
