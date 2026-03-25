@@ -6,7 +6,7 @@
    Individual item slots styled to match the board's background. */
 
 .battle-item-slot {
-  background-image: url('/assets/bg/bg-board.png');
+  background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
