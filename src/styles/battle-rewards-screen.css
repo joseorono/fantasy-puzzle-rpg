@@ -11,9 +11,6 @@
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
 .exp-gained-container>.character-cards-grid {
@@ -84,9 +81,6 @@
   border: 3px solid #d4a574;
   object-fit: cover;
   position: relative;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   flex-shrink: 0;
 }
 
@@ -320,9 +314,6 @@
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
 .victory-header {

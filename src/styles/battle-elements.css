@@ -1,5 +1,5 @@
-.enemy-sprite-container {
-  image-rendering: pixelated;
+.enemy-sprite-image {
+  object-fit: contain;
 }
 
 /* ─── Battle Item Bar Slots ─────────────────────────────────────────
@@ -17,10 +17,6 @@
     0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.enemy-sprite-image {
-  image-rendering: pixelated;
-  object-fit: contain;
-}
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,

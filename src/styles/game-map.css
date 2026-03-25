@@ -73,9 +73,6 @@
 
 .tilemap-container canvas {
   display: block;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   max-width: 100%;
   max-height: calc(100vh - 12rem);
   object-fit: contain;

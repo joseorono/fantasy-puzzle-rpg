@@ -69,7 +69,6 @@ a[href]:hover,
   height: var(--cursor-corner-size);
   background-size: contain;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;

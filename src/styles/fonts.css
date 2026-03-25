@@ -9,7 +9,6 @@
   font-family: var(--font-body);
   font-weight: bold;
   text-rendering: optimizeSpeed;
-  image-rendering: pixelated;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 0.1em;
@@ -40,7 +39,6 @@
   display: inline-block;
   flex-shrink: 0;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
   width: var(--bf-cw);
   height: var(--bf-ch);
   background-image: var(--bf-img);

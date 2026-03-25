@@ -8,9 +8,6 @@
   color: #e0e0e0;
   font-family: monospace;
   overflow: hidden;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
 }
 
@@ -23,9 +20,6 @@
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   flex-shrink: 0;
 }
 
@@ -73,9 +67,6 @@
     background-repeat: repeat;
     background-size: 50px 50px;
     background-position: center;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
 }
 
 /* Left Column - Character Info & Derived Stats */

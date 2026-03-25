@@ -5,7 +5,6 @@
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
-  image-rendering: pixelated;
   border: 3px solid #d4a574;
   padding: 0.875rem 1rem;
   box-shadow:
@@ -51,7 +50,6 @@
 }
 
 .nim-icon-wrapper img {
-  image-rendering: pixelated;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
 }
 
@@ -144,6 +142,5 @@
 }
 
 .nim-btn img {
-  image-rendering: pixelated;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
 }

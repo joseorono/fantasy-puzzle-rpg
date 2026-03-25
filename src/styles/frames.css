@@ -50,7 +50,6 @@
   height: var(--frame-thickness);
   background-size: cover;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
 }
 
 .wf-corner--top-left {
@@ -73,7 +72,6 @@
 .wf-edge {
   background-size: var(--frame-thickness) var(--frame-thickness);
   background-repeat: repeat;
-  image-rendering: pixelated;
 }
 
 .wf-edge--top {
@@ -162,7 +160,6 @@
   height: var(--bf-thickness);
   background-size: cover;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
 }
 
 .bf-corner--top-left {
@@ -185,7 +182,6 @@
 .bf-edge {
   background-size: var(--bf-thickness) var(--bf-thickness);
   background-repeat: repeat;
-  image-rendering: pixelated;
 }
 
 .bf-edge--top {
@@ -264,7 +260,6 @@
 .f05a-corner {
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
 }
 
 .f05a-corner--top-left {
@@ -294,7 +289,6 @@
 /* Edge styling */
 .f05a-edge {
   background-repeat: repeat;
-  image-rendering: pixelated;
 }
 
 .f05a-edge--top {

@@ -103,9 +103,6 @@
 .shop-portrait-sidebar .shop-portrait__image {
     max-height: 280px;
     width: auto;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
@@ -121,9 +118,6 @@
         0 8px 16px rgba(0, 0, 0, 0.7),
         inset 0 1px 0 rgba(255, 255, 255, 0.2),
         inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
     position: relative;
     flex: 1;
     min-height: 0;
@@ -836,9 +830,6 @@ font-weight: 700;
 .town .dialogue-portraits .dialogue-portrait__image {
   max-height: 280px;
   width: auto;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 

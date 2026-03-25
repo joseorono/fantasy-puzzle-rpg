@@ -21,13 +21,6 @@
   user-select: none;
 }
 
-/* Ensure smooth rendering */
-.marquee-container * {
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-}
-
 /* Variant: Gray (default) - with borders and background */
 .marquee-container.marquee--gray {
   background: linear-gradient(135deg, #1a1d29 0%, #2d3142 100%);
