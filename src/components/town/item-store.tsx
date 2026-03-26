@@ -98,11 +98,31 @@ export default function ItemStore({
                       )}
                     </div>
                     <div className="equipment-item-cost">
-                      {item.cost.coins > 0 && <span className="cost-badge gold">💰 {item.cost.coins}</span>}
-                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                      {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
+                      {item.cost.coins > 0 && (
+                        <span className="cost-badge gold flex items-center gap-1">
+                          <FrostyRpgIcon name="coinPurse" size={14} /> {item.cost.coins}
+                        </span>
+                      )}
+                      {item.cost.gold > 0 && (
+                        <span className="cost-badge gold flex items-center gap-1">
+                          <FrostyRpgIcon name="goldBar" size={14} /> {item.cost.gold}
+                        </span>
+                      )}
+                      {item.cost.silver > 0 && (
+                        <span className="cost-badge silver flex items-center gap-1">
+                          <FrostyRpgIcon name="silverBar" size={14} /> {item.cost.silver}
+                        </span>
+                      )}
+                      {item.cost.copper > 0 && (
+                        <span className="cost-badge copper flex items-center gap-1">
+                          <FrostyRpgIcon name="copperBar" size={14} /> {item.cost.copper}
+                        </span>
+                      )}
+                      {item.cost.iron > 0 && (
+                        <span className="cost-badge iron flex items-center gap-1">
+                          <FrostyRpgIcon name="ironBar" size={14} /> {item.cost.iron}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="equipment-item-description">{item.description}</div>
@@ -115,9 +135,41 @@ export default function ItemStore({
                           handleBuyItem(item);
                         }}
                         disabled={!canAffordItem}
-                        className="buy-button"
                       >
-                        {canAffordItem ? 'Buy' : 'Cannot Afford'}
+                        <span className="flex items-center gap-2">
+                          {canAffordItem ? (
+                            <>
+                              Buy for{' '}
+                              {item.cost.coins > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.coins} <FrostyRpgIcon name="coinPurse" size={18} />
+                                </span>
+                              )}
+                              {item.cost.gold > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.silver > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.copper > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.iron > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            'Cannot Afford'
+                          )}
+                        </span>
                       </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
