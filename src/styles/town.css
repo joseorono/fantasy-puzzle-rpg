@@ -502,32 +502,6 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
     color: rgba(255, 255, 255, 0.9);
 }
 
-.exchange-group button,
-.melt-options button {
-    width: 100%;
-    padding: 10px;
-    background: rgba(255, 215, 0, 0.2);
-    border: 1px solid rgba(255, 215, 0, 0.5);
-    color: #ffd700;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.exchange-group button:hover:not(:disabled),
-.melt-options button:hover:not(:disabled) {
-    background: rgba(255, 215, 0, 0.4);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-}
-
-.exchange-group button:disabled,
-.melt-options button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    color: rgba(255, 255, 255, 0.5);
-}
-
 /* Town Hub Styles */
 
 /* Town Resources Bar */
