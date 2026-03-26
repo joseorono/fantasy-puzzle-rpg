@@ -124,6 +124,7 @@
     overflow-y: auto;
     margin: 0.8rem;
     order: 1; /* content on the left */
+    margin-top: 6rem;
 }
 
 /* Shop bottom section - dialogue + marquee */
