@@ -57,7 +57,10 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
 
         {/* Party Members Display */}
         <div className="party-members-list">
-          <div className="party-members-grid">
+          <h2 className="">
+            <NarikWoodBitFont text="PARTY MEMBERS" size={1.5} />
+          </h2>
+          <div className="party-members-grid mt-4">
             {party.map((member) => (
               <PartyMemberCard key={member.id} member={member} variant="bar" />
             ))}
@@ -65,7 +68,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
         </div>
 
         {/* Heal Button */}
-        <div className="inn-actions">
+        <div className="inn-actions mt-8">
           <ToffecBeigeCornersWrapper>
             <ToffecButton
               variant="cream"
