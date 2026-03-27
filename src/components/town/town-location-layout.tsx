@@ -38,6 +38,7 @@ export function TownLocationLayout({
       <div className={bgClass} style={{ backgroundImage: `url('${backgroundImage}')` }}></div>
       <button className="leave-btn" onClick={onLeave}></button>
 
+      {/* Barra de recursos */}
       <div className="town-resources-bar">
         <TopBarResources resources={resources} />
       </div>
@@ -49,6 +50,7 @@ export function TownLocationLayout({
           )}
         </div>
 
+        {/* Contenedor principal */}
         <div className="shop-container">{children}</div>
       </div>
 

@@ -176,3 +176,13 @@
     padding: 0;
   }
 }
+
+/* xl screens - 1280px to 1535px */
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .top-bar-resources {
+    margin-top: 2rem;
+    transform: scale(0.8);
+    transform-origin: top right;
+  }
+}
+

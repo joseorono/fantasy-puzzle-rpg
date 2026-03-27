@@ -77,7 +77,7 @@
 .party-member-card--bar {
   flex: 1;
   min-width: 0;
-  padding: 0.4rem 0.6rem;
+  padding: 0.8rem 1rem;
   border: 1px solid rgba(212, 165, 116, 0.3);
 }
 

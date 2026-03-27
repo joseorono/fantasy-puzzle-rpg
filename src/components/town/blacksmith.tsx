@@ -137,10 +137,26 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                   <div className="equipment-item-header">
                     <div className="equipment-item-name">{item.name}</div>
                     <div className="equipment-item-cost">
-                      {item.cost.gold > 0 && <span className="cost-badge gold">🏆 {item.cost.gold}</span>}
-                      {item.cost.silver > 0 && <span className="cost-badge silver">🪙 {item.cost.silver}</span>}
-                      {item.cost.copper > 0 && <span className="cost-badge copper">🔶 {item.cost.copper}</span>}
-                      {item.cost.iron > 0 && <span className="cost-badge iron">⬛ {item.cost.iron}</span>}
+                      {item.cost.gold > 0 && (
+                        <span className="cost-badge gold flex items-center gap-1">
+                          <FrostyRpgIcon name="goldBar" size={14} /> {item.cost.gold}
+                        </span>
+                      )}
+                      {item.cost.silver > 0 && (
+                        <span className="cost-badge silver flex items-center gap-1">
+                          <FrostyRpgIcon name="silverBar" size={14} /> {item.cost.silver}
+                        </span>
+                      )}
+                      {item.cost.copper > 0 && (
+                        <span className="cost-badge copper flex items-center gap-1">
+                          <FrostyRpgIcon name="copperBar" size={14} /> {item.cost.copper}
+                        </span>
+                      )}
+                      {item.cost.iron > 0 && (
+                        <span className="cost-badge iron flex items-center gap-1">
+                          <FrostyRpgIcon name="ironBar" size={14} /> {item.cost.iron}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="equipment-item-description">{item.description}</div>
@@ -159,9 +175,36 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                           handleCraftItem(item);
                         }}
                         disabled={!canAfford(resources, item.cost)}
-                        className="craft-button"
                       >
-                        {canAfford(resources, item.cost) ? 'Craft' : 'Cannot Afford'}
+                        <span className="flex items-center gap-2">
+                          {canAfford(resources, item.cost) ? (
+                            <>
+                              Craft for{' '}
+                              {item.cost.gold > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.silver > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.copper > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
+                                </span>
+                              )}
+                              {item.cost.iron > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            'Cannot Afford'
+                          )}
+                        </span>
                       </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
@@ -186,8 +229,16 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="COPPER TO SILVER" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <ToffecButton variant="orange" onClick={() => handleExchangeResources('copper', 'silver', 5)} disabled={resources.copper < 5}>
-                  Exchange 5 Copper for 1 Silver
+                <ToffecButton
+                  variant="orange"
+                  onClick={() => handleExchangeResources('copper', 'silver', 5)}
+                  disabled={resources.copper < 5}
+                  className="w-full"
+                >
+                  <span className="flex items-center gap-2">
+                    Exchange 5 <FrostyRpgIcon name="copperBar" size={20} /> for 1{' '}
+                    <FrostyRpgIcon name="silverBar" size={20} />
+                  </span>
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
@@ -197,8 +248,16 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="IRON TO SILVER" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <ToffecButton variant="orange" onClick={() => handleExchangeResources('iron', 'silver', 5)} disabled={resources.iron < 5}>
-                  Exchange 5 Iron for 1 Silver
+                <ToffecButton
+                  variant="orange"
+                  onClick={() => handleExchangeResources('iron', 'silver', 5)}
+                  disabled={resources.iron < 5}
+                  className="w-full"
+                >
+                  <span className="flex items-center gap-2">
+                    Exchange 5 <FrostyRpgIcon name="ironBar" size={20} /> for 1{' '}
+                    <FrostyRpgIcon name="silverBar" size={20} />
+                  </span>
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
@@ -208,8 +267,16 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                 <NarikWoodBitFont text="SILVER TO GOLD" size={1} />
               </h3>
               <ToffecBeigeCornersWrapper>
-                <ToffecButton variant="orange" onClick={() => handleExchangeResources('silver', 'gold', 5)} disabled={resources.silver < 5}>
-                  Exchange 5 Silver for 1 Gold
+                <ToffecButton
+                  variant="orange"
+                  onClick={() => handleExchangeResources('silver', 'gold', 5)}
+                  disabled={resources.silver < 5}
+                  className="w-full"
+                >
+                  <span className="flex items-center gap-2">
+                    Exchange 5 <FrostyRpgIcon name="silverBar" size={20} /> for 1{' '}
+                    <FrostyRpgIcon name="goldBar" size={20} />
+                  </span>
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>
             </div>
@@ -227,18 +294,39 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
           <div className="melt-options">
             <ToffecBeigeCornersWrapper>
-              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(10)} disabled={resources.coins < 10}>
-                Melt 10 Coins → 1 Gold
+              <ToffecButton 
+                variant="orange" 
+                onClick={() => handleMeltCoinsToGold(10)} 
+                disabled={resources.coins < 10}
+                className="w-full"
+              >
+                <span className="flex items-center gap-2">
+                  Melt 10 <FrostyRpgIcon name="coinPurse" size={20} /> → 1 <FrostyRpgIcon name="goldBar" size={20} />
+                </span>
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(50)} disabled={resources.coins < 50}>
-                Melt 50 Coins → 5 Gold
+              <ToffecButton 
+                variant="orange" 
+                onClick={() => handleMeltCoinsToGold(50)} 
+                disabled={resources.coins < 50}
+                className="w-full"
+              >
+                <span className="flex items-center gap-2">
+                  Melt 50 <FrostyRpgIcon name="coinPurse" size={20} /> → 5 <FrostyRpgIcon name="goldBar" size={20} />
+                </span>
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <ToffecButton variant="orange" onClick={() => handleMeltCoinsToGold(100)} disabled={resources.coins < 100}>
-                Melt 100 Coins → 10 Gold
+              <ToffecButton 
+                variant="orange" 
+                onClick={() => handleMeltCoinsToGold(100)} 
+                disabled={resources.coins < 100}
+                className="w-full"
+              >
+                <span className="flex items-center gap-2">
+                  Melt 100 <FrostyRpgIcon name="coinPurse" size={20} /> → 10 <FrostyRpgIcon name="goldBar" size={20} />
+                </span>
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
           </div>
