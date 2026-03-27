@@ -171,7 +171,6 @@
   margin-bottom: 0.125rem;
 }
 
-.level-up-screen .exp-bar-container,
 .level-up-screen .hp-bar-container {
   background: rgba(10, 10, 20, 0.9);
   border: 2px solid #8b6914;
@@ -181,18 +180,8 @@
   margin-bottom: 0.25rem;
 }
 
-.level-up-screen .exp-bar-container {
-  height: 22px;
-}
-
 .level-up-screen .hp-bar-container {
   height: 26px;
-}
-.exp-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
-  border-radius: 6px;
-  transition: width 0.3s ease;
 }
 
 .hp-bar {
@@ -731,10 +720,6 @@
 
   .stat-label {
     margin-bottom: 0.25rem;
-  }
-
-  .level-up-screen .exp-bar-container {
-    height: 18px;
   }
 
   .level-up-screen .hp-bar-container {

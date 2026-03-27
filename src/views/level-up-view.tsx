@@ -10,6 +10,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { ExperienceBar } from '~/components/ui/experience-bar';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -141,12 +142,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="EXP" size={1} />
               </div>
-              <div className="exp-bar-container">
-                <div className="exp-bar" style={{ width: `${expPercentage}%` }} />
-                <div className="bar-text pixel-font text-xs">
-                  {character.expToNextLevel} / {calculateExpToNextLevel(character.level)}
-                </div>
-              </div>
+              <ExperienceBar
+                percentage={expPercentage}
+                label={`${character.expToNextLevel} / ${calculateExpToNextLevel(character.level)}`}
+                variant="full"
+              />
             </div>
 
             <div className="progress-section">
