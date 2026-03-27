@@ -123,7 +123,11 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
-        <div className="craft-section">
+        <div className="exchange-section">
+          <h2 className="-mb-5">
+            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={2} />
+          </h2>
+          <p className="-mb-5">Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
