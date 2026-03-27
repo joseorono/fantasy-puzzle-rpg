@@ -92,6 +92,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
+            size="sm"
             onClick={() => setSelectedTab('craft')}
             className={selectedTab === 'craft' ? 'active' : ''}
           >
@@ -101,6 +102,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
+            size="sm"
             onClick={() => setSelectedTab('exchange')}
             className={selectedTab === 'exchange' ? 'active' : ''}
           >
@@ -110,6 +112,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
+            size="sm"
             onClick={() => setSelectedTab('melt')}
             className={selectedTab === 'melt' ? 'active' : ''}
           >
@@ -244,6 +247,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
+                  size="sm"
                   onClick={() => handleExchangeResources('copper', 'silver', 5)}
                   disabled={resources.copper < 5}
                   className="w-full"
@@ -263,6 +267,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
+                  size="sm"
                   onClick={() => handleExchangeResources('iron', 'silver', 5)}
                   disabled={resources.iron < 5}
                   className="w-full"
@@ -282,6 +287,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
+                  size="sm"
                   onClick={() => handleExchangeResources('silver', 'gold', 5)}
                   disabled={resources.silver < 5}
                   className="w-full"
@@ -309,6 +315,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
+                size="sm"
                 onClick={() => handleMeltCoinsToGold(10)}
                 disabled={resources.coins < 10}
                 className="w-full"
@@ -321,6 +328,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
+                size="sm"
                 onClick={() => handleMeltCoinsToGold(50)}
                 disabled={resources.coins < 50}
                 className="w-full"
@@ -333,6 +341,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
+                size="sm"
                 onClick={() => handleMeltCoinsToGold(100)}
                 disabled={resources.coins < 100}
                 className="w-full"
