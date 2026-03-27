@@ -449,7 +449,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
-      <ToffecButton variant="cream" onClick={handleContinue} className="self-center">
+      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
         Finish
       </ToffecButton>
     </div>
