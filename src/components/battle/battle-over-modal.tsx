@@ -72,7 +72,7 @@ export function BattleOverModal() {
             <ToffecButton
               variant={isVictory ? 'cream' : 'tan'}
               onClick={handleContinue}
-              className={cn('crt-top-highlight', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
+              className={cn('crt-top-highlight mt-5', isVictory ? 'gom-btn--victory' : 'gom-btn--defeat')}
             >
               Continue
             </ToffecButton>
