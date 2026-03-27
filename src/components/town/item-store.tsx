@@ -130,6 +130,7 @@ export default function ItemStore({
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
                         variant="orange"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleBuyItem(item);
