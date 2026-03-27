@@ -442,7 +442,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
                 <div className="exp-progress-fill" style={{ width: `${progress}%` }} />
               </div>
             </div>
-            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP!</div>}
+            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP</div>}
           </div>
         ))}
       </div>
