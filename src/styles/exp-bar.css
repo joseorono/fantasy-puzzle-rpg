@@ -1,0 +1,58 @@
+/* Shared EXP Bar Component */
+
+.exp-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid #8b6914;
+  background: rgba(10, 10, 20, 0.9);
+}
+
+/* Full variant (level-up screen) */
+.exp-bar--full {
+  height: 22px;
+  margin-bottom: 0.25rem;
+}
+
+/* Compact variant (battle rewards character card) */
+.exp-bar--compact {
+  height: 8px;
+  border-width: 1px;
+  border-color: #d4a574;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.exp-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.exp-bar--compact .exp-bar__fill {
+  border-radius: 2px;
+}
+
+.exp-bar__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .exp-bar--full {
+    height: 18px;
+  }
+
+  .exp-bar--compact {
+    height: 6px;
+  }
+}

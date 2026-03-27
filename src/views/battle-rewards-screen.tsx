@@ -25,6 +25,7 @@ import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { ExperienceBar } from '~/components/ui/experience-bar';
 
 /**
  * Battle Rewards Screen View
@@ -438,9 +439,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
               <h3 className="character-name">{member.name}</h3>
               <div className="character-level">Lv {member.level}</div>
               <div className="exp-gained-text">EXP +{expReward}</div>
-              <div className="exp-progress-bar">
-                <div className="exp-progress-fill" style={{ width: `${progress}%` }} />
-              </div>
+              <ExperienceBar percentage={progress} variant="compact" />
             </div>
             {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP!</div>}
           </div>
