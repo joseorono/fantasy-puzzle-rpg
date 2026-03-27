@@ -90,17 +90,29 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
         <ToffecBeigeCornersWrapper>
-          <ToffecButton variant="tan" onClick={() => setSelectedTab('craft')} className={selectedTab === 'craft' ? 'active' : ''}>
+          <ToffecButton
+            variant="tan"
+            onClick={() => setSelectedTab('craft')}
+            className={selectedTab === 'craft' ? 'active' : ''}
+          >
             Craft
           </ToffecButton>
         </ToffecBeigeCornersWrapper>
         <ToffecBeigeCornersWrapper>
-          <ToffecButton variant="tan" onClick={() => setSelectedTab('exchange')} className={selectedTab === 'exchange' ? 'active' : ''}>
+          <ToffecButton
+            variant="tan"
+            onClick={() => setSelectedTab('exchange')}
+            className={selectedTab === 'exchange' ? 'active' : ''}
+          >
             Exchange
           </ToffecButton>
         </ToffecBeigeCornersWrapper>
         <ToffecBeigeCornersWrapper>
-          <ToffecButton variant="tan" onClick={() => setSelectedTab('melt')} className={selectedTab === 'melt' ? 'active' : ''}>
+          <ToffecButton
+            variant="tan"
+            onClick={() => setSelectedTab('melt')}
+            className={selectedTab === 'melt' ? 'active' : ''}
+          >
             Melt
           </ToffecButton>
         </ToffecBeigeCornersWrapper>
@@ -170,6 +182,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
                         variant="orange"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCraftItem(item);
@@ -294,9 +307,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
 
           <div className="melt-options">
             <ToffecBeigeCornersWrapper>
-              <ToffecButton 
-                variant="orange" 
-                onClick={() => handleMeltCoinsToGold(10)} 
+              <ToffecButton
+                variant="orange"
+                onClick={() => handleMeltCoinsToGold(10)}
                 disabled={resources.coins < 10}
                 className="w-full"
               >
@@ -306,9 +319,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <ToffecButton 
-                variant="orange" 
-                onClick={() => handleMeltCoinsToGold(50)} 
+              <ToffecButton
+                variant="orange"
+                onClick={() => handleMeltCoinsToGold(50)}
                 disabled={resources.coins < 50}
                 className="w-full"
               >
@@ -318,9 +331,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper>
-              <ToffecButton 
-                variant="orange" 
-                onClick={() => handleMeltCoinsToGold(100)} 
+              <ToffecButton
+                variant="orange"
+                onClick={() => handleMeltCoinsToGold(100)}
                 disabled={resources.coins < 100}
                 className="w-full"
               >
