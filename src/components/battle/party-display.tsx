@@ -193,7 +193,7 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[43vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
@@ -204,7 +204,7 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info */}
-      <div className="relative z-10 w-full max-w-xs px-2">
+      <div className="relative z-10 w-full max-w-xs px-2 mb-10">
         <div className="text-center">
           <h2 className="pixel-font pt-3 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             HEROES
