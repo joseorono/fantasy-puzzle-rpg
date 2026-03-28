@@ -21,6 +21,7 @@ export function PartyMemberCard({
   const colors = CHARACTER_COLORS[member.class];
   const Icon = CHARACTER_ICONS[member.class];
   const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
+  const expPct = Math.round(calculatePercentage(member.currentExp, member.expToNextLevel));
   const isRoster = variant === 'roster';
   const isDead = member.currentHp <= 0;
 
@@ -34,8 +35,8 @@ export function PartyMemberCard({
       )}
       onClick={onClick}
     >
-      <div className={cn('party-member-card__icon', colors.bg)}>
-        <Icon size={isRoster ? 14 : 16} className={colors.icon} />
+      <div className="party-member-card__icon">
+        <Icon size={isRoster ? 14 : 32} className={colors.icon} />
       </div>
       <div className="party-member-card__bars">
         <div className="party-member-card__hp-bar">
@@ -45,6 +46,12 @@ export function PartyMemberCard({
               HP_THRESHOLD_CLASS[getHpThreshold(hpPct)],
             )}
             style={{ width: `${hpPct}%` }}
+          />
+        </div>
+        <div className="party-member-card__exp-bar">
+          <div
+            className="party-member-card__exp-fill"
+            style={{ width: `${expPct}%` }}
           />
         </div>
         <div className="party-member-card__info-bar">

@@ -36,6 +36,7 @@ const partyBase: CharacterData[] = [
       spd: 10,
     },
     level: 1,
+    currentExp: 0,
     baseHp: 50,
     expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 6, // Tanky - highest HP scaling
@@ -60,6 +61,7 @@ const partyBase: CharacterData[] = [
       spd: 20,
     },
     level: 1,
+    currentExp: 0,
     baseHp: 40,
     expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 3, // Glass cannon - lowest HP scaling
@@ -84,6 +86,7 @@ const partyBase: CharacterData[] = [
       spd: 17,
     },
     level: 1,
+    currentExp: 0,
     baseHp: 35,
     expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 4, // Fragile - low HP scaling
@@ -108,6 +111,7 @@ const partyBase: CharacterData[] = [
       spd: 17,
     },
     level: 1,
+    currentExp: 0,
     baseHp: 45,
     expToNextLevel: EXP_TO_LEVEL_ONE,
     vitHpMultiplier: 5, // Balanced - moderate HP scaling

@@ -32,6 +32,7 @@ export interface CharacterData extends BaseStats {
   potentialStats: CoreRPGStats;
   maxCooldown: number; // Base cooldown before SPD modifications
   level: number;
+  currentExp: number;
   expToNextLevel: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
