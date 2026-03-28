@@ -22,6 +22,7 @@ export function PartyMemberCard({
   const Icon = CHARACTER_ICONS[member.class];
   const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
   const isRoster = variant === 'roster';
+  const isDead = member.currentHp <= 0;
 
   return (
     <div
@@ -29,18 +30,14 @@ export function PartyMemberCard({
         'party-member-card',
         isRoster ? 'party-member-card--roster' : 'party-member-card--bar',
         isActive && 'active',
+        isDead && 'dead',
       )}
       onClick={onClick}
     >
       <div className={cn('party-member-card__icon', colors.bg)}>
         <Icon size={isRoster ? 14 : 16} className={colors.icon} />
       </div>
-      <div className="party-member-card__info">
-        <div className="party-member-card__name">{member.name}</div>
-        <div className="party-member-card__detail">
-          Lv.{member.level} · {isRoster ? '' : 'HP '}
-          {member.currentHp}/{member.maxHp}
-        </div>
+      <div className="party-member-card__bars">
         <div className="party-member-card__hp-bar">
           <div
             className={cn(
@@ -49,6 +46,13 @@ export function PartyMemberCard({
             )}
             style={{ width: `${hpPct}%` }}
           />
+        </div>
+        <div className="party-member-card__info-bar">
+          <div className="party-member-card__name">{member.name}</div>
+          <div className="party-member-card__detail">
+            Lv.{member.level} · {isRoster ? '' : 'HP '}
+            {member.currentHp}/{member.maxHp}
+          </div>
         </div>
       </div>
     </div>
