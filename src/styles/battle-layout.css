@@ -32,8 +32,6 @@
   .enemySection {
     flex: 1;
     min-height: 0;
-    border-bottom: 2px solid rgb(55, 65, 81);
-    border-right: none !important;
   }
 
   .partySection {
