@@ -168,7 +168,7 @@
 
 .party-member-card__exp-bar {
   width: 95%;
-  height: 16px; /* Adjusted for 86px total height */
+  height: 12px; /* Adjusted for 86px total height */
   background: #1a1008;
   border: 3px solid #A98559;
   border-radius: 4px;
