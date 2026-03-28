@@ -68,38 +68,51 @@
 
 .party-member-card {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 0;
   background: transparent;
   border-radius: 0;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  width: 100%;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-.party-member-card--bar {
-  flex: 1;
-  min-width: 0;
+.party-member-card--bar,
+.party-member-card--roster {
+  width: 100%;
   padding: 0;
   border: none;
+  background: transparent;
+  display: flex;
+  flex: 1; /* Allow it to grow in flex containers */
+  min-width: 200px;
 }
 
 .party-member-card--roster {
-  padding: 0.5rem;
-  border: 2px solid rgba(139, 105, 20, 0.5);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.party-member-card--roster:hover {
-  border-color: #d4a574;
-  background: rgba(255, 215, 0, 0.05);
+.party-member-card--roster:hover .party-member-card__info-bar {
+  filter: brightness(1.1);
 }
 
-.party-member-card--roster.active {
+.party-member-card--roster.active .party-member-card__info-bar {
   border-color: #ffd700;
-  background: rgba(255, 215, 0, 0.1);
-  box-shadow: 0 0 4px rgba(255, 215, 0, 0.15);
+  box-shadow: 
+    0 0 12px rgba(255, 215, 0, 0.4),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.3),
+    inset 2px 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+.party-member-card--roster.active .party-member-card__hp-bar,
+.party-member-card--roster.active .party-member-card__exp-bar,
+.party-member-card--roster.active .party-member-card__icon {
+  border-color: #ffd700;
 }
 
 .party-member-card__icon {
@@ -112,18 +125,16 @@
   background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: 3px solid #A98559;
-}
-
-.party-member-card--bar .party-member-card__icon {
+  height: 86px; /* Exactly matches the combined height of bars with solapamiento */
   width: 64px;
-  height: auto;
-  align-self: stretch;
-  border-width: 3px;
+  z-index: 4;
 }
 
+.party-member-card--bar .party-member-card__icon,
 .party-member-card--roster .party-member-card__icon {
-  width: 28px;
-  height: 28px;
+  width: 64px;
+  height: 70px;
+  border-width: 3px;
 }
 
 .party-member-card__bars {
@@ -132,7 +143,10 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  align-items: flex-start;
+  align-items: stretch;
+  overflow: visible;
+  height: 86px;
+  position: relative;
 }
 
 .party-member-card__info-bar {
@@ -142,17 +156,19 @@
   margin-top: -3px;
   position: relative;
   z-index: 1;
-  padding: 0.3rem 0.5rem;
+  padding: 0.35rem 0.6rem;
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  width: 85%;
+  width: 90%;
   border-radius: 4px 4px 10px;
+  height: 46px; /* Adjusted for 86px total height */
+  flex-shrink: 0;
 }
 
 .party-member-card__exp-bar {
   width: 100%;
-  height: 10px;
+  height: 16px; /* Adjusted for 86px total height */
   background: #1a1008;
   border: 3px solid #A98559;
   border-radius: 4px;
@@ -160,6 +176,7 @@
   position: relative;
   z-index: 2;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .party-member-card__exp-fill {
@@ -193,23 +210,21 @@
 
 .party-member-card__hp-bar {
   width: 100%;
+  height: 23px;
   background: #3D2817;
   border-radius: 4px;
   overflow: hidden;
   margin-top: 0;
   position: relative;
+  z-index: 3;
   border: 3px solid #A98559;
+  flex-shrink: 0;
 }
 
-.party-member-card--bar .party-member-card__hp-bar {
-  height: 20px;
-  border-width: 3px;
-}
-
+.party-member-card--bar .party-member-card__hp-bar,
 .party-member-card--roster .party-member-card__hp-bar {
-  height: 4px;
-  border-radius: 2px;
-  margin-top: 3px;
+  height: 14px;
+  border-width: 3px;
 }
 
 .party-member-card__hp-fill {
@@ -663,13 +678,14 @@
   line-height: 1.5;
 }
 
-/* Party roster (right side of stats) */
+/* Party roster (right side of stats/equip) */
 .pause-menu-party-roster {
-  width: 180px;
+  width: 280px; /* Increased to accommodate 16-bit cards */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
 }
 
 

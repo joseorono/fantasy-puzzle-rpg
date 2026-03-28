@@ -36,7 +36,7 @@ export function PartyMemberCard({
       onClick={onClick}
     >
       <div className="party-member-card__icon">
-        <Icon size={isRoster ? 14 : 32} className={colors.icon} />
+        <Icon size={32} className={colors.icon} />
       </div>
       <div className="party-member-card__bars">
         <div className="party-member-card__hp-bar">
