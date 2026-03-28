@@ -193,7 +193,7 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-between p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
