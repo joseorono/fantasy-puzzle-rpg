@@ -127,7 +127,7 @@ export default function BattleScreen() {
           <div className="battleArea">
             {/* Left/Top section - Enemy */}
             <div
-              className="enemySection relative border-b-4 border-gray-700 lg:border-r-4 lg:border-b-0"
+              className="enemySection relative border-b-4 border-gray-700"
               style={{
                 backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
                 backgroundSize: 'cover',
