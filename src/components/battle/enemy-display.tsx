@@ -123,7 +123,7 @@ export function EnemyDisplay() {
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex h-[50vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
       {/* Enemy party grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="flex gap-3 sm:gap-4 md:gap-6">
@@ -139,7 +139,7 @@ export function EnemyDisplay() {
       </div>
 
       {/* Enemy section label */}
-      <div className="w-full max-w-xs px-2">
+      <div className="w-full max-w-xs px-2 mb-15">
         <div className="text-center">
           <h2 className="pixel-font text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             ENEMIES
