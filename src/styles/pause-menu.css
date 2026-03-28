@@ -59,7 +59,7 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
+  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
   border-bottom: 2px solid #8b6914;
   overflow-x: auto;
 }
@@ -177,6 +177,7 @@
   z-index: 2;
   overflow: hidden;
   flex-shrink: 0;
+  border-bottom-right-radius: 6px;
 }
 
 .party-member-card__exp-fill {
@@ -292,6 +293,7 @@
   display: flex;
   flex: 1;
   min-height: 0;
+  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────── */
@@ -302,7 +304,7 @@
   flex-direction: column;
   padding: 0.75rem 0;
   border-right: 2px solid #8b6914;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
+  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4));
   flex-shrink: 0;
 }
 
