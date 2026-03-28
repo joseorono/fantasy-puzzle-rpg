@@ -125,17 +125,7 @@ export default function BattleScreen() {
         {/* Main battle area - Split view */}
         <div className="battleContainer">
           <div className="battleArea">
-            {/* Left/Top section - Enemy */}
-            <div
-              className="enemySection relative border-b-4 border-gray-700"
-              style={{
-                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            >
-              <EnemyDisplay />
-            </div>
+            
 
             {/* Right/Bottom section - Party */}
             <div
@@ -149,6 +139,17 @@ export default function BattleScreen() {
               <PartyDisplay />
               <DamageNumber target="party" />
               <SkillActivationEffect />
+            </div>
+            {/* Left/Top section - Enemy */}
+            <div
+              className="enemySection relative border-b-4 border-gray-700"
+              style={{
+                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <EnemyDisplay />
             </div>
           </div>
 
