@@ -123,7 +123,7 @@ export function EnemyDisplay() {
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[50vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
       {/* Enemy party grid */}
       <div className="relative flex flex-1 items-center justify-center">
         <div className="flex gap-3 sm:gap-4 md:gap-6">
