@@ -84,6 +84,14 @@
   flex-shrink: 0;
 }
 
+@media (min-width: 1536px) {
+  .character-card .character-portrait {
+    margin-top: 4rem;
+    margin-left: 3rem;
+    scale: calc(2);
+  }
+}
+
 .character-card .character-info {
   flex: 1;
   display: flex;
@@ -92,8 +100,20 @@
   background: transparent;
 }
 
+@media (min-width: 1536px) {
+  .character-card .character-portrait {
+    margin-top: 5rem;
+    margin-left: 3rem;
+    scale: calc(2);
+  }
+  
+  .character-card .character-info {
+    margin-left: 6rem;
+    scale: calc(1.2);
+  }  
+}
+
 .character-card .character-name {
-  font-size: 1rem;
   font-weight: 700;
   color: #ffd700;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
@@ -513,6 +533,13 @@
   .character-card .exp-gained-text {
     font-size: 0.75rem;
     margin-bottom: 0.125rem;
+  }
+
+  /* Smaller EXP bar in battle rewards */
+  .character-card .exp-bar--compact {
+    height: 4px;
+    border-width: 1px;
+    border-radius: 2px;
   }
 
 
