@@ -110,7 +110,15 @@
   .character-card .character-info {
     margin-left: 6rem;
     scale: calc(1.2);
-  }  
+  }
+  
+  .rewards-resources-panel {
+    gap: 2rem;
+  }
+  
+  .rewards-resource-card {
+    gap: 3rem;
+  }
 }
 
 .character-card .character-name {
@@ -185,7 +193,7 @@
   display: flex;
   flex-wrap: wrap;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 2rem;
     margin-bottom: 1.5rem;
   flex-shrink: 0;
 }
@@ -200,7 +208,7 @@
   background-position: center;
   border: 3px solid #d4a574;
     border-radius: 12px;
-    padding: 0.625rem 0.625rem;
+    padding: 0.6rem 0.6rem;
     box-shadow:
       0 8px 16px rgba(0, 0, 0, 0.7),
       inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -209,6 +217,7 @@
     min-width: 100px;
     max-width: 180px;
     transition: all 0.2s ease;
+    scale: calc(1.1);
   }
   
   .rewards-resource-card:hover {
@@ -228,12 +237,12 @@
     display: flex;
     flex-direction: column;
     line-height: 1;
-    gap: 0.2rem;
+    gap: 0.5rem;
   }
   
   .rewards-resource-card__label {
     font-family: monospace;
-    font-size: 0.6875rem;
+    font-size: 0.80rem;
     font-weight: bold;
     text-transform: uppercase;
     color: #d4a574;
