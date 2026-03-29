@@ -193,10 +193,10 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex h-[50vh] 2xl:h-[43vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4 2xl:h-[43vh]">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4 xl:gap-3 xl:scale-90">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
           ))}
@@ -204,9 +204,9 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info */}
-      <div className="relative z-10 w-full max-w-xs px-2 mb-10">
+      <div className="relative z-10 mb-10 w-full max-w-xs px-2">
         <div className="text-center">
-          <h2 className="pixel-font pt-3 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+          <h2 className="pixel-font text-sm mt-5 pt-2 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg xl:text-xs">
             HEROES
           </h2>
         </div>
@@ -226,8 +226,8 @@ export function PartyDisplay() {
         </div>
         <div
           className={cn(
-            'relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 transition-all duration-300 sm:h-5 sm:border-3 md:h-6',
-            showPulse && 'scale-105 ring-4 ring-white/50',
+            'relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 transition-all duration-300 sm:h-5 sm:border-3 md:h-6 xl:h-3 xl:border-1',
+            showPulse && !true && 'scale-105 ring-4 ring-white/50',
           )}
         >
           {/* Health bar fill */}
@@ -235,7 +235,7 @@ export function PartyDisplay() {
             className={cn(
               'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
               getHealthBarColor(),
-              showPulse && 'animate-pulse',
+              showPulse && !true && 'animate-pulse',
             )}
             style={{ width: `${partyHealthPercentage}%` }}
           >
