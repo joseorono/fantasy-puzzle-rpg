@@ -319,7 +319,7 @@ export function Match3Board() {
     .map((char) => `dead-${char.color}`);
 
   return (
-    <div className="flex flex-1 justify-center xl:scale-80 2xl:scale-110 2xl:-translate-y-5 xl:-translate-y-3">
+    <div className="flex flex-1 justify-center">
       {/* Board container */}
       <div className={cn('match3BoardContainer', deadColorClasses)}>
         <Franuka05aFrame>
