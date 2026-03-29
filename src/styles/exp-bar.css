@@ -21,6 +21,7 @@
   border-color: #d4a574;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.5);
+  max-width: 80%;
 }
 
 .exp-bar__fill {
