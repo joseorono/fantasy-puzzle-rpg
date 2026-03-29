@@ -93,7 +93,7 @@ export function BattleItemBar() {
   const revealAngle = cooldownProgress * 360;
 
   return (
-    <div id="battle-item-bar" className="mt-2 flex items-center xl:-translate-y-16 xl:scale-85 2xl:translate-y-5 2xl:scale-110 justify-center gap-1.5 sm:gap-2">
+    <div id="battle-item-bar" className="mt-2 flex items-center justify-center gap-1.5 sm:gap-2">
       {battleItems.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
