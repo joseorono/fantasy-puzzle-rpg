@@ -196,7 +196,7 @@ export function PartyDisplay() {
     <div className="relative flex h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4 2xl:h-[43vh]">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4 2xl:gap-12 2xl:scale-100">
+        <div className="grid grid-cols-4 gap-2 xl:gap-5 xl:mt-4 sm:gap-3 md:gap-4 2xl:gap-12 2xl:scale-100 xl:scale-90">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
           ))}
@@ -206,13 +206,13 @@ export function PartyDisplay() {
       {/* Party Info */}
       <div className="relative z-10 mb-10 w-full max-w-xs px-2">
         <div className="text-center">
-          <h2 className="pixel-font text-sm mt-5 pt-2 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+          <h2 className="pixel-font text-sm mt-5 xl:mt-0 pt-2 scale-90 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             HEROES
           </h2>
         </div>
 
         {/* Party Health Bar */}
-        <div className="mb-1 flex items-center justify-between">
+        <div className="flex items-center justify-between xl:-mt-4">
           <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
           <span className="pixel-font text-xs font-bold text-white sm:text-sm">
             <NumberFlow
