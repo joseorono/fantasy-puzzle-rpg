@@ -126,7 +126,7 @@ export function EnemyDisplay() {
     <div className="relative flex xl:h-[45vh] 2xl:h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
       {/* Enemy party grid */}
       <div className="relative flex flex-1 items-center justify-center">
-        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-12 2xl:scale-100">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-12">
           {enemies.map((enemy) => (
             <EnemySprite
               key={enemy.id}
