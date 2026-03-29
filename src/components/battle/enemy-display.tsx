@@ -123,10 +123,10 @@ export function EnemyDisplay() {
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex h-[50vh] 2xl:h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-[50vh] xl:h-[45vh] 2xl:h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
       {/* Enemy party grid */}
       <div className="relative flex flex-1 items-center justify-center">
-        <div className="flex gap-3 sm:gap-4 md:gap-6">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 xl:gap-3 xl:scale-90">
           {enemies.map((enemy) => (
             <EnemySprite
               key={enemy.id}
@@ -139,9 +139,9 @@ export function EnemyDisplay() {
       </div>
 
       {/* Enemy section label */}
-      <div className="w-full max-w-xs px-2 mb-15">
+      <div className="w-full max-w-xs px-2 mb-15 xl:mt-5 xl:py-2">
         <div className="text-center">
-          <h2 className="pixel-font text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+          <h2 className="pixel-font xl:-mt-5 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg xl:text-xs">
             ENEMIES
           </h2>
         </div>
