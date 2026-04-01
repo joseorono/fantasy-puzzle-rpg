@@ -493,7 +493,7 @@
   width: 220px;
   flex-shrink: 0;
   padding: 1rem;
-  background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
+  background: linear-gradient(135deg, rgb(42 24 16 / 60%) 0%, rgb(26 16 8 / 60%) 100%);
   border: 2px solid #8b6914;
   border-radius: 8px;
   display: flex;
