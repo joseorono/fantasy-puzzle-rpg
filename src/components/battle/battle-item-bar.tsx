@@ -106,7 +106,7 @@ export function BattleItemBar() {
                 <button
                   onClick={() => handleUseItem(item)}
                   disabled={isDisabled}
-                  className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
+                  className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded w-12 lg:w-18 lg:h-18 xl:w-14 xl:h-16 2xl:w-20 2xl:h-20 px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
                     isEmpty || gameStatus !== 'playing'
                       ? 'cursor-not-allowed opacity-40'
                       : 'cursor-pointer hover:scale-105 active:scale-95'

@@ -56,7 +56,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
       onClick={onSelect}
       className={cn(
         `orb-${orb.type}`,
-        'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11',
+        'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 xl:h-9 xl:w-9 2xl:h-14 2xl:w-14',
         'cursor-pointer border-2 sm:border-3',
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
