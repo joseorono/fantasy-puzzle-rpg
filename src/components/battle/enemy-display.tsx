@@ -140,7 +140,7 @@ export function EnemyDisplay() {
 
       {/* Enemy section label */}
       <div className="w-full max-w-xs xl:mt-5">
-        <div className="text-center xl:-mt-20">
+        <div className="text-center xl:-translate-y-5">
           <h2 className="pixel-font scale-90 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             ENEMIES
           </h2>
