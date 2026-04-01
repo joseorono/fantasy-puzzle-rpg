@@ -8,9 +8,10 @@ import { PauseMenuLoad } from './tabs/pause-menu-load';
 
 export function PauseMenuContent() {
   const { activeTab } = usePauseMenu();
+  const contentClassName = activeTab === 'equip' ? 'pause-menu-content pause-menu-content--equip' : 'pause-menu-content';
 
   return (
-    <div className="pause-menu-content">
+    <div className={contentClassName}>
       {activeTab === 'items' && <PauseMenuItems />}
       {activeTab === 'equip' && <PauseMenuEquip />}
       {activeTab === 'stats' && <PauseMenuStats />}

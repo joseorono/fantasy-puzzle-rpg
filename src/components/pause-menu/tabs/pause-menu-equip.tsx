@@ -70,72 +70,74 @@ export function PauseMenuEquip() {
   }
 
   return (
-    <>
+    <div className="pause-menu-equip-tab">
       <h2 className="mb-4">
         <NarikRedwoodBitFont text="EQUIP" size={1.2} />
       </h2>
       <div className="pause-menu-equip-layout">
-        <div className="pause-menu-party-roster">
-          {party.map((member) => (
-            <PartyMemberCard
-              key={member.id}
-              member={member}
-              variant="roster"
-              isActive={member.id === selectedId}
-              onClick={() => handleSelectCharacter(member.id)}
-            />
-          ))}
-        </div>
+        <div className="pause-menu-equip-top-section">
+          <div className="pause-menu-party-roster">
+            {party.map((member) => (
+              <PartyMemberCard
+                key={member.id}
+                member={member}
+                variant="roster"
+                isActive={member.id === selectedId}
+                onClick={() => handleSelectCharacter(member.id)}
+              />
+            ))}
+          </div>
 
-        <div className="pause-menu-equip-main">
-          <div className="pause-menu-equip-header">
-            <div className={cn('pause-menu-stats-icon', colors.bg)}>
-              <Icon size={24} className={colors.icon} />
-            </div>
-            <div>
-              <div className="pause-menu-stats-name">{selected.name}</div>
-              <div className="pause-menu-stats-class">
-                {selected.class} · Lv. {selected.level}
+          <div className="pause-menu-equip-main">
+            <div className="pause-menu-equip-header">
+              <div className={cn('pause-menu-stats-icon', colors.bg)}>
+                <Icon size={24} className={colors.icon} />
+              </div>
+              <div>
+                <div className="pause-menu-stats-name">{selected.name}</div>
+                <div className="pause-menu-stats-class">
+                  {selected.class} · Lv. {selected.level}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="pause-menu-equip-slots">
-            <EquipSlotRow
-              label="Weapon"
-              item={equippedWeapon}
-              isActive={selectedSlot === 'weapon'}
-              onToggle={() => handleToggleSlot('weapon')}
-              onUnequip={() => handleUnequip('weapon')}
-            />
-            <EquipSlotRow
-              label="Armor"
-              item={equippedArmor}
-              isActive={selectedSlot === 'armor'}
-              onToggle={() => handleToggleSlot('armor')}
-              onUnequip={() => handleUnequip('armor')}
-            />
-          </div>
-
-          <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
-
-          {selectedSlot && (
-            <div className="pause-menu-equip-available">
-              <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
-              {availableItems.length === 0 ? (
-                <div className="pause-menu-equip-empty">
-                  No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
-                </div>
-              ) : (
-                availableItems.map((item) => (
-                  <EquipAvailableItem key={item.id} item={item} onEquip={() => handleEquip(item.id)} />
-                ))
-              )}
+            <div className="pause-menu-equip-slots">
+              <EquipSlotRow
+                label="Weapon"
+                item={equippedWeapon}
+                isActive={selectedSlot === 'weapon'}
+                onToggle={() => handleToggleSlot('weapon')}
+                onUnequip={() => handleUnequip('weapon')}
+              />
+              <EquipSlotRow
+                label="Armor"
+                item={equippedArmor}
+                isActive={selectedSlot === 'armor'}
+                onToggle={() => handleToggleSlot('armor')}
+                onUnequip={() => handleUnequip('armor')}
+              />
             </div>
-          )}
+
+            {selectedSlot && (
+              <div className="pause-menu-equip-available">
+                <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                {availableItems.length === 0 ? (
+                  <div className="pause-menu-equip-empty">
+                    No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
+                  </div>
+                ) : (
+                  availableItems.map((item) => (
+                    <EquipAvailableItem key={item.id} item={item} onEquip={() => handleEquip(item.id)} />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -182,39 +184,58 @@ interface EquipStatPreviewProps {
 }
 
 function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewProps) {
+  const stats = ['pow', 'vit', 'spd'] as const;
+
   return (
     <div className="pause-menu-equip-preview">
       <h3>Stats</h3>
-      {(['pow', 'vit', 'spd'] as const).map((stat) => (
-        <div key={stat} className="pause-menu-equip-preview-row">
-          <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
-            {stat.toUpperCase()}
-          </span>
-          <span className="pause-menu-equip-preview-base number-flow-container">
-            <NumberFlow value={baseStats[stat]} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
-          </span>
-          {bonuses[stat] !== 0 && (
-            <span
-              className={cn(
-                'pause-menu-equip-stat-diff number-flow-container',
-                bonuses[stat] > 0 ? 'positive' : 'negative',
+      <div className="pause-menu-equip-preview-stats-container">
+        {stats.map((stat, index) => (
+          <div key={stat} className="pause-menu-equip-preview-stat">
+            <div className="pause-menu-equip-preview-row">
+              <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
+                {stat}
+              </span>
+              <span className="pause-menu-equip-preview-base number-flow-container">
+                <NumberFlow
+                  value={baseStats[stat]}
+                  format={INTEGER_FORMAT}
+                  spinTiming={SNAPPY_SPIN_TIMING}
+                  transformTiming={SNAPPY_TRANSFORM_TIMING}
+                  opacityTiming={SNAPPY_OPACITY_TIMING}
+                />
+              </span>
+              {bonuses[stat] !== 0 && (
+                <span
+                  className={cn(
+                    'pause-menu-equip-stat-diff number-flow-container',
+                    bonuses[stat] > 0 ? 'positive' : 'negative',
+                  )}
+                >
+                  <NumberFlow
+                    value={bonuses[stat]}
+                    format={INTEGER_FORMAT}
+                    prefix={bonuses[stat] > 0 ? '+' : ''}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
+                </span>
               )}
-            >
+            </div>
+            <span className="pause-menu-equip-preview-total number-flow-container">
               <NumberFlow
-                value={bonuses[stat]}
+                value={effective[stat]}
                 format={INTEGER_FORMAT}
-                prefix={bonuses[stat] > 0 ? '+' : ''}
                 spinTiming={SNAPPY_SPIN_TIMING}
                 transformTiming={SNAPPY_TRANSFORM_TIMING}
                 opacityTiming={SNAPPY_OPACITY_TIMING}
               />
             </span>
-          )}
-          <span className="pause-menu-equip-preview-total number-flow-container">
-            <NumberFlow value={effective[stat]} format={INTEGER_FORMAT} spinTiming={SNAPPY_SPIN_TIMING} transformTiming={SNAPPY_TRANSFORM_TIMING} opacityTiming={SNAPPY_OPACITY_TIMING} />
-          </span>
-        </div>
-      ))}
+            {index < stats.length - 1 && <div className="pause-menu-equip-preview-divider" />}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
