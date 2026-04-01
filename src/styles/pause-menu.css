@@ -515,8 +515,10 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
-  border: 2px solid #8b6914;
+  background: url("/assets/bg/tc-bg-item-darker.png") no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+  border: none;
   border-radius: 8px;
 }
 
@@ -669,7 +671,7 @@
 
 .pause-menu-stats-skill {
   padding: 0.75rem;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
   border: 2px solid #8b6914;
   border-radius: 8px;
 }
