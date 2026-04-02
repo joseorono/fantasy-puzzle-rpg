@@ -1,0 +1,102 @@
+/* ─── Franuka Slider (Pixel Art Style) ──────────────────────────────────── */
+
+.franuka-slider-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.franuka-slider {
+  position: relative;
+  display: flex;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+  align-items: center;
+  height: 24px;
+}
+
+/* Track (background bar) */
+.franuka-slider-track {
+  position: relative;
+  background: linear-gradient(to bottom, #6B4C3A, #4A3428);
+  height: 12px;
+  width: 100%;
+  border: 2px solid #3D2817;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.1),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Range (filled portion) */
+.franuka-slider-range {
+  position: absolute;
+  background: linear-gradient(to bottom, #4A9FD8, #2B6BA8);
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.2),
+    inset -1px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Thumb (slider control) */
+.franuka-slider-thumb {
+  display: block;
+  width: 16px;
+  height: 20px;
+  background: linear-gradient(to bottom, #8B6F47, #6B5344);
+  border: 2px solid #3D2817;
+  border-radius: 1px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.15),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 5;
+}
+
+.franuka-slider-thumb:hover {
+  background: linear-gradient(to bottom, #9B7F57, #7B6354);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.2),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.5),
+    0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.franuka-slider-thumb:active {
+  background: linear-gradient(to bottom, #7B6344, #5B4334);
+  box-shadow:
+    inset 1px 1px 0 rgba(0, 0, 0, 0.3),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.franuka-slider-thumb:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+.franuka-slider-thumb:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Compact variant */
+.franuka-slider-wrapper.compact .franuka-slider {
+  height: 18px;
+}
+
+.franuka-slider-wrapper.compact .franuka-slider-track {
+  height: 8px;
+}
+
+.franuka-slider-wrapper.compact .franuka-slider-thumb {
+  width: 12px;
+  height: 16px;
+}
