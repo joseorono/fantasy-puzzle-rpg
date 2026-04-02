@@ -333,13 +333,15 @@
 
 .pause-menu-nav-btn:hover {
   color: #fff;
-  background: rgba(255, 215, 0, 0.02);
+  background: unset;
+  box-shadow: unset;
 }
 
 .pause-menu-nav-btn.active {
   color: #fff;
   background: transparent;
   position: relative;
+  box-shadow: unset;
 }
 
 .pause-menu-nav-btn.active::after {
