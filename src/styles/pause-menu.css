@@ -1160,7 +1160,6 @@
 
 
 .pause-menu-nav-btn:focus {
-  outline: 2px solid #ffd700;
   outline-offset: -2px;
 }
 
