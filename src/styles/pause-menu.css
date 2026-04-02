@@ -1199,3 +1199,40 @@
   color: #d4a574;
   font-style: italic;
 }
+
+/* ─── Options Tab ───────────────────────────────────────────────────────── */
+
+.pause-menu-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pause-menu-option-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pause-menu-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.25rem;
+}
+
+.pause-menu-option-label {
+  font-size: 0.75rem;
+  color: #d4a574;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pause-menu-option-value {
+  font-size: 0.75rem;
+  color: #ffd700;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: right;
+}
