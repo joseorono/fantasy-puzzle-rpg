@@ -817,36 +817,10 @@
   font-weight: 400;
 }
 
-.pause-menu-equip-slot-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: url("/assets/btn/tc-x-btn-2.png") no-repeat center;
-  background-size: contain;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 0.5rem;
-  opacity: 0.8;
-  transition: opacity 0.1s steps(2);
-  color: transparent;
-  font-size: 0;
-  line-height: 1;
-  overflow: hidden;
-  text-indent: -9999px;
-}
-
-.pause-menu-equip-slot-remove:hover {
+/* ToffecCloseButton hover state for equip slots */
+.pause-menu-equip-slot-row .toffec-close-btn:hover {
   opacity: 1;
   filter: brightness(1.1);
-  box-shadow: 1px 1px 0 rgba(212, 165, 116, 0.5);
-}
-
-.pause-menu-equip-slot-remove:active {
-  opacity: 0.9;
 }
 
 /* Stat preview */
