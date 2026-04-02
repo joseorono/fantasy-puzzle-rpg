@@ -23,6 +23,7 @@ import type { EquipmentItemData } from '~/types/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 
 const STAT_COLORS = {
   pow: '#e53935',
@@ -157,15 +158,16 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
       {item && (
         <Tooltip>
           <TooltipTrigger>
-            <button
-              className="pause-menu-equip-slot-remove"
+            <ToffecCloseButton
+              variant="medieval2"
+              size="sm"
+              hasBg={true}
               aria-label="Unequip"
               onClick={(e) => {
                 e.stopPropagation();
                 onUnequip();
               }}
-            >
-            </button>
+            />
           </TooltipTrigger>
           <TooltipContent>Unequip</TooltipContent>
         </Tooltip>

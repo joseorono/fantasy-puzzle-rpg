@@ -338,7 +338,44 @@
 
 .pause-menu-nav-btn.active {
   color: #ffd700;
-  background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
+  background: transparent;
+  position: relative;
+}
+
+.pause-menu-nav-btn.active::after {
+  content: '▶';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 0.8rem;
+  animation: arrow-indicator 1.05s steps(3) infinite;
+  text-shadow: 0 0 4px rgba(247, 247, 247, 0.6);
+  z-index: 10;
+}
+
+@keyframes arrow-indicator {
+  0% {
+    left: 2px;
+    opacity: 0.7;
+  }
+  25% {
+    left: 4px;
+    opacity: 0.85;
+  }
+  50% {
+    left: 6px;
+    opacity: 1;
+  }
+  75% {
+    left: 8px;
+    opacity: 0.85;
+  }
+  100% {
+    left: 2px;
+    opacity: 0.7;
+  }
 }
 
 .pause-menu-nav-spacer {
@@ -817,36 +854,10 @@
   font-weight: 400;
 }
 
-.pause-menu-equip-slot-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: url("/assets/btn/tc-x-btn-2.png") no-repeat center;
-  background-size: contain;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 0.5rem;
-  opacity: 0.8;
-  transition: opacity 0.1s steps(2);
-  color: transparent;
-  font-size: 0;
-  line-height: 1;
-  overflow: hidden;
-  text-indent: -9999px;
-}
-
-.pause-menu-equip-slot-remove:hover {
+/* ToffecCloseButton hover state for equip slots */
+.pause-menu-equip-slot-row .toffec-close-btn:hover {
   opacity: 1;
   filter: brightness(1.1);
-  box-shadow: 1px 1px 0 rgba(212, 165, 116, 0.5);
-}
-
-.pause-menu-equip-slot-remove:active {
-  opacity: 0.9;
 }
 
 /* Stat preview */
@@ -1147,29 +1158,6 @@
   }
 }
 
-.pause-menu-nav-btn {
-  position: relative;
-}
-
-.pause-menu-nav-btn::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #ffd700;
-  border-radius: 0 2px 2px 0;
-  opacity: 0;
-  transform: scaleY(0);
-  transform-origin: center;
-  transition: all 0.2s ease;
-}
-
-.pause-menu-nav-btn.active::before {
-  opacity: 1;
-  transform: scaleY(1);
-}
 
 .pause-menu-nav-btn:focus {
   outline: 2px solid #ffd700;
