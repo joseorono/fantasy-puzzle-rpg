@@ -841,6 +841,8 @@
 
 .pause-menu-equip-slot-remove:hover {
   opacity: 1;
+  filter: brightness(1.1);
+  box-shadow: 1px 1px 0 rgba(212, 165, 116, 0.5);
 }
 
 .pause-menu-equip-slot-remove:active {
