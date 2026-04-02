@@ -302,7 +302,7 @@
   width: 160px;
   display: flex;
   flex-direction: column;
-  padding: 0.75rem 0;
+  padding: 0.75rem 4px;
   border-right: 2px solid #8b6914;
   background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4));
   flex-shrink: 0;
@@ -332,12 +332,12 @@
 }
 
 .pause-menu-nav-btn:hover {
-  color: #ffd700;
-  background: rgba(255, 215, 0, 0.05);
+  color: #fff;
+  background: rgba(255, 215, 0, 0.02);
 }
 
 .pause-menu-nav-btn.active {
-  color: #ffd700;
+  color: #fff;
   background: transparent;
   position: relative;
 }
@@ -357,23 +357,23 @@
 
 @keyframes arrow-indicator {
   0% {
-    left: 2px;
+    left: 0px;
     opacity: 0.7;
   }
   25% {
-    left: 4px;
+    left: 2px;
     opacity: 0.85;
   }
   50% {
-    left: 6px;
+    left: 4px;
     opacity: 1;
   }
   75% {
-    left: 8px;
+    left: 6px;
     opacity: 0.85;
   }
   100% {
-    left: 2px;
+    left: 0px;
     opacity: 0.7;
   }
 }
@@ -1160,7 +1160,6 @@
 
 
 .pause-menu-nav-btn:focus {
-  outline: 2px solid #ffd700;
   outline-offset: -2px;
 }
 
