@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
@@ -91,13 +91,14 @@ export function PauseMenuEquip() {
           <div className="pause-menu-equip-main">
             <div className="pause-menu-equip-header">
               <div className={cn('pause-menu-stats-icon', colors.bg)}>
-                <Icon size={24} className={colors.icon} />
+                <Icon size={16} className={colors.icon} />
               </div>
-              <div>
+              <div className="pause-menu-equip-header-line">
                 <div className="pause-menu-stats-name">{selected.name}</div>
-                <div className="pause-menu-stats-class">
-                  {selected.class} · Lv. {selected.level}
-                </div>
+                <span className="pause-menu-equip-header-separator">|</span>
+                <div className="pause-menu-stats-class">{selected.class}</div>
+                <span className="pause-menu-equip-header-separator">|</span>
+                <div className="pause-menu-equip-header-level">Lv. {selected.level}</div>
               </div>
             </div>
 
@@ -132,10 +133,10 @@ export function PauseMenuEquip() {
                 )}
               </div>
             )}
+
+            <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
           </div>
         </div>
-
-        <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
       </div>
     </div>
   );
@@ -188,41 +189,40 @@ function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewPro
 
   return (
     <div className="pause-menu-equip-preview">
-      <h3>Stats</h3>
-      <div className="pause-menu-equip-preview-stats-container">
-        {stats.map((stat, index) => (
-          <div key={stat} className="pause-menu-equip-preview-stat">
-            <div className="pause-menu-equip-preview-row">
-              <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
-                {stat}
-              </span>
-              <span className="pause-menu-equip-preview-base number-flow-container">
+      <span className="pause-menu-equip-preview-title">Stats</span>
+      <div className="pause-menu-equip-preview-divider" />
+      {stats.map((stat, index) => (
+        <React.Fragment key={stat}>
+          <div className="pause-menu-equip-preview-stat-group">
+            <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
+              {stat}
+            </span>
+            <span className="pause-menu-equip-preview-base number-flow-container">
+              <NumberFlow
+                value={baseStats[stat]}
+                format={INTEGER_FORMAT}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+            {bonuses[stat] !== 0 && (
+              <span
+                className={cn(
+                  'pause-menu-equip-stat-diff number-flow-container',
+                  bonuses[stat] > 0 ? 'positive' : 'negative',
+                )}
+              >
                 <NumberFlow
-                  value={baseStats[stat]}
+                  value={bonuses[stat]}
                   format={INTEGER_FORMAT}
+                  prefix={bonuses[stat] > 0 ? '+' : ''}
                   spinTiming={SNAPPY_SPIN_TIMING}
                   transformTiming={SNAPPY_TRANSFORM_TIMING}
                   opacityTiming={SNAPPY_OPACITY_TIMING}
                 />
               </span>
-              {bonuses[stat] !== 0 && (
-                <span
-                  className={cn(
-                    'pause-menu-equip-stat-diff number-flow-container',
-                    bonuses[stat] > 0 ? 'positive' : 'negative',
-                  )}
-                >
-                  <NumberFlow
-                    value={bonuses[stat]}
-                    format={INTEGER_FORMAT}
-                    prefix={bonuses[stat] > 0 ? '+' : ''}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
-              )}
-            </div>
+            )}
             <span className="pause-menu-equip-preview-total number-flow-container">
               <NumberFlow
                 value={effective[stat]}
@@ -232,10 +232,10 @@ function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewPro
                 opacityTiming={SNAPPY_OPACITY_TIMING}
               />
             </span>
-            {index < stats.length - 1 && <div className="pause-menu-equip-preview-divider" />}
           </div>
-        ))}
-      </div>
+          {index < stats.length - 1 && <div className="pause-menu-equip-preview-divider" />}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
