@@ -617,7 +617,7 @@
 
 .pause-menu-stats-name {
   font-size: 1.1rem;
-  color: #ffd700;
+  color: #fff;
   font-weight: 700;
 }
 
@@ -665,7 +665,7 @@
 
 .pause-menu-stat-value {
   font-size: 0.7rem;
-  color: #ffd700;
+  color: #fff;
   font-weight: 700;
 }
 
@@ -678,7 +678,7 @@
 
 .pause-menu-stats-skill-name {
   font-size: 0.75rem;
-  color: #ffd700;
+  color: #fff;
   font-weight: 700;
   margin-bottom: 0.3rem;
 }
@@ -851,7 +851,7 @@
 .pause-menu-equip-preview {
   padding: 0.6rem 0.4rem;
   background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
-  border: 2px solid #8b6914;
+  border: 2px solid rgba(212, 165, 116, 0.85);
   border-radius: 8px;
   margin-top: auto;
   margin-bottom: 0;
@@ -913,7 +913,7 @@
 
 /* Available items list */
 .pause-menu-equip-available {
-  border: 2px solid #8b6914;
+  border: 2px solid #d4a574;
   border-radius: 12px;
   padding: 1rem;
   background: rgba(10, 6, 4, 0.6);
@@ -928,7 +928,7 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  border: 2px solid #ffd700;
+  border: 2px solid #d4a574;
   border-radius: 12px;
   pointer-events: none;
 }

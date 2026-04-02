@@ -4,6 +4,7 @@ import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
@@ -89,18 +90,13 @@ export function PauseMenuEquip() {
           </div>
 
           <div className="pause-menu-equip-main">
-            <div className="pause-menu-equip-header">
-              <div className={cn('pause-menu-stats-icon', colors.bg)}>
-                <Icon size={16} className={colors.icon} />
-              </div>
-              <div className="pause-menu-equip-header-line">
-                <div className="pause-menu-stats-name">{selected.name}</div>
-                <span className="pause-menu-equip-header-separator">|</span>
-                <div className="pause-menu-stats-class">{selected.class}</div>
-                <span className="pause-menu-equip-header-separator">|</span>
-                <div className="pause-menu-equip-header-level">Lv. {selected.level}</div>
-              </div>
-            </div>
+            <PauseMenuCharacterHeader
+              name={selected.name}
+              classNameText={selected.class}
+              level={selected.level}
+              Icon={Icon}
+              colors={colors}
+            />
 
             <div className="pause-menu-equip-slots">
               <EquipSlotRow

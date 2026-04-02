@@ -4,8 +4,8 @@ import { useParty } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constants/party';
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
-import { cn } from '~/lib/utils';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
@@ -49,17 +49,13 @@ export function PauseMenuStats() {
         </div>
 
         <div className="pause-menu-stats-main">
-          <div className="pause-menu-stats-header">
-            <div className={cn('pause-menu-stats-icon', colors.bg)}>
-              <Icon size={24} className={colors.icon} />
-            </div>
-            <div>
-              <div className="pause-menu-stats-name">{selected.name}</div>
-              <div className="pause-menu-stats-class">
-                {selected.class} · Lv. {selected.level}
-              </div>
-            </div>
-          </div>
+          <PauseMenuCharacterHeader
+            name={selected.name}
+            classNameText={selected.class}
+            level={selected.level}
+            Icon={Icon}
+            colors={colors}
+          />
 
           <div className="pause-menu-stats-grid">
             <div className="pause-menu-stats-section">
