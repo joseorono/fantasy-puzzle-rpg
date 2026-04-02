@@ -4,7 +4,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 6px 0;
 }
 
 .franuka-slider {
@@ -17,7 +17,7 @@
   height: 24px;
 }
 
-/* Track (frame + interior) */
+/* Track (frame + interior) — base styles, overridden by frame variants */
 .franuka-slider-track {
   position: relative;
   background: linear-gradient(to bottom, #6B4C3A, #4A3428);
@@ -32,7 +32,7 @@
     0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* Range (filled portion) — thinner bar centered in the track */
+/* Range (filled portion) — base styles, overridden by fill variants */
 .franuka-slider-range {
   position: absolute;
   background: linear-gradient(to bottom, #4A9FD8, #2B6BA8);
@@ -43,7 +43,7 @@
     inset -1px 0 0 rgba(0, 0, 0, 0.3);
 }
 
-/* Thumb (slider control) */
+/* Thumb (marker) — base styles, overridden by marker variants */
 .franuka-slider-thumb {
   display: block;
   width: 16px;
@@ -91,12 +91,12 @@
    Frame Variants
    The frame is the thick decorative border around the slider track.
    The fill-in bar is thinner and sits centered inside the frame.
+     Frame variants ONLY style the track — markers are separate.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /*
  * Wood frame — chunky dark brown pixel-art planks.
  * Multiple hard-edge layers: dark outline → mid brown → highlight line.
- * The fill sits as a thin bar in the center.
  */
 .franuka-slider-wrapper.frame-wood .franuka-slider {
   height: 32px;
@@ -107,51 +107,24 @@
   border-radius: 0;
   border: none;
   background: #3a2010;
-  /* Thick frame built from layered pixel outlines */
   box-shadow:
-    /* outermost dark outline */
     0 0 0 2px #1a0c04,
-    /* main wood body — top highlight, bottom shadow */
     inset 0 0 0 2px #5a3820,
     inset 0 0 0 3px #6b4830,
-    /* top bevel highlight */
     inset 0 3px 0 3px #7a5838,
     inset 0 4px 0 3px #8a6848,
-    /* bottom bevel shadow */
     inset 0 -3px 0 3px #2a1408,
     inset 0 -4px 0 3px #1e0c04,
-    /* interior dark groove */
     inset 0 0 0 6px #2e1810;
   overflow: hidden;
 }
 
 .franuka-slider-wrapper.frame-wood .franuka-slider-range {
-  /* Thin fill centered inside the thick frame */
   height: 8px;
   top: 50%;
   transform: translateY(-50%);
   margin-left: 6px;
   border-radius: 0;
-}
-
-.franuka-slider-wrapper.frame-wood .franuka-slider-thumb {
-  width: 14px;
-  height: 26px;
-  background: linear-gradient(to bottom, #9a7a50, #6b5030);
-  border: 2px solid #2a1608;
-  border-radius: 0;
-  box-shadow:
-    inset 1px 1px 0 #b8985e,
-    inset -1px -1px 0 #4a3018,
-    0 0 0 1px #1a0c04;
-}
-
-.franuka-slider-wrapper.frame-wood .franuka-slider-thumb:hover {
-  background: linear-gradient(to bottom, #aa8a60, #7b6040);
-}
-
-.franuka-slider-wrapper.frame-wood .franuka-slider-thumb:active {
-  background: linear-gradient(to bottom, #8a6a40, #5b4020);
 }
 
 /*
@@ -169,19 +142,13 @@
   background: #2a0c10;
   overflow: hidden;
   box-shadow:
-    /* outermost dark outline */
     0 0 0 2px #2a1206,
-    /* thick gold border */
     inset 0 0 0 2px #d49530,
     inset 0 0 0 4px #c88528,
-    /* gold highlight on top-left */
     inset 2px 2px 0 2px #e8b848,
-    /* gold shadow on bottom-right */
     inset -2px -2px 0 2px #9a6018,
-    /* inner red/magenta accent line */
     inset 0 0 0 5px #a83040,
     inset 0 0 0 6px #c04050,
-    /* dark interior */
     inset 0 0 0 7px #3a1018;
 }
 
@@ -191,28 +158,6 @@
   transform: translateY(-50%);
   margin-left: 7px;
   border-radius: 0;
-}
-
-.franuka-slider-wrapper.frame-gold .franuka-slider-thumb {
-  background: radial-gradient(circle at 40% 35%, #e8b848, #b87828 50%, #8a5418);
-  border: 2px solid #5a3008;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  box-shadow:
-    inset 1px 1px 0 #f0d068,
-    inset -1px -1px 0 #6a4010,
-    0 0 0 1px #3a1a06,
-    0 0 0 2px #b87828,
-    0 0 0 3px #3a1a06;
-}
-
-.franuka-slider-wrapper.frame-gold .franuka-slider-thumb:hover {
-  background: radial-gradient(circle at 40% 35%, #f8c858, #c88838 50%, #9a6428);
-}
-
-.franuka-slider-wrapper.frame-gold .franuka-slider-thumb:active {
-  background: radial-gradient(circle at 50% 50%, #c89838, #986818 50%, #6a4010);
 }
 
 /*
@@ -236,18 +181,13 @@
   background: #8a6838;
   overflow: hidden;
   box-shadow:
-    /* outermost dark outline */
     0 0 0 2px #2a1808,
-    /* thick tan/sandy frame */
     inset 0 0 0 2px #c8a868,
     inset 0 0 0 3px #d8b878,
-    /* top highlight */
     inset 0 2px 0 2px #e0c890,
     inset 0 3px 0 2px #d0b878,
-    /* bottom shadow */
     inset 0 -2px 0 2px #7a5828,
     inset 0 -3px 0 2px #6a4818,
-    /* interior dark groove */
     inset 0 0 0 5px #5a3e20;
 }
 
@@ -273,13 +213,10 @@
   background: radial-gradient(circle at 45% 40%, #78c8f0, #4088b8 45%, #284870);
   border: 3px solid #1a2840;
   box-shadow:
-    /* gold ring */
     0 0 0 2px #d8a830,
     0 0 0 3px #a07818,
-    /* yellow accent highlights */
     inset 0 -3px 0 #1a3050,
     inset 0 3px 0 #98e0ff,
-    /* outer dark outline */
     0 0 0 4px #1a0c04;
 }
 
@@ -291,7 +228,124 @@
   right: 0;
 }
 
-.franuka-slider-wrapper.frame-ornate .franuka-slider-thumb {
+/*
+ * Bookstyle frame — minimal parchment/paper style with small dark
+ * arrow end caps. Thin track with warm brown border.
+ * Evokes an old book's page slider or scroll indicator.
+ */
+.franuka-slider-wrapper.frame-bookstyle {
+  position: relative;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.franuka-slider-wrapper.frame-bookstyle .franuka-slider {
+  height: 28px;
+}
+
+.franuka-slider-wrapper.frame-bookstyle .franuka-slider-track {
+  height: 10px;
+  border-radius: 0;
+  border: none;
+  background: #a08868;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px #5a3e28,
+    0 0 0 2px #3a2210,
+    inset 0 1px 0 #b8a078,
+    inset 0 -1px 0 #887050;
+}
+
+.franuka-slider-wrapper.frame-bookstyle .franuka-slider-range {
+  height: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 1px;
+  border-radius: 0;
+}
+
+/* Arrow end caps — small dark triangular/chevron shapes */
+.franuka-slider-wrapper.frame-bookstyle::before,
+.franuka-slider-wrapper.frame-bookstyle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  z-index: 6;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3));
+}
+
+.franuka-slider-wrapper.frame-bookstyle::before {
+  left: 2px;
+  border-right: 10px solid #4a3020;
+}
+
+.franuka-slider-wrapper.frame-bookstyle::after {
+  right: 2px;
+  border-left: 10px solid #4a3020;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Marker Variants
+   The marker is the draggable thumb/indicator on the slider.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/*
+ * Block — rectangular wood block. The classic default.
+ */
+.franuka-slider-wrapper.marker-block .franuka-slider-thumb {
+  width: 14px;
+  height: 26px;
+  background: linear-gradient(to bottom, #9a7a50, #6b5030);
+  border: 2px solid #2a1608;
+  border-radius: 0;
+  box-shadow:
+    inset 1px 1px 0 #b8985e,
+    inset -1px -1px 0 #4a3018,
+    0 0 0 1px #1a0c04;
+}
+
+.franuka-slider-wrapper.marker-block .franuka-slider-thumb:hover {
+  background: linear-gradient(to bottom, #aa8a60, #7b6040);
+}
+
+.franuka-slider-wrapper.marker-block .franuka-slider-thumb:active {
+  background: linear-gradient(to bottom, #8a6a40, #5b4020);
+}
+
+/*
+ * Round — circular gold jewel marker.
+ */
+.franuka-slider-wrapper.marker-round .franuka-slider-thumb {
+  background: radial-gradient(circle at 40% 35%, #e8b848, #b87828 50%, #8a5418);
+  border: 2px solid #5a3008;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  box-shadow:
+    inset 1px 1px 0 #f0d068,
+    inset -1px -1px 0 #6a4010,
+    0 0 0 1px #3a1a06,
+    0 0 0 2px #b87828,
+    0 0 0 3px #3a1a06;
+}
+
+.franuka-slider-wrapper.marker-round .franuka-slider-thumb:hover {
+  background: radial-gradient(circle at 40% 35%, #f8c858, #c88838 50%, #9a6428);
+}
+
+.franuka-slider-wrapper.marker-round .franuka-slider-thumb:active {
+  background: radial-gradient(circle at 50% 50%, #c89838, #986818 50%, #6a4010);
+}
+
+/*
+ * Slim — thin vertical bar marker, gold-toned.
+ */
+.franuka-slider-wrapper.marker-slim .franuka-slider-thumb {
   background: linear-gradient(to bottom, #d8b868, #a88838);
   border: 2px solid #5a3e18;
   width: 8px;
@@ -303,14 +357,63 @@
     0 0 0 1px #3a2210;
 }
 
-.franuka-slider-wrapper.frame-ornate .franuka-slider-thumb:hover {
+.franuka-slider-wrapper.marker-slim .franuka-slider-thumb:hover {
   background: linear-gradient(to bottom, #e8c878, #b89848);
 }
 
-.franuka-slider-wrapper.frame-ornate .franuka-slider-thumb:active {
+.franuka-slider-wrapper.marker-slim .franuka-slider-thumb:active {
   background: linear-gradient(to bottom, #c8a858, #987828);
 }
 
+/*
+ * Ridged — vertically-ridged rectangular marker resembling book pages
+ * or a ribbed grip. Light tan/beige with visible vertical dark lines.
+ */
+.franuka-slider-wrapper.marker-ridged .franuka-slider-thumb {
+  width: 18px;
+  height: 24px;
+  border: 2px solid #5a4028;
+  border-radius: 0;
+  cursor: pointer;
+  /* Vertical ridges via repeating-linear-gradient */
+  background:
+    repeating-linear-gradient(to right,
+      #8a7050 0px,
+      #8a7050 1px,
+      transparent 1px,
+      transparent 3px),
+    linear-gradient(to bottom, #c8b090, #a89070);
+  box-shadow:
+    inset 1px 1px 0 #d8c8a8,
+    inset -1px -1px 0 #786040,
+    0 0 0 1px #3a2810,
+    0 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.franuka-slider-wrapper.marker-ridged .franuka-slider-thumb:hover {
+  background:
+    repeating-linear-gradient(to right,
+      #9a8060 0px,
+      #9a8060 1px,
+      transparent 1px,
+      transparent 3px),
+    linear-gradient(to bottom, #d8c0a0, #b8a080);
+}
+
+.franuka-slider-wrapper.marker-ridged .franuka-slider-thumb:active {
+  background:
+    repeating-linear-gradient(to right,
+      #7a6040 0px,
+      #7a6040 1px,
+      transparent 1px,
+      transparent 3px),
+    linear-gradient(to bottom, #b8a080, #988060);
+  box-shadow:
+    inset 1px 1px 0 #786040,
+    inset -1px -1px 0 #d8c8a8,
+    0 0 0 1px #3a2810,
+    0 1px 1px rgba(0, 0, 0, 0.3);
+}
 /* ═══════════════════════════════════════════════════════════════════════════
    Fill-In Variants
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -339,6 +442,27 @@
     inset -1px 0 0 #489820;
 }
 
+/* Golden fill — muted warm gold, not too bright */
+.franuka-slider-range.fill-golden {
+  background: #a88838;
+  border-right: 1px solid #6a5020;
+  box-shadow:
+    inset 0 1px 0 #c0a050,
+    inset 0 -1px 0 #887028,
+    inset 1px 0 0 #b89840,
+    inset -1px 0 0 #987830;
+}
+
+/* Parchment fill — warm tan/beige like aged paper */
+.franuka-slider-range.fill-parchment {
+  background: #c8a878;
+  border-right: 1px solid #887050;
+  box-shadow:
+    inset 0 1px 0 #d8c098,
+    inset 0 -1px 0 #a88858,
+    inset 1px 0 0 #d0b888,
+    inset -1px 0 0 #b89868;
+}
 /* ═══════════════════════════════════════════════════════════════════════════
    Size Variants
    ═══════════════════════════════════════════════════════════════════════════ */
