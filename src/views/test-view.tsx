@@ -1,3 +1,4 @@
+import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
@@ -137,7 +138,7 @@ export default function TestView() {
                 </div>
               </div>
 
-              {/* Size variants without bg */}
+              {/* Size variants without frame*/}
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Sizes (medieval5 no bg)</p>
                 <div className="flex items-center gap-4">
@@ -156,6 +157,62 @@ export default function TestView() {
                   <ToffecCloseButton variant="fairy3" hasBg disabled />
                   <ToffecCloseButton variant="medieval5" hasBg={false} disabled />
                 </div>
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+        {/* FranukaSlider variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider Variants</h2>
+
+              {/* Background: Wood */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + blue fill (default)</p>
+                <FranukaSlider defaultValue={[60]} max={100} step={1} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + red fill</p>
+                <FranukaSlider defaultValue={[45]} max={100} step={1} fillInVariant="red" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + green fill</p>
+                <FranukaSlider defaultValue={[75]} max={100} step={1} fillInVariant="green" />
+              </div>
+
+              {/* Backgrounds only (empty to show the bg) */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="wood" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Gold frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="gold" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ornate frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="ornate" />
+              </div>
+
+              {/* Background: Gold */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Gold frame + red fill</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="gold" fillInVariant="red" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Gold frame + blue fill</p>
+                <FranukaSlider defaultValue={[65]} max={100} step={1} frameVariant="gold" fillInVariant="blue" />
+              </div>
+
+              {/* Background: Ornate */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ornate frame + green fill</p>
+                <FranukaSlider defaultValue={[55]} max={100} step={1} frameVariant="ornate" fillInVariant="green" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ornate frame + blue fill</p>
+                <FranukaSlider defaultValue={[40]} max={100} step={1} frameVariant="ornate" fillInVariant="blue" />
               </div>
             </div>
           </Franuka05aFrame>
