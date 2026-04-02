@@ -38,7 +38,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Master Volume</span>
             <span className="pause-menu-option-value">{masterVolume}%</span>
           </div>
-          <FranukaSlider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
 
         <div className="pause-menu-option-row">
@@ -46,7 +46,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Music Volume</span>
             <span className="pause-menu-option-value">{musicVolume}%</span>
           </div>
-          <FranukaSlider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
 
         <div className="pause-menu-option-row">
@@ -54,7 +54,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">SFX Volume</span>
             <span className="pause-menu-option-value">{sfxVolume}%</span>
           </div>
-          <FranukaSlider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
       </div>
     </>

@@ -165,9 +165,8 @@ export default function TestView() {
         <div className="mt-6">
           <Franuka05aFrame>
             <div className="flex flex-col gap-6 p-4">
-              <h2 className="text-xl font-bold">FranukaSlider Variants</h2>
+              <h2 className="text-xl font-bold">FranukaSlider — Frames + Fills</h2>
 
-              {/* Background: Wood */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Wood frame + blue fill (default)</p>
                 <FranukaSlider defaultValue={[60]} max={100} step={1} />
@@ -181,7 +180,7 @@ export default function TestView() {
                 <FranukaSlider defaultValue={[75]} max={100} step={1} fillInVariant="green" />
               </div>
 
-              {/* Backgrounds only (empty to show the bg) */}
+              {/* Frames empty */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Wood frame (empty)</p>
                 <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="wood" />
@@ -195,24 +194,70 @@ export default function TestView() {
                 <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="ornate" />
               </div>
 
-              {/* Background: Gold */}
+              {/* Gold + Ornate combos */}
               <div className="flex flex-col gap-2">
-                <p className="text-xs opacity-70">Gold frame + red fill</p>
-                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="gold" fillInVariant="red" />
+                <p className="text-xs opacity-70">Gold frame + red fill + round marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="gold" fillInVariant="red" markerVariant="round" />
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-xs opacity-70">Gold frame + blue fill</p>
-                <FranukaSlider defaultValue={[65]} max={100} step={1} frameVariant="gold" fillInVariant="blue" />
+                <p className="text-xs opacity-70">Ornate frame + green fill + slim marker</p>
+                <FranukaSlider defaultValue={[55]} max={100} step={1} frameVariant="ornate" fillInVariant="green" markerVariant="slim" />
               </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
 
-              {/* Background: Ornate */}
+        {/* FranukaSlider — Marker variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider — Markers</h2>
+
               <div className="flex flex-col gap-2">
-                <p className="text-xs opacity-70">Ornate frame + green fill</p>
-                <FranukaSlider defaultValue={[55]} max={100} step={1} frameVariant="ornate" fillInVariant="green" />
+                <p className="text-xs opacity-70">Block marker (default)</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="block" />
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-xs opacity-70">Ornate frame + blue fill</p>
-                <FranukaSlider defaultValue={[40]} max={100} step={1} frameVariant="ornate" fillInVariant="blue" />
+                <p className="text-xs opacity-70">Round marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="round" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Slim marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="slim" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ridged marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="ridged" />
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+
+        {/* FranukaSlider — Bookstyle set */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider — Bookstyle</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + parchment fill + ridged marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + blue fill + ridged marker</p>
+                <FranukaSlider defaultValue={[65]} max={100} step={1} frameVariant="bookstyle" fillInVariant="blue" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + parchment fill + block marker</p>
+                <FranukaSlider defaultValue={[40]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="block" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + golden fill + ridged marker (pause menu style)</p>
+                <FranukaSlider defaultValue={[70]} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
               </div>
             </div>
           </Franuka05aFrame>
