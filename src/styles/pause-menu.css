@@ -672,7 +672,7 @@
 .pause-menu-stats-skill {
   padding: 0.75rem;
   background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
-  border: 2px solid #8b6914;
+  border: 1px solid rgba(212, 165, 116, 0.85);
   border-radius: 8px;
 }
 
