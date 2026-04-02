@@ -163,12 +163,12 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
           <TooltipTrigger>
             <button
               className="pause-menu-equip-slot-remove"
+              aria-label="Unequip"
               onClick={(e) => {
                 e.stopPropagation();
                 onUnequip();
               }}
             >
-              X
             </button>
           </TooltipTrigger>
           <TooltipContent>Unequip</TooltipContent>

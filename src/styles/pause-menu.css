@@ -821,32 +821,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  color: #8b6914;
-  background: transparent;
-  border: 1px solid #8b6914;
-  border-radius: 1px;
+  width: 20px;
+  height: 20px;
+  background: url("/assets/btn/tc-x-btn-2.png") no-repeat center;
+  background-size: contain;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
   padding: 0;
   margin-left: 0.5rem;
-  opacity: 0.6;
-  transition: all 0.1s steps(2);
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
+  opacity: 0.8;
+  transition: opacity 0.1s steps(2);
+  color: transparent;
+  font-size: 0;
   line-height: 1;
+  overflow: hidden;
+  text-indent: -9999px;
 }
 
 .pause-menu-equip-slot-remove:hover {
   opacity: 1;
-  color: #ffd700;
-  border-color: #d4a574;
-  background: rgba(212, 165, 116, 0.1);
 }
 
 .pause-menu-equip-slot-remove:active {
-  background: #8b6914;
-  color: #1a1008;
+  opacity: 0.9;
 }
 
 /* Stat preview */
