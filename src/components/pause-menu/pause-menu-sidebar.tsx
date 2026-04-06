@@ -72,7 +72,7 @@ export function PauseMenuSidebar() {
       <div className="pause-menu-nav-spacer" />
       <ToffecBeigeCornersWrapper>
         <button className="pause-menu-exit-btn" onClick={handleExit}>
-          <LogOut size={16} />
+          <LogOut size={24} />
           Exit
         </button>
       </ToffecBeigeCornersWrapper>
