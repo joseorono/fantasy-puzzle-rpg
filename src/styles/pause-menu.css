@@ -333,12 +333,12 @@
   position: relative;
   margin-bottom: 8px;
   
-  /* Jagged wood carved edges - more pronounced "notched" look */
+  /* Jagged wood carved edges - refined with appropriate notch volume */
   clip-path: polygon(
-    0% 15%, 5% 5%, 15% 0%, 25% 5%, 45% 0%, 55% 5%, 75% 0%, 85% 5%, 100% 15%,
-    95% 30%, 100% 45%, 95% 60%, 100% 75%, 95% 85%, 100% 100%,
-    85% 95%, 75% 100%, 55% 95%, 45% 100%, 25% 95%, 15% 100%, 5% 95%, 0% 85%,
-    5% 75%, 0% 60%, 5% 45%, 0% 30%
+    3px 0%, 96% 1px, 100% 6px, 
+    98% 48%, 100% 92%, 
+    95% 100%, 4px 98%, 
+    0% 85%, 3% 52%, 0% 12%
   );
   
   /* Filter to create the border effect on the clipped shape */
