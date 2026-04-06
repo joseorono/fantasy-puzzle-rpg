@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai';
 import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
-import { Slider } from '~/components/ui/8bit/slider';
+import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 
 export function PauseMenuOptions() {
@@ -38,7 +38,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Master Volume</span>
             <span className="pause-menu-option-value">{masterVolume}%</span>
           </div>
-          <Slider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
 
         <div className="pause-menu-option-row">
@@ -46,7 +46,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Music Volume</span>
             <span className="pause-menu-option-value">{musicVolume}%</span>
           </div>
-          <Slider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
 
         <div className="pause-menu-option-row">
@@ -54,7 +54,7 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">SFX Volume</span>
             <span className="pause-menu-option-value">{sfxVolume}%</span>
           </div>
-          <Slider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} />
+          <FranukaSlider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
         </div>
       </div>
     </>

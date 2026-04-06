@@ -1,4 +1,6 @@
+import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
@@ -92,6 +94,170 @@ export default function TestView() {
                 <FrostyRpgIcon name="ironArmor" size={32} />
                 <FrostyRpgIcon name="steelHelm" size={32} />
                 <FrostyRpgIcon name="shield" size={32} />
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+        {/* ToffecCloseButton variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">ToffecCloseButton</h2>
+
+              {/* With background */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">With background (hasBg)</p>
+                <div className="flex items-center gap-4">
+                  <ToffecCloseButton variant="medieval1" hasBg />
+                  <ToffecCloseButton variant="medieval2" hasBg />
+                  <ToffecCloseButton variant="medieval3" hasBg />
+                  <ToffecCloseButton variant="fairy2" hasBg />
+                  <ToffecCloseButton variant="fairy3" hasBg />
+                </div>
+              </div>
+
+              {/* Without background */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">No background (hasBg=false)</p>
+                <div className="flex items-center gap-4">
+                  <ToffecCloseButton variant="medieval4" hasBg={false} />
+                  <ToffecCloseButton variant="medieval5" hasBg={false} />
+                  <ToffecCloseButton variant="medieval6" hasBg={false} />
+                  <ToffecCloseButton variant="fairy1" hasBg={false} />
+                </div>
+              </div>
+
+              {/* Size variants */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Sizes (medieval1 with bg)</p>
+                <div className="flex items-center gap-4">
+                  <ToffecCloseButton variant="medieval1" hasBg size="sm" />
+                  <ToffecCloseButton variant="medieval1" hasBg size="default" />
+                  <ToffecCloseButton variant="medieval1" hasBg size="lg" />
+                  <ToffecCloseButton variant="medieval1" hasBg size="xl" />
+                </div>
+              </div>
+
+              {/* Size variants without frame*/}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Sizes (medieval5 no bg)</p>
+                <div className="flex items-center gap-4">
+                  <ToffecCloseButton variant="medieval5" hasBg={false} size="sm" />
+                  <ToffecCloseButton variant="medieval5" hasBg={false} size="default" />
+                  <ToffecCloseButton variant="medieval5" hasBg={false} size="lg" />
+                  <ToffecCloseButton variant="medieval5" hasBg={false} size="xl" />
+                </div>
+              </div>
+
+              {/* Disabled */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Disabled</p>
+                <div className="flex items-center gap-4">
+                  <ToffecCloseButton variant="medieval1" hasBg disabled />
+                  <ToffecCloseButton variant="fairy3" hasBg disabled />
+                  <ToffecCloseButton variant="medieval5" hasBg={false} disabled />
+                </div>
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+        {/* FranukaSlider variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider — Frames + Fills</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + blue fill (default)</p>
+                <FranukaSlider defaultValue={[60]} max={100} step={1} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + red fill</p>
+                <FranukaSlider defaultValue={[45]} max={100} step={1} fillInVariant="red" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame + green fill</p>
+                <FranukaSlider defaultValue={[75]} max={100} step={1} fillInVariant="green" />
+              </div>
+
+              {/* Frames empty */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Wood frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="wood" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Gold frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="gold" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ornate frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="ornate" />
+              </div>
+
+              {/* Gold + Ornate combos */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Gold frame + red fill + round marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="gold" fillInVariant="red" markerVariant="round" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ornate frame + green fill + slim marker</p>
+                <FranukaSlider defaultValue={[55]} max={100} step={1} frameVariant="ornate" fillInVariant="green" markerVariant="slim" />
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+
+        {/* FranukaSlider — Marker variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider — Markers</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Block marker (default)</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="block" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Round marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="round" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Slim marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="slim" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Ridged marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} markerVariant="ridged" />
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+
+        {/* FranukaSlider — Bookstyle set */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">FranukaSlider — Bookstyle</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + parchment fill + ridged marker</p>
+                <FranukaSlider defaultValue={[50]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame (empty)</p>
+                <FranukaSlider defaultValue={[0]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + blue fill + ridged marker</p>
+                <FranukaSlider defaultValue={[65]} max={100} step={1} frameVariant="bookstyle" fillInVariant="blue" markerVariant="ridged" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + parchment fill + block marker</p>
+                <FranukaSlider defaultValue={[40]} max={100} step={1} frameVariant="bookstyle" fillInVariant="parchment" markerVariant="block" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Bookstyle frame + golden fill + ridged marker (pause menu style)</p>
+                <FranukaSlider defaultValue={[70]} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
               </div>
             </div>
           </Franuka05aFrame>
