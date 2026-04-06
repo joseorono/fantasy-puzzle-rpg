@@ -316,11 +316,13 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1rem;
-  background: transparent;
-  border: none;
-  color: #d4a574;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background-size: 64px;
+  border: 3px solid #3d2817;
+  border-radius: 0;
+  color: #FFF8DC;
   font-weight: 700;
   font-size: 0.7rem;
   cursor: pointer;
@@ -328,61 +330,91 @@
   text-align: left;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-left: 3px solid transparent;
+  position: relative;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  /* Notches in corners using border-radius and outline */
+  outline: 3px solid #3d2817;
+  outline-offset: -6px;
+}
+
+.pause-menu-nav-btn::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 3px solid #3d2817;
+  pointer-events: none;
+  /* Create notches with clip-path on the border layer */
+  clip-path: polygon(
+    6px 0%, 
+    calc(100% - 6px) 0%, 
+    100% 6px, 
+    100% calc(100% - 6px), 
+    calc(100% - 6px) 100%, 
+    6px 100%, 
+    0% calc(100% - 6px), 
+    0% 6px
+  );
 }
 
 .pause-menu-nav-btn:hover {
+  background: #7B6354 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background-size: 64px;
+  border-color: #d4a574;
   color: #fff;
-  background: unset;
-  box-shadow: unset;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.pause-menu-nav-btn:hover::before {
+  border-color: #d4a574;
 }
 
 .pause-menu-nav-btn:focus-visible {
-  outline: none;
-  outline-offset: unset;
+  outline: 2px solid #d4a574;
+  outline-offset: 2px;
 }
 
 .pause-menu-nav-btn.active {
+  background: #D9841F url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background-size: 64px;
+  border-color: #d4a574;
   color: #fff;
-  background: transparent;
-  position: relative;
-  box-shadow: unset;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(255, 215, 0, 0.3),
+    0 0 12px rgba(212, 165, 116, 0.4);
 }
 
-.pause-menu-nav-btn.active::after {
-  content: '▶';
-  position: absolute;
-  left: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #fff;
-  font-size: 0.8rem;
-  animation: arrow-indicator 1.05s steps(3) infinite;
-  text-shadow: 0 0 4px rgba(247, 247, 247, 0.6);
-  z-index: 10;
+.pause-menu-nav-btn.active::before {
+  border-color: #d4a574;
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.5);
 }
 
-@keyframes arrow-indicator {
-  0% {
-    left: 0px;
-    opacity: 0.7;
-  }
-  25% {
-    left: 2px;
-    opacity: 0.85;
-  }
-  50% {
-    left: 4px;
-    opacity: 1;
-  }
-  75% {
-    left: 6px;
-    opacity: 0.85;
-  }
-  100% {
-    left: 0px;
-    opacity: 0.7;
-  }
+.pause-menu-nav-icon {
+  filter: grayscale(0.5) contrast(1.2) brightness(1.1);
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  width: 24px;
+  height: 24px;
+}
+
+.pause-menu-nav-btn.active .pause-menu-nav-icon {
+  filter: grayscale(0) contrast(1.1) brightness(1.15);
+}
+
+.pause-menu-nav-btn:hover .pause-menu-nav-icon {
+  filter: grayscale(0.3) contrast(1.15) brightness(1.12);
 }
 
 .pause-menu-nav-spacer {
