@@ -5,7 +5,6 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { LogOut } from 'lucide-react';
 
 const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
@@ -56,26 +55,23 @@ export function PauseMenuSidebar() {
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
-          <ToffecBeigeCornersWrapper key={tab.id}>
-            <button
-              ref={isActive ? activeButtonRef : null}
-              className={cn('pause-menu-nav-btn', isActive && 'active')}
-              onClick={() => handleTabClick(tab.id)}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <FrostyRpgIcon name={tab.icon} size={18} className="pause-menu-nav-icon" />
-              {tab.label}
-            </button>
-          </ToffecBeigeCornersWrapper>
+          <button
+            key={tab.id}
+            ref={isActive ? activeButtonRef : null}
+            className={cn('pause-menu-nav-btn', isActive && 'active')}
+            onClick={() => handleTabClick(tab.id)}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <FrostyRpgIcon name={tab.icon} size={24} className="pause-menu-nav-icon" />
+            {tab.label}
+          </button>
         );
       })}
       <div className="pause-menu-nav-spacer" />
-      <ToffecBeigeCornersWrapper>
-        <button className="pause-menu-exit-btn" onClick={handleExit}>
-          <LogOut size={14} />
-          Exit
-        </button>
-      </ToffecBeigeCornersWrapper>
+      <button className="pause-menu-exit-btn" onClick={handleExit}>
+        <LogOut size={16} />
+        Exit
+      </button>
     </div>
   );
 }
