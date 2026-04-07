@@ -118,6 +118,15 @@
   }
 }
 
+@media (min-width: 1920px) and (max-height: 911px) {
+  .character-card .character-portrait {
+    transform: translateY(25px);
+  }
+  .character-card .character-info {
+    margin-left: 8rem;
+  }
+}
+
 .character-card .character-name {
   font-weight: 700;
   color: #ffd700;
