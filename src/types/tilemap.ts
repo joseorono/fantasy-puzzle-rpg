@@ -46,16 +46,12 @@ export interface TilemapData {
   version?: string;
 }
 
-export interface TilemapProps {
-  tilesetImage: string;
-  visibleLayers?: string[];
-  defaultPlayerPosition?: Position;
-}
-
 export interface TiledMapConfig {
   tilesetImage: string;
   displayMapName: string;
   walkableLayers: string[];
   visibleLayers: string[];
   defaultPlayerPosition: Position;
+  /** When true, shows debug overlays (controls, character position, status). Defaults to false. */
+  debug?: boolean;
 }
