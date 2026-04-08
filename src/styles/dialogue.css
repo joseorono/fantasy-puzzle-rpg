@@ -119,14 +119,17 @@ body.dialogue-active {
   position: relative;
   width: 100%;
   max-width: 800px;
-  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-    border: 3px solid #d4a574;
-    border-radius: 16px;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 3px solid #d4a574;
+  border-radius: 0;
   padding: 1.5rem;
   box-shadow:
-      0 8px 16px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 2px #8b6914,
+    0 8px 20px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
   }
   
   /* Golden rivets at corners */
@@ -193,46 +196,7 @@ body.dialogue-active {
   animation: indicator-bounce 0.8s ease-in-out infinite;
 }
 
-.dialogue-box__history-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  background: linear-gradient(to bottom, #d48c46, #8b4513);
-  border: 2px solid #ffd700;
-  border-radius: 9999px;
-    /* Pill shape */
-    color: #fff;
-  font-family: monospace;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 0.4rem 0.75rem;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.05em;
-  box-shadow:
-      0 2px 0 #5e2f0d,
-      /* Bevel effect */
-      0 4px 4px rgba(0, 0, 0, 0.4);
-}
-
-.dialogue-box__history-button:hover {
-  background: linear-gradient(to bottom, #e6a35c, #a0521c);
-    transform: translateY(-1px);
-    box-shadow:
-      0 3px 0 #5e2f0d,
-      0 6px 8px rgba(0, 0, 0, 0.4),
-      0 0 8px rgba(255, 215, 0, 0.3);
-}
-
-.dialogue-box__history-button:active {
-  transform: translateY(2px);
-    box-shadow:
-      0 0 0 #5e2f0d,
-      inset 0 2px 4px rgba(0, 0, 0, 0.4);
-}
+/* .dialogue-box__history-button: styled by ToffecButton; class kept as a test selector hook. */
 
 @keyframes indicator-bounce {
   0%, 100% {
@@ -345,17 +309,20 @@ body.dialogue-active {
   width: 90%;
   max-width: 700px;
   max-height: 80vh;
-  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-    border: 3px solid #d4a574;
-    border-radius: 16px;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 3px solid #d4a574;
+  border-radius: 0;
   z-index: 1003;
   display: flex;
   flex-direction: column;
   transition: opacity 0.2s ease, transform 0.2s ease;
   box-shadow:
-      0 12px 24px rgba(0, 0, 0, 0.8),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 2px #8b6914,
+    0 12px 24px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
   }
   
   /* Golden rivets at corners of message history */
