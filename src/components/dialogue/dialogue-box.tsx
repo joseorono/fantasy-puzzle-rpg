@@ -1,5 +1,6 @@
 import { ArrowUpIcon } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
 interface DialogueBoxProps {
   speakerName?: string;
@@ -30,17 +31,18 @@ export function DialogueBox({
         {onOpenHistory && (
           <Tooltip>
             <TooltipTrigger>
-              <button
-                className="dialogue-box__button dialogue-box__history-button"
+              <ToffecButton
+                variant="cream"
+                size="sm"
+                className="dialogue-box__history-button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onOpenHistory();
                 }}
               >
-                {/* TODO: Change this icon */}
                 <ArrowUpIcon className="h-4 w-4" />
                 Message Log
-              </button>
+              </ToffecButton>
             </TooltipTrigger>
             <TooltipContent>Message History (scroll up)</TooltipContent>
           </Tooltip>
