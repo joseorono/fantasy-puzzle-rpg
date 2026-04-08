@@ -47,3 +47,6 @@ coverage
 *.sln
 *.sw?
 current-prompt.md
+
+# Tiled session files
+*.tiled-session

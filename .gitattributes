@@ -11,3 +11,7 @@
 
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Binary files - handle as binary to prevent line-by-line tracking
+*.tiled-project binary
+*.asesprite binary
