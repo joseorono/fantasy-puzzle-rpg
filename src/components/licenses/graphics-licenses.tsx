@@ -42,6 +42,13 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Various PixelCrawler tilesets. purchased from Anokolisa.
+          <a href="https://itch.io/s/81883/pixel-crawler-complete-collection">
+            https://itch.io/s/81883/pixel-crawler-complete-collection
+          </a>
+        </p>
+
+        <p>
           Free Pixel Art RPG UI, by allcreatinghere&nbsp;
           <a href="https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack">
             https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack
