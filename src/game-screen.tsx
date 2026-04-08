@@ -30,6 +30,7 @@ export default function GameScreen() {
 
       return (
         <TownHub
+          townName={townHubData!.townName}
           innCost={townHubData!.innCost}
           itemsForSell={townHubData!.itemsForSell}
           onLeaveCallback={townHubData!.onLeaveCallback}

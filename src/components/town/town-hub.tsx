@@ -15,12 +15,15 @@ import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 
 interface TownHubProps {
+  townName: string;
   innCost: Resources;
   itemsForSell: ItemStoreParams;
   onLeaveCallback: () => void;
 }
 
-export default function TownHub({ innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
+export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
+  // townName is currently passed through for the upcoming TownNameDisplay component
+  void townName;
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
   const dialogueText = useState(() => getRandomElement(TOWN_WELCOME_TEXT))[0];
   const isTyping = useState(false)[0];

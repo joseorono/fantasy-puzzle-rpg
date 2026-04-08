@@ -26,6 +26,7 @@ import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
+import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { generateRandomResources } from '~/lib/loot';
@@ -463,19 +464,24 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     if (!currentNode) return;
     console.log('Entering:', currentNode.name);
 
-    // Mark town as visited
-    if (currentNode.type === 'Town') {
-      mapProgressActions.completeNode(currentNode.type, currentNode.id);
-    }
+    const enteredNode = currentNode;
 
     // Close menu and clear current node
     setShowNodeMenu(false);
     setCurrentNode(null);
 
-    // Show feedback
-    alert(`Entered ${currentNode.name}!`);
+    if (enteredNode.type === 'Town') {
+      mapProgressActions.completeNode(enteredNode.type, enteredNode.id);
+      routerActions.goToTownHub({
+        ...DEFAULT_TOWN_HUB_DATA,
+        townName: enteredNode.name,
+        onLeaveCallback: () => routerActions.goBack(),
+      });
+      return;
+    }
 
-    // TODO: Navigate to town/dungeon screen instead of alert
+    // TODO: Navigate to dungeon screen
+    alert(`Entered ${enteredNode.name}!`);
   }
 
   function handleNodeOpenChest() {
