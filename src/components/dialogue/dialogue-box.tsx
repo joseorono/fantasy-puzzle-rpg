@@ -33,7 +33,7 @@ export function DialogueBox({
             <TooltipTrigger>
               <ToffecButton
                 variant="cream"
-                size="sm"
+                size="xs"
                 className="dialogue-box__history-button"
                 onClick={(e) => {
                   e.stopPropagation();
