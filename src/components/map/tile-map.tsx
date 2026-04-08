@@ -1,7 +1,8 @@
 // components/Tilemap.tsx
 import React, { useRef, useEffect, useState } from 'react';
-import type { TilemapData, TilemapProps } from '../../types/tilemap';
+import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
+import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
@@ -54,13 +55,12 @@ interface CharacterPosition {
   col: number;
 }
 
-const DEFAULT_PLAYER_POSITION = { x: 70, y: 58 };
+interface TilemapComponentProps {
+  config: TiledMapConfig;
+}
 
-const Tilemap: React.FC<TilemapProps> = ({
-  tilesetImage,
-  visibleLayers = ['snow', 'road', 'mountains', 'trees', 'signs'],
-  defaultPlayerPosition = DEFAULT_PLAYER_POSITION,
-}) => {
+const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
+  const { tilesetImage, displayMapName, visibleLayers, defaultPlayerPosition, debug } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(demoMap);
@@ -815,6 +815,12 @@ const Tilemap: React.FC<TilemapProps> = ({
   return (
     <>
       <div className="tilemap-container">
+        <MapInfoPanel
+          displayMapName={displayMapName}
+          debug={debug}
+          charPosition={charPosition}
+          status={debugInfo}
+        />
         <div
           style={{
             position: 'relative',
@@ -865,13 +871,6 @@ const Tilemap: React.FC<TilemapProps> = ({
           )}
         </div>
 
-        <div className="character-info">
-          <strong>Character Position:</strong> Row {charPosition.row}, Col {charPosition.col}
-          <br />
-          <strong>Controls:</strong> Arrow Keys or WASD
-          <br />
-          <strong>Status:</strong> {debugInfo}
-        </div>
       </div>
 
       {/* Dialogue trigger confirmation modal */}

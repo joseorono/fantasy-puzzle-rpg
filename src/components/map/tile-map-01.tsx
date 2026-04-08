@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 import { useGameStore, useMapProgressActions } from '~/stores/game-store';
+import { MapInfoPanel } from './map-info-panel';
 
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 
@@ -15,11 +16,12 @@ interface TilemapMap01Props {
 }
 
 const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
-  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition } = config;
+  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(newMap);
   const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPosition;
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
@@ -146,6 +148,9 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
 
       if (isWalkable(newRow, newCol)) {
         setCharPosition({ row: newRow, col: newCol });
+        setDebugInfo(`Walking at (${newRow}, ${newCol})`);
+      } else {
+        setDebugInfo(`Blocked at (${newRow}, ${newCol})`);
       }
     }
 
@@ -261,7 +266,12 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
 
   return (
     <div className="tilemap-container">
-      <h2 className="map-title">{displayMapName}</h2>
+      <MapInfoPanel
+        displayMapName={displayMapName}
+        debug={debug}
+        charPosition={charPosition}
+        status={debugInfo}
+      />
       <div className="canvas-wrapper">
         <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
       </div>
