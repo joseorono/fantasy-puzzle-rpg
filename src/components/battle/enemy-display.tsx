@@ -109,7 +109,7 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
       <BattleHpBar
         currentHp={enemy.currentHp}
         maxHp={enemy.maxHp}
-        className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
+        className="max-w-[90px] sm:max-w-[110px] md:max-w-[130px]"
       />
     </div>
   );

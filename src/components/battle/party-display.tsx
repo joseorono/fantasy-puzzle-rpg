@@ -193,7 +193,7 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info */}
-      <div className="relative z-10 mb-10 w-full max-w-xs px-2">
+      <div className="relative z-10 mb-10 w-full max-w-md px-2">
         <div className="text-center">
           <h2 className="pixel-font text-sm mt-5 xl:mt-0 pt-2 scale-90 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             HEROES
