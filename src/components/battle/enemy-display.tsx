@@ -1,7 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect } from 'react';
 import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
-import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
@@ -110,7 +109,6 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
       <BattleHpBar
         currentHp={enemy.currentHp}
         maxHp={enemy.maxHp}
-        thresholdColors={ENEMY_HP_THRESHOLD_BG}
         className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
       />
     </div>

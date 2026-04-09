@@ -172,23 +172,47 @@
 }
 
 .level-up-screen .hp-bar-container {
-  background: rgba(10, 10, 20, 0.9);
-  border: 2px solid #8b6914;
-  border-radius: 8px;
+  background: #1a1a1a;
+  border: 2px solid #000;
   position: relative;
   overflow: hidden;
   margin-bottom: 0.25rem;
+  height: 26px;
+  box-sizing: border-box;
+
+  /* Pixelated border corners */
+  clip-path: polygon(
+    0px 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0px,
+    calc(100% - 4px) 0px, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0px calc(100% - 4px)
+  );
 }
 
-.level-up-screen .hp-bar-container {
-  height: 26px;
+.level-up-screen .hp-bar-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .hp-bar {
   height: 100%;
-  background: linear-gradient(90deg, #8b6914 0%, #d4a574 100%);
-  border-radius: 6px;
+  background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
   transition: width 0.3s ease;
+  position: relative;
+}
+
+.hp-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .bar-text {

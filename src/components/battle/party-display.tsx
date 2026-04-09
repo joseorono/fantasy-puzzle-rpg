@@ -11,7 +11,7 @@ import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
-import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
+import { HP_THRESHOLD_GRADIENT } from '~/constants/ui';
 import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
@@ -121,7 +121,6 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       <BattleHpBar
         currentHp={character.currentHp}
         maxHp={character.maxHp}
-        thresholdColors={HP_THRESHOLD_BG}
         className="mb-0.5 max-w-[70px] sm:max-w-[80px]"
       />
 
@@ -147,20 +146,10 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
             `CD: ${Math.ceil(character.skillCooldown)}s`
           )}
         </div>
-        <div className="relative h-2 rounded-none border border-gray-700 bg-gray-800 sm:h-2.5">
+        <div className="battle-skill-bar-container">
           <div
-            className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
+            className={cn('battle-skill-bar-fill transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
-          >
-            {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          </div>
-          {/* Pixel border effect */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-            }}
           />
         </div>
       </div>
@@ -212,7 +201,7 @@ export function PartyDisplay() {
         </div>
 
         {/* Party Health Bar */}
-        <div className="flex items-center justify-between xl:-mt-4">
+        <div className="flex items-center justify-between xl:-mt-4 mb-1">
           <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
           <span className="pixel-font text-xs font-bold text-white sm:text-sm">
             <NumberFlow
@@ -224,38 +213,18 @@ export function PartyDisplay() {
             %
           </span>
         </div>
-        <div
-          className={cn(
-            'relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 transition-all duration-300 sm:h-5 sm:border-3 md:h-6 xl:h-3 xl:border-1',
-            showPulse && !true && 'scale-105 ring-4 ring-white/50',
-          )}
-        >
-          {/* Health bar fill */}
-          <div
-            className={cn(
-              'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
-              getHealthBarColor(),
-              showPulse && !true && 'animate-pulse',
-            )}
-            style={{ width: `${partyHealthPercentage}%` }}
-          >
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-            {/* Segmented bars effect */}
-            <div className="absolute inset-0 flex">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="flex-1 border-r border-black/20" />
-              ))}
-            </div>
+        
+        <div className="battle-party-hp-bar-container">
+          <div className="battle-party-hp-bar-fill-wrapper">
+            <div
+              className={cn(
+                'battle-party-hp-bar-fill transition-all duration-500',
+                getHealthBarColor(),
+                showPulse && 'scale-[1.02]'
+              )}
+              style={{ width: `${partyHealthPercentage}%` }}
+            />
           </div>
-          {/* Pixel border effect */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2)',
-            }}
-          />
         </div>
       </div>
     </div>

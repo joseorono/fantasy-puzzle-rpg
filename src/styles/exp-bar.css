@@ -3,36 +3,55 @@
 .exp-bar {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  border: 2px solid #8b6914;
-  background: rgba(10, 10, 20, 0.9);
+  background-color: #1a1a1a;
+  border: 2px solid #000;
+  box-sizing: border-box;
+  
+  /* Pixelated border corners */
+  clip-path: polygon(
+    0px 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0px,
+    calc(100% - 4px) 0px, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0px calc(100% - 4px)
+  );
+}
+
+.exp-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* Full variant (level-up screen) */
 .exp-bar--full {
-  height: 22px;
+  height: 24px;
   margin-bottom: 0.25rem;
 }
 
 /* Compact variant (battle rewards character card) */
 .exp-bar--compact {
-  height: 8px;
-  border-width: 1px;
-  border-color: #d4a574;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
-  max-width: 80%;
+  height: 12px;
+  max-width: 90%;
 }
 
 .exp-bar__fill {
   height: 100%;
   background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
-  border-radius: 6px;
   transition: width 0.3s ease;
+  position: relative;
 }
 
-.exp-bar--compact .exp-bar__fill {
-  border-radius: 2px;
+.exp-bar__fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .exp-bar__label {
