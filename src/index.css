@@ -404,6 +404,7 @@
 
 @import './styles/battle-top-bar.css';
 
+@import './styles/battle-hp-bar.css';
 @import './styles/battle-over-modal.css';
 
 @import './styles/exp-bar.css';

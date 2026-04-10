@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParty, usePartyActions } from '~/stores/game-store';
 import { fullyHealParty, isPartyFullyHealed, damageAllPartyMembers } from '~/lib/party-system';
 import { INITIAL_PARTY } from '~/constants/party';
+import { cn } from '~/lib/utils';
 
 interface TestResult {
   name: string;
@@ -203,19 +204,22 @@ export default function PartyTestView() {
                       {member.currentHp} / {member.maxHp}
                     </span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-slate-900">
-                    <div
-                      className={`h-2 rounded-full transition-all ${
-                        member.currentHp === member.maxHp
-                          ? 'bg-green-500'
-                          : member.currentHp > member.maxHp / 2
-                            ? 'bg-yellow-500'
-                            : 'bg-red-500'
-                      }`}
-                      style={{
-                        width: `${(member.currentHp / member.maxHp) * 100}%`,
-                      }}
-                    />
+                  <div className="battle-hp-bar-container" style={{ height: '16px' }}>
+                    <div className="battle-hp-bar-fill-wrapper">
+                      <div
+                        className={cn(
+                          'battle-hp-bar-fill',
+                          member.currentHp === member.maxHp
+                            ? 'hp-fill-high'
+                            : member.currentHp > member.maxHp / 2
+                              ? 'hp-fill-medium'
+                              : 'hp-fill-low'
+                        )}
+                        style={{
+                          width: `${(member.currentHp / member.maxHp) * 100}%`,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
