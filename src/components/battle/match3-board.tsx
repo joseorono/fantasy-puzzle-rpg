@@ -326,7 +326,7 @@ export function Match3Board() {
           {/* Board grid */}
           <div className="flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
             {board.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
+              <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2 lg:gap-1">
                 {row.map((orb) => (
                   <OrbComponent
                     key={orb.id}
