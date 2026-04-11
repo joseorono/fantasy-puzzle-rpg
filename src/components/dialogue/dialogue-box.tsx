@@ -40,7 +40,7 @@ export function DialogueBox({
                   onOpenHistory();
                 }}
               >
-                <ArrowUpIcon className="h-4 w-4" />
+                <ArrowUpIcon className="mr-2 h-4 w-4" />
                 Message Log
               </ToffecButton>
             </TooltipTrigger>
