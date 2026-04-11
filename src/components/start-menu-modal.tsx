@@ -4,8 +4,8 @@ import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { Play, FolderOpen, ArrowLeft } from 'lucide-react';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { Play, FolderOpen } from 'lucide-react';
+import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 interface StartMenuModalProps {
@@ -92,15 +92,10 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
 
             {/* Header bar */}
             <div className="start-menu-modal-header">
-              <ToffecBeigeCornersWrapper>
-                <button className="start-menu-modal-back" onClick={handleBackToMain}>
-                  <ArrowLeft size={14} />
-                  <span style={{ fontSize: '0.7rem' }}>Back</span>
-                </button>
-              </ToffecBeigeCornersWrapper>
               <h2 className="start-menu-modal-title">
                 <NarikWoodBitFont text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]} size={0.9} />
               </h2>
+              <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
             </div>
 
             {/* Divider */}
