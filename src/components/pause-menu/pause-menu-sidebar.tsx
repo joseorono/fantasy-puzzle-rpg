@@ -4,16 +4,17 @@ import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
-import { Package, Shield, BarChart3, Settings, Save, FolderOpen, LogOut } from 'lucide-react';
+import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { LogOut } from 'lucide-react';
 
-const TABS: { id: PauseMenuTab; label: string; icon: typeof Package }[] = [
-  { id: 'items', label: 'Items', icon: Package },
-  { id: 'equip', label: 'Equip', icon: Shield },
-  { id: 'stats', label: 'Stats', icon: BarChart3 },
-  { id: 'options', label: 'Options', icon: Settings },
-  { id: 'save', label: 'Save', icon: Save },
-  { id: 'load', label: 'Load', icon: FolderOpen },
+const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
+  { id: 'items', label: 'Items', icon: 'chest' },
+  { id: 'equip', label: 'Equip', icon: 'shield' },
+  { id: 'stats', label: 'Stats', icon: 'openBook' },
+  { id: 'options', label: 'Options', icon: 'wrench' },
+  { id: 'save', label: 'Save', icon: 'bookRed' },
+  { id: 'load', label: 'Load', icon: 'bookBlue' },
 ];
 
 export function PauseMenuSidebar() {
@@ -53,7 +54,6 @@ export function PauseMenuSidebar() {
   return (
     <div className="pause-menu-sidebar">
       {TABS.map((tab) => {
-        const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
           <ToffecBeigeCornersWrapper key={tab.id}>
@@ -63,7 +63,7 @@ export function PauseMenuSidebar() {
               onClick={() => handleTabClick(tab.id)}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon size={14} />
+              <FrostyRpgIcon name={tab.icon} size={24} className="pause-menu-nav-icon" />
               {tab.label}
             </button>
           </ToffecBeigeCornersWrapper>
@@ -72,7 +72,7 @@ export function PauseMenuSidebar() {
       <div className="pause-menu-nav-spacer" />
       <ToffecBeigeCornersWrapper>
         <button className="pause-menu-exit-btn" onClick={handleExit}>
-          <LogOut size={14} />
+          <LogOut size={24} />
           Exit
         </button>
       </ToffecBeigeCornersWrapper>

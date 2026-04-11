@@ -1,7 +1,8 @@
 // components/Tilemap.tsx
 import React, { useRef, useEffect, useState } from 'react';
-import type { TilemapData, TilemapProps } from '../../types/tilemap';
+import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
+import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
@@ -25,6 +26,7 @@ import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
+import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { generateRandomResources } from '~/lib/loot';
@@ -54,13 +56,12 @@ interface CharacterPosition {
   col: number;
 }
 
-const DEFAULT_PLAYER_POSITION = { x: 70, y: 58 };
+interface TilemapComponentProps {
+  config: TiledMapConfig;
+}
 
-const Tilemap: React.FC<TilemapProps> = ({
-  tilesetImage,
-  visibleLayers = ['snow', 'road', 'mountains', 'trees', 'signs'],
-  defaultPlayerPosition = DEFAULT_PLAYER_POSITION,
-}) => {
+const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
+  const { tilesetImage, displayMapName, visibleLayers, defaultPlayerPosition, debug } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(demoMap);
@@ -463,19 +464,24 @@ const Tilemap: React.FC<TilemapProps> = ({
     if (!currentNode) return;
     console.log('Entering:', currentNode.name);
 
-    // Mark town as visited
-    if (currentNode.type === 'Town') {
-      mapProgressActions.completeNode(currentNode.type, currentNode.id);
-    }
+    const enteredNode = currentNode;
 
     // Close menu and clear current node
     setShowNodeMenu(false);
     setCurrentNode(null);
 
-    // Show feedback
-    alert(`Entered ${currentNode.name}!`);
+    if (enteredNode.type === 'Town') {
+      mapProgressActions.completeNode(enteredNode.type, enteredNode.id);
+      routerActions.goToTownHub({
+        ...DEFAULT_TOWN_HUB_DATA,
+        townName: enteredNode.name,
+        onLeaveCallback: () => routerActions.goBack(),
+      });
+      return;
+    }
 
-    // TODO: Navigate to town/dungeon screen instead of alert
+    // TODO: Navigate to dungeon screen
+    alert(`Entered ${enteredNode.name}!`);
   }
 
   function handleNodeOpenChest() {
@@ -815,6 +821,12 @@ const Tilemap: React.FC<TilemapProps> = ({
   return (
     <>
       <div className="tilemap-container">
+        <MapInfoPanel
+          displayMapName={displayMapName}
+          debug={debug}
+          charPosition={charPosition}
+          status={debugInfo}
+        />
         <div
           style={{
             position: 'relative',
@@ -865,13 +877,6 @@ const Tilemap: React.FC<TilemapProps> = ({
           )}
         </div>
 
-        <div className="character-info">
-          <strong>Character Position:</strong> Row {charPosition.row}, Col {charPosition.col}
-          <br />
-          <strong>Controls:</strong> Arrow Keys or WASD
-          <br />
-          <strong>Status:</strong> {debugInfo}
-        </div>
       </div>
 
       {/* Dialogue trigger confirmation modal */}

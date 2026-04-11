@@ -17,6 +17,7 @@ export type ViewType =
  * Data for town hub view
  */
 export interface TownHubViewData {
+  townName: string;
   innCost: {
     coins: number;
     gold: number;

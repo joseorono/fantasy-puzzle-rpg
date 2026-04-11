@@ -23,7 +23,11 @@
       "Bash(file:*)",
       "Bash(cd:*)",
       "WebFetch(domain:number-flow.barvian.me)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(npm list:*)",
+      "Bash(npx -y pngjs-cli)",
+      "Bash(npx -y png-pixels-cli public/assets/btn/tc-x-btn-1.png)"
     ]
   }
 }

@@ -35,6 +35,7 @@ export default function RouterTestView() {
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
           onClick={() =>
             goToTownHub({
+              townName: 'Test Town',
               innCost: { coins: 20, gold: 0, silver: 0, iron: 0, copper: 0 },
               itemsForSell: [...ConsumableItemIds],
               onLeaveCallback: () => goBack(),

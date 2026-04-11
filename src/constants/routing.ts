@@ -10,6 +10,7 @@ export const DEFAULT_VIEW: ViewType = 'debug';
  * Default town hub data
  */
 export const DEFAULT_TOWN_HUB_DATA: TownHubViewData = {
+  townName: 'Town',
   innCost: {
     coins: 10,
     gold: 0,
