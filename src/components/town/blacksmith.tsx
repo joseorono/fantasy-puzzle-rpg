@@ -12,6 +12,7 @@ import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { CostBadge } from './cost-badge';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
@@ -92,7 +93,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
-            size="sm"
+            size="xs"
             onClick={() => setSelectedTab('craft')}
             className={selectedTab === 'craft' ? 'active' : ''}
           >
@@ -102,7 +103,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
-            size="sm"
+            size="xs"
             onClick={() => setSelectedTab('exchange')}
             className={selectedTab === 'exchange' ? 'active' : ''}
           >
@@ -112,7 +113,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
         <ToffecBeigeCornersWrapper>
           <ToffecButton
             variant="tan"
-            size="sm"
+            size="xs"
             onClick={() => setSelectedTab('melt')}
             className={selectedTab === 'melt' ? 'active' : ''}
           >
@@ -133,6 +134,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
               <ToffecButton
                 variant="tan"
+                size="xs"
                 key={type}
                 onClick={() => {
                   setSelectedEquipmentType(type);
@@ -156,26 +158,10 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                   <div className="equipment-item-header">
                     <div className="equipment-item-name">{item.name}</div>
                     <div className="equipment-item-cost">
-                      {item.cost.gold > 0 && (
-                        <span className="cost-badge gold flex items-center gap-1">
-                          <FrostyRpgIcon name="goldBar" size={14} /> {item.cost.gold}
-                        </span>
-                      )}
-                      {item.cost.silver > 0 && (
-                        <span className="cost-badge silver flex items-center gap-1">
-                          <FrostyRpgIcon name="silverBar" size={14} /> {item.cost.silver}
-                        </span>
-                      )}
-                      {item.cost.copper > 0 && (
-                        <span className="cost-badge copper flex items-center gap-1">
-                          <FrostyRpgIcon name="copperBar" size={14} /> {item.cost.copper}
-                        </span>
-                      )}
-                      {item.cost.iron > 0 && (
-                        <span className="cost-badge iron flex items-center gap-1">
-                          <FrostyRpgIcon name="ironBar" size={14} /> {item.cost.iron}
-                        </span>
-                      )}
+                      {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                      {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                      {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                      {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
                     </div>
                   </div>
                   <div className="equipment-item-description">{item.description}</div>
@@ -189,7 +175,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
                         variant="orange"
-                        size="sm"
+                        size="xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCraftItem(item);
@@ -251,7 +237,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
-                  size="sm"
+                  size="xs"
                   onClick={() => handleExchangeResources('copper', 'silver', 5)}
                   disabled={resources.copper < 5}
                   className="w-full"
@@ -271,7 +257,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
-                  size="sm"
+                  size="xs"
                   onClick={() => handleExchangeResources('iron', 'silver', 5)}
                   disabled={resources.iron < 5}
                   className="w-full"
@@ -291,7 +277,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
               <ToffecBeigeCornersWrapper>
                 <ToffecButton
                   variant="orange"
-                  size="sm"
+                  size="xs"
                   onClick={() => handleExchangeResources('silver', 'gold', 5)}
                   disabled={resources.silver < 5}
                   className="w-full"
@@ -319,7 +305,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
-                size="sm"
+                size="xs"
                 onClick={() => handleMeltCoinsToGold(10)}
                 disabled={resources.coins < 10}
                 className="w-full"
@@ -332,7 +318,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
-                size="sm"
+                size="xs"
                 onClick={() => handleMeltCoinsToGold(50)}
                 disabled={resources.coins < 50}
                 className="w-full"
@@ -345,7 +331,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
             <ToffecBeigeCornersWrapper>
               <ToffecButton
                 variant="orange"
-                size="sm"
+                size="xs"
                 onClick={() => handleMeltCoinsToGold(100)}
                 disabled={resources.coins < 100}
                 className="w-full"
