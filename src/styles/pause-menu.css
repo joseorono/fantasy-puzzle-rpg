@@ -418,7 +418,7 @@
 }
 
 .pause-menu-nav-icon {
-  filter: grayscale(0.2) brightness(0.6) contrast(1.2);
+  filter: grayscale(0.3) brightness(0.6) contrast(1.2);
   flex-shrink: 0;
   image-rendering: pixelated;
   width: 24px;
