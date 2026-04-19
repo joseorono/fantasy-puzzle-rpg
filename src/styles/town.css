@@ -133,11 +133,19 @@
     overflow-y: hidden;
 }
 
-.blacksmith .exchange-section {
+.blacksmith .craft-section {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
+}
+
+.blacksmith .exchange-section,
+.blacksmith .melt-section {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 /* Shop bottom section - dialogue + marquee */
@@ -259,7 +267,7 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .equipment-filters button {
@@ -292,7 +300,15 @@
 .craft-section {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
+}
+
+.craft-section h2 {
+    margin: 0;
+}
+
+.craft-section p {
+    margin: 0;
 }
 
 .equipment-list {
