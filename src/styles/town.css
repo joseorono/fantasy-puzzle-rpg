@@ -127,6 +127,27 @@
     margin-top: 6rem;
 }
 
+.blacksmith .shop-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+}
+
+.blacksmith .craft-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.blacksmith .exchange-section,
+.blacksmith .melt-section {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
 /* Shop bottom section - dialogue + marquee */
 .shop-bottom {
     position: relative;
@@ -182,93 +203,96 @@
     letter-spacing: 0.1em;
 }
 
-
 .resources-display {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 0.75rem;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background: linear-gradient(to bottom, #2a1810, #1a1008);
-        border: 2px solid #8b6914;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 700;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(to bottom, #2a1810, #1a1008);
+    border: 2px solid #8b6914;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
 
-    .resources-display>div {
-        color: #d4a574;
-        text-align: center;
-        padding: 0.5rem;
-        background: rgba(0, 0, 0, 0.3);
+.resources-display>div {
+    color: #d4a574;
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     border: 1px solid rgba(212, 165, 116, 0.3);
 }
 
 .blacksmith-tabs {
-display: flex;
-gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 3px solid #8b6914;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 3px solid #d4a57466;
 }
 
 .blacksmith-tabs button {
-padding: 0.75rem 1.5rem;
+    padding: 0.65rem 1.2rem;
     background: linear-gradient(to bottom, #2a1810, #1a1008);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     border-bottom: 3px solid transparent;
-border-radius: 8px 8px 0 0;
+    box-shadow: none;
+    border-radius: 8px 8px 0 0;
     color: #d4a574;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
 }
 
 .blacksmith-tabs button.active {
-background: linear-gradient(to bottom, #3d2817, #2a1810);
-border-bottom-color: #ffd700;
-    color: #ffd700;
-box-shadow: 0 -2px 8px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(to bottom, #3d2817, #2a1810);
+    border-bottom-color: #d4a574;
+    color: #d4a574;
+    box-shadow: 0 -2px 8px #d4a57466;
 }
 
 .blacksmith-tabs button:hover {
-color: #ffd700;
-border-color: #d4a574;
+    color: #e3bb92;
+    border-color: #d4a574;
+    box-shadow: none;
     transform: translateY(-2px);
 }
 
 .equipment-filters {
-display: flex;
-gap: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
     flex-wrap: wrap;
-margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .equipment-filters button {
-padding: 0.5rem 1rem;
+    padding: 0.4rem 0.9rem;
     background: linear-gradient(to bottom, #2a1810, #1a1008);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     color: #d4a574;
     font-weight: 700;
     cursor: pointer;
-border-radius: 8px;
+    border-radius: 9999px;
     transition: all 0.2s ease;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
 
 .equipment-filters button.active {
-background: linear-gradient(to bottom, #d48c46, #8b4513);
-    border-color: #ffd700;
-color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(to bottom, #3d2817, #2a1810);
+    border-color: #d4a574;
+    color: #e3bb92;
+    box-shadow: 0 1px 3px rgba(212, 165, 116, 0.18);
+    transform: translateY(1px);
 }
 
 .equipment-filters button:hover {
-border-color: #d4a574;
+    color: #e3bb92;
+    border-color: #d4a574;
     transform: translateY(-1px);
 }
 
@@ -276,15 +300,24 @@ border-color: #d4a574;
 .craft-section {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
 }
+
+.craft-section h2 {
+    margin: 0;
+}
+
+.craft-section p {
+    margin: 0;
+}
+
 .equipment-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.75rem;
     background: linear-gradient(to bottom, #1a1008, #0a0604);
-    border: 2px solid #8b6914;
+    border: 2px solid #d4a574;
     border-radius: 8px;
     min-height: 200px;
     max-height: 600px;
@@ -292,41 +325,47 @@ border-color: #d4a574;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+.blacksmith .equipment-list {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+}
+
 .equipment-list-item {
-background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
-    border: 2px solid #8b6914;
+    background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
+    border: 2px solid #84684a;
     border-radius: 8px;
     display: flex;
-gap: 0.75rem;
+    gap: 0.75rem;
     padding: 0.75rem;
     cursor: pointer;
-transition: all 0.2s ease;
+    transition: all 0.2s ease;
     align-items: flex-start;
 }
 
 .equipment-list-item:hover {
-background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+    background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
     border-color: #d4a574;
     transform: translateX(4px);
-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .equipment-list-item.selected {
-background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-    border-color: #ffd700;
-box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+    border-color: #d4a574;
+    box-shadow: 0 0 10px rgba(212, 165, 116, 0.28), 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .equipment-item-icon {
-font-size: 2rem;
+    font-size: 2rem;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 50px;
     height: 50px;
-background: linear-gradient(to bottom, #1a1008, #0a0604);
-    border: 2px solid #8b6914;
+    background: linear-gradient(to bottom, #1a1008, #0a0604);
+    border: 2px solid #84684a;
     border-radius: 8px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -348,7 +387,7 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 
 .equipment-item-name {
     font-weight: bold;
-    color: #ffd700;
+    color: #e3bb92;
     font-size: 1rem;
 }
 
@@ -407,18 +446,11 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 .stat-badge {
     padding: 4px 8px;
     background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(212, 165, 116, 0.35);
     border-radius: 3px;
     font-size: 0.75rem;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.equipment-details {
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 4px;
+    color: #e3bb92;
 }
 
 .equipment-details h2 {
@@ -464,22 +496,15 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 }
 
 /* Exchange Section */
-.exchange-section,
-.melt-section {
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-}
-
 .exchange-section h2,
 .melt-section h2 {
-    margin: 0 0 10px 0;
+    margin: 0 0 4px 0;
     color: #ffd700;
 }
 
 .exchange-section p,
 .melt-section p {
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -615,85 +640,82 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 
 /* Item shop Styles */
 .shop-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.store-info {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
-    border: 2px solid #8b6914;
-    border-radius: 8px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+display: flex;
+flex-direction: column;
+gap: 1.5rem;
 }
 
 .store-info h2 {
-    margin: 0 0 0.75rem 0;
-    color: #ffd700;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+margin: 0 0 0.75rem 0;
+color: #e3bb92;
+font-size: 1.5rem;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 .store-info p {
-    margin: 0;
-    color: #d4a574;
-    font-size: 0.9rem;
+margin: 0;
+color: #d4a574;
+font-size: 0.9rem;
 }
 
 .item-count {
-    font-size: 0.85rem;
-    color: #8b6914;
-    font-weight: 700;
+font-size: 0.85rem;
+color: rgba(255, 255, 255, 0.78);
+font-weight: 700;
 }
 
 .item-actions {
 display: flex;
 gap: 0.5rem;
-    margin-top: 0.75rem;
+margin-top: 0.75rem;
 }
 
 .buy-button {
 padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    background: linear-gradient(to bottom, #d48c46, #8b4513);
-    border: 2px solid #ffd700;
-    border-radius: 8px;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.2s ease;
+font-size: 0.875rem;
+font-weight: 700;
+background: linear-gradient(to bottom, #d48c46, #8b4513);
+border: 2px solid #d4a574;
+border-radius: 8px;
+color: #fff;
+cursor: pointer;
+transition: all 0.2s ease;
 }
 
 .buy-button:hover:not(:disabled) {
-    background: linear-gradient(to bottom, #e59c56, #9b5523);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+background: linear-gradient(to bottom, #e59c56, #9b5523);
+transform: translateY(-1px);
+box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
 }
 
 .buy-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+opacity: 0.5;
+cursor: not-allowed;
 }
 
 .inventory-info {
 margin: 1rem 0;
-    padding: 0.75rem;
-    background: linear-gradient(to bottom, #1a1008, #0a0604);
-    border: 2px solid #8b6914;
-    border-radius: 8px;
-    font-size: 0.9rem;
+padding: 0.75rem;
+background: linear-gradient(to bottom, #1a1008, #0a0604);
+border: 2px solid #84684a;
+border-radius: 8px;
+font-size: 0.9rem;
 font-weight: 700;
-    color: #d4a574;
+color: #d4a574;
 }
 
 /* Town Hub Dialogue Container Override */
 .town .dialogue-container {
-  position: absolute;
-  bottom: 2rem;
+position: absolute;
+bottom: 2rem;
+left: 50%;
+transform: translateX(-50%);
+width: 90%;
+max-width: 900px;
+z-index: 5;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
