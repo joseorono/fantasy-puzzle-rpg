@@ -210,15 +210,16 @@
 display: flex;
 gap: 0.75rem;
     margin-bottom: 1.5rem;
-    border-bottom: 3px solid #8b6914;
+    border-bottom: 3px solid #d4a57466;
 }
 
 .blacksmith-tabs button {
-padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1.5rem;
     background: linear-gradient(to bottom, #2a1810, #1a1008);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     border-bottom: 3px solid transparent;
-border-radius: 8px 8px 0 0;
+    box-shadow: none;
+    border-radius: 8px 8px 0 0;
     color: #d4a574;
     font-weight: 700;
     cursor: pointer;
@@ -230,14 +231,15 @@ border-radius: 8px 8px 0 0;
 
 .blacksmith-tabs button.active {
 background: linear-gradient(to bottom, #3d2817, #2a1810);
-border-bottom-color: #ffd700;
-    color: #ffd700;
-box-shadow: 0 -2px 8px rgba(255, 215, 0, 0.3);
+border-bottom-color: #d4a574;
+    color: #d4a574;
+box-shadow: 0 -2px 8px #d4a57466;
 }
 
 .blacksmith-tabs button:hover {
-color: #ffd700;
+color: #e3bb92;
 border-color: #d4a574;
+    box-shadow: none;
     transform: translateY(-2px);
 }
 
