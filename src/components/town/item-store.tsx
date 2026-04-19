@@ -13,6 +13,7 @@ import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { CostBadge } from './cost-badge';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -98,31 +99,11 @@ export default function ItemStore({
                       )}
                     </div>
                     <div className="equipment-item-cost">
-                      {item.cost.coins > 0 && (
-                        <span className="cost-badge gold flex items-center gap-1">
-                          <FrostyRpgIcon name="coinPurse" size={14} /> {item.cost.coins}
-                        </span>
-                      )}
-                      {item.cost.gold > 0 && (
-                        <span className="cost-badge gold flex items-center gap-1">
-                          <FrostyRpgIcon name="goldBar" size={14} /> {item.cost.gold}
-                        </span>
-                      )}
-                      {item.cost.silver > 0 && (
-                        <span className="cost-badge silver flex items-center gap-1">
-                          <FrostyRpgIcon name="silverBar" size={14} /> {item.cost.silver}
-                        </span>
-                      )}
-                      {item.cost.copper > 0 && (
-                        <span className="cost-badge copper flex items-center gap-1">
-                          <FrostyRpgIcon name="copperBar" size={14} /> {item.cost.copper}
-                        </span>
-                      )}
-                      {item.cost.iron > 0 && (
-                        <span className="cost-badge iron flex items-center gap-1">
-                          <FrostyRpgIcon name="ironBar" size={14} /> {item.cost.iron}
-                        </span>
-                      )}
+                      {item.cost.coins > 0 && <CostBadge resource="coins" amount={item.cost.coins} />}
+                      {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                      {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                      {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                      {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
                     </div>
                   </div>
                   <div className="equipment-item-description">{item.description}</div>
@@ -130,7 +111,7 @@ export default function ItemStore({
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
                         variant="orange"
-                        size="sm"
+                        size="xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleBuyItem(item);
