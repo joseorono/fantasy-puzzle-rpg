@@ -56,7 +56,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
       onClick={onSelect}
       className={cn(
         `orb-${orb.type}`,
-        'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11',
+        'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 xl:h-8 xl:w-8 2xl:h-14 2xl:w-14',
         'cursor-pointer border-2 sm:border-3',
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
@@ -326,7 +326,7 @@ export function Match3Board() {
           {/* Board grid */}
           <div className="flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
             {board.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2">
+              <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2 lg:gap-1 xl:gap-0 2xl:gap-1">
                 {row.map((orb) => (
                   <OrbComponent
                     key={orb.id}

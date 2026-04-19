@@ -9,12 +9,12 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { LogOut } from 'lucide-react';
 
 const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
-  { id: 'items', label: 'Items', icon: 'chest' },
-  { id: 'equip', label: 'Equip', icon: 'shield' },
-  { id: 'stats', label: 'Stats', icon: 'openBook' },
-  { id: 'options', label: 'Options', icon: 'wrench' },
-  { id: 'save', label: 'Save', icon: 'bookRed' },
-  { id: 'load', label: 'Load', icon: 'bookBlue' },
+  { id: 'items', label: 'Items', icon: 'smallPotion' },
+  { id: 'equip', label: 'Equip', icon: 'broadsword' },
+  { id: 'stats', label: 'Stats', icon: 'steelArmor' },
+  { id: 'options', label: 'Options', icon: 'seaSnail' },
+  { id: 'save', label: 'Save', icon: 'blueBook' },
+  { id: 'load', label: 'Load', icon: 'copperKey' },
 ];
 
 export function PauseMenuSidebar() {

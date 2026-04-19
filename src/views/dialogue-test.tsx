@@ -5,6 +5,8 @@ import {
   SIMPLE_DIALOGUE_SCENE,
   CUTSCENE_WITH_NARRATOR,
 } from '~/constants/dialogue/scenes/test-scene';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
 export function DialogueTestView() {
   const [activeScene, setActiveScene] = useState<'test' | 'simple' | 'narrator' | null>(null);
@@ -15,19 +17,9 @@ export function DialogueTestView() {
     setActiveScene(null);
   }
 
-  function startTestScene() {
+  function startScene(scene: 'test' | 'simple' | 'narrator') {
     setSceneKey((k) => k + 1);
-    setActiveScene('test');
-  }
-
-  function startSimpleScene() {
-    setSceneKey((k) => k + 1);
-    setActiveScene('simple');
-  }
-
-  function startNarratorScene() {
-    setSceneKey((k) => k + 1);
-    setActiveScene('narrator');
+    setActiveScene(scene);
   }
 
   function closeDialogue() {
@@ -36,163 +28,95 @@ export function DialogueTestView() {
 
   return (
     <div className="dialogue-test-view">
-      {/* Background scene */}
       <div
+        className="flex min-h-screen flex-col items-center justify-center gap-8 p-8"
         style={{
-          minHeight: '100vh',
-          background: 'linear-gradient(to bottom, #1a1a2e, #0f3460)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '2rem',
-          padding: '2rem',
+          backgroundImage: "url('/assets/bg/looping/bg-board-2.png')",
+          backgroundRepeat: 'repeat',
+          backgroundSize: 'auto',
         }}
       >
-        <h1
-          style={{
-            color: '#fff',
-            fontFamily: 'monospace',
-            fontSize: '2rem',
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
-            marginBottom: '1rem',
-          }}
-        >
-          Dialogue System Test
-        </h1>
+        {/* Header card */}
+        <div className="nim w-[420px]">
+          <div className="nim-header">
+            <div className="nim-icon-wrapper">
+              <FrostyRpgIcon name="openBook" size={28} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="nim-title pixel-font">Dialogue System Test</h2>
+              <p className="nim-type pixel-font">Demo</p>
+            </div>
+          </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '1rem',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-          }}
-        >
-          <button
-            onClick={startTestScene}
-            style={{
-              padding: '1rem 2rem',
-              fontSize: '1.125rem',
-              fontFamily: 'monospace',
-              fontWeight: 'bold',
-              backgroundColor: '#16213e',
-              color: '#ffd700',
-              border: '3px solid #ffd700',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            Start Test Scene
-          </button>
+          <div className="nim-description">
+            <p>Pick a scene to preview the dialogue system.</p>
+          </div>
 
-          <button
-            onClick={startSimpleScene}
-            style={{
-              padding: '1rem 2rem',
-              fontSize: '1.125rem',
-              fontFamily: 'monospace',
-              fontWeight: 'bold',
-              backgroundColor: '#16213e',
-              color: '#ffd700',
-              border: '3px solid #ffd700',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            Start Simple Scene
-          </button>
+          <div className="nim-actions">
+            <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={() => startScene('test')}>
+              <FrostyRpgIcon name="openBook" size={16} />
+              Test Scene
+            </ToffecButton>
 
-          <button
-            onClick={startNarratorScene}
-            style={{
-              padding: '1rem 2rem',
-              fontSize: '1.125rem',
-              fontFamily: 'monospace',
-              fontWeight: 'bold',
-              backgroundColor: '#16213e',
-              color: '#ffd700',
-              border: '3px solid #ffd700',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            Cutscene With Narrator
-          </button>
+            <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => startScene('simple')}>
+              <FrostyRpgIcon name="openBook" size={16} />
+              Simple Scene
+            </ToffecButton>
 
-          {activeScene && (
-            <button
-              onClick={closeDialogue}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.125rem',
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                backgroundColor: '#8b0000',
-                color: '#fff',
-                border: '3px solid #ff4444',
-                cursor: 'pointer',
-                textTransform: 'uppercase',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              Close Dialogue
-            </button>
-          )}
+            <ToffecButton variant="mauve" size="sm" className="nim-btn" onClick={() => startScene('narrator')}>
+              <FrostyRpgIcon name="orbPurple" size={16} />
+              Narrator Cutscene
+            </ToffecButton>
+
+            {activeScene && (
+              <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={closeDialogue}>
+                Close Dialogue
+              </ToffecButton>
+            )}
+          </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '2rem',
-            padding: '1.5rem',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            border: '2px solid #ffd700',
-            maxWidth: '600px',
-            color: '#fff',
-            fontFamily: 'monospace',
-            lineHeight: '1.6',
-          }}
-        >
-          <h2
-            style={{
-              color: '#ffd700',
-              marginBottom: '1rem',
-              fontSize: '1.25rem',
-            }}
-          >
-            Controls:
-          </h2>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            <li>• Click anywhere or press SPACE/ENTER to advance</li>
-            <li>• Hold CTRL to fast-forward text</li>
-            <li>• Scroll up to open Message History</li>
-            <li>• First click completes current text</li>
-            <li>• Second click advances to next line</li>
-          </ul>
+        {/* Controls reference card */}
+        <div className="nim w-[420px]">
+          <div className="nim-header">
+            <div className="nim-icon-wrapper">
+              <FrostyRpgIcon name="lantern" size={28} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="nim-title pixel-font">Controls</h2>
+              <p className="nim-type pixel-font">Reference</p>
+            </div>
+          </div>
 
-          <h2
-            style={{
-              color: '#ffd700',
-              marginTop: '1.5rem',
-              marginBottom: '1rem',
-              fontSize: '1.25rem',
-            }}
-          >
-            Features:
-          </h2>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            <li>• Typewriter text animation</li>
-            <li>• Character portraits with active/inactive states</li>
-            <li>• Message History/Log (scroll up to open)</li>
-            <li>• Narrator support for cutscenes</li>
-            <li>• Retro 16-bit pixel art aesthetic</li>
-            <li>• Dark transparent backdrop</li>
-            <li>• Speaker name display</li>
-            <li>• Continue indicator</li>
-          </ul>
+          <div className="nim-description">
+            <p>• Click or press SPACE/ENTER to advance</p>
+            <p>• Hold CTRL to fast-forward text</p>
+            <p>• Scroll up to open Message History</p>
+            <p>• First click completes current text</p>
+            <p>• Second click advances to next line</p>
+          </div>
+        </div>
+
+        {/* Features card */}
+        <div className="nim w-[420px]">
+          <div className="nim-header">
+            <div className="nim-icon-wrapper">
+              <FrostyRpgIcon name="orbPurple" size={28} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="nim-title pixel-font">Features</h2>
+              <p className="nim-type pixel-font">Info</p>
+            </div>
+          </div>
+
+          <div className="nim-description">
+            <p>• Typewriter text animation</p>
+            <p>• Character portraits with active/inactive states</p>
+            <p>• Message History/Log (scroll up to open)</p>
+            <p>• Narrator support for cutscenes</p>
+            <p>• Retro 16-bit pixel art aesthetic</p>
+            <p>• Speaker name display & continue indicator</p>
+          </div>
         </div>
       </div>
 

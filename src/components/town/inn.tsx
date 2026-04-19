@@ -72,6 +72,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
           <ToffecBeigeCornersWrapper>
             <ToffecButton
               variant="cream"
+              size="xs"
               onClick={handleFullyHealParty}
               disabled={isPartyFullyHealed || !canAffordHealing}
               className="heal-button"
