@@ -214,7 +214,7 @@ gap: 0.75rem;
 }
 
 .blacksmith-tabs button {
-    padding: 0.75rem 1.5rem;
+    padding: 0.65rem 1.2rem;
     background: linear-gradient(to bottom, #2a1810, #1a1008);
     border: 2px solid #84684a;
     border-bottom: 3px solid transparent;
@@ -225,8 +225,8 @@ gap: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
 }
 
 .blacksmith-tabs button.active {
@@ -253,7 +253,7 @@ margin-bottom: 1rem;
 .equipment-filters button {
 padding: 0.5rem 1rem;
     background: linear-gradient(to bottom, #2a1810, #1a1008);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     color: #d4a574;
     font-weight: 700;
     cursor: pointer;
@@ -263,13 +263,15 @@ border-radius: 8px;
 }
 
 .equipment-filters button.active {
-background: linear-gradient(to bottom, #d48c46, #8b4513);
-    border-color: #ffd700;
-color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+background: linear-gradient(to bottom, #3d2817, #2a1810);
+    border-color: #d4a574;
+color: #e3bb92;
+    box-shadow: 0 1px 3px rgba(212, 165, 116, 0.18);
+    transform: translateY(1px);
 }
 
 .equipment-filters button:hover {
+    color: #e3bb92;
 border-color: #d4a574;
     transform: translateY(-1px);
 }
@@ -286,7 +288,7 @@ border-color: #d4a574;
     gap: 0.75rem;
     padding: 1rem;
     background: linear-gradient(to bottom, #1a1008, #0a0604);
-    border: 2px solid #8b6914;
+    border: 2px solid #d4a574;
     border-radius: 8px;
     min-height: 200px;
     max-height: 600px;
@@ -296,7 +298,7 @@ border-color: #d4a574;
 
 .equipment-list-item {
 background: linear-gradient(135deg, #2a1810 0%, #1a1008 100%);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     border-radius: 8px;
     display: flex;
 gap: 0.75rem;
@@ -315,8 +317,8 @@ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 
 .equipment-list-item.selected {
 background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
-    border-color: #ffd700;
-box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-color: #d4a574;
+box-shadow: 0 0 10px rgba(212, 165, 116, 0.28), 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .equipment-item-icon {
@@ -328,7 +330,7 @@ font-size: 2rem;
     width: 50px;
     height: 50px;
 background: linear-gradient(to bottom, #1a1008, #0a0604);
-    border: 2px solid #8b6914;
+    border: 2px solid #84684a;
     border-radius: 8px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -350,7 +352,7 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 
 .equipment-item-name {
     font-weight: bold;
-    color: #ffd700;
+    color: #e3bb92;
     font-size: 1rem;
 }
 
@@ -359,36 +361,6 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
     gap: 6px;
     flex-wrap: wrap;
     justify-content: flex-end;
-}
-
-.cost-badge {
-    padding: 4px 8px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.cost-badge.gold {
-    border-color: rgba(255, 215, 0, 0.6);
-    color: #ffd700;
-}
-
-.cost-badge.silver {
-    border-color: rgba(192, 192, 192, 0.6);
-    color: #c0c0c0;
-}
-
-.cost-badge.copper {
-    border-color: rgba(184, 115, 51, 0.6);
-    color: #b87333;
-}
-
-.cost-badge.iron {
-    border-color: rgba(113, 121, 126, 0.6);
-    color: #71797E;
 }
 
 .equipment-item-description {
@@ -409,18 +381,11 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 .stat-badge {
     padding: 4px 8px;
     background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(212, 165, 116, 0.35);
     border-radius: 3px;
     font-size: 0.75rem;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.equipment-details {
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 4px;
+    color: #e3bb92;
 }
 
 .equipment-details h2 {
@@ -466,13 +431,6 @@ background: linear-gradient(to bottom, #1a1008, #0a0604);
 }
 
 /* Exchange Section */
-.exchange-section,
-.melt-section {
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-}
-
 .exchange-section h2,
 .melt-section h2 {
     margin: 0 0 10px 0;

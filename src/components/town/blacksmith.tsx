@@ -125,7 +125,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {selectedTab === 'craft' && (
         <div className="exchange-section">
           <h2 className="-mb-5">
-            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={2} />
+            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.5} />
           </h2>
           <p className="-mb-5">Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
@@ -239,7 +239,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
           <h2>
-            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={2} />
+            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.5} />
           </h2>
           <p>Convert resources at 1:1 ratio</p>
 
@@ -311,7 +311,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {selectedTab === 'melt' && (
         <div className="melt-section">
           <h2>
-            <NarikWoodBitFont text="MELT COINS TO GOLD" size={2} />
+            <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.5} />
           </h2>
           <p>Convert coins into gold (10 coins = 1 gold)</p>
 
