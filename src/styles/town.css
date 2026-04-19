@@ -128,14 +128,16 @@
 }
 
 .blacksmith .shop-container {
+    display: flex;
+    flex-direction: column;
     overflow-y: hidden;
 }
 
 .blacksmith .exchange-section {
     display: flex;
     flex-direction: column;
+    flex: 1;
     min-height: 0;
-    height: 100%;
 }
 
 /* Shop bottom section - dialogue + marquee */
