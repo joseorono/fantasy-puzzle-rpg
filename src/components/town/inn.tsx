@@ -57,7 +57,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
             <h2 className="">
               <NarikWoodBitFont text="PARTY MEMBERS" size={1.3} />
             </h2>
-            <div className="party-members-grid mt-4">
+            <div className="party-members-grid inn-party-members-grid mt-4">
               {party.map((member) => (
                 <PartyMemberCard key={member.id} member={member} variant="bar" />
               ))}
