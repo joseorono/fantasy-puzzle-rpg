@@ -133,6 +133,12 @@
     overflow-y: hidden;
 }
 
+.item-store .shop-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+}
+
 .blacksmith .craft-section {
     display: flex;
     flex-direction: column;
@@ -326,6 +332,12 @@
 }
 
 .blacksmith .equipment-list {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+}
+
+.item-store .equipment-list {
     flex: 1;
     min-height: 0;
     max-height: none;
@@ -604,7 +616,7 @@
 }
 
 .party-members-list {
-    padding: 1.5rem;
+    padding: 1rem;
     background: linear-gradient(to bottom, #1a1008, #0a0604);
     border: 2px solid #84684a;
     border-radius: 8px;
@@ -644,6 +656,11 @@
 display: flex;
 flex-direction: column;
 gap: 1.5rem;
+}
+
+.item-store .shop-content {
+    flex: 1;
+    min-height: 0;
 }
 
 .store-info h2 {

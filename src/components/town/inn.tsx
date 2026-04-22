@@ -55,7 +55,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
           <p>Restore party to full health for {price.coins} coins</p>
           <div className="party-members-list">
             <h2 className="">
-              <NarikWoodBitFont text="PARTY MEMBERS" size={1.3} />
+              <NarikWoodBitFont text="PARTY MEMBERS" size={1.15} />
             </h2>
             <div className="party-members-grid inn-party-members-grid mt-4">
               {party.map((member) => (
