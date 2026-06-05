@@ -31,9 +31,13 @@ function getEquipmentType(itemId: string): EquipmentType | null {
   return null;
 }
 
-const BLACKSMITH_BG_IMAGES = ['/assets/bg/bg-blacksmith-1.jpg', '/assets/bg/bg-blacksmith-1-2.jpg'];
-
-export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () => void }) {
+export default function Blacksmith({
+  backgroundImage,
+  onLeaveCallback,
+}: {
+  backgroundImage: string;
+  onLeaveCallback: () => void;
+}) {
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
@@ -82,7 +86,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
     <TownLocationLayout
       locationClass="blacksmith"
       bgClass="bg-blacksmith"
-      bgImages={BLACKSMITH_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={BLACKSMITH_CHAR}
       welcomeTexts={BLACKSMITH_WELCOME_TEXT}
       marqueeType="blacksmith"

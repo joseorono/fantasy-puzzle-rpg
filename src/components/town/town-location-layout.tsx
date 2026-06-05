@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { DialogueCharacter } from '~/types/dialogue';
 import type { MarqueeTextTypes } from '~/constants/flavor-text/marquee-text';
@@ -11,7 +11,7 @@ import { DialogueBox } from '~/components/dialogue/dialogue-box';
 interface TownLocationLayoutProps {
   locationClass: string;
   bgClass: string;
-  bgImages: string[];
+  backgroundImage: string;
   character: DialogueCharacter;
   welcomeTexts: readonly string[];
   marqueeType: MarqueeTextTypes;
@@ -22,7 +22,7 @@ interface TownLocationLayoutProps {
 export function TownLocationLayout({
   locationClass,
   bgClass,
-  bgImages,
+  backgroundImage,
   character,
   welcomeTexts,
   marqueeType,
@@ -30,7 +30,6 @@ export function TownLocationLayout({
   children,
 }: TownLocationLayoutProps) {
   const resources = useResources();
-  const backgroundImage = useMemo(() => getRandomElement(bgImages), []);
   const [dialogueText] = useState(() => getRandomElement(welcomeTexts));
 
   return (

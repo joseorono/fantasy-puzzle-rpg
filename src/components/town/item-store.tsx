@@ -21,12 +21,12 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
-const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
-
 export default function ItemStore({
+  backgroundImage,
   itemsForSell,
   onLeaveCallback,
 }: {
+  backgroundImage: string;
   itemsForSell: ItemStoreParams;
   onLeaveCallback: () => void;
 }) {
@@ -53,7 +53,7 @@ export default function ItemStore({
     <TownLocationLayout
       locationClass="item-store"
       bgClass="bg-item-store"
-      bgImages={ITEM_STORE_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={SHOPKEEPER_CHAR}
       welcomeTexts={ITEM_SHOP_WELCOME_TEXT}
       marqueeType="item-shop"

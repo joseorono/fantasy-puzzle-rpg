@@ -13,9 +13,15 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 
-const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
-
-export default function Inn({ price, onLeaveCallback }: { price: Resources; onLeaveCallback: () => void }) {
+export default function Inn({
+  backgroundImage,
+  price,
+  onLeaveCallback,
+}: {
+  backgroundImage: string;
+  price: Resources;
+  onLeaveCallback: () => void;
+}) {
   const partyActions = usePartyActions();
   const party = useParty();
   const resourcesActions = useResourcesActions();
@@ -36,7 +42,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
     <TownLocationLayout
       locationClass="inn"
       bgClass="bg-inn"
-      bgImages={INN_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={INNKEEPER_CHAR}
       welcomeTexts={INN_WELCOME_TEXT}
       marqueeType="inn"
