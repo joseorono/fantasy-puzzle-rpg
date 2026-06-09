@@ -38,9 +38,9 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
-  // First successful craft of this blacksmith visit shows the success overlay.
+  // The first craft of each distinct item this visit shows the success overlay.
   // Resets naturally because the blacksmith remounts on each visit.
-  const [craftCelebratedThisVisit, setCraftCelebratedThisVisit] = useState(false);
+  const [celebratedItemIds, setCelebratedItemIds] = useState<Set<string>>(() => new Set());
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
@@ -57,8 +57,8 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       inventoryActions.addItem(item.id);
       setSelectedItem(null);
 
-      if (!craftCelebratedThisVisit) {
-        setCraftCelebratedThisVisit(true);
+      if (!celebratedItemIds.has(item.id)) {
+        setCelebratedItemIds((prev) => new Set(prev).add(item.id));
         showOverlay({ kind: 'crafting-success', itemId: item.id });
       }
     }
