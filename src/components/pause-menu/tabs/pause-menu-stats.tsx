@@ -34,7 +34,7 @@ export function PauseMenuStats() {
 
   return (
     <>
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="STATS" size={1.2} />
       </h2>
       <div className="pause-menu-stats-layout">

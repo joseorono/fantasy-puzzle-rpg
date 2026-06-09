@@ -76,7 +76,7 @@ export function PauseMenuEquip() {
 
   return (
     <div className="pause-menu-equip-tab">
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="EQUIP" size={1.2} />
       </h2>
       <div className="pause-menu-equip-layout">
