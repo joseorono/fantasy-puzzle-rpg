@@ -52,7 +52,7 @@ export default function Inn({
         <div className="inn-info">
           <div className="inn-info-header">
             <h2>
-              <NarikWoodBitFont text="REST AND RECOVER" size={1.35} />
+              <NarikWoodBitFont text="REST AND RECOVER" size={1.2} />
             </h2>
             <div className={`status-value ${isPartyFullyHealed ? 'healthy' : 'injured'}`}>
               {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
