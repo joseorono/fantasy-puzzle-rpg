@@ -10,6 +10,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { KeyboardKeys } from '~/constants/keyboard';
 
 const TARGET_LABELS: Record<SkillTarget, string> = {
   enemy: 'Single enemy',
@@ -46,10 +47,10 @@ export function SkillSelector({ character, disabled = false }: SkillSelectorProp
   // pause-menu sidebar (which listens for arrows on window to switch tabs)
   // from also reacting while the cursor is moving between skills.
   function handleKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
-    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    if (e.key !== KeyboardKeys.ArrowUp && e.key !== KeyboardKeys.ArrowDown) return;
     e.preventDefault();
     e.stopPropagation();
-    const direction = e.key === 'ArrowUp' ? -1 : 1;
+    const direction = e.key === KeyboardKeys.ArrowUp ? -1 : 1;
     const nextIndex = (index + direction + skills.length) % skills.length;
     buttonRefs.current[nextIndex]?.focus();
     selectAt(nextIndex);

@@ -1,6 +1,5 @@
-import { useSetAtom } from 'jotai';
 import { useParty, usePartyActions } from '~/stores/game-store';
-import { pendingSkillUnlockAtom } from '~/stores/skill-unlock-atoms';
+import { useOverlay } from '~/hooks/use-overlay';
 import { getSkillById, isSkillUnlocked } from '~/lib/skill-system';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -14,7 +13,7 @@ import { SoundNames } from '~/constants/audio';
 export function useUnlockSkill() {
   const party = useParty();
   const partyActions = usePartyActions();
-  const setPendingUnlock = useSetAtom(pendingSkillUnlockAtom);
+  const { showOverlay } = useOverlay();
 
   function unlock(characterId: string, skillId: string) {
     const member = party.find((m) => m.id === characterId);
@@ -23,7 +22,7 @@ export function useUnlockSkill() {
     if (isSkillUnlocked(member, skillId)) return;
 
     partyActions.unlockSkillForCharacter(characterId, skillId);
-    setPendingUnlock({ characterId, skillId });
+    showOverlay({ kind: 'skill-unlock', characterId, skillId });
     soundService.playSound(SoundNames.shimmeringSuccess);
   }
 

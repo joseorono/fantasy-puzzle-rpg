@@ -4,7 +4,7 @@ import { MIN_LOAD_TIME_MS } from '~/constants/game';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
-import { SkillUnlockOverlay } from '~/components/skill-unlock-overlay';
+import { OverlayHost } from '~/components/overlays/overlay-host';
 import { StartMenu } from '~/components/start-menu';
 
 interface GameLoaderProps {}
@@ -47,7 +47,7 @@ export function GameLoader(_props: GameLoaderProps) {
       <>
         <GameScreen />
         <PauseMenuOverlay />
-        <SkillUnlockOverlay />
+        <OverlayHost />
       </>
     );
   }

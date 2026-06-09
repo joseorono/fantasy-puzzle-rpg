@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { isPauseMenuOpenAtom, activeMenuTabAtom } from '~/stores/pause-menu-atoms';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { useCurrentView } from '~/stores/game-store';
+import { KeyboardKeys } from '~/constants/keyboard';
 import type { ViewType } from '~/types/routing';
 
 const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards'];
@@ -38,7 +39,7 @@ export function usePauseMenu() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === KeyboardKeys.Escape) {
         e.preventDefault();
         toggle();
       }
