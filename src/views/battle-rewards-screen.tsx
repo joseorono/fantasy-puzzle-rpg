@@ -18,6 +18,8 @@ import {
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
 import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
+import { getNewlyUnlockableSkills } from '~/lib/skill-system';
+import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
@@ -35,6 +37,7 @@ export function BattleRewardsScreen() {
   const [step, setStep] = useState(1);
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
+  const { unlock } = useUnlockSkill();
   const routerActions = useRouterActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
@@ -139,12 +142,20 @@ export function BattleRewardsScreen() {
             expToNextLevel: currentPending.remainingExp,
           };
 
+          // Auto-unlock any skills the character now qualifies for by level.
+          function unlockLevelSkills(leveledCharacter: CharacterData) {
+            for (const skill of getNewlyUnlockableSkills(leveledCharacter, leveledCharacter.level)) {
+              unlock(leveledCharacter.id, skill.id);
+            }
+          }
+
           function handleConfirm(allocatedStats: CoreRPGStats) {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
             updatedCharacter.expToNextLevel = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
+            unlockLevelSkills(updatedCharacter);
             // Move to next character
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
@@ -156,6 +167,7 @@ export function BattleRewardsScreen() {
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
             updatedCharacter.expToNextLevel = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
+            unlockLevelSkills(updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
           }

@@ -1,6 +1,7 @@
 import { useParty, usePartyActions } from '~/stores/game-store';
 import { getSkillsForClass, isSkillUnlocked } from '~/lib/skill-system';
 import { DEFAULT_SKILL_BY_CLASS } from '~/constants/skills';
+import { CHARACTER_ICONS } from '~/constants/party';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import type { CharacterData } from '~/types/rpg-elements';
 
@@ -52,14 +53,15 @@ export default function SkillDebugView() {
                   {skills.map((skill) => {
                     const unlocked = isSkillUnlocked(member, skill.id);
                     const selected = member.selectedSkillId === skill.id;
+                    const Icon = CHARACTER_ICONS[skill.class];
                     return (
                       <div
                         key={skill.id}
                         className="flex items-center justify-between rounded bg-slate-700 px-3 py-2"
                       >
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-white">
-                            {skill.icon} {skill.name}
+                          <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
+                            <Icon className="h-4 w-4 shrink-0" /> {skill.name}
                             {selected && <span className="ml-2 text-xs text-amber-300">ACTIVE</span>}
                           </div>
                           <div className="text-xs text-slate-400">

@@ -4,8 +4,10 @@ import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
-import { INITIAL_PARTY, INITIAL_ENEMIES, SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/party';
-import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
+import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
+import { BASE_SKILL_DAMAGE } from '~/constants/skills';
+import { calculatePartyHpPercentage, calculateSkillDamage } from '~/lib/rpg-calculations';
+import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -279,7 +281,7 @@ export const fillPartyUltimateAtom = atom(null, (get, set, amount: number) => {
 
   const party = currentState.party.map((char) => {
     if (char.currentHp <= 0 || char.skillCooldown <= 0) return char;
-    const maxCooldown = calculateCharacterCooldown(char);
+    const maxCooldown = resolveCharacterCooldown(char);
     const reduction = maxCooldown * amount;
     return {
       ...char,
@@ -332,7 +334,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const character = currentState.party.find((c) => c.id === characterId);
   if (!character || character.currentHp <= 0 || character.skillCooldown > 0) return;
 
-  const skill = SKILL_DEFINITIONS[character.class];
+  const skill = getSelectedSkill(character);
   const amount = calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus);
 
   let party = currentState.party;
@@ -358,6 +360,23 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     if (enemies.every((e) => e.currentHp <= 0)) {
       gameStatus = 'won';
     }
+  } else if (skill.target === 'allEnemy') {
+    // Damage every living enemy
+    enemies = enemies.map((e) =>
+      e.currentHp <= 0 ? e : { ...e, currentHp: subtractionWithMin(e.currentHp, amount, 0) },
+    );
+
+    // Re-select if the current target died
+    const selectedEnemy = enemies.find((e) => e.id === selectedEnemyId);
+    if (selectedEnemy && selectedEnemy.currentHp <= 0) {
+      const nextId = getNextLivingEnemyId(enemies, selectedEnemyId);
+      if (nextId) selectedEnemyId = nextId;
+    }
+
+    // Check if ALL enemies are dead
+    if (enemies.every((e) => e.currentHp <= 0)) {
+      gameStatus = 'won';
+    }
   } else if (skill.target === 'allAlly') {
     // Heal all living party members and revive dead ones with half healing
     party = healAndReviveAllPartyMembers(party, amount, Math.floor(amount / 2));
@@ -372,7 +391,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   // Put skill back on cooldown
   party = party.map((char) =>
     char.id === characterId
-      ? { ...char, skillCooldown: calculateCharacterCooldown(char) }
+      ? { ...char, skillCooldown: resolveCharacterCooldown(char) }
       : char,
   );
 

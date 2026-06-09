@@ -792,6 +792,9 @@
 }
 
 .pause-menu-stats-skill-name {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.75rem;
   color: #fff;
   font-weight: 700;
@@ -802,6 +805,74 @@
   font-size: 0.6rem;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
+}
+
+/* ─── Skill selector (Stats + Equip) ─────────────────────────────── */
+.pause-menu-skill-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pause-menu-skill-select-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pause-menu-skill-option {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  border-radius: 6px;
+  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease-in-out,
+    filter 0.12s ease-in-out;
+}
+
+.pause-menu-skill-option:hover:not(.disabled) {
+  filter: brightness(1.1);
+}
+
+.pause-menu-skill-option.active {
+  background-color: #a07151;
+  color: #fff;
+  border-color: #d4a574;
+  filter: brightness(1.05);
+}
+
+.pause-menu-skill-option.disabled {
+  cursor: default;
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.pause-menu-skill-option-icon {
+  flex-shrink: 0;
+}
+
+/* Compact variant for the Equip tab (sits above the stat preview) */
+.pause-menu-skill-select--compact {
+  gap: 0.3rem;
+}
+
+.pause-menu-skill-select--compact .pause-menu-skill-option {
+  padding: 0.25rem 0.45rem;
+  font-size: 0.6rem;
+}
+
+.pause-menu-skill-select-locked {
+  font-size: 0.55rem;
+  color: rgba(255, 215, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Party roster (right side of stats/equip) */
@@ -1033,6 +1104,24 @@
   margin: 0 0 0.75rem 0;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #3d2817;
+}
+
+.pause-menu-equip-available-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #3d2817;
+}
+
+/* The header row owns the divider; the title keeps only its text styling. */
+.pause-menu-equip-available-header h3 {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
 }
 
 .pause-menu-equip-empty {

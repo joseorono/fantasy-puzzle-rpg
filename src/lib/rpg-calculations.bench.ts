@@ -39,6 +39,8 @@ const mockCharacter: CharacterData = {
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
   expToNextLevel: 100,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
 };
 
 const mockEnemy: EnemyData = {
