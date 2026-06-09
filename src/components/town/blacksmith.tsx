@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
+import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
 import { soundService } from '~/services/sound-service';
@@ -41,10 +42,14 @@ export default function Blacksmith({
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
+  // First successful craft of this blacksmith visit shows the success overlay.
+  // Resets naturally because the blacksmith remounts on each visit.
+  const [craftCelebratedThisVisit, setCraftCelebratedThisVisit] = useState(false);
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
+  const { showOverlay } = useOverlay();
 
   // Filter equipment by type
   const filteredEquipment = EquipmentItems.filter((item) => getEquipmentType(item.id) === selectedEquipmentType);
@@ -55,6 +60,11 @@ export default function Blacksmith({
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
       setSelectedItem(null);
+
+      if (!craftCelebratedThisVisit) {
+        setCraftCelebratedThisVisit(true);
+        showOverlay({ kind: 'crafting-success', itemId: item.id });
+      }
     }
   };
 

@@ -44,6 +44,8 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 30,
+    unlockedSkillIds: ['warrior-power-strike'],
+    selectedSkillId: 'warrior-power-strike',
   },
   {
     id: 'rogue',
@@ -69,6 +71,8 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 20,
+    unlockedSkillIds: ['rogue-assassinate'],
+    selectedSkillId: 'rogue-assassinate',
   },
   {
     id: 'mage',
@@ -94,6 +98,8 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 50,
+    unlockedSkillIds: ['mage-arcane-blast'],
+    selectedSkillId: 'mage-arcane-blast',
   },
   {
     id: 'healer',
@@ -119,6 +125,8 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 60,
+    unlockedSkillIds: ['healer-divine-heal'],
+    selectedSkillId: 'healer-divine-heal',
   },
 ];
 
@@ -234,55 +242,8 @@ export const HEALTH_BAR_COLORS: Record<OrbType, string> = {
 };
 
 // ─── Skills ──────────────────────────────────────────────────────────
-
-export type SkillTarget = 'enemy' | 'ally' | 'allAlly';
-
-export interface SkillDefinition {
-  name: string;
-  description: string;
-  icon: string;
-  baseDamageMultiplier: number;
-  flatDamageBonus: number;
-  target: SkillTarget;
-}
-
-/** Base damage value used for skill calculations */
-export const BASE_SKILL_DAMAGE = 15;
+// Skill definitions live in `~/constants/skills`; skill logic lives in
+// `~/lib/skill-system`. Each character owns a subset of those skills.
 
 /** Seconds of cooldown reduction per matched orb of a character's color */
 export const COOLDOWN_REDUCTION_PER_ORB = 0.3;
-
-export const SKILL_DEFINITIONS: Record<CharacterClass, SkillDefinition> = {
-  warrior: {
-    name: 'Power Strike',
-    description: 'A heavy blow dealing massive POW-scaled damage.',
-    icon: '⚔️',
-    baseDamageMultiplier: 3,
-    flatDamageBonus: 10,
-    target: 'enemy',
-  },
-  rogue: {
-    name: 'Assassinate',
-    description: 'A precise shot targeting a vital point for a burst of damage.',
-    icon: '🏹',
-    baseDamageMultiplier: 1,
-    flatDamageBonus: 30,
-    target: 'enemy',
-  },
-  mage: {
-    name: 'Arcane Blast',
-    description: 'Unleashes a devastating blast of arcane energy.',
-    icon: '✨',
-    baseDamageMultiplier: 5,
-    flatDamageBonus: 0,
-    target: 'enemy',
-  },
-  healer: {
-    name: 'Divine Heal',
-    description: 'Heals all party members with a powerful restorative spell.',
-    icon: '💚',
-    baseDamageMultiplier: 4,
-    flatDamageBonus: 0,
-    target: 'allAlly',
-  },
-};

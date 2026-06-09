@@ -88,7 +88,7 @@ export function PauseMenuItems() {
 
   return (
     <>
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="ITEMS" size={1.2} />
       </h2>
       <div className="pause-menu-item-categories">

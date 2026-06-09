@@ -4,6 +4,7 @@ import type { townLocations } from '~/types/map-node';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';
+import SkillStore from './skill-store';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_HUB_BG_SOUNDS } from '~/constants/audio';
@@ -58,13 +59,9 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     case 'inn':
       return <Inn backgroundImage={subLocationBackground!} price={innCost} onLeaveCallback={handleReturnToHub} />;
     case 'item-store':
-      return (
-        <ItemStore
-          backgroundImage={subLocationBackground!}
-          itemsForSell={itemsForSell}
-          onLeaveCallback={handleReturnToHub}
-        />
-      );
+      return <ItemStore backgroundImage={subLocationBackground!} itemsForSell={itemsForSell} onLeaveCallback={handleReturnToHub} />;
+    case 'skill-trainer':
+      return <SkillStore backgroundImage={subLocationBackground!} onLeaveCallback={handleReturnToHub} />;
   }
 
   return (
@@ -91,6 +88,9 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
             </div>
             <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
               <NarikWoodBitFont text="ITEM SHOP" size={1} />
+            </div>
+            <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('skill-trainer')}>
+              <NarikWoodBitFont text="SKILLS" size={1} />
             </div>
           </div>
         </div>

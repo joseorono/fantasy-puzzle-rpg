@@ -36,6 +36,10 @@ export interface CharacterData extends BaseStats {
   expToNextLevel: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
+  /** Ids of skills this character has unlocked (see `~/constants/skills`). */
+  unlockedSkillIds: string[];
+  /** Id of the currently active skill; resolved via `getSelectedSkill`. */
+  selectedSkillId: string;
 }
 
 // Enemy-specific stats

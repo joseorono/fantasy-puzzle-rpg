@@ -4,7 +4,7 @@
 
 import type { BattleState } from '~/types/battle';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { calculateCharacterCooldown } from '~/lib/rpg-calculations';
+import { resolveCharacterCooldown } from '~/lib/skill-system';
 import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
 import { createInitialBoard } from '~/lib/match-3';
 import { MIN_MATCH_SOUND_VOLUME, MAX_MATCH_SOUND_VOLUME } from '~/constants/audio';
@@ -29,7 +29,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     party: effectiveParty.map((char) => ({
       ...char,
       currentHp: char.maxHp,
-      skillCooldown: calculateCharacterCooldown(char),
+      skillCooldown: resolveCharacterCooldown(char),
     })),
     enemies: enemies.map((e) => ({ ...e, currentHp: e.maxHp })),
     selectedEnemyId: enemies[0].id,

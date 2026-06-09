@@ -18,6 +18,13 @@
   to { opacity: 1; }
 }
 
+/* Generic overlay content wrapper (OverlayContainer): no box of its own so the
+   inner card/banner lays out as a direct flex child of the backdrop, while still
+   catching clicks to stop them dismissing the overlay. */
+.overlay-container-content {
+  display: contents;
+}
+
 /* Modal container — bg-board background with retro double border */
 .gom-modal {
   position: relative;
