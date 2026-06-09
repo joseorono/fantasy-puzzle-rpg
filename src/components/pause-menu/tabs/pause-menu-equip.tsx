@@ -82,15 +82,17 @@ export function PauseMenuEquip() {
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-equip-top-section">
           <div className="pause-menu-party-roster">
-            {party.map((member) => (
-              <PartyMemberCard
-                key={member.id}
-                member={member}
-                variant="roster"
-                isActive={member.id === selectedId}
-                onClick={() => handleSelectCharacter(member.id)}
-              />
-            ))}
+            <div className="pause-menu-party-roster-list">
+              {party.map((member) => (
+                <PartyMemberCard
+                  key={member.id}
+                  member={member}
+                  variant="roster"
+                  isActive={member.id === selectedId}
+                  onClick={() => handleSelectCharacter(member.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="pause-menu-equip-main">

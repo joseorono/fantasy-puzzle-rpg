@@ -901,6 +901,13 @@ box-shadow:
   gap: 0.75rem;
 }
 
+/* Content-height wrapper so cards keep their natural size inside a full-height roster */
+.pause-menu-party-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 
