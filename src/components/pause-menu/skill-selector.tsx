@@ -59,6 +59,7 @@ export function SkillSelector({ character, disabled = false }: SkillSelectorProp
   return (
     <div className="pause-menu-skill-select pause-menu-skill-select--compact">
       <div className="pause-menu-skill-select-options">
+        <span className="pause-menu-skill-select-label">Skill</span>
         {skills.map((skill, index) => {
           const isActive = skill.id === character.selectedSkillId;
           return (
