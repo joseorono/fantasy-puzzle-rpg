@@ -26,11 +26,11 @@
 }
 
 .indigolay-tab--inactive {
-  background-image: url('../../../../context/UI_tab_Off.png');
+  background-image: url('/assets/tabs/UI_tab_Off.png');
 }
 
 .indigolay-tab--active {
-  background-image: url('../../../../context/UI_tab_On.png');
+  background-image: url('/assets/tabs/UI_tab_On.png');
   color: #f2d2af;
   filter: brightness(1.04) drop-shadow(0 2px 0 rgba(36, 17, 9, 0.6)) drop-shadow(0 0 6px rgba(212, 165, 116, 0.22));
 }
