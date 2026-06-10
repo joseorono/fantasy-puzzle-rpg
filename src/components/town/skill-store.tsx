@@ -16,8 +16,6 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
-const SKILL_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
-
 const RESOURCE_KEYS: (keyof Resources)[] = ['coins', 'gold', 'silver', 'copper', 'iron'];
 
 function isPurchasable(skill: SkillDefinition): boolean {
@@ -29,7 +27,13 @@ interface PurchasableSkill {
   skill: SkillDefinition;
 }
 
-export default function SkillStore({ onLeaveCallback }: { onLeaveCallback: () => void }) {
+export default function SkillStore({
+  backgroundImage,
+  onLeaveCallback,
+}: {
+  backgroundImage: string;
+  onLeaveCallback: () => void;
+}) {
   const party = useParty();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
@@ -53,7 +57,7 @@ export default function SkillStore({ onLeaveCallback }: { onLeaveCallback: () =>
     <TownLocationLayout
       locationClass="item-store"
       bgClass="bg-item-store"
-      bgImages={SKILL_STORE_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={SHOPKEEPER_CHAR}
       welcomeTexts={ITEM_SHOP_WELCOME_TEXT}
       marqueeType="item-shop"

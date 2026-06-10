@@ -9,7 +9,7 @@ import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_HUB_BG_SOUNDS } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
-import { pickSubLocationBackground, pickTownHubBackground } from '~/constants/town-backgrounds';
+import { pickAllSubLocationBackgrounds, pickTownHubBackground } from '~/constants/town-backgrounds';
 import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
@@ -28,7 +28,9 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   void townName;
   const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
   const [townHubBackground] = useState(pickTownHubBackground);
-  const [subLocationBackground, setSubLocationBackground] = useState<string | null>(null);
+  // Pick a background per sub-location once per hub visit so each stays consistent
+  // while navigating in and out; re-rolled only when the hub is re-entered (remounts).
+  const [subLocationBackgrounds] = useState(pickAllSubLocationBackgrounds);
   const dialogueText = useState(() => getRandomElement(TOWN_WELCOME_TEXT))[0];
   const isTyping = useState(false)[0];
   const resources = useResources();
@@ -43,7 +45,6 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
 
   const handleGoToPlace = (place: Exclude<townLocations, 'town-hub'>) => {
     soundService.playSound(SoundNames.mechanicalClick, 0.4, 0.1);
-    setSubLocationBackground(pickSubLocationBackground(place));
     setCurrentLocation(place);
   };
 
@@ -54,14 +55,20 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   switch (currentLocation) {
     case 'blacksmith':
       return (
-        <Blacksmith backgroundImage={subLocationBackground!} onLeaveCallback={handleReturnToHub} />
+        <Blacksmith backgroundImage={subLocationBackgrounds.blacksmith} onLeaveCallback={handleReturnToHub} />
       );
     case 'inn':
-      return <Inn backgroundImage={subLocationBackground!} price={innCost} onLeaveCallback={handleReturnToHub} />;
+      return <Inn backgroundImage={subLocationBackgrounds.inn} price={innCost} onLeaveCallback={handleReturnToHub} />;
     case 'item-store':
-      return <ItemStore backgroundImage={subLocationBackground!} itemsForSell={itemsForSell} onLeaveCallback={handleReturnToHub} />;
+      return (
+        <ItemStore
+          backgroundImage={subLocationBackgrounds['item-store']}
+          itemsForSell={itemsForSell}
+          onLeaveCallback={handleReturnToHub}
+        />
+      );
     case 'skill-trainer':
-      return <SkillStore backgroundImage={subLocationBackground!} onLeaveCallback={handleReturnToHub} />;
+      return <SkillStore backgroundImage={subLocationBackgrounds['skill-trainer']} onLeaveCallback={handleReturnToHub} />;
   }
 
   return (

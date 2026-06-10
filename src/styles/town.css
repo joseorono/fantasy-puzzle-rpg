@@ -752,11 +752,6 @@
   width: 90%;
   max-width: 900px;
   z-index: 5;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 900px;
-  z-index: 5;
 }
 
 .town .dialogue-portraits {
