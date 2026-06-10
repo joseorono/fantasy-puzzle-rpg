@@ -524,16 +524,19 @@
   font-size: 0.82rem;
 }
 
+.melt-options {
+    padding-top: 8px;
+}
+
 .exchange-options,
 .melt-options {
   display: flex;
-  flex-direction: column;
   gap: 15px;
 }
 
 .exchange-group {
   padding: 15px;
-  background: rgba(0, 0, 0, 0.3);
+  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
   border-radius: 4px;
 }
 
