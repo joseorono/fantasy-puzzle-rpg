@@ -496,14 +496,11 @@
   font-size: 0.82rem;
 }
 
-.melt-options {
-    padding-top: 8px;
-}
-
 .exchange-options,
 .melt-options {
   display: flex;
   gap: 15px;
+  padding-top: 0.75rem;
 }
 
 .exchange-group {

@@ -14,10 +14,15 @@ const indigolayTabVariants = cva(
         inactive: 'indigolay-tab--inactive',
         active: 'indigolay-tab--active',
       },
+      glow: {
+        true: 'indigolay-tab--glow',
+        false: 'indigolay-tab--no-glow',
+      },
     },
     defaultVariants: {
       size: 'default',
       state: 'inactive',
+      glow: true,
     },
   },
 );
@@ -26,10 +31,10 @@ interface IndigolayTabProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   isActive?: boolean;
 }
 
-export function IndigolayTab({ className, isActive, size, state, type = 'button', ...props }: IndigolayTabProps) {
+export function IndigolayTab({ className, glow, isActive, size, state, type = 'button', ...props }: IndigolayTabProps) {
   const resolvedState = isActive === true ? 'active' : isActive === false ? 'inactive' : state;
 
-  return <button type={type} className={cn(indigolayTabVariants({ size, state: resolvedState, className }))} {...props} />;
+  return <button type={type} className={cn(indigolayTabVariants({ glow, size, state: resolvedState, className }))} {...props} />;
 }
 
 export { indigolayTabVariants };
