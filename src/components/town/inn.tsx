@@ -13,9 +13,15 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 
-const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'];
-
-export default function Inn({ price, onLeaveCallback }: { price: Resources; onLeaveCallback: () => void }) {
+export default function Inn({
+  backgroundImage,
+  price,
+  onLeaveCallback,
+}: {
+  backgroundImage: string;
+  price: Resources;
+  onLeaveCallback: () => void;
+}) {
   const partyActions = usePartyActions();
   const party = useParty();
   const resourcesActions = useResourcesActions();
@@ -36,7 +42,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
     <TownLocationLayout
       locationClass="inn"
       bgClass="bg-inn"
-      bgImages={INN_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={INNKEEPER_CHAR}
       welcomeTexts={INN_WELCOME_TEXT}
       marqueeType="inn"
@@ -46,7 +52,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
         <div className="inn-info">
           <div className="inn-info-header">
             <h2>
-              <NarikWoodBitFont text="REST AND RECOVER" size={1.5} />
+              <NarikWoodBitFont text="REST AND RECOVER" size={1.2} />
             </h2>
             <div className={`status-value ${isPartyFullyHealed ? 'healthy' : 'injured'}`}>
               {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
@@ -54,10 +60,7 @@ export default function Inn({ price, onLeaveCallback }: { price: Resources; onLe
           </div>
           <p>Restore party to full health for {price.coins} coins</p>
           <div className="party-members-list">
-            <h2 className="">
-              <NarikWoodBitFont text="PARTY MEMBERS" size={1.3} />
-            </h2>
-            <div className="party-members-grid mt-4">
+            <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => (
                 <PartyMemberCard key={member.id} member={member} variant="bar" />
               ))}

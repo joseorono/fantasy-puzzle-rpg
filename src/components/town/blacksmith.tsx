@@ -12,6 +12,7 @@ import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
 
@@ -32,9 +33,13 @@ function getEquipmentType(itemId: string): EquipmentType | null {
   return null;
 }
 
-const BLACKSMITH_BG_IMAGES = ['/assets/bg/bg-blacksmith-1.jpg', '/assets/bg/bg-blacksmith-1-2.jpg'];
-
-export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () => void }) {
+export default function Blacksmith({
+  backgroundImage,
+  onLeaveCallback,
+}: {
+  backgroundImage: string;
+  onLeaveCallback: () => void;
+}) {
   const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
@@ -92,7 +97,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
     <TownLocationLayout
       locationClass="blacksmith"
       bgClass="bg-blacksmith"
-      bgImages={BLACKSMITH_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={BLACKSMITH_CHAR}
       welcomeTexts={BLACKSMITH_WELCOME_TEXT}
       marqueeType="blacksmith"
@@ -100,60 +105,39 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
     >
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('craft')}
-            className={selectedTab === 'craft' ? 'active' : ''}
-          >
-            Craft
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('exchange')}
-            className={selectedTab === 'exchange' ? 'active' : ''}
-          >
-            Exchange
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('melt')}
-            className={selectedTab === 'melt' ? 'active' : ''}
-          >
-            Melt
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
+        <IndigolayTab size="default" isActive={selectedTab === 'craft'} onClick={() => setSelectedTab('craft')}>
+          Craft
+        </IndigolayTab>
+        <IndigolayTab size="default" isActive={selectedTab === 'exchange'} onClick={() => setSelectedTab('exchange')}>
+          Exchange
+        </IndigolayTab>
+        <IndigolayTab size="default" isActive={selectedTab === 'melt'} onClick={() => setSelectedTab('melt')}>
+          Melt
+        </IndigolayTab>
       </div>
 
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
         <div className="craft-section">
           <h2>
-            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.5} />
+            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
           </h2>
           <p>Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
-              <ToffecButton
-                variant="tan"
-                size="xs"
+              <IndigolayTab
+                glow={false}
+                size="sm"
                 key={type}
                 onClick={() => {
                   setSelectedEquipmentType(type);
                   setSelectedItem(null);
                 }}
-                className={selectedEquipmentType === type ? 'active' : ''}
+                isActive={selectedEquipmentType === type}
               >
                 {label}
-              </ToffecButton>
+              </IndigolayTab>
             ))}
           </div>
 
@@ -235,7 +219,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
           <h2>
-            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.5} />
+            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
           </h2>
           <p>Convert resources at 1:1 ratio</p>
 
@@ -307,7 +291,7 @@ export default function Blacksmith({ onLeaveCallback }: { onLeaveCallback: () =>
       {selectedTab === 'melt' && (
         <div className="melt-section">
           <h2>
-            <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.5} />
+            <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
           </h2>
           <p>Convert coins into gold (10 coins = 1 gold)</p>
 

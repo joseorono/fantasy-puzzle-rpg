@@ -21,12 +21,12 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
-const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'];
-
 export default function ItemStore({
+  backgroundImage,
   itemsForSell,
   onLeaveCallback,
 }: {
+  backgroundImage: string;
   itemsForSell: ItemStoreParams;
   onLeaveCallback: () => void;
 }) {
@@ -53,7 +53,7 @@ export default function ItemStore({
     <TownLocationLayout
       locationClass="item-store"
       bgClass="bg-item-store"
-      bgImages={ITEM_STORE_BG_IMAGES}
+      backgroundImage={backgroundImage}
       character={SHOPKEEPER_CHAR}
       welcomeTexts={ITEM_SHOP_WELCOME_TEXT}
       marqueeType="item-shop"
@@ -62,7 +62,7 @@ export default function ItemStore({
       <div className="shop-content">
         <div className="store-info">
           <h2>
-            <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.5} />
+            <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.3} />
           </h2>
           <p>Purchase items to aid you in battle</p>
         </div>
