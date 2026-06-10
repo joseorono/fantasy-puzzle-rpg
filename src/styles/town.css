@@ -243,42 +243,19 @@
 
 .equipment-filters {
   display: flex;
+  align-items: flex-end;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
-}
-
-.equipment-filters button {
-  padding: 0.4rem 0.9rem;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
-  border: 2px solid #84684a;
-  color: #d4a574;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 9999px;
-  transition: all 0.2s ease;
-  font-size: 0.8rem;
-}
-
-.equipment-filters button.active {
-  background: linear-gradient(to bottom, #3d2817, #2a1810);
-  border-color: #d4a574;
-  color: #e3bb92;
-  box-shadow: 0 1px 3px rgba(212, 165, 116, 0.18);
-  transform: translateY(1px);
-}
-
-.equipment-filters button:hover {
-  color: #e3bb92;
-  border-color: #d4a574;
-  transform: translateY(-1px);
+  margin-top: 0.2rem;
+  margin-bottom: 0.08rem;
+  padding-left: 0.35rem;
 }
 
 /* Craft Section */
 .craft-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 .craft-section h2 {
@@ -286,7 +263,7 @@
 }
 
 .craft-section p {
-  margin: 0;
+  margin: 0 0 0.15rem 0;
   font-size: 0.82rem;
 }
 

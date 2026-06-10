@@ -126,18 +126,18 @@ export default function Blacksmith({
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
-              <ToffecButton
-                variant="tan"
-                size="xs"
+              <IndigolayTab
+                glow={false}
+                size="sm"
                 key={type}
                 onClick={() => {
                   setSelectedEquipmentType(type);
                   setSelectedItem(null);
                 }}
-                className={selectedEquipmentType === type ? 'active' : ''}
+                isActive={selectedEquipmentType === type}
               >
                 {label}
-              </ToffecButton>
+              </IndigolayTab>
             ))}
           </div>
 
