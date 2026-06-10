@@ -1,0 +1,57 @@
+.indigolay-tab {
+  position: relative;
+  min-width: 6.75rem;
+  height: 2.3rem;
+  padding: 0.45rem 1rem 0.25rem;
+  background-color: transparent;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: #d4a574;
+  font-family: var(--font-body, system-ui);
+  line-height: 1;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+  image-rendering: pixelated;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 2px 0 rgba(36, 17, 9, 0.55));
+}
+
+.indigolay-tab:hover:not(:disabled) {
+  transform: translateY(-1px);
+  color: #e7c3a0;
+}
+
+.indigolay-tab:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.indigolay-tab--inactive {
+  background-image: url('../../../../context/UI_tab_Off.png');
+}
+
+.indigolay-tab--active {
+  background-image: url('../../../../context/UI_tab_On.png');
+  color: #f2d2af;
+  filter: brightness(1.04) drop-shadow(0 2px 0 rgba(36, 17, 9, 0.6)) drop-shadow(0 0 6px rgba(212, 165, 116, 0.22));
+}
+
+.indigolay-tab--sm {
+  min-width: 5.8rem;
+  height: 2rem;
+  padding: 0.38rem 0.85rem 0.2rem;
+  font-size: 0.62rem;
+}
+
+.indigolay-tab--default {
+  min-width: 6.75rem;
+  height: 2.3rem;
+  padding: 0.45rem 1rem 0.25rem;
+  font-size: 0.7rem;
+}
+
+.indigolay-tab--lg {
+  min-width: 8.2rem;
+  height: 2.55rem;
+  padding: 0.52rem 1.15rem 0.28rem;
+  font-size: 0.8rem;
+}

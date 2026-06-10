@@ -234,39 +234,11 @@
 
 .blacksmith-tabs {
   display: flex;
+  align-items: flex-end;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   border-bottom: 3px solid #d4a57466;
-}
-
-.blacksmith-tabs button {
-  padding: 0.65rem 1.2rem;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
-  border: 2px solid #84684a;
-  border-bottom: 3px solid transparent;
-  box-shadow: none;
-  border-radius: 8px 8px 0 0;
-  color: #d4a574;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.75rem;
-}
-
-.blacksmith-tabs button.active {
-  background: linear-gradient(to bottom, #3d2817, #2a1810);
-  border-bottom-color: #d4a574;
-  color: #d4a574;
-  box-shadow: 0 -2px 8px #d4a57466;
-}
-
-.blacksmith-tabs button:hover {
-  color: #e3bb92;
-  border-color: #d4a574;
-  box-shadow: none;
-  transform: translateY(-2px);
+  padding-bottom: 0.1rem;
 }
 
 .equipment-filters {

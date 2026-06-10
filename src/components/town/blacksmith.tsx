@@ -12,6 +12,7 @@ import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
 
@@ -104,36 +105,15 @@ export default function Blacksmith({
     >
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('craft')}
-            className={selectedTab === 'craft' ? 'active' : ''}
-          >
-            Craft
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('exchange')}
-            className={selectedTab === 'exchange' ? 'active' : ''}
-          >
-            Exchange
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton
-            variant="tan"
-            size="xs"
-            onClick={() => setSelectedTab('melt')}
-            className={selectedTab === 'melt' ? 'active' : ''}
-          >
-            Melt
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
+        <IndigolayTab size="default" isActive={selectedTab === 'craft'} onClick={() => setSelectedTab('craft')}>
+          Craft
+        </IndigolayTab>
+        <IndigolayTab size="default" isActive={selectedTab === 'exchange'} onClick={() => setSelectedTab('exchange')}>
+          Exchange
+        </IndigolayTab>
+        <IndigolayTab size="default" isActive={selectedTab === 'melt'} onClick={() => setSelectedTab('melt')}>
+          Melt
+        </IndigolayTab>
       </div>
 
       {/* Craft Tab */}
