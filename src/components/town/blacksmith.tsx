@@ -4,10 +4,11 @@ import { useResources, useResourcesActions, useInventoryActions } from '~/stores
 import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems, CRAFTING_FEE } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
+import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
@@ -26,12 +27,88 @@ const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   armor: 'Armor',
 };
 
-/** Melt converts coins to gold at a fixed 10:1 rate; tiers are just quantity steps. */
-const MELT_TIERS = [
-  { coins: 10, gold: 1, label: 'SMALL BATCH' },
-  { coins: 50, gold: 5, label: 'MEDIUM BATCH' },
-  { coins: 100, gold: 10, label: 'LARGE BATCH' },
-] as const;
+interface MeltBatch {
+  label: string;
+  // Ordered small → large.
+  tiers: ReadonlyArray<{ coins: number; gold: number }>;
+}
+
+/** Melt converts coins to gold at a fixed 10:1 rate; tiers are just quantity
+    steps. The second tier of each batch sits between this batch's base amount
+    and the next batch's, kept a multiple of 10 so the gold payout stays whole. */
+const MELT_BATCHES: ReadonlyArray<MeltBatch> = [
+  {
+    label: 'SMALL BATCHES',
+    tiers: [
+      { coins: 10, gold: 1 },
+      { coins: 30, gold: 3 },
+    ],
+  },
+  {
+    label: 'MEDIUM BATCHES',
+    tiers: [
+      { coins: 50, gold: 5 },
+      { coins: 70, gold: 7 },
+    ],
+  },
+  {
+    label: 'LARGE BATCHES',
+    tiers: [
+      { coins: 100, gold: 10 },
+      { coins: 150, gold: 15 },
+    ],
+  },
+];
+
+interface ExchangeConfig {
+  label: string;
+  fromResource: 'copper' | 'silver' | 'iron';
+  toResource: 'silver' | 'gold';
+  fromIcon: FrostyRpgIconName;
+  toIcon: FrostyRpgIconName;
+  // Ordered small → large; the third tier is only shown on tall viewports.
+  tiers: ReadonlyArray<{ from: number; to: number }>;
+}
+
+/** Each card trades at a fixed 5:1 ratio; tiers are just quantity steps. */
+const EXCHANGE_CONFIGS: ReadonlyArray<ExchangeConfig> = [
+  {
+    label: 'COPPER TO SILVER',
+    fromResource: 'copper',
+    toResource: 'silver',
+    fromIcon: 'copperBar',
+    toIcon: 'silverBar',
+    tiers: [
+      { from: 5, to: 1 },
+      { from: 25, to: 5 },
+      { from: 50, to: 10 },
+    ],
+  },
+  {
+    label: 'IRON TO SILVER',
+    fromResource: 'iron',
+    toResource: 'silver',
+    fromIcon: 'ironBar',
+    toIcon: 'silverBar',
+    tiers: [
+      { from: 5, to: 1 },
+      { from: 25, to: 5 },
+      { from: 50, to: 10 },
+    ],
+  },
+  {
+    label: 'SILVER TO GOLD',
+    fromResource: 'silver',
+    toResource: 'gold',
+    fromIcon: 'silverBar',
+    toIcon: 'goldBar',
+    tiers: [
+      { from: 5, to: 1 },
+      { from: 25, to: 5 },
+      { from: 50, to: 10 },
+    ],
+  },
+];
 
 function getEquipmentType(itemId: string): EquipmentType | null {
   if (itemId.includes('sword') || itemId.includes('broadsword')) return 'sword';
@@ -80,13 +157,14 @@ export default function Blacksmith({
   const handleExchangeResources = (
     fromResource: keyof typeof resources,
     toResource: keyof typeof resources,
-    amount: number,
+    fromAmount: number,
+    toAmount: number,
   ) => {
-    const cost = createResources({ [fromResource]: amount });
+    const cost = createResources({ [fromResource]: fromAmount });
     if (canAfford(resources, cost)) {
       soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(cost);
-      resourcesActions.addResources(createResources({ [toResource]: amount }));
+      resourcesActions.addResources(createResources({ [toResource]: toAmount }));
     }
   };
 
@@ -258,68 +336,40 @@ export default function Blacksmith({
               <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
             </h2>
           </div>
-          <p className="town-section-subtitle">Convert resources at 1:1 ratio</p>
+          <p className="town-section-subtitle">Convert resources at a 5:1 ratio</p>
 
           <div className="exchange-options">
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="COPPER TO SILVER" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('copper', 'silver', 5)}
-                  disabled={resources.copper < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="copperBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="silverBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
-
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="IRON TO SILVER" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('iron', 'silver', 5)}
-                  disabled={resources.iron < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="ironBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="silverBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
-
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="SILVER TO GOLD" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('silver', 'gold', 5)}
-                  disabled={resources.silver < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="silverBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="goldBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
+            {EXCHANGE_CONFIGS.map((config) => (
+              <div className="exchange-group" key={config.label}>
+                <h3>
+                  <NarikWoodBitFont text={config.label} size={1} />
+                </h3>
+                <div className="exchange-buttons">
+                  {config.tiers.map((tier, tierIndex) => (
+                    <ToffecBeigeCornersWrapper
+                      key={tier.from}
+                      // Third tier only appears where there's vertical headroom.
+                      className={cn('exchange-button', tierIndex === 2 && 'exchange-button--tall-only')}
+                    >
+                      <ToffecButton
+                        variant="orange"
+                        size="xs"
+                        onClick={() =>
+                          handleExchangeResources(config.fromResource, config.toResource, tier.from, tier.to)
+                        }
+                        disabled={resources[config.fromResource] < tier.from}
+                        className="w-full"
+                      >
+                        <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          Exchange {tier.from} <FrostyRpgIcon name={config.fromIcon} size={20} /> for {tier.to}{' '}
+                          <FrostyRpgIcon name={config.toIcon} size={20} />
+                        </span>
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -341,25 +391,29 @@ export default function Blacksmith({
           <p className="town-section-subtitle">Convert spare coins into gold bars</p>
 
           <div className="melt-options">
-            {MELT_TIERS.map((tier) => (
-              <div className="melt-group" key={tier.coins}>
+            {MELT_BATCHES.map((batch) => (
+              <div className="melt-group" key={batch.label}>
                 <h3>
-                  <NarikWoodBitFont text={tier.label} size={1} />
+                  <NarikWoodBitFont text={batch.label} size={1} />
                 </h3>
-                <ToffecBeigeCornersWrapper>
-                  <ToffecButton
-                    variant="orange"
-                    size="xs"
-                    onClick={() => handleMeltCoinsToGold(tier.coins)}
-                    disabled={resources.coins < tier.coins}
-                    className="w-full"
-                  >
-                    <span className="flex items-center gap-2">
-                      Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}
-                      <FrostyRpgIcon name="goldBar" size={20} />
-                    </span>
-                  </ToffecButton>
-                </ToffecBeigeCornersWrapper>
+                <div className="melt-buttons">
+                  {batch.tiers.map((tier) => (
+                    <ToffecBeigeCornersWrapper key={tier.coins} className="melt-button">
+                      <ToffecButton
+                        variant="orange"
+                        size="xs"
+                        onClick={() => handleMeltCoinsToGold(tier.coins)}
+                        disabled={resources.coins < tier.coins}
+                        className="w-full"
+                      >
+                        <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}
+                          <FrostyRpgIcon name="goldBar" size={20} />
+                        </span>
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

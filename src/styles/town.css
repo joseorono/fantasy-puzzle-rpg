@@ -739,6 +739,37 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+/* Stack of tiers within a single trade card (Exchange and Melt). */
+.exchange-buttons,
+.melt-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Fill the card width so the tiers line up regardless of their numbers. This
+   needs to be real CSS, not Tailwind `w-full`: the `.cursor-corners` wrapper
+   sets `width: fit-content` at the same specificity but loads later, so a
+   utility class would lose — town.css loads after cursor.css and wins. */
+.exchange-button,
+.melt-button {
+  display: block;
+  width: 100%;
+}
+
+/* The third (largest) tier is hidden on short viewports so each card keeps to
+   two buttons; it's revealed only when there's vertical headroom. Literal must
+   match --craft-stats-min-height. */
+.exchange-button--tall-only {
+  display: none;
+}
+
+@media (min-height: 800px) {
+  .exchange-button--tall-only {
+    display: block;
+  }
+}
+
 /* Town Hub Styles */
 
 /* Town Resources Bar */
