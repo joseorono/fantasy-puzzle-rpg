@@ -2,19 +2,24 @@ import type { Resources } from '~/types/resources';
 import type { CharacterData } from '~/types/rpg-elements';
 import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
-import { canAfford, createResources } from '~/lib/resources';
-import { isPartyFullyHealed as checkPartyFullyHealed } from '~/lib/party-system';
+import { createResources } from '~/lib/resources';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
-import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+
+/** A single member to heal plus the coin cost to fully restore them. */
+interface HealEntry {
+  member: CharacterData;
+  cost: number;
+}
 
 export default function Inn({
   backgroundImage,
@@ -30,31 +35,54 @@ export default function Inn({
   const resourcesActions = useResourcesActions();
   const resources = useResources();
 
-  const isPartyFullyHealed = checkPartyFullyHealed(party);
-  const canAffordHealing = canAfford(resources, price);
-
   // Healing a single member scales with how hurt they are: a full-price heal
   // restores a member from 0 HP; a lightly-wounded member costs proportionally less.
   const getHealCost = (member: CharacterData) =>
     Math.ceil((price.coins * (member.maxHp - member.currentHp)) / member.maxHp);
 
-  const handleFullyHealParty = () => {
-    if (canAffordHealing) {
-      soundService.playSound(SoundNames.clickCoin);
-      partyActions.fullyHealParty();
-      resourcesActions.reduceResources(price);
-    }
-  };
+  const injured: HealEntry[] = party
+    .filter((member) => member.currentHp < member.maxHp)
+    .map((member) => ({ member, cost: getHealCost(member) }));
+
+  const isPartyFullyHealed = injured.length === 0;
+  const totalHealCost = injured.reduce((sum, entry) => sum + entry.cost, 0);
+
+  // Greedy "heal all" plan: heal the most-wounded heroes first, spending coins
+  // until the next hero is unaffordable. Lets the player heal partially instead
+  // of being blocked when they can't afford the whole party at once.
+  const healPlan = injured
+    .slice()
+    .sort((a, b) => b.cost - a.cost)
+    .reduce<{ entries: HealEntry[]; cost: number; remaining: number }>(
+      (plan, entry) =>
+        entry.cost <= plan.remaining
+          ? { entries: [...plan.entries, entry], cost: plan.cost + entry.cost, remaining: plan.remaining - entry.cost }
+          : plan,
+      { entries: [], cost: 0, remaining: resources.coins },
+    );
 
   const handleHealMember = (member: CharacterData) => {
     const cost = getHealCost(member);
-    if (cost <= 0) return;
-    const costResources = createResources({ coins: cost });
-    if (!canAfford(resources, costResources)) return;
+    if (cost <= 0 || resources.coins < cost) return;
     soundService.playSound(SoundNames.clickCoin);
     partyActions.fullyHealMember(member.id);
-    resourcesActions.reduceResources(costResources);
+    resourcesActions.reduceResources(createResources({ coins: cost }));
   };
+
+  const handleHealAll = () => {
+    if (healPlan.entries.length === 0) return;
+    soundService.playSound(SoundNames.clickCoin);
+    healPlan.entries.forEach((entry) => partyActions.fullyHealMember(entry.member.id));
+    resourcesActions.reduceResources(createResources({ coins: healPlan.cost }));
+  };
+
+  const healAllLabel = isPartyFullyHealed
+    ? 'Fully Healed'
+    : healPlan.entries.length === 0
+      ? 'Not Enough Coins'
+      : healPlan.entries.length === injured.length
+        ? `Heal All · ${totalHealCost} coins`
+        : `Heal ${healPlan.entries.length} ${healPlan.entries.length === 1 ? 'Hero' : 'Heroes'} · ${healPlan.cost} coins`;
 
   return (
     <TownLocationLayout
@@ -84,9 +112,7 @@ export default function Inn({
               </span>
             </div>
           </div>
-          <p className="town-section-subtitle">
-            Click a hero to heal them, or rest the whole party for {price.coins} coins
-          </p>
+          <p className="town-section-subtitle">Click a wounded hero to heal them, or heal everyone at once below</p>
           <div className="party-members-list">
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => {
@@ -94,57 +120,42 @@ export default function Inn({
                 const cost = getHealCost(member);
                 const canAffordHeal = resources.coins >= cost;
 
-                if (isFull) {
-                  return (
-                    <Tooltip key={member.id}>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <PartyMemberCard member={member} variant="bar" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>Fully healed</TooltipContent>
-                    </Tooltip>
-                  );
-                }
-
                 return (
-                  <Tooltip key={member.id}>
-                    <TooltipTrigger asChild>
-                      <div>
+                  <div key={member.id} className="inn-hero-cell">
+                    {isFull ? (
+                      <>
+                        <PartyMemberCard member={member} variant="bar" />
+                        <div className="inn-hero-heal inn-hero-heal--full">Fully Healed</div>
+                      </>
+                    ) : (
+                      <>
                         <ToffecBeigeCornersWrapper className={cn(!canAffordHeal && 'cannot-afford')}>
-                          <PartyMemberCard
-                            member={member}
-                            variant="bar"
-                            onClick={() => handleHealMember(member)}
-                          />
+                          <PartyMemberCard member={member} variant="bar" onClick={() => handleHealMember(member)} />
                         </ToffecBeigeCornersWrapper>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {canAffordHeal ? `Heal for ${cost} coins` : `Not enough coins (need ${cost})`}
-                    </TooltipContent>
-                  </Tooltip>
+                        <div className={cn('inn-hero-heal', !canAffordHeal && 'inn-hero-heal--locked')}>
+                          {canAffordHeal ? 'Heal' : 'Need'} · {cost}
+                          <FrostyRpgIcon name="coinPurse" size={14} />
+                        </div>
+                      </>
+                    )}
+                  </div>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Heal whole party */}
+        {/* Heal everyone affordable in one tap */}
         <div className="inn-actions">
           <ToffecBeigeCornersWrapper>
             <ToffecButton
               variant="cream"
               size="xs"
-              onClick={handleFullyHealParty}
-              disabled={isPartyFullyHealed || !canAffordHealing}
+              onClick={handleHealAll}
+              disabled={isPartyFullyHealed || healPlan.entries.length === 0}
               className="heal-button"
             >
-              {isPartyFullyHealed
-                ? 'Fully Healed'
-                : !canAffordHealing
-                  ? 'Not Enough Coins'
-                  : `Heal Party (${price.coins} coins)`}
+              {healAllLabel}
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>

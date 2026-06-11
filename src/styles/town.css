@@ -272,8 +272,19 @@
   gap: 0.75rem;
 }
 
+/* Bitmap-font headings keep the default heading line-height, which wraps the
+   glyphs in a taller line box so they don't vertically center against the
+   right-hand badge. Collapse that box to the glyph height so the header text
+   and the badge line up. */
+.town-section-header h2 {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 1;
+}
+
 .town-section-header--inn {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Reusable header pill (forge fee, melt rate, …): muted label + a gold value chip.
@@ -813,42 +824,6 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.party-status {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
-  border: 2px solid #84684a;
-  border-radius: 8px;
-}
-
-.status-label {
-  font-weight: 700;
-  color: #d4a574;
-  font-size: 0.8rem;
-}
-
-.status-value {
-  font-weight: 700;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  border: 1px solid;
-  font-size: 0.75rem;
-}
-
-.status-value.healthy {
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
-  border-color: #4ade80;
-}
-
-.status-value.injured {
-  color: #fb923c;
-  background: rgba(251, 146, 60, 0.1);
-  border-color: #fb923c;
-}
-
 .inn .party-members-list {
   padding-block: 0.75rem;
   padding-inline: 0;
@@ -869,8 +844,48 @@
   gap: 0.5rem;
 }
 
+/* Each grid cell stacks a hero card over its heal-cost chip. */
+.inn-hero-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
 .inn-party-members-grid .party-member-card--bar {
   min-width: 0;
+}
+
+/* Always-visible per-hero heal cost, so the price is readable without hovering. */
+.inn-hero-heal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Healthy hero — no action needed. */
+.inn-hero-heal--full {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+/* Injured but unaffordable — reads as locked, matching the dimmed card. */
+.inn-hero-heal--locked {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.1);
+  border-color: rgba(251, 146, 60, 0.45);
 }
 
 /* The toffeec cursor-corner wrapper defaults to `width: fit-content` (cursor.css),
