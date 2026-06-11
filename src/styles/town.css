@@ -404,14 +404,27 @@
 /* Above the threshold there's vertical headroom — reveal the stats just above
    the craft button. Literal must match --craft-stats-min-height. */
 @media (min-height: 800px) {
+  /* Description grows to fill the free space and centers its text vertically,
+     which keeps the stats + button tight together at the bottom. */
+  .craft-detail-desc {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
   .craft-detail-stats {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
     width: 100%;
     align-items: stretch;
-    /* push the stats (and the button after them) to the bottom of the panel */
-    margin-top: auto;
+  }
+
+  /* Let the description absorb the free space instead of the button. */
+  .craft-detail-actions {
+    margin-top: 0;
   }
 }
 .craft-detail-actions {
