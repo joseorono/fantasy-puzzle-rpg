@@ -15,6 +15,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
