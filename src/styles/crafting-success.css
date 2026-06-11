@@ -17,7 +17,7 @@
 .crafting-success-title {
   display: flex;
   justify-content: center;
-  filter: drop-shadow(0 0 14px rgba(220, 40, 40, 0.6)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+  filter: drop-shadow(0 0 14px rgba(255, 200, 70, 0.6)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
   transition:
     transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
     filter 0.5s ease;

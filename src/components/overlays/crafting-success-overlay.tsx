@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { findEquipmentItem } from '~/lib/equipment-system';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { soundService } from '~/services/sound-service';
@@ -52,7 +51,7 @@ export function CraftingSuccessOverlay({ request, onDismiss }: CraftingSuccessOv
     >
       <div className={cn('crafting-success', `crafting-success--${phase}`)}>
         <div className="crafting-success-title">
-          <NarikRedwoodBitFont text="SUCCESS" size={4} />
+          <NarikWoodBitFont text="SUCCESS" size={4} />
         </div>
 
         <div className="crafting-success-item">
