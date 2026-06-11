@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterData } from '~/types/rpg-elements';
 import {
   fullyHealParty,
+  fullyHealMember,
   isPartyFullyHealed,
   damageAllPartyMembers,
   getLivingMembers,
@@ -304,6 +305,51 @@ describe('party system utilities', () => {
       expect(result[0].currentHp).toBe(50);
       expect(result[1].currentHp).toBe(30);
       expect(result[2].currentHp).toBe(20);
+    });
+  });
+
+  describe('fullyHealMember', () => {
+    it('should fully heal only the targeted member', () => {
+      const result = fullyHealMember(testParty, 'mage');
+      expect(result[0].currentHp).toBe(50); // unchanged
+      expect(result[1].currentHp).toBe(30); // unchanged
+      expect(result[2].currentHp).toBe(50); // healed to maxHp
+    });
+
+    it('should heal the targeted member from any HP to maxHp', () => {
+      const result = fullyHealMember(testParty, 'warrior');
+      expect(result[0].currentHp).toBe(100); // maxHp
+    });
+
+    it('should not modify the targeted member maxHp', () => {
+      const result = fullyHealMember(testParty, 'rogue');
+      expect(result[1].maxHp).toBe(60);
+    });
+
+    it('should preserve other character properties', () => {
+      const result = fullyHealMember(testParty, 'warrior');
+      expect(result[0].name).toBe('Warrior');
+      expect(result[0].class).toBe('warrior');
+      expect(result[0].stats.pow).toBe(15);
+    });
+
+    it('should leave an already fully healed member unchanged', () => {
+      const party = [createTestCharacter({ id: 'full', currentHp: 100, maxHp: 100 })];
+      const result = fullyHealMember(party, 'full');
+      expect(result[0].currentHp).toBe(100);
+    });
+
+    it('should return unchanged party if characterId not found', () => {
+      const result = fullyHealMember(testParty, 'nonexistent');
+      expect(result[0].currentHp).toBe(50);
+      expect(result[1].currentHp).toBe(30);
+      expect(result[2].currentHp).toBe(20);
+    });
+
+    it('should not mutate original party', () => {
+      const original = testParty.map((c) => ({ ...c }));
+      fullyHealMember(testParty, 'mage');
+      expect(testParty[2].currentHp).toBe(original[2].currentHp);
     });
   });
 
