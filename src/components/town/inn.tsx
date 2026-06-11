@@ -50,7 +50,7 @@ export default function Inn({
     >
       <div className="inn-content">
         <div className="inn-info">
-          <div className="inn-info-header">
+          <div className="town-section-header town-section-header--inn">
             <h2>
               <NarikWoodBitFont text="REST AND RECOVER" size={1.2} />
             </h2>

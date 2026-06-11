@@ -65,9 +65,11 @@ export default function SkillStore({
     >
       <div className="shop-content">
         <div className="store-info">
-          <h2>
-            <NarikWoodBitFont text="SKILLS TRAINER" size={1.5} />
-          </h2>
+          <div className="town-section-header town-section-header--skills">
+            <h2>
+              <NarikWoodBitFont text="SKILLS TRAINER" size={1.5} />
+            </h2>
+          </div>
           <p>Train your heroes in new battle skills</p>
         </div>
 

@@ -119,7 +119,7 @@ export default function Blacksmith({
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
         <div className="craft-section">
-          <div className="craft-section-header">
+          <div className="town-section-header town-section-header--smith-craft">
             <h2>
               <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
             </h2>
@@ -238,9 +238,11 @@ export default function Blacksmith({
       {/* Exchange Tab */}
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
-          <h2>
-            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
-          </h2>
+          <div className="town-section-header town-section-header--smith-exchange">
+            <h2>
+              <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
+            </h2>
+          </div>
           <p>Convert resources at 1:1 ratio</p>
 
           <div className="exchange-options">
@@ -310,9 +312,11 @@ export default function Blacksmith({
       {/* Melt Tab */}
       {selectedTab === 'melt' && (
         <div className="melt-section">
-          <h2>
-            <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
-          </h2>
+          <div className="town-section-header town-section-header--smith-melt">
+            <h2>
+              <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
+            </h2>
+          </div>
           <p>Convert coins into gold (10 coins = 1 gold)</p>
 
           <div className="melt-options">
