@@ -181,7 +181,7 @@ export default function Blacksmith({
                 <>
                   <div className="craft-detail-header">
                     <div className="craft-detail-icon">
-                      {selectedItem.iconName ? <FrostyRpgIcon name={selectedItem.iconName} size={48} /> : null}
+                      {selectedItem.iconName ? <FrostyRpgIcon name={selectedItem.iconName} size={40} /> : null}
                     </div>
                     <div className="craft-detail-name">{selectedItem.name}</div>
                   </div>
