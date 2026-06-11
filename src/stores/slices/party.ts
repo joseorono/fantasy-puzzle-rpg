@@ -2,6 +2,7 @@ import type { PartySlice } from './party.types';
 import { INITIAL_PARTY } from '~/constants/party';
 import {
   fullyHealParty as fullyHealPartyLib,
+  fullyHealMember as fullyHealMemberLib,
   isPartyFullyHealed,
   damageAllPartyMembers as damageAllPartyMembersLib,
 } from '~/lib/party-system';
@@ -50,6 +51,14 @@ export const createPartySlice = (set: any): PartySlice => ({
           },
           false,
           'party/fullyHealParty',
+        ),
+      fullyHealMember: (characterId: string) =>
+        set(
+          (state: PartySlice) => {
+            state.party.members = fullyHealMemberLib(state.party.members, characterId);
+          },
+          false,
+          'party/fullyHealMember',
         ),
       isPartyFullyHealed: () =>
         set(
