@@ -26,6 +26,13 @@ const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   armor: 'Armor',
 };
 
+/** Melt converts coins to gold at a fixed 10:1 rate; tiers are just quantity steps. */
+const MELT_TIERS = [
+  { coins: 10, gold: 1, label: 'SMALL BATCH' },
+  { coins: 50, gold: 5, label: 'MEDIUM BATCH' },
+  { coins: 100, gold: 10, label: 'LARGE BATCH' },
+] as const;
+
 function getEquipmentType(itemId: string): EquipmentType | null {
   if (itemId.includes('sword') || itemId.includes('broadsword')) return 'sword';
   if (itemId.includes('bow')) return 'bow';
@@ -124,12 +131,8 @@ export default function Blacksmith({
             <h2>
               <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
             </h2>
-            <div className="craft-fee-badge">
-              <span className="craft-fee-badge__label">Forge Fee</span>
-              <span className="craft-fee-badge__value">
-                <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
-              </span>
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <div className="town-header-badge">
                   <span className="town-header-badge__label">Forge Fee</span>
                   <span className="town-header-badge__value">
@@ -328,49 +331,37 @@ export default function Blacksmith({
             <h2>
               <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
             </h2>
+            <div className="town-header-badge">
+              <span className="town-header-badge__label">Rate</span>
+              <span className="town-header-badge__value">
+                10 <FrostyRpgIcon name="coinPurse" size={14} /> = 1 <FrostyRpgIcon name="goldBar" size={14} />
+              </span>
+            </div>
           </div>
-          <p>Convert coins into gold (10 coins = 1 gold)</p>
+          <p className="town-section-subtitle">Convert spare coins into gold bars</p>
 
           <div className="melt-options">
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(10)}
-                disabled={resources.coins < 10}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 10 <FrostyRpgIcon name="coinPurse" size={20} /> → 1 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(50)}
-                disabled={resources.coins < 50}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 50 <FrostyRpgIcon name="coinPurse" size={20} /> → 5 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(100)}
-                disabled={resources.coins < 100}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 100 <FrostyRpgIcon name="coinPurse" size={20} /> → 10 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
+            {MELT_TIERS.map((tier) => (
+              <div className="melt-group" key={tier.coins}>
+                <h3>
+                  <NarikWoodBitFont text={tier.label} size={1} />
+                </h3>
+                <ToffecBeigeCornersWrapper>
+                  <ToffecButton
+                    variant="orange"
+                    size="xs"
+                    onClick={() => handleMeltCoinsToGold(tier.coins)}
+                    disabled={resources.coins < tier.coins}
+                    className="w-full"
+                  >
+                    <span className="flex items-center gap-2">
+                      Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}
+                      <FrostyRpgIcon name="goldBar" size={20} />
+                    </span>
+                  </ToffecButton>
+                </ToffecBeigeCornersWrapper>
+              </div>
+            ))}
           </div>
         </div>
       )}
