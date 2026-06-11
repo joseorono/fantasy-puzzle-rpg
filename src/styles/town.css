@@ -969,6 +969,24 @@
   font-weight: 700;
 }
 
+/* "Owned ×N" pill next to a shop item's name — on-theme with cost/stat badges. */
+.owned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.4rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  vertical-align: middle;
+}
+
 .item-actions {
   display: flex;
   gap: 0.5rem;
