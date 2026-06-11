@@ -355,9 +355,68 @@
   padding: 0 0.25rem;
 }
 
+/* Selected-item stats shown inside the detail panel.
+   Single source of truth for the height breakpoint. Native CSS cannot reference
+   a var() inside a media condition, so the @media rule below must use the same
+   literal value (800px) — keep them in sync. */
+:root {
+  --craft-stats-min-height: 800px;
+}
+
+/* Hidden by default (short / compressed viewports keep the panel compact). */
+.craft-detail-stats {
+  display: none;
+}
+
+/* "For: <class>" banner — full-width, gold left accent. */
+.craft-detail-for-class {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(212, 165, 116, 0.06));
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  border-left: 3px solid #ffd700;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Single left-aligned row of stat badges. */
+.craft-detail-stats-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Match the badge look outside the panel: the lighter board background shows
+   through the translucent badge bg, so deepen it to read like the list rows. */
+.craft-detail-stats .stat-badge {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* Above the threshold there's vertical headroom — reveal the stats just above
+   the craft button. Literal must match --craft-stats-min-height. */
+@media (min-height: 800px) {
+  .craft-detail-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+    align-items: stretch;
+    /* push the stats (and the button after them) to the bottom of the panel */
+    margin-top: auto;
+  }
+}
 .craft-detail-actions {
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding: 0.3rem 0;
   width: 100%;
   display: flex;
   justify-content: center;

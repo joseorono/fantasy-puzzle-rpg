@@ -188,9 +188,21 @@ export default function Blacksmith({
 
                   <p className="craft-detail-desc">{selectedItem.description}</p>
 
+                  <div className="craft-detail-stats">
+                    {selectedItem.forClass && (
+                      <div className="craft-detail-for-class">For: {selectedItem.forClass}</div>
+                    )}
+                    <div className="craft-detail-stats-row">
+                      <span className="stat-badge">POW: {selectedItem.pow}</span>
+                      <span className="stat-badge">VIT: {selectedItem.vit}</span>
+                      <span className="stat-badge">SPD: {selectedItem.spd}</span>
+                    </div>
+                  </div>
+
                   <div className="craft-detail-actions">
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
+                        className="craft-detail-buy-button"
                         variant="orange"
                         size="xs"
                         onClick={() => handleCraftItem(selectedItem)}
