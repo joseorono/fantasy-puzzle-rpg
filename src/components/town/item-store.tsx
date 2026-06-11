@@ -66,7 +66,7 @@ export default function ItemStore({
               <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.3} />
             </h2>
           </div>
-          <p>Purchase items to aid you in battle</p>
+          <p className="town-section-subtitle">Purchase items to aid you in battle</p>
         </div>
 
         {/* Items List */}

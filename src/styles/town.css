@@ -276,8 +276,9 @@
   margin-bottom: 0.25rem;
 }
 
-/* Forge-fee pill: muted label + a gold coin-value chip. */
-.craft-fee-badge {
+/* Reusable header pill (forge fee, melt rate, …): muted label + a gold value chip.
+   Lives at the right of a .town-section-header. */
+.town-header-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -292,7 +293,7 @@
   flex-shrink: 0;
 }
 
-.craft-fee-badge__label {
+.town-header-badge__label {
   font-size: 0.62rem;
   font-weight: bold;
   letter-spacing: 0.06em;
@@ -301,7 +302,7 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.craft-fee-badge__value {
+.town-header-badge__value {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -315,9 +316,13 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.craft-section p {
+/* Standardized subtitle under any town-location heading. Swap the color line
+   for the commented muted variant to soften it everywhere at once. */
+.town-section-subtitle {
   margin: 0 0 0.15rem 0;
   font-size: 0.82rem;
+  color: #e0e0e0;
+  /* color: rgba(255, 255, 255, 0.7); */
 }
 
 .craft-workspace {
@@ -711,13 +716,6 @@
   color: #ffd700;
 }
 
-.exchange-section p,
-.melt-section p {
-  margin: 0 0 4px 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.82rem;
-}
-
 .exchange-options,
 .melt-options {
   display: flex;
@@ -725,13 +723,17 @@
   padding-top: 0.75rem;
 }
 
-.exchange-group {
+/* Trade cards shared by the Exchange and Melt tabs. */
+.exchange-group,
+.melt-group {
+  flex: 1;
   padding: 15px;
   background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
   border-radius: 4px;
 }
 
-.exchange-group h3 {
+.exchange-group h3,
+.melt-group h3 {
   margin: 0 0 10px 0;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.9);
@@ -763,12 +765,6 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-}
-
-.inn-info p {
-  margin: 0 0 0.25rem 0;
-  color: #d4a574;
-  font-size: 0.75rem;
 }
 
 .party-status {
@@ -868,16 +864,6 @@
 .item-store .store-info h2 {
   margin: 0 0 0.3rem 0;
   font-size: 1.1rem;
-}
-
-.store-info p {
-  margin: 0;
-  color: #d4a574;
-  font-size: 0.9rem;
-}
-
-.item-store .store-info p {
-  font-size: 0.82rem;
 }
 
 .item-store .equipment-list {

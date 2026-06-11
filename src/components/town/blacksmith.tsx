@@ -255,7 +255,7 @@ export default function Blacksmith({
               <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
             </h2>
           </div>
-          <p>Convert resources at 1:1 ratio</p>
+          <p className="town-section-subtitle">Convert resources at 1:1 ratio</p>
 
           <div className="exchange-options">
             <div className="exchange-group">

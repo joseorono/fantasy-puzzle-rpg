@@ -58,7 +58,7 @@ export default function Inn({
               {isPartyFullyHealed ? 'Fully Healed' : 'Needs Healing'}
             </div>
           </div>
-          <p>Restore party to full health for {price.coins} coins</p>
+          <p className="town-section-subtitle">Restore party to full health for {price.coins} coins</p>
           <div className="party-members-list">
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => (
