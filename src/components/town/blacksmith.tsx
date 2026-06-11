@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { useOverlay } from '~/hooks/use-overlay';
-import { EquipmentItems, CRAFTING_FEE } from '~/constants/inventory';
+import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
-import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
@@ -17,6 +17,13 @@ import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import {
+  MELT_BATCHES,
+  EXCHANGE_CONFIGS,
+  MELT_COINS_PER_GOLD,
+  EXCHANGE_RATIO,
+  CRAFTING_FEE,
+} from '~/constants/blacksmith';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
@@ -26,89 +33,6 @@ const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   staff: 'Staves',
   armor: 'Armor',
 };
-
-interface MeltBatch {
-  label: string;
-  // Ordered small → large.
-  tiers: ReadonlyArray<{ coins: number; gold: number }>;
-}
-
-/** Melt converts coins to gold at a fixed 10:1 rate; tiers are just quantity
-    steps. The second tier of each batch sits between this batch's base amount
-    and the next batch's, kept a multiple of 10 so the gold payout stays whole. */
-const MELT_BATCHES: ReadonlyArray<MeltBatch> = [
-  {
-    label: 'SMALL BATCHES',
-    tiers: [
-      { coins: 10, gold: 1 },
-      { coins: 30, gold: 3 },
-    ],
-  },
-  {
-    label: 'MEDIUM BATCHES',
-    tiers: [
-      { coins: 50, gold: 5 },
-      { coins: 70, gold: 7 },
-    ],
-  },
-  {
-    label: 'LARGE BATCHES',
-    tiers: [
-      { coins: 100, gold: 10 },
-      { coins: 150, gold: 15 },
-    ],
-  },
-];
-
-interface ExchangeConfig {
-  label: string;
-  fromResource: 'copper' | 'silver' | 'iron';
-  toResource: 'silver' | 'gold';
-  fromIcon: FrostyRpgIconName;
-  toIcon: FrostyRpgIconName;
-  // Ordered small → large; the third tier is only shown on tall viewports.
-  tiers: ReadonlyArray<{ from: number; to: number }>;
-}
-
-/** Each card trades at a fixed 5:1 ratio; tiers are just quantity steps. */
-const EXCHANGE_CONFIGS: ReadonlyArray<ExchangeConfig> = [
-  {
-    label: 'COPPER TO SILVER',
-    fromResource: 'copper',
-    toResource: 'silver',
-    fromIcon: 'copperBar',
-    toIcon: 'silverBar',
-    tiers: [
-      { from: 5, to: 1 },
-      { from: 25, to: 5 },
-      { from: 50, to: 10 },
-    ],
-  },
-  {
-    label: 'IRON TO SILVER',
-    fromResource: 'iron',
-    toResource: 'silver',
-    fromIcon: 'ironBar',
-    toIcon: 'silverBar',
-    tiers: [
-      { from: 5, to: 1 },
-      { from: 25, to: 5 },
-      { from: 50, to: 10 },
-    ],
-  },
-  {
-    label: 'SILVER TO GOLD',
-    fromResource: 'silver',
-    toResource: 'gold',
-    fromIcon: 'silverBar',
-    toIcon: 'goldBar',
-    tiers: [
-      { from: 5, to: 1 },
-      { from: 25, to: 5 },
-      { from: 50, to: 10 },
-    ],
-  },
-];
 
 function getEquipmentType(itemId: string): EquipmentType | null {
   if (itemId.includes('sword') || itemId.includes('broadsword')) return 'sword';
@@ -172,8 +96,7 @@ export default function Blacksmith({
     const cost = createResources({ coins: coinAmount });
     if (canAfford(resources, cost)) {
       soundService.playSound(SoundNames.clickCoin);
-      // Conversion rate: 10 coins = 1 gold
-      const goldGain = Math.floor(coinAmount / 10);
+      const goldGain = Math.floor(coinAmount / MELT_COINS_PER_GOLD);
       resourcesActions.reduceResources(cost);
       resourcesActions.addResources(createResources({ gold: goldGain }));
     }
@@ -336,7 +259,7 @@ export default function Blacksmith({
               <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
             </h2>
           </div>
-          <p className="town-section-subtitle">Convert resources at a 5:1 ratio</p>
+          <p className="town-section-subtitle">Convert resources at a {EXCHANGE_RATIO}:1 ratio</p>
 
           <div className="exchange-options">
             {EXCHANGE_CONFIGS.map((config) => (
@@ -384,7 +307,8 @@ export default function Blacksmith({
             <div className="town-header-badge">
               <span className="town-header-badge__label">Rate</span>
               <span className="town-header-badge__value">
-                10 <FrostyRpgIcon name="coinPurse" size={14} /> = 1 <FrostyRpgIcon name="goldBar" size={14} />
+                {MELT_COINS_PER_GOLD} <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
+                <FrostyRpgIcon name="goldBar" size={14} />
               </span>
             </div>
           </div>
