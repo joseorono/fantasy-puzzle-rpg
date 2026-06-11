@@ -488,6 +488,30 @@
     0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
+/* Unaffordable items: same layout, muted/red treatment so they read as locked,
+   with their own normal + selected states (affordable items keep the styles above). */
+.equipment-list-item.cannot-afford {
+  background: linear-gradient(135deg, #2a1410 0%, #1a0c08 100%);
+  border-color: #6b4a3a;
+  opacity: 0.6;
+}
+
+.equipment-list-item.cannot-afford:hover {
+  background: linear-gradient(135deg, #3a1c14 0%, #2a1410 100%);
+  border-color: #b5705a;
+  opacity: 0.8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.equipment-list-item.cannot-afford.selected {
+  background: linear-gradient(135deg, #3a1c14 0%, #2a1410 100%);
+  border-color: #c46a52;
+  opacity: 0.9;
+  box-shadow:
+    0 0 10px rgba(196, 106, 82, 0.32),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
 .equipment-item-icon {
   font-size: 1.75rem;
   flex-shrink: 0;
