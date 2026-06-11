@@ -141,76 +141,74 @@ export default function Blacksmith({
             ))}
           </div>
 
-          {/* Equipment List */}
-          <div className="equipment-list">
-            {filteredEquipment.map((item) => (
-              <div key={item.id} className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}>
-                <div className="equipment-item-icon">
-                  {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                </div>
-                <div className="equipment-item-content">
-                  <div className="equipment-item-header">
-                    <div className="equipment-item-name">{item.name}</div>
-                    <div className="equipment-item-cost">
-                      {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
-                      {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
-                      {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
-                      {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+          {/* Master-Detail Workspace */}
+          <div className="craft-workspace">
+            {/* Equipment List */}
+            <div className="equipment-list">
+              {filteredEquipment.map((item) => (
+                <div
+                  key={item.id}
+                  className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedItem(item)}
+                >
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                  </div>
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">{item.name}</div>
+                      <div className="equipment-item-cost">
+                        {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                        {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                        {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                        {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+                      </div>
+                    </div>
+                    <div className="equipment-item-stats">
+                      <span className="stat-badge">POW: {item.pow}</span>
+                      <span className="stat-badge">VIT: {item.vit}</span>
+                      <span className="stat-badge">SPD: {item.spd}</span>
+                      {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
                     </div>
                   </div>
-                  <div className="equipment-item-description">{item.description}</div>
-                  <div className="equipment-item-stats">
-                    <span className="stat-badge">POW: {item.pow}</span>
-                    <span className="stat-badge">VIT: {item.vit}</span>
-                    <span className="stat-badge">SPD: {item.spd}</span>
-                    {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
+                </div>
+              ))}
+            </div>
+
+            {/* Detail Panel */}
+            <div className="craft-detail">
+              {selectedItem ? (
+                <>
+                  <div className="craft-detail-header">
+                    <div className="craft-detail-icon">
+                      {selectedItem.iconName ? <FrostyRpgIcon name={selectedItem.iconName} size={48} /> : null}
+                    </div>
+                    <div className="craft-detail-name">{selectedItem.name}</div>
                   </div>
-                  <div className="item-actions">
+
+                  <p className="craft-detail-desc">{selectedItem.description}</p>
+
+                  <div className="craft-detail-actions">
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
                         variant="orange"
                         size="xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCraftItem(item);
-                        }}
-                        disabled={!canAfford(resources, item.cost)}
+                        onClick={() => handleCraftItem(selectedItem)}
+                        disabled={!canAfford(resources, selectedItem.cost)}
                       >
                         <span className="flex items-center gap-2">
-                          {canAfford(resources, item.cost) ? (
-                            <>
-                              Craft for{' '}
-                              {item.cost.gold > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.silver > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.copper > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.iron > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            'Cannot Afford'
-                          )}
+                          {canAfford(resources, selectedItem.cost) ? 'Craft Item' : 'Cannot Afford'}
                         </span>
                       </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
+                </>
+              ) : (
+                <div className="craft-detail-empty">
+                  <p>Select an item from the list to see its crafting details.</p>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       )}

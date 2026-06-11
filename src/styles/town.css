@@ -267,6 +267,103 @@
   font-size: 0.82rem;
 }
 
+.craft-workspace {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.craft-workspace .equipment-list {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.craft-detail {
+  flex: 0 0 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.55), rgba(26, 16, 8, 0.55)),
+    url('/assets/bg/looping/bg-board.png');
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+.craft-detail-empty {
+  margin: auto;
+  text-align: center;
+  color: rgba(212, 165, 116, 0.7);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 1rem;
+}
+
+.craft-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.4);
+}
+
+.craft-detail-name {
+  font-weight: bold;
+  color: #e3bb92;
+  font-size: 1.05rem;
+  text-align: left;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.craft-detail-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 0.4rem;
+  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+  border: none;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.craft-detail-section-title {
+  color: #ffd700;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.2rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.craft-detail-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-style: italic;
+  text-align: center;
+  padding: 0 0.25rem;
+}
+
+.craft-detail-actions {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .equipment-list {
   display: flex;
   flex-direction: column;
