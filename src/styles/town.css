@@ -316,6 +316,21 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
+/* Status-colored value chips (Inn party status). Tinted fill + soft border so
+   they read as a status, not a harsh outline. Same green/orange as the legacy
+   .status-value states. */
+.town-header-badge__value--healthy {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.town-header-badge__value--injured {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.55);
+}
+
 /* Standardized subtitle under any town-location heading. Swap the color line
    for the commented muted variant to soften it everywhere at once. */
 .town-section-subtitle {
@@ -835,7 +850,8 @@
 }
 
 .inn .party-members-list {
-  padding: 0;
+  padding-block: 0.75rem;
+  padding-inline: 0;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -855,6 +871,36 @@
 
 .inn-party-members-grid .party-member-card--bar {
   min-width: 0;
+}
+
+/* The toffeec cursor-corner wrapper defaults to `width: fit-content` (cursor.css),
+   which would collapse the grid cell — same gotcha solved for .exchange-button.
+   Force it (and the trigger div Radix wraps it in) to fill the cell. */
+.inn-party-members-grid > * {
+  min-width: 0;
+}
+
+.inn-party-members-grid .cursor-corners {
+  display: block;
+  width: 100%;
+}
+
+/* Square the card off so the cursor corners hug it snugly. By default the icon is
+   shorter than the bars (bottom-left corner floats below it) and the info/exp bars
+   stop at 90–95% width (right corners float). Fill them to the card's box.
+   The icon rule needs 3 classes to outrank pause-menu.css, which loads later. */
+.inn-party-members-grid .party-member-card--bar .party-member-card__icon {
+  height: 86px;
+}
+
+.inn-party-members-grid .party-member-card__info-bar,
+.inn-party-members-grid .party-member-card__exp-bar {
+  width: 100%;
+}
+
+/* Injured-but-unaffordable card reads as locked, mirroring .equipment-list-item.cannot-afford. */
+.inn-party-members-grid .cannot-afford {
+  opacity: 0.6;
 }
 
 .inn-actions {
