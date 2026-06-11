@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
 import { useOverlay } from '~/hooks/use-overlay';
-import { EquipmentItems } from '~/constants/inventory';
+import { EquipmentItems, CRAFTING_FEE } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -119,9 +119,17 @@ export default function Blacksmith({
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
         <div className="craft-section">
-          <h2>
-            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
-          </h2>
+          <div className="craft-section-header">
+            <h2>
+              <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
+            </h2>
+            <div className="craft-fee-badge">
+              <span className="craft-fee-badge__label">Forge Fee</span>
+              <span className="craft-fee-badge__value">
+                <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
+              </span>
+            </div>
+          </div>
           <p>Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
@@ -148,7 +156,9 @@ export default function Blacksmith({
               {filteredEquipment.map((item) => (
                 <div
                   key={item.id}
-                  className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}
+                  className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''} ${
+                    canAfford(resources, item.cost) ? '' : 'cannot-afford'
+                  }`}
                   onClick={() => setSelectedItem(item)}
                 >
                   <div className="equipment-item-icon">
