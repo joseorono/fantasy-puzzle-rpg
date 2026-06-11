@@ -129,8 +129,19 @@ export default function Blacksmith({
                 <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
               </span>
             </div>
+                <div className="town-header-badge">
+                  <span className="town-header-badge__label">Forge Fee</span>
+                  <span className="town-header-badge__value">
+                    <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                A flat fee of {CRAFTING_FEE} coins charged each time you craft an item, on top of its material cost.
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <p>Choose an equipment type to craft</p>
+          <p className="town-section-subtitle">Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
