@@ -6,7 +6,7 @@ import { useCurrentView } from '~/stores/game-store';
 import { KeyboardKeys } from '~/constants/keyboard';
 import type { ViewType } from '~/types/routing';
 
-const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards'];
+const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards', 'town-hub'];
 
 export function usePauseMenu() {
   const [isOpen, setIsOpen] = useAtom(isPauseMenuOpenAtom);
