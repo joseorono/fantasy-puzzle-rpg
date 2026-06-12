@@ -5,6 +5,7 @@ import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford } from '~/lib/resources';
+import { cn } from '~/lib/utils';
 import { getItemQuantity } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -61,10 +62,12 @@ export default function ItemStore({
     >
       <div className="shop-content">
         <div className="store-info">
-          <h2>
-            <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.3} />
-          </h2>
-          <p>Purchase items to aid you in battle</p>
+          <div className="town-section-header town-section-header--items">
+            <h2>
+              <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.3} />
+            </h2>
+          </div>
+          <p className="town-section-subtitle">Purchase items to aid you in battle</p>
         </div>
 
         {/* Items List */}
@@ -74,7 +77,7 @@ export default function ItemStore({
             const canAffordItem = canAfford(resources, item.cost);
 
             return (
-              <div key={item.id} className="equipment-list-item">
+              <div key={item.id} className={cn('equipment-list-item', !canAffordItem && 'cannot-afford')}>
                 <div className="equipment-item-icon">
                   {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
                 </div>
@@ -83,9 +86,8 @@ export default function ItemStore({
                     <div className="equipment-item-name">
                       {item.name}
                       {itemCount > 0 && (
-                        <span className="item-count number-flow-container">
-                          {' '}
-                          (Owned:{' '}
+                        <span className="owned-badge number-flow-container">
+                          Owned{' '}
                           <NumberFlow
                             value={itemCount}
                             format={INTEGER_FORMAT}
@@ -94,7 +96,6 @@ export default function ItemStore({
                             transformTiming={SNAPPY_TRANSFORM_TIMING}
                             opacityTiming={SNAPPY_OPACITY_TIMING}
                           />
-                          )
                         </span>
                       )}
                     </div>

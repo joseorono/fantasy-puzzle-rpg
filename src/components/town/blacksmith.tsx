@@ -4,6 +4,7 @@ import { useResources, useResourcesActions, useInventoryActions } from '~/stores
 import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
+import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
@@ -15,6 +16,14 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import {
+  MELT_BATCHES,
+  EXCHANGE_CONFIGS,
+  MELT_COINS_PER_GOLD,
+  EXCHANGE_RATIO,
+  CRAFTING_FEE,
+} from '~/constants/blacksmith';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 
@@ -72,13 +81,14 @@ export default function Blacksmith({
   const handleExchangeResources = (
     fromResource: keyof typeof resources,
     toResource: keyof typeof resources,
-    amount: number,
+    fromAmount: number,
+    toAmount: number,
   ) => {
-    const cost = createResources({ [fromResource]: amount });
+    const cost = createResources({ [fromResource]: fromAmount });
     if (canAfford(resources, cost)) {
       soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(cost);
-      resourcesActions.addResources(createResources({ [toResource]: amount }));
+      resourcesActions.addResources(createResources({ [toResource]: toAmount }));
     }
   };
 
@@ -86,8 +96,7 @@ export default function Blacksmith({
     const cost = createResources({ coins: coinAmount });
     if (canAfford(resources, cost)) {
       soundService.playSound(SoundNames.clickCoin);
-      // Conversion rate: 10 coins = 1 gold
-      const goldGain = Math.floor(coinAmount / 10);
+      const goldGain = Math.floor(coinAmount / MELT_COINS_PER_GOLD);
       resourcesActions.reduceResources(cost);
       resourcesActions.addResources(createResources({ gold: goldGain }));
     }
@@ -119,10 +128,25 @@ export default function Blacksmith({
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
         <div className="craft-section">
-          <h2>
-            <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
-          </h2>
-          <p>Choose an equipment type to craft</p>
+          <div className="town-section-header town-section-header--smith-craft">
+            <h2>
+              <NarikWoodBitFont text="CRAFT EQUIPMENT" size={1.3} />
+            </h2>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="town-header-badge">
+                  <span className="town-header-badge__label">Forge Fee</span>
+                  <span className="town-header-badge__value">
+                    <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                A flat fee of {CRAFTING_FEE} coins charged each time you craft an item, on top of its material cost.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <p className="town-section-subtitle">Choose an equipment type to craft</p>
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
@@ -141,76 +165,88 @@ export default function Blacksmith({
             ))}
           </div>
 
-          {/* Equipment List */}
-          <div className="equipment-list">
-            {filteredEquipment.map((item) => (
-              <div key={item.id} className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''}`}>
-                <div className="equipment-item-icon">
-                  {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                </div>
-                <div className="equipment-item-content">
-                  <div className="equipment-item-header">
-                    <div className="equipment-item-name">{item.name}</div>
-                    <div className="equipment-item-cost">
-                      {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
-                      {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
-                      {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
-                      {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+          {/* Master-Detail Workspace */}
+          <div className="craft-workspace">
+            {/* Equipment List */}
+            <div className="equipment-list">
+              {filteredEquipment.map((item) => (
+                <div
+                  key={item.id}
+                  className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''} ${
+                    canAfford(resources, item.cost) ? '' : 'cannot-afford'
+                  }`}
+                  onClick={() => setSelectedItem(item)}
+                >
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                  </div>
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">{item.name}</div>
+                      <div className="equipment-item-cost">
+                        {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                        {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                        {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                        {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+                      </div>
+                    </div>
+                    <div className="equipment-item-stats">
+                      <span className="stat-badge">POW: {item.pow}</span>
+                      <span className="stat-badge">VIT: {item.vit}</span>
+                      <span className="stat-badge">SPD: {item.spd}</span>
+                      {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
                     </div>
                   </div>
-                  <div className="equipment-item-description">{item.description}</div>
-                  <div className="equipment-item-stats">
-                    <span className="stat-badge">POW: {item.pow}</span>
-                    <span className="stat-badge">VIT: {item.vit}</span>
-                    <span className="stat-badge">SPD: {item.spd}</span>
-                    {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
+                </div>
+              ))}
+            </div>
+
+            {/* Detail Panel */}
+            <div className="craft-detail">
+              {selectedItem ? (
+                <>
+                  <div className="craft-detail-header">
+                    <div className="craft-detail-icon">
+                      {selectedItem.iconName ? <FrostyRpgIcon name={selectedItem.iconName} size={40} /> : null}
+                    </div>
+                    <div className="craft-detail-name">{selectedItem.name}</div>
                   </div>
-                  <div className="item-actions">
+
+                  <p className="craft-detail-desc">{selectedItem.description}</p>
+
+                  <div className="craft-detail-stats">
+                    {selectedItem.forClass && (
+                      <div className="craft-detail-for-class">For: {selectedItem.forClass}</div>
+                    )}
+                    <div className="craft-detail-stats-row">
+                      <span className="stat-badge">POW: {selectedItem.pow}</span>
+                      <span className="stat-badge">VIT: {selectedItem.vit}</span>
+                      <span className="stat-badge">SPD: {selectedItem.spd}</span>
+                    </div>
+                  </div>
+
+                  <div className="craft-detail-actions">
                     <ToffecBeigeCornersWrapper>
                       <ToffecButton
+                        className="craft-detail-buy-button"
                         variant="orange"
                         size="xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCraftItem(item);
-                        }}
-                        disabled={!canAfford(resources, item.cost)}
+                        onClick={() => handleCraftItem(selectedItem)}
+                        disabled={!canAfford(resources, selectedItem.cost)}
                       >
                         <span className="flex items-center gap-2">
-                          {canAfford(resources, item.cost) ? (
-                            <>
-                              Craft for{' '}
-                              {item.cost.gold > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.silver > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.copper > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.iron > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            'Cannot Afford'
-                          )}
+                          {canAfford(resources, selectedItem.cost) ? 'Craft Item' : 'Cannot Afford'}
                         </span>
                       </ToffecButton>
                     </ToffecBeigeCornersWrapper>
                   </div>
+                </>
+              ) : (
+                <div className="craft-detail-empty">
+                  <p>Select an item from the list to see its crafting details.</p>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -218,71 +254,45 @@ export default function Blacksmith({
       {/* Exchange Tab */}
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
-          <h2>
-            <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
-          </h2>
-          <p>Convert resources at 1:1 ratio</p>
+          <div className="town-section-header town-section-header--smith-exchange">
+            <h2>
+              <NarikWoodBitFont text="EXCHANGE RESOURCES" size={1.3} />
+            </h2>
+          </div>
+          <p className="town-section-subtitle">Convert resources at a {EXCHANGE_RATIO}:1 ratio</p>
 
           <div className="exchange-options">
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="COPPER TO SILVER" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('copper', 'silver', 5)}
-                  disabled={resources.copper < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="copperBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="silverBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
-
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="IRON TO SILVER" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('iron', 'silver', 5)}
-                  disabled={resources.iron < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="ironBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="silverBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
-
-            <div className="exchange-group">
-              <h3>
-                <NarikWoodBitFont text="SILVER TO GOLD" size={1} />
-              </h3>
-              <ToffecBeigeCornersWrapper>
-                <ToffecButton
-                  variant="orange"
-                  size="xs"
-                  onClick={() => handleExchangeResources('silver', 'gold', 5)}
-                  disabled={resources.silver < 5}
-                  className="w-full"
-                >
-                  <span className="flex items-center gap-2">
-                    Exchange 5 <FrostyRpgIcon name="silverBar" size={20} /> for 1{' '}
-                    <FrostyRpgIcon name="goldBar" size={20} />
-                  </span>
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
-            </div>
+            {EXCHANGE_CONFIGS.map((config) => (
+              <div className="exchange-group" key={config.label}>
+                <h3>
+                  <NarikWoodBitFont text={config.label} size={1} />
+                </h3>
+                <div className="exchange-buttons">
+                  {config.tiers.map((tier, tierIndex) => (
+                    <ToffecBeigeCornersWrapper
+                      key={tier.from}
+                      // Third tier only appears where there's vertical headroom.
+                      className={cn('exchange-button', tierIndex === 2 && 'exchange-button--tall-only')}
+                    >
+                      <ToffecButton
+                        variant="orange"
+                        size="xs"
+                        onClick={() =>
+                          handleExchangeResources(config.fromResource, config.toResource, tier.from, tier.to)
+                        }
+                        disabled={resources[config.fromResource] < tier.from}
+                        className="w-full"
+                      >
+                        <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          Exchange {tier.from} <FrostyRpgIcon name={config.fromIcon} size={20} /> for {tier.to}{' '}
+                          <FrostyRpgIcon name={config.toIcon} size={20} />
+                        </span>
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -290,51 +300,46 @@ export default function Blacksmith({
       {/* Melt Tab */}
       {selectedTab === 'melt' && (
         <div className="melt-section">
-          <h2>
-            <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
-          </h2>
-          <p>Convert coins into gold (10 coins = 1 gold)</p>
+          <div className="town-section-header town-section-header--smith-melt">
+            <h2>
+              <NarikWoodBitFont text="MELT COINS TO GOLD" size={1.3} />
+            </h2>
+            <div className="town-header-badge">
+              <span className="town-header-badge__label">Rate</span>
+              <span className="town-header-badge__value">
+                {MELT_COINS_PER_GOLD} <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
+                <FrostyRpgIcon name="goldBar" size={14} />
+              </span>
+            </div>
+          </div>
+          <p className="town-section-subtitle">Convert spare coins into gold bars</p>
 
           <div className="melt-options">
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(10)}
-                disabled={resources.coins < 10}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 10 <FrostyRpgIcon name="coinPurse" size={20} /> → 1 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(50)}
-                disabled={resources.coins < 50}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 50 <FrostyRpgIcon name="coinPurse" size={20} /> → 5 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
-            <ToffecBeigeCornersWrapper>
-              <ToffecButton
-                variant="orange"
-                size="xs"
-                onClick={() => handleMeltCoinsToGold(100)}
-                disabled={resources.coins < 100}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  Melt 100 <FrostyRpgIcon name="coinPurse" size={20} /> → 10 <FrostyRpgIcon name="goldBar" size={20} />
-                </span>
-              </ToffecButton>
-            </ToffecBeigeCornersWrapper>
+            {MELT_BATCHES.map((batch) => (
+              <div className="melt-group" key={batch.label}>
+                <h3>
+                  <NarikWoodBitFont text={batch.label} size={1} />
+                </h3>
+                <div className="melt-buttons">
+                  {batch.tiers.map((tier) => (
+                    <ToffecBeigeCornersWrapper key={tier.coins} className="melt-button">
+                      <ToffecButton
+                        variant="orange"
+                        size="xs"
+                        onClick={() => handleMeltCoinsToGold(tier.coins)}
+                        disabled={resources.coins < tier.coins}
+                        className="w-full"
+                      >
+                        <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}
+                          <FrostyRpgIcon name="goldBar" size={20} />
+                        </span>
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

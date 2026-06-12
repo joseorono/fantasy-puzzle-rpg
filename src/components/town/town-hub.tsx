@@ -15,6 +15,7 @@ import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
+import { KeyboardKeys } from '~/constants/keyboard';
 
 interface TownHubProps {
   townName: string;
@@ -51,6 +52,22 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   const handleReturnToHub = () => {
     setCurrentLocation('town-hub');
   };
+
+  // ESC mirrors the leave button: back to the hub from a sub-location, or out of the town entirely
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== KeyboardKeys.Escape) return;
+      e.preventDefault();
+      if (currentLocation === 'town-hub') {
+        onLeaveCallback();
+      } else {
+        handleReturnToHub();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentLocation, onLeaveCallback]);
 
   switch (currentLocation) {
     case 'blacksmith':
@@ -108,7 +125,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
         <div className="dialogue-portraits">
           <img src="/assets/portraits/Innkeeper_02.png" alt="Innkeeper" className="dialogue-portrait__image" />
         </div>
-        <DialogueBox speakerName="Innkeeper" text={dialogueText} isTyping={isTyping} showIndicator={true} />
+        <DialogueBox speakerName="Innkeeper" text={dialogueText} isTyping={isTyping} showIndicator={false} />
       </div>
     </div>
   );

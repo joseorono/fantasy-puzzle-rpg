@@ -3,9 +3,9 @@
  */
 
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
+import { CRAFTING_FEE } from '~/constants/blacksmith';
 
 export const MAX_AMOUNT_PER_ITEM = 99;
-export const CRAFTING_FEE = 100;
 
 /*
  * Items
