@@ -49,7 +49,7 @@
 
 /* Victory accent */
 .gom-modal--victory {
-  border-color: #8b6914;
+  border-color: #5c3a1e;
   box-shadow:
     inset 0 0 0 2px #d4a574,
     0 8px 32px rgba(0, 0, 0, 0.8),
@@ -119,7 +119,7 @@
 }
 
 .gom-icon--victory {
-  border-color: #8b6914;
+  border-color: #5c3a1e;
   box-shadow:
     inset 0 0 0 2px #d4a574,
       0 3px 8px rgba(0, 0, 0, 0.7);
@@ -185,7 +185,7 @@
 
 .gom-subtitle {
   font-size: 0.75rem;
-  color: #d4a574;
+  color:#e0e0e0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
@@ -241,8 +241,13 @@
 }
 
 .gom-message--victory {
-  color: #ffd700;
-  border-color: #8b6914;
+  color: #e3bb92;
+  background: linear-gradient(135deg, rgba(110, 76, 49, 0.24), rgba(71, 47, 30, 0.32));
+  border-color: #d4a574;
+}
+
+.gom-message--victory p:first-of-type {
+  color: #e0e0e0;
 }
 
 .gom-message--defeat {
