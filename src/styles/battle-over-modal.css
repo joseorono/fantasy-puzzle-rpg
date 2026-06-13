@@ -106,7 +106,7 @@
       0 3px 8px rgba(0, 0, 0, 0.7);
       margin-bottom: 1rem;
     }
-    
+
     .gom-icon>* {
       transform: rotate(-45deg);
 }
@@ -293,8 +293,8 @@
 
 /* Red sprinkles for the Game Over / defeat modal */
 .gom-sparkles--red .gom-sparkle {
-  background: #e8a0a0;
-  box-shadow: 0 0 4px rgba(232, 160, 160, 0.6);
+  background: var(--color-red-400);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--color-red-600) 60%, transparent);
 }
 
 @keyframes gom-sparkle-drift {

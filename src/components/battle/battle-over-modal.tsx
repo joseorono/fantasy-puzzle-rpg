@@ -30,6 +30,10 @@ export function BattleOverModal() {
 
   return (
     <div className="gom-backdrop">
+      {/* Ambient drifting sparkles across the backdrop, behind the card —
+          gold for victory, red for defeat */}
+      <SparkleLayer count={20} variant={isVictory ? 'gold' : 'red'} zIndex={0} />
+
       <div className={cn('gom-modal', isVictory ? 'gom-modal--victory' : 'gom-modal--defeat')}>
         <div className="gom-content">
           {/* Icon medallion */}
@@ -78,9 +82,6 @@ export function BattleOverModal() {
             Continue
           </ToffecButton>
         </div>
-
-        {/* Drifting sparkles — gold for victory, red for defeat */}
-        <SparkleLayer count={20} variant={isVictory ? 'gold' : 'red'} />
       </div>
     </div>
   );
