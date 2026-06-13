@@ -107,54 +107,56 @@ export default function ItemStore({
                       {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
                     </div>
                   </div>
-                  <div className="equipment-item-description">{item.description}</div>
-                  <div className="item-actions">
-                    <ToffecBeigeCornersWrapper>
-                      <ToffecButton
-                        variant="orange"
-                        size="xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBuyItem(item);
-                        }}
-                        disabled={!canAffordItem}
-                      >
-                        <span className="flex items-center gap-2">
-                          {canAffordItem ? (
-                            <>
-                              Buy for{' '}
-                              {item.cost.coins > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.coins} <FrostyRpgIcon name="coinPurse" size={18} />
-                                </span>
-                              )}
-                              {item.cost.gold > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.silver > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.copper > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
-                                </span>
-                              )}
-                              {item.cost.iron > 0 && (
-                                <span className="flex items-center gap-1">
-                                  {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            'Cannot Afford'
-                          )}
-                        </span>
-                      </ToffecButton>
-                    </ToffecBeigeCornersWrapper>
+                  <div className="item-store-item-summary">
+                    <div className="equipment-item-description">{item.description}</div>
+                    <div className="item-actions">
+                      <ToffecBeigeCornersWrapper>
+                        <ToffecButton
+                          variant="orange"
+                          size="xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBuyItem(item);
+                          }}
+                          disabled={!canAffordItem}
+                        >
+                          <span className="flex items-center gap-2">
+                            {canAffordItem ? (
+                              <>
+                                Buy for{' '}
+                                {item.cost.coins > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    {item.cost.coins} <FrostyRpgIcon name="coinPurse" size={18} />
+                                  </span>
+                                )}
+                                {item.cost.gold > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
+                                  </span>
+                                )}
+                                {item.cost.silver > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
+                                  </span>
+                                )}
+                                {item.cost.copper > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
+                                  </span>
+                                )}
+                                {item.cost.iron > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              'Cannot Afford'
+                            )}
+                          </span>
+                        </ToffecButton>
+                      </ToffecBeigeCornersWrapper>
+                    </div>
                   </div>
                 </div>
               </div>
