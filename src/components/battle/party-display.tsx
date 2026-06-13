@@ -10,9 +10,10 @@ import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
-import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS, SKILL_DEFINITIONS } from '~/constants/party';
+import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS } from '~/constants/party';
 import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
-import { calculateCharacterCooldown, getHpThreshold } from '~/lib/rpg-calculations';
+import { getHpThreshold } from '~/lib/rpg-calculations';
+import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -23,11 +24,11 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
   const colors = CHARACTER_BATTLE_COLORS[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
-  const maxCooldownSeconds = calculateCharacterCooldown(character);
+  const maxCooldownSeconds = resolveCharacterCooldown(character);
   const cooldownPercentage = ((maxCooldownSeconds - character.skillCooldown) / maxCooldownSeconds) * 100;
   const isSkillReady = character.skillCooldown <= 0;
   const isDead = character.currentHp <= 0;
-  const skill = SKILL_DEFINITIONS[character.class];
+  const skill = getSelectedSkill(character);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [isActivating, setIsActivating] = useState(false);
@@ -140,8 +141,8 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       <div className="w-full max-w-[70px] sm:max-w-[80px]">
         <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
           {isSkillReady ? (
-            <span className="text-amber-300">
-              {skill.icon} {skill.name}
+            <span className="inline-flex items-center gap-1 text-amber-300">
+              <Icon className="h-3 w-3" /> {skill.name}
             </span>
           ) : (
             `CD: ${Math.ceil(character.skillCooldown)}s`
@@ -193,18 +194,18 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4 2xl:h-[43vh]">
+    <div className="relative flex xl:h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4 2xl:h-[43vh]">
       {/* Party members grid */}
       <div className="relative flex flex-1 items-center justify-center">
-        <div className="grid grid-cols-4 gap-2 xl:gap-7 xl:mt-4 sm:gap-3 md:gap-4 2xl:gap-12 2xl:scale-100 xl:scale-90">
+        <div className="grid grid-cols-4 gap-2 xl:gap-7 sm:gap-3 md:gap-4 2xl:gap-12">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
           ))}
         </div>
       </div>
 
-      {/* Party Info */}
-      <div className="relative z-10 mb-10 w-full max-w-xs px-2">
+      {/* Party Info - MOVED UP WITH TRANSLATE */}
+      <div className="relative z-10 mb-10 w-full max-w-xs px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]">
         <div className="text-center">
           <h2 className="pixel-font text-sm mt-5 xl:mt-0 pt-2 scale-90 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             HEROES
@@ -212,7 +213,7 @@ export function PartyDisplay() {
         </div>
 
         {/* Party Health Bar */}
-        <div className="flex items-center justify-between xl:-mt-4">
+        <div className="flex items-center justify-between">
           <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
           <span className="pixel-font text-xs font-bold text-white sm:text-sm">
             <NumberFlow

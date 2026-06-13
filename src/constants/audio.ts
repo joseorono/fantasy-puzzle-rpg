@@ -56,3 +56,9 @@ export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFa
 // Volume range for match-3 sounds (scaled by match size)
 export const MIN_MATCH_SOUND_VOLUME = 0.6;
 export const MAX_MATCH_SOUND_VOLUME = 1;
+
+/**
+ * Sound played when wildcard bomb orbs explode. Set to `null` to disable.
+ * Temporary: reuses the uncork SFX until a dedicated explosion sound exists.
+ */
+export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;

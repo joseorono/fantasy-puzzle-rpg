@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import NumberFlow from '@number-flow/react';
-import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
+import { useParty, usePartyActions, useInventory, useCurrentView } from '~/stores/game-store';
+import { SkillSelector } from '~/components/pause-menu/skill-selector';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
@@ -38,6 +39,8 @@ export function PauseMenuEquip() {
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
 
+  const isInBattle = useCurrentView() === 'battle-demo';
+
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
 
@@ -73,21 +76,23 @@ export function PauseMenuEquip() {
 
   return (
     <div className="pause-menu-equip-tab">
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="EQUIP" size={1.2} />
       </h2>
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-equip-top-section">
           <div className="pause-menu-party-roster">
-            {party.map((member) => (
-              <PartyMemberCard
-                key={member.id}
-                member={member}
-                variant="roster"
-                isActive={member.id === selectedId}
-                onClick={() => handleSelectCharacter(member.id)}
-              />
-            ))}
+            <div className="pause-menu-party-roster-list">
+              {party.map((member) => (
+                <PartyMemberCard
+                  key={member.id}
+                  member={member}
+                  variant="roster"
+                  isActive={member.id === selectedId}
+                  onClick={() => handleSelectCharacter(member.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="pause-menu-equip-main">
@@ -118,7 +123,16 @@ export function PauseMenuEquip() {
 
             {selectedSlot && (
               <div className="pause-menu-equip-available">
-                <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                <div className="pause-menu-equip-available-header">
+                  <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                  <ToffecCloseButton
+                    variant="medieval2"
+                    size="sm"
+                    hasBg={true}
+                    aria-label="Close"
+                    onClick={() => setSelectedSlot(null)}
+                  />
+                </div>
                 {availableItems.length === 0 ? (
                   <div className="pause-menu-equip-empty">
                     No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
@@ -130,6 +144,8 @@ export function PauseMenuEquip() {
                 )}
               </div>
             )}
+
+            <SkillSelector character={selected} disabled={isInBattle} />
 
             <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
           </div>

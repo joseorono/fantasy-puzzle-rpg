@@ -1,0 +1,128 @@
+/* ─── Crafting "Forging Success" overlay ─────────────────────────────── */
+
+.crafting-success {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: min(90vw, 620px);
+  padding: 1rem;
+  text-align: center;
+  animation: modal-zoom-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── SUCCESS banner title ───────────────────────────────────────────── */
+
+.crafting-success-title {
+  display: flex;
+  justify-content: center;
+  filter: drop-shadow(0 0 14px rgba(255, 200, 70, 0.6)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.5s ease;
+}
+
+/* In the details phase the banner shrinks and rises to make room for stats. */
+.crafting-success--details .crafting-success-title {
+  transform: scale(0.6) translateY(-0.25rem);
+}
+
+/* ─── Item icon + name ───────────────────────────────────────────────── */
+
+.crafting-success-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.5s ease;
+}
+
+.crafting-success--details .crafting-success-item {
+  transform: scale(0.85);
+}
+
+.crafting-success-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  background: radial-gradient(circle at center, rgba(40, 26, 14, 0.95), rgba(10, 6, 4, 0.95));
+  border: 3px solid #d4a574;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 0 18px rgba(212, 165, 116, 0.45);
+  animation:
+    skill-burst-icon-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    orb-glow 2.4s ease-in-out infinite;
+  image-rendering: pixelated;
+}
+
+.crafting-success-item-name {
+  font-size: 0.8rem;
+  color: #9be37a;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Details panel (revealed in phase 2) ────────────────────────────── */
+
+.crafting-success-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(24px);
+  overflow: hidden;
+  transition:
+    max-height 0.5s ease,
+    opacity 0.45s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.crafting-success--details .crafting-success-details {
+  max-height: 360px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.crafting-success-subtitle {
+  display: flex;
+  justify-content: center;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
+}
+
+.crafting-success-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: min(80vw, 360px);
+  padding: 0.85rem 1.1rem;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid #8b6914;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.crafting-success-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.crafting-success-stat-label {
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.crafting-success-stat-value {
+  color: #ffd700;
+  font-weight: 700;
+}

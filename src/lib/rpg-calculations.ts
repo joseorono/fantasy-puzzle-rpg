@@ -121,6 +121,27 @@ export function calculateEnemyDamage(enemy: EnemyData): number {
 }
 
 /**
+ * Base damage bonus added per cascade level. Each chained cascade (matches
+ * created by refilled orbs) increases damage by this fraction, plus any
+ * equipment combo bonus. The initial post-swap match is cascade level 0.
+ */
+export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.25;
+
+/**
+ * Calculates the cascade combo multiplier for a given cascade depth.
+ * Level 0 (the initial match) is always 1x. Each subsequent cascade adds
+ * CASCADE_DAMAGE_BONUS_PER_LEVEL plus the equipment combo bonus.
+ * Formula: 1 + cascadeLevel * (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus)
+ * @param cascadeLevel Cascade depth (0 = first match, 1+ = chained cascades)
+ * @param equipmentComboBonus Extra per-level bonus from equipment (default 0)
+ * @returns Combo multiplier (>= 1)
+ */
+export function calculateComboMultiplier(cascadeLevel: number, equipmentComboBonus: number = 0): number {
+  if (cascadeLevel <= 0) return 1;
+  return 1 + cascadeLevel * (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus);
+}
+
+/**
  * Calculates the damage multiplier based on match size.
  * @param matchSize Number of orbs matched
  * @returns Damage multiplier (1x, 1.5x, or 2x)
@@ -137,21 +158,28 @@ export function calculateMatchMultiplier(matchSize: number): number {
 }
 
 /**
- * Calculates match-3 damage based on match size and character power.
- * @param matchSize Number of orbs matched
+ * Calculates match-3 damage based on match size, character power, and an
+ * optional cascade combo multiplier.
+ * @param matchSize Number of orbs matched (including orbs destroyed by bomb explosions)
  * @param baseDamage Base damage per match
  * @param pow Power stat
+ * @param comboMultiplier Cascade combo multiplier from calculateComboMultiplier (default 1)
  * @returns Calculated damage
  */
-export function calculateMatchDamage(matchSize: number, baseDamage: number = 10, pow: number = 0): number {
+export function calculateMatchDamage(
+  matchSize: number,
+  baseDamage: number = 10,
+  pow: number = 0,
+  comboMultiplier: number = 1,
+): number {
   const matchMultiplier = calculateMatchMultiplier(matchSize);
-  const damage = baseDamage * matchMultiplier;
+  const damage = baseDamage * matchMultiplier * comboMultiplier;
 
   if (pow > 0) {
     return calculateDamage(damage, pow);
   }
 
-  return damage;
+  return Math.floor(damage);
 }
 
 // ============================================================================

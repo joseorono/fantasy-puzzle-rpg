@@ -82,6 +82,25 @@ export function getEquipmentBonuses(character: CharacterData): CoreRPGStats {
 }
 
 /**
+ * Calculate the total cascade combo bonus from a character's equipped items.
+ * Combines the (very low) comboBonus of the equipped weapon and armor.
+ * @param character Character data
+ * @returns Summed combo bonus (0 when nothing relevant is equipped)
+ */
+export function getEquipmentComboBonus(character: CharacterData): number {
+  let comboBonus = 0;
+
+  if (character.equippedWeaponId) {
+    comboBonus += findEquipmentItem(character.equippedWeaponId)?.comboBonus ?? 0;
+  }
+  if (character.equippedArmorId) {
+    comboBonus += findEquipmentItem(character.equippedArmorId)?.comboBonus ?? 0;
+  }
+
+  return comboBonus;
+}
+
+/**
  * Get effective stats (base + equipment bonuses) for a character.
  */
 export function getEffectiveStats(character: CharacterData): CoreRPGStats {

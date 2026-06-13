@@ -16,10 +16,13 @@ export interface PartyActions {
   setParty: (party: CharacterData[]) => void;
   updateCharacter: (characterId: string, character: CharacterData) => void;
   fullyHealParty: () => void;
+  fullyHealMember: (characterId: string) => void;
   isPartyFullyHealed: () => boolean;
   damageAllPartyMembers: (damage: number, canDie: boolean) => void;
   equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) => void;
   unequipItem: (characterId: string, slot: EquipmentSlot) => void;
+  unlockSkillForCharacter: (characterId: string, skillId: string) => void;
+  selectSkillForCharacter: (characterId: string, skillId: string) => void;
 }
 
 /**

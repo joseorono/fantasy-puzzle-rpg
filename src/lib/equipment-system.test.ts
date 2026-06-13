@@ -3,6 +3,7 @@ import {
   getEquipmentSlot,
   canEquip,
   getEquipmentBonuses,
+  getEquipmentComboBonus,
   getEffectiveStats,
   getEffectiveMaxHp,
   getPartyWithEffectiveStats,
@@ -29,6 +30,8 @@ function makeCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
     currentHp: 170,
     skillCooldown: 0,
     maxCooldown: 30,
+    unlockedSkillIds: ['warrior-power-strike'],
+    selectedSkillId: 'warrior-power-strike',
     ...overrides,
   };
 }
@@ -132,6 +135,35 @@ describe('getEquipmentBonuses', () => {
     // iron-sword: pow 5, vit 2, spd 0
     // iron-armor: pow 0, vit 10, spd -2
     expect(getEquipmentBonuses(char)).toEqual({ pow: 5, vit: 12, spd: -2 });
+  });
+});
+
+describe('getEquipmentComboBonus', () => {
+  it('returns 0 when nothing is equipped', () => {
+    expect(getEquipmentComboBonus(makeCharacter())).toBe(0);
+  });
+
+  it('returns the weapon combo bonus when a weapon is equipped', () => {
+    // iron-sword has comboBonus 0.01
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword' });
+    expect(getEquipmentComboBonus(char)).toBeCloseTo(0.01, 5);
+  });
+
+  it('treats armor without a combo bonus as 0', () => {
+    // iron-armor has no comboBonus field
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedArmorId: 'iron-armor' });
+    expect(getEquipmentComboBonus(char)).toBeCloseTo(0.01, 5);
+  });
+
+  it('returns 0 when only a comboless item is equipped', () => {
+    const char = makeCharacter({ equippedArmorId: 'iron-armor' });
+    expect(getEquipmentComboBonus(char)).toBe(0);
+  });
+
+  it('reads higher-tier weapon bonuses', () => {
+    // golden-war-bow has comboBonus 0.04
+    const rogue = makeCharacter({ id: 'rogue', class: 'rogue', color: 'green', equippedWeaponId: 'golden-war-bow' });
+    expect(getEquipmentComboBonus(rogue)).toBeCloseTo(0.04, 5);
   });
 });
 

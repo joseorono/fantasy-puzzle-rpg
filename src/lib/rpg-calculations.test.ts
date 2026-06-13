@@ -21,6 +21,8 @@ const mockCharacter: CharacterData = {
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
   expToNextLevel: 100,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
 };
 
 const mockEnemy: EnemyData = {
@@ -187,6 +189,55 @@ describe('Damage Calculations', () => {
   test('calculateMatchDamage: 5-match with power', () => {
     const result = rpg.calculateMatchDamage(5, 10, 20);
     expect(result).toBe(20); // (10 * 1.7) * (1 + 20/100) = 20.4 -> 20
+  });
+});
+
+// ============================================================================
+// Cascade Combo Calculations
+// ============================================================================
+
+describe('Cascade Combo Calculations', () => {
+  test('calculateComboMultiplier: cascade level 0 is always 1x', () => {
+    expect(rpg.calculateComboMultiplier(0)).toBe(1);
+    expect(rpg.calculateComboMultiplier(0, 0.05)).toBe(1); // equipment bonus ignored at level 0
+  });
+
+  test('calculateComboMultiplier: negative level clamps to 1x', () => {
+    expect(rpg.calculateComboMultiplier(-1)).toBe(1);
+  });
+
+  test('calculateComboMultiplier: each cascade level adds the base bonus', () => {
+    // 1 + level * 0.25
+    expect(rpg.calculateComboMultiplier(1)).toBe(1.25);
+    expect(rpg.calculateComboMultiplier(2)).toBe(1.5);
+    expect(rpg.calculateComboMultiplier(4)).toBe(2);
+  });
+
+  test('calculateComboMultiplier: equipment bonus adds a small per-level amount', () => {
+    // 1 + 1 * (0.25 + 0.02)
+    expect(rpg.calculateComboMultiplier(1, 0.02)).toBeCloseTo(1.27, 5);
+    // 1 + 3 * (0.25 + 0.05)
+    expect(rpg.calculateComboMultiplier(3, 0.05)).toBeCloseTo(1.9, 5);
+  });
+
+  test('calculateMatchDamage: comboMultiplier defaults to 1 (existing behavior unchanged)', () => {
+    expect(rpg.calculateMatchDamage(3, 10, 0)).toBe(10);
+    expect(rpg.calculateMatchDamage(5, 10, 0)).toBe(17);
+  });
+
+  test('calculateMatchDamage: applies combo multiplier without power', () => {
+    // 3-match (1x) * 1.25 combo * baseDamage 10 = 12.5 -> floor 12
+    expect(rpg.calculateMatchDamage(3, 10, 0, 1.25)).toBe(12);
+  });
+
+  test('calculateMatchDamage: applies combo multiplier with power', () => {
+    // 3-match (1x) * 1.5 combo * 10 = 15, then calculateDamage(15, 20) = floor(18) = 18
+    expect(rpg.calculateMatchDamage(3, 10, 20, 1.5)).toBe(18);
+  });
+
+  test('calculateMatchDamage: combo applies on top of the match-size multiplier', () => {
+    // 6-match (2x) * 1.25 combo * 10 = 25
+    expect(rpg.calculateMatchDamage(6, 10, 0, 1.25)).toBe(25);
   });
 });
 

@@ -3,18 +3,19 @@ import { usePauseMenu } from '~/hooks/use-pause-menu';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { KeyboardKeys } from '~/constants/keyboard';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { LogOut } from 'lucide-react';
 
 const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
-  { id: 'items', label: 'Items', icon: 'chest' },
-  { id: 'equip', label: 'Equip', icon: 'shield' },
-  { id: 'stats', label: 'Stats', icon: 'openBook' },
-  { id: 'options', label: 'Options', icon: 'wrench' },
-  { id: 'save', label: 'Save', icon: 'bookRed' },
-  { id: 'load', label: 'Load', icon: 'bookBlue' },
+  { id: 'items', label: 'Items', icon: 'smallPotion' },
+  { id: 'equip', label: 'Equip', icon: 'broadsword' },
+  { id: 'stats', label: 'Stats', icon: 'steelArmor' },
+  { id: 'options', label: 'Options', icon: 'seaSnail' },
+  { id: 'save', label: 'Save', icon: 'blueBook' },
+  { id: 'load', label: 'Load', icon: 'copperKey' },
 ];
 
 export function PauseMenuSidebar() {
@@ -34,9 +35,9 @@ export function PauseMenuSidebar() {
   function handleKeyDown(e: KeyboardEvent) {
     const currentIndex = TABS.findIndex((tab) => tab.id === activeTab);
 
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    if (e.key === KeyboardKeys.ArrowUp || e.key === KeyboardKeys.ArrowDown) {
       e.preventDefault();
-      const direction = e.key === 'ArrowUp' ? -1 : 1;
+      const direction = e.key === KeyboardKeys.ArrowUp ? -1 : 1;
       const nextIndex = (currentIndex + direction + TABS.length) % TABS.length;
       handleTabClick(TABS[nextIndex].id);
     }

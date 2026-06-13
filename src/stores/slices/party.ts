@@ -2,9 +2,11 @@ import type { PartySlice } from './party.types';
 import { INITIAL_PARTY } from '~/constants/party';
 import {
   fullyHealParty as fullyHealPartyLib,
+  fullyHealMember as fullyHealMemberLib,
   isPartyFullyHealed,
   damageAllPartyMembers as damageAllPartyMembersLib,
 } from '~/lib/party-system';
+import { unlockSkill as unlockSkillLib, selectSkill as selectSkillLib } from '~/lib/skill-system';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { EquipmentSlot } from '~/lib/equipment-system';
 
@@ -50,6 +52,14 @@ export const createPartySlice = (set: any): PartySlice => ({
           false,
           'party/fullyHealParty',
         ),
+      fullyHealMember: (characterId: string) =>
+        set(
+          (state: PartySlice) => {
+            state.party.members = fullyHealMemberLib(state.party.members, characterId);
+          },
+          false,
+          'party/fullyHealMember',
+        ),
       isPartyFullyHealed: () =>
         set(
           (state: PartySlice) => {
@@ -93,6 +103,26 @@ export const createPartySlice = (set: any): PartySlice => ({
           },
           false,
           'party/unequipItem',
+        ),
+      unlockSkillForCharacter: (characterId: string, skillId: string) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = unlockSkillLib(state.party.members[index], skillId);
+          },
+          false,
+          'party/unlockSkillForCharacter',
+        ),
+      selectSkillForCharacter: (characterId: string, skillId: string) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = selectSkillLib(state.party.members[index], skillId);
+          },
+          false,
+          'party/selectSkillForCharacter',
         ),
     },
   },

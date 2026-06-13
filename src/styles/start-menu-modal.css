@@ -38,24 +38,22 @@
   display: flex;
   flex-direction: column;
 
-  /* Outer golden border */
-  border: 5px solid #c8872e;
-  border-radius: 8px;
+  /* Outer tan border (matches nim/dialogue-box) */
+  border: 3px solid #d4a574;
+  border-radius: 0;
 
-  /* Inner panel */
-  background:
-    linear-gradient(180deg, #3a2a1a 0%, #2a1c10 50%, #1e150c 100%);
+  /* Repeating board background (matches nim) */
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
 
   /* Layered shadow for depth */
   box-shadow:
-    /* outer glow */
+    inset 0 0 0 2px #8b6914,
     0 0 20px rgba(200, 135, 46, 0.25),
-    /* hard drop shadow */
-    0 8px 32px rgba(0, 0, 0, 0.7),
-    /* inner highlight along top */
-    inset 0 1px 0 rgba(255, 215, 0, 0.15),
-    /* inner shadow along bottom */
-    inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
 
   animation: smm-panel-enter 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
@@ -124,10 +122,10 @@
   flex: 1;
   margin: 0;
   text-align: center;
-  padding-right: 60px; /* offset for centered look with back button */
+  padding-left: 40px; /* offset to keep title visually centered with close button on the right */
   display: flex;
-    align-items: center;
-    justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==========================================

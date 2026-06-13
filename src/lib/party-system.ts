@@ -22,6 +22,16 @@ export function isPartyFullyHealed(party: CharacterData[]): boolean {
   return party.every((member) => member.currentHp === member.maxHp);
 }
 
+/**
+ * Fully heal a single party member to their max HP, leaving other members untouched.
+ * @param party - Array of party members
+ * @param characterId - ID of the member to fully heal
+ * @returns New party array with the targeted member at full HP
+ */
+export function fullyHealMember(party: CharacterData[], characterId: string): CharacterData[] {
+  return party.map((member) => (member.id === characterId ? { ...member, currentHp: member.maxHp } : member));
+}
+
 export function damageAllPartyMembers(
   party: CharacterData[],
   damage: number,

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty } from '~/stores/game-store';
-import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constants/party';
+import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
+import { getSelectedSkill } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
@@ -23,16 +24,17 @@ export function PauseMenuStats() {
 
   const colors = CHARACTER_COLORS[selected.class];
   const Icon = CHARACTER_ICONS[selected.class];
-  const skill = SKILL_DEFINITIONS[selected.class];
+  const activeSkill = getSelectedSkill(selected);
 
   const effectiveStats = getEffectiveStats(selected);
   const maxHp = getEffectiveMaxHp(selected);
   const attackDmg = calculateDamage(10, effectiveStats.pow);
-  const cooldown = calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd);
+  const cooldown =
+    calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd) * activeSkill.cooldownMultiplier;
 
   return (
     <>
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="STATS" size={1.2} />
       </h2>
       <div className="pause-menu-stats-layout">
@@ -150,9 +152,9 @@ export function PauseMenuStats() {
 
           <div className="pause-menu-stats-skill">
             <div className="pause-menu-stats-skill-name">
-              {skill.icon} {skill.name}
+              <Icon className="pause-menu-skill-option-icon" size={14} /> {activeSkill.name}
             </div>
-            <div className="pause-menu-stats-skill-desc">{skill.description}</div>
+            <div className="pause-menu-stats-skill-desc">{activeSkill.description}</div>
           </div>
         </div>
       </div>

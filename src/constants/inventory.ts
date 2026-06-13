@@ -3,9 +3,9 @@
  */
 
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
+import { CRAFTING_FEE } from '~/constants/blacksmith';
 
 export const MAX_AMOUNT_PER_ITEM = 99;
-export const CRAFTING_FEE = 100;
 
 /*
  * Items
@@ -21,6 +21,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 0,
     forClass: 'warrior',
+    comboBonus: 0.01,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 2 },
     iconName: 'ironSword',
   },
@@ -33,6 +34,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 3,
     forClass: 'rogue',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, iron: 2 },
     iconName: 'shortBow',
   },
@@ -45,6 +47,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 1,
     forClass: 'mage',
+    comboBonus: 0.01,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 3 },
     iconName: 'ironStaff',
   },
@@ -70,6 +73,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 3,
     spd: 0,
     forClass: 'warrior',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
     iconName: 'shortSword',
   },
@@ -82,6 +86,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 5,
     forClass: 'rogue',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, iron: 6 },
     iconName: 'recurveBow',
   },
@@ -94,6 +99,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 2,
     forClass: 'mage',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
     iconName: 'woodStaff',
   },
@@ -119,6 +125,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 4,
     forClass: 'warrior',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 6, iron: 4 },
     iconName: 'longSword',
   },
@@ -131,6 +138,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 8,
     forClass: 'rogue',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 5, iron: 3 },
     iconName: 'longbow',
   },
@@ -143,6 +151,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 5,
     forClass: 'mage',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, iron: 4 },
     iconName: 'mageStaff',
   },
@@ -168,6 +177,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 4,
     spd: 1,
     forClass: 'warrior',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 4, iron: 0 },
     iconName: 'broadsword',
   },
@@ -180,6 +190,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 10,
     forClass: 'rogue',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 4, iron: 0 },
     iconName: 'compositeBow',
   },
@@ -192,6 +203,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 4,
     forClass: 'mage',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 5, iron: 0 },
     iconName: 'crystalStaff',
   },
@@ -217,6 +229,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 6,
     spd: -4,
     forClass: 'warrior',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
     iconName: 'flameSword',
   },
@@ -229,6 +242,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 12,
     forClass: 'rogue',
+    comboBonus: 0.04,
     cost: { coins: CRAFTING_FEE, gold: 3, copper: 0, silver: 5, iron: 0 },
     iconName: 'warBow',
   },
@@ -241,6 +255,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 5,
     spd: 6,
     forClass: 'mage',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
     iconName: 'scepter',
   },

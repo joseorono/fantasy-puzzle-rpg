@@ -118,9 +118,9 @@ const ICON_MAP = {
   /* ── Row 5: Books / magic / treasure ───────────────────── */
   bookRed: [0, 5],
   bookBlue: [1, 5],
-  bookGreen: [2, 5],
+  copperKey: [2, 5],
   openBook: [3, 5],
-  orbRed: [4, 5],
+  blueBook: [4, 5],
   orbBlue: [5, 5],
   orbGreen: [6, 5],
   orbPurple: [7, 5],
@@ -131,7 +131,7 @@ const ICON_MAP = {
   chest: [12, 5],
   openChest: [13, 5],
   coinPurse: [14, 5],
-  fireShard: [15, 5],
+  seaSnail: [15, 5],
 
   /* ── Row 6: Axes / hammers / bows ──────────────────────── */
   hatchet: [0, 6],

@@ -27,6 +27,8 @@ const makeChar = (overrides: Partial<CharacterData> = {}): CharacterData => ({
   currentHp: 170,
   skillCooldown: 0,
   maxCooldown: 30,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
   ...overrides,
 });
 

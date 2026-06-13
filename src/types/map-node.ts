@@ -31,7 +31,7 @@ export interface MapNode {
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 // Valid sublocations of any town
-export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store';
+export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store' | 'skill-trainer';
 
 // ─── Interactive Map Nodes ────────────────────────────────────────────
 
