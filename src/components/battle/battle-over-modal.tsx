@@ -8,6 +8,7 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -78,23 +79,8 @@ export function BattleOverModal() {
           </ToffecButton>
         </div>
 
-        {/* Victory sparkles */}
-        {isVictory && (
-          <div className="gom-sparkles">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div
-                key={i}
-                className="gom-sparkle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`,
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {/* Drifting sparkles — gold for victory, red for defeat */}
+        <SparkleLayer count={20} variant={isVictory ? 'gold' : 'red'} />
       </div>
     </div>
   );
