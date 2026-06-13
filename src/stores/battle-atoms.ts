@@ -179,18 +179,23 @@ export const resetBattleAtom = atom(null, (get, set) => {
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
 });
 
-// Atom to remove matched orbs and refill board
-export const removeMatchedOrbsAtom = atom(null, (get, set, matchedOrbIds: Set<string>) => {
-  if (matchedOrbIds.size === 0) return;
+// Atom to remove matched orbs and refill board.
+// `bombsToSpawn` guarantees that many refilled orbs become wildcard bombs
+// (on top of the per-orb random chance baked into removeMatchedOrbsAndRefill).
+export const removeMatchedOrbsAtom = atom(
+  null,
+  (get, set, matchedOrbIds: Set<string>, bombsToSpawn: number = 0) => {
+    if (matchedOrbIds.size === 0) return;
 
-  const currentState = get(battleStateAtom);
-  const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds);
+    const currentState = get(battleStateAtom);
+    const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds, bombsToSpawn);
 
-  set(battleStateAtom, {
-    ...currentState,
-    board: newBoard,
-  });
-});
+    set(battleStateAtom, {
+      ...currentState,
+      board: newBoard,
+    });
+  },
+);
 
 // Atom to heal the most damaged party member (revives dead members first)
 export const healPartyAtom = atom(

@@ -18,20 +18,23 @@ import type { Orb, BattleState } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
-import { calculateMatchDamage } from '~/lib/rpg-calculations';
+import { calculateMatchDamage, calculateComboMultiplier } from '~/lib/rpg-calculations';
+import { findLineMatches, expandBombExplosions } from '~/lib/match-3';
+import { getEquipmentComboBonus } from '~/lib/equipment-system';
 import {
   BASE_MATCH_DAMAGE,
   COOLDOWN_REDUCTION_PER_ORB,
   BASE_MATCH_SCORE,
   MATCH_SIZE_BONUS_MULTIPLIER,
 } from '~/constants/party';
+import { BOMB_MATCH_SPAWN_THRESHOLD } from '~/constants/game';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
-function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbComponentProps) {
+function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
 
@@ -61,8 +64,12 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
-        orb.isHighlighted && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
-        isDisappearing && 'scale-0 rotate-180 opacity-0',
+        // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
+        isExploding && 'orb-exploding',
+        orb.isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
+        // Wildcard bomb orbs get a distinct dark sheen and a pulsing white ring
+        orb.isBomb && !isExploding && 'animate-pulse ring-2 ring-white/90 brightness-75',
+        isDisappearing && !isExploding && 'scale-0 rotate-180 opacity-0',
         isInvalidSwap && 'shake ring-4 ring-red-500',
         isNew && 'fall-in',
       )}
@@ -81,8 +88,40 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, onSelect }: OrbCo
         }}
       />
 
-      {/* Particle explosion effect */}
-      {showParticles && (
+      {/* Wildcard bomb marker */}
+      {orb.isBomb && !isExploding && (
+        <span
+          className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs leading-none sm:text-sm 2xl:text-lg"
+          aria-hidden="true"
+        >
+          💣
+        </span>
+      )}
+
+      {/* Bomb blast burst — fiery shrapnel flung outward, plus a center flash */}
+      {isExploding && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span className="text-sm leading-none sm:text-base 2xl:text-xl" aria-hidden="true">
+            💥
+          </span>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute h-1.5 w-1.5 animate-ping rounded-full bg-orange-400 shadow-[0_0_8px_rgba(255,140,0,0.9)]"
+              style={{
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) rotate(${i * 30}deg) translateY(-26px)`,
+                animationDelay: `${i * 25}ms`,
+                animationDuration: '500ms',
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Particle explosion effect (normal line matches) */}
+      {showParticles && !isExploding && (
         <div className="pointer-events-none absolute inset-0">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
@@ -117,6 +156,8 @@ export function Match3Board() {
   const addScore = useSetAtom(addScoreAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
+  const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
+  const [comboLevel, setComboLevel] = useState(0);
   const [invalidSwap, setInvalidSwap] = useState<{
     from: GridPosition;
     to: GridPosition;
@@ -125,6 +166,8 @@ export function Match3Board() {
   const [newOrbIds, setNewOrbIds] = useState<Set<string>>(new Set());
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const previousBoardRef = useRef<Orb[][]>(board);
+  // Cascade depth for the current chain: 0 = initial post-swap match, 1+ = cascades
+  const cascadeLevelRef = useRef(0);
 
   // Track new orbs for animation
   useEffect(() => {
@@ -147,124 +190,118 @@ export function Match3Board() {
     previousBoardRef.current = board;
   }, [board]);
 
-  // Check for matches (simplified - just for visual demo)
+  // Check for matches, resolve bomb explosions, and apply combat effects
   useEffect(() => {
-    const matches = new Set<string>();
-
-    // Check horizontal matches
-    for (let row = 0; row < board.length; row++) {
-      for (let col = 0; col < board[row].length - 2; col++) {
-        const orbType = board[row][col].type;
-        if (board[row][col + 1].type === orbType && board[row][col + 2].type === orbType) {
-          matches.add(board[row][col].id);
-          matches.add(board[row][col + 1].id);
-          matches.add(board[row][col + 2].id);
-
-          // Check for 4 and 5 matches
-          if (col < board[row].length - 3 && board[row][col + 3].type === orbType) {
-            matches.add(board[row][col + 3].id);
-          }
-          if (col < board[row].length - 4 && board[row][col + 4].type === orbType) {
-            matches.add(board[row][col + 4].id);
-          }
-        }
-      }
-    }
-
-    // Check vertical matches
-    for (let col = 0; col < board[0].length; col++) {
-      for (let row = 0; row < board.length - 2; row++) {
-        const orbType = board[row][col].type;
-        if (board[row + 1][col].type === orbType && board[row + 2][col].type === orbType) {
-          matches.add(board[row][col].id);
-          matches.add(board[row + 1][col].id);
-          matches.add(board[row + 2][col].id);
-
-          // Check for 4 and 5 matches
-          if (row < board.length - 3 && board[row + 3][col].type === orbType) {
-            matches.add(board[row + 3][col].id);
-          }
-          if (row < board.length - 4 && board[row + 4][col].type === orbType) {
-            matches.add(board[row + 4][col].id);
-          }
-        }
-      }
-    }
+    // Wildcard-aware line matches, then expand any matched bombs into 3x3 blasts.
+    const lineMatches = findLineMatches(board);
+    const matches = expandBombExplosions(board, lineMatches);
 
     setHighlightedMatches(matches);
 
-    // Deal damage and remove orbs when matches are found
-    if (matches.size > 0) {
-      // Calculate and add score based on match size
-      const matchSizeBonus = (matches.size - 3) * MATCH_SIZE_BONUS_MULTIPLIER; // Extra points for matches larger than 3
-      const totalScore = BASE_MATCH_SCORE + matchSizeBonus;
-      addScore(totalScore);
-
-      // Clear any existing timer
-      if (processingTimerRef.current) {
-        clearTimeout(processingTimerRef.current);
-      }
-
-      // Determine the matched type (get type from first matched orb)
-      let matchedType: OrbType | null = null;
-      for (let row = 0; row < board.length; row++) {
-        for (let col = 0; col < board[row].length; col++) {
-          if (matches.has(board[row][col].id)) {
-            matchedType = board[row][col].type;
-            break;
-          }
-        }
-        if (matchedType) break;
-      }
-
-      // Update battle state with matched type
-      if (matchedType) {
-        setBattleState((prev: BattleState) => ({
-          ...prev,
-          lastMatchedType: matchedType,
-        }));
-      }
-
-      // Find the character that matches this orb type to apply their POW bonus
-      const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
-      const isCharacterDead = matchingCharacter && matchingCharacter.currentHp <= 0;
-      const characterPow = matchingCharacter?.stats.pow ?? 0;
-
-      // Calculate damage using RPG system (includes match size multiplier and POW bonus)
-      const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow);
-
-      // Actions are only performed if the character is alive (or it's a neutral match)
-      if (!isCharacterDead) {
-        // Reduce the matching character's skill cooldown based on orbs matched
-        if (matchingCharacter) {
-          const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
-          reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
-        }
-
-        // Show highlight for a moment, then apply effect
-        setTimeout(() => {
-          // Healer's default action heals the most damaged ally instead of dealing damage
-          if (matchingCharacter?.class === 'healer') {
-            healParty({ amount: totalDamage, source: 'match' });
-          } else {
-            damageEnemy(totalDamage);
-          }
-          soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
-        }, 200);
-      } else {
-        // Character is dead - still play a muted/different sound to indicate "empty" match
-        // Lower volume (0.4x) and higher pitch variance (0.15 instead of 0.03)
-        setTimeout(() => {
-          soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size) * 0.4, 0.1, 0.15);
-        }, 200);
-      }
-
-      // Remove matched orbs after animation - this will trigger a new board state
-      // which will cause this effect to run again and check for new matches
-      processingTimerRef.current = setTimeout(() => {
-        removeMatchedOrbs(matches);
-      }, 600);
+    // No matches: the board has settled — reset the combo chain display.
+    if (matches.size === 0) {
+      setComboLevel(0);
+      setExplodingOrbs(new Set());
+      return;
     }
+
+    // Orbs destroyed by a bomb blast (in the full set but not part of the line itself)
+    // get a distinct explosion animation and trigger the explosion sound.
+    const exploded = new Set<string>();
+    for (const id of matches) {
+      if (!lineMatches.has(id)) exploded.add(id);
+    }
+    setExplodingOrbs(exploded);
+
+    const explosionSound = BOMB_EXPLOSION_SOUND;
+    if (exploded.size > 0 && explosionSound) {
+      setTimeout(() => {
+        soundService.playSound(explosionSound, 0.7, 0.1, 0.1);
+      }, 200);
+    }
+
+    // The exploded orbs are added to the damage/score count via matches.size.
+    const matchSizeBonus = (matches.size - 3) * MATCH_SIZE_BONUS_MULTIPLIER;
+    const totalScore = BASE_MATCH_SCORE + matchSizeBonus;
+    addScore(totalScore);
+
+    // Clear any existing timer
+    if (processingTimerRef.current) {
+      clearTimeout(processingTimerRef.current);
+    }
+
+    // The acting character is decided by the first non-bomb (colored) matched orb.
+    let matchedType: OrbType | null = null;
+    for (let row = 0; row < board.length && !matchedType; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        const orb = board[row][col];
+        if (lineMatches.has(orb.id) && !orb.isBomb) {
+          matchedType = orb.type;
+          break;
+        }
+      }
+    }
+
+    // Update battle state with matched type
+    if (matchedType) {
+      setBattleState((prev: BattleState) => ({
+        ...prev,
+        lastMatchedType: matchedType,
+      }));
+    }
+
+    // Find the character that matches this orb type to apply their POW + combo bonus
+    const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
+    const isCharacterDead = matchingCharacter && matchingCharacter.currentHp <= 0;
+    const characterPow = matchingCharacter?.stats.pow ?? 0;
+
+    // Cascade combo multiplier: initial match is level 0 (1x), cascades escalate.
+    // Equipment adds a small per-level combo bonus on top.
+    const cascadeLevel = cascadeLevelRef.current;
+    const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
+    const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus);
+    setComboLevel(cascadeLevel);
+
+    // Calculate damage (match size multiplier + POW + cascade combo multiplier)
+    const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+
+    // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
+    const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
+
+    // Actions are only performed if the character is alive (or it's a neutral match)
+    if (!isCharacterDead) {
+      // Reduce the matching character's skill cooldown based on orbs matched
+      if (matchingCharacter) {
+        const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
+        reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
+      }
+
+      // Show highlight for a moment, then apply effect
+      setTimeout(() => {
+        // Healer's default action heals the most damaged ally instead of dealing damage
+        if (matchingCharacter?.class === 'healer') {
+          healParty({ amount: totalDamage, source: 'match' });
+        } else {
+          damageEnemy(totalDamage);
+        }
+        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
+      }, 200);
+    } else {
+      // Character is dead - still play a muted/different sound to indicate "empty" match
+      // Lower volume (0.4x) and higher pitch variance (0.15 instead of 0.03)
+      setTimeout(() => {
+        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size) * 0.4, 0.1, 0.15);
+      }, 200);
+    }
+
+    // Advance the cascade chain so the next refill-driven match scores higher.
+    cascadeLevelRef.current = cascadeLevel + 1;
+
+    // Remove matched orbs after animation - this will trigger a new board state
+    // which will cause this effect to run again and check for new (cascade) matches
+    processingTimerRef.current = setTimeout(() => {
+      removeMatchedOrbs(matches, bombsToSpawn);
+    }, 600);
 
     return () => {
       if (processingTimerRef.current) {
@@ -291,7 +328,8 @@ export function Match3Board() {
         const wasValid = swapOrbs(selectedOrb, { row, col });
 
         if (wasValid) {
-          // Valid swap - increment turn counter
+          // Valid swap - a fresh player action starts a new cascade chain
+          cascadeLevelRef.current = 0;
           incrementTurn();
           // processing flag will be cleared when matches are processed
           setIsProcessingSwap(false);
@@ -341,6 +379,7 @@ export function Match3Board() {
                         (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
                     }
                     isNew={newOrbIds.has(orb.id)}
+                    isExploding={explodingOrbs.has(orb.id)}
                     onSelect={() => handleOrbClick(orb.row, orb.col)}
                   />
                 ))}
@@ -350,10 +389,14 @@ export function Match3Board() {
         </Franuka05aFrame>
       </div>
 
-      {/* Match indicator */}
+      {/* Match / combo indicator */}
       {highlightedMatches.size > 0 && (
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
-          {highlightedMatches.size >= 5 ? '5x MATCH!' : `${highlightedMatches.size} MATCH!`}
+          {comboLevel >= 1
+            ? `COMBO x${comboLevel + 1}!`
+            : highlightedMatches.size >= 5
+              ? '5x MATCH!'
+              : `${highlightedMatches.size} MATCH!`}
         </div>
       )}
     </div>

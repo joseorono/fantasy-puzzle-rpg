@@ -25,5 +25,7 @@ export interface OrbComponentProps {
   isSelected: boolean;
   isInvalidSwap: boolean;
   isNew: boolean;
+  /** True when this orb was destroyed by a bomb blast (plays the explosion animation). */
+  isExploding: boolean;
   onSelect: () => void;
 }

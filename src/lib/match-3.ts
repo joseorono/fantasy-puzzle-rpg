@@ -2,7 +2,7 @@ import type { Orb } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import { getRandomElement } from '~/lib/utils';
-import { ORB_TYPES, BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { ORB_TYPES, BOARD_ROWS, BOARD_COLS, BOMB_REFILL_CHANCE } from '~/constants/game';
 
 /**
  * Generates a random orb type from the available ORB_TYPES.
@@ -14,44 +14,177 @@ export function getRandomOrbType(): OrbType {
 }
 
 /**
- * Checks if there is a match (3 or more consecutive orbs of the same type)
- * at the specified position on the board.
+ * Determines whether two orbs can belong to the same match.
+ * Bomb orbs are wildcards and match with any color.
+ *
+ * @param a - The first orb
+ * @param b - The second orb
+ * @returns True if the orbs are compatible for matching
+ */
+export function orbsMatch(a: Orb, b: Orb): boolean {
+  return Boolean(a.isBomb) || Boolean(b.isBomb) || a.type === b.type;
+}
+
+/**
+ * Scans a single line (row or column) of orbs and returns the indices that
+ * belong to a run of 3 or more matching orbs. Bomb orbs act as wildcards: a
+ * run's color is set by its first non-bomb orb, and bombs extend any run.
+ *
+ * Uses a greedy left-to-right scan — the color is committed by the first
+ * non-bomb orb encountered in a run.
+ *
+ * @param line - A 1D array of orbs (a board row or column)
+ * @returns Array of indices within the line that are part of a 3+ run
+ */
+function scanLineForMatches(line: Orb[]): number[] {
+  const matchedIndices: number[] = [];
+  const n = line.length;
+
+  let i = 0;
+  while (i < n) {
+    // The run color is undecided (null) until the first non-bomb orb is seen.
+    let runColor: OrbType | null = line[i].isBomb ? null : line[i].type;
+    let j = i + 1;
+
+    while (j < n) {
+      const orb = line[j];
+      if (orb.isBomb) {
+        // Wildcard always extends the run without changing its color.
+        j++;
+        continue;
+      }
+      if (runColor === null) {
+        runColor = orb.type;
+        j++;
+        continue;
+      }
+      if (orb.type === runColor) {
+        j++;
+        continue;
+      }
+      break;
+    }
+
+    const runLength = j - i;
+    if (runLength >= 3) {
+      for (let k = i; k < j; k++) matchedIndices.push(k);
+      i = j;
+    } else {
+      i++;
+    }
+  }
+
+  return matchedIndices;
+}
+
+/**
+ * Finds every orb that is part of a horizontal or vertical line match (3+),
+ * with wildcard bomb support. This is the single source of truth for line
+ * match detection.
+ *
+ * @param board - The game board containing orbs
+ * @returns A set of orb IDs that are part of a line match
+ */
+export function findLineMatches(board: Orb[][]): Set<string> {
+  const matchedIds = new Set<string>();
+  const rows = board.length;
+  const cols = board[0].length;
+
+  // Horizontal lines
+  for (let row = 0; row < rows; row++) {
+    for (const col of scanLineForMatches(board[row])) {
+      matchedIds.add(board[row][col].id);
+    }
+  }
+
+  // Vertical lines
+  for (let col = 0; col < cols; col++) {
+    const column: Orb[] = [];
+    for (let row = 0; row < rows; row++) column.push(board[row][col]);
+    for (const row of scanLineForMatches(column)) {
+      matchedIds.add(board[row][col].id);
+    }
+  }
+
+  return matchedIds;
+}
+
+/**
+ * Expands an initial set of matched orb IDs to include the orbs destroyed by
+ * any matched bomb. Each matched bomb explodes its surrounding 3x3 area, and
+ * any bomb caught in a blast chain-detonates.
+ *
+ * @param board - The game board containing orbs
+ * @param matchedIds - IDs of orbs matched via lines (the explosion seeds)
+ * @returns A set containing the line-matched IDs plus all orbs destroyed by explosions
+ */
+export function expandBombExplosions(board: Orb[][], matchedIds: Set<string>): Set<string> {
+  const rows = board.length;
+  const cols = board[0].length;
+
+  const destroyed = new Set<string>(matchedIds);
+  const queue: GridPosition[] = [];
+
+  // Seed the queue with every matched bomb.
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const orb = board[row][col];
+      if (orb.isBomb && destroyed.has(orb.id)) {
+        queue.push({ row, col });
+      }
+    }
+  }
+
+  while (queue.length > 0) {
+    const { row, col } = queue.pop()!;
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const r = row + dr;
+        const c = col + dc;
+        if (r < 0 || r >= rows || c < 0 || c >= cols) continue;
+
+        const neighbor = board[r][c];
+        if (destroyed.has(neighbor.id)) continue;
+
+        destroyed.add(neighbor.id);
+        // A bomb caught in the blast detonates as well.
+        if (neighbor.isBomb) queue.push({ row: r, col: c });
+      }
+    }
+  }
+
+  return destroyed;
+}
+
+/**
+ * Creates a wildcard bomb orb at the given position.
+ *
+ * @param row - The row index for the orb
+ * @param col - The column index for the orb
+ * @returns A new bomb Orb
+ */
+export function createBombOrb(row: number, col: number): Orb {
+  return {
+    id: `bomb-${Date.now()}-${row}-${col}`,
+    type: getRandomOrbType(),
+    row,
+    col,
+    isBomb: true,
+  };
+}
+
+/**
+ * Checks if there is a line match (3 or more, wildcard-aware) at the specified
+ * position on the board.
  *
  * @param board - The game board containing orbs
  * @param row - The row index to check
  * @param col - The column index to check
- * @returns True if there's a match at the position, false otherwise
+ * @returns True if the orb at the position is part of a line match
  */
 export function hasMatchAtPosition(board: Orb[][], row: number, col: number): boolean {
-  const orbType = board[row][col].type;
-  const rows = board.length;
-  const cols = board[0].length;
-
-  // Check horizontal match (3 or more)
-  let horizontalCount = 1;
-  // Check left
-  for (let c = col - 1; c >= 0 && board[row][c].type === orbType; c--) {
-    horizontalCount++;
-  }
-  // Check right
-  for (let c = col + 1; c < cols && board[row][c].type === orbType; c++) {
-    horizontalCount++;
-  }
-  if (horizontalCount >= 3) return true;
-
-  // Check vertical match (3 or more)
-  let verticalCount = 1;
-  // Check up
-  for (let r = row - 1; r >= 0 && board[r][col].type === orbType; r--) {
-    verticalCount++;
-  }
-  // Check down
-  for (let r = row + 1; r < rows && board[r][col].type === orbType; r++) {
-    verticalCount++;
-  }
-  if (verticalCount >= 3) return true;
-
-  return false;
+  return findLineMatches(board).has(board[row][col].id);
 }
 
 /**
@@ -107,7 +240,7 @@ export function swapOrbs(
 }
 
 /**
- * Checks if swapping two orbs would create a valid match.
+ * Checks if swapping two orbs would create a valid match (wildcard-aware).
  *
  * @param board - The game board containing orbs
  * @param from - The position of the first orb to swap
@@ -120,19 +253,30 @@ export function isValidSwap(
   to: GridPosition,
 ): boolean {
   const testBoard = swapOrbs(board, from, to);
-  return hasMatchAtPosition(testBoard, from.row, from.col) || hasMatchAtPosition(testBoard, to.row, to.col);
+  const matched = findLineMatches(testBoard);
+  return (
+    matched.has(testBoard[from.row][from.col].id) || matched.has(testBoard[to.row][to.col].id)
+  );
 }
 
 /**
  * Removes matched orbs from the board and applies gravity to fill empty spaces.
  * Matched orbs are removed, remaining orbs fall down, and new random orbs are
- * generated at the top.
+ * generated at the top. Newly spawned orbs may become wildcard bombs in two ways:
+ * a guaranteed `bombsToSpawn` count, plus an independent per-orb random chance.
  *
  * @param board - The game board containing orbs
  * @param matchedOrbIds - Set of orb IDs that should be removed
+ * @param bombsToSpawn - How many of the newly spawned orbs are guaranteed to become bombs (default 0)
+ * @param bombRefillChance - Per-orb probability (0-1) that a refilled orb spawns as a bomb (default BOMB_REFILL_CHANCE)
  * @returns A new board with matched orbs removed and refilled
  */
-export function removeMatchedOrbsAndRefill(board: Orb[][], matchedOrbIds: Set<string>): Orb[][] {
+export function removeMatchedOrbsAndRefill(
+  board: Orb[][],
+  matchedOrbIds: Set<string>,
+  bombsToSpawn: number = 0,
+  bombRefillChance: number = BOMB_REFILL_CHANCE,
+): Orb[][] {
   if (matchedOrbIds.size === 0) return board;
 
   const newBoard = board.map((row) => [...row]);
@@ -148,6 +292,9 @@ export function removeMatchedOrbsAndRefill(board: Orb[][], matchedOrbIds: Set<st
       }
     }
   }
+
+  // Track freshly spawned orbs so some can be promoted to bombs afterwards
+  const newlySpawned: GridPosition[] = [];
 
   // Process each column for gravity
   for (let col = 0; col < cols; col++) {
@@ -172,16 +319,34 @@ export function removeMatchedOrbsAndRefill(board: Orb[][], matchedOrbIds: Set<st
       };
     }
 
-    // Fill top with new random orbs
+    // Fill top with new random orbs; each has an independent chance to be a bomb.
     for (let i = 0; i < newOrbsNeeded; i++) {
       const row = newOrbsNeeded - 1 - i;
+      const isBomb = Math.random() < bombRefillChance;
       newBoard[row][col] = {
-        id: `orb-${Date.now()}-${row}-${col}`,
+        id: `${isBomb ? 'bomb' : 'orb'}-${Date.now()}-${row}-${col}`,
         type: getRandomOrbType(),
         row,
         col,
+        ...(isBomb ? { isBomb: true } : {}),
       };
+      newlySpawned.push({ row, col });
     }
+  }
+
+  // Guarantee `bombsToSpawn` bombs by promoting freshly spawned orbs that the
+  // random roll above didn't already turn into bombs.
+  const nonBombSpawns = newlySpawned.filter(({ row, col }) => !newBoard[row][col].isBomb);
+  const bombCount = Math.min(Math.max(0, Math.floor(bombsToSpawn)), nonBombSpawns.length);
+  for (let i = 0; i < bombCount; i++) {
+    // Partial Fisher-Yates: pick a not-yet-chosen position into slot i.
+    const pick = i + Math.floor(Math.random() * (nonBombSpawns.length - i));
+    const swap = nonBombSpawns[i];
+    nonBombSpawns[i] = nonBombSpawns[pick];
+    nonBombSpawns[pick] = swap;
+
+    const { row, col } = nonBombSpawns[i];
+    newBoard[row][col] = { ...newBoard[row][col], isBomb: true };
   }
 
   return newBoard;
