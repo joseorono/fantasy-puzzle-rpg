@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import {
   boardAtom,
   selectedOrbAtom,
@@ -34,6 +34,15 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
+
+/** Heat-scaled glow color for the cascade combo popup — hotter as the chain grows. */
+function getComboGlow(combo: number): string {
+  if (combo >= 5) return 'rgba(255, 60, 160, 0.95)'; // hot pink
+  if (combo === 4) return 'rgba(255, 80, 40, 0.95)'; // red-orange
+  if (combo === 3) return 'rgba(255, 140, 30, 0.95)'; // orange
+  return 'rgba(255, 200, 60, 0.9)'; // gold (x2)
+}
+
 function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSelect }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
@@ -157,7 +166,10 @@ export function Match3Board() {
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
-  const [comboLevel, setComboLevel] = useState(0);
+  // Combo multiplier currently shown in the cascade popup (0 = hidden, >=2 = visible)
+  const [comboPopup, setComboPopup] = useState(0);
+  const comboPopupTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const comboPopupKeyRef = useRef(0);
   const [invalidSwap, setInvalidSwap] = useState<{
     from: GridPosition;
     to: GridPosition;
@@ -198,9 +210,9 @@ export function Match3Board() {
 
     setHighlightedMatches(matches);
 
-    // No matches: the board has settled — reset the combo chain display.
+    // No matches: the board has settled. Leave the combo popup to fade on its own
+    // timer so the final cascade count stays readable for a beat.
     if (matches.size === 0) {
-      setComboLevel(0);
       setExplodingOrbs(new Set());
       return;
     }
@@ -260,7 +272,15 @@ export function Match3Board() {
     const cascadeLevel = cascadeLevelRef.current;
     const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
     const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus);
-    setComboLevel(cascadeLevel);
+
+    // Cascades (level >= 1) show a prominent, lingering combo popup. Each chained
+    // cascade bumps the count and refreshes the linger timer + the pop animation.
+    if (cascadeLevel >= 1) {
+      comboPopupKeyRef.current += 1;
+      setComboPopup(cascadeLevel + 1);
+      if (comboPopupTimerRef.current) clearTimeout(comboPopupTimerRef.current);
+      comboPopupTimerRef.current = setTimeout(() => setComboPopup(0), 1100);
+    }
 
     // Calculate damage (match size multiplier + POW + cascade combo multiplier)
     const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
@@ -357,7 +377,7 @@ export function Match3Board() {
     .map((char) => `dead-${char.color}`);
 
   return (
-    <div className="flex flex-1 justify-center">
+    <div className="relative flex flex-1 justify-center">
       {/* Board container */}
       <div className={cn('match3BoardContainer', deadColorClasses)}>
         <Franuka05aFrame>
@@ -389,14 +409,24 @@ export function Match3Board() {
         </Franuka05aFrame>
       </div>
 
-      {/* Match / combo indicator */}
+      {/* Match-size indicator */}
       {highlightedMatches.size > 0 && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
-          {comboLevel >= 1
-            ? `COMBO x${comboLevel + 1}!`
-            : highlightedMatches.size >= 5
-              ? '5x MATCH!'
-              : `${highlightedMatches.size} MATCH!`}
+        <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
+          {highlightedMatches.size >= 5 ? '5x MATCH!' : `${highlightedMatches.size} MATCH!`}
+        </div>
+      )}
+
+      {/* Cascade combo popup — prominent, lingering, overlaid on the board */}
+      {comboPopup >= 2 && (
+        <div className="pointer-events-none absolute top-[16%] left-1/2 z-20 -translate-x-1/2">
+          <div
+            key={comboPopupKeyRef.current}
+            className="combo-pop combo-popup"
+            style={{ '--combo-glow': getComboGlow(comboPopup) } as CSSProperties}
+          >
+            <span className="combo-popup__label">COMBO</span>
+            <span className="combo-popup__count">×{comboPopup}</span>
+          </div>
         </div>
       )}
     </div>

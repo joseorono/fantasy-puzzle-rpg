@@ -65,6 +65,76 @@
   animation: fall-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Cascade combo popup — a punchy scale-in (translate handled by the wrapper) */
+@keyframes combo-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  65% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.combo-pop {
+  animation: combo-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Arcade-style cascade combo readout: gold gradient text, pixel outline, heat glow */
+.combo-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.combo-popup__label {
+  color: #ffe9a8;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  padding-left: 0.3em; /* compensate trailing letter-spacing so it stays centered */
+  text-shadow:
+    -1px -1px 0 #5a2600,
+    1px -1px 0 #5a2600,
+    -1px 1px 0 #5a2600,
+    1px 1px 0 #5a2600,
+    0 2px 3px rgba(0, 0, 0, 0.65);
+}
+
+.combo-popup__count {
+  font-size: 2.3rem;
+  background: linear-gradient(180deg, #fffceb 0%, #ffd84d 46%, #ff8a00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Pixel outline + heat glow built from a drop-shadow stack (respects the clipped glyphs) */
+  filter:
+    drop-shadow(2px 0 0 #4a1d00) drop-shadow(-2px 0 0 #4a1d00) drop-shadow(0 2px 0 #4a1d00)
+    drop-shadow(0 -2px 0 #4a1d00) drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 0 12px var(--combo-glow, rgba(255, 180, 50, 0.9)));
+}
+
+@media (min-width: 640px) {
+  .combo-popup__label {
+    font-size: 0.72rem;
+  }
+  .combo-popup__count {
+    font-size: 2.9rem;
+  }
+}
+
 /* Bomb explosion burst — a fiery shockwave that scales up then collapses */
 @keyframes bomb-explode {
   0% {
