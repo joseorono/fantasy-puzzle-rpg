@@ -137,7 +137,8 @@ export default function Blacksmith({
                 <div className="town-header-badge">
                   <span className="town-header-badge__label">Forge Fee</span>
                   <span className="town-header-badge__value">
-                    <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
+                    <FrostyRpgIcon name="coinPurse" size={16} />{' '}
+                    <span className="town-header-badge__value--coins">{CRAFTING_FEE}</span>
                   </span>
                 </div>
               </TooltipTrigger>
@@ -307,7 +308,8 @@ export default function Blacksmith({
             <div className="town-header-badge">
               <span className="town-header-badge__label">Rate</span>
               <span className="town-header-badge__value">
-                {MELT_COINS_PER_GOLD} <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
+                <span className="town-header-badge__value--coins">{MELT_COINS_PER_GOLD}</span>{' '}
+                <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
                 <FrostyRpgIcon name="goldBar" size={14} />
               </span>
             </div>
