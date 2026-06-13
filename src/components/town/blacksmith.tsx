@@ -282,7 +282,7 @@ export default function Blacksmith({
                           handleExchangeResources(config.fromResource, config.toResource, tier.from, tier.to)
                         }
                         disabled={resources[config.fromResource] < tier.from}
-                        className="w-full"
+                        className="w-full text-[#e0e0e0]!"
                       >
                         <span className="flex items-center justify-center gap-2 whitespace-nowrap">
                           Exchange {tier.from} <FrostyRpgIcon name={config.fromIcon} size={20} /> for {tier.to}{' '}
@@ -330,7 +330,7 @@ export default function Blacksmith({
                         size="xs"
                         onClick={() => handleMeltCoinsToGold(tier.coins)}
                         disabled={resources.coins < tier.coins}
-                        className="w-full"
+                        className="w-full text-[#e0e0e0]!"
                       >
                         <span className="flex items-center justify-center gap-2 whitespace-nowrap">
                           Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}
