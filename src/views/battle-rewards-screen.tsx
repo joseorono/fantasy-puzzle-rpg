@@ -453,7 +453,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
               <div className="exp-gained-text">EXP +{expReward}</div>
               <ExperienceBar percentage={progress} variant="compact" />
             </div>
-            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP</div>}
+            {levelUpSet.has(member.id) && <div className="level-up-badge">Level Up</div>}
           </div>
         ))}
       </div>
