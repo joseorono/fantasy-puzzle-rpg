@@ -28,7 +28,7 @@ export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayPro
     <OverlayContainer
       onDismiss={onDismiss}
       dismissOnBackdropClick={request.dismissOnBackdropClick ?? true}
-      autoDismissMs={request.autoDismissMs ?? 3200}
+      autoDismissMs={request.autoDismissMs ?? 320000}
       sparkleCount={20}
     >
       <div className="gom-modal gom-modal--victory">

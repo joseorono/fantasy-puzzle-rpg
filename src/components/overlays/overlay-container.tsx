@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '~/lib/utils';
 import { KeyboardKeys } from '~/constants/keyboard';
+import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 interface OverlayContainerProps {
   onDismiss: () => void;
@@ -59,22 +60,7 @@ export function OverlayContainer({
         {children}
       </div>
 
-      {sparkleCount > 0 && (
-        <div className="gom-sparkles">
-          {Array.from({ length: sparkleCount }).map((_, i) => (
-            <div
-              key={i}
-              className="gom-sparkle"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <SparkleLayer count={sparkleCount} />
     </div>
   );
 }
