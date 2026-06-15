@@ -10,6 +10,7 @@ import { SoundNames } from '~/constants/audio';
 import type { BaseItemData } from '~/types/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
   SNAPPY_SPIN_TIMING,
@@ -93,16 +94,19 @@ export function PauseMenuItems() {
       </h2>
       <div className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
-          <button
+          <IndigolayTab
             key={cat.id}
-            className={cn('pause-menu-category-btn', category === cat.id && 'active')}
+            size="sm"
+            glow={false}
+            isActive={category === cat.id}
+            className="pause-menu-item-category-tab"
             onClick={() => {
               setCategory(cat.id);
               setSelectedItemId(null);
             }}
           >
             {cat.label}
-          </button>
+          </IndigolayTab>
         ))}
       </div>
       <div className="pause-menu-items-layout">

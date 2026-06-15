@@ -521,33 +521,28 @@ box-shadow:
 
 .pause-menu-item-categories {
   display: flex;
-  gap: 0.5rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   margin-bottom: 1rem;
+  padding: 0 0 0.15rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.28);
 }
 
-.pause-menu-category-btn {
-  padding: 0.4rem 0.8rem;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 6px;
-  color: #d4a574;
-  font-weight: 700;
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.pause-menu-item-category-tab.indigolay-tab {
+  min-width: 4.85rem;
+  height: 1.72rem;
+  padding: 0.3rem 0.72rem 0.16rem;
+  font-size: 0.55rem;
+  filter: drop-shadow(0 1px 0 rgba(36, 17, 9, 0.48));
 }
 
-.pause-menu-category-btn:hover {
-  border-color: #d4a574;
+.pause-menu-item-category-tab.indigolay-tab:hover:not(:disabled) {
+  filter: brightness(1.02) drop-shadow(0 1px 0 rgba(36, 17, 9, 0.48));
 }
 
-.pause-menu-category-btn.active {
-  background: linear-gradient(to bottom, #d48c46, #8b4513);
-  border-color: #d4a574;
-  color: #fff;
-  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
+.pause-menu-item-category-tab.indigolay-tab.indigolay-tab--active {
+  color: #f3e7d8;
 }
 
 .pause-menu-items-layout {
