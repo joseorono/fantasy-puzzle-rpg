@@ -69,6 +69,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   display: flex;
+  align-items: center;
   gap: 1.2rem;
   position: relative;
   min-height: 0;
@@ -99,14 +100,17 @@
 
 @media (min-width: 1280px) {
   .character-card .character-portrait {
-    margin-top: 2.5rem;
+    margin-top: 0;
     margin-left: 3rem;
     scale: calc(1.8);
+    transform: none;
+    transform-origin: top left;
   }
   
   .character-card .character-info {
     margin-left: 4rem;
     scale: calc(1.2);
+    transform-origin: top left;
   }
   
   .rewards-resources-panel {
@@ -120,13 +124,13 @@
 
 @media (min-width: 1536px) {
   .character-card .character-portrait {
-    transform: translateY(25px);
+    transform: none;
   }
 }
 
 @media (min-width: 1920px) and (max-height: 911px) {
   .character-card .character-portrait {
-    transform: translateY(25px);
+    transform: none;
   }
   .character-card .character-info {
     margin-left: 8rem;
