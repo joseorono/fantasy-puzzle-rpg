@@ -92,8 +92,10 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       event.preventDefault();
       setSelectedIndex((prev) => (prev === null ? MENU_ITEM_COUNT - 1 : (prev - 1 + MENU_ITEM_COUNT) % MENU_ITEM_COUNT));
     } else if (isConfirmKey(event.key)) {
-      if (selectedIndex === null) return;
+      // Always claim Enter/Space so they can't scroll the page, even when
+      // nothing is selected yet.
       event.preventDefault();
+      if (selectedIndex === null) return;
       [handleStartGame, handleOpenLoad, handleOpenSettings][selectedIndex]?.();
     }
   });
