@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory, useCurrentView } from '~/stores/game-store';
 import { SkillSelector } from '~/components/pause-menu/skill-selector';
@@ -26,10 +26,11 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 
+// Warm parchment/gold stat palette — matches level-up-screen.css `.stat-name.*`
 const STAT_COLORS = {
-  pow: '#e53935',
-  vit: '#43a047',
-  spd: '#1e88e5',
+  pow: '#d48c46',
+  vit: '#e3bb92',
+  spd: '#d4a574',
 } as const;
 
 export function PauseMenuEquip() {
@@ -153,7 +154,7 @@ export function PauseMenuEquip() {
 
             <SkillSelector character={selected} disabled={isInBattle} />
 
-            <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
+            <EquipStatPreview bonuses={bonuses} effective={effective} />
           </div>
         </div>
       </div>
@@ -199,63 +200,54 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
 }
 
 interface EquipStatPreviewProps {
-  baseStats: { pow: number; vit: number; spd: number };
   bonuses: { pow: number; vit: number; spd: number };
   effective: { pow: number; vit: number; spd: number };
 }
 
-function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewProps) {
+function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
   const stats = ['pow', 'vit', 'spd'] as const;
 
   return (
     <div className="pause-menu-equip-preview">
       <span className="pause-menu-equip-preview-title">Stats</span>
-      <div className="pause-menu-equip-preview-divider" />
-      {stats.map((stat, index) => (
-        <React.Fragment key={stat}>
-          <div className="pause-menu-equip-preview-stat-group">
-            <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
-              {stat}
-            </span>
-            <span className="pause-menu-equip-preview-base number-flow-container">
-              <NumberFlow
-                value={baseStats[stat]}
-                format={INTEGER_FORMAT}
-                spinTiming={SNAPPY_SPIN_TIMING}
-                transformTiming={SNAPPY_TRANSFORM_TIMING}
-                opacityTiming={SNAPPY_OPACITY_TIMING}
-              />
-            </span>
-            {bonuses[stat] !== 0 && (
-              <span
-                className={cn(
-                  'pause-menu-equip-stat-diff number-flow-container',
-                  bonuses[stat] > 0 ? 'positive' : 'negative',
-                )}
-              >
+      <div className="pause-menu-equip-preview-grid">
+        {stats.map((stat) => {
+          const diff = bonuses[stat];
+          return (
+            <div key={stat} className="pause-menu-equip-preview-stat-group">
+              <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
+                {stat}
+              </span>
+              <span className="pause-menu-equip-preview-total number-flow-container">
                 <NumberFlow
-                  value={bonuses[stat]}
+                  value={effective[stat]}
                   format={INTEGER_FORMAT}
-                  prefix={bonuses[stat] > 0 ? '+' : ''}
                   spinTiming={SNAPPY_SPIN_TIMING}
                   transformTiming={SNAPPY_TRANSFORM_TIMING}
                   opacityTiming={SNAPPY_OPACITY_TIMING}
                 />
               </span>
-            )}
-            <span className="pause-menu-equip-preview-total number-flow-container">
-              <NumberFlow
-                value={effective[stat]}
-                format={INTEGER_FORMAT}
-                spinTiming={SNAPPY_SPIN_TIMING}
-                transformTiming={SNAPPY_TRANSFORM_TIMING}
-                opacityTiming={SNAPPY_OPACITY_TIMING}
-              />
-            </span>
-          </div>
-          {index < stats.length - 1 && <div className="pause-menu-equip-preview-divider" />}
-        </React.Fragment>
-      ))}
+              {diff !== 0 && (
+                <span
+                  className={cn(
+                    'pause-menu-equip-stat-diff number-flow-container',
+                    diff > 0 ? 'positive' : 'negative',
+                  )}
+                >
+                  <NumberFlow
+                    value={diff}
+                    format={INTEGER_FORMAT}
+                    prefix={diff > 0 ? '+' : ''}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
