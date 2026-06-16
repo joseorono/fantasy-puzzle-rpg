@@ -86,6 +86,11 @@ a[href]:hover,
   transition: none;
 }
 
+/* Force corners visible regardless of hover (e.g. keyboard selection) */
+.cursor-corners--force-display .cursor-corner {
+  opacity: 1;
+}
+
 /* Corner positions */
 .cursor-corner--tl {
   top: var(--cursor-corner-inset);
@@ -121,6 +126,23 @@ a[href]:hover,
 }
 
 .cursor-corners:hover .cursor-corner--br {
+  animation: cursor-nudge-br 1.2s ease-in-out 0.3s infinite;
+}
+
+/* Same inward-nudge animation when force-displayed (keyboard selection) */
+.cursor-corners--force-display .cursor-corner--tl {
+  animation: cursor-nudge-tl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--tr {
+  animation: cursor-nudge-tr 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--bl {
+  animation: cursor-nudge-bl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--br {
   animation: cursor-nudge-br 1.2s ease-in-out 0.3s infinite;
 }
 

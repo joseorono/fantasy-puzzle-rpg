@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
 import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
@@ -6,6 +6,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Play, FolderOpen } from 'lucide-react';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 interface StartMenuModalProps {
@@ -21,8 +22,13 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
+const MENU_ITEM_COUNT = 3;
+
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
+  // Index of the keyboard-selected menu item (null = nothing selected yet, so
+  // the toffec corners only appear once the player actually uses the keyboard).
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     soundService.startMusic(SoundNames.startMenuMusic, 0.15);
@@ -30,6 +36,11 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       soundService.stopMusic(SoundNames.startMenuMusic);
     };
   }, []);
+
+  // Reset the keyboard selection whenever we leave the main view.
+  useEffect(() => {
+    if (activeTab !== 'main') setSelectedIndex(null);
+  }, [activeTab]);
 
   const handleMenuClick = (callback: () => void, soundName: SoundNames = SoundNames.mechanicalClick) => {
     soundService.playSound(soundName, 0.4, 0.1);
@@ -56,6 +67,38 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     setActiveTab('settings');
   };
 
+  // Latest values for the window listener, refreshed every render so the
+  // listener can be bound once without going stale.
+  const menuStateRef = useRef({ activeTab, selectedIndex, activate: (_index: number) => {} });
+  menuStateRef.current = {
+    activeTab,
+    selectedIndex,
+    activate: (index: number) => [handleStartGame, handleOpenLoad, handleOpenSettings][index]?.(),
+  };
+
+  // Arrow keys move the selection, Enter/Space activates it.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const { activeTab: tab, selectedIndex: selected, activate } = menuStateRef.current;
+      if (tab !== 'main') return;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % MENU_ITEM_COUNT));
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev === null ? MENU_ITEM_COUNT - 1 : (prev - 1 + MENU_ITEM_COUNT) % MENU_ITEM_COUNT));
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        if (selected === null) return;
+        event.preventDefault();
+        activate(selected);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const isModalOpen = activeTab !== 'main';
 
   return (
@@ -69,17 +112,23 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
         </div>
 
         <div className="main-menu__buttons">
-          <button className="main-menu__button" onClick={handleStartGame}>
-            <Play size={20} />
-            Start Game
-          </button>
-          <button className="main-menu__button" onClick={handleOpenLoad}>
-            <FolderOpen size={20} />
-            Load Game
-          </button>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 0}>
+            <button className="main-menu__button" onClick={handleStartGame}>
+              <Play size={20} />
+              Start Game
+            </button>
+          </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 1}>
+            <button className="main-menu__button" onClick={handleOpenLoad}>
+              <FolderOpen size={20} />
+              Load Game
+            </button>
+          </ToffecBeigeCornersWrapper>
         </div>
       </div>
-      <button className="main-menu__settings-icon" onClick={handleOpenSettings} />
+      <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2} className="main-menu__settings-corners">
+        <button className="main-menu__settings-icon" onClick={handleOpenSettings} aria-label="Settings" />
+      </ToffecBeigeCornersWrapper>
 
       {isModalOpen && (
         <div className="start-menu-modal-backdrop" onClick={handleBackToMain}>

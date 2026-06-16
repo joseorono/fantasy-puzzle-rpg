@@ -203,26 +203,11 @@
     0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* ==========================================
-   DECORATIVE ELEMENTS
-   ========================================== */
-
-.main-menu__button::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #d4a574, #ffd700, #d4a574);
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 2px;
-}
-
-.main-menu__button:hover:not(:disabled)::before {
-  opacity: 0.3;
+/* Keyboard/mouse selection is shown via the toffec cursor corners, so the
+   buttons themselves don't need a focus ring that would break the wood look. */
+.main-menu__button:focus-visible,
+.main-menu__settings-icon:focus-visible {
+  outline: none;
 }
 
 /* ==========================================
@@ -257,10 +242,17 @@
    SETTINGS ICON
    ========================================== */
 
-.main-menu__settings-icon {
+/* Wrapper carries the positioning so the toffec corners anchor to the icon */
+.main-menu .main-menu__settings-corners {
   position: absolute;
   bottom: 20px;
   right: 20px;
+  z-index: 10;
+}
+
+.main-menu__settings-icon {
+  display: block;
+  position: relative;
   width: 64px;
   height: 64px;
   background-color: transparent;
@@ -272,7 +264,6 @@
   cursor: pointer;
   transition: transform 0.2s ease;
   transform-origin: bottom right;
-  z-index: 10;
   padding: 0;
 }
 
@@ -301,11 +292,14 @@
     border: 3px solid #d4a574;
   }
 
+  .main-menu .main-menu__settings-corners {
+    bottom: 15px;
+    right: 15px;
+  }
+
   .main-menu__settings-icon {
     width: 48px;
     height: 48px;
-    bottom: 15px;
-    right: 15px;
   }
 }
 
