@@ -501,7 +501,8 @@ box-shadow:
   min-width: 0;
 }
 
-.pause-menu-content--equip {
+.pause-menu-content--equip,
+.pause-menu-content--items {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1289,8 +1290,8 @@ box-shadow:
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  padding: 0.5rem 0;
-  margin: 0.5rem 0;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
   border-top: 1px solid rgba(139, 105, 20, 0.5);
   background: linear-gradient(180deg, rgba(30, 20, 10, 0.3) 0%, rgba(20, 14, 6, 0.3) 100%);
   border-radius: 4px;
