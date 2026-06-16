@@ -34,10 +34,11 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
   return (
     <div className="start-menu">
       <div className="start-menu__bg" />
+      <div className="start-menu__overlay" />
 
       <div className="start-menu__loading-section">
         <button onClick={handleStartClick} className="start-menu__button">
-          START
+          Press Start
         </button>
       </div>
     </div>
