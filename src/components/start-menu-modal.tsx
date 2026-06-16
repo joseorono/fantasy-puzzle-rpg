@@ -44,6 +44,16 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     if (activeTab !== 'main') setSelectedIndex(null);
   }, [activeTab]);
 
+  // Drop the keyboard selection as soon as the mouse moves, so the keyboard
+  // selection corners never linger alongside a hovered button's corners.
+  useEffect(() => {
+    function clearKeyboardSelection() {
+      setSelectedIndex((prev) => (prev === null ? prev : null));
+    }
+    window.addEventListener('pointermove', clearKeyboardSelection);
+    return () => window.removeEventListener('pointermove', clearKeyboardSelection);
+  }, []);
+
   const handleMenuClick = (callback: () => void, soundName: SoundNames = SoundNames.mechanicalClick) => {
     soundService.playSound(soundName, 0.4, 0.1);
     callback();
