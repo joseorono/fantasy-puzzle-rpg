@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { DialogueScene, DialogueLine } from '../types/dialogue';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { KeyboardKeys } from '~/constants/keyboard';
 interface UseDialogueOptions {
   textSpeed?: number; // Characters per frame (default: 2)
   turboSpeed?: number; // Characters per frame when CTRL held (default: 10)
@@ -28,14 +29,14 @@ export function useDialogue(scene: DialogueScene, options: UseDialogueOptions = 
   // Handle CTRL key press for fast-forward
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Control') {
+      if (e.key === KeyboardKeys.Control) {
         if (!controlsEnabled) return;
         setIsCtrlPressed(true);
       }
     }
 
     function handleKeyUp(e: KeyboardEvent) {
-      if (e.key === 'Control') {
+      if (e.key === KeyboardKeys.Control) {
         setIsCtrlPressed(false);
       }
     }

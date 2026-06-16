@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CharacterPosition, Direction, MapData } from '~/types/map-node';
 import { WALKABLE_TILES } from '~/constants/maps';
+import { getNavDirection } from '~/constants/keyboard';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
 
 interface MapCharacterProps {
@@ -34,7 +35,7 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
   const [scale, setScale] = useState(1);
 
   // Track pressed keys for smooth continuous movement
-  const keysPressed = useRef<Set<string>>(new Set());
+  const keysPressed = useRef<Set<Direction>>(new Set());
   const movementTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -107,21 +108,18 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
   const isMovingRef = useRef(isMoving);
   isMovingRef.current = isMoving;
 
-  // Handle continuous movement with key tracking
+  // Handle continuous movement with key tracking (arrow keys and WASD alike)
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-
-      // Track key press
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
-        event.preventDefault();
-        keysPressed.current.add(key);
-      }
+      const direction = getNavDirection(event.key);
+      if (!direction) return;
+      event.preventDefault();
+      keysPressed.current.add(direction);
     }
 
     function handleKeyUp(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-      keysPressed.current.delete(key);
+      const direction = getNavDirection(event.key);
+      if (direction) keysPressed.current.delete(direction);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -141,13 +139,13 @@ export function MapCharacter({ charLocation, mapData, onMove }: MapCharacterProp
       // Determine intended direction from pressed keys
       let intendedDirection: Direction | null = null;
 
-      if (keys.has('arrowup') || keys.has('w')) {
+      if (keys.has('up')) {
         intendedDirection = 'up';
-      } else if (keys.has('arrowdown') || keys.has('s')) {
+      } else if (keys.has('down')) {
         intendedDirection = 'down';
-      } else if (keys.has('arrowleft') || keys.has('a')) {
+      } else if (keys.has('left')) {
         intendedDirection = 'left';
-      } else if (keys.has('arrowright') || keys.has('d')) {
+      } else if (keys.has('right')) {
         intendedDirection = 'right';
       }
 
