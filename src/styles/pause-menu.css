@@ -525,7 +525,7 @@ box-shadow:
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-bottom: 1rem;
-  padding: 0 0 0.15rem;
+  padding: 0;
   border-bottom: 2px solid rgba(212, 165, 116, 0.28);
 }
 
@@ -534,6 +534,7 @@ box-shadow:
   height: 1.72rem;
   padding: 0.3rem 0.72rem 0.16rem;
   font-size: 0.55rem;
+  margin-bottom: 0;
   filter: drop-shadow(0 1px 0 rgba(36, 17, 9, 0.48));
 }
 
