@@ -4,7 +4,7 @@ import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause
 import { soundService } from '~/services/sound-service';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
-import { cn } from '~/lib/utils';
+import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
 
 export function PauseMenuOptions() {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
@@ -84,19 +84,12 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Mute Audio</span>
             <span className="pause-menu-option-value">{isMuted === true ? 'ON' : 'OFF'}</span>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isMuted}
-            className={cn('pause-menu-mute-switch', isMuted === true && 'is-muted')}
-            onClick={handleMuteToggle}
-          >
-            <span className="pause-menu-mute-switch__track">
-              <span className="pause-menu-mute-switch__fill" />
-              <span className="pause-menu-mute-switch__thumb" />
-            </span>
-            <span className="pause-menu-mute-switch__text">{isMuted === true ? 'Muted' : 'Audio On'}</span>
-          </button>
+          <IndigolayCheckbox
+            checked={isMuted}
+            className="pause-menu-options-checkbox"
+            label={isMuted === true ? 'Muted' : 'Audio On'}
+            onChange={handleMuteToggle}
+          />
         </div>
       </div>
     </>
