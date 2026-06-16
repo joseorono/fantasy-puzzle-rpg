@@ -524,9 +524,9 @@ box-shadow:
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.08rem;
   padding: 0;
-  border-bottom: 2px solid rgba(212, 165, 116, 0.28);
+  padding-left: 0.35rem;
 }
 
 .pause-menu-item-category-tab.indigolay-tab {
