@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '~/lib/utils';
 
 interface SparkleLayerProps {
@@ -18,6 +19,18 @@ interface SparkleLayerProps {
  * Position the parent `relative` to scope the sparkles to it.
  */
 export function SparkleLayer({ count, variant = 'gold', zIndex, className }: SparkleLayerProps) {
+  // Generate the random placements once on mount so re-renders of the parent
+  // (e.g. animating reward counters) don't re-scatter the sparkles each frame.
+  // `count` is static per mounted instance, so a lazy initializer is sufficient.
+  const [sparkles] = useState(() =>
+    Array.from({ length: Math.max(0, count) }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 2 + Math.random() * 2,
+    })),
+  );
+
   if (count <= 0) return null;
 
   return (
@@ -25,15 +38,15 @@ export function SparkleLayer({ count, variant = 'gold', zIndex, className }: Spa
       className={cn('gom-sparkles', variant === 'red' && 'gom-sparkles--red', className)}
       style={zIndex === undefined ? undefined : { zIndex }}
     >
-      {Array.from({ length: count }).map((_, i) => (
+      {sparkles.map((sparkle, i) => (
         <div
           key={i}
           className="gom-sparkle"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${2 + Math.random() * 2}s`,
+            left: `${sparkle.left}%`,
+            top: `${sparkle.top}%`,
+            animationDelay: `${sparkle.delay}s`,
+            animationDuration: `${sparkle.duration}s`,
           }}
         />
       ))}
