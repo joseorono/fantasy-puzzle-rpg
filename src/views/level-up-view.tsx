@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
@@ -121,16 +121,13 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           {/* Left Column - Character Info & Derived Stats */}
           <div className="character-info-panel">
             <div className="character-identity">
-              <div style={{ position: 'relative' }}>
+              <div className="portrait-badge-wrap">
                 <img
                   src="/assets/portraits/Innkeeper_02.png"
                   alt={character.name}
                   className="character-portrait-small pixel-art"
                 />
-                <div className="level-badge pixel-border pixel-font text-xs">
-                  {character.level}
-                  <ArrowUpIcon className="level-badge-arrow" />
-                </div>
+                <div className="level-ribbon pixel-font">Lv {character.level}</div>
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>

@@ -105,62 +105,52 @@
   margin-bottom: 1rem;
 }
 
-.character-portrait-small {
+.portrait-badge-wrap {
+  position: relative;
   width: 72px;
-    height: 72px;
+  height: 72px;
   border-radius: 8px;
+  overflow: hidden;
   border: 2px solid #5c3a1e;
   box-shadow:
     inset 0 0 0 1px rgba(212, 165, 116, 0.68),
     0 3px 8px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+
+.portrait-badge-wrap .character-portrait-small {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.character-portrait-small {
   object-fit: cover;
-  position: relative;
+  display: block;
 }
 
-.level-badge {
+/* Diagonal corner ribbon across the bottom-right of the portrait */
+.level-ribbon {
   position: absolute;
-  bottom: -6px;
-    right: -6px;
-  background: linear-gradient(135deg, #a07151, #6b5344);
-  color: #f8f2e9;
-  width: 26px;
-    height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.7rem;
-  border: 2px solid #5c3a1e;
-  box-shadow:
-    inset 0 0 0 1px rgba(227, 187, 146, 0.45),
-    0 3px 8px rgba(0, 0, 0, 0.55);
-}
-
-@keyframes level-badge-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 8px rgba(212, 165, 116, 0.18);
-  }
-  50% {
-    transform: scale(1.04);
-      box-shadow: 0 0 12px rgba(212, 165, 116, 0.26);
-  }
-}
-
-.level-badge-arrow {
-  position: absolute;
-  top: -8px;
-    right: -5px;
-    width: 14px;
-    height: 14px;
+  bottom: 11px;
+  right: -22px;
+  width: 84px;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #f4cd84, #d4a574);
   color: #2a1810;
-  background: #d4a574;
-  border-radius: 50%;
-  padding: 2px;
-  border: 1px solid #5c3a1e;
-  stroke-width: 3;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid #5c3a1e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  z-index: 2;
 }
 
 .character-name-class {
@@ -740,9 +730,16 @@
     gap: 0.5rem;
   }
 
-  .character-portrait-small {
+  .portrait-badge-wrap {
     width: 56px;
-      height: 56px;
+    height: 56px;
+  }
+
+  .level-ribbon {
+    bottom: 7px;
+    right: -24px;
+    width: 76px;
+    font-size: 0.44rem;
   }
 
   .character-name {
