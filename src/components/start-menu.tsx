@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { isConfirmKey } from '~/constants/keyboard';
 import { MainMenu } from './main-menu';
 
 interface StartMenuProps {
@@ -24,7 +25,7 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
   useEffect(() => {
     if (showMainMenu) return;
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      if (isConfirmKey(event.key)) {
         event.preventDefault();
         handleStartClick();
       }
