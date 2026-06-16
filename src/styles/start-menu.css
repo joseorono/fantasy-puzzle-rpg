@@ -43,6 +43,25 @@
   z-index: 1;
 }
 
+/* Solid black layer that fades out to conceal the bg image popping in */
+.start-menu__cover {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 1;
+  animation: start-menu-cover-fade 0.9s ease-out forwards;
+}
+
+@keyframes start-menu-cover-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .start-menu__loading-section {
   position: relative;
   z-index: 2;

@@ -32,6 +32,25 @@
   z-index: 1;
 }
 
+/* Solid black layer that fades out to conceal the bg image popping in */
+.splash-screen__cover {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 1;
+  animation: splash-cover-fade 0.9s ease-out forwards;
+}
+
+@keyframes splash-cover-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .splash-screen__content {
   position: relative;
   z-index: 2;

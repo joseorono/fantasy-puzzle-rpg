@@ -64,6 +64,7 @@ export function GameLoader(_props: GameLoaderProps) {
     <div className="game-view splash-screen">
       <div className="splash-screen__bg" />
       <div className="splash-screen__overlay" />
+      <div className="splash-screen__cover" />
       <div className="splash-screen__content">
         {isLoading && (
           <div className="loader-panel">

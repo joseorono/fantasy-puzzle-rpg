@@ -35,6 +35,7 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
     <div className="start-menu">
       <div className="start-menu__bg" />
       <div className="start-menu__overlay" />
+      <div className="start-menu__cover" />
 
       <div className="start-menu__loading-section">
         <button onClick={handleStartClick} className="start-menu__button">
