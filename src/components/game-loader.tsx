@@ -63,12 +63,19 @@ export function GameLoader(_props: GameLoaderProps) {
   return (
     <div className="game-view splash-screen">
       <div className="splash-screen__bg" />
+      <div className="splash-screen__overlay" />
+      <div className="splash-screen__cover" />
       <div className="splash-screen__content">
         {isLoading && (
-          <>
+          <div className="loader-panel">
+            <span className="loader-panel__corner loader-panel__corner--tl" />
+            <span className="loader-panel__corner loader-panel__corner--tr" />
+            <span className="loader-panel__corner loader-panel__corner--bl" />
+            <span className="loader-panel__corner loader-panel__corner--br" />
             <p className="loader__loading-text">Now Loading...</p>
             <LoopingProgressBar durationInMs={1000} />
-          </>
+            <p className="loader__hint">Preparing your adventure</p>
+          </div>
         )}
         {hasError && (
           <div className="text-xl text-red-500">There was an error loading the game. Please refresh and try again.</div>

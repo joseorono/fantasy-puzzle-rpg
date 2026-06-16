@@ -120,9 +120,13 @@
 
 .main-menu__button {
   position: relative;
-  width: 350px;
+  /* The button must fill its fit-content cursor-corners wrapper exactly, or the
+     selection corners frame the wrapper instead of the visible plank. So we use
+     max-width: 100% (a smaller % would shrink the button inside the wrapper) and
+     set the real rendered width directly. */
+  width: 315px;
   height: 100px;
-  max-width: 90%;
+  max-width: 100%;
   padding: 0;
   font-size: 1.2rem;
   font-weight: bold;
@@ -135,16 +139,14 @@
   background-size: cover;
   background-position: center;
   border: none;
-  border-radius: 0;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* drop-shadow follows the plank's alpha silhouette, so the shadow hugs the
+     wood instead of casting a hard rectangle behind its irregular edges. */
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55));
   transition: all 0.2s ease;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-family: 'Press Start 2P', monospace;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,26 +162,9 @@
   transition: all 0.2s ease;
 }
 
-.main-menu__button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 50%, rgba(212, 165, 116, 0.1) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
 .main-menu__button:hover:not(:disabled) {
-  filter: brightness(1.15) drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+  filter: brightness(1.12) drop-shadow(0 7px 8px rgba(0, 0, 0, 0.6));
   transform: translateY(-3px);
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .main-menu__button:hover:not(:disabled) svg {
@@ -189,40 +174,21 @@
 }
 
 .main-menu__button:active:not(:disabled) {
+  filter: brightness(0.97) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
   transform: translateY(-1px);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .main-menu__button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  box-shadow:
-    0 0 10px rgba(212, 165, 116, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.4);
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
 }
 
-/* ==========================================
-   DECORATIVE ELEMENTS
-   ========================================== */
-
-.main-menu__button::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #d4a574, #ffd700, #d4a574);
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 2px;
-}
-
-.main-menu__button:hover:not(:disabled)::before {
-  opacity: 0.3;
+/* Keyboard/mouse selection is shown via the toffec cursor corners, so the
+   buttons themselves don't need a focus ring that would break the wood look. */
+.main-menu__button:focus-visible,
+.main-menu__settings-icon:focus-visible {
+  outline: none;
 }
 
 /* ==========================================
@@ -243,7 +209,7 @@
   }
 
   .main-menu__button {
-    width: 280px;
+    width: 252px;
     padding: 0.75rem 1.5rem;
     font-size: 1.2rem;
   }
@@ -257,10 +223,29 @@
    SETTINGS ICON
    ========================================== */
 
-.main-menu__settings-icon {
+/* Wrapper carries the positioning so the toffec corners anchor to the icon.
+   It also carries the hover/press scale so the corners grow together with the
+   icon (the icon scales too, as a child of the scaled wrapper). */
+.main-menu .main-menu__settings-corners {
   position: absolute;
   bottom: 20px;
   right: 20px;
+  z-index: 10;
+  transition: transform 0.2s ease;
+  transform-origin: bottom right;
+}
+
+.main-menu .main-menu__settings-corners:hover {
+  transform: scale(1.1);
+}
+
+.main-menu .main-menu__settings-corners:active {
+  transform: scale(0.95);
+}
+
+.main-menu__settings-icon {
+  display: block;
+  position: relative;
   width: 64px;
   height: 64px;
   background-color: transparent;
@@ -270,19 +255,11 @@
   background-position: center;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s ease;
-  transform-origin: bottom right;
-  z-index: 10;
   padding: 0;
 }
 
 .main-menu__settings-icon:hover {
   background-image: url('/assets/menu/start/settings-icon-hover.png');
-  transform: scale(1.1);
-}
-
-.main-menu__settings-icon:active {
-  transform: scale(0.95);
 }
 
 @media (max-width: 480px) {
@@ -295,17 +272,20 @@
   }
 
   .main-menu__button {
-    width: 240px;
+    width: 216px;
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
     border: 3px solid #d4a574;
   }
 
+  .main-menu .main-menu__settings-corners {
+    bottom: 15px;
+    right: 15px;
+  }
+
   .main-menu__settings-icon {
     width: 48px;
     height: 48px;
-    bottom: 15px;
-    right: 15px;
   }
 }
 

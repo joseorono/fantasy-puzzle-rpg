@@ -137,7 +137,8 @@ export default function Blacksmith({
                 <div className="town-header-badge">
                   <span className="town-header-badge__label">Forge Fee</span>
                   <span className="town-header-badge__value">
-                    <FrostyRpgIcon name="coinPurse" size={16} /> {CRAFTING_FEE}
+                    <FrostyRpgIcon name="coinPurse" size={16} />{' '}
+                    <span className="town-header-badge__value--coins">{CRAFTING_FEE}</span>
                   </span>
                 </div>
               </TooltipTrigger>
@@ -281,7 +282,7 @@ export default function Blacksmith({
                           handleExchangeResources(config.fromResource, config.toResource, tier.from, tier.to)
                         }
                         disabled={resources[config.fromResource] < tier.from}
-                        className="w-full"
+                        className="w-full text-[#e0e0e0]!"
                       >
                         <span className="flex items-center justify-center gap-2 whitespace-nowrap">
                           Exchange {tier.from} <FrostyRpgIcon name={config.fromIcon} size={20} /> for {tier.to}{' '}
@@ -307,7 +308,8 @@ export default function Blacksmith({
             <div className="town-header-badge">
               <span className="town-header-badge__label">Rate</span>
               <span className="town-header-badge__value">
-                {MELT_COINS_PER_GOLD} <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
+                <span className="town-header-badge__value--coins">{MELT_COINS_PER_GOLD}</span>{' '}
+                <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
                 <FrostyRpgIcon name="goldBar" size={14} />
               </span>
             </div>
@@ -328,7 +330,7 @@ export default function Blacksmith({
                         size="xs"
                         onClick={() => handleMeltCoinsToGold(tier.coins)}
                         disabled={resources.coins < tier.coins}
-                        className="w-full"
+                        className="w-full text-[#e0e0e0]!"
                       >
                         <span className="flex items-center justify-center gap-2 whitespace-nowrap">
                           Melt {tier.coins} <FrostyRpgIcon name="coinPurse" size={20} /> → {tier.gold}{' '}

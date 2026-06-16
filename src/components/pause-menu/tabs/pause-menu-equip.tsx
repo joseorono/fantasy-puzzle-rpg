@@ -53,6 +53,7 @@ export function PauseMenuEquip() {
   const equippedArmor = selected.equippedArmorId ? findEquipmentItem(selected.equippedArmorId) : undefined;
 
   const availableItems = selectedSlot ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory) : [];
+  const equippedItemIdForSelectedSlot = selectedSlot === 'weapon' ? selected.equippedWeaponId : selected.equippedArmorId;
 
   function handleSelectCharacter(id: string) {
     setSelectedId(id);
@@ -139,7 +140,12 @@ export function PauseMenuEquip() {
                   </div>
                 ) : (
                   availableItems.map((item) => (
-                    <EquipAvailableItem key={item.id} item={item} onEquip={() => handleEquip(item.id)} />
+                    <EquipAvailableItem
+                      key={item.id}
+                      item={item}
+                      isEquipped={item.id === equippedItemIdForSelectedSlot}
+                      onEquip={() => handleEquip(item.id)}
+                    />
                   ))
                 )}
               </div>
@@ -256,18 +262,22 @@ function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewPro
 
 interface EquipAvailableItemProps {
   item: EquipmentItemData;
+  isEquipped: boolean;
   onEquip: () => void;
 }
 
-function EquipAvailableItem({ item, onEquip }: EquipAvailableItemProps) {
+function EquipAvailableItem({ item, isEquipped, onEquip }: EquipAvailableItemProps) {
   return (
-    <ToffecBeigeCornersWrapper className="pause-menu-equip-available-item">
+    <ToffecBeigeCornersWrapper className={cn('pause-menu-equip-available-item', isEquipped && 'is-equipped')}>
       <div className="pause-menu-equip-available-clickable" onClick={onEquip}>
         <span className="pause-menu-item-icon-slot">
           {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
         </span>
         <div className="pause-menu-equip-available-info">
-          <div className="pause-menu-equip-available-name">{item.name}</div>
+          <div className="pause-menu-equip-available-name-row">
+            <div className="pause-menu-equip-available-name">{item.name}</div>
+            {isEquipped && <span className="pause-menu-equip-available-badge">Equipped</span>}
+          </div>
           <div className="pause-menu-equip-available-stats">
             {item.pow !== 0 && (
               <span className="pause-menu-item-stat-badge">
