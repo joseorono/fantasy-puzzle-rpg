@@ -85,3 +85,51 @@
     0 0 10px rgba(255, 215, 0, 0.9),
     1px 1px 0 rgba(0, 0, 0, 0.8);
 }
+
+/* ── Floor loot popup — compact icon chips above the character ────────── */
+
+.floor-loot-notification {
+  padding: 0.5rem 0.625rem;
+}
+
+.floor-loot-notification__title {
+  margin: 0 0 0.375rem 0;
+  text-align: center;
+  font-size: 0.5rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.floor-loot-notification__items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.375rem;
+}
+
+.floor-loot-notification__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem 0.125rem 0.25rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 6px;
+}
+
+.floor-loot-notification__icon {
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+.floor-loot-notification__amount {
+  font-family: monospace;
+  font-size: 0.725rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}

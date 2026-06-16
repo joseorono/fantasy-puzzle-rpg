@@ -3,6 +3,8 @@ import type { Resources } from '~/types/resources';
 import type { Position } from '~/types/geometry';
 import { filterNonZeroResources } from '~/lib/loot';
 import { FLOOR_LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
+import { RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 
 interface FloorLootNotificationProps {
   resources: Resources;
@@ -42,24 +44,30 @@ export function FloorLootNotification({ resources, onClose, characterPosition }:
 
   return (
     <div
-      className={`loot-notification pointer-events-none fixed z-50 transition-all duration-300 ${
+      className={`loot-notification floor-loot-notification pointer-events-none fixed z-50 transition-all duration-300 ${
         isVisible ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
       }`}
       style={{
         left: `${characterPosition.x}px`,
         top: `${characterPosition.y - 60}px`,
         transform: 'translateX(-50%)',
-        padding: '0.5rem 0.75rem',
-        minWidth: '90px',
       }}
     >
-      <p className="item-type mb-1 ml-0 text-center">Found</p>
-      <div className="flex flex-wrap justify-center gap-x-2">
-        {resourceEntries.map(([key, value]) => (
-          <p key={key} className="loot-notification__item whitespace-nowrap">
-            +{value} {key}
-          </p>
-        ))}
+      <p className="floor-loot-notification__title">Found!</p>
+      <div className="floor-loot-notification__items">
+        {resourceEntries.map(([key, value]) => {
+          const resourceKey = key as keyof Resources;
+          return (
+            <div key={key} className="floor-loot-notification__item" title={RESOURCE_LABELS[resourceKey]}>
+              <FrostyRpgIcon
+                name={RESOURCE_ICON_NAMES[resourceKey]}
+                size={24}
+                className="floor-loot-notification__icon"
+              />
+              <span className="floor-loot-notification__amount">+{value}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
