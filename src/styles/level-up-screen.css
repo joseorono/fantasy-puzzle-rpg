@@ -134,18 +134,19 @@
 /* Diagonal corner ribbon across the bottom-right of the portrait */
 .level-ribbon {
   position: absolute;
-  bottom: 11px;
-  right: -22px;
-  width: 84px;
+  bottom: 4px;
+  right: -26px;
+  width: 76px;
   transform: rotate(-45deg);
   background: linear-gradient(135deg, #f4cd84, #d4a574);
   color: #2a1810;
   text-align: center;
+  white-space: nowrap;
   font-weight: 700;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
+  font-size: 0.4rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 2px 0;
+  padding: 1px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.5);
   border-bottom: 1px solid #5c3a1e;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -736,10 +737,10 @@
   }
 
   .level-ribbon {
-    bottom: 7px;
-    right: -24px;
-    width: 76px;
-    font-size: 0.44rem;
+    bottom: 4px;
+    right: -18px;
+    width: 60px;
+    font-size: 0.32rem;
   }
 
   .character-name {
