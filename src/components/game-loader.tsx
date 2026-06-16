@@ -72,7 +72,7 @@ export function GameLoader(_props: GameLoaderProps) {
             <span className="loader-panel__corner loader-panel__corner--tr" />
             <span className="loader-panel__corner loader-panel__corner--bl" />
             <span className="loader-panel__corner loader-panel__corner--br" />
-            <p className="loader__loading-text">Now Loading</p>
+            <p className="loader__loading-text">Now Loading...</p>
             <LoopingProgressBar durationInMs={1000} />
             <p className="loader__hint">Preparing your adventure</p>
           </div>
