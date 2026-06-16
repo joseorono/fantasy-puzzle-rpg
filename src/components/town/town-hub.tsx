@@ -16,6 +16,7 @@ import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 import { KeyboardKeys } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 
 interface TownHubProps {
   townName: string;
@@ -54,20 +55,15 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   };
 
   // ESC mirrors the leave button: back to the hub from a sub-location, or out of the town entirely
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key !== KeyboardKeys.Escape) return;
-      e.preventDefault();
-      if (currentLocation === 'town-hub') {
-        onLeaveCallback();
-      } else {
-        handleReturnToHub();
-      }
+  useWindowKeyDown((e) => {
+    if (e.key !== KeyboardKeys.Escape) return;
+    e.preventDefault();
+    if (currentLocation === 'town-hub') {
+      onLeaveCallback();
+    } else {
+      handleReturnToHub();
     }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentLocation, onLeaveCallback]);
+  });
 
   switch (currentLocation) {
     case 'blacksmith':

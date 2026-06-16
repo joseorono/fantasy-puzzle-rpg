@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '~/lib/utils';
 import { KeyboardKeys } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 interface OverlayContainerProps {
@@ -39,17 +40,12 @@ export function OverlayContainer({
     return () => clearTimeout(timer);
   }, [autoDismissMs, onDismiss]);
 
-  useEffect(() => {
-    if (!dismissOnKey) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === KeyboardKeys.Enter || e.key === KeyboardKeys.Escape) {
-        e.preventDefault();
-        onDismiss();
-      }
+  useWindowKeyDown((e) => {
+    if (e.key === KeyboardKeys.Enter || e.key === KeyboardKeys.Escape) {
+      e.preventDefault();
+      onDismiss();
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dismissOnKey, onDismiss]);
+  }, dismissOnKey);
 
   return (
     <div

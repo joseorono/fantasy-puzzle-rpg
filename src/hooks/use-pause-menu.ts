@@ -4,6 +4,7 @@ import { isPauseMenuOpenAtom, activeMenuTabAtom } from '~/stores/pause-menu-atom
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { useCurrentView } from '~/stores/game-store';
 import { KeyboardKeys } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import type { ViewType } from '~/types/routing';
 
 const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards', 'town-hub'];
@@ -37,16 +38,11 @@ export function usePauseMenu() {
     setActiveTab(tab);
   }
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === KeyboardKeys.Escape) {
-        e.preventDefault();
-        toggle();
-      }
+  useWindowKeyDown((e) => {
+    if (e.key === KeyboardKeys.Escape) {
+      e.preventDefault();
+      toggle();
     }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
   // Auto-close if navigating to a disabled view while open

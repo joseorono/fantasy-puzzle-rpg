@@ -3,7 +3,8 @@ import { usePauseMenu } from '~/hooks/use-pause-menu';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { KeyboardKeys } from '~/constants/keyboard';
+import { getNavDirection } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -32,21 +33,16 @@ export function PauseMenuSidebar() {
     close();
   }
 
-  function handleKeyDown(e: KeyboardEvent) {
+  // Up/Down (or W/S) cycles through the tabs.
+  useWindowKeyDown((e) => {
+    const navDirection = getNavDirection(e.key);
+    if (navDirection !== 'up' && navDirection !== 'down') return;
+    e.preventDefault();
     const currentIndex = TABS.findIndex((tab) => tab.id === activeTab);
-
-    if (e.key === KeyboardKeys.ArrowUp || e.key === KeyboardKeys.ArrowDown) {
-      e.preventDefault();
-      const direction = e.key === KeyboardKeys.ArrowUp ? -1 : 1;
-      const nextIndex = (currentIndex + direction + TABS.length) % TABS.length;
-      handleTabClick(TABS[nextIndex].id);
-    }
-  }
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTab]);
+    const step = navDirection === 'up' ? -1 : 1;
+    const nextIndex = (currentIndex + step + TABS.length) % TABS.length;
+    handleTabClick(TABS[nextIndex].id);
+  });
 
   useEffect(() => {
     activeButtonRef.current?.focus();

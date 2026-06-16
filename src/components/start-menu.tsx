@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { MainMenu } from './main-menu';
 
 interface StartMenuProps {
@@ -22,17 +23,12 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
   };
 
   // Press Enter or Space anywhere on the title screen to start.
-  useEffect(() => {
-    if (showMainMenu) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (isConfirmKey(event.key)) {
-        event.preventDefault();
-        handleStartClick();
-      }
+  useWindowKeyDown((event) => {
+    if (isConfirmKey(event.key)) {
+      event.preventDefault();
+      handleStartClick();
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showMainMenu]);
+  }, !showMainMenu);
 
   const handleNewGame = () => {
     onStartClick();

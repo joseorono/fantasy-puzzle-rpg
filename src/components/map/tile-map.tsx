@@ -9,6 +9,8 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
 import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
+import { getNavDirection } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
@@ -313,45 +315,23 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     [currentMapId, currentResources, floorLootProgressActions, resourcesActions],
   );
 
-  // Handle keyboard input for character movement
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      // Prevent default scrolling behavior
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(event.key)) {
-        event.preventDefault();
-      }
+  // Handle keyboard input for character movement (arrow keys and WASD alike)
+  useWindowKeyDown((event) => {
+    const direction = getNavDirection(event.key);
+    if (!direction) return;
+    // Prevent default scrolling behavior
+    event.preventDefault();
 
-      setCharPosition((currentPos) => {
-        let newRow = currentPos.row;
-        let newCol = currentPos.col;
+    setCharPosition((currentPos) => {
+      let newRow = currentPos.row;
+      let newCol = currentPos.col;
+      if (direction === 'up') newRow -= 1;
+      else if (direction === 'down') newRow += 1;
+      else if (direction === 'left') newCol -= 1;
+      else newCol += 1;
 
-        switch (event.key) {
-          case 'ArrowUp':
-          case 'w':
-          case 'W':
-            newRow -= 1;
-            break;
-          case 'ArrowDown':
-          case 's':
-          case 'S':
-            newRow += 1;
-            break;
-          case 'ArrowLeft':
-          case 'a':
-          case 'A':
-            newCol -= 1;
-            break;
-          case 'ArrowRight':
-          case 'd':
-          case 'D':
-            newCol += 1;
-            break;
-          default:
-            return currentPos;
-        }
-
-        // Only move if the new position is a road tile
-        const canMove = isRoadTile(newRow, newCol);
+      // Only move if the new position is a road tile
+      const canMove = isRoadTile(newRow, newCol);
 
         if (canMove) {
           console.log(`✅ Moving to (${newRow}, ${newCol})`);
@@ -384,13 +364,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           return currentPos;
         }
       });
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, checkFloorLoot, showNodeMenu, mapData]);
+  });
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {

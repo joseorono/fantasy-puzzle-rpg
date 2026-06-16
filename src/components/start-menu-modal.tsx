@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
 import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { Play, FolderOpen } from 'lucide-react';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -68,38 +69,24 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     setActiveTab('settings');
   };
 
-  // Latest values for the window listener, refreshed every render so the
-  // listener can be bound once without going stale.
-  const menuStateRef = useRef({ activeTab, selectedIndex, activate: (_index: number) => {} });
-  menuStateRef.current = {
-    activeTab,
-    selectedIndex,
-    activate: (index: number) => [handleStartGame, handleOpenLoad, handleOpenSettings][index]?.(),
-  };
+  // Arrow keys / WASD move the selection, Enter/Space activates it. The hook
+  // always invokes the latest closure, so this reads current state directly.
+  useWindowKeyDown((event) => {
+    if (activeTab !== 'main') return;
 
-  // Arrow keys / WASD move the selection, Enter/Space activates it.
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      const { activeTab: tab, selectedIndex: selected, activate } = menuStateRef.current;
-      if (tab !== 'main') return;
-
-      const direction = getNavDirection(event.key);
-      if (direction === 'down') {
-        event.preventDefault();
-        setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % MENU_ITEM_COUNT));
-      } else if (direction === 'up') {
-        event.preventDefault();
-        setSelectedIndex((prev) => (prev === null ? MENU_ITEM_COUNT - 1 : (prev - 1 + MENU_ITEM_COUNT) % MENU_ITEM_COUNT));
-      } else if (isConfirmKey(event.key)) {
-        if (selected === null) return;
-        event.preventDefault();
-        activate(selected);
-      }
+    const direction = getNavDirection(event.key);
+    if (direction === 'down') {
+      event.preventDefault();
+      setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % MENU_ITEM_COUNT));
+    } else if (direction === 'up') {
+      event.preventDefault();
+      setSelectedIndex((prev) => (prev === null ? MENU_ITEM_COUNT - 1 : (prev - 1 + MENU_ITEM_COUNT) % MENU_ITEM_COUNT));
+    } else if (isConfirmKey(event.key)) {
+      if (selectedIndex === null) return;
+      event.preventDefault();
+      [handleStartGame, handleOpenLoad, handleOpenSettings][selectedIndex]?.();
     }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  });
 
   const isModalOpen = activeTab !== 'main';
 
