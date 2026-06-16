@@ -33,3 +33,8 @@ export const RESOURCE_LABELS = {
   iron: 'Iron',
   copper: 'Copper',
 } as const satisfies Record<keyof Resources, string>;
+
+/** Canonical order resources are displayed in across the UI. */
+export const RESOURCE_DISPLAY_ORDER = ['coins', 'gold', 'silver', 'iron', 'copper'] as const satisfies ReadonlyArray<
+  keyof Resources
+>;

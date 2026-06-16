@@ -25,6 +25,7 @@ import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
@@ -204,38 +205,11 @@ interface ItemRewardsScreenProps {
   onFinish: () => void;
 }
 
-const RESOURCE_CONFIG = [
-  {
-    key: 'coins' as keyof Resources,
-    label: 'Coins',
-    iconName: 'coinPurse' as const,
-    colorClass: 'rewards-resource-row--coins',
-  },
-  {
-    key: 'gold' as keyof Resources,
-    label: 'Gold',
-    iconName: 'goldBar' as const,
-    colorClass: 'rewards-resource-row--gold',
-  },
-  {
-    key: 'silver' as keyof Resources,
-    label: 'Silver',
-    iconName: 'silverBar' as const,
-    colorClass: 'rewards-resource-row--silver',
-  },
-  {
-    key: 'iron' as keyof Resources,
-    label: 'Iron',
-    iconName: 'ironBar' as const,
-    colorClass: 'rewards-resource-row--iron',
-  },
-  {
-    key: 'copper' as keyof Resources,
-    label: 'Copper',
-    iconName: 'copperBar' as const,
-    colorClass: 'rewards-resource-row--copper',
-  },
-];
+const RESOURCE_CONFIG = RESOURCE_DISPLAY_ORDER.map((key) => ({
+  key,
+  label: RESOURCE_LABELS[key],
+  iconName: RESOURCE_ICON_NAMES[key],
+}));
 
 interface RewardsResourcesPanelProps {
   earnedResources: Resources;

@@ -1,6 +1,7 @@
 import NumberFlow from '@number-flow/react';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -13,43 +14,13 @@ interface TopBarResourcesProps {
 }
 
 export function TopBarResources({ resources }: TopBarResourcesProps) {
-  const resourceItems = [
-    {
-      key: 'coins' as keyof Resources,
-      label: 'Coins',
-      value: resources.coins,
-      className: 'top-bar-resource--coins',
-      iconName: 'coinPurse' as const,
-    },
-    {
-      key: 'gold' as keyof Resources,
-      label: 'Gold',
-      value: resources.gold,
-      className: 'top-bar-resource--gold',
-      iconName: 'goldBar' as const,
-    },
-    {
-      key: 'silver' as keyof Resources,
-      label: 'Silver',
-      value: resources.silver,
-      className: 'top-bar-resource--silver',
-      iconName: 'silverBar' as const,
-    },
-    {
-      key: 'iron' as keyof Resources,
-      label: 'Iron',
-      value: resources.iron,
-      className: 'top-bar-resource--iron',
-      iconName: 'ironBar' as const,
-    },
-    {
-      key: 'copper' as keyof Resources,
-      label: 'Copper',
-      value: resources.copper,
-      className: 'top-bar-resource--copper',
-      iconName: 'copperBar' as const,
-    },
-  ];
+  const resourceItems = RESOURCE_DISPLAY_ORDER.map((key) => ({
+    key,
+    label: RESOURCE_LABELS[key],
+    value: resources[key],
+    className: `top-bar-resource--${key}`,
+    iconName: RESOURCE_ICON_NAMES[key],
+  }));
 
   return (
     <div className="top-bar-resources">

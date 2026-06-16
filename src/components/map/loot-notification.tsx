@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { LootTable } from '~/types/loot';
+import type { Resources } from '~/types/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ResourceChip } from '~/components/ui-custom/resource-chip';
+import { RESOURCE_DISPLAY_ORDER } from '~/constants/resources';
 import { LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
 
 interface LootNotificationProps {
@@ -35,12 +39,10 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
 
   const hasEquipment = loot.equipableItems.length > 0;
   const hasConsumables = loot.consumableItems.length > 0;
-  const hasResources =
-    loot.resources.item.coins > 0 ||
-    loot.resources.item.gold > 0 ||
-    loot.resources.item.copper > 0 ||
-    loot.resources.item.silver > 0 ||
-    loot.resources.item.iron > 0;
+  const earnedResources = RESOURCE_DISPLAY_ORDER.map((key) => ({
+    key,
+    amount: loot.resources.item[key],
+  })).filter((entry) => entry.amount > 0);
 
   return (
     <div
@@ -53,48 +55,44 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
         <NarikWoodBitFont text="Treasure Found" size={1.1} />
       </div>
 
-      {/* Loot contents */}
+      {/* Equipment */}
       {hasEquipment && (
         <div className="loot-notification__section">
           <p className="loot-notification__section-label">Equipment</p>
           {loot.equipableItems.map((lootItem, idx) => (
-            <p key={idx} className="loot-notification__item">
-              {'\u2022'} {lootItem.item.name}
-            </p>
+            <div key={idx} className="loot-notification__entry">
+              <span className="loot-notification__entry-icon">
+                {lootItem.item.iconName ? <FrostyRpgIcon name={lootItem.item.iconName} size={24} /> : null}
+              </span>
+              <span className="loot-notification__entry-name">{lootItem.item.name}</span>
+            </div>
           ))}
         </div>
       )}
 
+      {/* Consumables */}
       {hasConsumables && (
         <div className="loot-notification__section">
           <p className="loot-notification__section-label">Items</p>
           {loot.consumableItems.map((lootItem, idx) => (
-            <p key={idx} className="loot-notification__item">
-              {'\u2022'} {lootItem.item.name}
-            </p>
+            <div key={idx} className="loot-notification__entry">
+              <span className="loot-notification__entry-icon">
+                {lootItem.item.iconName ? <FrostyRpgIcon name={lootItem.item.iconName} size={24} /> : null}
+              </span>
+              <span className="loot-notification__entry-name">{lootItem.item.name}</span>
+            </div>
           ))}
         </div>
       )}
 
-      {hasResources && (
+      {/* Resources */}
+      {earnedResources.length > 0 && (
         <div className="loot-notification__section">
           <p className="loot-notification__section-label">Resources</p>
-          <div className="loot-notification__resources-grid">
-            {loot.resources.item.coins > 0 && (
-              <span className="loot-notification__item">Coins: {loot.resources.item.coins}</span>
-            )}
-            {loot.resources.item.gold > 0 && (
-              <span className="loot-notification__item">Gold: {loot.resources.item.gold}</span>
-            )}
-            {loot.resources.item.copper > 0 && (
-              <span className="loot-notification__item">Copper: {loot.resources.item.copper}</span>
-            )}
-            {loot.resources.item.silver > 0 && (
-              <span className="loot-notification__item">Silver: {loot.resources.item.silver}</span>
-            )}
-            {loot.resources.item.iron > 0 && (
-              <span className="loot-notification__item">Iron: {loot.resources.item.iron}</span>
-            )}
+          <div className="loot-notification__resources">
+            {earnedResources.map(({ key, amount }) => (
+              <ResourceChip key={key} resource={key as keyof Resources} amount={amount} iconSize={20} />
+            ))}
           </div>
         </div>
       )}

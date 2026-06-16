@@ -3,8 +3,7 @@ import type { Resources } from '~/types/resources';
 import type { Position } from '~/types/geometry';
 import { filterNonZeroResources } from '~/lib/loot';
 import { FLOOR_LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
-import { RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ResourceChip } from '~/components/ui-custom/resource-chip';
 
 interface FloorLootNotificationProps {
   resources: Resources;
@@ -55,19 +54,9 @@ export function FloorLootNotification({ resources, onClose, characterPosition }:
     >
       <p className="floor-loot-notification__title">Found!</p>
       <div className="floor-loot-notification__items">
-        {resourceEntries.map(([key, value]) => {
-          const resourceKey = key as keyof Resources;
-          return (
-            <div key={key} className="floor-loot-notification__item" title={RESOURCE_LABELS[resourceKey]}>
-              <FrostyRpgIcon
-                name={RESOURCE_ICON_NAMES[resourceKey]}
-                size={24}
-                className="floor-loot-notification__icon"
-              />
-              <span className="floor-loot-notification__amount">+{value}</span>
-            </div>
-          );
-        })}
+        {resourceEntries.map(([key, value]) => (
+          <ResourceChip key={key} resource={key as keyof Resources} amount={value ?? 0} />
+        ))}
       </div>
     </div>
   );
