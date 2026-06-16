@@ -1,26 +1,28 @@
 /* Tooltip Styles - Item Type Theme */
 
 .tooltip-content {
-  color: #d4a574;
-  font-size: 0.625rem;
-  text-transform: uppercase;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  background: rgba(8, 4, 0, 0.3);
-  max-width: 20em;
+  color: #e0e0e0;
+  font-size: 0.7rem;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  border: 2px solid rgba(212, 165, 116, 0.85);
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  max-width: 22em;
   word-wrap: break-word;
   z-index: 1100;
   pointer-events: none;
-  filter:
-    drop-shadow(1px 0 0 rgba(212, 165, 116, 0.6))
-    drop-shadow(-1px 0 0 rgba(212, 165, 116, 0.6))
-    drop-shadow(0 1px 0 rgba(212, 165, 116, 0.6))
-    drop-shadow(0 -1px 0 rgba(212, 165, 116, 0.6));
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.45);
 }
 
-/* Tooltip arrow pointer */
+/* Tooltip arrow pointer — reads as a pointed extension of the gold border */
 .tooltip-arrow {
-  fill: rgba(8, 4, 0, 0.3);
+  fill: rgba(212, 165, 116, 0.85);
 }
 
 /* Animation states */
@@ -57,8 +59,8 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tooltip-content {
-    font-size: 0.4rem;
-      padding: 0.125rem 0.375rem;
-    max-width: 160px;
+    font-size: 0.55rem;
+    padding: 0.4rem 0.55rem;
+    max-width: 200px;
   }
 }
