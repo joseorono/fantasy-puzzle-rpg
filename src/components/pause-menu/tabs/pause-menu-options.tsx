@@ -39,7 +39,16 @@ export function PauseMenuOptions() {
   }
 
   function handleMuteToggle() {
-    if (isMuted === true) {
+    // Read the service's mute state at toggle time so we don't desync if mute
+    // was changed elsewhere (e.g. the battle top bar) while this menu was open.
+    let currentlyMuted = isMuted;
+    try {
+      currentlyMuted = soundService.isMuted();
+    } catch {
+      currentlyMuted = isMuted;
+    }
+
+    if (currentlyMuted) {
       soundService.unmuteAll();
       setIsMuted(false);
       return;
