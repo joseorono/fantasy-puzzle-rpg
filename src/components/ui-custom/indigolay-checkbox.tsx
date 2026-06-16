@@ -8,11 +8,14 @@ const indigolayCheckboxVariants = cva(
     variants: {
       size: {
         sm: 'indigolay-checkbox--sm',
-        default: 'indigolay-checkbox--default',
+        md: 'indigolay-checkbox--md',
+        lg: 'indigolay-checkbox--lg',
+        xl: 'indigolay-checkbox--xl',
+        '2xl': 'indigolay-checkbox--2xl',
       },
     },
     defaultVariants: {
-      size: 'default',
+      size: 'md',
     },
   },
 );
