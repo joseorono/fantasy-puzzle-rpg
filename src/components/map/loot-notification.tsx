@@ -50,7 +50,7 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
     >
       {/* Header */}
       <div className="loot-notification__header">
-        <NarikWoodBitFont text="Treasure Found" size={1.2} />
+        <NarikWoodBitFont text="Treasure Found" size={1.1} />
       </div>
 
       {/* Loot contents */}
