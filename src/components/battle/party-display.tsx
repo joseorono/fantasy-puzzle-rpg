@@ -243,21 +243,28 @@ export function PartyDisplay() {
       </div>
 
       {/* Party Info — HEROES label to the left of the stacked HP + Guard bars (compact) */}
-      <div className="relative z-10 mb-10 flex w-full max-w-sm items-center gap-2 px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]">
+      <div
+        id="party-stats-panel"
+        className="relative z-10 mb-10 flex w-full max-w-sm items-center gap-2 px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]"
+      >
         {/* HEROES label, left of the bars to reclaim vertical space */}
         <h2 className="pixel-font shrink-0 text-[9px] leading-tight font-bold tracking-wider text-white uppercase sm:text-[11px]">
           HEROES
         </h2>
 
         {/* Stacked HP + Guard bars */}
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div id="party-bars" className="flex min-w-0 flex-1 flex-col gap-1">
           {/* Party Health Bar */}
-          <div className="flex items-center gap-1.5">
+          <div id="party-hp-row" className="flex items-center gap-1.5">
             <span className="flex w-5 shrink-0 justify-center">
               <FrostyRpgIcon name="redVial" size={20} />
             </span>
-            <div className="relative h-4 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-5 xl:h-4">
+            <div
+              id="party-hp-bar"
+              className="relative h-4 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-5 xl:h-4"
+            >
               <div
+                id="party-hp-fill"
                 className={cn(
                   'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
                   getHealthBarColor(),
@@ -277,7 +284,10 @@ export function PartyDisplay() {
                 style={{ boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' }}
               />
             </div>
-            <span className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]">
+            <span
+              id="party-hp-percent"
+              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"
+            >
               <NumberFlow
                 value={Math.round(partyHealthPercentage)}
                 spinTiming={SNAPPY_SPIN_TIMING}
@@ -289,7 +299,7 @@ export function PartyDisplay() {
           </div>
 
           {/* Party Guard Bar */}
-          <div className="flex items-center gap-1.5">
+          <div id="party-guard-row" className="flex items-center gap-1.5">
             <span className="flex w-5 shrink-0 justify-center">
               <FrostyRpgIcon
                 name="steelArmor"
@@ -298,12 +308,14 @@ export function PartyDisplay() {
               />
             </span>
             <div
+              id="party-guard-bar"
               className={cn(
                 'relative h-4 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-5 xl:h-4',
                 isGuardFull && 'guard-bar-full',
               )}
             >
               <div
+                id="party-guard-fill"
                 className={cn(
                   'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-300',
                   GUARD_BAR_GRADIENT,
@@ -346,7 +358,10 @@ export function PartyDisplay() {
                 </div>
               )}
             </div>
-            <span className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]">
+            <span
+              id="party-guard-percent"
+              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"
+            >
               <NumberFlow
                 value={Math.round(guardPercentage)}
                 spinTiming={SNAPPY_SPIN_TIMING}
