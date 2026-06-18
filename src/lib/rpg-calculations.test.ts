@@ -206,18 +206,27 @@ describe('Cascade Combo Calculations', () => {
     expect(rpg.calculateComboMultiplier(-1)).toBe(1);
   });
 
-  test('calculateComboMultiplier: each cascade level adds the base bonus', () => {
-    // 1 + level * 0.25
-    expect(rpg.calculateComboMultiplier(1)).toBe(1.25);
-    expect(rpg.calculateComboMultiplier(2)).toBe(1.5);
-    expect(rpg.calculateComboMultiplier(4)).toBe(2);
+  test('calculateComboMultiplier: scales on a diminishing (sqrt) curve', () => {
+    // 1 + 0.35 * sqrt(level)
+    expect(rpg.calculateComboMultiplier(1)).toBeCloseTo(1.35, 5);
+    expect(rpg.calculateComboMultiplier(2)).toBeCloseTo(1.4949747, 5);
+    expect(rpg.calculateComboMultiplier(4)).toBeCloseTo(1.7, 5);
+    // Each extra level adds less than the previous one (diminishing returns)
+    const d1 = rpg.calculateComboMultiplier(2) - rpg.calculateComboMultiplier(1);
+    const d2 = rpg.calculateComboMultiplier(3) - rpg.calculateComboMultiplier(2);
+    expect(d2).toBeLessThan(d1);
   });
 
-  test('calculateComboMultiplier: equipment bonus adds a small per-level amount', () => {
-    // 1 + 1 * (0.25 + 0.02)
-    expect(rpg.calculateComboMultiplier(1, 0.02)).toBeCloseTo(1.27, 5);
-    // 1 + 3 * (0.25 + 0.05)
-    expect(rpg.calculateComboMultiplier(3, 0.05)).toBeCloseTo(1.9, 5);
+  test('calculateComboMultiplier: never exceeds MAX_COMBO_MULTIPLIER', () => {
+    expect(rpg.calculateComboMultiplier(50)).toBe(rpg.MAX_COMBO_MULTIPLIER);
+    expect(rpg.calculateComboMultiplier(9999, 0.5)).toBe(rpg.MAX_COMBO_MULTIPLIER);
+  });
+
+  test('calculateComboMultiplier: equipment bonus raises the curve coefficient', () => {
+    // 1 + (0.35 + 0.02) * sqrt(1)
+    expect(rpg.calculateComboMultiplier(1, 0.02)).toBeCloseTo(1.37, 5);
+    // Equipment makes a given cascade level hit harder (still capped)
+    expect(rpg.calculateComboMultiplier(2, 0.1)).toBeGreaterThan(rpg.calculateComboMultiplier(2));
   });
 
   test('calculateMatchDamage: comboMultiplier defaults to 1 (existing behavior unchanged)', () => {

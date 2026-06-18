@@ -18,6 +18,16 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Damage Numbers**: Animated floating damage numbers appear when damage is dealt
   - Red numbers for enemy damage
   - Orange numbers for party damage
+- **Cascade Combos**: Chained cascades (matches from refilled orbs) multiply damage on a
+  diminishing square-root curve — `min(MAX_COMBO_MULTIPLIER, 1 + (CASCADE_DAMAGE_BONUS_PER_LEVEL +
+  equipmentComboBonus) × √cascadeLevel)` (`src/lib/rpg-calculations.ts`). Rises fast early, then
+  flattens, and is hard-capped at `MAX_COMBO_MULTIPLIER` (2.0×) so deep chains stay flashy without
+  speedrunning a battle. The chain (and its combo level) resets on each new player swap.
+- **Bomb chains (anti-runaway)**: Matching a wildcard bomb still triggers a 3×3 blast and can chain,
+  but bomb spawning is bounded per cascade chain: after the first bomb spawns in a chain the per-orb
+  refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.5), and a chain spawns at most
+  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/game.ts`). So bomb cascades can't self-feed
+  into runaway x8 combos.
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top
   - Glow effect on matched orbs (400ms)
   - Scale-down and fade-out animation (200ms)

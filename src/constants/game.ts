@@ -19,6 +19,12 @@ export const BOMB_MATCH_SPAWN_THRESHOLD = 5;
 /** Chance (0-1) that any individual refilled orb spawns as a wildcard bomb. */
 export const BOMB_REFILL_CHANCE = 0.02;
 
+/** After the first bomb spawns in a cascade chain, the per-orb bomb chance is multiplied by this. */
+export const CASCADE_BOMB_CHANCE_MULTIPLIER = 0.75;
+
+/** Max wildcard bombs that may spawn across a single cascade chain (anti-runaway). */
+export const MAX_CHAIN_BOMB_SPAWNS = 3;
+
 /** Minimum time (ms) the loading screen is shown, regardless of actual load speed. */
 export const MIN_LOAD_TIME_MS = 800;
 

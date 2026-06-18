@@ -5,6 +5,7 @@ import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
+import { BOMB_REFILL_CHANCE } from '~/constants/game';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
   calculatePartyHpPercentage,
@@ -209,16 +210,31 @@ export const resetBattleAtom = atom(null, (get, set) => {
 // (on top of the per-orb random chance baked into removeMatchedOrbsAndRefill).
 export const removeMatchedOrbsAtom = atom(
   null,
-  (get, set, matchedOrbIds: Set<string>, bombsToSpawn: number = 0) => {
-    if (matchedOrbIds.size === 0) return;
+  (
+    get,
+    set,
+    matchedOrbIds: Set<string>,
+    bombsToSpawn: number = 0,
+    bombRefillChance: number = BOMB_REFILL_CHANCE,
+    maxBombs: number = Infinity,
+  ): number => {
+    if (matchedOrbIds.size === 0) return 0;
 
     const currentState = get(battleStateAtom);
-    const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds, bombsToSpawn);
+    const { board, bombsSpawned } = removeMatchedOrbsAndRefill(
+      currentState.board,
+      matchedOrbIds,
+      bombsToSpawn,
+      bombRefillChance,
+      maxBombs,
+    );
 
     set(battleStateAtom, {
       ...currentState,
-      board: newBoard,
+      board,
     });
+
+    return bombsSpawned;
   },
 );
 

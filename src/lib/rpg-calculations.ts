@@ -121,24 +121,28 @@ export function calculateEnemyDamage(enemy: EnemyData): number {
 }
 
 /**
- * Base damage bonus added per cascade level. Each chained cascade (matches
- * created by refilled orbs) increases damage by this fraction, plus any
- * equipment combo bonus. The initial post-swap match is cascade level 0.
+ * Combo bonus coefficient. Damage scales with the SQUARE ROOT of cascade depth
+ * (diminishing returns), so deep chains keep rewarding without exploding. The
+ * initial post-swap match is cascade level 0. Equipment combo bonus adds to this.
  */
-export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.25;
+export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.35;
+
+/** Hard ceiling on the cascade combo multiplier, regardless of chain depth. */
+export const MAX_COMBO_MULTIPLIER = 2.0;
 
 /**
  * Calculates the cascade combo multiplier for a given cascade depth.
- * Level 0 (the initial match) is always 1x. Each subsequent cascade adds
- * CASCADE_DAMAGE_BONUS_PER_LEVEL plus the equipment combo bonus.
- * Formula: 1 + cascadeLevel * (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus)
+ * Level 0 (the initial match) is always 1x. Deeper cascades scale on a
+ * diminishing (square-root) curve and are clamped at MAX_COMBO_MULTIPLIER.
+ * Formula: min(MAX_COMBO_MULTIPLIER, 1 + (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus) * sqrt(cascadeLevel))
  * @param cascadeLevel Cascade depth (0 = first match, 1+ = chained cascades)
- * @param equipmentComboBonus Extra per-level bonus from equipment (default 0)
- * @returns Combo multiplier (>= 1)
+ * @param equipmentComboBonus Extra coefficient bonus from equipment (default 0)
+ * @returns Combo multiplier (1 .. MAX_COMBO_MULTIPLIER)
  */
 export function calculateComboMultiplier(cascadeLevel: number, equipmentComboBonus: number = 0): number {
   if (cascadeLevel <= 0) return 1;
-  return 1 + cascadeLevel * (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus);
+  const perLevel = CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus;
+  return Math.min(MAX_COMBO_MULTIPLIER, 1 + perLevel * Math.sqrt(cascadeLevel));
 }
 
 /**

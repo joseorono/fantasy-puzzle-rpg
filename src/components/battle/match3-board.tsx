@@ -34,7 +34,12 @@ import {
   GRAY_MATCH_DAMAGE_MULTIPLIER,
   GUARD_CHARGE_PER_ORB,
 } from '~/constants/party';
-import { BOMB_MATCH_SPAWN_THRESHOLD } from '~/constants/game';
+import {
+  BOMB_MATCH_SPAWN_THRESHOLD,
+  BOMB_REFILL_CHANCE,
+  CASCADE_BOMB_CHANCE_MULTIPLIER,
+  MAX_CHAIN_BOMB_SPAWNS,
+} from '~/constants/game';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
@@ -188,6 +193,8 @@ export function Match3Board() {
   const previousBoardRef = useRef<Orb[][]>(board);
   // Cascade depth for the current chain: 0 = initial post-swap match, 1+ = cascades
   const cascadeLevelRef = useRef(0);
+  // Bombs spawned so far in the current cascade chain (anti-runaway budget)
+  const chainBombsSpawnedRef = useRef(0);
 
   // Track new orbs for animation
   useEffect(() => {
@@ -302,6 +309,12 @@ export function Match3Board() {
     // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
     const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
 
+    // Bomb-spawn budget for this cascade chain: the per-orb chance halves once the
+    // first bomb has spawned, and the chain can spawn at most MAX_CHAIN_BOMB_SPAWNS.
+    const bombChance =
+      chainBombsSpawnedRef.current > 0 ? BOMB_REFILL_CHANCE * CASCADE_BOMB_CHANCE_MULTIPLIER : BOMB_REFILL_CHANCE;
+    const maxBombs = Math.max(0, MAX_CHAIN_BOMB_SPAWNS - chainBombsSpawnedRef.current);
+
     // Actions are only performed if the character is alive (or it's a neutral match)
     if (!isCharacterDead) {
       // Reduce the matching character's skill cooldown based on orbs matched
@@ -340,7 +353,8 @@ export function Match3Board() {
     // Remove matched orbs after animation - this will trigger a new board state
     // which will cause this effect to run again and check for new (cascade) matches
     processingTimerRef.current = setTimeout(() => {
-      removeMatchedOrbs(matches, bombsToSpawn);
+      const spawned = removeMatchedOrbs(matches, bombsToSpawn, bombChance, maxBombs);
+      chainBombsSpawnedRef.current += spawned;
     }, 600);
 
     return () => {
@@ -370,6 +384,7 @@ export function Match3Board() {
         if (wasValid) {
           // Valid swap - a fresh player action starts a new cascade chain
           cascadeLevelRef.current = 0;
+          chainBombsSpawnedRef.current = 0;
           incrementTurn();
           // processing flag will be cleared when matches are processed
           setIsProcessingSwap(false);
