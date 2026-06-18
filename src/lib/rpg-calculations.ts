@@ -284,7 +284,7 @@ export const MAX_GUARD_REDUCTION = 1;
 export const GUARD_DRAIN_FRACTION = 0.5;
 
 /** Guard points bled per second at a full bar; scales down with fill (anti-hoard decay). */
-export const GUARD_DECAY_RATE = 8;
+export const GUARD_DECAY_RATE = 3;
 
 /** Divisor controlling how steeply party SPD raises the Guard Charge Rate (higher = gentler). */
 export const GUARD_CHARGE_RATE_DIVISOR = 25;
