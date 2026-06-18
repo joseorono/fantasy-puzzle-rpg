@@ -38,6 +38,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     currentMatches: [],
     score: 0,
     turn: 1,
+    guard: 0,
     gameStatus: 'playing',
     lastDamage: null,
     lastMatchedType: null,

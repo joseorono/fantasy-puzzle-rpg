@@ -173,7 +173,26 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
 - Each character is associated with an orb type (color)
 - Matching orbs of a character's type provides visual feedback
 - Health bar changes color based on last matched type
-- Gray orbs are neutral and don't trigger character-specific effects
+- Gray orbs are neutral: they deal reduced chip damage and charge the party-wide **Guard** meter (see below)
+
+### Guard Meter
+The party shares a **Guard** meter (`BattleState.guard`, `0..GUARD_MAX`) — its own defensive resource,
+charged by matching gray orbs. Math lives in `src/lib/rpg-calculations.ts`; balance constants in
+`src/constants/party.ts` (gray damage/charge) and `rpg-calculations.ts` (mitigation/drain/decay).
+
+- **Charging:** matching gray adds `matchSize × GUARD_CHARGE_PER_ORB × guardChargeRate`, where the
+  SPD-derived `calculateGuardChargeRate(party)` scales charge with the living party's collective SPD
+  on a diminishing (sqrt) curve. Gray's enemy chip damage is scaled by `GRAY_MATCH_DAMAGE_MULTIPLIER`.
+- **Mitigation (percentage-based, scales to any damage):** an incoming hit is reduced by the bar's
+  **fill %** (capped at `MAX_GUARD_REDUCTION`). A full bar fully blocks one attack. Resolved centrally
+  in `damagePartyAtom` via `resolveGuardedDamage(incoming, guard, guardBreak)`.
+- **`guardBreak` (per enemy, default 1):** scales only how much of the bar each block *drains* — `2.0`
+  erodes it twice as fast (forces more gray-matching to stay shielded), `0.5` barely dents it. It does
+  **not** weaken mitigation, so a full bar always fully blocks.
+- **Anti-hoard decay:** Guard bleeds over time proportional to its fill (`decayGuard`, ticked in the
+  battle screen's cooldown loop), so a full bar can't be parked — blocking a big hit is a timing play.
+- **Feedback:** the Guard bar (steelArmor icon, below the HEROES HP bar) shimmers while charging, glows
+  when full, and shatters with a "BLOCK!"/"GUARD" popup + clang when it mitigates a hit.
 
 ## Future Enhancements
 - Character-specific abilities when skills are ready

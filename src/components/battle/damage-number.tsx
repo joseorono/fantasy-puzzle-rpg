@@ -12,7 +12,8 @@ export function DamageNumber({ target }: DamageNumberProps) {
   const [animationKey, setAnimationKey] = useState(0);
 
   useEffect(() => {
-    if (lastDamage && lastDamage.target === target) {
+    // Skip fully-blocked hits (amount 0) — the Guard bar's "BLOCK!" popup is the feedback there.
+    if (lastDamage && lastDamage.target === target && lastDamage.amount > 0) {
       setDisplayDamage(lastDamage.amount);
       setVisible(true);
       setAnimationKey((prev) => prev + 1); // Force new animation

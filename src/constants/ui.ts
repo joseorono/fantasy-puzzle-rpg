@@ -37,6 +37,9 @@ export const HP_THRESHOLD_GRADIENT: Record<HpThreshold, string> = {
   low: 'from-red-600 to-red-500',
 };
 
+/** Tailwind gradient for the party Guard bar (steel/blue-gray, evokes the steelArmor icon) */
+export const GUARD_BAR_GRADIENT = 'from-slate-400 to-slate-300';
+
 /** Tailwind bg classes for enemy HP bars (battle) */
 export const ENEMY_HP_THRESHOLD_BG: Record<HpThreshold, string> = {
   high: 'bg-red-500',

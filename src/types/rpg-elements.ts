@@ -50,4 +50,6 @@ export interface EnemyData extends BaseStats {
   attackDamage: number; // Base damage before POW modifications
   lootTable: LootTable; // Loot dropped when defeated
   expReward: number; // Experience points rewarded when defeated
+  /** Drain multiplier on the party Guard meter per hit; default 1 (0.5 = barely erodes, 2+ = chews through). */
+  guardBreak?: number;
 }

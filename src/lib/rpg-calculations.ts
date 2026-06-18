@@ -271,6 +271,86 @@ export function calculateItemCooldownInMs(party: CharacterData[]): number {
 }
 
 // ============================================================================
+// Guard Calculations
+// ============================================================================
+
+/** Maximum value of the party Guard meter (a full bar). */
+export const GUARD_MAX = 100;
+
+/** Reduction cap: 1 = a full Guard bar can fully block one attack. */
+export const MAX_GUARD_REDUCTION = 1;
+
+/** Fraction of the Guard bar a full-strength block consumes, before guardBreak scaling. */
+export const GUARD_DRAIN_FRACTION = 0.5;
+
+/** Guard points bled per second at a full bar; scales down with fill (anti-hoard decay). */
+export const GUARD_DECAY_RATE = 8;
+
+/** Divisor controlling how steeply party SPD raises the Guard Charge Rate (higher = gentler). */
+export const GUARD_CHARGE_RATE_DIVISOR = 25;
+
+/**
+ * Calculates the party's Guard Charge Rate — a multiplier on the guard gained from matching
+ * gray orbs. Scales with the collective SPD of living members on a diminishing (square-root)
+ * curve so stacking SPD can't trivialize defense.
+ * Formula: 1 + sqrt(livingCollectiveSpd) / GUARD_CHARGE_RATE_DIVISOR
+ * @param party Array of character data
+ * @returns Guard charge multiplier (>= 1)
+ */
+export function calculateGuardChargeRate(party: CharacterData[]): number {
+  const livingSpd = party.reduce(
+    (total, char) => (char.currentHp > 0 ? total + char.stats.spd : total),
+    0,
+  );
+  return 1 + Math.sqrt(livingSpd) / GUARD_CHARGE_RATE_DIVISOR;
+}
+
+/** Result of resolving an incoming hit against the Guard meter. */
+export interface GuardResolution {
+  /** Damage that gets through after Guard mitigation. */
+  damageTaken: number;
+  /** Remaining Guard after the hit drains it. */
+  guardAfter: number;
+  /** True when the hit was fully blocked by a maxed-out bar. */
+  wasFullBlock: boolean;
+}
+
+/**
+ * Resolves an incoming hit against the party Guard meter. Mitigation is a percentage of the
+ * incoming damage equal to the bar's fill (capped at MAX_GUARD_REDUCTION), so it scales to any
+ * damage magnitude. The enemy's `guardBreak` only scales how much of the bar the block drains.
+ * @param incoming Raw incoming damage
+ * @param guard Current guard value (0..GUARD_MAX)
+ * @param guardBreak Enemy drain multiplier (default 1; 0.5 barely erodes, 2+ chews through)
+ * @returns The damage taken, the guard remaining, and whether it was a full block
+ */
+export function resolveGuardedDamage(
+  incoming: number,
+  guard: number,
+  guardBreak: number = 1,
+): GuardResolution {
+  const reduction = Math.min(MAX_GUARD_REDUCTION, guard / GUARD_MAX);
+  const damageTaken = Math.max(0, Math.round(incoming * (1 - reduction)));
+  const drain = reduction * GUARD_DRAIN_FRACTION * GUARD_MAX * guardBreak;
+  return {
+    damageTaken,
+    guardAfter: Math.max(0, guard - drain),
+    wasFullBlock: reduction >= MAX_GUARD_REDUCTION && damageTaken === 0,
+  };
+}
+
+/**
+ * Bleeds the Guard meter over time, faster the fuller the bar (anti-hoard decay).
+ * Formula: guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt
+ * @param guard Current guard value
+ * @param dt Elapsed time in seconds
+ * @returns The decayed guard value, floored at 0
+ */
+export function decayGuard(guard: number, dt: number): number {
+  return Math.max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt);
+}
+
+// ============================================================================
 // HP Threshold
 // ============================================================================
 

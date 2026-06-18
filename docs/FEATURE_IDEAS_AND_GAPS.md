@@ -39,8 +39,9 @@ Everything below expands on these and the rest of the systems.
 - **No status effects or elements.** `CharacterData`/`EnemyData` have no `activeEffects` field;
   skills in `src/constants/skills.ts` only carry damage multipliers + flat bonuses. We already
   have ice/fire/lightning/poison icon assets sitting unused.
-- **Gray orbs are dead weight.** Five orb types (`src/constants/game.ts`) but gray does nothing
-  — no block-breaking, no charge, no penalty.
+- ~~**Gray orbs are dead weight.** Five orb types (`src/constants/game.ts`) but gray does nothing
+  — no block-breaking, no charge, no penalty.~~ **Resolved:** gray now charges the party Guard meter
+  (and deals tuned-down chip damage). See [GUARD_METER_PLAN.md](./GUARD_METER_PLAN.md).
 - **Skills resolve instantly with no animation beat.** A 650ms color flash (skill burst overlay)
   is the whole payoff for a level-6 ultimate. No telegraph, no impact.
 - **Enemies are HP sponges.** Attack on a timer, target random living member, die at 0 HP.

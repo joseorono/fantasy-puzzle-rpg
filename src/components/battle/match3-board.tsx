@@ -13,12 +13,17 @@ import {
   reduceSkillCooldownAtom,
   incrementTurnAtom,
   addScoreAtom,
+  addGuardAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
-import { calculateMatchDamage, calculateComboMultiplier } from '~/lib/rpg-calculations';
+import {
+  calculateMatchDamage,
+  calculateComboMultiplier,
+  calculateGuardChargeRate,
+} from '~/lib/rpg-calculations';
 import { findLineMatches, expandBombExplosions } from '~/lib/match-3';
 import { getEquipmentComboBonus } from '~/lib/equipment-system';
 import {
@@ -26,6 +31,8 @@ import {
   COOLDOWN_REDUCTION_PER_ORB,
   BASE_MATCH_SCORE,
   MATCH_SIZE_BONUS_MULTIPLIER,
+  GRAY_MATCH_DAMAGE_MULTIPLIER,
+  GUARD_CHARGE_PER_ORB,
 } from '~/constants/party';
 import { BOMB_MATCH_SPAWN_THRESHOLD } from '~/constants/game';
 import { cn } from '~/lib/utils';
@@ -163,6 +170,7 @@ export function Match3Board() {
   const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
   const addScore = useSetAtom(addScoreAtom);
+  const addGuard = useSetAtom(addGuardAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
@@ -282,8 +290,14 @@ export function Match3Board() {
       comboPopupTimerRef.current = setTimeout(() => setComboPopup(0), 1100);
     }
 
-    // Calculate damage (match size multiplier + POW + cascade combo multiplier)
-    const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+    // Calculate damage (match size multiplier + POW + cascade combo multiplier).
+    // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
+    // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER (gray previously dealt full neutral damage).
+    const isGrayMatch = matchedType === 'gray';
+    const baseTotalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+    const totalDamage = isGrayMatch
+      ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
+      : baseTotalDamage;
 
     // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
     const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
@@ -294,6 +308,12 @@ export function Match3Board() {
       if (matchingCharacter) {
         const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
         reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
+      }
+
+      // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
+      // Charge scales with match size and the party's SPD-derived Guard Charge Rate.
+      if (isGrayMatch) {
+        addGuard(matches.size * GUARD_CHARGE_PER_ORB * calculateGuardChargeRate(party));
       }
 
       // Show highlight for a moment, then apply effect

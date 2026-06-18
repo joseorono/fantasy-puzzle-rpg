@@ -6,7 +6,13 @@ import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
-import { calculatePartyHpPercentage, calculateSkillDamage } from '~/lib/rpg-calculations';
+import {
+  calculatePartyHpPercentage,
+  calculateSkillDamage,
+  resolveGuardedDamage,
+  decayGuard,
+  GUARD_MAX,
+} from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import {
   getLivingMembers,
@@ -50,6 +56,10 @@ export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
   return calculatePartyHpPercentage(party);
 });
+
+// Derived atoms for the party Guard meter
+export const guardAtom = atom((get) => get(battleStateAtom).guard);
+export const guardPercentageAtom = atom((get) => (get(battleStateAtom).guard / GUARD_MAX) * 100);
 
 // Atom to select a target enemy
 export const selectEnemyAtom = atom(null, (get, set, enemyId: string) => {
@@ -110,22 +120,37 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
   const living = getLivingMembers(currentState.party);
   if (living.length === 0) return;
 
-  // Select a random living hero to take damage
+  // The Guard meter mitigates incoming damage before it reaches a hero. The attacking
+  // enemy's guardBreak only scales how hard the hit drains the bar, not the mitigation.
+  const attacker = attackerEnemyId
+    ? currentState.enemies.find((e) => e.id === attackerEnemyId)
+    : undefined;
+  const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
+    damage,
+    currentState.guard,
+    attacker?.guardBreak ?? 1,
+  );
+  const wasGuarded = damageTaken < damage;
+
+  // Select a random living hero to take the post-Guard damage
   const targetHero = getRandomElement(living);
 
-  const party = damagePartyMember(currentState.party, targetHero.id, damage);
+  const party = damagePartyMember(currentState.party, targetHero.id, damageTaken);
   const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
 
   set(battleStateAtom, {
     ...currentState,
     party,
+    guard: guardAfter,
     gameStatus,
     lastDamage: {
-      amount: damage,
+      amount: damageTaken,
       target: 'party',
       timestamp: Date.now(),
       characterId: targetHero.id,
       enemyId: attackerEnemyId,
+      wasGuarded,
+      blocked: wasFullBlock,
     },
   });
 });
@@ -311,6 +336,28 @@ export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number
   });
 
   set(battleStateAtom, { ...currentState, party });
+});
+
+// Atom to add to the party Guard meter (e.g. from matching gray orbs)
+export const addGuardAtom = atom(null, (get, set, amount: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || amount <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: Math.min(GUARD_MAX, currentState.guard + amount),
+  });
+});
+
+// Atom to bleed the Guard meter over time (anti-hoard decay)
+export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || currentState.guard <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: decayGuard(currentState.guard, deltaSeconds),
+  });
 });
 
 // Atom to increment turn counter

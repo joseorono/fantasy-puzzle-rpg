@@ -40,8 +40,20 @@ export interface BattleState {
   currentMatches: Match[];
   score: number;
   turn: number;
+  /** Party-wide Guard meter (0..GUARD_MAX). Charged by matching gray orbs; mitigates enemy attacks. */
+  guard: number;
   gameStatus: BattleStatus;
-  lastDamage: { amount: number; target: ActionTarget; timestamp: number; characterId?: string; enemyId?: string } | null;
+  lastDamage: {
+    amount: number;
+    target: ActionTarget;
+    timestamp: number;
+    characterId?: string;
+    enemyId?: string;
+    /** Set when the incoming party hit was mitigated by Guard. */
+    wasGuarded?: boolean;
+    /** Set when Guard fully blocked the incoming hit. */
+    blocked?: boolean;
+  } | null;
   lastMatchedType: OrbType | null;
   enemyAttackTimestamp?: number | null;
   lastSkillActivation: SkillActivationEvent | null;

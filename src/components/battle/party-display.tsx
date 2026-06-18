@@ -2,16 +2,19 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import {
   partyAtom,
   partyHealthPercentageAtom,
+  guardPercentageAtom,
   lastMatchedTypeAtom,
   lastDamageAtom,
   activateSkillAtom,
 } from '~/stores/battle-atoms';
 import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Heart } from 'lucide-react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
+import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS } from '~/constants/party';
-import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT } from '~/constants/ui';
+import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT, GUARD_BAR_GRADIENT } from '~/constants/ui';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
@@ -43,7 +46,12 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
 
   // Show damage animation when this character is hit
   useEffect(() => {
-    if (lastDamage && lastDamage.target === 'party' && lastDamage.characterId === character.id) {
+    if (
+      lastDamage &&
+      lastDamage.target === 'party' &&
+      lastDamage.characterId === character.id &&
+      lastDamage.amount > 0
+    ) {
       setDamageAmount(lastDamage.amount);
       setShowDamage(true);
       const timer = setTimeout(() => setShowDamage(false), 1000);
@@ -172,9 +180,18 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
 export function PartyDisplay() {
   const party = useAtomValue(partyAtom);
   const partyHealthPercentage = useAtomValue(partyHealthPercentageAtom);
+  const guardPercentage = useAtomValue(guardPercentageAtom);
   const lastMatchedType = useAtomValue(lastMatchedTypeAtom);
+  const lastDamage = useAtomValue(lastDamageAtom);
   const activateSkill = useSetAtom(activateSkillAtom);
   const [showPulse, setShowPulse] = useState(false);
+
+  // Guard feedback: shimmer while charging, shatter + popup when a hit is mitigated.
+  const [guardCharging, setGuardCharging] = useState(false);
+  const [guardBlock, setGuardBlock] = useState<{ full: boolean; key: number } | null>(null);
+  const prevGuardRef = useRef(0);
+  const guardBlockKeyRef = useRef(0);
+  const isGuardFull = guardPercentage >= 99.5;
 
   // Trigger pulse animation when type changes
   useEffect(() => {
@@ -184,6 +201,28 @@ export function PartyDisplay() {
       return () => clearTimeout(timer);
     }
   }, [lastMatchedType]);
+
+  // Shimmer the Guard bar whenever it gains charge.
+  useEffect(() => {
+    if (guardPercentage > prevGuardRef.current + 0.01) {
+      setGuardCharging(true);
+      const timer = setTimeout(() => setGuardCharging(false), 450);
+      prevGuardRef.current = guardPercentage;
+      return () => clearTimeout(timer);
+    }
+    prevGuardRef.current = guardPercentage;
+  }, [guardPercentage]);
+
+  // Shatter + "BLOCK!" popup (and a metallic clang) when an incoming hit was mitigated by Guard.
+  useEffect(() => {
+    if (lastDamage && lastDamage.target === 'party' && lastDamage.wasGuarded) {
+      guardBlockKeyRef.current += 1;
+      setGuardBlock({ full: !!lastDamage.blocked, key: guardBlockKeyRef.current });
+      soundService.playSound(SoundNames.blacksmithShorter, lastDamage.blocked ? 0.9 : 0.5);
+      const timer = setTimeout(() => setGuardBlock(null), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [lastDamage]);
 
   // Determine health bar color
   const getHealthBarColor = () => {
@@ -204,59 +243,120 @@ export function PartyDisplay() {
         </div>
       </div>
 
-      {/* Party Info - MOVED UP WITH TRANSLATE */}
-      <div className="relative z-10 mb-10 w-full max-w-xs px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]">
-        <div className="text-center">
-          <h2 className="pixel-font text-sm mt-5 xl:mt-0 pt-2 scale-90 font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
-            HEROES
-          </h2>
-        </div>
+      {/* Party Info — HEROES label to the left of the stacked HP + Guard bars (compact) */}
+      <div className="relative z-10 mb-10 flex w-full max-w-xs items-center gap-2 px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]">
+        {/* HEROES label, left of the bars to reclaim vertical space */}
+        <h2 className="pixel-font shrink-0 text-[9px] leading-tight font-bold tracking-wider text-white uppercase sm:text-[11px]">
+          HEROES
+        </h2>
 
-        {/* Party Health Bar */}
-        <div className="flex items-center justify-between">
-          <span className="pixel-font text-xs font-bold tracking-wider text-white uppercase sm:text-sm">HP</span>
-          <span className="pixel-font text-xs font-bold text-white sm:text-sm">
-            <NumberFlow
-              value={Math.round(partyHealthPercentage)}
-              spinTiming={SNAPPY_SPIN_TIMING}
-              transformTiming={SNAPPY_TRANSFORM_TIMING}
-              opacityTiming={SNAPPY_OPACITY_TIMING}
-            />
-            %
-          </span>
-        </div>
-        <div
-          className={cn(
-            'relative h-4 rounded-none border-2 border-gray-700 bg-gray-800 transition-all duration-300 sm:h-5 sm:border-3 md:h-6 xl:h-3 xl:border-1',
-            showPulse && !true && 'scale-105 ring-4 ring-white/50',
-          )}
-        >
-          {/* Health bar fill */}
-          <div
-            className={cn(
-              'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
-              getHealthBarColor(),
-              showPulse && !true && 'animate-pulse',
-            )}
-            style={{ width: `${partyHealthPercentage}%` }}
-          >
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-            {/* Segmented bars effect */}
-            <div className="absolute inset-0 flex">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="flex-1 border-r border-black/20" />
-              ))}
+        {/* Stacked HP + Guard bars */}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {/* Party Health Bar */}
+          <div className="flex items-center gap-1.5">
+            <Heart className="h-3 w-3 shrink-0 text-red-400 sm:h-3.5 sm:w-3.5" fill="currentColor" />
+            <div className="relative h-3 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-3.5 xl:h-3">
+              <div
+                className={cn(
+                  'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
+                  getHealthBarColor(),
+                  showPulse && 'brightness-125',
+                )}
+                style={{ width: `${partyHealthPercentage}%` }}
+              >
+                <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                <div className="absolute inset-0 flex">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="flex-1 border-r border-black/20" />
+                  ))}
+                </div>
+              </div>
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' }}
+              />
             </div>
+            <span className="pixel-font w-8 shrink-0 text-right text-[9px] font-bold text-white sm:text-[11px]">
+              <NumberFlow
+                value={Math.round(partyHealthPercentage)}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+              %
+            </span>
           </div>
-          {/* Pixel border effect */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2)',
-            }}
-          />
+
+          {/* Party Guard Bar */}
+          <div className="flex items-center gap-1.5">
+            <FrostyRpgIcon
+              name="steelArmor"
+              size={14}
+              className={cn(
+                'shrink-0',
+                guardCharging && 'guard-icon-charging',
+                isGuardFull && 'guard-icon-full',
+              )}
+            />
+            <div
+              className={cn(
+                'relative h-3 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-3.5 xl:h-3',
+                isGuardFull && 'guard-bar-full',
+              )}
+            >
+              <div
+                className={cn(
+                  'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-300',
+                  GUARD_BAR_GRADIENT,
+                )}
+                style={{ width: `${guardPercentage}%` }}
+              >
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent',
+                    guardCharging ? 'guard-shimmer' : 'opacity-0',
+                  )}
+                />
+                <div className="absolute inset-0 flex">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="flex-1 border-r border-black/20" />
+                  ))}
+                </div>
+              </div>
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' }}
+              />
+              {/* Shatter flash + "BLOCK!" / "GUARD" popup when a hit is mitigated */}
+              {guardBlock && (
+                <div
+                  key={guardBlock.key}
+                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+                >
+                  <div
+                    className={cn('guard-shatter absolute inset-0', guardBlock.full ? 'bg-white/70' : 'bg-white/30')}
+                  />
+                  <span
+                    className={cn(
+                      'guard-block-popup pixel-font relative font-bold text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.85)]',
+                      guardBlock.full ? 'text-[11px] sm:text-sm' : 'text-[8px] sm:text-[10px]',
+                    )}
+                  >
+                    {guardBlock.full ? 'BLOCK!' : 'GUARD'}
+                  </span>
+                </div>
+              )}
+            </div>
+            <span className="pixel-font w-8 shrink-0 text-right text-[9px] font-bold text-white sm:text-[11px]">
+              <NumberFlow
+                value={Math.round(guardPercentage)}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+              %
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -91,6 +91,7 @@ describe('createBattleState', () => {
     const state = createBattleState(party, enemies);
     expect(state.score).toBe(0);
     expect(state.turn).toBe(1);
+    expect(state.guard).toBe(0);
     expect(state.selectedOrb).toBeNull();
     expect(state.currentMatches).toEqual([]);
     expect(state.lastDamage).toBeNull();

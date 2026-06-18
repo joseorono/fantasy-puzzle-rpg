@@ -446,3 +446,92 @@ describe('Stat Utilities', () => {
     expect(result3).toBe(false);
   });
 });
+
+// ============================================================================
+// Guard Calculations
+// ============================================================================
+
+describe('Guard Calculations', () => {
+  function partyWithSpds(spds: number[], hps?: number[]): CharacterData[] {
+    return spds.map((spd, i) => ({
+      ...mockCharacter,
+      id: `char-${i}`,
+      stats: { ...mockCharacter.stats, spd },
+      currentHp: hps ? hps[i] : mockCharacter.maxHp,
+    }));
+  }
+
+  test('calculateGuardChargeRate: returns >= 1 and >= 1 at zero SPD', () => {
+    expect(rpg.calculateGuardChargeRate(partyWithSpds([0, 0]))).toBe(1);
+    expect(rpg.calculateGuardChargeRate(partyWithSpds([10, 20]))).toBeGreaterThan(1);
+  });
+
+  test('calculateGuardChargeRate: monotonic — more SPD never charges slower', () => {
+    const low = rpg.calculateGuardChargeRate(partyWithSpds([10, 10]));
+    const high = rpg.calculateGuardChargeRate(partyWithSpds([40, 40]));
+    expect(high).toBeGreaterThan(low);
+  });
+
+  test('calculateGuardChargeRate: diminishing — doubling SPD less than doubles the bonus', () => {
+    const bonusAt = (spd: number) => rpg.calculateGuardChargeRate(partyWithSpds([spd])) - 1;
+    expect(bonusAt(100)).toBeLessThan(bonusAt(25) * 4);
+  });
+
+  test('calculateGuardChargeRate: ignores dead members', () => {
+    const allAlive = rpg.calculateGuardChargeRate(partyWithSpds([20, 20]));
+    const oneDead = rpg.calculateGuardChargeRate(partyWithSpds([20, 20], [100, 0]));
+    expect(oneDead).toBeLessThan(allAlive);
+  });
+
+  test('resolveGuardedDamage: empty bar lets full damage through', () => {
+    const r = rpg.resolveGuardedDamage(25, 0);
+    expect(r.damageTaken).toBe(25);
+    expect(r.guardAfter).toBe(0);
+    expect(r.wasFullBlock).toBe(false);
+  });
+
+  test('resolveGuardedDamage: full bar fully blocks (guardBreak 1), drains half', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 1);
+    expect(r.damageTaken).toBe(0);
+    expect(r.wasFullBlock).toBe(true);
+    expect(r.guardAfter).toBe(50); // 100 - 1 * 0.5 * 100 * 1
+  });
+
+  test('resolveGuardedDamage: guardBreak 2 still fully blocks but empties the bar', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 2);
+    expect(r.damageTaken).toBe(0);
+    expect(r.wasFullBlock).toBe(true);
+    expect(r.guardAfter).toBe(0); // 100 - 1 * 0.5 * 100 * 2 = 0 (floored)
+  });
+
+  test('resolveGuardedDamage: guardBreak 0.5 fully blocks and barely dents', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 0.5);
+    expect(r.damageTaken).toBe(0);
+    expect(r.guardAfter).toBe(75); // 100 - 1 * 0.5 * 100 * 0.5
+  });
+
+  test('resolveGuardedDamage: half bar mitigates ~50%', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX / 2, 1);
+    expect(r.damageTaken).toBe(13); // round(25 * 0.5)
+    expect(r.guardAfter).toBe(25); // 50 - 0.5 * 0.5 * 100 * 1 = 50 - 25
+    expect(r.wasFullBlock).toBe(false);
+  });
+
+  test('resolveGuardedDamage: is magnitude-independent (same % behavior at 25 and 2500)', () => {
+    const small = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX / 2, 1);
+    const large = rpg.resolveGuardedDamage(2500, rpg.GUARD_MAX / 2, 1);
+    // Same mitigation fraction → same guard drain regardless of hit size
+    expect(large.guardAfter).toBe(small.guardAfter);
+    expect(large.damageTaken).toBe(1250); // exactly 50% of 2500
+    expect(small.damageTaken).toBe(13); // round(50% of 25)
+  });
+
+  test('decayGuard: bleeds proportionally to fill and floors at 0', () => {
+    expect(rpg.decayGuard(rpg.GUARD_MAX, 1)).toBe(rpg.GUARD_MAX - rpg.GUARD_DECAY_RATE);
+    // 20% fill decays ~20% as fast as a full bar
+    const fullDrop = rpg.GUARD_MAX - rpg.decayGuard(rpg.GUARD_MAX, 1);
+    const lowDrop = rpg.GUARD_MAX * 0.2 - rpg.decayGuard(rpg.GUARD_MAX * 0.2, 1);
+    expect(lowDrop).toBeCloseTo(fullDrop * 0.2, 5);
+    expect(rpg.decayGuard(0, 5)).toBe(0);
+  });
+});

@@ -10,6 +10,7 @@ import {
   gameStatusAtom,
   enemiesAtom,
   tickSkillCooldownsAtom,
+  tickGuardDecayAtom,
 } from '~/stores/battle-atoms';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
@@ -24,6 +25,7 @@ export default function BattleScreen() {
   const enemies = useAtomValue(enemiesAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
+  const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
 
   // Per-enemy attack timer tracking
   const attackTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -94,16 +96,17 @@ export default function BattleScreen() {
     return () => clearAllTimers();
   }, [gameStatus, enemies, damageParty]);
 
-  // Skill cooldown tick loop
+  // Skill cooldown + Guard decay tick loop
   useEffect(() => {
     if (gameStatus !== 'playing') return;
 
     const interval = setInterval(() => {
       tickSkillCooldowns(0.1);
+      tickGuardDecay(0.1);
     }, 100);
 
     return () => clearInterval(interval);
-  }, [gameStatus, tickSkillCooldowns]);
+  }, [gameStatus, tickSkillCooldowns, tickGuardDecay]);
 
   // Combat music
   useEffect(() => {
