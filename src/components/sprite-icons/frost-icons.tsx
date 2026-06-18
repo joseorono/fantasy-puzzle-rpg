@@ -98,7 +98,7 @@ const ICON_MAP = {
   kunai: [15, 3],
 
   /* ── Row 4: Potions / tools ────────────────────────────── */
-  ironSword: [0, 4],
+  redVial: [0, 4],
   smallPotion: [1, 4],
   largePotion: [2, 4],
   bluePotion: [3, 4],

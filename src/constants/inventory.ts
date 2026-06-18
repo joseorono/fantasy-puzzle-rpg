@@ -23,7 +23,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     forClass: 'warrior',
     comboBonus: 0.01,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 2 },
-    iconName: 'ironSword',
+    iconName: 'broadsword',
   },
   {
     id: 'iron-short-bow',
