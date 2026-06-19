@@ -88,7 +88,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #boardSection::before {
