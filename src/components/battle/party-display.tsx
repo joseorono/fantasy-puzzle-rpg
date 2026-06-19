@@ -22,7 +22,7 @@ import {
 } from '~/constants/ui';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
-import { triggerHitstop } from '~/lib/hitstop';
+import { triggerHitstop } from '~/lib/animation-strategies';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';

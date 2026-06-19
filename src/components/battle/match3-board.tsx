@@ -45,7 +45,7 @@ import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
-import { triggerHitstop } from '~/lib/hitstop';
+import { triggerHitstop } from '~/lib/animation-strategies';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 
 /** Heat-scaled glow color for the cascade combo popup — hotter as the chain grows. */
