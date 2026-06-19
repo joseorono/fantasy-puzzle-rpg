@@ -49,6 +49,10 @@ export interface BattleState {
     timestamp: number;
     characterId?: string;
     enemyId?: string;
+    /** Multiple targets hit at once (e.g. an all-enemy skill). Each id flinches. */
+    enemyIds?: string[];
+    /** What produced the hit. A missing value is treated as `'match'` by consumers. */
+    source?: 'match' | 'skill' | 'enemy';
     /** Set when the incoming party hit was mitigated by Guard. */
     wasGuarded?: boolean;
     /** Set when Guard fully blocked the incoming hit. */

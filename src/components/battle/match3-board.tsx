@@ -45,6 +45,7 @@ import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
+import { triggerHitstop } from '~/lib/hitstop';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 
 /** Heat-scaled glow color for the cascade combo popup — hotter as the chain grows. */
@@ -336,6 +337,8 @@ export function Match3Board() {
           healParty({ amount: totalDamage, source: 'match' });
         } else {
           damageEnemy(totalDamage);
+          // Freeze-frame on the moment damage lands (skip on heals — nothing was struck).
+          triggerHitstop();
         }
         soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
       }, 200);

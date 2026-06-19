@@ -410,6 +410,11 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   let selectedEnemyId = currentState.selectedEnemyId;
   let gameStatus = currentState.gameStatus;
 
+  // Capture which enemy/enemies took the hit BEFORE selection advances on death,
+  // so the flinch lands on the sprite that was actually struck.
+  const hitEnemyId = selectedEnemyId;
+  const hitEnemyIds = enemies.filter((e) => e.currentHp > 0).map((e) => e.id);
+
   if (skill.target === 'enemy') {
     // Damage the selected enemy
     enemies = enemies.map((e) => {
@@ -463,18 +468,29 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       : char,
   );
 
+  // Drive the enemy hit reaction (flinch + number) through the shared lastDamage channel.
+  // Heals are left out — they keep flowing through the party-side feedback.
+  const timestamp = Date.now();
+  let lastDamage = currentState.lastDamage;
+  if (skill.target === 'enemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, source: 'skill' };
+  } else if (skill.target === 'allEnemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, source: 'skill' };
+  }
+
   set(battleStateAtom, {
     ...currentState,
     party,
     enemies,
     selectedEnemyId,
     gameStatus,
+    lastDamage,
     lastSkillActivation: {
       characterId,
       skillName: skill.name,
       amount,
       isHeal: skill.target === 'ally' || skill.target === 'allAlly',
-      timestamp: Date.now(),
+      timestamp,
     },
   });
 });

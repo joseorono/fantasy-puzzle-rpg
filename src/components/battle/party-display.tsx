@@ -22,6 +22,7 @@ import {
 } from '~/constants/ui';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
+import { triggerHitstop } from '~/lib/hitstop';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -53,6 +54,10 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
     soundService.playSound(SoundNames.shimmeringSuccessShort);
     setIsActivating(true);
     setTimeout(() => setIsActivating(false), 600);
+    // Freeze-frame on damaging casts (heals get their feedback over the party instead).
+    if (skill.target === 'enemy' || skill.target === 'allEnemy') {
+      triggerHitstop();
+    }
   }
 
   // Show damage animation when this character is hit
