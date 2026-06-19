@@ -3,6 +3,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .battleArea {
@@ -62,13 +63,32 @@
   min-height: 0;
 }
 
+@media (max-height: 700px) and (min-width: 1024px) {
+  .partySection #party-display-root {
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .partySection #party-members-grid {
+    transform: scale(0.88);
+    transform-origin: center center;
+  }
+
+  .partySection #party-stats-panel {
+    margin-bottom: 0;
+    transform: scale(0.92);
+    transform-origin: center top;
+  }
+}
+
 .boardSection {
   position: relative;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: auto;
 }
 
 #boardSection::before {

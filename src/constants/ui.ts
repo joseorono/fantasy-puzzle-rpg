@@ -40,6 +40,12 @@ export const HP_THRESHOLD_GRADIENT: Record<HpThreshold, string> = {
 /** Tailwind gradient for the party Guard bar (steel/blue-gray, evokes the steelArmor icon) */
 export const GUARD_BAR_GRADIENT = 'from-slate-400 to-slate-300';
 
+/** Minimum opacity for party stats icons; remaining opacity scales with fill percentage up to 1. */
+export const PARTY_STATS_ICON_MIN_OPACITY = 0.6;
+
+/** Visual dimming filter used by low/empty party stats icons, aligned with the pause menu icon language. */
+export const PARTY_STATS_ICON_DIM_FILTER = 'grayscale(0.3) brightness(0.6) contrast(1.2)';
+
 /** Tailwind bg classes for enemy HP bars (battle) */
 export const ENEMY_HP_THRESHOLD_BG: Record<HpThreshold, string> = {
   high: 'bg-red-500',

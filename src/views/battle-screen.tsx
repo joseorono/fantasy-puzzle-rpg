@@ -117,12 +117,12 @@ export default function BattleScreen() {
   }, []);
 
   return (
-    <div className="game-view overflow-hidden">
+    <div className="game-view flex h-full min-h-0 flex-col overflow-x-hidden overflow-y-auto">
       {/* Retro screen effect overlay */}
       <div className="retro-screen pointer-events-none fixed inset-0 z-50" />
 
       {/* Main container - constrained to game view height */}
-      <div className="relative flex h-full flex-col">
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <BattleTopBar nextAttackIn={nextAttackIn} />
 
         {/* Main battle area - Split view */}

@@ -13,7 +13,13 @@ import { useState, useEffect, useRef } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS } from '~/constants/party';
-import { HP_THRESHOLD_BG, HP_THRESHOLD_GRADIENT, GUARD_BAR_GRADIENT } from '~/constants/ui';
+import {
+  HP_THRESHOLD_BG,
+  HP_THRESHOLD_GRADIENT,
+  GUARD_BAR_GRADIENT,
+  PARTY_STATS_ICON_MIN_OPACITY,
+  PARTY_STATS_ICON_DIM_FILTER,
+} from '~/constants/ui';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
@@ -21,6 +27,12 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import NumberFlow from '@number-flow/react';
 import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING } from '~/constants/number-flow';
+
+function getPartyStatsIconOpacity(fillPercentage: number) {
+  const normalizedPercentage = Math.max(0, Math.min(100, fillPercentage));
+
+  return PARTY_STATS_ICON_MIN_OPACITY + ((1 - PARTY_STATS_ICON_MIN_OPACITY) * normalizedPercentage) / 100;
+}
 
 function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const Icon = CHARACTER_ICONS[character.class];
@@ -184,6 +196,10 @@ export function PartyDisplay() {
   const lastDamage = useAtomValue(lastDamageAtom);
   const activateSkill = useSetAtom(activateSkillAtom);
   const [showPulse, setShowPulse] = useState(false);
+  const isPartyHealthEmpty = partyHealthPercentage <= 0;
+  const isGuardEmpty = guardPercentage <= 0;
+  const partyHealthIconOpacity = getPartyStatsIconOpacity(partyHealthPercentage);
+  const guardIconOpacity = getPartyStatsIconOpacity(guardPercentage);
 
   // Guard feedback: shimmer while charging, shatter + popup when a hit is mitigated.
   const [guardCharging, setGuardCharging] = useState(false);
@@ -232,9 +248,9 @@ export function PartyDisplay() {
   };
 
   return (
-    <div className="relative flex xl:h-[50vh] flex-col items-center justify-between p-2 sm:p-3 md:p-4 2xl:h-[43vh]">
+    <div id="party-display-root" className="relative flex h-full flex-col items-center justify-center gap-3 p-2 sm:gap-4 sm:p-3 md:gap-5 md:p-4">
       {/* Party members grid */}
-      <div className="relative flex flex-1 items-center justify-center">
+      <div id="party-members-grid" className="relative flex items-center justify-center">
         <div className="grid grid-cols-4 gap-2 xl:gap-7 sm:gap-3 md:gap-4 2xl:gap-12">
           {party.map((character) => (
             <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
@@ -245,7 +261,7 @@ export function PartyDisplay() {
       {/* Party Info — HEROES label to the left of the stacked HP + Guard bars (compact) */}
       <div
         id="party-stats-panel"
-        className="relative z-10 mb-10 flex w-full max-w-sm items-center gap-2 px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]"
+        className="relative z-10 mb-2 flex w-full max-w-sm items-center gap-2 px-2 xl:translate-y-[-5px] 2xl:translate-y-[0]"
       >
         {/* HEROES label, left of the bars to reclaim vertical space */}
         <h2 className="pixel-font shrink-0 text-[9px] leading-tight font-bold tracking-wider text-white uppercase sm:text-[11px]">
@@ -256,7 +272,13 @@ export function PartyDisplay() {
         <div id="party-bars" className="flex min-w-0 flex-1 flex-col gap-1">
           {/* Party Health Bar */}
           <div id="party-hp-row" className="flex items-center gap-1.5">
-            <span className="flex w-5 shrink-0 justify-center">
+            <span
+              className="flex w-5 shrink-0 justify-center"
+              style={{
+                opacity: partyHealthIconOpacity,
+                filter: isPartyHealthEmpty === true ? PARTY_STATS_ICON_DIM_FILTER : undefined,
+              }}
+            >
               <FrostyRpgIcon name="redVial" size={20} />
             </span>
             <div
@@ -300,11 +322,20 @@ export function PartyDisplay() {
 
           {/* Party Guard Bar */}
           <div id="party-guard-row" className="flex items-center gap-1.5">
-            <span className="flex w-5 shrink-0 justify-center">
+            <span
+              className="flex w-5 shrink-0 justify-center"
+              style={{
+                opacity: guardIconOpacity,
+                filter: isGuardEmpty === true ? PARTY_STATS_ICON_DIM_FILTER : undefined,
+              }}
+            >
               <FrostyRpgIcon
                 name="steelArmor"
                 size={20}
-                className={cn(guardCharging && 'guard-icon-charging', isGuardFull && 'guard-icon-full')}
+                className={cn(
+                  !isGuardEmpty && guardCharging && 'guard-icon-charging',
+                  !isGuardEmpty && isGuardFull && 'guard-icon-full',
+                )}
               />
             </span>
             <div
