@@ -41,7 +41,7 @@ export const useGameStore = create<GameStore>()(
   devtools(
     immer((set, get) => {
       const resourcesSlice = createResourcesSlice(set);
-      const partySlice = createPartySlice(set);
+      const partySlice = createPartySlice(set, get);
       const inventorySlice = createInventorySlice(set);
       const routerSlice = createRouterSlice(set);
       const mapProgressSlice = createMapProgressSlice(set, get);

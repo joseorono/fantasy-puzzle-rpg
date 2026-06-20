@@ -14,11 +14,12 @@ import {
   goToDebug as libGoToDebug,
   goToBattleRewards as libGoToBattleRewards,
 } from '~/lib/routing';
+import type { SliceSet } from '~/types/store';
 
 /**
  * Creates the router slice for the game store
  */
-export function createRouterSlice(set: any): RouterSlice {
+export function createRouterSlice(set: SliceSet<RouterSlice>): RouterSlice {
   return {
     router: INITIAL_ROUTER_STATE,
     actions: {

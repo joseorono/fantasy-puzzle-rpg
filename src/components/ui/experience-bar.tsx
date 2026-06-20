@@ -30,4 +30,5 @@ export function ExperienceBar({ percentage, label, variant, className }: Experie
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { experienceBarVariants };

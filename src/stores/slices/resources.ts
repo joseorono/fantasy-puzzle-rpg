@@ -2,6 +2,7 @@ import type { ResourcesSlice } from './resources.types';
 import { addResources as addResourcesLib, deductCost } from '../../lib/resources';
 import { INITIAL_RESOURCES_STATE } from '../../constants/resources';
 import type { Resources } from '~/types/resources';
+import type { SliceSet } from '~/types/store';
 
 /**
  * Create the resources slice
@@ -9,7 +10,7 @@ import type { Resources } from '~/types/resources';
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createResourcesSlice = (set: any): ResourcesSlice => ({
+export const createResourcesSlice = (set: SliceSet<ResourcesSlice>): ResourcesSlice => ({
   resources: INITIAL_RESOURCES_STATE,
 
   actions: {

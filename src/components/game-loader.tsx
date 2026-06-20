@@ -7,13 +7,11 @@ import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 import { OverlayHost } from '~/components/overlays/overlay-host';
 import { StartMenu } from '~/components/start-menu';
 
-interface GameLoaderProps {}
-
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function GameLoader(_props: GameLoaderProps) {
+export function GameLoader() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isReady, setIsReady] = useState(false);

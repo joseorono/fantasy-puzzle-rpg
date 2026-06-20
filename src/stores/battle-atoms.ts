@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import type { BattleState } from '~/types/battle';
+import type { BattleState, BattleStatus } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
@@ -280,7 +280,7 @@ export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
@@ -294,7 +294,7 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
@@ -408,7 +408,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   let party = currentState.party;
   let enemies = currentState.enemies;
   let selectedEnemyId = currentState.selectedEnemyId;
-  let gameStatus = currentState.gameStatus;
+  let gameStatus: BattleStatus = currentState.gameStatus;
 
   // Capture which enemy/enemies took the hit BEFORE selection advances on death,
   // so the flinch lands on the sprite that was actually struck.

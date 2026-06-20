@@ -1,6 +1,7 @@
 import type { InventorySlice } from './inventory.types';
 import { addItemToInventory, removeItemFromInventory } from '../../lib/inventory';
 import type { InventoryItem } from '~/lib/inventory';
+import type { SliceSet } from '~/types/store';
 
 /**
  * Initial inventory state
@@ -19,7 +20,7 @@ const INITIAL_INVENTORY_STATE: InventoryItem[] = [
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createInventorySlice = (set: any): InventorySlice => ({
+export const createInventorySlice = (set: SliceSet<InventorySlice>): InventorySlice => ({
   inventory: {
     items: INITIAL_INVENTORY_STATE,
   },

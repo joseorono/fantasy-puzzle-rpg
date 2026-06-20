@@ -37,4 +37,5 @@ export function ToffecButton({ className, variant, size, ...props }: ToffecButto
   return <button className={cn(toffecButtonVariants({ variant, size, className }))} {...props} />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { toffecButtonVariants };

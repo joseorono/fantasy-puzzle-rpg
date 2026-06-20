@@ -36,4 +36,5 @@ export function IndigolayCheckbox({ checked, className, disabled, label, onChang
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { indigolayCheckboxVariants };

@@ -26,6 +26,7 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   skillCooldown: 0,
   maxCooldown: 10,
   level: 1,
+  currentExp: 0,
   expToNextLevel: 1,
   unlockedSkillIds: ['warrior-power-strike'],
   selectedSkillId: 'warrior-power-strike',
