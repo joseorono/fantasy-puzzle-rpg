@@ -1,6 +1,7 @@
-import { useAtomValue } from 'jotai';
-import { gameStatusAtom, enemiesAtom } from '~/stores/battle-atoms';
-import { useRouterActions } from '~/stores/game-store';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { gameStatusAtom, enemiesAtom, partyAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { useRouterActions, usePartyActions } from '~/stores/game-store';
+import { isGameStartedAtom } from '~/stores/app-atoms';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { combineLootFromEnemies } from '~/lib/loot';
@@ -13,7 +14,11 @@ import { SparkleLayer } from '~/components/effects/sparkle-layer';
 export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
   const enemies = useAtomValue(enemiesAtom);
-  const { goToBattleRewards, goBack } = useRouterActions();
+  const battleParty = useAtomValue(partyAtom);
+  const resetBattle = useSetAtom(resetBattleAtom);
+  const setGameStarted = useSetAtom(isGameStartedAtom);
+  const { goToBattleRewards, reset: resetRouter } = useRouterActions();
+  const { syncBattleHp, fullyHealParty } = usePartyActions();
 
   if (gameStatus === 'playing') return null;
 
@@ -21,10 +26,16 @@ export function BattleOverModal() {
 
   function handleContinue() {
     if (isVictory) {
+      // Carry post-battle HP back to the persistent party before showing rewards.
+      syncBattleHp(battleParty);
       const { lootTable, expReward } = combineLootFromEnemies(enemies);
       goToBattleRewards({ lootTable, expReward });
     } else {
-      goBack();
+      // Defeat: auto-heal the party, reset combat + navigation, and return to the start menu.
+      fullyHealParty();
+      resetBattle();
+      resetRouter();
+      setGameStarted(false);
     }
   }
 

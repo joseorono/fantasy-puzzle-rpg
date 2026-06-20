@@ -5,6 +5,7 @@ import {
   fullyHealMember as fullyHealMemberLib,
   isPartyFullyHealed,
   damageAllPartyMembers as damageAllPartyMembersLib,
+  applyHpFromBattle,
 } from '~/lib/party-system';
 import { unlockSkill as unlockSkillLib, selectSkill as selectSkillLib } from '~/lib/skill-system';
 import type { CharacterData } from '~/types/rpg-elements';
@@ -69,6 +70,14 @@ export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartyS
           },
           false,
           'party/damageAllPartyMembers',
+        ),
+      syncBattleHp: (battleParty: CharacterData[]) =>
+        set(
+          (state: PartySlice) => {
+            state.party.members = applyHpFromBattle(state.party.members, battleParty);
+          },
+          false,
+          'party/syncBattleHp',
         ),
       equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) =>
         set(

@@ -61,11 +61,11 @@ describe('createBattleState', () => {
     expect(state.enemies[1].currentHp).toBe(state.enemies[1].maxHp);
   });
 
-  it('should reset party members to full HP', () => {
+  it('should carry over party members current HP (no force-heal on entry)', () => {
     const state = createBattleState(party, enemies);
-    for (const member of state.party) {
-      expect(member.currentHp).toBe(member.maxHp);
-    }
+    // No equipment, so effective maxHp equals base maxHp and current HP is preserved.
+    expect(state.party[0].currentHp).toBe(30);
+    expect(state.party[1].currentHp).toBe(20);
   });
 
   it('should set skill cooldowns on party members', () => {

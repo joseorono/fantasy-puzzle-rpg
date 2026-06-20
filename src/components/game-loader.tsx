@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { isGameStartedAtom } from '~/stores/app-atoms';
 import { loaderService } from '~/services/loader-service';
 import { MIN_LOAD_TIME_MS } from '~/constants/game';
 import GameScreen from '~/game-screen';
@@ -14,7 +16,9 @@ function delay(ms: number): Promise<void> {
 export function GameLoader() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  // Menu↔game gate lives in a global atom so flows like a game-over can return to the title.
+  const isReady = useAtomValue(isGameStartedAtom);
+  const setGameStarted = useSetAtom(isGameStartedAtom);
   const [showStartMenu, setShowStartMenu] = useState(false);
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export function GameLoader() {
   }, []);
 
   function handleStartMenuClick() {
-    setIsReady(true);
+    setGameStarted(true);
   }
 
   if (isReady) {
