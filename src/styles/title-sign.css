@@ -11,38 +11,46 @@
 
 .title-sign-layer {
   position: fixed;
-  inset: 0;
+  /* Sit inside the ever-present window frame (see --frame-thickness in frames.css). */
+  inset: var(--frame-thickness, 0px);
   z-index: 60;
   display: flex;
-  padding: 1.5rem;
+  padding: 1rem;
   /* Click-through: only a dismissable ribbon re-enables pointer events. */
   pointer-events: none;
 }
 
 .title-sign {
   /* Tunable defaults (overridden per variant). */
-  --ts-base-width: 340px;
-  --ts-font: 13px;
-  --ts-text-inset: 13%;
-  --ts-text-nudge-y: 8%;
+  --ts-base-width: 480px;
+  --ts-font: 14px;
+  --ts-text-inset: 14%;
+  --ts-text-nudge-y: 6%;
 
+  position: relative;
+  flex: none;
   width: calc(var(--ts-base-width) * var(--ts-scale, 1));
-  max-width: 90vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-inline: var(--ts-text-inset);
-  padding-bottom: var(--ts-text-nudge-y);
+  max-width: 92%;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
   pointer-events: none;
 }
 
+/*
+  Text is positioned out of flow so it never affects the ribbon's box size —
+  the per-variant aspect-ratio fully governs the height from the width.
+*/
 .title-sign__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--ts-text-inset);
+  padding-bottom: var(--ts-text-nudge-y);
   text-align: center;
-  white-space: nowrap;
-  line-height: 1.2;
+  line-height: 1.3;
   user-select: none;
   font-size: calc(var(--ts-font) * var(--ts-scale, 1));
 }
@@ -57,10 +65,10 @@
   background-image: url('/assets/title-signs/ribbon-red.png');
 }
 .title-sign--large {
-  --ts-base-width: 600px;
-  --ts-font: 20px;
-  --ts-text-inset: 14%;
-  --ts-text-nudge-y: 6%;
+  --ts-base-width: 700px;
+  --ts-font: 22px;
+  --ts-text-inset: 15%;
+  --ts-text-nudge-y: 5%;
   aspect-ratio: 700 / 141;
   background-image: url('/assets/title-signs/ribbon-red-large.png');
 }
@@ -89,12 +97,12 @@
   centering transform with the animation transform.
 */
 .title-sign--top {
-  --ts-hidden: translateY(-150%);
+  --ts-hidden: translateY(-200%);
   align-self: flex-start;
   margin-inline: auto;
 }
 .title-sign--bottom {
-  --ts-hidden: translateY(150%);
+  --ts-hidden: translateY(200%);
   align-self: flex-end;
   margin-inline: auto;
 }
