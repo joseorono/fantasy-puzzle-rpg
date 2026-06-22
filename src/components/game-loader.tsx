@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { isGameStartedAtom } from '~/stores/app-atoms';
+import { useRouterActions } from '~/stores/game-store';
 import { loaderService } from '~/services/loader-service';
 import { MIN_LOAD_TIME_MS } from '~/constants/game';
+import { SKIP_TO_DEBUG_VIEW } from '~/constants/dev';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 import { OverlayHost } from '~/components/overlays/overlay-host';
+import { TitleSignHost } from '~/components/title-sign/title-sign-host';
 import { StartMenu } from '~/components/start-menu';
 
 function delay(ms: number): Promise<void> {
@@ -19,24 +22,32 @@ export function GameLoader() {
   // Menu↔game gate lives in a global atom so flows like a game-over can return to the title.
   const isReady = useAtomValue(isGameStartedAtom);
   const setGameStarted = useSetAtom(isGameStartedAtom);
+  const { goToDebug } = useRouterActions();
   const [showStartMenu, setShowStartMenu] = useState(false);
 
   useEffect(() => {
+    // Dev shortcut: skip the start menu and jump straight into the debug view.
+    const onLoaded = () => {
+      setIsLoading(false);
+      if (SKIP_TO_DEBUG_VIEW) {
+        goToDebug();
+        setGameStarted(true);
+      } else {
+        setShowStartMenu(true);
+      }
+    };
+
     if (loaderService.shouldPreload()) {
       loaderService.isPreloading = true;
       Promise.all([loaderService.preloadEverything(), delay(MIN_LOAD_TIME_MS)])
-        .then(() => {
-          setIsLoading(false);
-          setShowStartMenu(true);
-        })
+        .then(onLoaded)
         .catch((error) => {
           console.error('Failed to load game assets:', error);
           setHasError(true);
           setIsLoading(false);
         });
     } else if (loaderService.isLoaded) {
-      setIsLoading(false);
-      setShowStartMenu(true);
+      onLoaded();
     }
   }, []);
 
@@ -50,6 +61,7 @@ export function GameLoader() {
         <GameScreen />
         <PauseMenuOverlay />
         <OverlayHost />
+        <TitleSignHost />
       </>
     );
   }
