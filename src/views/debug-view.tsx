@@ -6,6 +6,7 @@ import TestView from '~/views/test-view';
 import PartyTestView from '~/views/party-test';
 import RouterTestView from '~/views/router-test';
 import GlobalAnimationTest from '~/views/global-animation-test';
+import TitleSignTestView from '~/views/title-sign-test';
 import SkillDebugView from '~/views/skill-debug';
 
 interface DebugSection {
@@ -18,6 +19,7 @@ interface DebugSection {
 
 const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
+  { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
   { id: 'router', label: 'Router', Component: RouterTestView },
   { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
   { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },

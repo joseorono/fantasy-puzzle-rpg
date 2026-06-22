@@ -1,0 +1,154 @@
+/*
+  Title sign — a decorative ribbon banner that slides in from off-screen,
+  rests, then retracts. Rendered by `TitleSignHost` in a fixed, click-through
+  layer so it never blocks the screen underneath. Slide direction is driven by
+  the position modifier via the `--ts-hidden` custom property; the overall
+  scale is driven by `--ts-scale` (set inline from the component's SIZE_SCALE).
+
+  Animation durations below mirror ENTRY_DURATION_MS / EXIT_DURATION_MS in
+  title-sign.tsx — keep them in sync.
+*/
+
+.title-sign-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  padding: 1.5rem;
+  /* Click-through: only a dismissable ribbon re-enables pointer events. */
+  pointer-events: none;
+}
+
+.title-sign {
+  /* Tunable defaults (overridden per variant). */
+  --ts-base-width: 340px;
+  --ts-font: 13px;
+  --ts-text-inset: 13%;
+  --ts-text-nudge-y: 8%;
+
+  width: calc(var(--ts-base-width) * var(--ts-scale, 1));
+  max-width: 90vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--ts-text-inset);
+  padding-bottom: var(--ts-text-nudge-y);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+.title-sign__text {
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.2;
+  user-select: none;
+  font-size: calc(var(--ts-font) * var(--ts-scale, 1));
+}
+
+/* Ribbon artwork + intrinsic aspect ratio per variant */
+.title-sign--tan {
+  aspect-ratio: 370 / 66;
+  background-image: url('/assets/title-signs/ribbon-tan.png');
+}
+.title-sign--red {
+  aspect-ratio: 370 / 66;
+  background-image: url('/assets/title-signs/ribbon-red.png');
+}
+.title-sign--large {
+  --ts-base-width: 600px;
+  --ts-font: 20px;
+  --ts-text-inset: 14%;
+  --ts-text-nudge-y: 6%;
+  aspect-ratio: 700 / 141;
+  background-image: url('/assets/title-signs/ribbon-red-large.png');
+}
+
+/* Text colour — muted, not too bright; shadow keeps it legible on the ribbon */
+.title-sign--text-gold {
+  color: #e8c87e;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-cream {
+  color: #f3e7c9;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-white {
+  color: #f5f6fa;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-dark {
+  color: #3a2410;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/*
+  Placement within the flex layer + the hidden (off-screen) transform used by
+  the enter/exit keyframes. Single-child flex placement avoids combining a
+  centering transform with the animation transform.
+*/
+.title-sign--top {
+  --ts-hidden: translateY(-150%);
+  align-self: flex-start;
+  margin-inline: auto;
+}
+.title-sign--bottom {
+  --ts-hidden: translateY(150%);
+  align-self: flex-end;
+  margin-inline: auto;
+}
+.title-sign--left {
+  --ts-hidden: translateX(-150%);
+  align-self: center;
+  margin-right: auto;
+}
+.title-sign--right {
+  --ts-hidden: translateX(150%);
+  align-self: center;
+  margin-left: auto;
+}
+.title-sign--center {
+  --ts-hidden: translateY(-60vh);
+  margin: auto;
+}
+
+/* Lifecycle phases */
+.title-sign--entering {
+  animation: title-sign-in 0.5s ease-out both;
+}
+.title-sign--holding {
+  transform: translate(0, 0);
+  opacity: 1;
+}
+.title-sign--exiting {
+  animation: title-sign-out 0.4s ease-in both;
+}
+
+/* Only a click-to-dismiss ribbon (holdMs === null) captures pointer events */
+.title-sign--dismissable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@keyframes title-sign-in {
+  from {
+    transform: var(--ts-hidden);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes title-sign-out {
+  from {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: var(--ts-hidden);
+    opacity: 0;
+  }
+}
