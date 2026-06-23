@@ -12,14 +12,14 @@ import {
 import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
-import { rollRarity, getRarityOdds, getRarityColor, getRarityLabel, canUpgradeRarity, upgradeRarity } from '~/lib/rarity';
+import { rollRarity, getRarityColor, getRarityLabel, canUpgradeRarity, upgradeRarity } from '~/lib/rarity';
 import { getUpgradeCost, getSalvageReturn } from '~/lib/crafting';
 import {
   getOwnedEquipmentInstances,
   getScaledEquipmentStats,
   type OwnedEquipmentInstance,
 } from '~/lib/equipment-system';
-import { CRAFTING_RARITY_BIAS, PITY_BIAS_STEP, PITY_MAX, RARITY_TIERS } from '~/constants/rarity';
+import { CRAFTING_RARITY_BIAS, PITY_BIAS_STEP, PITY_MAX } from '~/constants/rarity';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -62,11 +62,6 @@ function getEquipmentType(itemId: string): EquipmentType | null {
 /** Stable key for an owned equipment instance (item + rolled rarity). */
 function instanceKey(instance: { item: { id: string }; rarity: string }): string {
   return `${instance.item.id}::${instance.rarity}`;
-}
-
-/** Format a rarity odds percentage: one decimal under 10%, whole number otherwise. */
-function formatOdds(pct: number): string {
-  return pct < 10 ? pct.toFixed(1) : String(Math.round(pct));
 }
 
 /** Render a cost/refund as a row of resource badges, skipping zero amounts. */
@@ -113,7 +108,6 @@ export default function Blacksmith({
 
   // Pity-adjusted craft luck: each unlucky craft nudges the odds toward rarer gear.
   const craftBias = CRAFTING_RARITY_BIAS + Math.min(pity, PITY_MAX) * PITY_BIAS_STEP;
-  const craftOdds = getRarityOdds(craftBias);
 
   // Owned gear with free (non-equipped) copies, for the Modify tab.
   const modifiableInstances = getOwnedEquipmentInstances(inventory, party).filter((inst) => inst.available > 0);
@@ -242,16 +236,6 @@ export default function Blacksmith({
             </Tooltip>
           </div>
           <p className="town-section-subtitle">Choose an equipment type to craft</p>
-
-          {/* Rarity odds — reflect the current pity-adjusted luck */}
-          <div className="craft-odds flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.6rem] tracking-wider uppercase">
-            {RARITY_TIERS.map((tier) => (
-              <span key={tier} style={{ color: getRarityColor(tier) }}>
-                {getRarityLabel(tier)} {formatOdds(craftOdds[tier])}%
-              </span>
-            ))}
-            {pity > 0 && <span className="text-[#c08a3e] normal-case">· luck building…</span>}
-          </div>
 
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
