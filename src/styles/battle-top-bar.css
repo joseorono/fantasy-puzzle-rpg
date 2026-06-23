@@ -1,28 +1,31 @@
-/* ─── Battle Top Bar ─────────────────────────────────────────────────── */
+/* ─── Battle Top Bar (indigolay) ─────────────────────────────────────────
+   Reskinned to the indigolay pixel-art kit: a red ornate banner (9-sliced via
+   border-image so the gold filigree corners stay crisp while the middle leather
+   stretches), currency-pill stat chips, and a sys-button mute toggle. All PNG
+   surfaces render pixelated. Asset sources live in public/assets/hud/.
+   Slice/width values are tuned against the source art (bar 593×129,
+   chip 220×68, button 76×77) — adjust if the art is swapped. */
 
 #battle-top-bar {
   position: relative;
   z-index: 10;
-  padding: 0.5rem 0.75rem;
-  background:
-    linear-gradient(to bottom, #3d2817, #2a1810),
-    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
-  border-bottom: 3px solid #d4a574;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  /* The banner is drawn entirely by border-image; borders form the frame inset
+     and `fill` paints the central red leather behind the content. */
+  border-style: solid;
+  border-width: 20px 52px 26px 52px;
+  border-image-source: url('/assets/hud/bar-red.png');
+  border-image-slice: 26 64 32 64 fill;
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
 }
 
-/* Inner layout */
 #battle-top-bar .btb-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  position: relative;
-  z-index: 2;
+  min-height: 2.5rem;
 }
 
 /* ── Incoming enemy attacks (hero) ───────────────────────────────────────── */
@@ -36,14 +39,13 @@
 #battle-top-bar .btb-threats-label {
   font-size: 0.5rem;
   font-weight: 700;
-  color: #e8a0a0;
+  color: #f2d2af;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
 }
 
-/* Hide the label on very narrow screens; the pies speak for themselves. */
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   #battle-top-bar .btb-threats-label {
     display: none;
   }
@@ -55,10 +57,15 @@
   gap: 0.375rem;
 }
 
+/* Lift the red pies off the red leather so they stay legible. */
+#battle-top-bar .btb-threat-pie {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+
 #battle-top-bar .btb-threat-icon {
   width: 0.85rem;
   height: 0.85rem;
-  color: #f1c0c0;
+  color: #f7d7d7;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
 }
 
@@ -67,17 +74,17 @@
   font-weight: 700;
   color: #9be37a;
   letter-spacing: 0.08em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
 }
 
 #battle-top-bar .btb-threats-more {
   font-size: 0.625rem;
   font-weight: 700;
-  color: #d4a574;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
 }
 
-/* ── Stats (Turn, Score) ─────────────────────────────────────────────────── */
+/* ── Stats (Turn, Score) — indigolay currency pills ──────────────────────── */
 #battle-top-bar .btb-stats {
   display: flex;
   align-items: center;
@@ -86,165 +93,77 @@
 }
 
 #battle-top-bar .btb-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
-  background:
-    linear-gradient(
-      135deg,
-      #1a1008 25%,
-      #0f0804 25%,
-      #0f0804 50%,
-      #1a1008 50%,
-      #1a1008 75%,
-      #0f0804 75%,
-      #0f0804
-    ),
-    linear-gradient(to bottom, #1a1008, #0a0604);
-  background-size: 8px 8px, 100% 100%;
-  border: 2px solid #8b6914;
-  border-radius: 4px;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.2);
   position: relative;
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  min-width: 4.25rem;
+  /* Reserve the round well on the left; value sits in the bar to its right. */
+  padding-left: 2rem;
+  padding-right: 0.7rem;
+  background: url('/assets/hud/chip-currency.png') no-repeat;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
 }
 
-#battle-top-bar .btb-badge-label {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  color: #d4a574;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  position: relative;
-  z-index: 1;
+/* Icon centered in the pill's circular well. */
+#battle-top-bar .btb-badge-icon {
+  position: absolute;
+  left: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.05rem;
+  height: 1.05rem;
+  color: #e8c87e;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
 }
 
 #battle-top-bar .btb-badge-value {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
+  color: #f2d2af;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  position: relative;
-  z-index: 1;
+  line-height: 1;
 }
 
 #battle-top-bar .btb-badge-value--gold {
-  color: #ffd700;
-  text-shadow:
-    1px 1px 0 rgba(0, 0, 0, 0.8),
-    0 0 6px rgba(255, 215, 0, 0.4);
+  color: #e6c07a;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-@media (min-width: 640px) {
-  #battle-top-bar .btb-badge {
-    padding: 0.375rem 0.75rem;
-  }
-  #battle-top-bar .btb-badge-label {
-    font-size: 0.625rem;
-  }
-}
-
-/* ── Action buttons ──────────────────────────────────────────────────────── */
+/* ── Actions — indigolay sys button ──────────────────────────────────────── */
 #battle-top-bar .btb-actions {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  position: relative;
-  z-index: 2;
 }
 
 #battle-top-bar .btb-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
-  background:
-    linear-gradient(
-      135deg,
-      #3d2817 25%,
-      #2a1810 25%,
-      #2a1810 50%,
-      #3d2817 50%,
-      #3d2817 75%,
-      #2a1810 75%,
-      #2a1810
-    ),
-    linear-gradient(to bottom, #3d2817, #2a1810);
-  background-size: 6px 6px, 100% 100%;
-  border: 2px solid #8b6914;
-  border-radius: 4px;
-  color: #d4a574;
+  border: none;
+  background: url('/assets/hud/btn-sys.png') no-repeat center / 100% 100%;
+  color: #f2d2af;
   cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.4),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-@media (min-width: 640px) {
-  #battle-top-bar .btb-btn {
-    width: 2rem;
-    height: 2rem;
-  }
+  image-rendering: pixelated;
+  transition: transform 0.1s ease, filter 0.1s ease;
 }
 
 #battle-top-bar .btb-btn:hover {
-  color: #ffd700;
-  border-color: #d4a574;
-  background:
-    linear-gradient(
-      135deg,
-      #4d3827 25%,
-      #3a2818 25%,
-      #3a2818 50%,
-      #4d3827 50%,
-      #4d3827 75%,
-      #3a2818 75%,
-      #3a2818
-    ),
-    linear-gradient(to bottom, #4d3827, #3a2818);
-  background-size: 6px 6px, 100% 100%;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.4),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.15),
-    0 2px 0 rgba(0, 0, 0, 0.3),
-    0 0 8px rgba(255, 215, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.2);
-  transform: translateY(-1px);
+  filter: brightness(1.12);
 }
 
 #battle-top-bar .btb-btn:active {
   transform: translateY(1px);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-    0 1px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.2);
+  filter: brightness(0.95);
 }
 
 #battle-top-bar .btb-btn-icon {
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 1rem;
+  height: 1rem;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
-  position: relative;
-  z-index: 1;
-}
-
-@media (min-width: 640px) {
-  #battle-top-bar .btb-btn-icon {
-    width: 1rem;
-    height: 1rem;
-  }
 }

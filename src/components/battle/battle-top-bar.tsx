@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { Swords, Volume2, VolumeX } from 'lucide-react';
+import { Hourglass, Star, Swords, Volume2, VolumeX } from 'lucide-react';
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { battleStateAtom, gameStatusAtom } from '~/stores/battle-atoms';
@@ -40,7 +40,7 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
   const overflowCount = enemyTimers.length - visibleTimers.length;
 
   return (
-    <header id="battle-top-bar" className="crt-container crt-overlay">
+    <header id="battle-top-bar">
       <div className="btb-inner">
         {/* Incoming enemy attacks — one depleting ring per living enemy. */}
         <div className="btb-threats">
@@ -57,6 +57,7 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
                   paused={isPaused}
                   size="md"
                   tone="danger"
+                  className="btb-threat-pie"
                 >
                   <Swords className="btb-threat-icon" />
                 </RadialCountdown>
@@ -68,13 +69,13 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
 
         {/* Stats */}
         <div className="btb-stats">
-          <div className="btb-badge crt-top-highlight">
-            <span className="btb-badge-label pixel-font">TURN</span>
+          <div className="btb-badge">
+            <Hourglass className="btb-badge-icon" aria-label="Turn" />
             <span className="btb-badge-value pixel-font">{battleState.turn}</span>
           </div>
 
-          <div className="btb-badge crt-top-highlight">
-            <span className="btb-badge-label pixel-font">SCORE</span>
+          <div className="btb-badge">
+            <Star className="btb-badge-icon" aria-label="Score" />
             <span className="btb-badge-value btb-badge-value--gold pixel-font number-flow-container">
               <NumberFlow
                 value={battleState.score}
@@ -90,7 +91,7 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
         {/* Actions */}
         <div className="btb-actions">
           <button
-            className="btb-btn crt-top-highlight"
+            className="btb-btn"
             onClick={toggleMute}
             aria-label={isMuted ? 'Unmute' : 'Mute'}
           >
