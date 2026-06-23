@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import type { RarityTier } from '~/constants/rarity';
 
 /**
  * Shared dismissal options every overlay request accepts.
@@ -17,7 +18,7 @@ export interface OverlayOptions {
 export type OverlayRequest = OverlayOptions &
   (
     | { kind: 'skill-unlock'; characterId: string; skillId: string }
-    | { kind: 'crafting-success'; itemId: string }
+    | { kind: 'crafting-success'; itemId: string; rarity: RarityTier }
   );
 
 /**

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { findEquipmentItem } from '~/lib/equipment-system';
+import { findEquipmentItem, getScaledEquipmentStats } from '~/lib/equipment-system';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { RetroDivider } from '~/components/ui-custom/retro-divider';
@@ -36,10 +37,12 @@ export function CraftingSuccessOverlay({ request, onDismiss }: CraftingSuccessOv
 
   if (!item) return null;
 
+  const scaled = getScaledEquipmentStats(item, request.rarity);
+  const rarityColor = getRarityColor(request.rarity);
   const stats = [
-    { label: 'POW', value: item.pow },
-    { label: 'VIT', value: item.vit },
-    { label: 'SPD', value: item.spd },
+    { label: 'POW', value: scaled.pow },
+    { label: 'VIT', value: scaled.vit },
+    { label: 'SPD', value: scaled.spd },
   ].filter((stat) => stat.value !== 0);
 
   return (
@@ -61,6 +64,12 @@ export function CraftingSuccessOverlay({ request, onDismiss }: CraftingSuccessOv
             </div>
           )}
           <div className="crafting-success-item-name pixel-font">{item.name}</div>
+          <div
+            className="crafting-success-item-rarity pixel-font text-[0.7rem] tracking-wider uppercase"
+            style={{ color: rarityColor }}
+          >
+            {getRarityLabel(request.rarity)}
+          </div>
         </div>
 
         <div className="crafting-success-details">

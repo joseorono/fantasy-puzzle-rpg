@@ -23,6 +23,7 @@ export const MOSS_GOLEM: EnemyData = {
   guardBreak: 1.75, // Heavy slams chew through the party Guard meter
   lootTable: MOSS_GOLEM_LOOT,
   expReward: 25,
+  rarityBias: 1, // Tanky elite — slightly better odds at rarer gear
 };
 
 // Set currentHp to maxHp

@@ -79,6 +79,43 @@ describe('inventory utilities', () => {
     });
   });
 
+  describe('rarity-keyed stacking', () => {
+    it('keeps different rarities of the same item as separate stacks', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 1, 'rare');
+      expect(inv).toHaveLength(2);
+      expect(getItemQuantity(inv, 'iron-sword', 'common')).toBe(1);
+      expect(getItemQuantity(inv, 'iron-sword', 'rare')).toBe(1);
+    });
+
+    it('stacks items of the same id and rarity', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'rare');
+      inv = addItemToInventory(inv, 'iron-sword', 2, 'rare');
+      expect(inv).toHaveLength(1);
+      expect(inv[0]).toEqual({ itemId: 'iron-sword', quantity: 3, rarity: 'rare' });
+    });
+
+    it('sums all rarities when no rarity is given to getItemQuantity', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 2, 'rare');
+      expect(getItemQuantity(inv, 'iron-sword')).toBe(3);
+    });
+
+    it('removes from the matching rarity stack only', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 1, 'rare');
+      inv = removeItemFromInventory(inv, 'iron-sword', 1, 'common');
+      expect(getItemQuantity(inv, 'iron-sword', 'common')).toBe(0);
+      expect(getItemQuantity(inv, 'iron-sword', 'rare')).toBe(1);
+    });
+
+    it('does not add a rarity key for consumables', () => {
+      const inv = addItemToInventory(emptyInventory, 'potion', 2);
+      expect(inv[0]).toEqual({ itemId: 'potion', quantity: 2 });
+      expect('rarity' in inv[0]).toBe(false);
+    });
+  });
+
   describe('removeItemFromInventory', () => {
     it('should decrease quantity of existing item', () => {
       const result = removeItemFromInventory(testInventory, 'potion', 2);

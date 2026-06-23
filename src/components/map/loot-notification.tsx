@@ -3,6 +3,7 @@ import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { ResourceChip } from '~/components/ui-custom/resource-chip';
 import { RESOURCE_DISPLAY_ORDER } from '~/constants/resources';
 import { LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
@@ -64,7 +65,12 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
               <span className="loot-notification__entry-icon">
                 {lootItem.item.iconName ? <FrostyRpgIcon name={lootItem.item.iconName} size={24} /> : null}
               </span>
-              <span className="loot-notification__entry-name">{lootItem.item.name}</span>
+              <span className="loot-notification__entry-name" style={{ color: getRarityColor(lootItem.rarity) }}>
+                {lootItem.item.name}
+                <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">
+                  {getRarityLabel(lootItem.rarity)}
+                </span>
+              </span>
             </div>
           ))}
         </div>

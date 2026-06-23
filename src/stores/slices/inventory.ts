@@ -1,6 +1,7 @@
 import type { InventorySlice } from './inventory.types';
 import { addItemToInventory, removeItemFromInventory } from '../../lib/inventory';
 import type { InventoryItem } from '~/lib/inventory';
+import type { RarityTier } from '~/constants/rarity';
 import type { SliceSet } from '~/types/store';
 
 /**
@@ -27,19 +28,19 @@ export const createInventorySlice = (set: SliceSet<InventorySlice>): InventorySl
 
   actions: {
     inventory: {
-      addItem: (itemId: string, quantity: number = 1) =>
+      addItem: (itemId: string, quantity: number = 1, rarity?: RarityTier) =>
         set(
           (state: InventorySlice) => {
-            state.inventory.items = addItemToInventory(state.inventory.items, itemId, quantity);
+            state.inventory.items = addItemToInventory(state.inventory.items, itemId, quantity, rarity);
           },
           false,
           'inventory/addItem',
         ),
 
-      removeItem: (itemId: string, quantity: number = 1) =>
+      removeItem: (itemId: string, quantity: number = 1, rarity?: RarityTier) =>
         set(
           (state: InventorySlice) => {
-            state.inventory.items = removeItemFromInventory(state.inventory.items, itemId, quantity);
+            state.inventory.items = removeItemFromInventory(state.inventory.items, itemId, quantity, rarity);
           },
           false,
           'inventory/removeItem',

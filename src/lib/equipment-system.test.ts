@@ -8,6 +8,7 @@ import {
   getEffectiveMaxHp,
   getPartyWithEffectiveStats,
   getAvailableEquipmentForSlot,
+  getScaledEquipmentStats,
   findEquipmentItem,
 } from './equipment-system';
 import type { CharacterData } from '~/types/rpg-elements';
@@ -139,6 +140,31 @@ describe('getEquipmentBonuses', () => {
   });
 });
 
+describe('rarity scaling', () => {
+  it('common rarity leaves stats unchanged', () => {
+    const sword = findEquipmentItem('iron-sword')!;
+    // iron-sword: pow 5, vit 2, spd 0
+    expect(getScaledEquipmentStats(sword, 'common')).toEqual({ pow: 5, vit: 2, spd: 0 });
+  });
+
+  it('higher rarity scales positive stats (rounded) and leaves penalties untouched', () => {
+    const armor = findEquipmentItem('iron-armor')!;
+    // iron-armor: pow 0, vit 10, spd -2 → legendary x1.6: vit 16, spd stays -2
+    expect(getScaledEquipmentStats(armor, 'legendary')).toEqual({ pow: 0, vit: 16, spd: -2 });
+  });
+
+  it('undefined rarity defaults to common', () => {
+    const sword = findEquipmentItem('iron-sword')!;
+    expect(getScaledEquipmentStats(sword, undefined)).toEqual({ pow: 5, vit: 2, spd: 0 });
+  });
+
+  it('getEquipmentBonuses applies the equipped rarity multiplier', () => {
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'legendary' });
+    // iron-sword pow 5 → round(8) = 8, vit 2 → round(3.2) = 3, spd 0
+    expect(getEquipmentBonuses(char)).toEqual({ pow: 8, vit: 3, spd: 0 });
+  });
+});
+
 describe('getEquipmentComboBonus', () => {
   it('returns 0 when nothing is equipped', () => {
     expect(getEquipmentComboBonus(makeCharacter())).toBe(0);
@@ -242,7 +268,7 @@ describe('getAvailableEquipmentForSlot', () => {
     ];
     const result = getAvailableEquipmentForSlot('weapon', warrior, [warrior], inventory);
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('iron-sword');
+    expect(result[0].item.id).toBe('iron-sword');
   });
 
   it('returns armor for any class', () => {
@@ -278,7 +304,7 @@ describe('getAvailableEquipmentForSlot', () => {
 
     // rogue-2 should NOT see iron-short-bow because rogue already has it equipped and qty is 1
     const result = getAvailableEquipmentForSlot('weapon', anotherRogue, party, inventory);
-    expect(result.find((i) => i.id === 'iron-short-bow')).toBeUndefined();
+    expect(result.find((i) => i.item.id === 'iron-short-bow')).toBeUndefined();
   });
 
   it('allows equipping if quantity exceeds equipped count', () => {
@@ -289,6 +315,6 @@ describe('getAvailableEquipmentForSlot', () => {
 
     // rogue-2 SHOULD see iron-short-bow because qty is 2 and only 1 is equipped
     const result = getAvailableEquipmentForSlot('weapon', anotherRogue, party, inventory);
-    expect(result.find((i) => i.id === 'iron-short-bow')).toBeDefined();
+    expect(result.find((i) => i.item.id === 'iron-short-bow')).toBeDefined();
   });
 });

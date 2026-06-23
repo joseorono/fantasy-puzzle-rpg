@@ -1,4 +1,5 @@
 import type { LootTable } from './loot';
+import type { RarityTier } from '~/constants/rarity';
 
 export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
@@ -36,6 +37,10 @@ export interface CharacterData extends BaseStats {
   expToNextLevel: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
+  /** Rolled rarity of the equipped weapon; mirrors `equippedWeaponId`. */
+  equippedWeaponRarity?: RarityTier;
+  /** Rolled rarity of the equipped armor; mirrors `equippedArmorId`. */
+  equippedArmorRarity?: RarityTier;
   /** Ids of skills this character has unlocked (see `~/constants/skills`). */
   unlockedSkillIds: string[];
   /** Id of the currently active skill; resolved via `getSelectedSkill`. */
@@ -52,4 +57,9 @@ export interface EnemyData extends BaseStats {
   expReward: number; // Experience points rewarded when defeated
   /** Drain multiplier on the party Guard meter per hit; default 1 (0.5 = barely erodes, 2+ = chews through). */
   guardBreak?: number;
+  /**
+   * Luck bias applied to equipment-drop rarity rolls; default 0 (neutral odds).
+   * Higher values skew this enemy's drops toward rarer tiers. See `rollRarity`.
+   */
+  rarityBias?: number;
 }

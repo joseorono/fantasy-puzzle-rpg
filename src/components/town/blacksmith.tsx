@@ -4,6 +4,8 @@ import { useResources, useResourcesActions, useInventoryActions } from '~/stores
 import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
+import { rollRarity } from '~/lib/rarity';
+import { CRAFTING_RARITY_BIAS } from '~/constants/rarity';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -68,12 +70,14 @@ export default function Blacksmith({
     if (canAfford(resources, item.cost)) {
       soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(item.cost);
-      inventoryActions.addItem(item.id);
+      // Roll the crafted item's rarity once and store it on the inventory stack.
+      const rarity = rollRarity(CRAFTING_RARITY_BIAS);
+      inventoryActions.addItem(item.id, 1, rarity);
       setSelectedItem(null);
 
       if (!celebratedItemIds.has(item.id)) {
         setCelebratedItemIds((prev) => new Set(prev).add(item.id));
-        showOverlay({ kind: 'crafting-success', itemId: item.id });
+        showOverlay({ kind: 'crafting-success', itemId: item.id, rarity });
       }
     }
   };
