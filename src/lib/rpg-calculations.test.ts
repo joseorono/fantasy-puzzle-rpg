@@ -496,6 +496,12 @@ describe('Guard Calculations', () => {
     expect(oneDead).toBeLessThan(allAlive);
   });
 
+  test('calculateGuardChargeRate: clamps negative collective SPD (no NaN from negative-SPD gear)', () => {
+    const result = rpg.calculateGuardChargeRate(partyWithSpds([-10, -20]));
+    expect(Number.isNaN(result)).toBe(false);
+    expect(result).toBe(1); // sqrt(max(0, -30)) = 0 -> charge rate 1
+  });
+
   test('resolveGuardedDamage: empty bar lets full damage through', () => {
     const r = rpg.resolveGuardedDamage(25, 0);
     expect(r.damageTaken).toBe(25);

@@ -306,7 +306,9 @@ export function calculateGuardChargeRate(party: CharacterData[]): number {
     (total, char) => (char.currentHp > 0 ? total + char.stats.spd : total),
     0,
   );
-  return 1 + Math.sqrt(livingSpd) / GUARD_CHARGE_RATE_DIVISOR;
+  // Clamp to >= 0: negative-SPD equipment can drag the collective SPD below zero,
+  // and Math.sqrt of a negative would return NaN and poison the entire Guard meter.
+  return 1 + Math.sqrt(Math.max(0, livingSpd)) / GUARD_CHARGE_RATE_DIVISOR;
 }
 
 /** Result of resolving an incoming hit against the Guard meter. */
