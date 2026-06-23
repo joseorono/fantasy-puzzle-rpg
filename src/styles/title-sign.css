@@ -28,6 +28,8 @@
   /* Downward nudge as a % of ribbon height (applied via translateY so it stays
                size-independent — % padding would be width-relative, which it must not be). */
     --ts-text-nudge-y: 8%;
+  /* Gap between the ribbon and the frame edge it rests against (per-position). */
+  --ts-edge-gap: 0.75rem;
 
   position: relative;
   flex: none;
@@ -100,24 +102,27 @@
 .title-sign--top {
   --ts-hidden: translateY(-200%);
   align-self: flex-start;
-  /* Rest a little below the top edge rather than flush against the frame. */
-    margin-top: 0.75rem;
+  /* Rest a little away from the edge rather than flush against the frame. */
+  margin-top: var(--ts-edge-gap);
   margin-inline: auto;
 }
 .title-sign--bottom {
   --ts-hidden: translateY(200%);
   align-self: flex-end;
+  margin-bottom: var(--ts-edge-gap);
   margin-inline: auto;
 }
 .title-sign--left {
   --ts-hidden: translateX(-150%);
   align-self: center;
+  margin-left: var(--ts-edge-gap);
   margin-right: auto;
 }
 .title-sign--right {
   --ts-hidden: translateX(150%);
   align-self: center;
   margin-left: auto;
+  margin-right: var(--ts-edge-gap);
 }
 .title-sign--center {
   --ts-hidden: translateY(-60vh);
