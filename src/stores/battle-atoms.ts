@@ -312,6 +312,10 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 
 // Derived atom for game status
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
+// Narrow derived atoms so UI that only shows turn/score doesn't re-render on every
+// board/HP/match change (see BattleTopBar).
+export const turnAtom = atom((get) => get(battleStateAtom).turn);
+export const scoreAtom = atom((get) => get(battleStateAtom).score);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);

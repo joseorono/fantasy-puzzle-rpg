@@ -310,8 +310,9 @@ export function Match3Board() {
     // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
     const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
 
-    // Bomb-spawn budget for this cascade chain: the per-orb chance halves once the
-    // first bomb has spawned, and the chain can spawn at most MAX_CHAIN_BOMB_SPAWNS.
+    // Bomb-spawn budget for this cascade chain: once the first bomb has spawned, the
+    // per-orb chance is scaled by CASCADE_BOMB_CHANCE_MULTIPLIER, and the chain can
+    // spawn at most MAX_CHAIN_BOMB_SPAWNS.
     const bombChance =
       chainBombsSpawnedRef.current > 0 ? BOMB_REFILL_CHANCE * CASCADE_BOMB_CHANCE_MULTIPLIER : BOMB_REFILL_CHANCE;
     const maxBombs = Math.max(0, MAX_CHAIN_BOMB_SPAWNS - chainBombsSpawnedRef.current);

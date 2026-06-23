@@ -25,7 +25,7 @@ The battle screen now features a fully functional combat system with enemy attac
   speedrunning a battle. The chain (and its combo level) resets on each new player swap.
 - **Bomb chains (anti-runaway)**: Matching a wildcard bomb still triggers a 3×3 blast and can chain,
   but bomb spawning is bounded per cascade chain: after the first bomb spawns in a chain the per-orb
-  refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.5), and a chain spawns at most
+  refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.75), and a chain spawns at most
   `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/game.ts`). So bomb cascades can't self-feed
   into runaway x8 combos.
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top

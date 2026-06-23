@@ -2,7 +2,7 @@ import { useAtomValue } from 'jotai';
 import { Hourglass, Star, Swords, Volume2, VolumeX } from 'lucide-react';
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
-import { battleStateAtom, gameStatusAtom } from '~/stores/battle-atoms';
+import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
 import { soundService } from '~/services/sound-service';
 import {
@@ -22,7 +22,8 @@ interface BattleTopBarProps {
 }
 
 export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
-  const battleState = useAtomValue(battleStateAtom);
+  const turn = useAtomValue(turnAtom);
+  const score = useAtomValue(scoreAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
   const [isMuted, setIsMuted] = useState(() => soundService.isMuted());
 
@@ -71,14 +72,14 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
         <div className="btb-stats">
           <div className="btb-badge">
             <Hourglass className="btb-badge-icon" aria-label="Turn" />
-            <span className="btb-badge-value pixel-font">{battleState.turn}</span>
+            <span className="btb-badge-value pixel-font">{turn}</span>
           </div>
 
           <div className="btb-badge">
             <Star className="btb-badge-icon" aria-label="Score" />
             <span className="btb-badge-value btb-badge-value--gold pixel-font number-flow-container">
               <NumberFlow
-                value={battleState.score}
+                value={score}
                 format={INTEGER_FORMAT}
                 spinTiming={SNAPPY_SPIN_TIMING}
                 transformTiming={SNAPPY_TRANSFORM_TIMING}
