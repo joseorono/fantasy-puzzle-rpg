@@ -72,3 +72,19 @@ export const CRAFTING_RARITY_BIAS = 0;
 
 /** Bias applied to treasure-chest loot. */
 export const CHEST_RARITY_BIAS = 1;
+
+/*
+ * Crafting "pity" — consecutive unlucky crafts build luck toward rarer gear.
+ * A craft that rolls below PITY_RESET_TIER increments the pity counter; a craft
+ * at or above it resets the counter to 0. The counter feeds a rising bias into
+ * the next craft's roll: bias = CRAFTING_RARITY_BIAS + min(pity, PITY_MAX) * PITY_BIAS_STEP.
+ */
+
+/** Extra rarity bias granted per accumulated pity point. */
+export const PITY_BIAS_STEP = 0.5;
+
+/** Pity counter is clamped here so the bias can't run away. */
+export const PITY_MAX = 20;
+
+/** A craft rolling below this tier builds pity; rolling at/above it resets pity. */
+export const PITY_RESET_TIER: RarityTier = 'rare';

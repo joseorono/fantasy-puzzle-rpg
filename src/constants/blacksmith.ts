@@ -9,10 +9,36 @@
  */
 
 import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
+import type { Resources } from '~/types/resources';
+import type { RarityTier } from './rarity';
 
 /** Flat coin fee charged on every craft, on top of the item's material cost.
     Baked into each equipment item's `cost.coins` in `inventory.ts`. */
 export const CRAFTING_FEE = 100;
+
+/** Fraction of an item's material bars returned when salvaged (see `getSalvageReturn`). */
+export const SALVAGE_RETURN_RATIO = 0.5;
+
+/** Source tiers that can be upgraded one step (legendary is the cap). */
+export type UpgradableTier = Exclude<RarityTier, 'legendary'>;
+
+/** Ordered upgradable source tiers, low → high. */
+const UPGRADABLE_TIERS: ReadonlyArray<UpgradableTier> = ['common', 'uncommon', 'rare', 'epic'];
+
+/** Base coin fee for a one-tier equipment upgrade. Deliberately separate from
+    {@link CRAFTING_FEE} — upgrading is its own action with its own price. */
+export const UPGRADE_BASE_FEE = 150;
+
+/** Coin cost to upgrade gear up one tier, rising with the source tier
+    (`UPGRADE_BASE_FEE * (tierIndex + 1)`). Computed from the base fee so
+    rebalancing only ever means editing {@link UPGRADE_BASE_FEE}. */
+export const UPGRADE_COSTS: Record<UpgradableTier, Resources> = UPGRADABLE_TIERS.reduce(
+  (acc, tier, index) => {
+    acc[tier] = { coins: UPGRADE_BASE_FEE * (index + 1), gold: 0, copper: 0, silver: 0, iron: 0 };
+    return acc;
+  },
+  {} as Record<UpgradableTier, Resources>,
+);
 
 /** Coins required to melt down into a single gold bar (10 coins = 1 gold). */
 export const MELT_COINS_PER_GOLD = 10;
