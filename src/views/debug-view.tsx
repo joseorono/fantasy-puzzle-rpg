@@ -18,8 +18,6 @@ interface DebugSection {
 }
 
 const DEBUG_SECTIONS: DebugSection[] = [
-  { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
-  { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
   { id: 'router', label: 'Router', Component: RouterTestView },
   { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
   { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },
@@ -28,6 +26,9 @@ const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'resources', label: 'Resources', Component: ResourcesTestView },
   { id: 'sound', label: 'Sound', Component: SoundTestView },
   { id: 'misc', label: 'Misc / Test', Component: TestView },
+  // Recently added — kept further down now that they're stable.
+  { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
+  { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
 ];
 
 function scrollToSection(id: string) {
