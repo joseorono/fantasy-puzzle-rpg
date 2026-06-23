@@ -100,6 +100,8 @@
 .title-sign--top {
   --ts-hidden: translateY(-200%);
   align-self: flex-start;
+  /* Rest a little below the top edge rather than flush against the frame. */
+    margin-top: 0.75rem;
   margin-inline: auto;
 }
 .title-sign--bottom {
