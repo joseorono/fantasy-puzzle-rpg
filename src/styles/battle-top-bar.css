@@ -193,12 +193,12 @@
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
 }
 
-/* The bar is fixed (out of flow); this spacer reserves its height at the top of
-   the battle column so nothing sits under it. It adds no extra page height (it
-   replaces space the bar would have taken), so it introduces no scrollbar, and
-   the existing section backgrounds below handle the visuals. The opaque banner
-   covers the spacer area, so no app background shows through. */
-.btb-spacer {
-  flex: none;
-  height: var(--btb-height);
+/* The bar floats on top (absolute, reserves no space), so the battle section
+   backgrounds fill the whole column — including the strip behind the bar — and
+   there's never any app-white showing. We only pad the section *content* down by
+   the bar height so foreground elements aren't hidden beneath it. Padding lives
+   on the bg-bearing sections, so the background still covers the padded strip. */
+.battleArea .partySection,
+.battleArea .enemySection {
+  padding-top: var(--btb-height);
 }

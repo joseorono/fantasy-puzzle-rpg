@@ -50,9 +50,6 @@ export default function BattleScreen() {
       {/* Main container - constrained to game view height */}
       <div className="relative flex min-h-0 flex-1 flex-col">
         <BattleTopBar enemyTimers={enemyTimers} />
-        {/* Reserves the fixed bar's height so content isn't hidden beneath it. */}
-        <div className="btb-spacer" aria-hidden />
-
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
