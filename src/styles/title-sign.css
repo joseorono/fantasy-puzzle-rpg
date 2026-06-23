@@ -68,7 +68,8 @@
   --ts-base-width: 700px;
   --ts-font: 22px;
   --ts-text-inset: 15%;
-  --ts-text-nudge-y: 6%;
+  /* Negative = nudge down */
+    --ts-text-nudge-y: 8%;
   aspect-ratio: 700 / 141;
   background-image: url('/assets/title-signs/ribbon-red-large.png');
 }
