@@ -205,6 +205,18 @@ export const resetBattleAtom = atom(null, (get, set) => {
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
 });
 
+/**
+ * Re-arm the encounter when the battle view is entered onto an already-finished fight,
+ * so re-entry always starts fresh with enemies at full HP. No-op while a battle is in
+ * progress, so it never clobbers an encounter a caller just set up (e.g. the map's
+ * `setupBattleAtom`). Reuses the current encounter's enemies and the passed-in party.
+ */
+export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[]) => {
+  const state = get(battleStateAtom);
+  if (state.gameStatus === 'playing') return;
+  set(battleStateAtom, createBattleState(party, state.enemies));
+});
+
 // Atom to remove matched orbs and refill board.
 // `bombsToSpawn` guarantees that many refilled orbs become wildcard bombs
 // (on top of the per-orb random chance baked into removeMatchedOrbsAndRefill).

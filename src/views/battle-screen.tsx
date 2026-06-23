@@ -5,10 +5,16 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
-import { gameStatusAtom, tickSkillCooldownsAtom, tickGuardDecayAtom } from '~/stores/battle-atoms';
+import {
+  gameStatusAtom,
+  tickSkillCooldownsAtom,
+  tickGuardDecayAtom,
+  ensureFreshBattleAtom,
+} from '~/stores/battle-atoms';
+import { useParty } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { BattleTopBar } from '~/components/battle/battle-top-bar';
@@ -18,6 +24,16 @@ export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
+  const party = useParty();
+  const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
+
+  // On entering the battle view onto an already-finished fight, re-arm a fresh battle
+  // (enemies back to full HP) so re-entry always restarts. Runs before paint to avoid a
+  // one-frame flash of the victory/defeat modal. Mount-only: capture the party as it is on entry.
+  useLayoutEffect(() => {
+    ensureFreshBattle(party);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Drives enemy attacks and exposes per-enemy countdown timing for the top bar.
   const enemyTimers = useEnemyAttackTimers();
