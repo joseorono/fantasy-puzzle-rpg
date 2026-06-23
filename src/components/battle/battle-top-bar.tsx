@@ -55,7 +55,7 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
                   durationMs={timer.intervalMs}
                   cycleKey={timer.cycleKey}
                   paused={isPaused}
-                  size="md"
+                  size="sm"
                   tone="danger"
                   className="btb-threat-pie"
                 >

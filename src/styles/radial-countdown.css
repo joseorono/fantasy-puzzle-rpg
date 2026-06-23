@@ -18,8 +18,8 @@
   /* Tunable defaults (overridden per size/tone variant). */
   --rc-size: 2.25rem;
   --rc-thickness: 5px;
-  --rc-fill: #e74c3c;
-  --rc-track: rgba(0, 0, 0, 0.5);
+  --rc-fill: #ff5a45;
+  --rc-track: rgba(18, 8, 6, 0.62);
 
   position: relative;
   display: inline-flex;
@@ -112,7 +112,7 @@
 
 /* ── Tones (reuse the project's gold/red retro palette) ──────────────────── */
 .radial-countdown--danger {
-  --rc-fill: #e74c3c;
+  --rc-fill: #ff5a45;
 }
 .radial-countdown--gold {
   --rc-fill: #ffd700;
