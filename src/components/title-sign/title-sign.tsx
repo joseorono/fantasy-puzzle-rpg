@@ -1,17 +1,31 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { cva } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
-import type { TitleSignRequest, TitleSignSize } from '~/stores/title-sign-atoms';
+import type {
+  TitleSignRequest,
+  TitleSignSize,
+  TitleSignTextColor,
+  TitleSignVariant,
+} from '~/stores/title-sign-atoms';
 
 /** Defaults for every optional field of a {@link TitleSignRequest}. */
 const TITLE_SIGN_DEFAULTS = {
   VARIANT: 'tan',
-  TEXT_COLOR: 'gold',
   SIZE: 'md',
   POSITION: 'top',
   HOLD_MS: 2000,
   HAS_ENTRY_ANIMATION: true,
 } as const;
+
+/**
+ * Default text colour per ribbon variant. The tan ribbon is light, so dark text
+ * reads best on it; the red/large ribbons keep the warm gold.
+ */
+const DEFAULT_TEXT_COLOR_BY_VARIANT: Record<TitleSignVariant, TitleSignTextColor> = {
+  tan: 'dark',
+  red: 'gold',
+  large: 'gold',
+};
 
 /** Slide-in animation duration (must match the CSS keyframe duration). */
 const ENTRY_DURATION_MS = 500;
@@ -58,7 +72,7 @@ const titleSignVariants = cva('title-sign', {
   },
   defaultVariants: {
     variant: TITLE_SIGN_DEFAULTS.VARIANT,
-    textColor: TITLE_SIGN_DEFAULTS.TEXT_COLOR,
+    textColor: DEFAULT_TEXT_COLOR_BY_VARIANT[TITLE_SIGN_DEFAULTS.VARIANT],
     size: TITLE_SIGN_DEFAULTS.SIZE,
     position: TITLE_SIGN_DEFAULTS.POSITION,
   },
@@ -87,12 +101,15 @@ export function TitleSign({ request, onDismiss }: TitleSignProps) {
   const {
     text,
     variant = TITLE_SIGN_DEFAULTS.VARIANT,
-    textColor = TITLE_SIGN_DEFAULTS.TEXT_COLOR,
+    textColor,
     size = TITLE_SIGN_DEFAULTS.SIZE,
     position = TITLE_SIGN_DEFAULTS.POSITION,
     holdMs = TITLE_SIGN_DEFAULTS.HOLD_MS,
     hasEntryAnimation = TITLE_SIGN_DEFAULTS.HAS_ENTRY_ANIMATION,
   } = request;
+
+  // Fall back to the per-variant default colour when the request doesn't set one.
+  const resolvedTextColor = textColor ?? DEFAULT_TEXT_COLOR_BY_VARIANT[variant];
 
   const [phase, setPhase] = useState<Phase>(hasEntryAnimation ? 'entering' : 'holding');
 
@@ -126,7 +143,7 @@ export function TitleSign({ request, onDismiss }: TitleSignProps) {
     <div className="title-sign-layer" aria-hidden>
       <div
         className={cn(
-          titleSignVariants({ variant, textColor, size, position }),
+          titleSignVariants({ variant, textColor: resolvedTextColor, size, position }),
           PHASE_CLASS[phase],
           isClickToDismiss && 'title-sign--dismissable',
         )}
