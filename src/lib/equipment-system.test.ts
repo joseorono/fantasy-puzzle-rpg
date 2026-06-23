@@ -9,6 +9,7 @@ import {
   getPartyWithEffectiveStats,
   getAvailableEquipmentForSlot,
   getScaledEquipmentStats,
+  getOwnedEquipmentInstances,
   findEquipmentItem,
 } from './equipment-system';
 import type { CharacterData } from '~/types/rpg-elements';
@@ -316,5 +317,36 @@ describe('getAvailableEquipmentForSlot', () => {
     // rogue-2 SHOULD see iron-short-bow because qty is 2 and only 1 is equipped
     const result = getAvailableEquipmentForSlot('weapon', anotherRogue, party, inventory);
     expect(result.find((i) => i.item.id === 'iron-short-bow')).toBeDefined();
+  });
+});
+
+describe('getOwnedEquipmentInstances', () => {
+  it('reports quantity and deducts equipped copies from available', () => {
+    const inventory: InventoryItem[] = [{ itemId: 'iron-sword', quantity: 2, rarity: 'common' }];
+    const wielder = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'common' });
+    const result = getOwnedEquipmentInstances(inventory, [wielder]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].item.id).toBe('iron-sword');
+    expect(result[0].quantity).toBe(2);
+    expect(result[0].available).toBe(1); // 2 owned - 1 equipped
+  });
+
+  it('keeps different rarities of the same item separate', () => {
+    const inventory: InventoryItem[] = [
+      { itemId: 'iron-sword', quantity: 1, rarity: 'common' },
+      { itemId: 'iron-sword', quantity: 1, rarity: 'rare' },
+    ];
+    const result = getOwnedEquipmentInstances(inventory, []);
+    expect(result).toHaveLength(2);
+    expect(result.every((i) => i.available === 1)).toBe(true);
+  });
+
+  it('does not count a different rarity as equipped', () => {
+    const inventory: InventoryItem[] = [{ itemId: 'iron-sword', quantity: 1, rarity: 'rare' }];
+    // A member has the COMMON one equipped, which must not reduce the RARE stack.
+    const wielder = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'common' });
+    const result = getOwnedEquipmentInstances(inventory, [wielder]);
+    expect(result[0].available).toBe(1);
   });
 });

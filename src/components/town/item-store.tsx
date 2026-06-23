@@ -1,18 +1,22 @@
+import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
+import { ConsumableItems } from '~/constants/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { getItemsFromIds } from '~/lib/town';
-import { canAfford } from '~/lib/resources';
+import { canAfford, createResources } from '~/lib/resources';
+import { getSellPrice } from '~/lib/crafting';
 import { cn } from '~/lib/utils';
-import { getItemQuantity } from '~/lib/inventory';
+import { getItemQuantity, filterInventoryByType } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from './cost-badge';
 import {
@@ -35,8 +39,14 @@ export default function ItemStore({
   const inventoryActions = useInventoryActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
+  const [selectedTab, setSelectedTab] = useState<'buy' | 'sell'>('buy');
 
   const itemsData = getItemsFromIds(itemsForSell);
+
+  // Owned consumables, resolved to their definitions, for the Sell tab.
+  const sellableItems = filterInventoryByType(inventory, ConsumableItems, 'consumable')
+    .map((inv) => ({ item: ConsumableItems.find((c) => c.id === inv.itemId), quantity: inv.quantity }))
+    .filter((entry): entry is { item: ConsumableItemData; quantity: number } => Boolean(entry.item));
 
   const handleBuyItem = (item: ConsumableItemData) => {
     if (canAfford(resources, item.cost)) {
@@ -44,6 +54,12 @@ export default function ItemStore({
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
     }
+  };
+
+  const handleSellItem = (item: ConsumableItemData) => {
+    soundService.playSound(SoundNames.clickCoin);
+    inventoryActions.removeItem(item.id, 1);
+    resourcesActions.addResources(createResources({ coins: getSellPrice(item) }));
   };
 
   const getItemCount = (itemId: string): number => {
@@ -61,16 +77,76 @@ export default function ItemStore({
       onLeave={onLeaveCallback}
     >
       <div className="shop-content">
+        {/* Buy / Sell tabs */}
+        <div className="blacksmith-tabs">
+          <IndigolayTab size="default" isActive={selectedTab === 'buy'} onClick={() => setSelectedTab('buy')}>
+            Buy
+          </IndigolayTab>
+          <IndigolayTab size="default" isActive={selectedTab === 'sell'} onClick={() => setSelectedTab('sell')}>
+            Sell
+          </IndigolayTab>
+        </div>
+
         <div className="store-info">
           <div className="town-section-header town-section-header--items">
             <h2>
-              <NarikWoodBitFont text="CONSUMABLE ITEMS" size={1.3} />
+              <NarikWoodBitFont text={selectedTab === 'buy' ? 'CONSUMABLE ITEMS' : 'SELL ITEMS'} size={1.3} />
             </h2>
           </div>
-          <p className="town-section-subtitle">Purchase items to aid you in battle</p>
+          <p className="town-section-subtitle">
+            {selectedTab === 'buy' ? 'Purchase items to aid you in battle' : 'Sell items for half their value'}
+          </p>
         </div>
 
-        {/* Items List */}
+        {/* Sell List */}
+        {selectedTab === 'sell' && (
+          <div className="equipment-list">
+            {sellableItems.length === 0 ? (
+              <p className="town-section-subtitle">You have no items to sell.</p>
+            ) : (
+              sellableItems.map(({ item, quantity }) => (
+                <div key={item.id} className="equipment-list-item">
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                  </div>
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">
+                        {item.name}
+                        <span className="owned-badge">Owned {quantity}</span>
+                      </div>
+                      <div className="equipment-item-cost">
+                        <CostBadge resource="coins" amount={getSellPrice(item)} />
+                      </div>
+                    </div>
+                    <div className="item-store-item-summary">
+                      <div className="equipment-item-description">{item.description}</div>
+                      <div className="item-actions">
+                        <ToffecBeigeCornersWrapper>
+                          <ToffecButton
+                            variant="cream"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSellItem(item);
+                            }}
+                          >
+                            <span className="flex items-center gap-2">
+                              Sell for {getSellPrice(item)} <FrostyRpgIcon name="coinPurse" size={18} />
+                            </span>
+                          </ToffecButton>
+                        </ToffecBeigeCornersWrapper>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Buy List */}
+        {selectedTab === 'buy' && (
         <div className="equipment-list">
           {itemsData.map((item) => {
             const itemCount = getItemCount(item.id);
@@ -163,6 +239,7 @@ export default function ItemStore({
             );
           })}
         </div>
+        )}
       </div>
     </TownLocationLayout>
   );

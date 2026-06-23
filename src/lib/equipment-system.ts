@@ -18,6 +18,13 @@ export interface EquipmentInstance {
   rarity: RarityTier;
 }
 
+/** An owned equipment stack with how many copies are free (not equipped). */
+export interface OwnedEquipmentInstance extends EquipmentInstance {
+  quantity: number;
+  /** Copies not currently equipped by any party member — safe to modify/scrap. */
+  available: number;
+}
+
 /**
  * Determine the equipment slot for an item by its ID.
  * Weapons have forClass set; armor items don't (or contain 'armor'/'plate').
@@ -210,6 +217,41 @@ export function getAvailableEquipmentForSlot(
     if (inv.quantity - equippedByOthers > 0) {
       instances.push({ item, rarity });
     }
+  }
+
+  return instances;
+}
+
+/**
+ * Count how many party members have a specific (itemId, rarity) instance equipped
+ * in either slot.
+ */
+export function countEquippedInstances(party: CharacterData[], itemId: string, rarity: RarityTier): number {
+  return party.reduce((count, member) => {
+    const weaponMatch = member.equippedWeaponId === itemId && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
+    const armorMatch = member.equippedArmorId === itemId && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
+    return count + (weaponMatch ? 1 : 0) + (armorMatch ? 1 : 0);
+  }, 0);
+}
+
+/**
+ * List every owned equipment stack as an instance, annotated with how many copies
+ * are free to modify or scrap (`available = quantity - equipped copies`). Used by
+ * the blacksmith's upgrade/salvage UI so equipped gear can't be over-consumed.
+ */
+export function getOwnedEquipmentInstances(
+  inventory: InventoryItem[],
+  party: CharacterData[],
+): OwnedEquipmentInstance[] {
+  const instances: OwnedEquipmentInstance[] = [];
+
+  for (const inv of inventory) {
+    const item = findEquipmentItem(inv.itemId);
+    if (!item) continue;
+
+    const rarity = inv.rarity ?? DEFAULT_RARITY;
+    const equipped = countEquippedInstances(party, item.id, rarity);
+    instances.push({ item, rarity, quantity: inv.quantity, available: inv.quantity - equipped });
   }
 
   return instances;

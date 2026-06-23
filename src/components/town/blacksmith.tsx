@@ -1,15 +1,30 @@
 import { useState } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { useResources, useResourcesActions, useInventoryActions } from '~/stores/game-store';
+import {
+  useResources,
+  useResourcesActions,
+  useInventoryActions,
+  useInventory,
+  useParty,
+  useCraftingPity,
+  useCraftingActions,
+} from '~/stores/game-store';
 import { useOverlay } from '~/hooks/use-overlay';
 import { EquipmentItems } from '~/constants/inventory';
 import { canAfford, createResources } from '~/lib/resources';
-import { rollRarity } from '~/lib/rarity';
-import { CRAFTING_RARITY_BIAS } from '~/constants/rarity';
+import { rollRarity, getRarityOdds, getRarityColor, getRarityLabel, canUpgradeRarity, upgradeRarity } from '~/lib/rarity';
+import { getUpgradeCost, getSalvageReturn } from '~/lib/crafting';
+import {
+  getOwnedEquipmentInstances,
+  getScaledEquipmentStats,
+  type OwnedEquipmentInstance,
+} from '~/lib/equipment-system';
+import { CRAFTING_RARITY_BIAS, PITY_BIAS_STEP, PITY_MAX, RARITY_TIERS } from '~/constants/rarity';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
+import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
@@ -44,6 +59,29 @@ function getEquipmentType(itemId: string): EquipmentType | null {
   return null;
 }
 
+/** Stable key for an owned equipment instance (item + rolled rarity). */
+function instanceKey(instance: { item: { id: string }; rarity: string }): string {
+  return `${instance.item.id}::${instance.rarity}`;
+}
+
+/** Format a rarity odds percentage: one decimal under 10%, whole number otherwise. */
+function formatOdds(pct: number): string {
+  return pct < 10 ? pct.toFixed(1) : String(Math.round(pct));
+}
+
+/** Render a cost/refund as a row of resource badges, skipping zero amounts. */
+function CostBadges({ resources }: { resources: Resources }) {
+  return (
+    <>
+      {resources.coins > 0 && <CostBadge resource="coins" amount={resources.coins} />}
+      {resources.gold > 0 && <CostBadge resource="gold" amount={resources.gold} />}
+      {resources.silver > 0 && <CostBadge resource="silver" amount={resources.silver} />}
+      {resources.copper > 0 && <CostBadge resource="copper" amount={resources.copper} />}
+      {resources.iron > 0 && <CostBadge resource="iron" amount={resources.iron} />}
+    </>
+  );
+}
+
 export default function Blacksmith({
   backgroundImage,
   onLeaveCallback,
@@ -51,28 +89,46 @@ export default function Blacksmith({
   backgroundImage: string;
   onLeaveCallback: () => void;
 }) {
-  const [selectedTab, setSelectedTab] = useState<'craft' | 'exchange' | 'melt'>('craft');
+  const [selectedTab, setSelectedTab] = useState<'craft' | 'modify' | 'exchange' | 'melt'>('craft');
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
   // The first craft of each distinct item this visit shows the success overlay.
   // Resets naturally because the blacksmith remounts on each visit.
   const [celebratedItemIds, setCelebratedItemIds] = useState<Set<string>>(() => new Set());
+  // Modify (upgrade/salvage) tab: selected owned instance + a salvage confirm gate.
+  const [selectedModifyKey, setSelectedModifyKey] = useState<string | null>(null);
+  const [pendingSalvage, setPendingSalvage] = useState(false);
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
+  const inventory = useInventory();
+  const party = useParty();
+  const pity = useCraftingPity();
+  const craftingActions = useCraftingActions();
   const { showOverlay } = useOverlay();
 
   // Filter equipment by type
   const filteredEquipment = EquipmentItems.filter((item) => getEquipmentType(item.id) === selectedEquipmentType);
 
+  // Pity-adjusted craft luck: each unlucky craft nudges the odds toward rarer gear.
+  const craftBias = CRAFTING_RARITY_BIAS + Math.min(pity, PITY_MAX) * PITY_BIAS_STEP;
+  const craftOdds = getRarityOdds(craftBias);
+
+  // Owned gear with free (non-equipped) copies, for the Modify tab.
+  const modifiableInstances = getOwnedEquipmentInstances(inventory, party).filter((inst) => inst.available > 0);
+  const selectedModify = selectedModifyKey
+    ? modifiableInstances.find((inst) => instanceKey(inst) === selectedModifyKey)
+    : undefined;
+
   const handleCraftItem = (item: EquipmentItemData) => {
     if (canAfford(resources, item.cost)) {
       soundService.playSound(SoundNames.clickCoin);
       resourcesActions.reduceResources(item.cost);
-      // Roll the crafted item's rarity once and store it on the inventory stack.
-      const rarity = rollRarity(CRAFTING_RARITY_BIAS);
+      // Roll the crafted item's rarity once (pity-adjusted) and store it on the stack.
+      const rarity = rollRarity(craftBias);
       inventoryActions.addItem(item.id, 1, rarity);
+      craftingActions.registerCraft(rarity);
       setSelectedItem(null);
 
       if (!celebratedItemIds.has(item.id)) {
@@ -81,6 +137,37 @@ export default function Blacksmith({
       }
     }
   };
+
+  function handleSelectModify(key: string) {
+    setSelectedModifyKey((prev) => (prev === key ? prev : key));
+    setPendingSalvage(false);
+  }
+
+  function handleUpgrade(instance: OwnedEquipmentInstance) {
+    const cost = getUpgradeCost(instance.rarity);
+    if (!canUpgradeRarity(instance.rarity) || !canAfford(resources, cost)) return;
+    soundService.playSound(SoundNames.clickCoin);
+    resourcesActions.reduceResources(cost);
+    const next = upgradeRarity(instance.rarity);
+    inventoryActions.removeItem(instance.item.id, 1, instance.rarity);
+    inventoryActions.addItem(instance.item.id, 1, next);
+    showOverlay({ kind: 'crafting-success', itemId: instance.item.id, rarity: next });
+    setSelectedModifyKey(null);
+    setPendingSalvage(false);
+  }
+
+  function handleSalvage(instance: OwnedEquipmentInstance) {
+    // First click arms the confirm; second click actually scraps the item.
+    if (!pendingSalvage) {
+      setPendingSalvage(true);
+      return;
+    }
+    soundService.playSound(SoundNames.clickCoin);
+    inventoryActions.removeItem(instance.item.id, 1, instance.rarity);
+    resourcesActions.addResources(getSalvageReturn(instance.item));
+    setSelectedModifyKey(null);
+    setPendingSalvage(false);
+  }
 
   const handleExchangeResources = (
     fromResource: keyof typeof resources,
@@ -121,6 +208,9 @@ export default function Blacksmith({
         <IndigolayTab size="default" isActive={selectedTab === 'craft'} onClick={() => setSelectedTab('craft')}>
           Craft
         </IndigolayTab>
+        <IndigolayTab size="default" isActive={selectedTab === 'modify'} onClick={() => setSelectedTab('modify')}>
+          Modify
+        </IndigolayTab>
         <IndigolayTab size="default" isActive={selectedTab === 'exchange'} onClick={() => setSelectedTab('exchange')}>
           Exchange
         </IndigolayTab>
@@ -152,6 +242,17 @@ export default function Blacksmith({
             </Tooltip>
           </div>
           <p className="town-section-subtitle">Choose an equipment type to craft</p>
+
+          {/* Rarity odds — reflect the current pity-adjusted luck */}
+          <div className="craft-odds flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.6rem] tracking-wider uppercase">
+            {RARITY_TIERS.map((tier) => (
+              <span key={tier} style={{ color: getRarityColor(tier) }}>
+                {getRarityLabel(tier)} {formatOdds(craftOdds[tier])}%
+              </span>
+            ))}
+            {pity > 0 && <span className="text-[#c08a3e] normal-case">· luck building…</span>}
+          </div>
+
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
@@ -256,6 +357,70 @@ export default function Blacksmith({
         </div>
       )}
 
+      {/* Modify Tab */}
+      {selectedTab === 'modify' && (
+        <div className="craft-section">
+          <div className="town-section-header town-section-header--smith-craft">
+            <h2>
+              <NarikWoodBitFont text="MODIFY GEAR" size={1.3} />
+            </h2>
+          </div>
+          <p className="town-section-subtitle">Upgrade gear one tier, or salvage it for materials</p>
+
+          <div className="craft-workspace">
+            <div className="equipment-list">
+              {modifiableInstances.length === 0 ? (
+                <div className="craft-detail-empty">
+                  <p>No spare equipment to modify. Craft or unequip gear first.</p>
+                </div>
+              ) : (
+                modifiableInstances.map((inst) => {
+                  const key = instanceKey(inst);
+                  return (
+                    <div
+                      key={key}
+                      className={cn('equipment-list-item', selectedModifyKey === key && 'selected')}
+                      onClick={() => handleSelectModify(key)}
+                    >
+                      <div className="equipment-item-icon">
+                        {inst.item.iconName ? <FrostyRpgIcon name={inst.item.iconName} size={24} /> : null}
+                      </div>
+                      <div className="equipment-item-content">
+                        <div className="equipment-item-header">
+                          <div className="equipment-item-name" style={{ color: getRarityColor(inst.rarity) }}>
+                            {inst.item.name}
+                            <span className="ml-1 text-[0.55rem] uppercase opacity-80">
+                              {getRarityLabel(inst.rarity)}
+                            </span>
+                          </div>
+                          <div className="equipment-item-cost">x{inst.available}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="craft-detail">
+              {selectedModify ? (
+                <ModifyDetail
+                  instance={selectedModify}
+                  resources={resources}
+                  pendingSalvage={pendingSalvage}
+                  onUpgrade={() => handleUpgrade(selectedModify)}
+                  onSalvage={() => handleSalvage(selectedModify)}
+                />
+              ) : (
+                <div className="craft-detail-empty">
+                  <p>Select a piece of equipment to upgrade or salvage.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Exchange Tab */}
       {selectedTab === 'exchange' && (
         <div className="exchange-section">
@@ -350,5 +515,77 @@ export default function Blacksmith({
         </div>
       )}
     </TownLocationLayout>
+  );
+}
+
+interface ModifyDetailProps {
+  instance: OwnedEquipmentInstance;
+  resources: Resources;
+  pendingSalvage: boolean;
+  onUpgrade: () => void;
+  onSalvage: () => void;
+}
+
+/** Detail panel for the Modify tab: rarity-scaled stats plus Upgrade and Salvage actions. */
+function ModifyDetail({ instance, resources, pendingSalvage, onUpgrade, onSalvage }: ModifyDetailProps) {
+  const stats = getScaledEquipmentStats(instance.item, instance.rarity);
+  const upgradable = canUpgradeRarity(instance.rarity);
+  const nextRarity = upgradeRarity(instance.rarity);
+  const upgradeCost = getUpgradeCost(instance.rarity);
+  const canAffordUpgrade = canAfford(resources, upgradeCost);
+  const salvageReturn = getSalvageReturn(instance.item);
+
+  return (
+    <>
+      <div className="craft-detail-header">
+        <div className="craft-detail-icon">
+          {instance.item.iconName ? <FrostyRpgIcon name={instance.item.iconName} size={40} /> : null}
+        </div>
+        <div className="craft-detail-name" style={{ color: getRarityColor(instance.rarity) }}>
+          {instance.item.name}
+          <div className="text-[0.6rem] tracking-wider uppercase">{getRarityLabel(instance.rarity)}</div>
+        </div>
+      </div>
+
+      <div className="craft-detail-stats">
+        <div className="craft-detail-stats-row">
+          <span className="stat-badge">POW: {stats.pow}</span>
+          <span className="stat-badge">VIT: {stats.vit}</span>
+          <span className="stat-badge">SPD: {stats.spd}</span>
+        </div>
+      </div>
+
+      {/* Upgrade action */}
+      <div className="craft-detail-actions">
+        {upgradable ? (
+          <>
+            <div className="equipment-item-cost flex flex-wrap items-center gap-1">
+              <span style={{ color: getRarityColor(nextRarity) }}>→ {getRarityLabel(nextRarity)}</span>
+              <CostBadges resources={upgradeCost} />
+            </div>
+            <ToffecBeigeCornersWrapper>
+              <ToffecButton variant="orange" size="xs" onClick={onUpgrade} disabled={!canAffordUpgrade}>
+                {canAffordUpgrade ? 'Upgrade' : 'Cannot Afford'}
+              </ToffecButton>
+            </ToffecBeigeCornersWrapper>
+          </>
+        ) : (
+          <div className="craft-detail-for-class">Maxed — Legendary</div>
+        )}
+      </div>
+
+      {/* Salvage action */}
+      <div className="craft-detail-actions">
+        <div className="equipment-item-cost flex flex-wrap items-center gap-1">
+          <span>Salvage for</span>
+          <CostBadges resources={salvageReturn} />
+        </div>
+        <ToffecBeigeCornersWrapper>
+          <ToffecButton variant="cream" size="xs" onClick={onSalvage}>
+            {pendingSalvage ? 'Confirm Salvage?' : 'Salvage'}
+          </ToffecButton>
+        </ToffecBeigeCornersWrapper>
+      </div>
+    </>
   );
 }
