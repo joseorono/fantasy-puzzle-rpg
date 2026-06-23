@@ -49,17 +49,12 @@ export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayPro
           <RetroDivider variant="victory" />
 
           <div className="gom-message gom-message--victory">
-            <p
-              style={{
-                marginBottom: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.4rem',
-              }}
-            >
-              <Icon size={16} /> {skill.name}
-            </p>
+            {/* Skill name on a red ribbon banner (reuses the title-sign artwork). */}
+            <div className="title-sign title-sign--red title-sign--text-gold" style={{ margin: '0 auto 0.75rem' }}>
+              <span className="title-sign__text pixel-font" style={{ gap: '0.4rem', whiteSpace: 'nowrap' }}>
+                {skill.name}
+              </span>
+            </div>
             <p>{skill.description}</p>
           </div>
         </div>
