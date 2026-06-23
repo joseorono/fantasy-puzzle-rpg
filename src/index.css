@@ -404,6 +404,8 @@
 
 @import './styles/battle-top-bar.css';
 
+@import './styles/radial-countdown.css';
+
 @import './styles/battle-over-modal.css';
 
 @import './styles/crafting-success.css';

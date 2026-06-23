@@ -7,6 +7,7 @@ import PartyTestView from '~/views/party-test';
 import RouterTestView from '~/views/router-test';
 import GlobalAnimationTest from '~/views/global-animation-test';
 import TitleSignTestView from '~/views/title-sign-test';
+import RadialCountdownTestView from '~/views/radial-countdown-test';
 import SkillDebugView from '~/views/skill-debug';
 
 interface DebugSection {
@@ -29,6 +30,7 @@ const DEBUG_SECTIONS: DebugSection[] = [
   // Recently added — kept further down now that they're stable.
   { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
   { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
+  { id: 'radial-countdown', label: 'Radial Countdown', Component: RadialCountdownTestView },
 ];
 
 function scrollToSection(id: string) {
