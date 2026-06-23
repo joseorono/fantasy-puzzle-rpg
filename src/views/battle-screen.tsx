@@ -5,96 +5,22 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
-import {
-  damagePartyAtom,
-  gameStatusAtom,
-  enemiesAtom,
-  tickSkillCooldownsAtom,
-  tickGuardDecayAtom,
-} from '~/stores/battle-atoms';
+import { gameStatusAtom, tickSkillCooldownsAtom, tickGuardDecayAtom } from '~/stores/battle-atoms';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
-import { useState, useEffect, useRef } from 'react';
-import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
+import { useEffect } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { BattleTopBar } from '~/components/battle/battle-top-bar';
+import { useEnemyAttackTimers } from '~/hooks/use-enemy-attack-timers';
 
 export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
-  const enemies = useAtomValue(enemiesAtom);
-  const damageParty = useSetAtom(damagePartyAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
 
-  // Per-enemy attack timer tracking
-  const attackTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const [nextAttackIn, setNextAttackIn] = useState(0);
-  const countdownTimersRef = useRef<Map<string, number>>(new Map());
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Clear all enemy attack timers
-  function clearAllTimers() {
-    for (const timer of attackTimersRef.current.values()) {
-      clearInterval(timer);
-    }
-    attackTimersRef.current.clear();
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-    countdownTimersRef.current.clear();
-  }
-
-  // Per-enemy attack timers
-  useEffect(() => {
-    if (gameStatus !== 'playing') {
-      clearAllTimers();
-      return;
-    }
-
-    // Clear existing timers before setting new ones
-    clearAllTimers();
-
-    const livingEnemies = enemies.filter((e) => e.currentHp > 0);
-
-    for (const enemy of livingEnemies) {
-      const interval = calculateEnemyAttackInterval(enemy);
-      const damage = calculateEnemyDamage(enemy);
-
-      // Initialize countdown
-      countdownTimersRef.current.set(enemy.id, interval / 1000);
-
-      // Set attack interval per enemy
-      const timer = setInterval(() => {
-        damageParty(damage, enemy.id);
-        countdownTimersRef.current.set(enemy.id, interval / 1000);
-      }, interval);
-
-      attackTimersRef.current.set(enemy.id, timer);
-    }
-
-    // Shared countdown tick — find soonest attack
-    countdownIntervalRef.current = setInterval(() => {
-      let minCountdown = Infinity;
-      for (const [id, remaining] of countdownTimersRef.current) {
-        const next = remaining - 1;
-        const enemy = enemies.find((e) => e.id === id);
-        if (enemy && enemy.currentHp > 0) {
-          const interval = calculateEnemyAttackInterval(enemy) / 1000;
-          countdownTimersRef.current.set(id, next <= 0 ? interval : next);
-          if (next < minCountdown && next > 0) minCountdown = next;
-        }
-      }
-      setNextAttackIn(minCountdown === Infinity ? 0 : Math.max(1, Math.ceil(minCountdown)));
-    }, 1000);
-
-    // Initialize display
-    const minInterval = Math.min(...livingEnemies.map((e) => calculateEnemyAttackInterval(e)));
-    setNextAttackIn(Math.ceil(minInterval / 1000));
-
-    return () => clearAllTimers();
-  }, [gameStatus, enemies, damageParty]);
+  // Drives enemy attacks and exposes per-enemy countdown timing for the top bar.
+  const enemyTimers = useEnemyAttackTimers();
 
   // Skill cooldown + Guard decay tick loop
   useEffect(() => {
@@ -123,7 +49,7 @@ export default function BattleScreen() {
 
       {/* Main container - constrained to game view height */}
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <BattleTopBar nextAttackIn={nextAttackIn} />
+        <BattleTopBar enemyTimers={enemyTimers} />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
