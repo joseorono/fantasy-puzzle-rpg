@@ -202,6 +202,56 @@ Everything below expands on these and the rest of the systems.
 
 ---
 
+## 7. Building on the new systems (rarity, economy, guard)
+
+The rarity tiers, the crafting/economy loop (upgrade · salvage · sell · hidden pity), and the
+Guard meter opened up a batch of follow-ups that reuse seams we already shipped — cheaper to build
+than the greenfield ideas above.
+
+### Rarity & equipment depth
+- [ ] **Reforge (random re-roll).** A gambler's counterpart to the deterministic Upgrade: pay to
+  re-roll an item's rarity for a shot up (or down). The plumbing (`rollRarity`, rarity-keyed
+  stacks, `removeItem`/`addItem` by rarity) already exists.
+- [ ] **Affixes layered on rarity.** Higher tiers roll bonus affixes (`+crit`, `on-match: heal`,
+  elemental damage). Add an `affixes` array to `EquipmentItemData` instances and resolve them in
+  `getEquipmentBonuses` / `rpg-calculations.ts`. This finishes the original "affixes & rarity" idea.
+- [ ] **Set bonuses.** Reward equipping matching-tier or matching-theme gear across the party — a
+  reason to chase full sets instead of one big number.
+- [ ] **Material-driven craft quality.** Spend extra/better materials to raise that craft's rarity
+  bias, turning the flat forge fee into a real choice. `CRAFTING_RARITY_BIAS` already feeds the roll.
+- [ ] **Dismantle legendaries into a rare currency** that buys guaranteed high-tier crafts — a sink
+  for duplicate top-end gear.
+
+### Crafting & economy quality-of-life
+- [ ] **Sort / filter inventory by rarity** in the pause-menu Items/Equip tabs — a
+  `sortInventoryByRarity` beside the existing `sortInventoryByName`.
+- [ ] **Compare-on-hover.** Show the stat delta versus the currently equipped item when browsing
+  gear, so rarity/upgrade choices are legible at a glance.
+- [ ] **Bulk salvage / sell-all** below a chosen rarity, to clear junk without one-by-one clicks.
+- [ ] **Subtle pity feedback.** The numeric odds panel was removed for being noisy; hint at building
+  luck instead with a faint glow on the Craft button as pity climbs.
+- [ ] **Sell equipment for coins** as an alternative to material salvage — the other half of the
+  offload loop.
+
+### Guard meter & combat counterplay
+- [ ] **Active parry.** Spend a full Guard meter to fully negate the next hit and counter, instead
+  of only passive chip-blocking.
+- [ ] **Interrupt telegraphed attacks.** Let a timed match or skill cancel a charging enemy attack
+  surfaced by the new attack-timer telegraph — rewards watching the radial countdown.
+- [ ] **Guard-fuelled ultimate.** Overcharging Guard past full converts the overflow into ultimate
+  charge, so defense feeds offense.
+- [ ] **Per-class Guard identity.** Warrior charges Guard faster, Mage converts it to spell power —
+  gives the shared meter some build variety.
+
+### Special tiles (extending bombs)
+- [ ] **Line-clear orb** from L/T-shaped matches. The `clearBoardRowAtom` / `clearBoardColumnAtom`
+  atoms already exist — this just spawns the tile organically from play.
+- [ ] **Color bomb** from a match-5 that clears every orb of one color.
+- [ ] **Bomb-chain payoff.** A small combo callout / score bonus when one bomb detonates another,
+  reusing the existing match-indicator UI.
+
+---
+
 ## Suggested Priority (rough effort → impact)
 
 | Priority | Feature | Why | Effort |
