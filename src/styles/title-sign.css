@@ -15,9 +15,9 @@
   inset: var(--frame-thickness, 0px);
   z-index: 60;
   display: flex;
-  padding: 1rem;
   /* Click-through: only a dismissable ribbon re-enables pointer events. */
   pointer-events: none;
+  overflow: hidden;
 }
 
 .title-sign {
@@ -25,7 +25,9 @@
   --ts-base-width: 480px;
   --ts-font: 14px;
   --ts-text-inset: 14%;
-  --ts-text-nudge-y: 6%;
+  /* Downward nudge as a % of ribbon height (applied via translateY so it stays
+               size-independent — % padding would be width-relative, which it must not be). */
+    --ts-text-nudge-y: 8%;
 
   position: relative;
   flex: none;
@@ -47,12 +49,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-inline: var(--ts-text-inset);
-  padding-bottom: var(--ts-text-nudge-y);
   text-align: center;
-  line-height: 1.3;
   user-select: none;
   font-size: calc(var(--ts-font) * var(--ts-scale, 1));
+  margin-bottom: calc(var(--ts-text-nudge-y)*0.5);
 }
 
 /* Ribbon artwork + intrinsic aspect ratio per variant */
@@ -68,7 +68,7 @@
   --ts-base-width: 700px;
   --ts-font: 22px;
   --ts-text-inset: 15%;
-  --ts-text-nudge-y: 5%;
+  --ts-text-nudge-y: 6%;
   aspect-ratio: 700 / 141;
   background-image: url('/assets/title-signs/ribbon-red-large.png');
 }
