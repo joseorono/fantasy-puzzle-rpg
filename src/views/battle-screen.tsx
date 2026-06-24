@@ -1,5 +1,7 @@
 import { useAtomValue, useSetAtom } from 'jotai';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { EnemyDisplay } from '~/components/battle/enemy-display';
+import { BattlePauseOverlay } from '~/components/battle/battle-pause-overlay';
 import { PartyDisplay } from '~/components/battle/party-display';
 import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
@@ -11,38 +13,61 @@ import {
   tickGuardDecayAtom,
   ensureFreshBattleAtom,
 } from '~/stores/battle-atoms';
-import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { useParty } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
-import { useEffect, useLayoutEffect } from 'react';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { KeyboardKeys } from '~/constants/keyboard';
 import { BattleTopBar } from '~/components/battle/battle-top-bar';
 import { useEnemyAttackTimers } from '~/hooks/use-enemy-attack-timers';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 
 export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
-  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
   const party = useParty();
   const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
+  const [isBattlePaused, setIsBattlePaused] = useState(false);
+
+  function toggleBattlePause() {
+    if (gameStatus !== 'playing' && isBattlePaused !== true) return;
+    setIsBattlePaused((prev) => prev !== true);
+  }
+
+  function resumeBattle() {
+    setIsBattlePaused(false);
+  }
 
   // On entering the battle view onto an already-finished fight, re-arm a fresh battle
   // (enemies back to full HP) so re-entry always restarts. Runs before paint to avoid a
   // one-frame flash of the victory/defeat modal. Mount-only: capture the party as it is on entry.
   useLayoutEffect(() => {
     ensureFreshBattle(party);
+    setIsBattlePaused(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useWindowKeyDown((event) => {
+    if (event.key !== KeyboardKeys.Escape) return;
+    if (gameStatus !== 'playing' && isBattlePaused !== true) return;
+
+    event.preventDefault();
+    toggleBattlePause();
+  });
+
+  useEffect(() => {
+    if (gameStatus === 'playing') return;
+    setIsBattlePaused(false);
+  }, [gameStatus]);
+
   // Drives enemy attacks and exposes per-enemy countdown timing for the top bar.
-  const enemyTimers = useEnemyAttackTimers();
+  const enemyTimers = useEnemyAttackTimers(isBattlePaused);
 
   // Skill cooldown + Guard decay tick loop
   useEffect(() => {
-    if (gameStatus !== 'playing' || isPauseMenuOpen === true) return;
+    if (gameStatus !== 'playing' || isBattlePaused === true) return;
 
     const interval = setInterval(() => {
       tickSkillCooldowns(0.1);
@@ -50,7 +75,7 @@ export default function BattleScreen() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [gameStatus, isPauseMenuOpen, tickSkillCooldowns, tickGuardDecay]);
+  }, [gameStatus, isBattlePaused, tickSkillCooldowns, tickGuardDecay]);
 
   // Combat music
   useEffect(() => {
@@ -67,7 +92,7 @@ export default function BattleScreen() {
 
       {/* Main container - constrained to game view height */}
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <BattleTopBar enemyTimers={enemyTimers} />
+        <BattleTopBar enemyTimers={enemyTimers} isBattlePaused={isBattlePaused} onPauseToggle={toggleBattlePause} />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
@@ -112,12 +137,14 @@ export default function BattleScreen() {
 
             <div className="relative z-1 flex flex-col items-center xl:-translate-y-8">
               <div id="boardWrapper" className="relative mx-auto max-w-xl">
-                <Match3Board />
+                <Match3Board isBattlePaused={isBattlePaused} />
               </div>
-              <BattleItemBar />
+              <BattleItemBar isBattlePaused={isBattlePaused} />
             </div>
           </div>
         </div>
+
+        {isBattlePaused === true && <BattlePauseOverlay onResume={resumeBattle} />}
       </div>
 
       {/* Floating particles effect */}

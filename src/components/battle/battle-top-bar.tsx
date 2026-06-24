@@ -1,9 +1,8 @@
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { Hourglass, Pause, Star, Swords, Volume2, VolumeX } from 'lucide-react';
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
-import { activeMenuTabAtom, isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
 import { soundService } from '~/services/sound-service';
 import {
@@ -20,15 +19,14 @@ const MAX_VISIBLE_TIMERS = 4;
 interface BattleTopBarProps {
   /** Per-enemy attack timing, from `useEnemyAttackTimers`. */
   enemyTimers: EnemyAttackTimer[];
+  isBattlePaused: boolean;
+  onPauseToggle: () => void;
 }
 
-export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
+export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: BattleTopBarProps) {
   const turn = useAtomValue(turnAtom);
   const score = useAtomValue(scoreAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
-  const isPauseOpen = useAtomValue(isPauseMenuOpenAtom);
-  const setIsPauseOpen = useSetAtom(isPauseMenuOpenAtom);
-  const setActiveMenuTab = useSetAtom(activeMenuTabAtom);
   const [isMuted, setIsMuted] = useState(() => soundService.isMuted());
 
   function toggleMute() {
@@ -40,17 +38,7 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
     setIsMuted(!isMuted);
   }
 
-  function togglePause() {
-    if (isPauseOpen === true) {
-      setIsPauseOpen(false);
-      return;
-    }
-
-    setActiveMenuTab('items');
-    setIsPauseOpen(true);
-  }
-
-  const isPaused = gameStatus !== 'playing' || isPauseOpen === true;
+  const isPaused = gameStatus !== 'playing' || isBattlePaused === true;
   const visibleTimers = enemyTimers.slice(0, MAX_VISIBLE_TIMERS);
   const overflowCount = enemyTimers.length - visibleTimers.length;
 
@@ -107,8 +95,8 @@ export function BattleTopBar({ enemyTimers }: BattleTopBarProps) {
         <div className="btb-actions">
           <button
             className="btb-btn"
-            onClick={togglePause}
-            aria-label={isPauseOpen ? 'Resume battle' : 'Pause battle'}
+            onClick={onPauseToggle}
+            aria-label={isBattlePaused ? 'Despausar batalla' : 'Pausar batalla'}
           >
             <Pause className="btb-btn-icon" />
           </button>
