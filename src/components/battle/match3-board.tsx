@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import {
   boardAtom,
   selectedOrbAtom,
@@ -167,6 +168,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
 export function Match3Board() {
   const board = useAtomValue(boardAtom);
   const selectedOrb = useAtomValue(selectedOrbAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const party = useAtomValue(partyAtom);
   const selectOrb = useSetAtom(selectOrbAtom);
   const swapOrbs = useSetAtom(swapOrbsAtom);
@@ -370,7 +372,7 @@ export function Match3Board() {
 
   const handleOrbClick = (row: number, col: number) => {
     // Don't allow clicks while processing a swap
-    if (isProcessingSwap) return;
+    if (isProcessingSwap || isPauseMenuOpen === true) return;
 
     if (!selectedOrb) {
       // First selection

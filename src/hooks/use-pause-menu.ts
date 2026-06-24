@@ -7,7 +7,7 @@ import { KeyboardKeys } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import type { ViewType } from '~/types/routing';
 
-const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards', 'town-hub'];
+const DISABLED_VIEWS: ViewType[] = ['battle-rewards', 'town-hub'];
 
 export function usePauseMenu() {
   const [isOpen, setIsOpen] = useAtom(isPauseMenuOpenAtom);

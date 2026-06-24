@@ -11,6 +11,7 @@ import {
   tickGuardDecayAtom,
   ensureFreshBattleAtom,
 } from '~/stores/battle-atoms';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { useParty } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
@@ -22,6 +23,7 @@ import { useEnemyAttackTimers } from '~/hooks/use-enemy-attack-timers';
 
 export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
   const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
   const party = useParty();
@@ -40,7 +42,7 @@ export default function BattleScreen() {
 
   // Skill cooldown + Guard decay tick loop
   useEffect(() => {
-    if (gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing' || isPauseMenuOpen === true) return;
 
     const interval = setInterval(() => {
       tickSkillCooldowns(0.1);
@@ -48,7 +50,7 @@ export default function BattleScreen() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [gameStatus, tickSkillCooldowns, tickGuardDecay]);
+  }, [gameStatus, isPauseMenuOpen, tickSkillCooldowns, tickGuardDecay]);
 
   // Combat music
   useEffect(() => {

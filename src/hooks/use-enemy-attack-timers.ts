@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { damagePartyAtom, enemiesAtom, gameStatusAtom } from '~/stores/battle-atoms';
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
 
@@ -28,6 +29,7 @@ export interface EnemyAttackTimer {
 export function useEnemyAttackTimers(): EnemyAttackTimer[] {
   const enemies = useAtomValue(enemiesAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const [cycles, setCycles] = useState<Record<string, number>>({});
 
@@ -51,7 +53,7 @@ export function useEnemyAttackTimers(): EnemyAttackTimer[] {
       timers.clear();
     }
 
-    if (gameStatus !== 'playing') return clearTimers;
+    if (gameStatus !== 'playing' || isPauseMenuOpen === true) return clearTimers;
 
     for (const enemy of enemiesRef.current.filter((e) => e.currentHp > 0)) {
       const intervalMs = calculateEnemyAttackInterval(enemy);
@@ -67,7 +69,7 @@ export function useEnemyAttackTimers(): EnemyAttackTimer[] {
 
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStatus, rosterSignature, damageParty]);
+  }, [gameStatus, isPauseMenuOpen, rosterSignature, damageParty]);
 
   return livingEnemies.map((enemy) => ({
     id: enemy.id,

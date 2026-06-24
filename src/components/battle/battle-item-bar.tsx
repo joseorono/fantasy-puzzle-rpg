@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import {
@@ -23,6 +24,7 @@ export function BattleItemBar() {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const party = useAtomValue(partyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
@@ -61,7 +63,7 @@ export function BattleItemBar() {
   const battleItems = ConsumableItems.filter((item) => item.usableInBattle && item.action);
 
   const handleUseItem = (item: ConsumableItemData) => {
-    if (gameStatus !== 'playing' || isOnCooldown) return;
+    if (gameStatus !== 'playing' || isPauseMenuOpen === true || isOnCooldown) return;
 
     const quantity = getItemQuantity(inventory, item.id);
     if (quantity <= 0 || !item.action) return;
@@ -97,7 +99,7 @@ export function BattleItemBar() {
       {battleItems.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
-        const isDisabled = isEmpty || gameStatus !== 'playing' || isOnCooldown;
+        const isDisabled = isEmpty || gameStatus !== 'playing' || isPauseMenuOpen === true || isOnCooldown;
 
         return (
           <ToffecBeigeCornersWrapper key={item.id}>
@@ -107,7 +109,7 @@ export function BattleItemBar() {
                   onClick={() => handleUseItem(item)}
                   disabled={isDisabled}
                   className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-                    isEmpty || gameStatus !== 'playing'
+                    isEmpty || gameStatus !== 'playing' || isPauseMenuOpen === true
                       ? 'cursor-not-allowed opacity-40'
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   }`}
