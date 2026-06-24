@@ -27,7 +27,7 @@
   --ts-text-inset: 14%;
   /* Downward nudge as a % of ribbon height (applied via translateY so it stays
                size-independent — % padding would be width-relative, which it must not be). */
-    --ts-text-nudge-y: 8%;
+  --ts-text-nudge-y: 8%;
   /* Gap between the ribbon and the frame edge it rests against (per-position). */
   --ts-edge-gap: 0.75rem;
 
@@ -54,7 +54,11 @@
   text-align: center;
   user-select: none;
   font-size: calc(var(--ts-font) * var(--ts-scale, 1));
-  margin-bottom: calc(var(--ts-text-nudge-y)*0.5);
+  margin-bottom: calc(var(--ts-text-nudge-y) * 0.5);
+  padding: 0 var(--ts-text-inset);
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.2;
 }
 
 /* Ribbon artwork + intrinsic aspect ratio per variant */
@@ -71,7 +75,7 @@
   --ts-font: 22px;
   --ts-text-inset: 15%;
   /* Negative = nudge down */
-    --ts-text-nudge-y: 8%;
+  --ts-text-nudge-y: 8%;
   aspect-ratio: 700 / 141;
   background-image: url('/assets/title-signs/ribbon-red-large.png');
 }

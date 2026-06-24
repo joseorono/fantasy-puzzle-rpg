@@ -51,7 +51,7 @@ export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayPro
           <div className="gom-message gom-message--victory">
             {/* Skill name on a red ribbon banner (reuses the title-sign artwork). */}
             <div className="title-sign title-sign--red title-sign--text-gold" style={{ margin: '0 auto 0.75rem' }}>
-              <span className="title-sign__text pixel-font" style={{ gap: '0.4rem', whiteSpace: 'nowrap' }}>
+              <span className="title-sign__text pixel-font" style={{ fontSize: '13px' }}>
                 {skill.name}
               </span>
             </div>
