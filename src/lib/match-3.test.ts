@@ -204,7 +204,7 @@ describe('removeMatchedOrbsAndRefill', () => {
       ['blue', 'green'],
     ]);
     const matched = new Set(['0-0', '1-0', '2-0']);
-    const result = removeMatchedOrbsAndRefill(board, matched, 0, 0);
+    const { board: result } = removeMatchedOrbsAndRefill(board, matched, 0, 0);
 
     // Same dimensions, no leftover matched ids
     expect(result.length).toBe(3);
@@ -213,30 +213,61 @@ describe('removeMatchedOrbsAndRefill', () => {
     expect(allIds.some((id) => matched.has(id))).toBe(false);
   });
 
-  it('returns the same board when nothing is matched', () => {
+  it('returns the same board and zero spawns when nothing is matched', () => {
     const board = makeBoard([['blue', 'green', 'purple']]);
-    expect(removeMatchedOrbsAndRefill(board, new Set(), 1, 1)).toBe(board);
+    const result = removeMatchedOrbsAndRefill(board, new Set(), 1, 1);
+    expect(result.board).toBe(board);
+    expect(result.bombsSpawned).toBe(0);
   });
 
   it('spawns no bombs when bombsToSpawn=0 and chance=0', () => {
     const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
     const matched = new Set(['0-0', '1-0', '2-0']);
-    const result = removeMatchedOrbsAndRefill(board, matched, 0, 0);
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 0);
     expect(countBombs(result)).toBe(0);
+    expect(bombsSpawned).toBe(0);
   });
 
   it('guarantees exactly bombsToSpawn bombs (random chance disabled)', () => {
     const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
     const matched = new Set(['0-0', '1-0', '2-0']); // 3 new orbs spawned
-    const result = removeMatchedOrbsAndRefill(board, matched, 2, 0);
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 2, 0);
     expect(countBombs(result)).toBe(2);
+    expect(bombsSpawned).toBe(2);
   });
 
   it('turns every refilled orb into a bomb when chance=1', () => {
     const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
     const matched = new Set(['0-0', '1-0', '2-0']); // 3 refilled slots
-    const result = removeMatchedOrbsAndRefill(board, matched, 0, 1);
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 1);
     expect(countBombs(result)).toBe(3);
+    expect(bombsSpawned).toBe(3);
+  });
+
+  it('caps random bomb spawns at maxBombs', () => {
+    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
+    const matched = new Set(['0-0', '1-0', '2-0']); // 3 refilled slots, chance=1
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 1, 2);
+    expect(countBombs(result)).toBe(2);
+    expect(bombsSpawned).toBe(2);
+  });
+
+  it('clamps guaranteed bombs to maxBombs', () => {
+    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
+    const matched = new Set(['0-0', '1-0', '2-0']);
+    // Ask for 5 guaranteed bombs but cap at 2
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 5, 0, 2);
+    expect(countBombs(result)).toBe(2);
+    expect(bombsSpawned).toBe(2);
+  });
+
+  it('counts random and guaranteed bombs together against maxBombs', () => {
+    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
+    const matched = new Set(['0-0', '1-0', '2-0']);
+    // chance=1 would fill all 3, guaranteed adds more, but the cap holds at 2 total
+    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 2, 1, 2);
+    expect(countBombs(result)).toBe(2);
+    expect(bombsSpawned).toBe(2);
   });
 });
 

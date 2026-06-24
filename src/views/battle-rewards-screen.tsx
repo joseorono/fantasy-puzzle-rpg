@@ -25,6 +25,7 @@ import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -282,9 +283,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
       resourcesActions.addResources(earnedResources);
     }
 
-    // Add equipment items to inventory
+    // Add equipment items to inventory, carrying each drop's rolled rarity
     for (const entry of lootTable.equipableItems) {
-      inventoryActions.addItem(entry.item.id, 1);
+      inventoryActions.addItem(entry.item.id, 1, entry.rarity);
     }
 
     // Add consumable items to inventory
@@ -316,9 +317,11 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
               <div className="item-entry-icon">
                 {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
               </div>
-              <span className="item-name">
+              <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
-                <span className="item-type">EQUIPMENT</span>
+                <span className="item-type" style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}>
+                  {getRarityLabel(item.rarity)}
+                </span>
               </span>
             </li>
           ))}

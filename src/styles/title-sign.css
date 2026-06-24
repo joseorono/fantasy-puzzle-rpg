@@ -1,0 +1,174 @@
+/*
+  Title sign — a decorative ribbon banner that slides in from off-screen,
+  rests, then retracts. Rendered by `TitleSignHost` in a fixed, click-through
+  layer so it never blocks the screen underneath. Slide direction is driven by
+  the position modifier via the `--ts-hidden` custom property; the overall
+  scale is driven by `--ts-scale` (set inline from the component's SIZE_SCALE).
+
+  Animation durations below mirror ENTRY_DURATION_MS / EXIT_DURATION_MS in
+  title-sign.tsx — keep them in sync.
+*/
+
+.title-sign-layer {
+  position: fixed;
+  /* Sit inside the ever-present window frame (see --frame-thickness in frames.css). */
+  inset: var(--frame-thickness, 0px);
+  z-index: 60;
+  display: flex;
+  /* Click-through: only a dismissable ribbon re-enables pointer events. */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.title-sign {
+  /* Tunable defaults (overridden per variant). */
+  --ts-base-width: 480px;
+  --ts-font: 14px;
+  --ts-text-inset: 14%;
+  /* Downward nudge as a % of ribbon height (applied via translateY so it stays
+               size-independent — % padding would be width-relative, which it must not be). */
+  --ts-text-nudge-y: 8%;
+  /* Gap between the ribbon and the frame edge it rests against (per-position). */
+  --ts-edge-gap: 0.75rem;
+
+  position: relative;
+  flex: none;
+  width: calc(var(--ts-base-width) * var(--ts-scale, 1));
+  max-width: 92%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+/*
+  Text is positioned out of flow so it never affects the ribbon's box size —
+  the per-variant aspect-ratio fully governs the height from the width.
+*/
+.title-sign__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+  font-size: calc(var(--ts-font) * var(--ts-scale, 1));
+  margin-bottom: calc(var(--ts-text-nudge-y) * 0.5);
+  padding: 0 var(--ts-text-inset);
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+}
+
+/* Ribbon artwork + intrinsic aspect ratio per variant */
+.title-sign--tan {
+  aspect-ratio: 370 / 66;
+  background-image: url('/assets/title-signs/ribbon-tan.png');
+}
+.title-sign--red {
+  aspect-ratio: 370 / 66;
+  background-image: url('/assets/title-signs/ribbon-red.png');
+}
+.title-sign--large {
+  --ts-base-width: 700px;
+  --ts-font: 22px;
+  --ts-text-inset: 15%;
+  /* Negative = nudge down */
+  --ts-text-nudge-y: 8%;
+  aspect-ratio: 700 / 141;
+  background-image: url('/assets/title-signs/ribbon-red-large.png');
+}
+
+/* Text colour — muted, not too bright; shadow keeps it legible on the ribbon */
+.title-sign--text-gold {
+  color: #e8c87e;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-cream {
+  color: #f3e7c9;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-white {
+  color: #f5f6fa;
+  text-shadow: 1px 1px 0 rgba(40, 22, 8, 0.6);
+}
+.title-sign--text-dark {
+  color: #3a2410;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/*
+  Placement within the flex layer + the hidden (off-screen) transform used by
+  the enter/exit keyframes. Single-child flex placement avoids combining a
+  centering transform with the animation transform.
+*/
+.title-sign--top {
+  --ts-hidden: translateY(-200%);
+  align-self: flex-start;
+  /* Rest a little away from the edge rather than flush against the frame. */
+  margin-top: var(--ts-edge-gap);
+  margin-inline: auto;
+}
+.title-sign--bottom {
+  --ts-hidden: translateY(200%);
+  align-self: flex-end;
+  margin-bottom: var(--ts-edge-gap);
+  margin-inline: auto;
+}
+.title-sign--left {
+  --ts-hidden: translateX(-150%);
+  align-self: center;
+  margin-left: var(--ts-edge-gap);
+  margin-right: auto;
+}
+.title-sign--right {
+  --ts-hidden: translateX(150%);
+  align-self: center;
+  margin-left: auto;
+  margin-right: var(--ts-edge-gap);
+}
+.title-sign--center {
+  --ts-hidden: translateY(-60vh);
+  margin: auto;
+}
+
+/* Lifecycle phases */
+.title-sign--entering {
+  animation: title-sign-in 0.5s ease-out both;
+}
+.title-sign--holding {
+  transform: translate(0, 0);
+  opacity: 1;
+}
+.title-sign--exiting {
+  animation: title-sign-out 0.4s ease-in both;
+}
+
+/* Only a click-to-dismiss ribbon (holdMs === null) captures pointer events */
+.title-sign--dismissable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@keyframes title-sign-in {
+  from {
+    transform: var(--ts-hidden);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes title-sign-out {
+  from {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: var(--ts-hidden);
+    opacity: 0;
+  }
+}

@@ -29,6 +29,10 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 - **Applies to**:
   - Character skill cooldowns
   - Enemy attack intervals
+  - **Guard Charge Rate** (derived) — the party's collective SPD raises how fast gray matches
+    charge the shared Guard meter, via `calculateGuardChargeRate(party) = 1 + sqrt(livingSpd) / GUARD_CHARGE_RATE_DIVISOR`.
+    Uses a diminishing (sqrt) curve so stacking SPD speeds up defense without trivializing it. See the
+    Guard Meter section in [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md).
 
 ## Character Stats
 
@@ -119,6 +123,11 @@ Located in `src/lib/rpg-calculations.ts`:
 - `calculateCooldownFillRate(baseCooldown, spd)` - Fill rate per second
 - `calculateEnemyAttackInterval(enemy)` - Enemy attack timing
 - `calculateCharacterCooldown(character)` - Character skill cooldown
+
+### Guard Functions
+- `calculateGuardChargeRate(party)` - SPD-derived multiplier on gray-match Guard gain
+- `resolveGuardedDamage(incoming, guard, guardBreak)` - Mitigate an incoming hit against the Guard meter
+- `decayGuard(guard, dt)` - Bleed the Guard meter over time (anti-hoard)
 
 ### Utility Functions
 - `createCoreStats(pow, vit, spd)` - Create stats object

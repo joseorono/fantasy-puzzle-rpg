@@ -269,15 +269,17 @@ export function isValidSwap(
  * @param matchedOrbIds - Set of orb IDs that should be removed
  * @param bombsToSpawn - How many of the newly spawned orbs are guaranteed to become bombs (default 0)
  * @param bombRefillChance - Per-orb probability (0-1) that a refilled orb spawns as a bomb (default BOMB_REFILL_CHANCE)
- * @returns A new board with matched orbs removed and refilled
+ * @param maxBombs - Hard cap on total bombs spawned this call (random + guaranteed) (default Infinity)
+ * @returns The refilled board and the number of bombs actually spawned
  */
 export function removeMatchedOrbsAndRefill(
   board: Orb[][],
   matchedOrbIds: Set<string>,
   bombsToSpawn: number = 0,
   bombRefillChance: number = BOMB_REFILL_CHANCE,
-): Orb[][] {
-  if (matchedOrbIds.size === 0) return board;
+  maxBombs: number = Infinity,
+): { board: Orb[][]; bombsSpawned: number } {
+  if (matchedOrbIds.size === 0) return { board, bombsSpawned: 0 };
 
   const newBoard = board.map((row) => [...row]);
   const rows = newBoard.length;
@@ -295,6 +297,8 @@ export function removeMatchedOrbsAndRefill(
 
   // Track freshly spawned orbs so some can be promoted to bombs afterwards
   const newlySpawned: GridPosition[] = [];
+  // Total bombs created this call (random + guaranteed), clamped to maxBombs.
+  let bombsSpawned = 0;
 
   // Process each column for gravity
   for (let col = 0; col < cols; col++) {
@@ -319,10 +323,12 @@ export function removeMatchedOrbsAndRefill(
       };
     }
 
-    // Fill top with new random orbs; each has an independent chance to be a bomb.
+    // Fill top with new random orbs; each has an independent chance to be a bomb,
+    // until the per-call bomb cap is reached.
     for (let i = 0; i < newOrbsNeeded; i++) {
       const row = newOrbsNeeded - 1 - i;
-      const isBomb = Math.random() < bombRefillChance;
+      const isBomb = bombsSpawned < maxBombs && Math.random() < bombRefillChance;
+      if (isBomb) bombsSpawned++;
       newBoard[row][col] = {
         id: `${isBomb ? 'bomb' : 'orb'}-${Date.now()}-${row}-${col}`,
         type: getRandomOrbType(),
@@ -335,9 +341,10 @@ export function removeMatchedOrbsAndRefill(
   }
 
   // Guarantee `bombsToSpawn` bombs by promoting freshly spawned orbs that the
-  // random roll above didn't already turn into bombs.
+  // random roll above didn't already turn into bombs — but never exceed maxBombs.
   const nonBombSpawns = newlySpawned.filter(({ row, col }) => !newBoard[row][col].isBomb);
-  const bombCount = Math.min(Math.max(0, Math.floor(bombsToSpawn)), nonBombSpawns.length);
+  const guaranteedBudget = Math.max(0, maxBombs - bombsSpawned);
+  const bombCount = Math.min(Math.max(0, Math.floor(bombsToSpawn)), nonBombSpawns.length, guaranteedBudget);
   for (let i = 0; i < bombCount; i++) {
     // Partial Fisher-Yates: pick a not-yet-chosen position into slot i.
     const pick = i + Math.floor(Math.random() * (nonBombSpawns.length - i));
@@ -348,6 +355,7 @@ export function removeMatchedOrbsAndRefill(
     const { row, col } = nonBombSpawns[i];
     newBoard[row][col] = { ...newBoard[row][col], isBomb: true };
   }
+  bombsSpawned += bombCount;
 
-  return newBoard;
+  return { board: newBoard, bombsSpawned };
 }

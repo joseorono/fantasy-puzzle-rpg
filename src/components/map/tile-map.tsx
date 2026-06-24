@@ -31,7 +31,8 @@ import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
-import { generateRandomResources } from '~/lib/loot';
+import { generateRandomResources, rollLootTableRarities } from '~/lib/loot';
+import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
@@ -465,7 +466,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     // Play chest opening sound immediately for instant feedback
     soundService.playSound(SoundNames.bgNoiseMiner, 0.7, 0.1, 0.05);
 
-    const loot = currentNode.lootPayload;
+    // Roll a rarity for each equipment entry once, so the inventory grant and the
+    // loot notification below show the same tiers.
+    const loot = rollLootTableRarities(currentNode.lootPayload, CHEST_RARITY_BIAS);
 
     // Apply loot to player inventory and resources using math utilities
     // Add equipment items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
@@ -474,12 +477,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       if (!randomBool(lootItem.probability)) return;
 
       const item = lootItem.item;
-      const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
+      const existingItem = currentInventory.items.find(
+        (invItem) => invItem.itemId === item.id && invItem.rarity === lootItem.rarity,
+      );
       const currentQuantity = existingItem?.quantity ?? 0;
       const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
       const quantityToAdd = newQuantity - currentQuantity;
       if (quantityToAdd > 0) {
-        inventoryActions.addItem(item.id, quantityToAdd);
+        inventoryActions.addItem(item.id, quantityToAdd, lootItem.rarity);
       }
     });
 

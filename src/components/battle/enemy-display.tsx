@@ -19,12 +19,20 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
+  const [isRecoiling, setIsRecoiling] = useState(false);
+  const [isSkillHit, setIsSkillHit] = useState(false);
 
-  // Show damage animation when this enemy is hit
+  // Show damage animation when this enemy is hit. Skills hit the selected enemy (enemyId)
+  // or every living enemy (enemyIds); matches only ever set enemyId.
   useEffect(() => {
-    if (lastDamage && lastDamage.target === 'enemy' && lastDamage.enemyId === enemy.id) {
+    const isHit =
+      lastDamage?.target === 'enemy' &&
+      (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
+    if (isHit) {
       setDamageAmount(lastDamage.amount);
+      setIsSkillHit(lastDamage.source === 'skill');
       setShowDamage(true);
+      setIsRecoiling(true);
       setAnimationKey((prev) => prev + 1);
       const timer = setTimeout(() => setShowDamage(false), 1000);
       return () => clearTimeout(timer);
@@ -38,8 +46,14 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {/* Enemy sprite container */}
-      <div className="group relative">
+      {/* Enemy sprite container — recoil lives here (not the hover-scaled inner box) */}
+      <div
+        className={cn('group relative', isRecoiling && (isSkillHit ? 'enemy-recoil-strong' : 'enemy-recoil'))}
+        onAnimationEnd={(e) => {
+          // animationend bubbles up from the flash/number children too — only the recoil clears it.
+          if (e.animationName.startsWith('enemy-recoil')) setIsRecoiling(false);
+        }}
+      >
         <div
           onClick={handleClick}
           className={cn(
@@ -72,25 +86,34 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           </div>
         )}
 
-        {/* Per-enemy damage number */}
+        {/* Per-enemy damage number. Skill hits erupt bigger and read as a warm crit chip;
+            match hits keep their snappy float. */}
         {showDamage && (
           <div
             key={animationKey}
-            className="damage-number pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8"
+            className={cn(
+              'pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8',
+              isSkillHit ? 'damage-erupt' : 'damage-number',
+            )}
           >
             <DamageDisplay
               amount={damageAmount}
-              type={damageAmount > 20 ? 'critical' : 'damage'}
-              className="text-xl sm:text-2xl md:text-3xl"
+              type={isSkillHit || damageAmount > 20 ? 'critical' : 'damage'}
+              className={
+                isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
+              }
             />
           </div>
         )}
 
-        {/* Impact flash effect on hit */}
+        {/* Impact flash effect on hit — a touch stronger for skills */}
         {showDamage && (
           <div
             key={`flash-${animationKey}`}
-            className="pointer-events-none absolute inset-0 rounded-lg bg-red-500/40"
+            className={cn(
+              'pointer-events-none absolute inset-0 rounded-lg',
+              isSkillHit ? 'bg-red-500/55' : 'bg-red-500/40',
+            )}
             style={{ animation: 'flash-fade 0.3s ease-out forwards' }}
           />
         )}

@@ -43,4 +43,4 @@ export interface ConsumableItemData extends BaseItemData {
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];
 export type ItemStoreParams = Array<ConsumableItemIds>;
 
-export interface KeyItemData extends BaseItemData {}
+export type KeyItemData = BaseItemData;

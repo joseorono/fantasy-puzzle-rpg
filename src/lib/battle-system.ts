@@ -26,9 +26,11 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
   const effectiveParty = getPartyWithEffectiveStats(party);
 
   return {
+    // currentHp is intentionally carried over from the incoming party (already clamped to
+    // the equipment-adjusted maxHp by getPartyWithEffectiveStats) so HP persists between
+    // battles. Only combat-transient state (skill cooldowns) is (re)initialized here.
     party: effectiveParty.map((char) => ({
       ...char,
-      currentHp: char.maxHp,
       skillCooldown: resolveCharacterCooldown(char),
     })),
     enemies: enemies.map((e) => ({ ...e, currentHp: e.maxHp })),
@@ -38,6 +40,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     currentMatches: [],
     score: 0,
     turn: 1,
+    guard: 0,
     gameStatus: 'playing',
     lastDamage: null,
     lastMatchedType: null,

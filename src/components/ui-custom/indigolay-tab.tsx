@@ -37,4 +37,5 @@ export function IndigolayTab({ className, glow, isActive, size, state, type = 'b
   return <button type={type} className={cn(indigolayTabVariants({ glow, size, state: resolvedState, className }))} {...props} />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { indigolayTabVariants };

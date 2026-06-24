@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import type { FloorLootProgressSlice, FloorLootProgressState } from './floor-loot-progress.types';
+import type { SliceSet, SliceGet } from '~/types/store';
 
 const INITIAL_FLOOR_LOOT_PROGRESS_STATE: FloorLootProgressState = {};
 
@@ -7,7 +8,10 @@ const INITIAL_FLOOR_LOOT_PROGRESS_STATE: FloorLootProgressState = {};
  * Floor loot progress slice - tracks collected floor loot spots across all maps
  * This state persists across map transitions to prevent re-collecting loot
  */
-export const createFloorLootProgressSlice = (set: any, get: any): FloorLootProgressSlice => ({
+export const createFloorLootProgressSlice = (
+  set: SliceSet<FloorLootProgressSlice>,
+  get: SliceGet<FloorLootProgressSlice>,
+): FloorLootProgressSlice => ({
   floorLootProgress: INITIAL_FLOOR_LOOT_PROGRESS_STATE,
 
   actions: {
@@ -31,7 +35,9 @@ export const createFloorLootProgressSlice = (set: any, get: any): FloorLootProgr
 
       resetFloorLootProgress: () =>
         set(
-          { floorLootProgress: INITIAL_FLOOR_LOOT_PROGRESS_STATE },
+          (state) => {
+            state.floorLootProgress = INITIAL_FLOOR_LOOT_PROGRESS_STATE;
+          },
           false,
           'floorLootProgress/resetFloorLootProgress',
         ),

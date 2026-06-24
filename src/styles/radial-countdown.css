@@ -1,0 +1,130 @@
+/*
+  Radial countdown — a small ring that depletes from full to empty, driven
+  entirely by CSS. The depletion animates the registered `--rc-angle` custom
+  property inside a conic-gradient, so it runs on the compositor. JS only
+  remounts the fill layer (via a React `key`) to replay the animation each cycle.
+
+  Consumed by `RadialCountdown` (src/components/ui-custom/radial-countdown.tsx).
+*/
+
+/* Registering the angle lets the browser interpolate it smoothly in @keyframes. */
+@property --rc-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 360deg;
+}
+
+.radial-countdown {
+  /* Tunable defaults (overridden per size/tone variant). */
+  --rc-size: 2.25rem;
+  --rc-thickness: 5px;
+  --rc-fill: #ff5a45;
+  --rc-track: rgba(18, 8, 6, 0.62);
+
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--rc-size);
+  height: var(--rc-size);
+  image-rendering: pixelated;
+}
+
+/* Dark inner disc so center content reads clearly against the ring. */
+.radial-countdown::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--rc-thickness) - 1px);
+  border-radius: 50%;
+  background: radial-gradient(circle, #2a1810, #160d06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* The depleting ring itself: a conic-gradient masked into a ring band. */
+.radial-countdown__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg, var(--rc-fill) var(--rc-angle), var(--rc-track) 0);
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--rc-thickness)),
+    #000 calc(100% - var(--rc-thickness))
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--rc-thickness)),
+    #000 calc(100% - var(--rc-thickness))
+  );
+  /* Both share the inline animation-duration set by the component. */
+  animation:
+    rc-deplete linear forwards,
+    rc-urgency linear forwards;
+}
+
+.radial-countdown__center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #ffe9a8;
+}
+
+@keyframes rc-deplete {
+  from {
+    --rc-angle: 360deg;
+  }
+  to {
+    --rc-angle: 0deg;
+  }
+}
+
+/* Glow ramps up over the final stretch so an imminent event reads as urgent. */
+@keyframes rc-urgency {
+  0%,
+  70% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  85% {
+    filter: drop-shadow(0 0 3px var(--rc-fill));
+  }
+  100% {
+    filter: drop-shadow(0 0 6px var(--rc-fill));
+  }
+}
+
+/* ── Sizes ────────────────────────────────────────────────────────────── */
+.radial-countdown--sm {
+  --rc-size: 1.75rem;
+  --rc-thickness: 4px;
+}
+.radial-countdown--md {
+  --rc-size: 2.25rem;
+  --rc-thickness: 5px;
+}
+.radial-countdown--lg {
+  --rc-size: 3rem;
+  --rc-thickness: 6px;
+}
+
+/* ── Tones (reuse the project's gold/red retro palette) ──────────────────── */
+.radial-countdown--danger {
+  --rc-fill: #ff5a45;
+}
+.radial-countdown--gold {
+  --rc-fill: #ffd700;
+}
+.radial-countdown--neutral {
+  --rc-fill: #d4a574;
+}
+
+/* Respect reduced-motion: show a full, static ring instead of animating. */
+@media (prefers-reduced-motion: reduce) {
+  .radial-countdown__fill {
+    animation: none;
+    --rc-angle: 360deg;
+  }
+}

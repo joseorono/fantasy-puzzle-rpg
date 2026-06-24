@@ -1,16 +1,32 @@
 import { useAtomValue } from 'jotai';
-import { Swords, Volume2, VolumeX } from 'lucide-react';
+import { Hourglass, Pause, Star, Swords, Volume2, VolumeX } from 'lucide-react';
 import { useState } from 'react';
-import { battleStateAtom } from '~/stores/battle-atoms';
-import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import NumberFlow from '@number-flow/react';
+import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
+import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
 import { soundService } from '~/services/sound-service';
+import {
+  INTEGER_FORMAT,
+  SNAPPY_OPACITY_TIMING,
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+} from '~/constants/number-flow';
+import type { EnemyAttackTimer } from '~/hooks/use-enemy-attack-timers';
+
+/** Beyond this, extra enemy timers collapse into a "+N" chip to avoid crowding. */
+const MAX_VISIBLE_TIMERS = 4;
 
 interface BattleTopBarProps {
-  nextAttackIn: number;
+  /** Per-enemy attack timing, from `useEnemyAttackTimers`. */
+  enemyTimers: EnemyAttackTimer[];
+  isBattlePaused: boolean;
+  onPauseToggle: () => void;
 }
 
-export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
-  const battleState = useAtomValue(battleStateAtom);
+export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: BattleTopBarProps) {
+  const turn = useAtomValue(turnAtom);
+  const score = useAtomValue(scoreAtom);
+  const gameStatus = useAtomValue(gameStatusAtom);
   const [isMuted, setIsMuted] = useState(() => soundService.isMuted());
 
   function toggleMute() {
@@ -22,35 +38,72 @@ export function BattleTopBar({ nextAttackIn }: BattleTopBarProps) {
     setIsMuted(!isMuted);
   }
 
+  const isPaused = gameStatus !== 'playing' || isBattlePaused === true;
+  const visibleTimers = enemyTimers.slice(0, MAX_VISIBLE_TIMERS);
+  const overflowCount = enemyTimers.length - visibleTimers.length;
+
   return (
-    <header id="battle-top-bar" className="crt-container crt-overlay">
+    <header id="battle-top-bar">
       <div className="btb-inner">
-        <div className="btb-stats">
-          <h1 className="btb-title crt-text-glow">
-            <NarikWoodBitFont text="BATTLE" size={1} />
-          </h1>
-
-          <div className="btb-badge crt-top-highlight">
-            <span className="btb-badge-label pixel-font">TURN:</span>
-            <span className="btb-badge-value pixel-font">{battleState.turn}</span>
-          </div>
-
-          <div className="btb-badge crt-top-highlight">
-            <span className="btb-badge-label pixel-font">SCORE:</span>
-            <span className="btb-badge-value btb-badge-value--gold pixel-font">{battleState.score}</span>
-          </div>
-
-          <div className="btb-atk-badge crt-top-highlight">
-            <Swords className="btb-atk-icon" />
-            <span className="btb-atk-label pixel-font">ATK:</span>
-            <span className="btb-atk-value pixel-font">{nextAttackIn}s</span>
+        {/* Incoming enemy attacks — one depleting ring per living enemy. */}
+        <div className="btb-threats">
+          <span className="btb-threats-label pixel-font">INCOMING</span>
+          <div className="btb-threats-pies">
+            {visibleTimers.length === 0 ? (
+              <span className="btb-threats-clear pixel-font">CLEAR</span>
+            ) : (
+              visibleTimers.map((timer) => (
+                <RadialCountdown
+                  key={timer.id}
+                  durationMs={timer.intervalMs}
+                  cycleKey={timer.cycleKey}
+                  paused={isPaused}
+                  size="sm"
+                  tone="danger"
+                  className="btb-threat-pie"
+                >
+                  <Swords className="btb-threat-icon" />
+                </RadialCountdown>
+              ))
+            )}
+            {overflowCount > 0 && <span className="btb-threats-more pixel-font">+{overflowCount}</span>}
           </div>
         </div>
 
+        {/* Stats */}
+        <div className="btb-stats">
+          <div className="btb-badge">
+            <Hourglass className="btb-badge-icon" aria-label="Turn" />
+            <span className="btb-badge-value pixel-font">{turn}</span>
+          </div>
+
+          <div className="btb-badge">
+            <Star className="btb-badge-icon" aria-label="Score" />
+            <span className="btb-badge-value btb-badge-value--gold pixel-font number-flow-container">
+              <NumberFlow
+                value={score}
+                format={INTEGER_FORMAT}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
         <div className="btb-actions">
           <button
-            className="btb-btn crt-top-highlight"
+            className="btb-btn"
+            onClick={onPauseToggle}
+            aria-label={isBattlePaused ? 'Despausar batalla' : 'Pausar batalla'}
+          >
+            <Pause className="btb-btn-icon" />
+          </button>
+          <button
+            className="btb-btn"
             onClick={toggleMute}
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? <VolumeX className="btb-btn-icon" /> : <Volume2 className="btb-btn-icon" />}
           </button>

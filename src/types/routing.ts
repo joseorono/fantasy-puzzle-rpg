@@ -39,39 +39,29 @@ export interface BattleViewData {
 }
 
 /**
- * Data for map demo view
+ * Data for map demo view (no specific data needed for demo)
  */
-export interface MapDemoViewData {
-  // No specific data needed for demo
-}
+export type MapDemoViewData = object;
 
 /**
- * Data for map demo 2 view
+ * Data for map demo 2 view (no specific data needed for demo)
  */
-export interface MapDemo2ViewData {
-  // No specific data needed for demo
-}
+export type MapDemo2ViewData = object;
 
 /**
- * Data for dialogue demo view
+ * Data for dialogue demo view (no specific data needed for demo)
  */
-export interface DialogueDemoViewData {
-  // No specific data needed for demo
-}
+export type DialogueDemoViewData = object;
 
 /**
- * Data for inventory view
+ * Data for inventory view (no specific data needed for now)
  */
-export interface InventoryViewData {
-  // No specific data needed for now
-}
+export type InventoryViewData = object;
 
 /**
- * Data for debug view
+ * Data for debug view (no specific data needed)
  */
-export interface DebugViewData {
-  // No specific data needed
-}
+export type DebugViewData = object;
 
 /**
  * Data for battle rewards view

@@ -1,5 +1,8 @@
-import { useRouterActions, useRouterState } from '~/stores/game-store';
+import { useSetAtom } from 'jotai';
+import { useRouterActions, useRouterState, useParty } from '~/stores/game-store';
+import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
+import { INITIAL_ENEMIES } from '~/constants/party';
 import { createLootTable } from '~/types/loot';
 
 /**
@@ -7,6 +10,8 @@ import { createLootTable } from '~/types/loot';
  */
 export default function RouterTestView() {
   const router = useRouterState();
+  const party = useParty();
+  const setupBattle = useSetAtom(setupBattleAtom);
   const {
     goToTownHub,
     goToBattleDemo,
@@ -47,13 +52,16 @@ export default function RouterTestView() {
 
         <button
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() =>
+          onClick={() => {
+            // Set up a fresh demo encounter (enemies at full HP) before navigating,
+            // mirroring the map's startBattle so the demo is deterministic.
+            setupBattle({ enemies: INITIAL_ENEMIES, party });
             goToBattleDemo({
               enemyId: 'moss-golem',
               location: 'Forest',
               canFlee: true,
-            })
-          }
+            });
+          }}
         >
           Battle Demo
         </button>

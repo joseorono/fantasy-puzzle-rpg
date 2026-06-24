@@ -26,6 +26,7 @@ export interface BitmapFontConfig {
 }
 
 /** Pre-computes a character → [col, row] lookup from a config's charset. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildCharMap(
   charset: string,
   cols: number,

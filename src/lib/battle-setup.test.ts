@@ -16,6 +16,7 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   skillCooldown: 0,
   maxCooldown: 30,
   level: 1,
+  currentExp: 0,
   expToNextLevel: 100,
   unlockedSkillIds: ['warrior-power-strike'],
   selectedSkillId: 'warrior-power-strike',
@@ -60,11 +61,11 @@ describe('createBattleState', () => {
     expect(state.enemies[1].currentHp).toBe(state.enemies[1].maxHp);
   });
 
-  it('should reset party members to full HP', () => {
+  it('should carry over party members current HP (no force-heal on entry)', () => {
     const state = createBattleState(party, enemies);
-    for (const member of state.party) {
-      expect(member.currentHp).toBe(member.maxHp);
-    }
+    // No equipment, so effective maxHp equals base maxHp and current HP is preserved.
+    expect(state.party[0].currentHp).toBe(30);
+    expect(state.party[1].currentHp).toBe(20);
   });
 
   it('should set skill cooldowns on party members', () => {
@@ -91,6 +92,7 @@ describe('createBattleState', () => {
     const state = createBattleState(party, enemies);
     expect(state.score).toBe(0);
     expect(state.turn).toBe(1);
+    expect(state.guard).toBe(0);
     expect(state.selectedOrb).toBeNull();
     expect(state.currentMatches).toEqual([]);
     expect(state.lastDamage).toBeNull();

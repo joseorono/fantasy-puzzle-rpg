@@ -21,6 +21,7 @@ const makeChar = (overrides: Partial<CharacterData> = {}): CharacterData => ({
   potentialStats: { pow: 30, vit: 30, spd: 10 },
   level: 1,
   baseHp: 50,
+  currentExp: 0,
   expToNextLevel: 100,
   vitHpMultiplier: 6,
   maxHp: 170,

@@ -55,6 +55,7 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useGlobalAnimation() {
   const ctx = useContext(GlobalAnimationContext);
   if (!ctx) throw new Error('useGlobalAnimation must be used within GlobalAnimationProvider');

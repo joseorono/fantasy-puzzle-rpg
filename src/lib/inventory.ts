@@ -3,14 +3,28 @@
  */
 
 import type { BaseItemData } from '~/types/inventory';
+import type { RarityTier } from '~/constants/rarity';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 
 /**
- * Inventory item with quantity
+ * Inventory item with quantity.
+ *
+ * `rarity` is the rolled tier for equipment instances; it is part of the stack
+ * key, so a Common and a Rare copy of the same item are separate stacks.
+ * Consumables and key items leave it undefined and stack purely by `itemId`.
  */
 export interface InventoryItem {
   itemId: string;
   quantity: number;
+  rarity?: RarityTier;
+}
+
+/**
+ * Two inventory entries belong to the same stack when they share both item id
+ * and rolled rarity (undefined rarity matches undefined — i.e. consumables).
+ */
+function isSameStack(item: InventoryItem, itemId: string, rarity?: RarityTier): boolean {
+  return item.itemId === itemId && item.rarity === rarity;
 }
 
 /**
@@ -28,13 +42,19 @@ export function canAddItem(currentQuantity: number, amountToAdd: number): boolea
  * @param inventory - Current inventory
  * @param itemId - ID of the item to add
  * @param quantity - Quantity to add (default: 1)
+ * @param rarity - Rolled rarity for equipment instances; omit for consumables/key items
  * @returns New inventory with item added
  */
-export function addItemToInventory(inventory: InventoryItem[], itemId: string, quantity: number = 1): InventoryItem[] {
-  const existingItemIndex = inventory.findIndex((item) => item.itemId === itemId);
+export function addItemToInventory(
+  inventory: InventoryItem[],
+  itemId: string,
+  quantity: number = 1,
+  rarity?: RarityTier,
+): InventoryItem[] {
+  const existingItemIndex = inventory.findIndex((item) => isSameStack(item, itemId, rarity));
 
   if (existingItemIndex !== -1) {
-    // Item exists, update quantity
+    // Stack exists (same id + rarity), update quantity
     const existingItem = inventory[existingItemIndex];
     const newQuantity = Math.min(existingItem.quantity + quantity, MAX_AMOUNT_PER_ITEM);
 
@@ -44,8 +64,10 @@ export function addItemToInventory(inventory: InventoryItem[], itemId: string, q
       ...inventory.slice(existingItemIndex + 1),
     ];
   } else {
-    // New item, add to inventory
-    return [...inventory, { itemId, quantity: Math.min(quantity, MAX_AMOUNT_PER_ITEM) }];
+    // New stack, add to inventory (only carry a rarity key when it's defined)
+    const newItem: InventoryItem = { itemId, quantity: Math.min(quantity, MAX_AMOUNT_PER_ITEM) };
+    if (rarity) newItem.rarity = rarity;
+    return [...inventory, newItem];
   }
 }
 
@@ -54,14 +76,16 @@ export function addItemToInventory(inventory: InventoryItem[], itemId: string, q
  * @param inventory - Current inventory
  * @param itemId - ID of the item to remove
  * @param quantity - Quantity to remove (default: 1)
+ * @param rarity - Rarity of the stack to remove from; omit for consumables/key items
  * @returns New inventory with item removed
  */
 export function removeItemFromInventory(
   inventory: InventoryItem[],
   itemId: string,
   quantity: number = 1,
+  rarity?: RarityTier,
 ): InventoryItem[] {
-  const existingItemIndex = inventory.findIndex((item) => item.itemId === itemId);
+  const existingItemIndex = inventory.findIndex((item) => isSameStack(item, itemId, rarity));
 
   if (existingItemIndex === -1) {
     // Item doesn't exist, return unchanged
@@ -85,13 +109,21 @@ export function removeItemFromInventory(
 }
 
 /**
- * Get the quantity of a specific item in inventory
+ * Get the quantity of a specific item in inventory.
+ *
+ * Without `rarity`, sums every stack of `itemId` regardless of tier (useful for
+ * "do I own any of this?" checks and for consumables, which have no rarity).
+ * With `rarity`, returns the quantity of that exact tier's stack only.
  * @param inventory - Current inventory
  * @param itemId - ID of the item
+ * @param rarity - Optional rarity tier to match exactly
  * @returns Quantity of the item (0 if not found)
  */
-export function getItemQuantity(inventory: InventoryItem[], itemId: string): number {
-  const item = inventory.find((item) => item.itemId === itemId);
+export function getItemQuantity(inventory: InventoryItem[], itemId: string, rarity?: RarityTier): number {
+  if (rarity === undefined) {
+    return inventory.reduce((total, item) => (item.itemId === itemId ? total + item.quantity : total), 0);
+  }
+  const item = inventory.find((item) => isSameStack(item, itemId, rarity));
   return item ? item.quantity : 0;
 }
 
@@ -100,10 +132,11 @@ export function getItemQuantity(inventory: InventoryItem[], itemId: string): num
  * @param inventory - Current inventory
  * @param itemId - ID of the item
  * @param minQuantity - Minimum quantity required (default: 1)
+ * @param rarity - Optional rarity tier to match exactly
  * @returns true if inventory has the item with at least minQuantity
  */
-export function hasItem(inventory: InventoryItem[], itemId: string, minQuantity: number = 1): boolean {
-  return getItemQuantity(inventory, itemId) >= minQuantity;
+export function hasItem(inventory: InventoryItem[], itemId: string, minQuantity: number = 1, rarity?: RarityTier): boolean {
+  return getItemQuantity(inventory, itemId, rarity) >= minQuantity;
 }
 
 /**

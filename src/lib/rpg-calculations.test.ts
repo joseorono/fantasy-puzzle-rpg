@@ -1,6 +1,7 @@
 import { expect, test, describe } from 'vitest';
 import * as rpg from './rpg-calculations';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
+import { createEmptyLootTable } from '~/types/loot';
 
 // ============================================================================
 // Test Data
@@ -20,6 +21,7 @@ const mockCharacter: CharacterData = {
   baseHp: 100,
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
+  currentExp: 0,
   expToNextLevel: 100,
   unlockedSkillIds: ['warrior-power-strike'],
   selectedSkillId: 'warrior-power-strike',
@@ -36,6 +38,8 @@ const mockEnemy: EnemyData = {
   sprite: '👾',
   attackInterval: 4000,
   attackDamage: 25,
+  lootTable: createEmptyLootTable(),
+  expReward: 10,
 };
 
 // ============================================================================
@@ -206,18 +210,27 @@ describe('Cascade Combo Calculations', () => {
     expect(rpg.calculateComboMultiplier(-1)).toBe(1);
   });
 
-  test('calculateComboMultiplier: each cascade level adds the base bonus', () => {
-    // 1 + level * 0.25
-    expect(rpg.calculateComboMultiplier(1)).toBe(1.25);
-    expect(rpg.calculateComboMultiplier(2)).toBe(1.5);
-    expect(rpg.calculateComboMultiplier(4)).toBe(2);
+  test('calculateComboMultiplier: scales on a diminishing (sqrt) curve', () => {
+    // 1 + 0.35 * sqrt(level)
+    expect(rpg.calculateComboMultiplier(1)).toBeCloseTo(1.35, 5);
+    expect(rpg.calculateComboMultiplier(2)).toBeCloseTo(1.4949747, 5);
+    expect(rpg.calculateComboMultiplier(4)).toBeCloseTo(1.7, 5);
+    // Each extra level adds less than the previous one (diminishing returns)
+    const d1 = rpg.calculateComboMultiplier(2) - rpg.calculateComboMultiplier(1);
+    const d2 = rpg.calculateComboMultiplier(3) - rpg.calculateComboMultiplier(2);
+    expect(d2).toBeLessThan(d1);
   });
 
-  test('calculateComboMultiplier: equipment bonus adds a small per-level amount', () => {
-    // 1 + 1 * (0.25 + 0.02)
-    expect(rpg.calculateComboMultiplier(1, 0.02)).toBeCloseTo(1.27, 5);
-    // 1 + 3 * (0.25 + 0.05)
-    expect(rpg.calculateComboMultiplier(3, 0.05)).toBeCloseTo(1.9, 5);
+  test('calculateComboMultiplier: never exceeds MAX_COMBO_MULTIPLIER', () => {
+    expect(rpg.calculateComboMultiplier(50)).toBe(rpg.MAX_COMBO_MULTIPLIER);
+    expect(rpg.calculateComboMultiplier(9999, 0.5)).toBe(rpg.MAX_COMBO_MULTIPLIER);
+  });
+
+  test('calculateComboMultiplier: equipment bonus raises the curve coefficient', () => {
+    // 1 + (0.35 + 0.02) * sqrt(1)
+    expect(rpg.calculateComboMultiplier(1, 0.02)).toBeCloseTo(1.37, 5);
+    // Equipment makes a given cascade level hit harder (still capped)
+    expect(rpg.calculateComboMultiplier(2, 0.1)).toBeGreaterThan(rpg.calculateComboMultiplier(2));
   });
 
   test('calculateMatchDamage: comboMultiplier defaults to 1 (existing behavior unchanged)', () => {
@@ -444,5 +457,100 @@ describe('Stat Utilities', () => {
 
     const result3 = rpg.validateStats({ pow: 10, vit: 20, spd: -1 });
     expect(result3).toBe(false);
+  });
+});
+
+// ============================================================================
+// Guard Calculations
+// ============================================================================
+
+describe('Guard Calculations', () => {
+  function partyWithSpds(spds: number[], hps?: number[]): CharacterData[] {
+    return spds.map((spd, i) => ({
+      ...mockCharacter,
+      id: `char-${i}`,
+      stats: { ...mockCharacter.stats, spd },
+      currentHp: hps ? hps[i] : mockCharacter.maxHp,
+    }));
+  }
+
+  test('calculateGuardChargeRate: returns >= 1 and >= 1 at zero SPD', () => {
+    expect(rpg.calculateGuardChargeRate(partyWithSpds([0, 0]))).toBe(1);
+    expect(rpg.calculateGuardChargeRate(partyWithSpds([10, 20]))).toBeGreaterThan(1);
+  });
+
+  test('calculateGuardChargeRate: monotonic — more SPD never charges slower', () => {
+    const low = rpg.calculateGuardChargeRate(partyWithSpds([10, 10]));
+    const high = rpg.calculateGuardChargeRate(partyWithSpds([40, 40]));
+    expect(high).toBeGreaterThan(low);
+  });
+
+  test('calculateGuardChargeRate: diminishing — doubling SPD less than doubles the bonus', () => {
+    const bonusAt = (spd: number) => rpg.calculateGuardChargeRate(partyWithSpds([spd])) - 1;
+    expect(bonusAt(100)).toBeLessThan(bonusAt(25) * 4);
+  });
+
+  test('calculateGuardChargeRate: ignores dead members', () => {
+    const allAlive = rpg.calculateGuardChargeRate(partyWithSpds([20, 20]));
+    const oneDead = rpg.calculateGuardChargeRate(partyWithSpds([20, 20], [100, 0]));
+    expect(oneDead).toBeLessThan(allAlive);
+  });
+
+  test('calculateGuardChargeRate: clamps negative collective SPD (no NaN from negative-SPD gear)', () => {
+    const result = rpg.calculateGuardChargeRate(partyWithSpds([-10, -20]));
+    expect(Number.isNaN(result)).toBe(false);
+    expect(result).toBe(1); // sqrt(max(0, -30)) = 0 -> charge rate 1
+  });
+
+  test('resolveGuardedDamage: empty bar lets full damage through', () => {
+    const r = rpg.resolveGuardedDamage(25, 0);
+    expect(r.damageTaken).toBe(25);
+    expect(r.guardAfter).toBe(0);
+    expect(r.wasFullBlock).toBe(false);
+  });
+
+  test('resolveGuardedDamage: full bar fully blocks (guardBreak 1), drains half', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 1);
+    expect(r.damageTaken).toBe(0);
+    expect(r.wasFullBlock).toBe(true);
+    expect(r.guardAfter).toBe(50); // 100 - 1 * 0.5 * 100 * 1
+  });
+
+  test('resolveGuardedDamage: guardBreak 2 still fully blocks but empties the bar', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 2);
+    expect(r.damageTaken).toBe(0);
+    expect(r.wasFullBlock).toBe(true);
+    expect(r.guardAfter).toBe(0); // 100 - 1 * 0.5 * 100 * 2 = 0 (floored)
+  });
+
+  test('resolveGuardedDamage: guardBreak 0.5 fully blocks and barely dents', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX, 0.5);
+    expect(r.damageTaken).toBe(0);
+    expect(r.guardAfter).toBe(75); // 100 - 1 * 0.5 * 100 * 0.5
+  });
+
+  test('resolveGuardedDamage: half bar mitigates ~50%', () => {
+    const r = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX / 2, 1);
+    expect(r.damageTaken).toBe(13); // round(25 * 0.5)
+    expect(r.guardAfter).toBe(25); // 50 - 0.5 * 0.5 * 100 * 1 = 50 - 25
+    expect(r.wasFullBlock).toBe(false);
+  });
+
+  test('resolveGuardedDamage: is magnitude-independent (same % behavior at 25 and 2500)', () => {
+    const small = rpg.resolveGuardedDamage(25, rpg.GUARD_MAX / 2, 1);
+    const large = rpg.resolveGuardedDamage(2500, rpg.GUARD_MAX / 2, 1);
+    // Same mitigation fraction → same guard drain regardless of hit size
+    expect(large.guardAfter).toBe(small.guardAfter);
+    expect(large.damageTaken).toBe(1250); // exactly 50% of 2500
+    expect(small.damageTaken).toBe(13); // round(50% of 25)
+  });
+
+  test('decayGuard: bleeds proportionally to fill and floors at 0', () => {
+    expect(rpg.decayGuard(rpg.GUARD_MAX, 1)).toBe(rpg.GUARD_MAX - rpg.GUARD_DECAY_RATE);
+    // 20% fill decays ~20% as fast as a full bar
+    const fullDrop = rpg.GUARD_MAX - rpg.decayGuard(rpg.GUARD_MAX, 1);
+    const lowDrop = rpg.GUARD_MAX * 0.2 - rpg.decayGuard(rpg.GUARD_MAX * 0.2, 1);
+    expect(lowDrop).toBeCloseTo(fullDrop * 0.2, 5);
+    expect(rpg.decayGuard(0, 5)).toBe(0);
   });
 });

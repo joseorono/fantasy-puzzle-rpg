@@ -171,7 +171,7 @@ export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']
  * returns to the view before battle (map, town, etc.) instead of back to battle.
  */
 export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
-  if (!canNavigate(currentState, 'battle-rewards')) {
+  if (!canNavigate()) {
     return {
       success: false,
       error: `Cannot navigate from ${currentState.currentView} to battle-rewards`,

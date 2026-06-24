@@ -13,6 +13,10 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
+  /** Forwarded for upcoming Load Game wiring; load is currently handled by the internal Load tab. */
+  onLoadGame?: () => void;
+  /** Forwarded for upcoming Credits wiring (not yet implemented). */
+  onCredits?: () => void;
 }
 
 type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';

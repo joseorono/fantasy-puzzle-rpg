@@ -13,12 +13,17 @@ import {
   reduceSkillCooldownAtom,
   incrementTurnAtom,
   addScoreAtom,
+  addGuardAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
-import { calculateMatchDamage, calculateComboMultiplier } from '~/lib/rpg-calculations';
+import {
+  calculateMatchDamage,
+  calculateComboMultiplier,
+  calculateGuardChargeRate,
+} from '~/lib/rpg-calculations';
 import { findLineMatches, expandBombExplosions } from '~/lib/match-3';
 import { getEquipmentComboBonus } from '~/lib/equipment-system';
 import {
@@ -26,13 +31,21 @@ import {
   COOLDOWN_REDUCTION_PER_ORB,
   BASE_MATCH_SCORE,
   MATCH_SIZE_BONUS_MULTIPLIER,
+  GRAY_MATCH_DAMAGE_MULTIPLIER,
+  GUARD_CHARGE_PER_ORB,
 } from '~/constants/party';
-import { BOMB_MATCH_SPAWN_THRESHOLD } from '~/constants/game';
+import {
+  BOMB_MATCH_SPAWN_THRESHOLD,
+  BOMB_REFILL_CHANCE,
+  CASCADE_BOMB_CHANCE_MULTIPLIER,
+  MAX_CHAIN_BOMB_SPAWNS,
+} from '~/constants/game';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
+import { triggerHitstop } from '~/lib/animation-strategies';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 
 /** Heat-scaled glow color for the cascade combo popup — hotter as the chain grows. */
@@ -151,7 +164,11 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
   );
 }
 
-export function Match3Board() {
+interface Match3BoardProps {
+  isBattlePaused: boolean;
+}
+
+export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const board = useAtomValue(boardAtom);
   const selectedOrb = useAtomValue(selectedOrbAtom);
   const party = useAtomValue(partyAtom);
@@ -163,6 +180,7 @@ export function Match3Board() {
   const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
   const addScore = useSetAtom(addScoreAtom);
+  const addGuard = useSetAtom(addGuardAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
@@ -180,6 +198,8 @@ export function Match3Board() {
   const previousBoardRef = useRef<Orb[][]>(board);
   // Cascade depth for the current chain: 0 = initial post-swap match, 1+ = cascades
   const cascadeLevelRef = useRef(0);
+  // Bombs spawned so far in the current cascade chain (anti-runaway budget)
+  const chainBombsSpawnedRef = useRef(0);
 
   // Track new orbs for animation
   useEffect(() => {
@@ -282,11 +302,24 @@ export function Match3Board() {
       comboPopupTimerRef.current = setTimeout(() => setComboPopup(0), 1100);
     }
 
-    // Calculate damage (match size multiplier + POW + cascade combo multiplier)
-    const totalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+    // Calculate damage (match size multiplier + POW + cascade combo multiplier).
+    // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
+    // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER (gray previously dealt full neutral damage).
+    const isGrayMatch = matchedType === 'gray';
+    const baseTotalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+    const totalDamage = isGrayMatch
+      ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
+      : baseTotalDamage;
 
     // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
     const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
+
+    // Bomb-spawn budget for this cascade chain: once the first bomb has spawned, the
+    // per-orb chance is scaled by CASCADE_BOMB_CHANCE_MULTIPLIER, and the chain can
+    // spawn at most MAX_CHAIN_BOMB_SPAWNS.
+    const bombChance =
+      chainBombsSpawnedRef.current > 0 ? BOMB_REFILL_CHANCE * CASCADE_BOMB_CHANCE_MULTIPLIER : BOMB_REFILL_CHANCE;
+    const maxBombs = Math.max(0, MAX_CHAIN_BOMB_SPAWNS - chainBombsSpawnedRef.current);
 
     // Actions are only performed if the character is alive (or it's a neutral match)
     if (!isCharacterDead) {
@@ -296,6 +329,12 @@ export function Match3Board() {
         reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
       }
 
+      // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
+      // Charge scales with match size and the party's SPD-derived Guard Charge Rate.
+      if (isGrayMatch) {
+        addGuard(matches.size * GUARD_CHARGE_PER_ORB * calculateGuardChargeRate(party));
+      }
+
       // Show highlight for a moment, then apply effect
       setTimeout(() => {
         // Healer's default action heals the most damaged ally instead of dealing damage
@@ -303,6 +342,8 @@ export function Match3Board() {
           healParty({ amount: totalDamage, source: 'match' });
         } else {
           damageEnemy(totalDamage);
+          // Freeze-frame on the moment damage lands (skip on heals — nothing was struck).
+          triggerHitstop();
         }
         soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
       }, 200);
@@ -320,7 +361,8 @@ export function Match3Board() {
     // Remove matched orbs after animation - this will trigger a new board state
     // which will cause this effect to run again and check for new (cascade) matches
     processingTimerRef.current = setTimeout(() => {
-      removeMatchedOrbs(matches, bombsToSpawn);
+      const spawned = removeMatchedOrbs(matches, bombsToSpawn, bombChance, maxBombs);
+      chainBombsSpawnedRef.current += spawned;
     }, 600);
 
     return () => {
@@ -332,7 +374,7 @@ export function Match3Board() {
 
   const handleOrbClick = (row: number, col: number) => {
     // Don't allow clicks while processing a swap
-    if (isProcessingSwap) return;
+    if (isProcessingSwap || isBattlePaused === true) return;
 
     if (!selectedOrb) {
       // First selection
@@ -350,6 +392,7 @@ export function Match3Board() {
         if (wasValid) {
           // Valid swap - a fresh player action starts a new cascade chain
           cascadeLevelRef.current = 0;
+          chainBombsSpawnedRef.current = 0;
           incrementTurn();
           // processing flag will be cleared when matches are processed
           setIsProcessingSwap(false);

@@ -5,10 +5,13 @@ import {
   fullyHealMember as fullyHealMemberLib,
   isPartyFullyHealed,
   damageAllPartyMembers as damageAllPartyMembersLib,
+  applyHpFromBattle,
 } from '~/lib/party-system';
 import { unlockSkill as unlockSkillLib, selectSkill as selectSkillLib } from '~/lib/skill-system';
 import type { CharacterData } from '~/types/rpg-elements';
+import type { RarityTier } from '~/constants/rarity';
 import type { EquipmentSlot } from '~/lib/equipment-system';
+import type { SliceSet, SliceGet } from '~/types/store';
 
 /**
  * Create the party slice
@@ -16,7 +19,7 @@ import type { EquipmentSlot } from '~/lib/equipment-system';
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createPartySlice = (set: any): PartySlice => ({
+export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartySlice>): PartySlice => ({
   party: {
     members: INITIAL_PARTY,
   },
@@ -60,14 +63,7 @@ export const createPartySlice = (set: any): PartySlice => ({
           false,
           'party/fullyHealMember',
         ),
-      isPartyFullyHealed: () =>
-        set(
-          (state: PartySlice) => {
-            return isPartyFullyHealed(state.party.members);
-          },
-          false,
-          'party/isPartyFullyHealed',
-        ),
+      isPartyFullyHealed: () => isPartyFullyHealed(get().party.members),
       damageAllPartyMembers: (damage: number, canDie: boolean) =>
         set(
           (state: PartySlice) => {
@@ -76,15 +72,25 @@ export const createPartySlice = (set: any): PartySlice => ({
           false,
           'party/damageAllPartyMembers',
         ),
-      equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) =>
+      syncBattleHp: (battleParty: CharacterData[]) =>
+        set(
+          (state: PartySlice) => {
+            state.party.members = applyHpFromBattle(state.party.members, battleParty);
+          },
+          false,
+          'party/syncBattleHp',
+        ),
+      equipItem: (characterId: string, itemId: string, slot: EquipmentSlot, rarity?: RarityTier) =>
         set(
           (state: PartySlice) => {
             const member = state.party.members.find((m) => m.id === characterId);
             if (!member) return;
             if (slot === 'weapon') {
               member.equippedWeaponId = itemId;
+              member.equippedWeaponRarity = rarity;
             } else {
               member.equippedArmorId = itemId;
+              member.equippedArmorRarity = rarity;
             }
           },
           false,
@@ -97,8 +103,10 @@ export const createPartySlice = (set: any): PartySlice => ({
             if (!member) return;
             if (slot === 'weapon') {
               member.equippedWeaponId = undefined;
+              member.equippedWeaponRarity = undefined;
             } else {
               member.equippedArmorId = undefined;
+              member.equippedArmorRarity = undefined;
             }
           },
           false,

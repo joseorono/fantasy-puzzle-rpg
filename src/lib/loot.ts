@@ -5,6 +5,7 @@ import type { FloorLootSpot } from '~/types/map-node';
 import type { Resources } from '~/types/resources';
 import { createEmptyLootTable } from '~/types/loot';
 import { randIntInRange } from './math';
+import { rollRarity } from './rarity';
 
 // ─── Enemy Loot ───────────────────────────────────────────────────────
 
@@ -30,7 +31,12 @@ export function combineLootFromEnemies(enemies: EnemyData[]): {
 
   const expReward = enemies.reduce((sum, enemy) => sum + enemy.expReward, 0);
 
-  const equipableItems = enemies.flatMap((enemy) => enemy.lootTable.equipableItems);
+  // Roll each equipment drop's rarity once, here, using the dropping enemy's bias.
+  // The rolled tier rides along on the entry so the rewards UI and the inventory
+  // grant agree on what was found.
+  const equipableItems = enemies.flatMap((enemy) =>
+    enemy.lootTable.equipableItems.map((entry) => ({ ...entry, rarity: rollRarity(enemy.rarityBias ?? 0) })),
+  );
   const consumableItems = enemies.flatMap((enemy) => enemy.lootTable.consumableItems);
 
   const resources = enemies.reduce(
@@ -57,6 +63,21 @@ export function combineLootFromEnemies(enemies: EnemyData[]): {
       },
     },
     expReward,
+  };
+}
+
+/**
+ * Returns a copy of a loot table with a freshly rolled rarity on every equipment
+ * entry. Use this to materialize a static loot table (e.g. a treasure chest) once,
+ * so the same rolled tiers are shown to the player and granted to the inventory.
+ * @param lootTable - The static loot table to roll rarities for
+ * @param bias - Rarity bias for the source (default 0); see `rollRarity`
+ * @returns A new loot table whose equipment entries carry a rolled `rarity`
+ */
+export function rollLootTableRarities(lootTable: LootTable, bias: number = 0): LootTable {
+  return {
+    ...lootTable,
+    equipableItems: lootTable.equipableItems.map((entry) => ({ ...entry, rarity: rollRarity(bias) })),
   };
 }
 

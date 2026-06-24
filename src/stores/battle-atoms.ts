@@ -1,12 +1,19 @@
 import { atom } from 'jotai';
-import type { BattleState } from '~/types/battle';
+import type { BattleState, BattleStatus } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
+import { BOMB_REFILL_CHANCE } from '~/constants/game';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
-import { calculatePartyHpPercentage, calculateSkillDamage } from '~/lib/rpg-calculations';
+import {
+  calculatePartyHpPercentage,
+  calculateSkillDamage,
+  resolveGuardedDamage,
+  decayGuard,
+  GUARD_MAX,
+} from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import {
   getLivingMembers,
@@ -50,6 +57,10 @@ export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
   return calculatePartyHpPercentage(party);
 });
+
+// Derived atoms for the party Guard meter
+export const guardAtom = atom((get) => get(battleStateAtom).guard);
+export const guardPercentageAtom = atom((get) => (get(battleStateAtom).guard / GUARD_MAX) * 100);
 
 // Atom to select a target enemy
 export const selectEnemyAtom = atom(null, (get, set, enemyId: string) => {
@@ -110,22 +121,37 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
   const living = getLivingMembers(currentState.party);
   if (living.length === 0) return;
 
-  // Select a random living hero to take damage
+  // The Guard meter mitigates incoming damage before it reaches a hero. The attacking
+  // enemy's guardBreak only scales how hard the hit drains the bar, not the mitigation.
+  const attacker = attackerEnemyId
+    ? currentState.enemies.find((e) => e.id === attackerEnemyId)
+    : undefined;
+  const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
+    damage,
+    currentState.guard,
+    attacker?.guardBreak ?? 1,
+  );
+  const wasGuarded = damageTaken < damage;
+
+  // Select a random living hero to take the post-Guard damage
   const targetHero = getRandomElement(living);
 
-  const party = damagePartyMember(currentState.party, targetHero.id, damage);
+  const party = damagePartyMember(currentState.party, targetHero.id, damageTaken);
   const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
 
   set(battleStateAtom, {
     ...currentState,
     party,
+    guard: guardAfter,
     gameStatus,
     lastDamage: {
-      amount: damage,
+      amount: damageTaken,
       target: 'party',
       timestamp: Date.now(),
       characterId: targetHero.id,
       enemyId: attackerEnemyId,
+      wasGuarded,
+      blocked: wasFullBlock,
     },
   });
 });
@@ -179,21 +205,48 @@ export const resetBattleAtom = atom(null, (get, set) => {
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
 });
 
+/**
+ * Re-arm the encounter when the battle view is entered onto an already-finished fight,
+ * so re-entry always starts fresh with enemies at full HP. No-op while a battle is in
+ * progress, so it never clobbers an encounter a caller just set up (e.g. the map's
+ * `setupBattleAtom`). Reuses the current encounter's enemies and the passed-in party.
+ */
+export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[]) => {
+  const state = get(battleStateAtom);
+  if (state.gameStatus === 'playing') return;
+  set(battleStateAtom, createBattleState(party, state.enemies));
+});
+
 // Atom to remove matched orbs and refill board.
 // `bombsToSpawn` guarantees that many refilled orbs become wildcard bombs
 // (on top of the per-orb random chance baked into removeMatchedOrbsAndRefill).
 export const removeMatchedOrbsAtom = atom(
   null,
-  (get, set, matchedOrbIds: Set<string>, bombsToSpawn: number = 0) => {
-    if (matchedOrbIds.size === 0) return;
+  (
+    get,
+    set,
+    matchedOrbIds: Set<string>,
+    bombsToSpawn: number = 0,
+    bombRefillChance: number = BOMB_REFILL_CHANCE,
+    maxBombs: number = Infinity,
+  ): number => {
+    if (matchedOrbIds.size === 0) return 0;
 
     const currentState = get(battleStateAtom);
-    const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds, bombsToSpawn);
+    const { board, bombsSpawned } = removeMatchedOrbsAndRefill(
+      currentState.board,
+      matchedOrbIds,
+      bombsToSpawn,
+      bombRefillChance,
+      maxBombs,
+    );
 
     set(battleStateAtom, {
       ...currentState,
-      board: newBoard,
+      board,
     });
+
+    return bombsSpawned;
   },
 );
 
@@ -239,7 +292,7 @@ export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
@@ -253,12 +306,16 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
 // Derived atom for game status
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
+// Narrow derived atoms so UI that only shows turn/score doesn't re-render on every
+// board/HP/match change (see BattleTopBar).
+export const turnAtom = atom((get) => get(battleStateAtom).turn);
+export const scoreAtom = atom((get) => get(battleStateAtom).score);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
@@ -313,6 +370,28 @@ export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number
   set(battleStateAtom, { ...currentState, party });
 });
 
+// Atom to add to the party Guard meter (e.g. from matching gray orbs)
+export const addGuardAtom = atom(null, (get, set, amount: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || amount <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: Math.min(GUARD_MAX, currentState.guard + amount),
+  });
+});
+
+// Atom to bleed the Guard meter over time (anti-hoard decay)
+export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || currentState.guard <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: decayGuard(currentState.guard, deltaSeconds),
+  });
+});
+
 // Atom to increment turn counter
 export const incrementTurnAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
@@ -345,7 +424,12 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   let party = currentState.party;
   let enemies = currentState.enemies;
   let selectedEnemyId = currentState.selectedEnemyId;
-  let gameStatus = currentState.gameStatus;
+  let gameStatus: BattleStatus = currentState.gameStatus;
+
+  // Capture which enemy/enemies took the hit BEFORE selection advances on death,
+  // so the flinch lands on the sprite that was actually struck.
+  const hitEnemyId = selectedEnemyId;
+  const hitEnemyIds = enemies.filter((e) => e.currentHp > 0).map((e) => e.id);
 
   if (skill.target === 'enemy') {
     // Damage the selected enemy
@@ -400,18 +484,29 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       : char,
   );
 
+  // Drive the enemy hit reaction (flinch + number) through the shared lastDamage channel.
+  // Heals are left out — they keep flowing through the party-side feedback.
+  const timestamp = Date.now();
+  let lastDamage = currentState.lastDamage;
+  if (skill.target === 'enemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, source: 'skill' };
+  } else if (skill.target === 'allEnemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, source: 'skill' };
+  }
+
   set(battleStateAtom, {
     ...currentState,
     party,
     enemies,
     selectedEnemyId,
     gameStatus,
+    lastDamage,
     lastSkillActivation: {
       characterId,
       skillName: skill.name,
       amount,
       isHeal: skill.target === 'ally' || skill.target === 'allAlly',
-      timestamp: Date.now(),
+      timestamp,
     },
   });
 });

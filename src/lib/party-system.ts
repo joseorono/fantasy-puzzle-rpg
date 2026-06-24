@@ -47,6 +47,22 @@ export function damageAllPartyMembers(
 }
 
 /**
+ * Copies post-battle HP back onto the persistent (store) party, matched by id.
+ * Battle members carry an equipment-adjusted maxHp, so each member's currentHp is clamped to
+ * the store member's base maxHp. Members with no matching battle member are left untouched.
+ * @param storeParty - The persistent party from the store
+ * @param battleParty - The party from the finished battle (post-combat HP)
+ * @returns New party array with currentHp synced from the battle
+ */
+export function applyHpFromBattle(storeParty: CharacterData[], battleParty: CharacterData[]): CharacterData[] {
+  return storeParty.map((member) => {
+    const battleMember = battleParty.find((b) => b.id === member.id);
+    if (!battleMember) return member;
+    return { ...member, currentHp: Math.min(battleMember.currentHp, member.maxHp) };
+  });
+}
+
+/**
  * Returns party members that are still alive (currentHp > 0).
  * @param party - Array of party members
  * @returns Filtered array of living members
