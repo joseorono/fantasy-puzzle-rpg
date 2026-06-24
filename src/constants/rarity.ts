@@ -53,11 +53,11 @@ export const RARITY_COLORS: Record<RarityTier, string> = {
  * percentages — `rollRarity` normalizes them.
  */
 export const BASE_RARITY_WEIGHTS: Record<RarityTier, number> = {
-  common: 60,
-  uncommon: 25,
-  rare: 10,
+  common: 55,
+  uncommon: 22,
+  rare: 9,
   epic: 4,
-  legendary: 1,
+  legendary: 10,
 };
 
 /**
@@ -88,3 +88,4 @@ export const PITY_MAX = 20;
 
 /** A craft rolling below this tier builds pity; rolling at/above it resets pity. */
 export const PITY_RESET_TIER: RarityTier = 'rare';
+
