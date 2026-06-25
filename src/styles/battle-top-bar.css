@@ -115,7 +115,7 @@
   display: inline-flex;
   align-items: center;
   height: 1.7rem;
-  min-width: 4.25rem;
+  min-width: 5.25rem;
   /* Reserve the round well on the left; value sits in the bar to its right. */
   padding-left: 2rem;
   padding-right: 0.75rem;
@@ -127,7 +127,7 @@
 /* Icon centered in the pill's circular well, above the art. */
 #battle-top-bar .btb-badge-icon {
   position: absolute;
-  left: 0.45rem;
+  left: 0.3rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
