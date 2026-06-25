@@ -45,16 +45,13 @@
   margin: 0.35rem auto 0;
 }
 
-/* The shared title-sign text uses a width-relative margin nudge that shoves the
-   label upward at this small scale — override it so the text reads larger and sits
-   centered in the banner band. */
+/* Only bump the font for legibility — leave the shared title-sign vertical
+   centering (the --ts-text-nudge-y margin) untouched so it sits in the band
+   exactly like every other title-sign usage. */
 .exp-gained-ribbon .title-sign__text {
   font-weight: 700;
   letter-spacing: 0.04em;
   font-size: 0.8rem;
-  margin-bottom: 0;
-  padding: 0 18%;
-  transform: translateY(-7%);
 }
 
 .character-cards-grid {
@@ -129,12 +126,6 @@
   }
 }
 
-/* Bigger, prominent character name. */
-.character-card .character-name {
-  font-size: 1.2rem;
-  margin-bottom: 0.1rem;
-}
-
 /* Level + class share an aligned sub-row directly below the name. */
 .reward-sub {
   display: flex;
@@ -197,11 +188,17 @@
   }
 }
 
+/* Prominent name, styled like the pause menu's .party-member-card__name. */
 .character-card .character-name {
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #e0e0e0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  margin: 0 0 0.125rem 0;
+  color: #fff8dc;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 0.1rem 0;
 }
 
 .character-card .character-level {
