@@ -219,3 +219,25 @@ a[href]:hover,
 .cursor-corners--toffeec-beige .cursor-corner--br {
   background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png');
 }
+
+/*
+=========================================================
+    Cursor Corners — Indigolay
+=========================================================
+*/
+
+.cursor-corners--indigolay .cursor-corner--tl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--tr {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topright.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--bl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--br {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png');
+}
