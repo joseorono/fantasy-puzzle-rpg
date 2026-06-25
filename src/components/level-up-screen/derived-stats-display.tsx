@@ -7,6 +7,7 @@ import {
   calculateSkillCooldown,
   calculateDamage,
   calculateItemCooldownInMs,
+  calculateGuardChargeRate,
 } from '~/lib/rpg-calculations';
 import { useParty } from '~/stores/game-store';
 import {
@@ -44,12 +45,18 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
   );
   const previewItemCooldown = calculateItemCooldownInMs(previewParty);
 
+  // Guard Charge Rate is a party-level multiplier driven by collective living SPD,
+  // so its preview reuses the same SPD-swapped party as item cooldown.
+  const currentGuardChargeRate = calculateGuardChargeRate(party);
+  const previewGuardChargeRate = calculateGuardChargeRate(previewParty);
+
   // Calculate deltas
   const maxHpDelta = previewMaxHp - currentMaxHp;
   const fillRateDelta = previewFillRate - currentFillRate;
   const cooldownDelta = previewCooldown - currentCooldown;
   const powerDelta = previewPower - currentPower;
   const itemCooldownDelta = previewItemCooldown - currentItemCooldown;
+  const guardChargeRateDelta = previewGuardChargeRate - currentGuardChargeRate;
 
   const isHealer = character.class === 'healer';
   const powerLabel = isHealer ? 'Healing Power' : 'Attack Power';
@@ -163,6 +170,34 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
                 format={DECIMAL_2_FORMAT}
                 prefix={itemCooldownDelta > 0 ? '+' : ''}
                 trend={itemCooldownDelta > 0 ? 1 : -1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="derived-stat-row">
+        <span className="derived-stat-name pixel-font text-xs">Guard Charge Rate</span>
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
+          <NumberFlow
+            value={previewGuardChargeRate}
+            format={DECIMAL_2_FORMAT}
+            suffix="×"
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+          {guardChargeRateDelta !== 0 && (
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={guardChargeRateDelta}
+                format={DECIMAL_2_FORMAT}
+                prefix={guardChargeRateDelta > 0 ? '+' : ''}
+                trend={guardChargeRateDelta > 0 ? 1 : -1}
                 spinTiming={SNAPPY_SPIN_TIMING}
                 transformTiming={SNAPPY_TRANSFORM_TIMING}
                 opacityTiming={SNAPPY_OPACITY_TIMING}
