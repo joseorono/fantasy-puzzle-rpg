@@ -17,9 +17,10 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats, buildExpGainTimeline } from '~/lib/leveling-system';
 import { getNewlyUnlockableSkills } from '~/lib/skill-system';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
+import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
@@ -358,17 +359,6 @@ interface ExpBarFillingUpProps {
 function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFillingUpProps) {
   const partyMembers = useParty();
   const partyActions = usePartyActions();
-  const [progress, setProgress] = useState(0);
-
-  // Pre-calculate which characters will level up
-  const [levelUpSet] = useState(() => {
-    const preview = partyMembers.map((member) => ({
-      ...member,
-      expToNextLevel: member.expToNextLevel + expReward,
-    }));
-    const pending = calculateLevelUpsForParty(preview, expReward);
-    return new Set(pending.filter((p) => p.pendingLevelUps > 0).map((p) => p.charId));
-  });
 
   function handleContinue() {
     // Apply exp to all party members and compute the updated party snapshot
@@ -383,22 +373,6 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
     onFinish(updatedPartyMembers);
   }
-
-  // Animate the exp bar
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 2;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return next;
-      });
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="exp-gained-container">
@@ -422,16 +396,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
       <div className="character-cards-grid">
         {partyMembers.slice(0, 4).map((member) => (
-          <div key={member.id} className="character-card">
-            <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
-            <div className="character-info">
-              <h3 className="character-name">{member.name}</h3>
-              <div className="character-level">Lv {member.level}</div>
-              <div className="exp-gained-text">EXP +{expReward}</div>
-              <ExperienceBar percentage={progress} variant="compact" />
-            </div>
-            {levelUpSet.has(member.id) && <div className="level-up-badge">Level Up</div>}
-          </div>
+          <CharacterExpCard key={member.id} member={member} expReward={expReward} />
         ))}
       </div>
 
@@ -440,6 +405,48 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
       <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
         Finish
       </ToffecButton>
+    </div>
+  );
+}
+
+/**
+ * A single party member's reward card: drives its EXP bar through the character's real
+ * gain timeline, popping the "Level Up" badge each time the bar actually crosses a level.
+ */
+interface CharacterExpCardProps {
+  member: CharacterData;
+  expReward: number;
+}
+
+function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
+  // Build the timeline once so the rAF animation has a stable input.
+  const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
+  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline);
+
+  return (
+    <div className="character-card">
+      <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+      <div className="character-info">
+        <h3 className="character-name">{member.name}</h3>
+        <div className="character-level number-flow-container">
+          Lv{' '}
+          <NumberFlow
+            value={level}
+            format={INTEGER_FORMAT}
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+        </div>
+        <div className="exp-gained-text">EXP +{expReward}</div>
+        <ExperienceBar percentage={percentage} variant="compact" />
+      </div>
+      {hasLeveledUp && (
+        <div key={badgeKey} className="level-up-badge level-up-badge--pop">
+          Level Up
+        </div>
+      )}
     </div>
   );
 }

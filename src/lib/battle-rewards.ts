@@ -1,4 +1,5 @@
 import type { CharacterData } from '~/types/rpg-elements';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 
 /**
  * Represents pending level ups for a character
@@ -30,14 +31,14 @@ export function calculateLevelUpsForParty(partyMembers: CharacterData[], expGain
     let expProgress = expBeforeBattle + expGained;
 
     // EXP required for the current level, matching the EXP bar display logic
-    let expToNextLevel = Math.floor(Math.exp(level));
+    let expToNextLevel = getExpThresholdForLevel(level);
 
     // Count how many times the character levels up based on their EXP progress
     while (expProgress >= expToNextLevel) {
       levelUps += 1;
       expProgress -= expToNextLevel;
       level += 1;
-      expToNextLevel = Math.floor(Math.exp(level));
+      expToNextLevel = getExpThresholdForLevel(level);
     }
 
     const remainingExp = expProgress;

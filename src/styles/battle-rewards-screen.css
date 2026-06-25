@@ -171,20 +171,39 @@
 }
 
 @keyframes levelUpBounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.05); }
+  0% { transform: translateY(6px) scale(0.8); opacity: 0; }
+  60% { transform: translateY(-3px) scale(1.08); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* O glow effect */
-@keyframes glowPulse {
-  0%, 100% { 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    border-color: #ffd700;
+/* Warm amber glow — no bright gold, keeps the parchment palette */
+@keyframes levelUpWarmGlow {
+  0% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 rgba(212, 165, 116, 0);
+    border-color: rgba(227, 187, 146, 0.5);
   }
-  50% { 
-    box-shadow: 0 0 25px rgba(255, 215, 0, 1);
-    border-color: #fff;
+  50% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 14px rgba(212, 165, 116, 0.85);
+    border-color: rgba(227, 187, 146, 0.95);
   }
+  100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 rgba(212, 165, 116, 0);
+    border-color: rgba(227, 187, 146, 0.5);
+  }
+}
+
+/* Plays on mount and re-plays on each level-up (badge is remounted via a changing key). */
+.level-up-badge--pop {
+  animation:
+    levelUpBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    levelUpWarmGlow 0.6s ease-out;
+}
+
+/* The rewards bar is driven frame-by-frame by requestAnimationFrame (useExpGainAnimation),
+   so it must not also run a CSS width transition — that would lag the fill and animate the
+   reset-to-0 backwards. The level-up screen's ExperienceBar keeps its own transition. */
+.exp-gained-container .exp-bar__fill {
+  transition: none;
 }
 
 /* Resources Panel — card-based layout (like Pause Menu / TownHub) */
