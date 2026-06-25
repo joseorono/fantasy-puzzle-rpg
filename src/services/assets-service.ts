@@ -43,7 +43,15 @@ export const assetList: string[] = [
   '/assets/bg/tc-bg-item-darker.png',
   '/assets/bg/tc-bg-item-lighter.png',
 
+  // Checkboxes
+  '/assets/checkboxes/indigolay-checkbox-bg.png',
+  '/assets/checkboxes/indigolay-checkbox-mark.png',
+
   // Cursors
+  '/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-topright.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomleft.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-topleft.png',
@@ -78,7 +86,15 @@ export const assetList: string[] = [
   '/assets/frame/franuka-05a/frame-top-left-corner.png',
   '/assets/frame/franuka-05a/frame-top-right-corner.png',
 
+  // HUD
+  '/assets/hud/bar-red.png',
+  '/assets/hud/btn-sys.png',
+  '/assets/hud/chip-currency.png',
+
   // Icons
+  '/assets/icons/indigolay/icon-columns.png',
+  '/assets/icons/indigolay/icon-mute.png',
+  '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
 
@@ -104,10 +120,19 @@ export const assetList: string[] = [
   // Sprites
   '/assets/sprite/character-placeholder.png',
 
+  // Tabs
+  '/assets/tabs/UI_tab_Off.png',
+  '/assets/tabs/UI_tab_On.png',
+
   // Tilesets
   '/assets/tileset/demo-map-2.png',
   '/assets/tileset/demo-map.png',
   '/assets/tileset/pc-forge-tileset.png',
+
+  // Title Signs
+  '/assets/title-signs/ribbon-red-large.png',
+  '/assets/title-signs/ribbon-red.png',
+  '/assets/title-signs/ribbon-tan.png',
 
   // Transitions
   '/assets/transitions/circle.svg',
