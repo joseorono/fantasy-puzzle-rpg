@@ -198,7 +198,11 @@
    there's never any app-white showing. We only pad the section *content* down by
    the bar height so foreground elements aren't hidden beneath it. Padding lives
    on the bg-bearing sections, so the background still covers the padded strip. */
-.battleArea .partySection,
-.battleArea .enemySection {
+.battleArea .partySection {
   padding-top: var(--btb-height);
 }
+
+.battleArea .enemySection {
+  padding-top: 2rem;
+}
+
