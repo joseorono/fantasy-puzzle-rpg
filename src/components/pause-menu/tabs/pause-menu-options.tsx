@@ -88,23 +88,20 @@ export function PauseMenuOptions() {
         </div>
 
         <div className="pause-menu-option-row pause-menu-option-row--mute">
-          <div className="pause-menu-option-header">
+          <button
+            type="button"
+            className="pause-menu-mute-toggle"
+            aria-pressed={isMuted}
+            onClick={handleMuteToggle}
+          >
+            <img
+              className="pause-menu-mute-toggle__icon"
+              src={isMuted === true ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
+              alt=""
+              draggable={false}
+            />
             <span className="pause-menu-option-label">Mute Audio</span>
-            <button
-              type="button"
-              className="pause-menu-mute-toggle"
-              aria-pressed={isMuted}
-              aria-label={isMuted === true ? 'Unmute audio' : 'Mute audio'}
-              onClick={handleMuteToggle}
-            >
-              <img
-                className="pause-menu-mute-toggle__icon"
-                src={isMuted === true ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
-                alt=""
-                draggable={false}
-              />
-            </button>
-          </div>
+          </button>
         </div>
       </div>
     </>
