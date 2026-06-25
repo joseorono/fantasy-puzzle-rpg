@@ -236,6 +236,12 @@
 
 .enemy-selected {
   animation: enemy-selected-blink 2s ease-in-out infinite;
+  /* Beveled gold border for a touch of depth: warm top highlight, a darker
+     inner shadow at the bottom, and a soft lift off the background. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 196, 0.55),
+    inset 0 -3px 3px rgba(110, 64, 12, 0.5),
+    0 2px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Flash fade for damage impact */
