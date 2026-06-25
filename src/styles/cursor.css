@@ -226,6 +226,11 @@ a[href]:hover,
 =========================================================
 */
 
+/* Sit the brackets a touch further out so there's a small gap between
+   them and the golden border (matching indigolay's slot reference). */
+.cursor-corners--indigolay {
+  --cursor-corner-inset: -3px;
+}
 .cursor-corners--indigolay .cursor-corner--tl {
   background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png');
 }
