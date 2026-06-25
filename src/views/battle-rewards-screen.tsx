@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
@@ -30,6 +30,7 @@ import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
 
 /**
@@ -381,16 +382,24 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
         <h1 className="exp-gained-title rewards-section-title">
           <NarikWoodBitFont text="Exp Gained" size={2} />
         </h1>
-        <div className="exp-gained-amount number-flow-container">
-          <NumberFlow
-            value={expReward}
-            format={INTEGER_FORMAT}
-            prefix="+"
-            trend={1}
-            spinTiming={SNAPPY_SPIN_TIMING}
-            transformTiming={SNAPPY_TRANSFORM_TIMING}
-            opacityTiming={SNAPPY_OPACITY_TIMING}
-          />
+        {/* EXP total on a tan ribbon banner (reuses the title-sign artwork) so it reads
+            as a labelled reward rather than a bare number. */}
+        <div
+          className="exp-gained-ribbon title-sign title-sign--tan title-sign--text-dark"
+          style={{ '--ts-scale': 0.42 } as CSSProperties}
+        >
+          <span className="title-sign__text pixel-font number-flow-container">
+            <NumberFlow
+              value={expReward}
+              format={INTEGER_FORMAT}
+              prefix="+"
+              suffix=" EXP"
+              trend={1}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+          </span>
         </div>
       </header>
 
@@ -399,6 +408,8 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
           <CharacterExpCard key={member.id} member={member} expReward={expReward} />
         ))}
       </div>
+
+      <RetroDivider variant="gold" className="rewards-divider" />
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
@@ -425,21 +436,17 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
 
   return (
     <div className="character-card">
-      <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+      {/* Portrait carries the level on a diagonal corner ribbon (reuses .level-ribbon). */}
+      <div className="reward-portrait">
+        <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+        <div className="level-ribbon pixel-font">Lv {level}</div>
+      </div>
       <div className="character-info">
         <h3 className="character-name">{member.name}</h3>
-        <div className="character-level number-flow-container">
-          Lv{' '}
-          <NumberFlow
-            value={level}
-            format={INTEGER_FORMAT}
-            trend={1}
-            spinTiming={SNAPPY_SPIN_TIMING}
-            transformTiming={SNAPPY_TRANSFORM_TIMING}
-            opacityTiming={SNAPPY_OPACITY_TIMING}
-          />
+        <div className="reward-sub pixel-font">
+          <span className="reward-level">Lv {level}</span>
+          <span className="reward-class">{member.class}</span>
         </div>
-        <div className="exp-gained-text">EXP +{expReward}</div>
         <ExperienceBar percentage={percentage} variant="compact" />
       </div>
       {hasLeveledUp && (
