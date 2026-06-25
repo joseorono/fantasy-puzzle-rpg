@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { Hourglass, Pause, Star, Swords, Volume2, VolumeX } from 'lucide-react';
+import { Hourglass, Pause, Star, Swords } from 'lucide-react';
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
@@ -105,7 +105,12 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
             onClick={toggleMute}
             aria-label={isMuted ? 'Unmute' : 'Mute'}
           >
-            {isMuted ? <VolumeX className="btb-btn-icon" /> : <Volume2 className="btb-btn-icon" />}
+            <img
+              className="btb-btn-icon btb-btn-icon--img"
+              src={isMuted ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
+              alt=""
+              draggable={false}
+            />
           </button>
         </div>
       </div>
