@@ -11,7 +11,6 @@ import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS } from '~/constants/party';
 import {
   HP_THRESHOLD_BG,
@@ -284,7 +283,7 @@ export function PartyDisplay() {
                 filter: isPartyHealthEmpty === true ? PARTY_STATS_ICON_DIM_FILTER : undefined,
               }}
             >
-              <FrostyRpgIcon name="redVial" size={20} />
+              <img src="/assets/icons/indigolay/icon-hp.png" alt="HP" className="h-5 w-5" />
             </span>
             <div
               id="party-hp-bar"
@@ -334,10 +333,11 @@ export function PartyDisplay() {
                 filter: isGuardEmpty === true ? PARTY_STATS_ICON_DIM_FILTER : undefined,
               }}
             >
-              <FrostyRpgIcon
-                name="steelArmor"
-                size={20}
+              <img
+                src="/assets/icons/indigolay/icon-sys-defense.png"
+                alt="Guard"
                 className={cn(
+                  'h-5 w-5',
                   !isGuardEmpty && guardCharging && 'guard-icon-charging',
                   !isGuardEmpty && isGuardFull && 'guard-icon-full',
                 )}

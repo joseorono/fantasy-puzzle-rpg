@@ -93,7 +93,9 @@ export const assetList: string[] = [
 
   // Icons
   '/assets/icons/indigolay/icon-columns.png',
+  '/assets/icons/indigolay/icon-hp.png',
   '/assets/icons/indigolay/icon-mute.png',
+  '/assets/icons/indigolay/icon-sys-defense.png',
   '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
