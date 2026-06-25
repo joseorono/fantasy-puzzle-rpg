@@ -173,12 +173,27 @@
   margin: 0;
 }
 
+/* Label + bar share one row to save vertical space in the left column. */
 .progress-section {
-  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .stat-label {
-  margin-bottom: 0.125rem;
+  /* Fixed column so the EXP and HP bars start at the same x (EXP ≈ 45px wide). */
+  width: 3rem;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+/* The bar fills the rest of the row. */
+.progress-section .exp-bar,
+.progress-section .hp-bar-container {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 }
 
 .level-up-screen .hp-bar-container {
@@ -756,7 +771,7 @@
   }
 
   .stat-label {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
   }
 
   .level-up-screen .hp-bar-container {

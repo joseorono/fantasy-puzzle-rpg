@@ -412,7 +412,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
               </div>
               <p className="stat-hint pixel-font text-xs">
-                Reduces skill cooldowns.{' '}
+                Reduces skill &amp; item cooldowns and charges Guard faster.{' '}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="info-icon cursor-help">ⓘ</span>
@@ -421,6 +421,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     -Reduces ultimate skill cooldown
                     <br />
                     -Reduces item cooldowns in battle
+                    <br />
+                    -Charges the party Guard meter faster
                   </TooltipContent>
                 </Tooltip>
               </p>
