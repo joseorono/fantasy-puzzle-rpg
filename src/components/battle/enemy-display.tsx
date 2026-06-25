@@ -5,6 +5,7 @@ import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
+import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 import type { EnemyData } from '~/types/rpg-elements';
 
 interface EnemySpriteProps {
@@ -54,30 +55,32 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           if (e.animationName.startsWith('enemy-recoil')) setIsRecoiling(false);
         }}
       >
-        <div
-          onClick={handleClick}
-          className={cn(
-            'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
-            isDead
-              ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
-              : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
-            isSelected && !isDead && 'enemy-selected border-yellow-400',
-            'enemy-sprite-container',
-          )}
-        >
-          {enemy.sprite.startsWith('/') ? (
-            <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
-          ) : (
-            <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
-          )}
+        <IndigolayCornersWrapper alwaysVisible={isSelected && !isDead}>
+          <div
+            onClick={handleClick}
+            className={cn(
+              'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
+              isDead
+                ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
+                : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
+              isSelected && !isDead && 'enemy-selected border-[#e3a43e]',
+              'enemy-sprite-container',
+            )}
+          >
+            {enemy.sprite.startsWith('/') ? (
+              <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
+            ) : (
+              <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+            )}
 
-          {/* Death indicator */}
-          {isDead && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
-            </div>
-          )}
-        </div>
+            {/* Death indicator */}
+            {isDead && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
+              </div>
+            )}
+          </div>
+        </IndigolayCornersWrapper>
 
         {/* Selected arrow indicator */}
         {isSelected && !isDead && (

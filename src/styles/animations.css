@@ -231,7 +231,7 @@
 /* Subtle brightness pulse for selected enemy */
 @keyframes enemy-selected-blink {
   0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.4); }
+  50% { filter: brightness(1.15); }
 }
 
 .enemy-selected {
