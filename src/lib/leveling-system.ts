@@ -1,6 +1,6 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
-import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
 /**
  * Leveling System
  *
@@ -90,7 +90,7 @@ export function buildExpGainTimeline(character: CharacterData, expGained: number
   const segments: ExpGainSegment[] = [];
   let totalLevelUps = 0;
 
-  while (totalLevelUps < MAX_LEVEL_UPS_PER_BATTLE) {
+  while (level < MAX_LEVEL && totalLevelUps < MAX_LEVEL_UPS_PER_BATTLE) {
     const threshold = getExpThresholdForLevel(level);
     // Guard against a non-positive threshold so we never divide by zero or loop forever.
     const safeThreshold = threshold > 0 ? threshold : 1;
