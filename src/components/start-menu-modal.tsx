@@ -99,6 +99,30 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     }
   };
 
+  const handleBookmark = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    const url = window.location.href;
+    const title = document.title || 'Fantasy Puzzle RPG';
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const shortcut = isMac ? 'Cmd+D' : 'Ctrl+D';
+
+    const ext = window.external as unknown as { AddFavorite?: (url: string, title: string) => void };
+    if (ext?.AddFavorite) {
+      // Legacy IE
+      ext.AddFavorite(url, title);
+      return;
+    }
+
+    const sidebar = (window as unknown as { sidebar?: { addPanel?: (title: string, url: string, param: string) => void } }).sidebar;
+    if (sidebar?.addPanel) {
+      // Legacy Firefox
+      sidebar.addPanel(title, url, '');
+      return;
+    }
+
+    window.alert(`Press ${shortcut} to bookmark this page.`);
+  };
+
   // Arrow keys / WASD move the selection, Enter/Space activates it. The hook
   // always invokes the latest closure, so this reads current state directly.
   useWindowKeyDown((event) => {
@@ -147,6 +171,9 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
           </ToffecBeigeCornersWrapper>
         </div>
       </div>
+      <ToffecBeigeCornersWrapper className="main-menu__bookmark-corners">
+        <button className="main-menu__bookmark-button" onClick={handleBookmark} aria-label="Bookmark" />
+      </ToffecBeigeCornersWrapper>
       <div className="main-menu__actions">
         <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2} className="main-menu__action-corners">
           <button className="main-menu__share-icon" onClick={handleShare} aria-label="Share" />
