@@ -21,10 +21,12 @@
 }
 
 .level-tag__num {
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.04em;
+  /* normal spacing keeps two digits optically centered (letter-spacing leaves
+     trailing space that shifts the glyphs left). */
+  letter-spacing: 0;
   color: #ffe9c2;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
 }
@@ -38,6 +40,6 @@
   }
 
   .character-card .level-tag__num {
-    font-size: 0.7rem;
+    font-size: 0.58rem;
   }
 }
