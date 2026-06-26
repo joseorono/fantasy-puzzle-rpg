@@ -220,36 +220,42 @@
 }
 
 /* ==========================================
-   SETTINGS ICON
+   TITLE SCREEN ACTIONS (share + settings)
    ========================================== */
 
-/* Wrapper carries the positioning so the toffec corners anchor to the icon.
-   It also carries the hover/press scale so the corners grow together with the
-   icon (the icon scales too, as a child of the scaled wrapper). */
-.main-menu .main-menu__settings-corners {
+/* Container anchors both icons to the bottom-right of the title screen. */
+.main-menu__actions {
   position: absolute;
   bottom: 20px;
   right: 20px;
   z-index: 10;
-  transition: transform 0.2s ease;
-  transform-origin: bottom right;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.main-menu .main-menu__settings-corners:hover {
+/* Each wrapper carries the hover/press scale so the toffec corners grow with the
+   icon (the icon scales too, as a child of the scaled wrapper). */
+.main-menu .main-menu__action-corners {
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.main-menu .main-menu__action-corners:hover {
   transform: scale(1.1);
 }
 
-.main-menu .main-menu__settings-corners:active {
+.main-menu .main-menu__action-corners:active {
   transform: scale(0.95);
 }
 
-.main-menu__settings-icon {
+.main-menu__settings-icon,
+.main-menu__share-icon {
   display: block;
   position: relative;
   width: 64px;
   height: 64px;
   background-color: transparent;
-  background-image: url('/assets/menu/start/settings-icon.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -258,8 +264,12 @@
   padding: 0;
 }
 
-.main-menu__settings-icon:hover {
-  background-image: url('/assets/menu/start/settings-icon-hover.png');
+.main-menu__settings-icon {
+  background-image: url('/assets/icons/indigolay/Icon_setting.png');
+}
+
+.main-menu__share-icon {
+  background-image: url('/assets/icons/indigolay/Icon_share_.png');
 }
 
 @media (max-width: 480px) {
@@ -278,12 +288,13 @@
     border: 3px solid #d4a574;
   }
 
-  .main-menu .main-menu__settings-corners {
+  .main-menu__actions {
     bottom: 15px;
     right: 15px;
   }
 
-  .main-menu__settings-icon {
+  .main-menu__settings-icon,
+  .main-menu__share-icon {
     width: 48px;
     height: 48px;
   }
