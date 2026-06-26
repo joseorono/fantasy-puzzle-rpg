@@ -266,7 +266,7 @@
     filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
   }
   50% {
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 8px rgba(212, 165, 116, 0.9));
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 6px rgba(212, 165, 116, 0.6));
   }
   100% {
     filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
