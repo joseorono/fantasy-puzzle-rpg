@@ -110,7 +110,9 @@
   width: 72px;
   height: 72px;
   border-radius: 8px;
-  overflow: hidden;
+  /* visible so the level pennant can hang off the top-left corner; the inner
+     image keeps its own rounded corners below. */
+  overflow: visible;
   border: 2px solid #5c3a1e;
   box-shadow:
     inset 0 0 0 1px rgba(212, 165, 116, 0.68),
@@ -122,36 +124,13 @@
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   box-shadow: none;
 }
 
 .character-portrait-small {
   object-fit: cover;
   display: block;
-}
-
-/* Diagonal corner ribbon across the bottom-right of the portrait */
-.level-ribbon {
-  position: absolute;
-  bottom: 4px;
-  right: -26px;
-  width: 76px;
-  transform: rotate(-45deg);
-  background: linear-gradient(135deg, #f4cd84, #d4a574);
-  color: #2a1810;
-  text-align: center;
-  white-space: nowrap;
-  font-weight: 700;
-  font-size: 0.4rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 1px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-  border-bottom: 1px solid #5c3a1e;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-  z-index: 2;
 }
 
 .character-name-class {
@@ -749,13 +728,6 @@
   .portrait-badge-wrap {
     width: 56px;
     height: 56px;
-  }
-
-  .level-ribbon {
-    bottom: 4px;
-    right: -18px;
-    width: 60px;
-    font-size: 0.32rem;
   }
 
   .character-name {

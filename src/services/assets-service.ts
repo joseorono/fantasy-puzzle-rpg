@@ -54,6 +54,9 @@ export const assetList: string[] = [
   // Decorations
   '/assets/decorations/indigolay/divider-ornament.png',
 
+  // Indicators
+  '/assets/indicators/indigolay/level-tag-red.png',
+
   // Cursors
   '/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png',
   '/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png',

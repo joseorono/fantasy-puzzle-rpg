@@ -11,6 +11,7 @@ import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { LevelTag } from '~/components/ui-custom/level-tag';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -127,7 +128,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   alt={character.name}
                   className="character-portrait-small pixel-art"
                 />
-                <div className="level-ribbon pixel-font">Lv {character.level}</div>
+                <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>

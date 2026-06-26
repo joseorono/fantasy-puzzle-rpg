@@ -21,6 +21,7 @@ import { levelUp, getRandomPotentialStats, buildExpGainTimeline } from '~/lib/le
 import { getNewlyUnlockableSkills } from '~/lib/skill-system';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
+import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
@@ -436,10 +437,10 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
 
   return (
     <div className="character-card">
-      {/* Portrait carries the level on a diagonal corner ribbon (reuses .level-ribbon). */}
+      {/* Portrait carries the level on a hanging pennant tag in the top-left corner. */}
       <div className="reward-portrait">
         <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
-        <div className="level-ribbon pixel-font">Lv {level}</div>
+        <LevelTag level={level} />
       </div>
       <div className="character-info">
         <h3 className="character-name">{member.name}</h3>
