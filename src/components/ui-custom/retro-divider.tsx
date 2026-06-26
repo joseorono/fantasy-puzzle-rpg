@@ -1,51 +1,50 @@
 import { cn } from '~/lib/utils';
 
+type RetroDividerVariant = 'default' | 'victory' | 'defeat' | 'gold' | 'silver' | 'bronze';
+
 interface RetroDividerProps {
-  variant?: 'default' | 'victory' | 'defeat' | 'gold' | 'silver' | 'bronze';
+  variant?: RetroDividerVariant;
   className?: string;
   icon?: string;
 }
 
+const ORNAMENT_SRC = '/assets/decorations/indigolay/divider-ornament.png';
+
+/**
+ * Per-variant re-tint of the warm-gold filigree source PNG. `filter` recolors
+ * the ornament; `glow` is its soft drop-shadow.
+ */
+const VARIANT_CONFIG: Record<RetroDividerVariant, { filter: string; glow: string }> = {
+  default: { filter: 'saturate(0.8) brightness(0.95)', glow: '0 0 4px rgba(146,64,14,0.25)' },
+  victory: { filter: 'brightness(1.1) saturate(1.15)', glow: '0 0 6px rgba(202,138,4,0.4)' },
+  defeat: { filter: 'sepia(1) saturate(3) hue-rotate(-40deg) brightness(0.8)', glow: '0 0 6px rgba(153,27,27,0.4)' },
+  gold: { filter: 'brightness(1.05) saturate(1.1)', glow: '0 0 6px rgba(202,138,4,0.45)' },
+  silver: { filter: 'grayscale(1) brightness(1.3) contrast(1.05)', glow: '0 0 6px rgba(156,163,175,0.4)' },
+  bronze: { filter: 'sepia(0.5) saturate(1.5) hue-rotate(-12deg) brightness(0.9)', glow: '0 0 6px rgba(180,83,9,0.4)' },
+};
+
 export function RetroDivider({ variant = 'default', className, icon }: RetroDividerProps) {
-  const variantStyles = {
-    default: 'bg-gradient-to-r from-transparent via-amber-900/50 to-transparent',
-    victory: 'bg-gradient-to-r from-transparent via-yellow-600/60 to-transparent',
-    defeat: 'bg-gradient-to-r from-transparent via-red-900/60 to-transparent',
-    gold: 'bg-gradient-to-r from-transparent via-yellow-500/70 to-transparent',
-    silver: 'bg-gradient-to-r from-transparent via-gray-400/70 to-transparent',
-    bronze: 'bg-gradient-to-r from-transparent via-amber-700/70 to-transparent',
-  };
+  const { filter, glow } = VARIANT_CONFIG[variant];
 
   return (
-    <div className={cn('relative my-4 flex items-center', className)}>
-      {/* Left decorative element */}
-      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-800/30 to-amber-700/50" />
-
-      {/* Center ornament */}
-      <div className="mx-2 flex h-8 w-8 items-center justify-center">
-        {icon ? (
-          <img src={icon} alt="" className="h-5 w-5 object-contain [image-rendering:pixelated]" />
-        ) : (
-          <div
-            className={cn(
-              'h-2 w-2 rotate-45 border',
-              variant === 'victory' && 'border-yellow-500 bg-yellow-600 shadow-[0_0_8px_rgba(202,138,4,0.6)]',
-              variant === 'defeat' && 'border-red-700 bg-red-800 shadow-[0_0_8px_rgba(153,27,27,0.6)]',
-              variant === 'gold' && 'border-yellow-400 bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]',
-              variant === 'silver' && 'border-gray-300 bg-gray-400 shadow-[0_0_8px_rgba(156,163,175,0.6)]',
-              variant === 'bronze' && 'border-amber-600 bg-amber-700 shadow-[0_0_8px_rgba(180,83,9,0.6)]',
-              variant === 'default' && 'border-amber-700 bg-amber-800 shadow-[0_0_6px_rgba(146,64,14,0.4)]',
-            )}
+    <div className={cn('my-3 flex justify-center', className)}>
+      <div className="relative flex items-center justify-center">
+        {/* Native-resolution ornament — never upscaled past 2x to stay crisp */}
+        <img
+          src={ORNAMENT_SRC}
+          alt=""
+          className="h-[13px] w-auto object-contain [image-rendering:pixelated]"
+          style={{ filter: `${filter} drop-shadow(${glow})` }}
+        />
+        {icon && (
+          <img
+            src={icon}
+            alt=""
+            className="absolute h-4 w-4 object-contain [image-rendering:pixelated]"
+            style={{ filter: `drop-shadow(${glow})` }}
           />
         )}
       </div>
-
-      {/* Right decorative element */}
-      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-800/30 to-amber-700/50" />
-
-      {/* Main divider line */}
-      <div className={cn('absolute inset-0 h-px', variantStyles[variant])} />
     </div>
   );
 }
-

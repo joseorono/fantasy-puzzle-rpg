@@ -51,6 +51,9 @@ export const assetList: string[] = [
   '/assets/checkboxes/indigolay-checkbox-bg.png',
   '/assets/checkboxes/indigolay-checkbox-mark.png',
 
+  // Decorations
+  '/assets/decorations/indigolay/divider-ornament.png',
+
   // Cursors
   '/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png',
   '/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png',
