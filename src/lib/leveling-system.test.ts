@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as levelingSystem from './leveling-system';
 import { calculateMaxHp } from './rpg-calculations';
 import { calculateLevelUpsForParty } from './battle-rewards';
+import { MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
 import type { CharacterData, CoreRPGStats } from '~/types';
 
 // Helper function to create a test character
@@ -352,5 +353,16 @@ describe('buildExpGainTimeline', () => {
 
       expect(timeline.totalLevelUps).toBe(pending.pendingLevelUps);
     }
+  });
+
+  it('caps the final level at MAX_LEVEL for runaway EXP (no infinite loop)', () => {
+    // Infinity EXP keeps expProgress >= threshold forever; the level ceiling must halt
+    // the loop so the character lands exactly on MAX_LEVEL.
+    const startLevel = 1;
+    const character = createTestCharacter({ level: startLevel, expToNextLevel: 1 });
+    const [pending] = calculateLevelUpsForParty([character], Infinity);
+
+    expect(startLevel + pending.pendingLevelUps).toBe(MAX_LEVEL);
+    expect(pending.pendingLevelUps).toBeLessThanOrEqual(MAX_LEVEL_UPS_PER_BATTLE);
   });
 });
