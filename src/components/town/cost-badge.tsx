@@ -38,3 +38,19 @@ export function CostBadge({ resource, amount }: CostBadgeProps) {
     </Tooltip>
   );
 }
+
+interface CostBadgesProps {
+  resources: Resources;
+}
+
+export function CostBadges({ resources }: CostBadgesProps) {
+  return (
+    <>
+      {resources.coins > 0 && <CostBadge resource="coins" amount={resources.coins} />}
+      {resources.gold > 0 && <CostBadge resource="gold" amount={resources.gold} />}
+      {resources.silver > 0 && <CostBadge resource="silver" amount={resources.silver} />}
+      {resources.copper > 0 && <CostBadge resource="copper" amount={resources.copper} />}
+      {resources.iron > 0 && <CostBadge resource="iron" amount={resources.iron} />}
+    </>
+  );
+}

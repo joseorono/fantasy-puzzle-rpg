@@ -430,6 +430,8 @@
 
 @import './styles/town.css';
 
+@import './styles/salvage-confirm-dialog.css';
+
 @import './styles/top-bar-resources.css';
 
 @import './styles/pause-menu.css';

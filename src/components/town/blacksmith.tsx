@@ -24,15 +24,15 @@ import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
-import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
+import { SalvageConfirmDialog } from './salvage-confirm-dialog';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { CostBadge } from './cost-badge';
+import { CostBadge, CostBadges } from './cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import {
   MELT_BATCHES,
@@ -64,19 +64,6 @@ function instanceKey(instance: { item: { id: string }; rarity: string }): string
   return `${instance.item.id}::${instance.rarity}`;
 }
 
-/** Render a cost/refund as a row of resource badges, skipping zero amounts. */
-function CostBadges({ resources }: { resources: Resources }) {
-  return (
-    <>
-      {resources.coins > 0 && <CostBadge resource="coins" amount={resources.coins} />}
-      {resources.gold > 0 && <CostBadge resource="gold" amount={resources.gold} />}
-      {resources.silver > 0 && <CostBadge resource="silver" amount={resources.silver} />}
-      {resources.copper > 0 && <CostBadge resource="copper" amount={resources.copper} />}
-      {resources.iron > 0 && <CostBadge resource="iron" amount={resources.iron} />}
-    </>
-  );
-}
-
 export default function Blacksmith({
   backgroundImage,
   onLeaveCallback,
@@ -90,9 +77,9 @@ export default function Blacksmith({
   // The first craft of each distinct item this visit shows the success overlay.
   // Resets naturally because the blacksmith remounts on each visit.
   const [celebratedItemIds, setCelebratedItemIds] = useState<Set<string>>(() => new Set());
-  // Modify (upgrade/salvage) tab: selected owned instance + a salvage confirm gate.
+  // Modify (upgrade/salvage) tab: selected owned instance + a salvage confirm dialog.
   const [selectedModifyKey, setSelectedModifyKey] = useState<string | null>(null);
-  const [pendingSalvage, setPendingSalvage] = useState(false);
+  const [isSalvageDialogOpen, setIsSalvageDialogOpen] = useState(false);
 
   const resources = useResources();
   const resourcesActions = useResourcesActions();
@@ -134,7 +121,7 @@ export default function Blacksmith({
 
   function handleSelectModify(key: string) {
     setSelectedModifyKey((prev) => (prev === key ? prev : key));
-    setPendingSalvage(false);
+    setIsSalvageDialogOpen(false);
   }
 
   function handleUpgrade(instance: OwnedEquipmentInstance) {
@@ -147,20 +134,19 @@ export default function Blacksmith({
     inventoryActions.addItem(instance.item.id, 1, next);
     showOverlay({ kind: 'crafting-success', itemId: instance.item.id, rarity: next });
     setSelectedModifyKey(null);
-    setPendingSalvage(false);
+    setIsSalvageDialogOpen(false);
+  }
+
+  function handleOpenSalvageDialog() {
+    setIsSalvageDialogOpen(true);
   }
 
   function handleSalvage(instance: OwnedEquipmentInstance) {
-    // First click arms the confirm; second click actually scraps the item.
-    if (!pendingSalvage) {
-      setPendingSalvage(true);
-      return;
-    }
     soundService.playSound(SoundNames.clickCoin);
     inventoryActions.removeItem(instance.item.id, 1, instance.rarity);
     resourcesActions.addResources(getSalvageReturn(instance.item));
     setSelectedModifyKey(null);
-    setPendingSalvage(false);
+    setIsSalvageDialogOpen(false);
   }
 
   const handleExchangeResources = (
@@ -390,10 +376,8 @@ export default function Blacksmith({
               {selectedModify ? (
                 <ModifyDetail
                   instance={selectedModify}
-                  resources={resources}
-                  pendingSalvage={pendingSalvage}
                   onUpgrade={() => handleUpgrade(selectedModify)}
-                  onSalvage={() => handleSalvage(selectedModify)}
+                  onSalvage={() => handleOpenSalvageDialog()}
                 />
               ) : (
                 <div className="craft-detail-empty">
@@ -403,6 +387,15 @@ export default function Blacksmith({
             </div>
           </div>
         </div>
+      )}
+
+      {isSalvageDialogOpen && selectedModify && (
+        <SalvageConfirmDialog
+          instance={selectedModify}
+          salvageReturn={getSalvageReturn(selectedModify.item)}
+          onConfirm={() => handleSalvage(selectedModify)}
+          onCancel={() => setIsSalvageDialogOpen(false)}
+        />
       )}
 
       {/* Exchange Tab */}
@@ -504,14 +497,13 @@ export default function Blacksmith({
 
 interface ModifyDetailProps {
   instance: OwnedEquipmentInstance;
-  resources: Resources;
-  pendingSalvage: boolean;
   onUpgrade: () => void;
   onSalvage: () => void;
 }
 
 /** Detail panel for the Modify tab: rarity-scaled stats plus Upgrade and Salvage actions. */
-function ModifyDetail({ instance, resources, pendingSalvage, onUpgrade, onSalvage }: ModifyDetailProps) {
+function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
+  const resources = useResources();
   const stats = getScaledEquipmentStats(instance.item, instance.rarity);
   const upgradable = canUpgradeRarity(instance.rarity);
   const nextRarity = upgradeRarity(instance.rarity);
@@ -566,7 +558,7 @@ function ModifyDetail({ instance, resources, pendingSalvage, onUpgrade, onSalvag
         </div>
         <ToffecBeigeCornersWrapper>
           <ToffecButton variant="cream" size="xs" onClick={onSalvage}>
-            {pendingSalvage ? 'Confirm Salvage?' : 'Salvage'}
+            Salvage
           </ToffecButton>
         </ToffecBeigeCornersWrapper>
       </div>
