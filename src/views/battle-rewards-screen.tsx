@@ -450,8 +450,13 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
         <ExperienceBar percentage={percentage} variant="compact" />
       </div>
       {hasLeveledUp && (
-        <div key={badgeKey} className="level-up-badge level-up-badge--pop">
-          Level Up
+        // The bookmark animates once when it first appears (no key on the container),
+        // while the inner text re-keys on every level-up so it pops again — a live
+        // signal that you're still leveling.
+        <div className="level-up-badge level-up-badge--pop">
+          <span key={badgeKey} className="level-up-badge__text">
+            Level Up
+          </span>
         </div>
       )}
     </div>

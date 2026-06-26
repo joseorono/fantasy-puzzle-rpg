@@ -43,6 +43,10 @@ export const assetList: string[] = [
   '/assets/bg/tc-bg-item-darker.png',
   '/assets/bg/tc-bg-item-lighter.png',
 
+  // Bookmarks
+  //'/assets/bookmarks/ui-bookmark-horizontal-l-red.png',
+  '/assets/bookmarks/ui-bookmark-horizontal-m-red.png',
+
   // Checkboxes
   '/assets/checkboxes/indigolay-checkbox-bg.png',
   '/assets/checkboxes/indigolay-checkbox-mark.png',
