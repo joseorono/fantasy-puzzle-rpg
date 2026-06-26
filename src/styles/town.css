@@ -474,6 +474,53 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
+/* Upgrade row: next-rank banner and button stacked vertically. */
+.craft-detail-upgrade-row,
+.craft-detail-salvage-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.craft-detail-next-rank,
+.craft-detail-salvage-return {
+  width: auto;
+  min-width: 60%;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 5px 10px;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(212, 165, 116, 0.06));
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  border-left: 3px solid #ffd700;
+  border-radius: 4px;
+}
+
+.craft-detail-next-rank-label,
+.craft-detail-salvage-label {
+  font-size: 0.65rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
+}
+
+.craft-detail-next-rank-value {
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
+}
+
 /* Single left-aligned row of stat badges. */
 .craft-detail-stats-row {
   display: flex;
@@ -521,6 +568,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .equipment-list {
@@ -1102,6 +1150,14 @@
 
   .shop-portrait-sidebar .shop-portrait__image {
     max-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .craft-detail-next-rank,
+  .craft-detail-salvage-return {
+    min-width: unset;
+    width: 100%;
   }
 }
 

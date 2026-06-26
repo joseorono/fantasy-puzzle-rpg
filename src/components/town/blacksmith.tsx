@@ -534,17 +534,20 @@ function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
       {/* Upgrade action */}
       <div className="craft-detail-actions">
         {upgradable ? (
-          <>
-            <div className="equipment-item-cost flex flex-wrap items-center gap-1">
-              <span style={{ color: getRarityColor(nextRarity) }}>→ {getRarityLabel(nextRarity)}</span>
-              <CostBadges resources={upgradeCost} />
+          <div className="craft-detail-upgrade-row">
+            <div className="craft-detail-next-rank">
+              <span className="craft-detail-next-rank-label">Next Rank:</span>
+              <span className="craft-detail-next-rank-value" style={{ color: getRarityColor(nextRarity) }}>
+                {getRarityLabel(nextRarity)}
+              </span>
+              <CostBadges resources={upgradeCost} compact />
             </div>
             <ToffecBeigeCornersWrapper>
               <ToffecButton variant="orange" size="xs" onClick={onUpgrade} disabled={!canAffordUpgrade}>
                 {canAffordUpgrade ? 'Upgrade' : 'Cannot Afford'}
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
-          </>
+          </div>
         ) : (
           <div className="craft-detail-for-class">Maxed — Legendary</div>
         )}
@@ -552,15 +555,17 @@ function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
 
       {/* Salvage action */}
       <div className="craft-detail-actions">
-        <div className="equipment-item-cost flex flex-wrap items-center gap-1">
-          <span>Salvage for</span>
-          <CostBadges resources={salvageReturn} />
+        <div className="craft-detail-salvage-row">
+          <div className="craft-detail-salvage-return">
+            <span className="craft-detail-salvage-label">Salvage for</span>
+            <CostBadges resources={salvageReturn} compact />
+          </div>
+          <ToffecBeigeCornersWrapper>
+            <ToffecButton variant="cream" size="xs" onClick={onSalvage}>
+              Salvage
+            </ToffecButton>
+          </ToffecBeigeCornersWrapper>
         </div>
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton variant="cream" size="xs" onClick={onSalvage}>
-            Salvage
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
       </div>
     </>
   );
