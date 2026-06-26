@@ -239,7 +239,7 @@
 .main-menu__bookmark-corners {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 10px;
   z-index: 10;
   transition: transform 0.2s ease;
   transform-origin: center;
@@ -301,6 +301,9 @@
 
 .main-menu__bookmark-button {
   background-image: url('/assets/icons/indigolay/Icon_bookmark-fill.png');
+  padding: 5px;
+  box-sizing: border-box;
+  background-origin: content-box;
 }
 
 @media (max-width: 480px) {
