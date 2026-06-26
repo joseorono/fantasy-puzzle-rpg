@@ -40,11 +40,19 @@
 .rewards-section-subtitle {
   margin: 0 0 1rem 0;
 }
-.exp-gained-amount {
-  font-size: 1.125rem;
-  color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  margin-top: 0.25rem;
+/* EXP total ribbon (title-sign artwork) sits centered under the heading. */
+.exp-gained-ribbon {
+  margin: 0.35rem auto 0;
+}
+
+/* Only bump the font for legibility — leave the shared title-sign vertical
+   centering (the --ts-text-nudge-y margin) untouched so it sits in the band
+   exactly like every other title-sign usage. */
+.exp-gained-ribbon .title-sign__text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+  margin-top: 4px;
 }
 
 .character-cards-grid {
@@ -73,7 +81,20 @@
   gap: 1.2rem;
   position: relative;
   min-height: 0;
-  overflow: hidden;
+  /* visible (not hidden) so the level-up bookmark can hang past the right edge;
+         the card's rounded corners still hold via border-radius. */
+    overflow: visible;
+}
+
+/* Wraps the portrait. overflow is visible so the level pennant can hang off the
+   top-left corner; the portrait image carries its own border-radius. */
+.reward-portrait {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: visible;
+  line-height: 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .character-card .character-portrait {
@@ -87,6 +108,30 @@
   object-fit: cover;
   position: relative;
   flex-shrink: 0;
+}
+
+/* Level + class share an aligned sub-row directly below the name. */
+.reward-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.reward-level {
+  color: #f4cd84;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.reward-class {
+  color: #d4a574;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 .character-card .character-info {
@@ -127,11 +172,17 @@
   }
 }
 
+/* Prominent name, styled like the pause menu's .party-member-card__name. */
 .character-card .character-name {
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #e0e0e0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  margin: 0 0 0.125rem 0;
+  color: #fff8dc;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 0.1rem 0;
 }
 
 .character-card .character-level {
@@ -148,43 +199,101 @@
 }
 
 
+/* Level-up indicator is a horizontal bookmark (indigolay) that hangs 25px past
+   the card's right edge. Native art is 183×102 (~1.79:1). */
 .level-up-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+    right: -16px;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.28rem 0.7rem;
-  background: linear-gradient(135deg, rgba(160, 113, 81, 0.95), rgba(107, 83, 68, 0.95));
-  border: 1px solid rgba(227, 187, 146, 0.5);
-  border-radius: 999px;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  width: 104px;
+    height: 58px;
+    /* Extra right padding keeps the label off the swallowtail notch so it reads
+         centered on the flat red band. */
+    padding: 0 1.25rem 0.3rem 0.5rem;
+    background: url('/assets/bookmarks/ui-bookmark-horizontal-m-red.png') no-repeat center / contain;
+    image-rendering: pixelated;
   white-space: nowrap;
   font-weight: 700;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  color: #e0e0e0;
-  letter-spacing: 0.06em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  color: #ffe9c2;
+    letter-spacing: 0.03em;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
 
-@keyframes levelUpBounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.05); }
+/* Appear-only entrance: the bookmark slides in from the edge it hangs off and
+   overshoots with a slight tilt, so it reads as being slapped onto the card. */
+@keyframes levelUpAppear {
+  0% { transform: translateX(14px) scale(0.55) rotate(-7deg); opacity: 0; }
+  55% { transform: translateX(0) scale(1.14) rotate(2deg); opacity: 1; }
+  100% { transform: translateX(0) scale(1) rotate(0); opacity: 1; }
 }
 
-/* O glow effect */
-@keyframes glowPulse {
-  0%, 100% { 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    border-color: #ffd700;
+/* The label lives on its own so it can animate independently of the static bookmark. */
+.level-up-badge__text {
+  display: inline-block;
+  /* Per-level pop replays on each level-up (text is re-keyed); the idle breathe keeps
+     it alive between level-ups so the badge never reads as frozen. */
+  animation:
+    levelUpTextPop 0.4s ease-out both,
+    levelUpTextIdle 1.6s ease-in-out 0.4s infinite;
+}
+
+/* Subtle punch each time you gain a level, with a tiny side-to-side shake. */
+@keyframes levelUpTextPop {
+  0% { transform: scale(0.96) translateX(0); filter: brightness(1.25); }
+  30% { transform: scale(1.08) translateX(-1px); }
+  55% { transform: scale(1.04) translateX(1px); }
+  80% { transform: scale(1.01) translateX(-0.5px); }
+  100% { transform: scale(1) translateX(0); filter: brightness(1); }
+}
+
+/* Gentle continuous breathe — the "still leveling" heartbeat. */
+@keyframes levelUpTextIdle {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.03); filter: brightness(1.12); }
+}
+
+/* Warm amber glow — no bright gold, keeps the parchment palette. Uses drop-shadow
+   so the glow hugs the bookmark silhouette instead of a box. */
+@keyframes levelUpBookmarkGlow {
+  0% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
   }
-  50% { 
-    box-shadow: 0 0 25px rgba(255, 215, 0, 1);
-    border-color: #fff;
+  50% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 8px rgba(212, 165, 116, 0.9));
   }
+  100% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  }
+}
+
+/* Plays once when the bookmark first appears (no remount key), not on each level-up. */
+.level-up-badge--pop {
+  animation:
+    levelUpAppear 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    levelUpBookmarkGlow 0.7s ease-out;
+}
+
+/* The rewards bar is driven frame-by-frame by requestAnimationFrame (useExpGainAnimation),
+   so it must not also run a CSS width transition — that would lag the fill and animate the
+   reset-to-0 backwards. The level-up screen's ExperienceBar keeps its own transition. */
+.exp-gained-container .exp-bar__fill {
+  transition: none;
+}
+
+/* Section divider between the party cards and the resource payout. */
+.rewards-divider {
+  width: 60%;
+  margin-inline: auto;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 /* Resources Panel — card-based layout (like Pause Menu / TownHub) */
@@ -192,11 +301,11 @@
   display: flex;
   flex-wrap: wrap;
     justify-content: center;
-    gap: 2rem;
+    gap: 2.75rem;
     margin-bottom: 1.5rem;
   flex-shrink: 0;
 }
-  
+
 .rewards-resource-card {
   display: flex;
   align-items: center;
@@ -214,12 +323,11 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.2),
       inset 0 -2px 4px rgba(0, 0, 0, 0.5);
     flex: 1;
-    min-width: 100px;
+    min-width: 110px;
     max-width: 180px;
     transition: all 0.2s ease;
-    scale: calc(1.1);
   }
-  
+
   .rewards-resource-card:hover {
     transform: translateY(-1px);
     box-shadow:
@@ -229,18 +337,18 @@
       inset 0 -2px 4px rgba(0, 0, 0, 0.5),
       0 0 8px rgba(212, 165, 116, 0.22);
   }
-  
+
   .rewards-resource-card__icon {
     flex-shrink: 0;
   }
-  
+
   .rewards-resource-card__content {
     display: flex;
     flex-direction: column;
     line-height: 1;
     gap: 0.5rem;
   }
-  
+
   .rewards-resource-card__label {
     font-family: monospace;
     font-size: 1rem;
@@ -259,21 +367,21 @@
     border-radius: 4px;
     padding: 0.125rem 0.3rem;
   }
-  
+
   .rewards-resource-card__earned {
     font-family: monospace;
     font-size: 0.875rem;
     font-weight: bold;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
   }
-  
+
   .rewards-resource-card__arrow {
     color: #d4a574;
     font-size: 0.75rem;
     flex-shrink: 0;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
   }
-  
+
   .rewards-resource-card__balance {
     font-family: monospace;
     font-size: 0.875rem;
@@ -282,20 +390,20 @@
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
     opacity: 0.7;
   }
-  
+
   /* Resource-specific value colors */
   .rewards-resource-card--coins .rewards-resource-card__earned {
     color: #ffd700;
   }
-  
+
   .rewards-resource-card--gold .rewards-resource-card__earned {
     color: #ffd700;
   }
-  
+
   .rewards-resource-card--silver .rewards-resource-card__earned {
     color: #c0c0c0;
   }
-  
+
   .rewards-resource-card--iron .rewards-resource-card__earned {
     color: #71797e;
 }
@@ -566,13 +674,13 @@
     gap: 0.375rem;
     margin-bottom: 0.75rem;
   }
-  
+
   .rewards-resource-card {
     padding: 0.25rem 0.5rem;
     gap: 0.375rem;
     min-width: 80px;
   }
-  
+
   .rewards-resource-card__earned,
   .rewards-resource-card__balance {
     font-size: 0.75rem;
@@ -582,7 +690,7 @@
 @media (min-width: 1280px) {
   .rewards-resources-panel {
     gap: 2rem;
-    
+
   }
 }
 
@@ -635,31 +743,34 @@
   }
 
   .level-up-badge {
-    padding: 0.22rem 0.55rem;
-    font-size: 0.58rem;
+    width: 84px;
+      height: 47px;
+      right: -20px;
+      padding: 0 1rem 0.25rem 0.4rem;
+      font-size: 0.62rem;
   }
 
                 .rewards-resources-panel {
                   gap: 0.25rem;
                   margin-bottom: 0.5rem;
                 }
-        
+
                 .rewards-resource-card {
                   padding: 0.2rem 0.375rem;
                   gap: 0.25rem;
                   min-width: 70px;
                   border-radius: 6px;
                 }
-        
+
                 .rewards-resource-card__label {
                   font-size: 0.5rem;
                 }
-        
+
                 .rewards-resource-card__earned,
                 .rewards-resource-card__balance {
                   font-size: 0.625rem;
                 }
-        
+
                 .rewards-resource-card__arrow {
                   font-size: 0.5rem;
                 }

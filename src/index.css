@@ -430,6 +430,8 @@
 
 @import './styles/town.css';
 
+@import './styles/salvage-confirm-dialog.css';
+
 @import './styles/top-bar-resources.css';
 
 @import './styles/pause-menu.css';
@@ -447,6 +449,8 @@
 @import './components/ui-custom/styles/indigolay-checkbox.css';
 
 @import './components/ui-custom/styles/indigolay-tab.css';
+
+@import './components/ui-custom/styles/level-tag.css';
 
 @import './components/ui-custom/styles/toffec-close-button.css';
 

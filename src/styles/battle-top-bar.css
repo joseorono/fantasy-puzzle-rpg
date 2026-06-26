@@ -115,7 +115,7 @@
   display: inline-flex;
   align-items: center;
   height: 1.7rem;
-  min-width: 4.25rem;
+  min-width: 5.25rem;
   /* Reserve the round well on the left; value sits in the bar to its right. */
   padding-left: 2rem;
   padding-right: 0.75rem;
@@ -127,7 +127,7 @@
 /* Icon centered in the pill's circular well, above the art. */
 #battle-top-bar .btb-badge-icon {
   position: absolute;
-  left: 0.45rem;
+  left: 0.3rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
@@ -193,12 +193,23 @@
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
 }
 
+#battle-top-bar .btb-btn-icon--img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
 /* The bar floats on top (absolute, reserves no space), so the battle section
    backgrounds fill the whole column — including the strip behind the bar — and
    there's never any app-white showing. We only pad the section *content* down by
    the bar height so foreground elements aren't hidden beneath it. Padding lives
    on the bg-bearing sections, so the background still covers the padded strip. */
-.battleArea .partySection,
-.battleArea .enemySection {
+.battleArea .partySection {
   padding-top: var(--btb-height);
 }
+
+.battleArea .enemySection {
+  padding-top: 2rem;
+}
+

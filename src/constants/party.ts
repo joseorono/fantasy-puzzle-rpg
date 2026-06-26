@@ -15,6 +15,11 @@ export const MATCH_SIZE_BONUS_MULTIPLIER = 5; // Extra points per orb beyond 3
 // Default EXP needed for level 1 characters
 export const EXP_TO_LEVEL_ONE = calculateExpToNextLevel(1);
 export const LEVELING_UP_HEALS_CHARACTER = true;
+// Hard ceiling on a character's level. Levels run 1–99 (see the 2-digit level tag UI).
+export const MAX_LEVEL = 99;
+// Safety cap on level-ups awarded from a single battle, guarding against a runaway
+// loop on bad data (used when building the rewards-screen EXP animation timeline).
+export const MAX_LEVEL_UPS_PER_BATTLE = 99;
 
 // ─── Initial Party Setup ─────────────────────────────────────────────
 // Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)

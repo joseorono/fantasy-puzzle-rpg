@@ -1446,6 +1446,38 @@ box-shadow:
   gap: 0.65rem;
 }
 
-.pause-menu-options-checkbox.indigolay-checkbox {
-  margin-left: 0.1rem;
+.pause-menu-mute-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.15rem 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: filter 0.1s ease;
+}
+
+.pause-menu-mute-toggle:hover {
+  filter: brightness(1.12);
+}
+
+.pause-menu-mute-toggle:hover .pause-menu-option-label {
+  color: #e3bb92;
+}
+
+.pause-menu-mute-toggle:active {
+  transform: translateY(1px);
+}
+
+.pause-menu-mute-toggle .pause-menu-option-label {
+  cursor: pointer;
+}
+
+.pause-menu-mute-toggle__icon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
 }

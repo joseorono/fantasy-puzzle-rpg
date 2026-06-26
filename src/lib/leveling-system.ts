@@ -1,6 +1,6 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
-import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/party';
+import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
 /**
  * Leveling System
  *
@@ -31,6 +31,97 @@ import { LEVELING_UP_HEALS_CHARACTER } from '~/constants/party';
  */
 export function calculateExpToNextLevel(level: number): number {
   return Math.trunc(level * level);
+}
+
+/**
+ * The EXP required to clear a single level — the threshold the game actually uses to
+ * decide level-ups (see `calculateLevelUpsForParty` in `battle-rewards.ts`). Shared by
+ * the level-up logic and the rewards-screen bar animation so the two can't drift.
+ *
+ * @param level - The character's current level
+ * @returns EXP needed to advance out of that level
+ */
+export function getExpThresholdForLevel(level: number): number {
+  return Math.floor(Math.exp(level));
+}
+
+/** One step of the rewards-screen EXP bar animation (a single level the bar passes through). */
+export interface ExpGainSegment {
+  /** Level shown while this segment fills. */
+  level: number;
+  /** Starting fill of the bar for this segment (0–100). */
+  fromPercent: number;
+  /** Ending fill of the bar for this segment (0–100; 100 when the character levels up). */
+  toPercent: number;
+  /** Whether a level-up occurs at the end of this segment. */
+  levelsUp: boolean;
+}
+
+/** A character's full EXP-gain animation: the levels their bar walks through this battle. */
+export interface ExpGainTimeline {
+  /** The character's level before any EXP was applied. */
+  startLevel: number;
+  /** Total number of levels gained. */
+  totalLevelUps: number;
+  /** Ordered segments the bar animates through (always at least one). */
+  segments: ExpGainSegment[];
+}
+
+/**
+ * Builds the per-level animation timeline for a character's EXP gain. Mirrors the
+ * level-up loop in `calculateLevelUpsForParty` but records each level the bar walks
+ * through, so the rewards screen can fill → pop → reset → refill once per level gained.
+ *
+ * Pure function: takes the character's pre-battle state and the EXP gained, returns the
+ * sequence of fill segments. Always emits at least one segment (a static one when no
+ * EXP/level-up occurs).
+ *
+ * @param character - The party member in their pre-battle state (uses `level` and the
+ *   `expToNextLevel` progress-within-current-level field)
+ * @param expGained - EXP awarded from the battle
+ * @returns The ordered animation timeline
+ */
+export function buildExpGainTimeline(character: CharacterData, expGained: number): ExpGainTimeline {
+  const startLevel = character.level;
+  let level = startLevel;
+  let progress = Math.max(0, character.expToNextLevel);
+  let remaining = Math.max(0, expGained);
+
+  const segments: ExpGainSegment[] = [];
+  let totalLevelUps = 0;
+
+  while (level < MAX_LEVEL && totalLevelUps < MAX_LEVEL_UPS_PER_BATTLE) {
+    const threshold = getExpThresholdForLevel(level);
+    // Guard against a non-positive threshold so we never divide by zero or loop forever.
+    const safeThreshold = threshold > 0 ? threshold : 1;
+    const fromPercent = (progress / safeThreshold) * 100;
+    const needed = safeThreshold - progress;
+
+    if (remaining >= needed) {
+      // Enough EXP to clear this level: fill to 100%, level up, reset for the next level.
+      segments.push({ level, fromPercent, toPercent: 100, levelsUp: true });
+      remaining -= needed;
+      level += 1;
+      progress = 0;
+      totalLevelUps += 1;
+      continue;
+    }
+
+    // Not enough to level: settle at the real partial fill and stop.
+    progress += remaining;
+    segments.push({ level, fromPercent, toPercent: (progress / safeThreshold) * 100, levelsUp: false });
+    break;
+  }
+
+  // Always return at least one segment (e.g. expGained === 0 produces a static bar).
+  if (segments.length === 0) {
+    const threshold = getExpThresholdForLevel(level);
+    const safeThreshold = threshold > 0 ? threshold : 1;
+    const percent = (progress / safeThreshold) * 100;
+    segments.push({ level, fromPercent: percent, toPercent: percent, levelsUp: false });
+  }
+
+  return { startLevel, totalLevelUps, segments };
 }
 
 /**

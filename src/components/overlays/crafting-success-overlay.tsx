@@ -54,7 +54,9 @@ export function CraftingSuccessOverlay({ request, onDismiss }: CraftingSuccessOv
     >
       <div className={cn('crafting-success', `crafting-success--${phase}`)}>
         <div className="crafting-success-title">
-          <NarikWoodBitFont text="SUCCESS" size={4} />
+          <div className="title-sign title-sign--red title-sign--text-gold" style={{ width: '520px' }}>
+            <span className="title-sign__text pixel-font" style={{ fontSize: '20px' }}>SUCCESS</span>
+          </div>
         </div>
 
         <div className="crafting-success-item">

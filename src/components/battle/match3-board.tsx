@@ -262,36 +262,32 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       clearTimeout(processingTimerRef.current);
     }
 
-    // The acting character is decided by the first non-bomb (colored) matched orb.
-    let matchedType: OrbType | null = null;
-    for (let row = 0; row < board.length && !matchedType; row++) {
+    // A single move can form matches of several colors at once (e.g. 3 yellow + 3 blue).
+    // Collect every distinct non-bomb color present in the line matches, preserving
+    // first-seen order. Each color independently triggers its character's action.
+    const matchedTypes: OrbType[] = [];
+    const seenTypes = new Set<OrbType>();
+    for (let row = 0; row < board.length; row++) {
       for (let col = 0; col < board[row].length; col++) {
         const orb = board[row][col];
-        if (lineMatches.has(orb.id) && !orb.isBomb) {
-          matchedType = orb.type;
-          break;
+        if (lineMatches.has(orb.id) && !orb.isBomb && !seenTypes.has(orb.type)) {
+          seenTypes.add(orb.type);
+          matchedTypes.push(orb.type);
         }
       }
     }
 
-    // Update battle state with matched type
-    if (matchedType) {
+    // The primary (first-seen) color drives the party-wide pulse + health-bar flash.
+    const primaryMatchedType = matchedTypes[0] ?? null;
+    if (primaryMatchedType) {
       setBattleState((prev: BattleState) => ({
         ...prev,
-        lastMatchedType: matchedType,
+        lastMatchedType: primaryMatchedType,
       }));
     }
 
-    // Find the character that matches this orb type to apply their POW + combo bonus
-    const matchingCharacter = matchedType ? party.find((char) => char.color === matchedType) : null;
-    const isCharacterDead = matchingCharacter && matchingCharacter.currentHp <= 0;
-    const characterPow = matchingCharacter?.stats.pow ?? 0;
-
     // Cascade combo multiplier: initial match is level 0 (1x), cascades escalate.
-    // Equipment adds a small per-level combo bonus on top.
     const cascadeLevel = cascadeLevelRef.current;
-    const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
-    const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus);
 
     // Cascades (level >= 1) show a prominent, lingering combo popup. Each chained
     // cascade bumps the count and refreshes the linger timer + the pop animation.
@@ -301,15 +297,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       if (comboPopupTimerRef.current) clearTimeout(comboPopupTimerRef.current);
       comboPopupTimerRef.current = setTimeout(() => setComboPopup(0), 1100);
     }
-
-    // Calculate damage (match size multiplier + POW + cascade combo multiplier).
-    // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
-    // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER (gray previously dealt full neutral damage).
-    const isGrayMatch = matchedType === 'gray';
-    const baseTotalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
-    const totalDamage = isGrayMatch
-      ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
-      : baseTotalDamage;
 
     // A big line match (skill, not explosions) earns a guaranteed wildcard bomb.
     const bombsToSpawn = lineMatches.size >= BOMB_MATCH_SPAWN_THRESHOLD ? 1 : 0;
@@ -321,12 +308,33 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       chainBombsSpawnedRef.current > 0 ? BOMB_REFILL_CHANCE * CASCADE_BOMB_CHANCE_MULTIPLIER : BOMB_REFILL_CHANCE;
     const maxBombs = Math.max(0, MAX_CHAIN_BOMB_SPAWNS - chainBombsSpawnedRef.current);
 
-    // Actions are only performed if the character is alive (or it's a neutral match)
-    if (!isCharacterDead) {
-      // Reduce the matching character's skill cooldown based on orbs matched
+    // Per-color effects: each matched color's character acts off the full match size.
+    // Collect the damage/heal each living character applies, then resolve them together
+    // after the highlight delay so the hitstop + match sound fire once for the whole move.
+    const pendingEffects: Array<{ amount: number; isHeal: boolean }> = [];
+    for (const matchedType of matchedTypes) {
+      const matchingCharacter = party.find((char) => char.color === matchedType);
+      const isCharacterDead = matchingCharacter ? matchingCharacter.currentHp <= 0 : false;
+      const characterPow = matchingCharacter?.stats.pow ?? 0;
+
+      // Each hero applies their own equipment combo bonus on top of the cascade level.
+      const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
+      const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus);
+
+      // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
+      // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER.
+      const isGrayMatch = matchedType === 'gray';
+      const baseTotalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+      const totalDamage = isGrayMatch
+        ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
+        : baseTotalDamage;
+
+      // Dead characters perform no action, but gray still charges the party Guard meter.
+      if (isCharacterDead) continue;
+
+      // Reduce the matching character's skill cooldown based on orbs matched.
       if (matchingCharacter) {
-        const cooldownReduction = matches.size * COOLDOWN_REDUCTION_PER_ORB;
-        reduceSkillCooldown(matchingCharacter.id, cooldownReduction);
+        reduceSkillCooldown(matchingCharacter.id, matches.size * COOLDOWN_REDUCTION_PER_ORB);
       }
 
       // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
@@ -335,25 +343,32 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
         addGuard(matches.size * GUARD_CHARGE_PER_ORB * calculateGuardChargeRate(party));
       }
 
-      // Show highlight for a moment, then apply effect
-      setTimeout(() => {
-        // Healer's default action heals the most damaged ally instead of dealing damage
-        if (matchingCharacter?.class === 'healer') {
-          healParty({ amount: totalDamage, source: 'match' });
-        } else {
-          damageEnemy(totalDamage);
-          // Freeze-frame on the moment damage lands (skip on heals — nothing was struck).
-          triggerHitstop();
-        }
-        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
-      }, 200);
-    } else {
-      // Character is dead - still play a muted/different sound to indicate "empty" match
-      // Lower volume (0.4x) and higher pitch variance (0.15 instead of 0.03)
-      setTimeout(() => {
-        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size) * 0.4, 0.1, 0.15);
-      }, 200);
+      // Healer's default action heals the most damaged ally instead of dealing damage.
+      pendingEffects.push({ amount: totalDamage, isHeal: matchingCharacter?.class === 'healer' });
     }
+
+    // Show highlight for a moment, then resolve every matched color's effect together.
+    setTimeout(() => {
+      let didDamage = false;
+      for (const effect of pendingEffects) {
+        if (effect.isHeal) {
+          healParty({ amount: effect.amount, source: 'match' });
+        } else {
+          damageEnemy(effect.amount);
+          didDamage = true;
+        }
+      }
+
+      if (pendingEffects.length > 0) {
+        // Freeze-frame once on the moment damage lands (skip on heal-only moves).
+        if (didDamage) triggerHitstop();
+        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size), 0.1, 0.03);
+      } else {
+        // No living character acted - play a muted/different sound to indicate "empty" match.
+        // Lower volume (0.4x) and higher pitch variance (0.15 instead of 0.03).
+        soundService.playSound(SoundNames.match, getMatchSoundVolume(matches.size) * 0.4, 0.1, 0.15);
+      }
+    }, 200);
 
     // Advance the cascade chain so the next refill-driven match scores higher.
     cascadeLevelRef.current = cascadeLevel + 1;

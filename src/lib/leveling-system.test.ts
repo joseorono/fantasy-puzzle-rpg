@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import * as levelingSystem from './leveling-system';
 import { calculateMaxHp } from './rpg-calculations';
+import { calculateLevelUpsForParty } from './battle-rewards';
+import { MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
 import type { CharacterData, CoreRPGStats } from '~/types';
 
 // Helper function to create a test character
@@ -278,5 +280,89 @@ describe('levelUp', () => {
     const result = levelingSystem.levelUp(character, chosenStats, null, 1);
 
     expect(result).toBe(character);
+  });
+});
+
+describe('getExpThresholdForLevel', () => {
+  it('matches Math.floor(Math.exp(level))', () => {
+    for (const level of [1, 2, 3, 4, 5]) {
+      expect(levelingSystem.getExpThresholdForLevel(level)).toBe(Math.floor(Math.exp(level)));
+    }
+  });
+});
+
+describe('buildExpGainTimeline', () => {
+  it('produces a single partial segment when no level-up occurs', () => {
+    // threshold(1) = floor(e) = 2; gaining 1 fills to 50%.
+    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const timeline = levelingSystem.buildExpGainTimeline(character, 1);
+
+    expect(timeline.startLevel).toBe(1);
+    expect(timeline.totalLevelUps).toBe(0);
+    expect(timeline.segments).toHaveLength(1);
+    expect(timeline.segments[0]).toMatchObject({ level: 1, fromPercent: 0, toPercent: 50, levelsUp: false });
+  });
+
+  it('emits a static segment when no exp is gained', () => {
+    const character = createTestCharacter({ level: 1, expToNextLevel: 1 });
+    const timeline = levelingSystem.buildExpGainTimeline(character, 0);
+
+    expect(timeline.totalLevelUps).toBe(0);
+    expect(timeline.segments).toHaveLength(1);
+    // threshold(1) = 2; sitting at 1/2 = 50%, no movement.
+    expect(timeline.segments[0]).toMatchObject({ fromPercent: 50, toPercent: 50, levelsUp: false });
+  });
+
+  it('fills to 100% and resets to 0% when exactly hitting a threshold', () => {
+    // threshold(1) = 2; gaining exactly 2 clears level 1.
+    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const timeline = levelingSystem.buildExpGainTimeline(character, 2);
+
+    expect(timeline.totalLevelUps).toBe(1);
+    expect(timeline.segments).toHaveLength(2);
+    expect(timeline.segments[0]).toMatchObject({ level: 1, fromPercent: 0, toPercent: 100, levelsUp: true });
+    // After the level-up the bar starts the next level at 0%.
+    expect(timeline.segments[1]).toMatchObject({ level: 2, fromPercent: 0, toPercent: 0, levelsUp: false });
+  });
+
+  it('emits one levelsUp segment per level on a multi-level gain', () => {
+    // threshold(1) = 2, threshold(2) = 7; gaining 9 clears two levels.
+    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const timeline = levelingSystem.buildExpGainTimeline(character, 9);
+
+    expect(timeline.totalLevelUps).toBe(2);
+    const levelUpSegments = timeline.segments.filter((s) => s.levelsUp);
+    expect(levelUpSegments).toHaveLength(2);
+    expect(levelUpSegments.map((s) => s.level)).toEqual([1, 2]);
+  });
+
+  it('agrees with calculateLevelUpsForParty on the total level-up count', () => {
+    for (const { level, progress, gained } of [
+      { level: 1, progress: 0, gained: 1 },
+      { level: 1, progress: 0, gained: 2 },
+      { level: 1, progress: 0, gained: 9 },
+      { level: 2, progress: 3, gained: 25 },
+      { level: 3, progress: 10, gained: 100 },
+    ]) {
+      const preBattle = createTestCharacter({ level, expToNextLevel: progress });
+      const timeline = levelingSystem.buildExpGainTimeline(preBattle, gained);
+
+      // calculateLevelUpsForParty expects members whose expToNextLevel already includes the reward.
+      const postBattle = createTestCharacter({ level, expToNextLevel: progress + gained });
+      const [pending] = calculateLevelUpsForParty([postBattle], gained);
+
+      expect(timeline.totalLevelUps).toBe(pending.pendingLevelUps);
+    }
+  });
+
+  it('caps the final level at MAX_LEVEL for runaway EXP (no infinite loop)', () => {
+    // Infinity EXP keeps expProgress >= threshold forever; the level ceiling must halt
+    // the loop so the character lands exactly on MAX_LEVEL.
+    const startLevel = 1;
+    const character = createTestCharacter({ level: startLevel, expToNextLevel: 1 });
+    const [pending] = calculateLevelUpsForParty([character], Infinity);
+
+    expect(startLevel + pending.pendingLevelUps).toBe(MAX_LEVEL);
+    expect(pending.pendingLevelUps).toBeLessThanOrEqual(MAX_LEVEL_UPS_PER_BATTLE);
   });
 });

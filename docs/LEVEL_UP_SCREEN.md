@@ -21,6 +21,8 @@ Displays calculated stats that are derived from base stats:
 - Max HP (from VIT)
 - Skill Cooldown Fill Rate (from SPD)
 - Skill Cooldown Fill Time (from SPD)
+- Item Cooldown (from the party's collective SPD)
+- Guard Charge Rate (from the party's collective SPD)
 - Attack Power / Healing Power (from POW)
 
 Shows real-time preview with delta indicators when stats are pending allocation.

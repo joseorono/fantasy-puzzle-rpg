@@ -28,7 +28,7 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
-const MENU_ITEM_COUNT = 3;
+const MENU_ITEM_COUNT = 4;
 
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
@@ -83,6 +83,46 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     setActiveTab('settings');
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Fantasy Puzzle RPG', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to share:', error);
+      }
+    }
+  };
+
+  const handleBookmark = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    const url = window.location.href;
+    const title = document.title || 'Fantasy Puzzle RPG';
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const shortcut = isMac ? 'Cmd+D' : 'Ctrl+D';
+
+    const ext = window.external as unknown as { AddFavorite?: (url: string, title: string) => void };
+    if (ext?.AddFavorite) {
+      // Legacy IE
+      ext.AddFavorite(url, title);
+      return;
+    }
+
+    const sidebar = (window as unknown as { sidebar?: { addPanel?: (title: string, url: string, param: string) => void } }).sidebar;
+    if (sidebar?.addPanel) {
+      // Legacy Firefox
+      sidebar.addPanel(title, url, '');
+      return;
+    }
+
+    window.alert(`Press ${shortcut} to bookmark this page.`);
+  };
+
   // Arrow keys / WASD move the selection, Enter/Space activates it. The hook
   // always invokes the latest closure, so this reads current state directly.
   useWindowKeyDown((event) => {
@@ -100,7 +140,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       // nothing is selected yet.
       event.preventDefault();
       if (selectedIndex === null) return;
-      [handleStartGame, handleOpenLoad, handleOpenSettings][selectedIndex]?.();
+      [handleStartGame, handleOpenLoad, handleShare, handleOpenSettings][selectedIndex]?.();
     }
   });
 
@@ -131,9 +171,17 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
           </ToffecBeigeCornersWrapper>
         </div>
       </div>
-      <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2} className="main-menu__settings-corners">
-        <button className="main-menu__settings-icon" onClick={handleOpenSettings} aria-label="Settings" />
+      <ToffecBeigeCornersWrapper className="main-menu__bookmark-corners">
+        <button className="main-menu__bookmark-button" onClick={handleBookmark} aria-label="Bookmark" />
       </ToffecBeigeCornersWrapper>
+      <div className="main-menu__actions">
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2} className="main-menu__action-corners">
+          <button className="main-menu__share-icon" onClick={handleShare} aria-label="Share" />
+        </ToffecBeigeCornersWrapper>
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 3} className="main-menu__action-corners">
+          <button className="main-menu__settings-icon" onClick={handleOpenSettings} aria-label="Settings" />
+        </ToffecBeigeCornersWrapper>
+      </div>
 
       {isModalOpen && (
         <div className="start-menu-modal-backdrop" onClick={handleBackToMain}>

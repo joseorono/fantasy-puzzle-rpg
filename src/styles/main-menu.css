@@ -220,36 +220,62 @@
 }
 
 /* ==========================================
-   SETTINGS ICON
+   TITLE SCREEN ACTIONS (share + settings)
    ========================================== */
 
-/* Wrapper carries the positioning so the toffec corners anchor to the icon.
-   It also carries the hover/press scale so the corners grow together with the
-   icon (the icon scales too, as a child of the scaled wrapper). */
-.main-menu .main-menu__settings-corners {
+/* Container anchors the bottom-right icon actions to the title screen. */
+.main-menu__actions {
   position: absolute;
   bottom: 20px;
   right: 20px;
   z-index: 10;
-  transition: transform 0.2s ease;
-  transform-origin: bottom right;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.main-menu .main-menu__settings-corners:hover {
+/* Bookmark sits in the top-right corner, aligned vertically with the settings
+   icon so both share the same right edge offset. */
+.main-menu__bookmark-corners {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  z-index: 10;
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.main-menu__bookmark-corners:hover {
   transform: scale(1.1);
 }
 
-.main-menu .main-menu__settings-corners:active {
+.main-menu__bookmark-corners:active {
   transform: scale(0.95);
 }
 
-.main-menu__settings-icon {
+/* Each wrapper carries the hover/press scale so the toffec corners grow with the
+   icon (the icon scales too, as a child of the scaled wrapper). */
+.main-menu .main-menu__action-corners {
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.main-menu .main-menu__action-corners:hover {
+  transform: scale(1.1);
+}
+
+.main-menu .main-menu__action-corners:active {
+  transform: scale(0.95);
+}
+
+.main-menu__settings-icon,
+.main-menu__share-icon,
+.main-menu__bookmark-button {
   display: block;
   position: relative;
   width: 64px;
   height: 64px;
   background-color: transparent;
-  background-image: url('/assets/menu/start/settings-icon.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -258,8 +284,26 @@
   padding: 0;
 }
 
-.main-menu__settings-icon:hover {
-  background-image: url('/assets/menu/start/settings-icon-hover.png');
+/* Tone down the global white-glow hover effect on these icon buttons while
+   keeping a subtle highlight and a faint glow. */
+.main-menu__actions button:hover,
+.main-menu__bookmark-button:hover {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4)) brightness(1.1);
+}
+
+.main-menu__settings-icon {
+  background-image: url('/assets/icons/indigolay/Icon_setting.png');
+}
+
+.main-menu__share-icon {
+  background-image: url('/assets/icons/indigolay/Icon_share_.png');
+}
+
+.main-menu__bookmark-button {
+  background-image: url('/assets/icons/indigolay/Icon_bookmark-fill.png');
+  padding: 5px;
+  box-sizing: border-box;
+  background-origin: content-box;
 }
 
 @media (max-width: 480px) {
@@ -278,12 +322,19 @@
     border: 3px solid #d4a574;
   }
 
-  .main-menu .main-menu__settings-corners {
+  .main-menu__actions {
     bottom: 15px;
     right: 15px;
   }
 
-  .main-menu__settings-icon {
+  .main-menu__bookmark-corners {
+    top: 15px;
+    right: 15px;
+  }
+
+  .main-menu__settings-icon,
+  .main-menu__share-icon,
+  .main-menu__bookmark-button {
     width: 48px;
     height: 48px;
   }

@@ -11,6 +11,7 @@ import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { LevelTag } from '~/components/ui-custom/level-tag';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -127,7 +128,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   alt={character.name}
                   className="character-portrait-small pixel-art"
                 />
-                <div className="level-ribbon pixel-font">Lv {character.level}</div>
+                <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>
@@ -412,7 +413,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
               </div>
               <p className="stat-hint pixel-font text-xs">
-                Reduces skill cooldowns.{' '}
+                Reduces skill &amp; item cooldowns and charges Guard faster.{' '}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="info-icon cursor-help">ⓘ</span>
@@ -421,6 +422,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     -Reduces ultimate skill cooldown
                     <br />
                     -Reduces item cooldowns in battle
+                    <br />
+                    -Charges the party Guard meter faster
                   </TooltipContent>
                 </Tooltip>
               </p>

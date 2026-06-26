@@ -49,3 +49,35 @@ describe('randomBool', () => {
     expect(typeof result).toBe('boolean');
   });
 });
+
+// formatLevel
+describe('formatLevel', () => {
+  test('zero-pads single-digit levels to two digits', () => {
+    expect(utils.formatLevel(1)).toBe('01');
+    expect(utils.formatLevel(5)).toBe('05');
+    expect(utils.formatLevel(9)).toBe('09');
+  });
+
+  test('leaves two-digit levels unchanged', () => {
+    expect(utils.formatLevel(10)).toBe('10');
+    expect(utils.formatLevel(42)).toBe('42');
+    expect(utils.formatLevel(99)).toBe('99');
+  });
+
+  test('returns levels longer than the width unpadded', () => {
+    expect(utils.formatLevel(100)).toBe('100');
+  });
+
+  test('handles zero', () => {
+    expect(utils.formatLevel(0)).toBe('00');
+  });
+
+  test('truncates non-integer levels before padding', () => {
+    expect(utils.formatLevel(4.9)).toBe('04');
+  });
+
+  test('respects a custom width', () => {
+    expect(utils.formatLevel(7, 3)).toBe('007');
+    expect(utils.formatLevel(42, 4)).toBe('0042');
+  });
+});

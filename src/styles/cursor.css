@@ -60,6 +60,7 @@ a[href]:hover,
   --cursor-corner-inset: -2px;
   --cursor-corner-nudge: 2px;
   position: relative;
+  display: inline-flex;
   width: fit-content;
 }
 
@@ -218,4 +219,31 @@ a[href]:hover,
 
 .cursor-corners--toffeec-beige .cursor-corner--br {
   background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png');
+}
+
+/*
+=========================================================
+    Cursor Corners — Indigolay
+=========================================================
+*/
+
+/* Sit the brackets a touch further out so there's a small gap between
+   them and the golden border (matching indigolay's slot reference). */
+.cursor-corners--indigolay {
+  --cursor-corner-inset: -3px;
+}
+.cursor-corners--indigolay .cursor-corner--tl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--tr {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topright.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--bl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--br {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png');
 }
