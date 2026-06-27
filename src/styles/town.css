@@ -596,7 +596,7 @@
 }
 
 .craft-detail--modify .craft-detail-header {
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
 }
 
