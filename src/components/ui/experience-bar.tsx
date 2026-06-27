@@ -24,7 +24,10 @@ interface ExperienceBarProps extends VariantProps<typeof experienceBarVariants> 
 export function ExperienceBar({ percentage, label, variant, className }: ExperienceBarProps) {
   return (
     <div className={cn(experienceBarVariants({ variant, className }))}>
-      <div className="exp-bar__fill" style={{ width: `${percentage}%` }} />
+      <div
+        className={cn('exp-bar__fill', percentage >= 100 && 'exp-bar__fill--full')}
+        style={{ width: `${percentage}%` }}
+      />
       {label && <div className="exp-bar__label pixel-font text-xs">{label}</div>}
     </div>
   );
