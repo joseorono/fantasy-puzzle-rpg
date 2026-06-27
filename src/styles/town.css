@@ -404,7 +404,7 @@
 .craft-detail-name {
   font-weight: bold;
   color: #e3bb92;
-  font-size: 1.05rem;
+  font-size: 1rem;
   text-align: left;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
@@ -521,7 +521,7 @@
 
 .craft-detail-next-rank-label,
 .craft-detail-salvage-label {
-  font-size: 0.65rem;
+  font-size: 0.5rem;
   font-weight: bold;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -589,6 +589,49 @@
   align-items: center;
 }
 
+/* Modify tab detail panel: keep content top-aligned so switching gear doesn't
+   shift the layout. The next-rank banner is also compacted to fit the narrow panel. */
+.craft-detail--modify {
+  align-items: flex-start;
+}
+
+.craft-detail--modify .craft-detail-header {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.craft-detail--modify .craft-detail-name {
+  text-align: left;
+}
+
+.craft-detail--modify .craft-detail-stats {
+  margin-top: 0.5rem;
+}
+
+.craft-detail--modify .craft-detail-actions {
+  margin-top: 0.5rem;
+}
+
+.craft-detail--modify .craft-detail-next-rank {
+  width: 100%;
+  min-width: unset;
+  max-width: none;
+  gap: 0.25rem;
+  padding: 4px 6px;
+  flex-wrap: wrap;
+}
+
+.craft-detail--modify .craft-detail-next-rank-label {
+  font-size: 0.58rem;
+}
+
+.craft-detail--modify .craft-detail-next-rank-value {
+  font-size: 0.5rem;
+}
+
+.craft-detail--modify .craft-detail-next-rank .resource-chip__amount {
+  font-size: 0.65rem;
+}
 .equipment-list {
   display: flex;
   flex-direction: column;
