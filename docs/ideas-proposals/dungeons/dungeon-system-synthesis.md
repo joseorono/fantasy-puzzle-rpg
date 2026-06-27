@@ -13,8 +13,9 @@ events** — `dialogue`, `combat`, `chest`, in any combination. A floor may be a
 battle, a single conversation, or `dialogue → combat → chest`; all events are optional.
 
 There is **no traversable tilemap**. The run is driven through one dedicated PC screen (a vertical
-floor track over an atmospheric background). The first clear plays story dialogue; replays skip it
-for farming (`skipStory`). Dungeons are repeatable infinitely.
+floor track over an atmospheric background). The first clear plays story dialogue and chests;
+replays (`isReplay`) skip **both dialogue and chests** and chain combats only, for farming.
+Dungeons are repeatable infinitely.
 
 The system is **self-contained — it does not use the map system** (no `mapProgress`, no map node,
 no changes to `tile-map.tsx`). It is a thin **controller + dispatcher + one new view** that wires
@@ -36,9 +37,11 @@ together the existing combat, dialogue, loot, rewards, and pause-menu systems.
 | Event payload | inline objects | string IDs + registries | **Inline, as named `const`s referenced by variable** — typed objects, no registry/lookup boilerplate, shared by JS reference |
 | Combat reference | encounter (multi-enemy) | single `enemyId` | **Encounter (multi-enemy)** — real fights have several enemies |
 | Party HP | unspecified | persistent + wipe resets run | **Persistent attrition; no auto-heal; player manages between floors** |
-| Between-floor recovery | — | — | **Reuse existing global `<PauseMenu />`** (Items + Equip tabs) via a "Manage Party" button |
+| Between-floor recovery | — | — | **Manage Party** (existing global `<PauseMenu />`, Items + Equip) **+ free Rest** (once/floor) |
+| Run-state storage | Zustand slice | Zustand slice | **Jotai atoms** (transient) — the store is written **only once, on completion** |
+| Replay skip flag | derived in slice | derived in dispatcher | **Passed via router** (`DungeonViewData.isReplay`), computed at entry |
 | Resume on reload | in-memory (v1) | persist run | **In-memory v1** — reload restarts at Floor 1 |
-| Completion tracking | own slice | own slice (`completedDungeons`) | **Own `dungeon-run` slice** — not `mapProgress` |
+| Completion tracking | own slice | own slice (`completedDungeons`) | **Minimal `dungeon-progress` Zustand slice** (`completedDungeons` only) — not `mapProgress` |
 | Per-floor background | yes | yes | **Yes** — floor override → dungeon default |
 | Combat background sync | — | pass `bgImage` into battle | **Adopt** — combat panels match the dungeon/floor art |
 | Dialogue trigger | inline `<DialogueScene>` overlay | `goToDialogue` route | **Inline overlay** — `goToDialogue` doesn't exist; the inline overlay is the real mechanism |
@@ -49,23 +52,28 @@ together the existing combat, dialogue, loot, rewards, and pause-menu systems.
 
 | Role | Implementation |
 | --- | --- |
-| Dungeon Manager | `DungeonView` (`src/views/dungeon-view.tsx`) + `dungeon-run` Zustand slice |
-| Completion / farming flag | `completedDungeons` in the `dungeon-run` slice (self-contained) |
+| Dungeon Manager | `DungeonView` (`src/views/dungeon-view.tsx`) + Jotai run atoms (`src/stores/dungeon-atoms.ts`) |
+| Transient run state | **Jotai atoms** (floor/event index, phase, replay, rest) — ephemeral, never persisted |
+| Completion tracking | minimal Zustand `dungeon-progress` slice (`completedDungeons`); the **only** store write |
+| Replay flag | `DungeonViewData.isReplay`, computed at entry from `isDungeonCompleted` |
 | Event Dispatcher | per-event state machine in `DungeonView`, backed by pure helpers in `src/lib/dungeon-system.ts` |
 | Navigation UI | split-pane PC screen: floor track + atmospheric background |
 | Combat / Dialogue / Loot / Rewards | existing systems, reused unchanged where possible |
-| Between-floor party management | existing global `<PauseMenu />` (Items/Equip), opened via `usePauseMenu()` |
+| Between-floor party management | existing global `<PauseMenu />` (Items/Equip) + free **Rest** (once/floor) |
 
 ### High-level flow
 
 ```
 Entry surface (town / quest board / debug)
-  -> goToDungeon({ dungeonId })
-  -> DungeonView: step through floors[].events[] in order
-       dialogue -> inline <DialogueScene> overlay (skipped when skipStory)
+  -> isReplay = isDungeonCompleted(dungeonId)        // Zustand READ
+  -> goToDungeon({ dungeonId, isReplay })
+  -> DungeonView: step through floors[].events[] in order (run state in Jotai)
+       dialogue -> inline <DialogueScene> overlay      (skipped when isReplay)
        combat   -> setupBattle + goToBattleDemo -> battle -> battle-rewards -> goBack() -> resume
-       chest    -> grantLootTable + loot popup
-  -> last floor cleared -> markDungeonCompleted -> "Leave" -> goBack()
+       chest    -> grantLootTable + loot popup          (skipped when isReplay)
+       (between floors: optional free Rest once per floor; or Leave Dungeon -> confirm
+        -> resetDungeonRunAtom + goBack, run progress lost)
+  -> last floor cleared -> markDungeonCompleted   // the ONE Zustand write -> "Leave" -> goBack()
 ```
 
 ## 2. Types — `src/types/dungeon.ts` (new)
@@ -82,7 +90,7 @@ import type { LootTable } from '~/types/loot';
 
 /** One event in a floor's ordered sequence. Discriminated union on `type` (no enums). */
 export type DungeonEvent =
-  | { type: 'dialogue'; scene: DialogueScene }            // inline overlay; skipped when skipStory
+  | { type: 'dialogue'; scene: DialogueScene }            // inline overlay; skipped on replays
   | { type: 'combat';   encounter: EncounterDefinition }  // multi-enemy fight
   | { type: 'chest';    loot: LootTable };                // granted directly + popup
 
@@ -104,38 +112,47 @@ export interface DungeonDefinition {
 }
 ```
 
-## 3. Run-state slice — `src/stores/slices/dungeon-run.ts` (+ `.types.ts`) (new)
+## 3. Run state (Jotai) + completion (minimal Zustand)
 
-Required because `DungeonView` unmounts during the separate `battle`/`battle-rewards` views.
-Tracks **both** floor and event index (events resume mid-floor after a combat round-trip).
-Follows the existing slice pattern (immer `set`, `actions.<sliceName>`, registered in
-`game-store.ts`).
+The store is written **only once per run — on completion**. Everything else is transient.
+
+### 3a. Transient run state — `src/stores/dungeon-atoms.ts` (new, Jotai)
+
+Module-level Jotai atoms (mirrors `src/stores/battle-atoms.ts`): they survive `DungeonView`
+unmounting during the `battle`/`battle-rewards` views and are **never persisted**, so reloading
+restarts the run (in-memory v1). Tracks **both** floor and event index (events resume mid-floor
+after a combat round-trip).
 
 ```ts
 export type DungeonPhase =
   | 'browsing' | 'pre-dialogue' | 'awaiting-battle' | 'post-dialogue' | 'complete';
 
-export interface DungeonRunState {
-  activeDungeonId: string | null;
-  currentFloorIndex: number;
-  currentEventIndex: number;                  // resume point within the floor's events[]
-  phase: DungeonPhase;
-  skipStory: boolean;                         // set from completedDungeons at run start
-  completedDungeons: Record<string, boolean>; // self-contained, NOT mapProgress
-}
+export const activeDungeonIdAtom  = atom<string | null>(null);
+export const currentFloorIndexAtom = atom(0);
+export const currentEventIndexAtom = atom(0);   // resume point within the floor's events[]
+export const dungeonPhaseAtom      = atom<DungeonPhase>('browsing');
+export const isReplayAtom          = atom(false); // seeded from DungeonViewData.isReplay on mount
+export const hasRestedOnFloorAtom  = atom(false); // one free Rest per floor
 
-export interface DungeonRunActions {
-  startDungeon: (dungeonId: string, skipStory: boolean) => void;
-  setDungeonPhase: (phase: DungeonPhase) => void;
-  advanceEvent: () => void;                   // event index++ (or roll to next floor)
-  advanceFloor: () => void;                   // floor index++, event index → 0
+// write-atoms: startDungeonRunAtom(dungeonId, isReplay), advanceEventAtom,
+// advanceFloorAtom (resets event index + hasRestedOnFloor), resetDungeonRunAtom
+```
+
+### 3b. Completion — `src/stores/slices/dungeon-progress.ts` (+ `.types.ts`) (new, Zustand)
+
+A tiny slice holding only the persisted completion flags. `markDungeonCompleted` is the **single
+store write** of a run, fired once when the last floor's last event resolves.
+
+```ts
+export interface DungeonProgressState { completedDungeons: Record<string, boolean>; }
+export interface DungeonProgressActions {
   markDungeonCompleted: (dungeonId: string) => void;
-  exitDungeon: () => void;                    // clear active run; keep completedDungeons
+  isDungeonCompleted: (dungeonId: string) => boolean;
 }
 ```
 
-Register in `game-store.ts`; export `useDungeonRunState` / `useDungeonRunActions`.
-`isDungeonCompleted(id)` reads `completedDungeons` for the `skipStory` decision at entry.
+Register in `game-store.ts`; export `useDungeonProgressState` / `useDungeonProgressActions`.
+The entry surface calls `isDungeonCompleted(id)` to compute `isReplay` (see §6).
 
 ## 4. Dispatcher / lifecycle — `src/lib/dungeon-system.ts` (new, JSDoc + `.test.ts`)
 
@@ -144,27 +161,30 @@ Pure, testable helpers:
 - `getDungeonById(id): DungeonDefinition | undefined`
 - `getFloor(dungeon, floorIndex)` / `getEvent(floor, eventIndex)`
 - `isLastEventOfFloor(floor, eventIndex)` / `isLastFloor(dungeon, floorIndex)`
-- `shouldPlayDialogue(skipStory): boolean` → `!skipStory`
+- `shouldRunEvent(event, isReplay): boolean` → on replays, **only `combat` runs** (returns `false`
+  for `dialogue` and `chest`); on a first clear everything runs.
 - `getFloorBackground(dungeon, floor): string` → `floor.backgroundImage ?? dungeon.backgroundImage`
 
 **Per-event loop** (driven in `DungeonView`):
 
-1. Player engages the current floor → process `events[currentEventIndex]`.
-2. `dialogue`: if `!skipStory` → render inline `<DialogueScene scene onComplete>`; on complete →
-   `advanceEvent()`. If `skipStory` → skip immediately.
+1. Player engages the current floor → process `events[currentEventIndex]`. If
+   `!shouldRunEvent(event, isReplay)` → `advanceEvent()` immediately (replay skip).
+2. `dialogue`: render inline `<DialogueScene scene onComplete>`; on complete → `advanceEvent()`.
 3. `combat`: `setupBattle({ enemies: event.encounter.enemies, party })` →
    `goToBattleDemo({ enemyId: floor.id, location: dungeonId, bgImage: resolvedFloorBg })`; set
-   `phase = 'awaiting-battle'`. The existing win flow runs `battle → battle-rewards → goBack()`,
-   which returns to `DungeonView` because `goToBattleRewards` preserves the pre-battle `previousView`
-   (= `dungeon`). On return with `phase === 'awaiting-battle'` → reliably a **win** (defeat resets
-   the router to the start menu) → `advanceEvent()`.
+   `dungeonPhaseAtom = 'awaiting-battle'`. The existing win flow runs
+   `battle → battle-rewards → goBack()`, which returns to `DungeonView` because `goToBattleRewards`
+   preserves the pre-battle `previousView` (= `dungeon`). On return with
+   `dungeonPhaseAtom === 'awaiting-battle'` → reliably a **win** (defeat resets the router to the
+   start menu) → `advanceEvent()`.
 4. `chest`: grant loot directly (§7) + popup → `advanceEvent()`.
-5. When `currentEventIndex` passes the last event of the floor → `advanceFloor()` (unlock the next
-   floor). When the last floor finishes → `markDungeonCompleted(dungeonId)`, `phase = 'complete'`,
+5. When `currentEventIndexAtom` passes the last event of the floor → `advanceFloorAtom` (unlock the
+   next floor, reset `hasRestedOnFloorAtom`). When the last floor finishes →
+   `markDungeonCompleted(dungeonId)` (**the one store write**), `dungeonPhaseAtom = 'complete'`,
    show completion + "Leave" (`goBack()`).
 
-On `DungeonView` mount, read the slice: if `phase === 'awaiting-battle'`, resume at step 3's
-post-combat handling (the victory return path).
+On `DungeonView` mount, read the atoms: if `dungeonPhaseAtom === 'awaiting-battle'`, resume at
+step 3's post-combat handling (the victory return path).
 
 ## 5. Party HP — persistent attrition + player-managed recovery
 
@@ -177,20 +197,34 @@ post-combat handling (the victory return path).
   There the player swaps **equipment** (Equip tab → `equipItem`/`unequipItem`) and uses **items**
   (Items tab → `usableOutOfBattle` consumables via `healPartyMember` in `src/lib/party-system.ts`).
   Both already work out of battle. Gate the button to between-event/floor moments (not mid-combat).
-- **Wipe** = whole-run reset: on defeat, reset the `dungeon-run` slice to Floor 1 and exit the run.
+- **Free Rest — once per floor.** A **"Rest"** button heals each *living* member by
+  `DUNGEON_REST_HEAL_PERCENT` (10%, see §11) of their max HP and **revives** any downed hero with
+  **1 HP**. On click:
+  `partyActions.setParty(healAllByMaxHpPercent(party, DUNGEON_REST_HEAL_PERCENT))`,
+  play `SoundNames.shimmeringSuccessShorter`, set `hasRestedOnFloorAtom = true`. Disabled once used
+  on the current floor (reset on floor advance) or when the whole party is already at full HP.
+  - New pure helper in `src/lib/party-system.ts` (+ `party-system.test.ts`):
+    `healAllByMaxHpPercent(party, healPercent, revivePercent?)` — living members gain
+    `ceil(maxHp * healPercent)`, clamped to `maxHp` via `additionWithMax`; dead members are revived
+    to `ceil(maxHp * revivePercent)` when `revivePercent` is provided, otherwise to **1 HP**.
+    Mirrors the existing `healAndReviveAllPartyMembers`, but percentage-based. Rest calls it with
+    `revivePercent` left undefined (→ 1 HP revives).
+- **Wipe** = whole-run reset: on defeat, `resetDungeonRunAtom` (back to Floor 1) and exit the run.
   The existing defeat path (`battle-over-modal.tsx`) already heals the party and returns to the menu.
 
 ## 6. Routing & entry (no map-system changes)
 
 - `src/types/routing.ts`: add `'dungeon'` to `ViewType`; add
-  `interface DungeonViewData { dungeonId: string }`; add to `ViewDataMap` + the `RouteStatus`
-  intersection. Add optional `bgImage?: string` to `BattleViewData`.
+  `interface DungeonViewData { dungeonId: string; isReplay: boolean }`; add to `ViewDataMap` + the
+  `RouteStatus` intersection. Add optional `bgImage?: string` to `BattleViewData`.
 - `src/lib/routing.ts`: add `goToDungeon(state, data)` wrapping `prepareNavigation(..., 'dungeon', data)`,
   mirroring `goToBattleDemo`.
 - `src/stores/slices/router.ts` (+ `router.types.ts`): expose the `goToDungeon` action.
 - `src/game-screen.tsx`: add `case 'dungeon'` → `<DungeonView />`.
-- **Entry:** call `goToDungeon({ dungeonId })` from a non-map surface (town hub / quest board /
-  debug button). **`tile-map.tsx` and the map node system are untouched.**
+- **Entry:** compute `isReplay = isDungeonCompleted(dungeonId)` (Zustand read), then call
+  `goToDungeon({ dungeonId, isReplay })` from a non-map surface (town hub / quest board / debug
+  button). `DungeonView` seeds `isReplayAtom` from `isReplay` on mount. **`tile-map.tsx` and the map
+  node system are untouched.**
 
 ## 7. Backgrounds & loot reuse
 
@@ -218,7 +252,7 @@ post-combat handling (the victory return path).
 | [F1] Vanguard Gate     (x) | Floor 4 — <description>                  |
 |                            | [ Enter Battle / Open Chest / Continue ] |
 +----------------------------+------------------------------------------+
-| [ Manage Party ]                              [ Retreat to Town ]      |
+| [ Manage Party ]   [ Rest (once/floor) ]      [ Leave Dungeon ]       |
 +-----------------------------------------------------------------------+
 ```
 
@@ -226,35 +260,67 @@ post-combat handling (the victory return path).
   (`=== currentFloorIndex`, pulse/highlight), locked (`>`).
 - **Right:** atmospheric background + current-floor name/description + the contextual action button.
 - **Header:** party HP (reuse `PauseMenuPartyBar` or a compact HP read from `useParty`).
-- **Footer:** **Manage Party** (`usePauseMenu().open()`) and **Retreat to Town** (`goBack()`).
+- **Footer:** **Manage Party** (`usePauseMenu().open()`), **Rest** (free, once per floor — disabled
+  after use / when party is full), and **Leave Dungeon** (see below). These are available in the
+  between-floor "browsing" phase (including when you return to the floor menu after a battle), not
+  mid-combat or mid-dialogue.
+- **Leave Dungeon — confirmation required.** Leaving mid-run **discards all run progress** (the run
+  lives only in the Jotai atoms — nothing is persisted until completion). So the button opens a
+  **confirmation modal**; on **confirm** → `resetDungeonRunAtom` + `goBack()` to the entry surface;
+  on **cancel** → stay. Modal open/closed is local `useState` in `DungeonView`.
+  - **Out of scope:** the confirmation dialog **component** is the user's to implement. The plan only
+    wires the trigger + the confirm/cancel handlers against an assumed contract
+    (`isOpen`, `onConfirm`, `onCancel`); until it exists, this can fall back to a placeholder.
 - Inline overlays like the map: `<DialogueScene>` for dialogue events, loot popup for chests.
 - Reuse `ToffecButton`, `FrostyRpgIcon`, `NarikWoodBitFont`; styles in `src/styles/dungeon.css`
   imported via `index.css`. Warm parchment palette, compact. No memoization.
 
 ## 9. Files
 
-**New:** `src/types/dungeon.ts`, `src/stores/slices/dungeon-run.ts` (+ `.types.ts`),
-`src/lib/dungeon-system.ts` (+ `.test.ts`), `src/views/dungeon-view.tsx`, `src/styles/dungeon.css`.
+**New:** `src/types/dungeon.ts`, `src/stores/dungeon-atoms.ts` (Jotai run state),
+`src/stores/slices/dungeon-progress.ts` (+ `.types.ts`), `src/lib/dungeon-system.ts` (+ `.test.ts`),
+`src/views/dungeon-view.tsx`, `src/styles/dungeon.css`, `src/constants/dungeon.ts`.
 
 **Modified:** `src/types/routing.ts`, `src/lib/routing.ts`, `src/stores/slices/router.ts`
 (+ `router.types.ts`), `src/stores/game-store.ts`, `src/game-screen.tsx`,
 `src/views/battle-screen.tsx` (bg override), `src/lib/loot.ts` (extract `grantLootTable`),
-`src/index.css`. **`tile-map.tsx` and the map system are untouched.**
+`src/lib/party-system.ts` (+ `.test.ts`: `healAllByMaxHpPercent`), `src/index.css`.
+**`tile-map.tsx` and the map system are untouched.**
 
 **User-authored (out of scope):** concrete `DungeonDefinition` constants under
-`src/constants/dungeons/`, composed from named encounter/scene/loot `const`s.
+`src/constants/dungeons/`, composed from named encounter/scene/loot `const`s; and the **Leave
+Dungeon confirmation dialog component** (the plan wires its trigger + confirm/cancel handlers only).
 
 ## 10. Verification
 
 1. `npm run test-cli` — unit tests for `src/lib/dungeon-system.ts` (`getEvent`,
-   `isLastEventOfFloor`, `isLastFloor`, `getFloorBackground`, dispatcher branching).
+   `isLastEventOfFloor`, `isLastFloor`, `getFloorBackground`, `shouldRunEvent` — combat-only on
+   replay) and `src/lib/party-system.ts` (`healAllByMaxHpPercent` — heals living by `healPercent`
+   clamped to `maxHp`; revives dead to **1 HP** by default, or to `revivePercent` when provided).
 2. Manual (`npm run dev`): author a throwaway dungeon — Floor 1 `[dialogue, combat]`, Floor 2
    `[chest]` (no battle), Floor 3 boss `[dialogue, combat, chest]` — reusing `SWAMP_FROG`/
    `MOSS_GOLEM` + an existing chest `LootTable`; enter via a debug button:
    - **First clear:** events play in order across floors; the chest-only floor works without a
      battle; combat uses the dungeon background; HP carries between fights; **Manage Party**
-     heals/re-equips between floors; the boss floor marks the dungeon complete.
-   - **Replay (skipStory):** dialogue events are skipped; combat/chest chain straight through.
-   - **Wipe:** lose a fight → the run resets to Floor 1, the party is healed, and the player returns
-     to the entry surface.
+     heals/re-equips between floors; **Rest** heals living heroes ~10% of max HP and revives downed
+     heroes with 1 HP, once per floor, with the `shimmeringSuccessShorter` SFX, then disables until
+     the next floor; the boss floor marks the dungeon complete.
+   - **Replay (`isReplay=true`):** dialogue **and** chest events are skipped; combats chain straight
+     through for farming.
+   - **Wipe:** lose a fight → `resetDungeonRunAtom` (back to Floor 1), the party is healed, and the
+     player returns to the entry surface.
+   - **Leave Dungeon:** from the between-floor menu, clicking Leave opens the confirmation modal;
+     confirming discards run progress (`resetDungeonRunAtom`) and returns to the entry surface;
+     cancelling stays on the current floor with progress intact.
    - Per-floor `backgroundImage` overrides render; `goBack()` returns to the entry surface.
+   - **Store discipline:** via Zustand devtools, confirm the only dungeon write during a run is
+     `markDungeonCompleted` on the final floor — no per-floor/per-event store writes.
+
+## 11. Tunable constants — `src/constants/dungeon.ts` (new)
+
+```ts
+/** Fraction of each living hero's max HP restored by a free between-floor Rest (dead revive with 1 HP; once per floor). */
+export const DUNGEON_REST_HEAL_PERCENT = 0.1;
+```
+
+Future dungeon-wide tunables live here too.
