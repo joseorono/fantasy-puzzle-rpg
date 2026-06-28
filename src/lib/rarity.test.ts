@@ -27,7 +27,8 @@ describe('rollRarity', () => {
       const tier = rollRarity(0);
       counts[tier] = (counts[tier] ?? 0) + 1;
     }
-    // Base weights are 60/25/10/4/1, so the ordering should hold comfortably over 20k samples.
+    // Base weights are 55/22/10/9/4 (sum 100), so the ordering should hold comfortably
+    // over 20k samples (rare 10 and epic 9 sit too close to compare reliably by sampling).
     expect(counts.common).toBeGreaterThan(counts.uncommon);
     expect(counts.uncommon).toBeGreaterThan(counts.rare);
     expect(counts.rare ?? 0).toBeGreaterThan(counts.legendary ?? 0);
@@ -49,6 +50,7 @@ describe('getRarityOdds', () => {
     const odds = getRarityOdds(0);
     const total = Object.values(odds).reduce((sum, pct) => sum + pct, 0);
     expect(total).toBeCloseTo(100, 5);
+    // Base weights 55/22/10/9/4 → ordering common > uncommon > rare > epic > legendary.
     expect(odds.common).toBeGreaterThan(odds.uncommon);
     expect(odds.uncommon).toBeGreaterThan(odds.rare);
     expect(odds.rare).toBeGreaterThan(odds.epic);
