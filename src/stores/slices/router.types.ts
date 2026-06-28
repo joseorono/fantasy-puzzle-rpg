@@ -18,6 +18,11 @@ export interface RouterSlice {
       goToBattleDemo: (data: ViewDataMap['battle-demo']) => void;
 
       /**
+       * Navigate to a dungeon run with required data
+       */
+      goToDungeon: (data: ViewDataMap['dungeon']) => void;
+
+      /**
        * Navigate to map demo
        */
       goToMapDemo: (data?: ViewDataMap['map-demo']) => void;

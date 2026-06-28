@@ -6,6 +6,10 @@ import type { Resources } from '~/types/resources';
 import { createEmptyLootTable } from '~/types/loot';
 import { randIntInRange } from './math';
 import { rollRarity } from './rarity';
+import { addItemToInventory, type InventoryItem } from './inventory';
+import { addResources } from './resources';
+import { randomBool } from './utils';
+import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 
 // ─── Enemy Loot ───────────────────────────────────────────────────────
 
@@ -79,6 +83,58 @@ export function rollLootTableRarities(lootTable: LootTable, bias: number = 0): L
     ...lootTable,
     equipableItems: lootTable.equipableItems.map((entry) => ({ ...entry, rarity: rollRarity(bias) })),
   };
+}
+
+/**
+ * Result of granting a loot table: the new inventory/resources to commit to the
+ * store, plus the rolled loot table to display in a notification.
+ */
+export interface ApplyLootResult {
+  inventory: InventoryItem[];
+  resources: Resources;
+  /** The loot with equipment rarities rolled once — show this to the player. */
+  rolledLoot: LootTable;
+}
+
+/**
+ * Grant a static loot table against a snapshot of the player's inventory and
+ * resources, returning the new values (a pure delta — no store mutation). Equipment
+ * rarities are rolled once (so the granted tiers match what is shown), each entry is
+ * probability-gated via `randomBool`, and stacks are capped at `MAX_AMOUNT_PER_ITEM`
+ * by {@link addItemToInventory}. The caller commits the result with store actions
+ * and shows `rolledLoot` in a popup.
+ *
+ * Mirrors the chest-granting flow inlined in the map's `tile-map.tsx`, extracted so
+ * the dungeon can reuse it without passing store actions into lib code.
+ * @param loot - The static loot table to grant
+ * @param inventory - Current inventory snapshot
+ * @param resources - Current resources snapshot
+ * @param rarityBias - Rarity bias for equipment rolls (defaults to the chest bias)
+ * @returns The updated inventory/resources and the rolled loot table
+ */
+export function applyLootTable(
+  loot: LootTable,
+  inventory: InventoryItem[],
+  resources: Resources,
+  rarityBias: number = CHEST_RARITY_BIAS,
+): ApplyLootResult {
+  const rolledLoot = rollLootTableRarities(loot, rarityBias);
+
+  let nextInventory = inventory;
+  for (const lootItem of rolledLoot.equipableItems) {
+    if (!randomBool(lootItem.probability)) continue;
+    nextInventory = addItemToInventory(nextInventory, lootItem.item.id, 1, lootItem.rarity);
+  }
+  for (const lootItem of rolledLoot.consumableItems) {
+    if (!randomBool(lootItem.probability)) continue;
+    nextInventory = addItemToInventory(nextInventory, lootItem.item.id, 1);
+  }
+
+  const nextResources = randomBool(loot.resources.probability)
+    ? addResources(resources, loot.resources.item)
+    : resources;
+
+  return { inventory: nextInventory, resources: nextResources, rolledLoot };
 }
 
 // ─── Floor Loot ───────────────────────────────────────────────────────

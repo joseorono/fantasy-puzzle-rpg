@@ -432,6 +432,10 @@
 
 @import './styles/salvage-confirm-dialog.css';
 
+@import './styles/confirm-dialog.css';
+
+@import './styles/dungeon.css';
+
 @import './styles/top-bar-resources.css';
 
 @import './styles/pause-menu.css';

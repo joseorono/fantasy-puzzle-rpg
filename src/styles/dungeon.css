@@ -1,0 +1,208 @@
+/* ==========================================
+   DUNGEON VIEW — atmospheric run screen
+   Warm parchment / dark-brown palette, compact. No bright golds.
+   ========================================== */
+
+.dungeon {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #e8dcc8;
+  overflow: hidden;
+}
+
+/* Darkening scrim so foreground text stays readable over any background. */
+.dungeon__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 12, 8, 0.72) 0%, rgba(20, 12, 8, 0.55) 45%, rgba(20, 12, 8, 0.82) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dungeon__header,
+.dungeon__main,
+.dungeon__footer {
+  position: relative;
+  z-index: 1;
+}
+
+.dungeon__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid rgba(92, 58, 30, 0.8);
+  background: linear-gradient(180deg, rgba(42, 24, 16, 0.85), rgba(42, 24, 16, 0.4));
+}
+
+.dungeon__hp {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: #d4a574;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+.dungeon__main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* ─── Left: vertical floor track ─────────────────────────────────────── */
+
+.dungeon__track {
+  display: flex;
+  flex-direction: column-reverse; /* Floor 1 at the bottom, boss at the top */
+  justify-content: flex-start;
+  gap: 0.4rem;
+  width: 240px;
+  flex-shrink: 0;
+  padding: 0.75rem;
+  overflow-y: auto;
+  background: rgba(28, 18, 12, 0.78);
+  border: 2px solid #5c3a1e;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(212, 165, 116, 0.25);
+}
+
+.dungeon__floor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.dungeon__floor-mark {
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dungeon__floor--completed {
+  color: #8a8175;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dungeon__floor--current {
+  color: #f0e4cf;
+  background: rgba(200, 135, 46, 0.18);
+  border-color: rgba(212, 165, 116, 0.6);
+  animation: dungeon-floor-pulse 1.8s ease-in-out infinite;
+}
+
+.dungeon__floor--locked {
+  color: #6b5f50;
+  opacity: 0.7;
+}
+
+@keyframes dungeon-floor-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 165, 116, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px 1px rgba(212, 165, 116, 0.35);
+  }
+}
+
+/* ─── Right: stage / action panel ────────────────────────────────────── */
+
+.dungeon__stage {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.dungeon__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 460px;
+  padding: 1rem 1.25rem 1.25rem;
+  background: linear-gradient(180deg, rgba(42, 24, 16, 0.35), rgba(28, 18, 12, 0.88));
+  border: 2px solid #5c3a1e;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(212, 165, 116, 0.25);
+  text-align: center;
+}
+
+.dungeon__panel--complete {
+  align-self: center;
+}
+
+.dungeon__floor-banner {
+  padding: 0.25rem 0;
+}
+
+.dungeon__desc {
+  font-size: 0.65rem;
+  line-height: 1.6;
+  color: #d8cbb4;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon__replay {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c08a3e;
+}
+
+.dungeon__action {
+  display: flex;
+  justify-content: center;
+  min-height: 3rem;
+  align-items: center;
+}
+
+/* ─── Footer controls ────────────────────────────────────────────────── */
+
+.dungeon__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  border-top: 2px solid rgba(92, 58, 30, 0.8);
+  background: linear-gradient(0deg, rgba(42, 24, 16, 0.85), rgba(42, 24, 16, 0.4));
+}
+
+.dungeon--error {
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .dungeon__main {
+    flex-direction: column;
+  }
+
+  .dungeon__track {
+    width: 100%;
+    flex-direction: column;
+    max-height: 35%;
+  }
+
+  .dungeon__stage {
+    align-items: stretch;
+  }
+}

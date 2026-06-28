@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { gameStatusAtom, enemiesAtom, partyAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { useRouterActions, usePartyActions } from '~/stores/game-store';
 import { isGameStartedAtom } from '~/stores/app-atoms';
 import { cn } from '~/lib/utils';
@@ -16,6 +17,7 @@ export function BattleOverModal() {
   const enemies = useAtomValue(enemiesAtom);
   const battleParty = useAtomValue(partyAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
+  const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
   const setGameStarted = useSetAtom(isGameStartedAtom);
   const { goToBattleRewards, reset: resetRouter } = useRouterActions();
   const { syncBattleHp, fullyHealParty } = usePartyActions();
@@ -32,8 +34,11 @@ export function BattleOverModal() {
       goToBattleRewards({ lootTable, expReward });
     } else {
       // Defeat: auto-heal the party, reset combat + navigation, and return to the start menu.
+      // Also tear down any active dungeon run so re-entry starts fresh at Floor 1
+      // (harmless outside a dungeon — the atoms are already at their defaults).
       fullyHealParty();
       resetBattle();
+      resetDungeonRun();
       resetRouter();
       setGameStarted(false);
     }

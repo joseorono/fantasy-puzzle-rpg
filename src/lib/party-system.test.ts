@@ -10,6 +10,7 @@ import {
   damagePartyMember,
   healPartyMember,
   healAllLivingPartyMembers,
+  healAllByMaxHpPercent,
   isPartyDefeated,
 } from './party-system';
 
@@ -370,6 +371,47 @@ describe('party system utilities', () => {
       const result = healAllLivingPartyMembers(party, 25);
       expect(result[0].currentHp).toBe(0);
       expect(result[1].currentHp).toBe(35);
+    });
+  });
+
+  describe('healAllByMaxHpPercent', () => {
+    it('heals living members by a percentage of their own max HP', () => {
+      // warrior 50/100 +10% -> 60; rogue 30/60 +10% -> 36; mage 20/50 +10% -> 25
+      const result = healAllByMaxHpPercent(testParty, 0.1);
+      expect(result[0].currentHp).toBe(60);
+      expect(result[1].currentHp).toBe(36);
+      expect(result[2].currentHp).toBe(25);
+    });
+
+    it('rounds the heal amount up (ceil)', () => {
+      // 55 max * 10% = 5.5 -> ceil 6
+      const party = [createTestCharacter({ currentHp: 10, maxHp: 55 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(16);
+    });
+
+    it('clamps living members to max HP', () => {
+      const party = [createTestCharacter({ currentHp: 98, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(100);
+    });
+
+    it('revives dead members to 1 HP by default', () => {
+      const party = [createTestCharacter({ id: 'dead', currentHp: 0, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(1);
+    });
+
+    it('revives dead members to revivePercent of max HP when provided', () => {
+      const party = [createTestCharacter({ id: 'dead', currentHp: 0, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1, 0.25);
+      expect(result[0].currentHp).toBe(25);
+    });
+
+    it('does not mutate the original party', () => {
+      const original = testParty.map((c) => ({ ...c }));
+      healAllByMaxHpPercent(testParty, 0.1);
+      expect(testParty[0].currentHp).toBe(original[0].currentHp);
     });
   });
 

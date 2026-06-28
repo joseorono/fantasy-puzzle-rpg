@@ -7,6 +7,7 @@ import {
   prepareSetViewData,
   goToTownHub as libGoToTownHub,
   goToBattleDemo as libGoToBattleDemo,
+  goToDungeon as libGoToDungeon,
   goToMapDemo as libGoToMapDemo,
   goToMapDemo2 as libGoToMapDemo2,
   goToDialogueDemo as libGoToDialogueDemo,
@@ -38,6 +39,17 @@ export function createRouterSlice(set: SliceSet<RouterSlice>): RouterSlice {
         goToBattleDemo: (data) => {
           set((state: RouterSlice) => {
             const result = libGoToBattleDemo(state.router, data);
+            if (result.success && result.nextState) {
+              state.router = result.nextState;
+            } else {
+              console.warn(`Navigation failed: ${result.error}`);
+            }
+          });
+        },
+
+        goToDungeon: (data) => {
+          set((state: RouterSlice) => {
+            const result = libGoToDungeon(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {

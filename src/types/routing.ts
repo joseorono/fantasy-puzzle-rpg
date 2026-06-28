@@ -11,7 +11,8 @@ export type ViewType =
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
-  | 'battle-rewards';
+  | 'battle-rewards'
+  | 'dungeon';
 
 /**
  * Data for town hub view
@@ -36,6 +37,16 @@ export interface BattleViewData {
   enemyId: string;
   location?: string;
   canFlee?: boolean;
+  /** Background image URL for the battle panels; falls back to the default art. */
+  bgImage?: string;
+}
+
+/**
+ * Data for the dungeon view. `isReplay` is computed at entry from completion state.
+ */
+export interface DungeonViewData {
+  dungeonId: string;
+  isReplay: boolean;
 }
 
 /**
@@ -83,6 +94,7 @@ export interface ViewDataMap {
   inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
+  dungeon: DungeonViewData;
 }
 
 /**
@@ -95,7 +107,8 @@ export type RouteStatus = TownHubViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &
-  BattleRewardsViewData;
+  BattleRewardsViewData &
+  DungeonViewData;
 
 /**
  * Router state

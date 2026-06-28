@@ -13,6 +13,8 @@ import DemoMap2 from './components/map/demo-map-2.tsx';
 
 import BattleScreen from '~/views/battle-screen';
 
+import DungeonView from '~/views/dungeon-view';
+
 /**
 
  * Main game screen component that renders views based on router state
@@ -59,6 +61,9 @@ export default function GameScreen() {
 
     case 'battle-rewards':
       return <BattleRewardsScreen />;
+
+    case 'dungeon':
+      return <DungeonView />;
 
     default:
       return <div>Unknown View: {currentView}</div>;
