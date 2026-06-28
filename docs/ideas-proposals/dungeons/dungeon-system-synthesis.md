@@ -324,3 +324,5 @@ export const DUNGEON_REST_HEAL_PERCENT = 0.1;
 ```
 
 Future dungeon-wide tunables live here too.
+
+There are generic dungeon background images we can default to in public\assets\bg\dungeon
