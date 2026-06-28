@@ -348,7 +348,7 @@ export default function DungeonView() {
         >
           {hasRested ? 'Rested' : 'Rest'}
         </ToffecButton>
-        <ToffecButton variant="mauve" size="sm" onClick={handleLeave} disabled={isComplete}>
+        <ToffecButton variant="mauve" size="sm" onClick={handleLeave} disabled={!controlsEnabled}>
           Leave Dungeon
         </ToffecButton>
       </div>

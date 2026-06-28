@@ -1,12 +1,14 @@
-import type { DungeonProgressSlice } from './dungeon-progress.types';
+import type { DungeonProgressSlice, DungeonProgressState } from './dungeon-progress.types';
 import type { SliceSet, SliceGet } from '~/types/store';
 
 /**
- * Initial dungeon progress state — nothing completed.
+ * Fresh initial dungeon progress state — nothing completed. A factory (not a shared
+ * constant) so init and reset each get their own object and completion flags can
+ * never leak across a reset.
  */
-const INITIAL_DUNGEON_PROGRESS_STATE = {
+const createInitialDungeonProgressState = (): DungeonProgressState => ({
   completedDungeons: {},
-};
+});
 
 /**
  * Create the dungeon progress slice.
@@ -19,7 +21,7 @@ export const createDungeonProgressSlice = (
   set: SliceSet<DungeonProgressSlice>,
   get: SliceGet<DungeonProgressSlice>,
 ): DungeonProgressSlice => ({
-  dungeonProgress: INITIAL_DUNGEON_PROGRESS_STATE,
+  dungeonProgress: createInitialDungeonProgressState(),
 
   actions: {
     dungeonProgress: {
@@ -42,7 +44,7 @@ export const createDungeonProgressSlice = (
   reset: () =>
     set(
       (state: DungeonProgressSlice) => {
-        state.dungeonProgress = INITIAL_DUNGEON_PROGRESS_STATE;
+        state.dungeonProgress = createInitialDungeonProgressState();
       },
       false,
       'dungeonProgress/reset',

@@ -15,6 +15,11 @@ export function useConfirm() {
 
   return (options: ConfirmDialogOptions): Promise<boolean> =>
     new Promise<boolean>((resolve) => {
-      setRequest({ ...options, resolve });
+      // Settle any still-open request as cancelled before replacing it, so a caller
+      // awaiting the previous confirm never hangs (e.g. double-trigger).
+      setRequest((prev) => {
+        prev?.resolve(false);
+        return { ...options, resolve };
+      });
     });
 }
