@@ -41,13 +41,23 @@ import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
 import { DialogueScene } from '~/components/dialogue';
 import { LootNotification } from '~/components/map/loot-notification';
+import { TopBarResources } from '~/components/town/top-bar-resources';
+import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { cn } from '~/lib/utils';
+import { cn, getRandomElement } from '~/lib/utils';
+import {
+  DUNGEON_COMBAT_FLAVOR,
+  DUNGEON_BOSS_FLAVOR,
+  DUNGEON_CHEST_FLAVOR,
+  DUNGEON_DIALOGUE_FLAVOR,
+  DUNGEON_CONTINUE_FLAVOR,
+  DUNGEON_CLEARED_FLAVOR,
+} from '~/constants/flavor-text/dungeon-flavor';
 
 /** Label for the floor's contextual action button, by the current event type. */
 function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): string {
@@ -55,6 +65,14 @@ function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): strin
   if (event.type === 'dialogue') return 'View Scene';
   if (event.type === 'chest') return 'Open Chest';
   return isBoss ? 'Challenge Boss' : 'Enter Battle';
+}
+
+/** Random flavor line for the current event (chosen once per event in an effect). */
+function pickEventFlavor(event: DungeonEvent | undefined, isBoss: boolean): string {
+  if (!event) return getRandomElement(DUNGEON_CONTINUE_FLAVOR);
+  if (event.type === 'dialogue') return getRandomElement(DUNGEON_DIALOGUE_FLAVOR);
+  if (event.type === 'chest') return getRandomElement(DUNGEON_CHEST_FLAVOR);
+  return getRandomElement(isBoss ? DUNGEON_BOSS_FLAVOR : DUNGEON_COMBAT_FLAVOR);
 }
 
 /**
@@ -91,7 +109,9 @@ export default function DungeonView() {
   const { setInventory } = useInventoryActions();
   const resources = useResources();
   const { setResources } = useResourcesActions();
-  const { goToBattleDemo, goBack } = useRouterActions();
+  // Entry is debug-only in v1; navigate back explicitly because the router's
+  // previousView is null after the battle round-trip (goBack would no-op).
+  const { goToBattleDemo, goToDebug } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
 
   const pauseMenu = usePauseMenu();
@@ -100,6 +120,7 @@ export default function DungeonView() {
   // ─── Local UI state ──────────────────────────────────────────────────
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
+  const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
 
   const dungeon = viewData ? getDungeonById(viewData.dungeonId) : undefined;
 
@@ -146,6 +167,20 @@ export default function DungeonView() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, floorIndex, eventIndex, activeDialogue, activeDungeonId]);
+
+  // Re-roll the flavor line once per event/floor/phase change (not per render, so
+  // it doesn't flicker).
+  useEffect(() => {
+    if (!dungeon) return;
+    if (phase === 'complete') {
+      setFlavorLine(getRandomElement(DUNGEON_CLEARED_FLAVOR));
+      return;
+    }
+    const floor = getFloor(dungeon, floorIndex);
+    const event = floor ? getEvent(floor, eventIndex) : undefined;
+    setFlavorLine(pickEventFlavor(event, floor?.isBoss ?? false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dungeon, floorIndex, eventIndex, phase]);
 
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
@@ -209,91 +244,104 @@ export default function DungeonView() {
     });
     if (!ok) return;
     resetRun();
-    goBack();
+    goToDebug();
   }
 
   function handleFinish() {
     resetRun();
-    goBack();
+    goToDebug();
   }
 
-  return (
-    <div
-      className="game-view dungeon"
-      style={{ backgroundImage: `url('${floorBg}')` }}
-    >
-      <div className="dungeon__scrim" />
+  const isBoss = currentFloor?.isBoss ?? false;
 
-      {/* Header */}
-      <div className="dungeon__header">
-        <div className="dungeon__title">
-          <NarikWoodBitFont text={dungeon.name} size={1.2} />
-        </div>
-        <div className="dungeon__hp pixel-font">
-          PARTY HP {totalCurrentHp} / {totalMaxHp}
+  return (
+    <div className="game-view dungeon flex h-full min-h-0 flex-col overflow-hidden">
+      {/* Atmospheric background + darkening scrim (mirrors the town's layered bg) */}
+      <div className="dungeon-bg" style={{ backgroundImage: `url('${floorBg}')` }} />
+      <div className="dungeon-scrim" />
+
+      {/* Resources floated top-right, out of flow (mirrors the town hub) */}
+      <div className="dungeon-resources-bar">
+        <TopBarResources resources={resources} />
+      </div>
+
+      {/* Top bar: dungeon name + party HP chip */}
+      <div className="dungeon-topbar">
+        <div className="dungeon-topbar__left">
+          <NarikWoodBitFont text={dungeon.name} size={1.1} />
+          <span className="dungeon-hp-chip">HP {totalCurrentHp} / {totalMaxHp}</span>
         </div>
       </div>
 
-      <div className="dungeon__main">
-        {/* Left: vertical floor track */}
-        <div className="dungeon__track">
-          {dungeon.floors.map((floor, idx) => {
-            const state =
-              idx < floorIndex ? 'completed' : idx === floorIndex ? 'current' : 'locked';
-            return (
-              <div key={floor.id} className={cn('dungeon__floor', `dungeon__floor--${state}`)}>
-                <span className="dungeon__floor-mark">
-                  {state === 'completed' ? '✓' : state === 'current' ? '▸' : '·'}
-                </span>
-                <span className="dungeon__floor-name">
-                  {floor.isBoss ? `BOSS — ${floor.name}` : floor.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      {/* Main: floor track (left) + current-floor stage (right) */}
+      <div className="dungeon-layout">
+        <aside className="dungeon-track">
+          <div className="dungeon-track__title">
+            <NarikWoodBitFont text="DESCENT" size={0.7} />
+          </div>
+          <div className="dungeon-track__list">
+            {dungeon.floors.map((floor, idx) => {
+              const state = idx < floorIndex ? 'completed' : idx === floorIndex ? 'current' : 'locked';
+              return (
+                <div key={floor.id} className={cn('dungeon-floor', `dungeon-floor--${state}`)}>
+                  <span className="dungeon-floor__mark">
+                    {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
+                  </span>
+                  <span className="dungeon-floor__name">{floor.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
 
-        {/* Right: current floor + contextual action */}
-        <div className="dungeon__stage">
+        <main className="dungeon-stage">
           {isComplete ? (
-            <div className="dungeon__panel dungeon__panel--complete">
-              <NarikWoodBitFont text="Dungeon Cleared" size={1.4} />
-              <p className="dungeon__desc pixel-font">The hollow falls silent. Your work here is done.</p>
+            <div className="dungeon-card dungeon-card--complete">
+              <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
+              <p className="dungeon-card__desc">{flavorLine}</p>
               <ToffecButton variant="cream" onClick={handleFinish}>
                 Leave
               </ToffecButton>
             </div>
           ) : (
-            <div className="dungeon__panel">
-              <div className="dungeon__floor-banner">
-                <NarikWoodBitFont text={currentFloor?.name ?? ''} size={1} />
+            <div className="dungeon-card">
+              <div className="dungeon-card__banner">
+                <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.9} />
+                {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}
               </div>
-              {isReplay && <p className="dungeon__replay pixel-font">Replay — combats only</p>}
-              <div className="dungeon__action">
-                {phase === 'awaiting-battle' ? (
-                  <p className="dungeon__desc pixel-font">Entering battle…</p>
-                ) : (
+              {isReplay && <p className="dungeon-card__replay">Replay — combats only</p>}
+              <p className="dungeon-card__desc">
+                {phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}
+              </p>
+              <div className="dungeon-card__action">
+                {phase !== 'awaiting-battle' && (
                   <ToffecButton
-                    variant="tan"
+                    variant={isBoss && currentEvent?.type === 'combat' ? 'orange' : 'tan'}
+                    size="lg"
                     onClick={handleEngage}
                     disabled={!canEngage}
                   >
-                    {getActionLabel(currentEvent, currentFloor?.isBoss ?? false)}
+                    {getActionLabel(currentEvent, isBoss)}
                   </ToffecButton>
                 )}
               </div>
             </div>
           )}
-        </div>
+        </main>
+      </div>
+
+      {/* Party status strip */}
+      <div className="dungeon-party">
+        <PauseMenuPartyBar />
       </div>
 
       {/* Footer controls */}
-      <div className="dungeon__footer">
+      <div className="dungeon-footer">
         <ToffecButton variant="gray" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
           Manage Party
         </ToffecButton>
         <ToffecButton
-          variant="gray"
+          variant="tan"
           size="sm"
           onClick={handleRest}
           disabled={!controlsEnabled || hasRested || partyFull}
