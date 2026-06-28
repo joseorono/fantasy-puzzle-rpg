@@ -621,14 +621,6 @@
   flex-wrap: wrap;
 }
 
-.craft-detail--modify .craft-detail-next-rank-label {
-  font-size: 0.58rem;
-}
-
-.craft-detail--modify .craft-detail-next-rank-value {
-  font-size: 0.5rem;
-}
-
 .craft-detail--modify .craft-detail-next-rank .resource-chip__amount {
   font-size: 0.65rem;
 }
