@@ -1023,6 +1023,12 @@
   opacity: 0.6;
 }
 
+/* A fully-healed hero is wrapped (to keep its HP bar mounted for the fill animation) but is
+   no longer clickable, so suppress the hover cursor-corners that signal interactivity. */
+.inn-hero-card--healed:hover .cursor-corner {
+  opacity: 0;
+}
+
 .inn-actions {
   display: flex;
   justify-content: center;
