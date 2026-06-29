@@ -45,6 +45,7 @@ import { TopBarResources } from '~/components/town/top-bar-resources';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
 import { soundService } from '~/services/sound-service';
@@ -65,6 +66,15 @@ function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): strin
   if (event.type === 'dialogue') return 'View Scene';
   if (event.type === 'chest') return 'Open Chest';
   return isBoss ? 'Challenge Boss' : 'Enter Battle';
+}
+
+/** Icon shown in the action card's pixel-art medallion, by the current event type. */
+function getEventMedallion(event: DungeonEvent | undefined, isBoss: boolean): FrostyRpgIconName {
+  if (isBoss) return 'skull';
+  if (!event) return 'lantern';
+  if (event.type === 'dialogue') return 'openBook';
+  if (event.type === 'chest') return 'chest';
+  return 'broadsword';
 }
 
 /** Random flavor line for the current event (chosen once per event in an effect). */
@@ -297,27 +307,47 @@ export default function DungeonView() {
         <main className="dungeon-stage">
           {isComplete ? (
             <div className="dungeon-card dungeon-card--complete">
-              <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
-              <p className="dungeon-card__desc">{flavorLine}</p>
-              <ToffecButton variant="cream" onClick={handleFinish}>
-                Leave
-              </ToffecButton>
+              <div className="dungeon-card__banner">
+                <div className="dungeon-card__medallion">
+                  <FrostyRpgIcon name="crown" size={24} />
+                </div>
+                <div className="dungeon-card__banner-title">
+                  <NarikWoodBitFont text="Dungeon Cleared" size={1.0} />
+                </div>
+              </div>
+              <div className="dungeon-card__divider" />
+              <div className="dungeon-card__body">
+                <p className="dungeon-card__desc">{flavorLine}</p>
+              </div>
+              <div className="dungeon-card__action">
+                <ToffecButton variant="cream" size="sm" onClick={handleFinish}>
+                  Leave
+                </ToffecButton>
+              </div>
             </div>
           ) : (
-            <div className="dungeon-card">
+            <div className={cn('dungeon-card', isBoss && 'dungeon-card--boss')}>
               <div className="dungeon-card__banner">
-                <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.9} />
-                {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}
+                <div className="dungeon-card__medallion">
+                  <FrostyRpgIcon name={getEventMedallion(currentEvent, isBoss)} size={24} />
+                </div>
+                <div className="dungeon-card__banner-title">
+                  <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.85} />
+                  {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}
+                </div>
               </div>
-              {isReplay && <p className="dungeon-card__replay">Replay — combats only</p>}
-              <p className="dungeon-card__desc">
-                {phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}
-              </p>
+              <div className="dungeon-card__divider" />
+              <div className="dungeon-card__body">
+                {isReplay && <p className="dungeon-card__replay">Replay — combats only</p>}
+                <p className="dungeon-card__desc">
+                  {phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}
+                </p>
+              </div>
               <div className="dungeon-card__action">
                 {phase !== 'awaiting-battle' && (
                   <ToffecButton
                     variant={isBoss && currentEvent?.type === 'combat' ? 'orange' : 'tan'}
-                    size="lg"
+                    size="sm"
                     onClick={handleEngage}
                     disabled={!canEngage}
                   >

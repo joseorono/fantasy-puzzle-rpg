@@ -430,9 +430,9 @@
 
 @import './styles/town.css';
 
-@import './styles/salvage-confirm-dialog.css';
+@import './styles/confirm-panel.css';
 
-@import './styles/confirm-dialog.css';
+@import './styles/salvage-confirm-dialog.css';
 
 @import './styles/dungeon.css';
 
