@@ -312,10 +312,17 @@
 }
 
 .dungeon-card__replay {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
   font-size: 0.6rem;
+  font-weight: bold;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c08a3e;
+  color: #f3e2c9;
+  background: rgba(42, 26, 14, 0.68);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 .dungeon-card__desc {
