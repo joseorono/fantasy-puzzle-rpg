@@ -372,7 +372,7 @@ export default function Blacksmith({
               )}
             </div>
 
-            <div className="craft-detail">
+            <div className="craft-detail craft-detail--modify">
               {selectedModify ? (
                 <ModifyDetail
                   instance={selectedModify}
@@ -455,8 +455,7 @@ export default function Blacksmith({
               <span className="town-header-badge__label">Rate</span>
               <span className="town-header-badge__value">
                 <span className="town-header-badge__value--coins">{MELT_COINS_PER_GOLD}</span>{' '}
-                <FrostyRpgIcon name="coinPurse" size={14} /> = 1{' '}
-                <FrostyRpgIcon name="goldBar" size={14} />
+                <FrostyRpgIcon name="coinPurse" size={14} /> = 1 <FrostyRpgIcon name="goldBar" size={14} />
               </span>
             </div>
           </div>

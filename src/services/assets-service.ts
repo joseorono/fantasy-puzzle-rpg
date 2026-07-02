@@ -1,3 +1,5 @@
+import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
+
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
 
@@ -21,6 +23,7 @@ export const assetList: string[] = [
   '/assets/bg/item-shop-bg1.jpg',
   '/assets/bg/item-shop-bg2.jpg',
   '/assets/bg/reception-desk.jpg',
+  ...DUNGEON_BG_IMAGES,
 
   // Looping Backgrounds
   '/assets/bg/looping/bg-board-2.png',

@@ -121,22 +121,26 @@ export default function Inn({
                 const canAffordHeal = resources.coins >= cost;
 
                 return (
+                  // Keep the card wrapped in the same element whether full or injured so React
+                  // reuses the HP-fill node across a heal — that's what lets its width transition
+                  // (pause-menu.css) animate the bar filling up instead of snapping to 100%.
                   <div key={member.id} className="inn-hero-cell">
+                    <ToffecBeigeCornersWrapper
+                      className={cn(isFull && 'inn-hero-card--healed', !isFull && !canAffordHeal && 'cannot-afford')}
+                    >
+                      <PartyMemberCard
+                        member={member}
+                        variant="bar"
+                        onClick={isFull ? undefined : () => handleHealMember(member)}
+                      />
+                    </ToffecBeigeCornersWrapper>
                     {isFull ? (
-                      <>
-                        <PartyMemberCard member={member} variant="bar" />
-                        <div className="inn-hero-heal inn-hero-heal--full">Fully Healed</div>
-                      </>
+                      <div className="inn-hero-heal inn-hero-heal--full">Fully Healed</div>
                     ) : (
-                      <>
-                        <ToffecBeigeCornersWrapper className={cn(!canAffordHeal && 'cannot-afford')}>
-                          <PartyMemberCard member={member} variant="bar" onClick={() => handleHealMember(member)} />
-                        </ToffecBeigeCornersWrapper>
-                        <div className={cn('inn-hero-heal', !canAffordHeal && 'inn-hero-heal--locked')}>
-                          {canAffordHeal ? 'Heal' : 'Need'} · {cost}
-                          <FrostyRpgIcon name="coinPurse" size={14} />
-                        </div>
-                      </>
+                      <div className={cn('inn-hero-heal', !canAffordHeal && 'inn-hero-heal--locked')}>
+                        {canAffordHeal ? 'Heal' : 'Need'} · {cost}
+                        <FrostyRpgIcon name="coinPurse" size={14} />
+                      </div>
                     )}
                   </div>
                 );

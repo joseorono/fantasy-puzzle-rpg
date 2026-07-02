@@ -11,7 +11,7 @@ Base Systems:
   - [x] Item selling: a Sell tab in the Item Shop (consumables → coins at half value, min 1). (Jose)
   - [x] Blacksmith "Modify" tab: upgrade gear one rarity tier, or salvage it for materials. (Jose)
 - [x] Level-up/progression system. (Jose and Edd)
-- [x] Map system: with menus for each map node, and different nodes. Similar to the Fire Emblem The Sacred Stones (GBA) map, the Pokemon Emerald (GBA) fly map, or the Mario World (SNES) map.  (WIP - Mauricio)
+- [x] Map system: with menus for each map node, and different nodes. Similar to the Fire Emblem The Sacred Stones (GBA) map, the Pokemon Emerald (GBA) fly map, or the Mario World (SNES) map. (WIP - Mauricio)
 - [ ] Battle system: Detailed elsewhere. (WIP by the whole Team)
   - [x] Party Guard meter: gray orbs charge a shared meter that blocks incoming damage. (Jose)
   - [x] Cascade combo multiplier: chained cascades scale damage on a diminishing curve. (Jose)
@@ -22,6 +22,7 @@ Base Systems:
   - [x] Party HP persists across battles. (Jose)
 
 Second-Order Systems:
+
 - [x] Inventory system: Will be implemented alongside the Town system. Requires: Zustand store. Done by Jose.
   - [x] Per-instance equipment rarity: stacks keyed by item + rolled rarity. (Jose)
 - [x] Crafting system: Will be implemented alongside the Town system. Requires: Zustand store, partially implemented Town system. Finished by Jose.
@@ -29,5 +30,5 @@ Second-Order Systems:
   - [x] Equipment upgrade: bump an item up one rarity tier (tier-scaled cost). (Jose)
   - [x] Equipment salvage: scrap gear for half its material bars. (Jose)
 - [x] Equipment Rarity system: per-instance tiers (Common→Legendary), stat multipliers, weighted rolls with per-enemy bias, color-coded across all item UI. Done by Jose.
-- [ ] Dungeon System. Requires: Properly integrated Map, Town, Battle, and Level-up/progression systems.
+- [x] Dungeon System. Requires: Properly integrated Map, Town, Battle, and Level-up/progression systems.
 - [ ] Save data: not included until we have a clear idea of the data we'll need. Requires: Most of the base systems.

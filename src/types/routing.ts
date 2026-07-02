@@ -1,4 +1,5 @@
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
 
 /**
  * Available views in the game
@@ -11,7 +12,8 @@ export type ViewType =
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
-  | 'battle-rewards';
+  | 'battle-rewards'
+  | 'dungeon';
 
 /**
  * Data for town hub view
@@ -36,6 +38,19 @@ export interface BattleViewData {
   enemyId: string;
   location?: string;
   canFlee?: boolean;
+  /** Background image URL for the battle panels; falls back to the default art. */
+  bgImage?: string;
+}
+
+/**
+ * Data for the dungeon view. The full dungeon object is passed by reference (authored
+ * dungeons are module constants; generated/randomized ones are one-off objects), so a run
+ * needs no registry lookup and future multi-dungeon locations can hand off any definition.
+ * `isReplay` is computed at entry from completion state.
+ */
+export interface DungeonViewData {
+  dungeon: DungeonDefinition;
+  isReplay: boolean;
 }
 
 /**
@@ -83,6 +98,7 @@ export interface ViewDataMap {
   inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
+  dungeon: DungeonViewData;
 }
 
 /**
@@ -95,7 +111,8 @@ export type RouteStatus = TownHubViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &
-  BattleRewardsViewData;
+  BattleRewardsViewData &
+  DungeonViewData;
 
 /**
  * Router state

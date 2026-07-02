@@ -430,7 +430,11 @@
 
 @import './styles/town.css';
 
+@import './styles/confirm-panel.css';
+
 @import './styles/salvage-confirm-dialog.css';
+
+@import './styles/dungeon.css';
 
 @import './styles/top-bar-resources.css';
 

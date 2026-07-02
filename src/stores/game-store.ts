@@ -15,6 +15,8 @@ import type { FloorLootProgressSlice } from './slices/floor-loot-progress.types'
 import { createFloorLootProgressSlice } from './slices/floor-loot-progress';
 import type { CraftingSlice } from './slices/crafting.types';
 import { createCraftingSlice } from './slices/crafting';
+import type { DungeonProgressSlice } from './slices/dungeon-progress.types';
+import { createDungeonProgressSlice } from './slices/dungeon-progress';
 import { GAME_STORE_NAME } from '~/constants/game';
 
 /**
@@ -28,13 +30,15 @@ export type GameStore = {
   mapProgress: MapProgressSlice['mapProgress'];
   floorLootProgress: FloorLootProgressSlice['floorLootProgress'];
   crafting: CraftingSlice['crafting'];
+  dungeonProgress: DungeonProgressSlice['dungeonProgress'];
   actions: ResourcesSlice['actions'] &
     PartySlice['actions'] &
     InventorySlice['actions'] &
     RouterSlice['actions'] &
     MapProgressSlice['actions'] &
     FloorLootProgressSlice['actions'] &
-    CraftingSlice['actions'];
+    CraftingSlice['actions'] &
+    DungeonProgressSlice['actions'];
   reset?: () => void;
 };
 
@@ -51,6 +55,7 @@ export const useGameStore = create<GameStore>()(
       const mapProgressSlice = createMapProgressSlice(set, get);
       const floorLootProgressSlice = createFloorLootProgressSlice(set, get);
       const craftingSlice = createCraftingSlice(set);
+      const dungeonProgressSlice = createDungeonProgressSlice(set, get);
       return {
         ...resourcesSlice,
         ...partySlice,
@@ -59,6 +64,7 @@ export const useGameStore = create<GameStore>()(
         ...mapProgressSlice,
         ...floorLootProgressSlice,
         ...craftingSlice,
+        ...dungeonProgressSlice,
         actions: {
           ...resourcesSlice.actions,
           ...partySlice.actions,
@@ -67,6 +73,7 @@ export const useGameStore = create<GameStore>()(
           ...mapProgressSlice.actions,
           ...floorLootProgressSlice.actions,
           ...craftingSlice.actions,
+          ...dungeonProgressSlice.actions,
         },
       };
     }),
@@ -149,4 +156,10 @@ export const useCraftingActions = () => useGameStore((state) => state.actions.cr
  * Get the current crafting pity counter
  */
 export const useCraftingPity = () => useGameStore((state) => state.crafting.pity);
+
+/**
+ * Selector hooks for dungeon progress slice
+ */
+export const useDungeonProgressState = () => useGameStore((state) => state.dungeonProgress);
+export const useDungeonProgressActions = () => useGameStore((state) => state.actions.dungeonProgress);
 

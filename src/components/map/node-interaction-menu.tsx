@@ -118,7 +118,7 @@ export function NodeInteractionMenu({
         )}
 
         {canInteract && onEnter && (
-          <ToffecButton variant="mauve" size="sm" className="nim-btn" onClick={onEnter}>
+          <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onEnter}>
             <FrostyRpgIcon name="orbPurple" size={16} />
             Interact
           </ToffecButton>

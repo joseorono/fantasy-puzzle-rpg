@@ -10,6 +10,7 @@ import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 import { OverlayHost } from '~/components/overlays/overlay-host';
 import { TitleSignHost } from '~/components/title-sign/title-sign-host';
+import { ConfirmDialogHost } from '~/components/confirm-dialog/confirm-dialog-host';
 import { StartMenu } from '~/components/start-menu';
 
 function delay(ms: number): Promise<void> {
@@ -62,6 +63,7 @@ export function GameLoader() {
         <PauseMenuOverlay />
         <OverlayHost />
         <TitleSignHost />
+        <ConfirmDialogHost />
       </>
     );
   }

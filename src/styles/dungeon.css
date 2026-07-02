@@ -1,0 +1,381 @@
+/* ==========================================
+   DUNGEON VIEW — atmospheric run screen
+   Layout skeleton comes from Tailwind utilities on the view; this file carries the
+   visual polish (indigolay board panels, warm parchment palette). No bright #ffd700.
+   ========================================== */
+
+.dungeon {
+  position: relative;
+  color: #e8dcc8;
+}
+
+/* ─── Background + scrim (layered like the town's .bg-town) ───────────── */
+
+.dungeon-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dungeon-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(20, 12, 8, 0.78) 0%, rgba(20, 12, 8, 0.5) 40%, rgba(20, 12, 8, 0.88) 100%);
+}
+
+/* Every direct content row sits above the background layers. */
+.dungeon > .dungeon-topbar,
+.dungeon > .dungeon-layout,
+.dungeon > .dungeon-party,
+.dungeon > .dungeon-footer {
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Resources (floated top-right, out of flow like the town) ────────── */
+
+.dungeon-resources-bar {
+  position: absolute;
+  top: 0;
+  right: 0.5rem;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ─── Top bar ────────────────────────────────────────────────────────── */
+
+.dungeon-topbar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.45);
+  background: linear-gradient(180deg, rgba(42, 24, 16, 0.9), rgba(42, 24, 16, 0.35));
+}
+
+.dungeon-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Keep the bitmap-font title on one line (its glyphs are inline-blocks that
+   would otherwise wrap when squeezed). */
+.dungeon-topbar__left .bf-text {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.dungeon-hp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 12px;
+  font-size: 0.62rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Main layout ────────────────────────────────────────────────────── */
+
+.dungeon-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* ─── Left: floor track (indigolay board panel) ──────────────────────── */
+
+.dungeon-track {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 0.75rem;
+  background-image: linear-gradient(180deg, rgba(42, 24, 16, 0.82), rgba(26, 16, 8, 0.9)),
+    url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  border: 3px solid #d4a574;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 8px 20px rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-track__title {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.5);
+}
+
+.dungeon-track__list {
+  display: flex;
+  flex-direction: column; /* Floor 1 at the top, deepest floor at the bottom */
+  gap: 0.35rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.dungeon-floor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  border: 1px solid rgba(212, 165, 116, 0.18);
+  background: rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-floor__mark {
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dungeon-floor--completed {
+  color: #8a8175;
+  opacity: 0.85;
+}
+
+.dungeon-floor--current {
+  color: #f0e4cf;
+  background: rgba(200, 135, 46, 0.22);
+  border-color: rgba(212, 165, 116, 0.7);
+}
+
+.dungeon-floor--locked {
+  color: #6b5f50;
+}
+
+/* ─── Right: stage / action card ─────────────────────────────────────── */
+
+.dungeon-stage {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The action card shares the game-over / confirm-panel pixel-art language: a chunky
+   triple border over the board texture, a diamond medallion, and a gradient divider.
+   Boss floors swap the gold accents for warning red. */
+.dungeon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  color: #e0e0e0;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 4px solid #5c3a1e;
+  outline: 3px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 0 22px rgba(200, 135, 46, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.78),
+    0 2px 0 #2a1a0e;
+  overflow: hidden;
+  text-align: center;
+  animation: dungeon-card-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dungeon-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Boss floor: red frame accent. */
+.dungeon-card--boss {
+  border-color: #6b2a1a;
+  box-shadow:
+    inset 0 0 0 2px #b0552e,
+    0 0 22px rgba(192, 88, 62, 0.28),
+    0 12px 32px rgba(0, 0, 0, 0.78),
+    0 2px 0 #2a1a0e;
+}
+
+.dungeon-card__banner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(180deg, rgba(200, 135, 46, 0.16) 0%, transparent 100%);
+}
+
+.dungeon-card--boss .dungeon-card__banner {
+  background: linear-gradient(180deg, rgba(192, 88, 62, 0.22) 0%, transparent 100%);
+}
+
+.dungeon-card--complete .dungeon-card__banner {
+  background: linear-gradient(180deg, rgba(212, 165, 116, 0.26) 0%, transparent 100%);
+}
+
+/* Rotated pixel-art diamond holding the event icon. */
+.dungeon-card__medallion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  transform: rotate(45deg);
+  background: #0e0a06;
+  border: 3px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.dungeon-card__medallion > * {
+  transform: rotate(-45deg);
+}
+
+.dungeon-card__medallion img {
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
+}
+
+.dungeon-card--boss .dungeon-card__medallion {
+  border-color: #6b2a1a;
+  box-shadow:
+    inset 0 0 0 2px #b0552e,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.dungeon-card__banner-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+}
+
+.dungeon-card__divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent);
+}
+
+.dungeon-card--boss .dungeon-card__divider {
+  background: linear-gradient(90deg, transparent, #6b2a1a 20%, #c0392b 50%, #6b2a1a 80%, transparent);
+}
+
+.dungeon-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.dungeon-card__boss-tag {
+  padding: 2px 10px;
+  font-size: 0.55rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #f0e4cf;
+  background: rgba(192, 88, 62, 0.9);
+  border: 1px solid rgba(240, 210, 180, 0.5);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-card__replay {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.5rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f3e2c9;
+  background: rgba(42, 26, 14, 0.68);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+.dungeon-card__desc {
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: #d8cbb4;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-card__action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.25rem 1.25rem 1.1rem;
+}
+
+/* ─── Party status strip ─────────────────────────────────────────────── */
+
+.dungeon-party {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.35rem 1rem 0;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+
+.dungeon-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  border-top: 2px solid rgba(212, 165, 116, 0.45);
+  background: linear-gradient(0deg, rgba(42, 24, 16, 0.9), rgba(42, 24, 16, 0.35));
+}
+
+.dungeon--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .dungeon-layout {
+    flex-direction: column;
+  }
+
+  .dungeon-track {
+    width: 100%;
+    max-height: 30%;
+  }
+}

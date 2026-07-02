@@ -55,9 +55,9 @@ export const RARITY_COLORS: Record<RarityTier, string> = {
 export const BASE_RARITY_WEIGHTS: Record<RarityTier, number> = {
   common: 55,
   uncommon: 22,
-  rare: 9,
-  epic: 4,
-  legendary: 10,
+  rare: 10,
+  epic: 9,
+  legendary: 4,
 };
 
 /**

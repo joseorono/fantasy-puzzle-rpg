@@ -13,7 +13,7 @@ import {
   tickGuardDecayAtom,
   ensureFreshBattleAtom,
 } from '~/stores/battle-atoms';
-import { useParty } from '~/stores/game-store';
+import { useParty, useViewData } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
 import { soundService } from '~/services/sound-service';
@@ -30,6 +30,10 @@ export default function BattleScreen() {
   const party = useParty();
   const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
   const [isBattlePaused, setIsBattlePaused] = useState(false);
+
+  // Background can be overridden per-encounter (e.g. dungeon/floor art) via view data.
+  const battleData = useViewData('battle-demo');
+  const bgImage = battleData?.bgImage ?? '/assets/bg/battle/simple_battle_background.jpg';
 
   function toggleBattlePause() {
     if (gameStatus !== 'playing' && isBattlePaused !== true) return;
@@ -103,7 +107,7 @@ export default function BattleScreen() {
             <div
               className="partySection relative"
               style={{
-                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
+                backgroundImage: `url(${bgImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
@@ -116,7 +120,7 @@ export default function BattleScreen() {
             <div
               className="enemySection relative border-b-4 border-gray-700"
               style={{
-                backgroundImage: 'url(/assets/bg/battle/simple_battle_background.jpg)',
+                backgroundImage: `url(${bgImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
@@ -128,7 +132,8 @@ export default function BattleScreen() {
           {/* Bottom section - Match-3 Board */}
           <div
             id="boardSection"
-            className="boardSection relative border-t-2 border-amber-700 bg-gradient-to-b  from-amber-950/80 to-amber-900/60 p-2 sm:p-3"
+            className="boardSection relative border-t-2 border-amber-700 bg-gradient-to-b from-amber-950/80 to-amber-900/60 p-2 sm:p-3"
+            style={{ '--board-bg-image': `url(${bgImage})` } as React.CSSProperties}
           >
             {/* Decorative background pattern */}
             <div className="board-pattern-layer absolute inset-0 opacity-5">

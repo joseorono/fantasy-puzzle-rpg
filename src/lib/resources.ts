@@ -70,6 +70,22 @@ export function addResources(available: Resources, reward: Resources): Resources
 }
 
 /**
+ * Scale every resource field by a fraction, floored to whole units.
+ * @param resources - The resources to scale
+ * @param percentage - A 0–1 fraction (e.g. 0.25 for 25%)
+ * @returns New resources object with each field multiplied by `percentage` and floored
+ */
+export function getPercentageOfResources(resources: Resources, percentage: number): Resources {
+  return {
+    coins: Math.floor(resources.coins * percentage),
+    gold: Math.floor(resources.gold * percentage),
+    copper: Math.floor(resources.copper * percentage),
+    silver: Math.floor(resources.silver * percentage),
+    iron: Math.floor(resources.iron * percentage),
+  };
+}
+
+/**
  * Validate that an amount is non-negative
  * @param amount - Amount to validate
  * @returns Validated amount (minimum 0)

@@ -8,6 +8,7 @@ const toffecButtonVariants = cva(
       variant: {
         tan: 'toffec-button--tan',
         mauve: 'toffec-button--mauve',
+        'indigolay-red': 'toffec-button--indigolay-red',
         orange: 'toffec-button--orange',
         cream: 'toffec-button--cream',
         gray: 'toffec-button--gray',

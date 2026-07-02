@@ -131,6 +131,13 @@ export function goToBattleDemo(currentState: RouterState, data: ViewDataMap['bat
 }
 
 /**
+ * Navigate to a dungeon run with required data
+ */
+export function goToDungeon(currentState: RouterState, data: ViewDataMap['dungeon']): NavigationResult {
+  return prepareNavigation(currentState, 'dungeon', data);
+}
+
+/**
  * Navigate to map demo
  */
 export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-demo']): NavigationResult {
