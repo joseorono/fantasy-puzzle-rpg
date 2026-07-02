@@ -8,6 +8,7 @@ import {
   isLastFloor,
   shouldRunEvent,
   getFloorBackground,
+  getDungeonRestPool,
 } from './dungeon-system';
 
 const DIALOGUE_EVENT: DungeonEvent = {
@@ -81,5 +82,34 @@ describe('getFloorBackground', () => {
 
   it('falls back to the dungeon default', () => {
     expect(getFloorBackground(DUNGEON, DUNGEON.floors[0])).toBe('/default.jpg');
+  });
+});
+
+/** Build a dungeon fixture whose only relevant property is its floor count. */
+function dungeonWithFloors(floorCount: number): DungeonDefinition {
+  return {
+    id: 'n',
+    name: 'N',
+    backgroundImage: '/default.jpg',
+    floors: Array.from({ length: floorCount }, (_, i) => ({
+      id: `f${i}`,
+      name: `Floor ${i}`,
+      events: [],
+    })),
+  };
+}
+
+describe('getDungeonRestPool', () => {
+  it('scales the pool as floor(floors / 2.5)', () => {
+    expect(getDungeonRestPool(dungeonWithFloors(3))).toBe(1);
+    expect(getDungeonRestPool(dungeonWithFloors(5))).toBe(2);
+    expect(getDungeonRestPool(dungeonWithFloors(6))).toBe(2);
+    expect(getDungeonRestPool(dungeonWithFloors(8))).toBe(3);
+    expect(getDungeonRestPool(dungeonWithFloors(10))).toBe(4);
+  });
+
+  it('floors the pool to a minimum of 1 for short dungeons', () => {
+    expect(getDungeonRestPool(dungeonWithFloors(2))).toBe(1);
+    expect(getDungeonRestPool(dungeonWithFloors(1))).toBe(1);
   });
 });

@@ -24,6 +24,8 @@ export const dungeonPhaseAtom = atom<DungeonPhase>('browsing');
 export const isReplayAtom = atom(false);
 /** One free Rest per floor; reset on floor advance. */
 export const hasRestedOnFloorAtom = atom(false);
+/** Rests spent so far this run; capped by getDungeonRestPool(). Persists across floors. */
+export const restsUsedAtom = atom(0);
 
 /**
  * Start (or restart) a dungeon run. Authoritative: resets every run atom before
@@ -38,6 +40,7 @@ export const startDungeonRunAtom = atom(
     set(dungeonPhaseAtom, 'browsing');
     set(isReplayAtom, params.isReplay);
     set(hasRestedOnFloorAtom, false);
+    set(restsUsedAtom, 0);
   },
 );
 
@@ -73,4 +76,5 @@ export const resetDungeonRunAtom = atom(null, (_get, set) => {
   set(dungeonPhaseAtom, 'browsing');
   set(isReplayAtom, false);
   set(hasRestedOnFloorAtom, false);
+  set(restsUsedAtom, 0);
 });

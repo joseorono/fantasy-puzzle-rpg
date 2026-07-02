@@ -7,6 +7,7 @@ import {
   dungeonPhaseAtom,
   isReplayAtom,
   hasRestedOnFloorAtom,
+  restsUsedAtom,
   startDungeonRunAtom,
   advanceEventAtom,
   advanceFloorAtom,
@@ -30,6 +31,7 @@ import {
   getFloor,
   getEvent,
   getFloorBackground,
+  getDungeonRestPool,
   isLastFloor,
   shouldRunEvent,
 } from '~/lib/dungeon-system';
@@ -101,6 +103,7 @@ export default function DungeonView() {
   const phase = useAtomValue(dungeonPhaseAtom);
   const isReplay = useAtomValue(isReplayAtom);
   const hasRested = useAtomValue(hasRestedOnFloorAtom);
+  const restsUsed = useAtomValue(restsUsedAtom);
 
   const startRun = useSetAtom(startDungeonRunAtom);
   const advanceEvent = useSetAtom(advanceEventAtom);
@@ -109,6 +112,7 @@ export default function DungeonView() {
   const resolveBattleWin = useSetAtom(resolveBattleWinAtom);
   const setPhase = useSetAtom(dungeonPhaseAtom);
   const setHasRested = useSetAtom(hasRestedOnFloorAtom);
+  const setRestsUsed = useSetAtom(restsUsedAtom);
   const setupBattle = useSetAtom(setupBattleAtom);
   const store = useStore();
 
@@ -207,6 +211,7 @@ export default function DungeonView() {
   // Footer controls available only between events (not mid-combat / mid-dialogue).
   const controlsEnabled = isBrowsing && !isComplete;
   const partyFull = isPartyFullyHealed(party);
+  const restsLeft = getDungeonRestPool(dungeon) - restsUsed;
 
   const totalCurrentHp = party.reduce((sum, m) => sum + Math.max(0, m.currentHp), 0);
   const totalMaxHp = party.reduce((sum, m) => sum + m.maxHp, 0);
@@ -238,10 +243,11 @@ export default function DungeonView() {
   }
 
   function handleRest() {
-    if (hasRested || partyFull) return;
+    if (hasRested || partyFull || restsLeft <= 0) return;
     setParty(healAllByMaxHpPercent(party, DUNGEON_REST_HEAL_PERCENT));
     soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6, 0.05);
     setHasRested(true);
+    setRestsUsed(restsUsed + 1);
   }
 
   async function handleLeave() {
@@ -374,9 +380,9 @@ export default function DungeonView() {
           variant="tan"
           size="sm"
           onClick={handleRest}
-          disabled={!controlsEnabled || hasRested || partyFull}
+          disabled={!controlsEnabled || hasRested || partyFull || restsLeft <= 0}
         >
-          {hasRested ? 'Rested' : 'Rest'}
+          {hasRested ? 'Rested' : `Rest (${restsLeft} left)`}
         </ToffecButton>
         <ToffecButton variant="mauve" size="sm" onClick={handleLeave} disabled={!controlsEnabled}>
           Leave Dungeon

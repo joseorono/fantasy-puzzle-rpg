@@ -6,6 +6,7 @@
 
 import type { DungeonDefinition, DungeonFloor, DungeonEvent } from '~/types/dungeon';
 import { DUNGEONS } from '~/constants/dungeons';
+import { DUNGEON_REST_POOL_DIVISOR, DUNGEON_REST_POOL_MINIMUM } from '~/constants/dungeon';
 
 /**
  * Look up an authored dungeon by id.
@@ -79,4 +80,17 @@ export function shouldRunEvent(event: DungeonEvent, isReplay: boolean): boolean 
  */
 export function getFloorBackground(dungeon: DungeonDefinition, floor: DungeonFloor): string {
   return floor.backgroundImage ?? dungeon.backgroundImage;
+}
+
+/**
+ * Total Rests available for one run of a dungeon: `floor(floorCount / divisor)`,
+ * floored to a minimum so even short dungeons grant at least one Rest.
+ * @param dungeon - The dungeon being run
+ * @returns The number of Rests available for the whole run
+ */
+export function getDungeonRestPool(dungeon: DungeonDefinition): number {
+  return Math.max(
+    DUNGEON_REST_POOL_MINIMUM,
+    Math.floor(dungeon.floors.length / DUNGEON_REST_POOL_DIVISOR),
+  );
 }
