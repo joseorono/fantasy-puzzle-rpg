@@ -3,9 +3,9 @@ import type { DialogueScene } from '~/types/dialogue';
 import { NARRATOR_CHAR, KNIGHT_CHAR } from '~/constants/dialogue/characters';
 import { MOSS_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 import { ANCIENT_CHEST_LOOT } from '~/constants/maps/map-00/loot-tables';
+import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 
-const CAVE_BG_1 = '/assets/bg/dungeon/bg-generic-cave-1.jpg';
-const CAVE_BG_2 = '/assets/bg/dungeon/bg-generic-cave-2.jpg';
+const [CAVE_BG_1, CAVE_BG_2] = DUNGEON_BG_IMAGES;
 
 // ─── Dialogue (named consts, shared by reference) ─────────────────────
 
@@ -83,3 +83,4 @@ export const SAMPLE_DUNGEON: DungeonDefinition = {
     },
   ],
 };
+
