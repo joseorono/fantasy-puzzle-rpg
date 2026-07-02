@@ -367,7 +367,7 @@ export default function DungeonView() {
 
       {/* Footer controls */}
       <div className="dungeon-footer">
-        <ToffecButton variant="gray" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
+        <ToffecButton variant="cream" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
           Manage Party
         </ToffecButton>
         <ToffecButton
