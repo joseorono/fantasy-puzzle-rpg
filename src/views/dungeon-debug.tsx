@@ -14,6 +14,10 @@ export default function DungeonDebugView() {
     goToDungeon({ dungeonId: SAMPLE_DUNGEON.id, isReplay });
   }
 
+  function enterReplay() {
+    goToDungeon({ dungeonId: SAMPLE_DUNGEON.id, isReplay: true });
+  }
+
   const completed = isDungeonCompleted(SAMPLE_DUNGEON.id);
 
   return (
@@ -23,12 +27,20 @@ export default function DungeonDebugView() {
         Sample dungeon: <span className="font-semibold">{SAMPLE_DUNGEON.name}</span> —{' '}
         {completed ? 'cleared (entering as replay: combats only)' : 'not yet cleared (first clear)'}
       </p>
-      <button
-        onClick={enter}
-        className="rounded bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
-      >
-        Enter {SAMPLE_DUNGEON.name}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={enter}
+          className="rounded bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+        >
+          Enter {SAMPLE_DUNGEON.name}
+        </button>
+        <button
+          onClick={enterReplay}
+          className="rounded bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
+        >
+          Replay {SAMPLE_DUNGEON.name}
+        </button>
+      </div>
     </div>
   );
 }
