@@ -89,6 +89,8 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
   const leftPortraits = scene.characters.filter((char) => char.side === 'left' && char.portrait);
   const rightPortraits = scene.characters.filter((char) => char.side === 'right' && char.portrait);
   const centerPortraits = scene.characters.filter((char) => char.side === 'center' && char.portrait);
+  const visiblePortraitCount = scene.characters.filter((char) => char.portrait).length;
+  const shouldForcePortraitActive = visiblePortraitCount === 1;
 
   return (
     <>
@@ -116,7 +118,7 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
             <DialoguePortrait
               key={char.id}
               character={char}
-              isActive={char.id === currentLine.speakerId}
+              isActive={shouldForcePortraitActive || char.id === currentLine.speakerId}
               emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
               showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
               rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
@@ -128,7 +130,7 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
             <DialoguePortrait
               key={char.id}
               character={char}
-              isActive={char.id === currentLine.speakerId}
+              isActive={shouldForcePortraitActive || char.id === currentLine.speakerId}
               emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
               showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
               rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
@@ -140,7 +142,7 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
             <DialoguePortrait
               key={char.id}
               character={char}
-              isActive={char.id === currentLine.speakerId}
+              isActive={shouldForcePortraitActive || char.id === currentLine.speakerId}
               emotion={char.id === currentLine.speakerId ? currentLine.emotion : undefined}
               showPortrait={currentLine.speakerId === char.id ? currentLine.showPortrait !== false : true}
               rotate90deg={currentLine.speakerId === char.id ? currentLine.rotate90deg === true : false}
