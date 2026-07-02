@@ -9,7 +9,10 @@ import {
   shouldRunEvent,
   getFloorBackground,
   getDungeonRestPool,
+  getDungeonEstimatedResources,
 } from './dungeon-system';
+import { SAMPLE_DUNGEON } from '~/constants/dungeons';
+import { createResources } from './resources';
 
 const DIALOGUE_EVENT: DungeonEvent = {
   type: 'dialogue',
@@ -111,5 +114,14 @@ describe('getDungeonRestPool', () => {
   it('floors the pool to a minimum of 1 for short dungeons', () => {
     expect(getDungeonRestPool(dungeonWithFloors(2))).toBe(1);
     expect(getDungeonRestPool(dungeonWithFloors(1))).toBe(1);
+  });
+});
+
+describe('getDungeonEstimatedResources', () => {
+  it('sums enemy drops + chests across the sample dungeon (probability 1)', () => {
+    // 2× Swamp Frog {15c,1cu} + 2× Moss Golem {50c,2cu,1fe} + 2× ANCIENT_CHEST {100c,5cu,3fe}
+    expect(getDungeonEstimatedResources(SAMPLE_DUNGEON)).toEqual(
+      createResources({ coins: 330, copper: 16, iron: 8 }),
+    );
   });
 });

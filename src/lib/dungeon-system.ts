@@ -5,8 +5,10 @@
  */
 
 import type { DungeonDefinition, DungeonFloor, DungeonEvent } from '~/types/dungeon';
+import type { Resources } from '~/types/resources';
 import { DUNGEONS } from '~/constants/dungeons';
 import { DUNGEON_REST_POOL_DIVISOR, DUNGEON_REST_POOL_MINIMUM } from '~/constants/dungeon';
+import { createResources, addResources, getPercentageOfResources } from './resources';
 
 /**
  * Look up an authored dungeon by id.
@@ -93,4 +95,29 @@ export function getDungeonRestPool(dungeon: DungeonDefinition): number {
     DUNGEON_REST_POOL_MINIMUM,
     Math.floor(dungeon.floors.length / DUNGEON_REST_POOL_DIVISOR),
   );
+}
+
+/**
+ * Total estimated resource yield of a dungeon: every combat enemy's loot plus every
+ * chest, with each loot table weighted by its own drop `probability` (so it's an
+ * expected-value estimate, not a best-case sum).
+ * @param dungeon - The dungeon to estimate
+ * @returns The summed, probability-weighted resources across the whole dungeon
+ */
+export function getDungeonEstimatedResources(dungeon: DungeonDefinition): Resources {
+  let total = createResources();
+  for (const floor of dungeon.floors) {
+    for (const event of floor.events) {
+      const tables =
+        event.type === 'combat'
+          ? event.encounter.enemies.map((enemy) => enemy.lootTable)
+          : event.type === 'chest'
+            ? [event.loot]
+            : [];
+      for (const table of tables) {
+        total = addResources(total, getPercentageOfResources(table.resources.item, table.resources.probability));
+      }
+    }
+  }
+  return total;
 }
