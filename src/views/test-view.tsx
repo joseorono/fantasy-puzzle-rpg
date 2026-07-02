@@ -161,6 +161,75 @@ export default function TestView() {
             </div>
           </Franuka05aFrame>
         </div>
+
+        {/* ToffecButton variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">ToffecButton</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Variants</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="tan">Tan</ToffecButton>
+                  <ToffecButton variant="mauve">Mauve</ToffecButton>
+                  <ToffecButton variant="orange">Orange</ToffecButton>
+                  <ToffecButton variant="cream">Cream</ToffecButton>
+                  <ToffecButton variant="gray">Gray</ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Sizes</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="orange" size="xs">
+                    XS
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="sm">
+                    Small
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="default">
+                    Default
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="lg">
+                    Large
+                  </ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Circle sizes</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="cream" size="circle" aria-label="Circle default">
+                    ●
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="circle-sm" aria-label="Circle small">
+                    ●
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="circle-lg" aria-label="Circle large">
+                    ●
+                  </ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Disabled</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="tan" disabled>
+                    Tan
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="sm" disabled>
+                    Small
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="xs" disabled>
+                    Disabled
+                  </ToffecButton>
+                </div>
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+
         {/* FranukaSlider variants */}
         <div className="mt-6">
           <Franuka05aFrame>
