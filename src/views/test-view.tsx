@@ -173,6 +173,7 @@ export default function TestView() {
                 <div className="flex flex-wrap items-center gap-4">
                   <ToffecButton variant="tan">Tan</ToffecButton>
                   <ToffecButton variant="mauve">Mauve</ToffecButton>
+                  <ToffecButton variant="indigolay-red">Indigolay Red</ToffecButton>
                   <ToffecButton variant="orange">Orange</ToffecButton>
                   <ToffecButton variant="cream">Cream</ToffecButton>
                   <ToffecButton variant="gray">Gray</ToffecButton>

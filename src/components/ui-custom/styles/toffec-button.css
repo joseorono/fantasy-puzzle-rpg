@@ -21,7 +21,7 @@
 }
 
 .toffec-button:hover:not(:disabled).toffec-button--mauve {
-  box-shadow: 0 2px 0 #4d1717, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .toffec-button:hover:not(:disabled).toffec-button--orange {
@@ -57,10 +57,20 @@
 
 /* Mauve variant (Row 2 from image) */
 .toffec-button--mauve {
+  background-color: #705060;
+  box-shadow: 0 4px 0 #4a3540, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Indigolay Red variant (branch-specific red version of the old mauve styling) */
+.toffec-button--indigolay-red {
   background-color: #762323;
   color: #f5e6c8;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
   box-shadow: 0 4px 0 #4d1717, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.toffec-button:hover:not(:disabled).toffec-button--indigolay-red {
+  box-shadow: 0 2px 0 #4d1717, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Orange variant (Row 3 from image) */

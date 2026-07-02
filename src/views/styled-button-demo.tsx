@@ -21,6 +21,9 @@ export default function ToffecButtonDemo() {
             <ToffecButton variant="mauve" onClick={handleClick}>
               Mauve
             </ToffecButton>
+            <ToffecButton variant="indigolay-red" onClick={handleClick}>
+              Indigolay Red
+            </ToffecButton>
             <ToffecButton variant="orange" onClick={handleClick}>
               Orange
             </ToffecButton>
@@ -112,7 +115,7 @@ export default function ToffecButtonDemo() {
             <ToffecButton variant="orange" onClick={handleClick}>
               Confirm
             </ToffecButton>
-            <ToffecButton variant="mauve" onClick={handleClick}>
+            <ToffecButton variant="indigolay-red" onClick={handleClick}>
               Cancel
             </ToffecButton>
           </div>

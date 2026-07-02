@@ -63,7 +63,7 @@ export function DialogueTestView() {
               Simple Scene
             </ToffecButton>
 
-            <ToffecButton variant="mauve" size="sm" className="nim-btn" onClick={() => startScene('narrator')}>
+            <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={() => startScene('narrator')}>
               <FrostyRpgIcon name="orbPurple" size={16} />
               Narrator Cutscene
             </ToffecButton>
