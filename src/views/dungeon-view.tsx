@@ -27,7 +27,6 @@ import {
   useDungeonProgressActions,
 } from '~/stores/game-store';
 import {
-  getDungeonById,
   getFloor,
   getEvent,
   getFloorBackground,
@@ -136,18 +135,17 @@ export default function DungeonView() {
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
 
-  // Prefer a dungeon object carried in viewData (e.g. a generated remix); otherwise
-  // resolve an authored dungeon from the registry by id.
-  const dungeon = viewData ? (viewData.dungeon ?? getDungeonById(viewData.dungeonId)) : undefined;
+  // The dungeon definition is passed by reference through the router (authored or generated).
+  const dungeon = viewData?.dungeon;
 
   // On mount: resume a won battle, or seed a fresh run. Both paths are idempotent,
   // so StrictMode's double-fired mount effect is safe.
   useEffect(() => {
     if (!viewData) return;
-    if (activeDungeonId === viewData.dungeonId && phase === 'awaiting-battle') {
+    if (activeDungeonId === viewData.dungeon.id && phase === 'awaiting-battle') {
       resolveBattleWin();
-    } else if (activeDungeonId !== viewData.dungeonId) {
-      startRun({ dungeonId: viewData.dungeonId, isReplay: viewData.isReplay });
+    } else if (activeDungeonId !== viewData.dungeon.id) {
+      startRun({ dungeonId: viewData.dungeon.id, isReplay: viewData.isReplay });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -160,7 +158,7 @@ export default function DungeonView() {
     if (!dungeon || !viewData) return;
     if (activeDialogue) return;
     if (store.get(dungeonPhaseAtom) !== 'browsing') return;
-    if (store.get(activeDungeonIdAtom) !== viewData.dungeonId) return; // not seeded yet
+    if (store.get(activeDungeonIdAtom) !== viewData.dungeon.id) return; // not seeded yet
 
     const liveFloorIndex = store.get(currentFloorIndexAtom);
     const floor = getFloor(dungeon, liveFloorIndex);

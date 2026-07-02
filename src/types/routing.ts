@@ -43,16 +43,14 @@ export interface BattleViewData {
 }
 
 /**
- * Data for the dungeon view. `isReplay` is computed at entry from completion state.
+ * Data for the dungeon view. The full dungeon object is passed by reference (authored
+ * dungeons are module constants; generated/randomized ones are one-off objects), so a run
+ * needs no registry lookup and future multi-dungeon locations can hand off any definition.
+ * `isReplay` is computed at entry from completion state.
  */
 export interface DungeonViewData {
-  dungeonId: string;
+  dungeon: DungeonDefinition;
   isReplay: boolean;
-  /**
-   * A full dungeon object to run directly, bypassing the `DUNGEONS` registry. Used for
-   * generated (e.g. randomized) dungeons that aren't authored/registered.
-   */
-  dungeon?: DungeonDefinition;
 }
 
 /**

@@ -12,16 +12,15 @@ export default function DungeonDebugView() {
 
   function enter() {
     const isReplay = isDungeonCompleted(SAMPLE_DUNGEON.id);
-    goToDungeon({ dungeonId: SAMPLE_DUNGEON.id, isReplay });
+    goToDungeon({ dungeon: SAMPLE_DUNGEON, isReplay });
   }
 
   function enterReplay() {
-    goToDungeon({ dungeonId: SAMPLE_DUNGEON.id, isReplay: true });
+    goToDungeon({ dungeon: SAMPLE_DUNGEON, isReplay: true });
   }
 
   function enterRandomized() {
-    const remix = randomizeDungeon(SAMPLE_DUNGEON);
-    goToDungeon({ dungeonId: remix.id, isReplay: false, dungeon: remix });
+    goToDungeon({ dungeon: randomizeDungeon(SAMPLE_DUNGEON), isReplay: false });
   }
 
   const completed = isDungeonCompleted(SAMPLE_DUNGEON.id);
