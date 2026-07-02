@@ -47,6 +47,9 @@ export function ConfirmPanel({
     <div className="confirm-panel-backdrop" onClick={onCancel}>
       <div
         className={cn('confirm-panel', isDanger && 'confirm-panel--danger')}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         onClick={(event) => event.stopPropagation()}
       >
         <button className="confirm-panel__close" onClick={onCancel} aria-label="Close" type="button" />

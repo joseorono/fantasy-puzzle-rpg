@@ -247,7 +247,7 @@ export default function DungeonView() {
     setParty(healAllByMaxHpPercent(party, DUNGEON_REST_HEAL_PERCENT));
     soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6, 0.05);
     setHasRested(true);
-    setRestsUsed(restsUsed + 1);
+    setRestsUsed((n) => n + 1);
   }
 
   async function handleLeave() {
