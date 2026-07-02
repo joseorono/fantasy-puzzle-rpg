@@ -1,5 +1,6 @@
 import { useRouterActions, useDungeonProgressActions } from '~/stores/game-store';
 import { SAMPLE_DUNGEON } from '~/constants/dungeons';
+import { randomizeDungeon } from '~/lib/dungeon-randomizer';
 
 /**
  * Debug entry point for the dungeon system. Computes `isReplay` from completion
@@ -16,6 +17,11 @@ export default function DungeonDebugView() {
 
   function enterReplay() {
     goToDungeon({ dungeonId: SAMPLE_DUNGEON.id, isReplay: true });
+  }
+
+  function enterRandomized() {
+    const remix = randomizeDungeon(SAMPLE_DUNGEON);
+    goToDungeon({ dungeonId: remix.id, isReplay: false, dungeon: remix });
   }
 
   const completed = isDungeonCompleted(SAMPLE_DUNGEON.id);
@@ -39,6 +45,12 @@ export default function DungeonDebugView() {
           className="rounded bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
         >
           Replay {SAMPLE_DUNGEON.name}
+        </button>
+        <button
+          onClick={enterRandomized}
+          className="rounded bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600"
+        >
+          Randomize {SAMPLE_DUNGEON.name}
         </button>
       </div>
     </div>

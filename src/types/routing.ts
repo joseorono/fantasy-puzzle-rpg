@@ -1,4 +1,5 @@
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
 
 /**
  * Available views in the game
@@ -47,6 +48,11 @@ export interface BattleViewData {
 export interface DungeonViewData {
   dungeonId: string;
   isReplay: boolean;
+  /**
+   * A full dungeon object to run directly, bypassing the `DUNGEONS` registry. Used for
+   * generated (e.g. randomized) dungeons that aren't authored/registered.
+   */
+  dungeon?: DungeonDefinition;
 }
 
 /**

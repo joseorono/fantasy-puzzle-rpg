@@ -136,7 +136,9 @@ export default function DungeonView() {
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
 
-  const dungeon = viewData ? getDungeonById(viewData.dungeonId) : undefined;
+  // Prefer a dungeon object carried in viewData (e.g. a generated remix); otherwise
+  // resolve an authored dungeon from the registry by id.
+  const dungeon = viewData ? (viewData.dungeon ?? getDungeonById(viewData.dungeonId)) : undefined;
 
   // On mount: resume a won battle, or seed a fresh run. Both paths are idempotent,
   // so StrictMode's double-fired mount effect is safe.
