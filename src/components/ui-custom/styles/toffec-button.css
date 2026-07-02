@@ -50,6 +50,11 @@
   box-shadow: 0 4px 0 #6b4a35, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
+.toffec-button--tan:not(:disabled) {
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
 /* Mauve variant (Row 2 from image) */
 .toffec-button--mauve {
   background-color: #762323;
