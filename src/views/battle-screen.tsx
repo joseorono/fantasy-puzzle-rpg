@@ -132,7 +132,7 @@ export default function BattleScreen() {
           {/* Bottom section - Match-3 Board */}
           <div
             id="boardSection"
-            className="boardSection relative border-t-2 border-amber-700 bg-gradient-to-b  from-amber-950/80 to-amber-900/60 p-2 sm:p-3"
+            className="boardSection relative border-t-2 border-amber-700 bg-gradient-to-b from-amber-950/80 to-amber-900/60 p-2 sm:p-3"
             style={{ '--board-bg-image': `url(${bgImage})` } as React.CSSProperties}
           >
             {/* Decorative background pattern */}
