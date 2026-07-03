@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { cn } from '~/lib/utils';
@@ -71,7 +72,7 @@ export function ConfirmPanel({
           </div>
         </div>
 
-        <div className="confirm-panel__divider" />
+        <RetroDivider variant={isDanger ? 'defeat' : 'default'} />
 
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 
