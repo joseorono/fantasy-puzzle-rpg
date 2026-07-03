@@ -76,7 +76,7 @@
 
 /* ─── Close button ─────────────────────────────────────────────────────── */
 
-.confirm-panel__close {
+.confirm-panel .confirm-panel__close {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -85,8 +85,7 @@
   height: 26px;
   padding: 0;
   border: none;
-  background: transparent url('/assets/icons/indigolay/Icon_x-circle.png') no-repeat center;
-  background-size: contain;
+  background: transparent;
   image-rendering: pixelated;
   cursor: pointer;
   transition:
@@ -94,12 +93,12 @@
     filter 0.15s ease;
 }
 
-.confirm-panel__close:hover {
+.confirm-panel .confirm-panel__close:hover {
   transform: scale(1.1);
   filter: brightness(1.15);
 }
 
-.confirm-panel__close:active {
+.confirm-panel .confirm-panel__close:active {
   transform: scale(0.92);
 }
 
