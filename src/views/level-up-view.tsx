@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
@@ -11,6 +11,8 @@ import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import {
   SNAPPY_SPIN_TIMING,
@@ -38,6 +40,10 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   const pointsRemaining = availablePoints - pointsSpent;
   const hasPendingChanges = pointsSpent > 0;
   const allPointsAllocated = pointsRemaining === 0;
+
+  useEffect(() => {
+    soundService.playSound(SoundNames.levelUp);
+  }, [character.id]);
 
   // Calculate preview stats
   const previewStats = {
