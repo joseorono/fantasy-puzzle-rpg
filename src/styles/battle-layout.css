@@ -45,7 +45,7 @@
     flex: 0 0 45%;
     width: 45%;
     max-height: 100vh;
-    overflow: auto;
+    overflow: hidden;
     border-top: none !important;
     border-left: 2px solid rgb(180, 83, 9);
   }
@@ -80,16 +80,20 @@
     transform: scale(0.92);
     transform-origin: center top;
   }
+
+  .match3BoardContainer .f05a-frame {
+    transform: scale(0.8);
+    transform-origin: center bottom;
+  }
 }
 
 .boardSection {
   position: relative;
   flex-shrink: 0;
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 #boardSection::before {
