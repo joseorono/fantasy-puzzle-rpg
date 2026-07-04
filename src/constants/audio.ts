@@ -49,7 +49,7 @@ export const soundFiles = {
   [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.wav',
   [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.wav',
   [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.wav',
-  [SoundNames.levelUp]: '/assets/audio/ui/levelup.wav',
+  [SoundNames.levelUp]: '/assets/audio/ui/levelup.ogg',
 };
 
 // Background sounds for the town hub (randomly selected on entry)
