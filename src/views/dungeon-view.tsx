@@ -45,6 +45,7 @@ import { LootNotification } from '~/components/map/loot-notification';
 import { TopBarResources } from '~/components/town/top-bar-resources';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
@@ -212,6 +213,9 @@ export default function DungeonView() {
   const controlsEnabled = isBrowsing && !isComplete;
   const partyFull = isPartyFullyHealed(party);
   const restsLeft = getDungeonRestPool(dungeon) - restsUsed;
+  // No resting on the entrance floor: otherwise players could walk in, rest, and leave,
+  // treating the dungeon as a free (albeit slower) inn. You must progress past it first.
+  const canRestOnThisFloor = floorIndex > 0;
 
   const totalCurrentHp = party.reduce((sum, m) => sum + Math.max(0, m.currentHp), 0);
   const totalMaxHp = party.reduce((sum, m) => sum + m.maxHp, 0);
@@ -243,7 +247,7 @@ export default function DungeonView() {
   }
 
   function handleRest() {
-    if (hasRested || partyFull || restsLeft <= 0) return;
+    if (hasRested || partyFull || restsLeft <= 0 || !canRestOnThisFloor) return;
     setParty(healAllByMaxHpPercent(party, DUNGEON_REST_HEAL_PERCENT));
     soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6, 0.05);
     setHasRested(true);
@@ -269,6 +273,9 @@ export default function DungeonView() {
   }
 
   const isBoss = currentFloor?.isBoss ?? false;
+
+  const restHealPercent = Math.round(DUNGEON_REST_HEAL_PERCENT * 100);
+  const isRestDisabled = !controlsEnabled || hasRested || partyFull || restsLeft <= 0 || !canRestOnThisFloor;
 
   return (
     <div className="game-view dungeon flex h-full min-h-0 flex-col overflow-hidden">
@@ -373,20 +380,43 @@ export default function DungeonView() {
 
       {/* Footer controls */}
       <div className="dungeon-footer">
-        <ToffecButton variant="cream" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
-          Manage Party
-        </ToffecButton>
-        <ToffecButton
-          variant="tan"
-          size="sm"
-          onClick={handleRest}
-          disabled={!controlsEnabled || hasRested || partyFull || restsLeft <= 0}
-        >
-          {hasRested ? 'Rested' : `Rest (${restsLeft} left)`}
-        </ToffecButton>
-        <ToffecButton variant="indigolay-red" size="sm" onClick={handleLeave} disabled={!controlsEnabled}>
-          Leave Dungeon
-        </ToffecButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <ToffecButton variant="cream" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
+                Manage Party
+              </ToffecButton>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Open the party menu to review stats, swap equipment, and assign skills.
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <ToffecButton variant="tan" size="sm" onClick={handleRest} disabled={isRestDisabled}>
+                {hasRested ? 'Rested' : `Rest (${restsLeft} left)`}
+              </ToffecButton>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Heal every hero for {restHealPercent}% of their max HP. Rests are limited per dungeon.
+            {isRestDisabled ? " You can't rest on this floor." : ''}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <ToffecButton variant="indigolay-red" size="sm" onClick={handleLeave} disabled={!controlsEnabled}>
+                Leave Dungeon
+              </ToffecButton>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top">Abandon the run and return. You'll lose all progress in this dungeon.</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Inline overlays */}
