@@ -117,3 +117,9 @@
 #boardSection::before {
   pointer-events: none;
 }
+
+/* Tiled grid overlay for the board section (60×60 SVG, kept crisp via .pixel-art). */
+.board-grid-pattern {
+  background-image: url('/assets/bg/grid-pattern.svg');
+  background-repeat: repeat;
+}
