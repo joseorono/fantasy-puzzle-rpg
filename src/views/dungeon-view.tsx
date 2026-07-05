@@ -233,7 +233,7 @@ export default function DungeonView() {
     setInventory(result.inventory);
     setResources(result.resources);
     setCurrentLoot(result.rolledLoot);
-    soundService.playSound(SoundNames.bgNoiseMiner, 0.7, 0.1, 0.05);
+    soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
     advanceEvent();
   }
 

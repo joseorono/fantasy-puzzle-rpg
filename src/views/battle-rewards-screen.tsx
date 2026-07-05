@@ -33,6 +33,21 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+
+/**
+ * Play the level-up jingle, throttled so the up-to-four party cards crossing a level on
+ * the same frame collapse into a single play instead of stacking into a loud blare.
+ * Sequential level-ups (≥ a segment apart) still each get their own play.
+ */
+let lastLevelUpSoundAt = -Infinity;
+function playLevelUpSound() {
+  const now = performance.now();
+  if (now - lastLevelUpSoundAt < 120) return;
+  lastLevelUpSoundAt = now;
+  soundService.playSound(SoundNames.levelUp, 0.8);
+}
 
 /**
  * Battle Rewards Screen View
@@ -433,7 +448,9 @@ interface CharacterExpCardProps {
 function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
   // Build the timeline once so the rAF animation has a stable input.
   const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
-  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline);
+  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline, {
+    onLevelUp: playLevelUpSound,
+  });
 
   return (
     <div className="character-card">

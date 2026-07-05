@@ -23,6 +23,7 @@ export enum SoundNames {
   bossFight = 'bossFight',
   fightMusicLoop = 'fightMusicLoop',
   levelUp = 'levelUp',
+  rhodesmasChime = 'rhodesmasChime',
 }
 
 export const soundFiles = {
@@ -50,6 +51,7 @@ export const soundFiles = {
   [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.wav',
   [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.wav',
   [SoundNames.levelUp]: '/assets/audio/ui/levelup.ogg',
+  [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
 };
 
 // Background sounds for the town hub (randomly selected on entry)

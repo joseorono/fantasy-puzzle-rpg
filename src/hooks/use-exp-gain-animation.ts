@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ExpGainTimeline } from '~/lib/leveling-system';
 
 /** Milliseconds of fill time per percent travelled (a full 0→100 fill ≈ 600ms before clamping). */
@@ -12,6 +12,15 @@ const LEVEL_UP_PAUSE_MS = 320;
 /** Ease-out so each fill decelerates as it lands. */
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+export interface ExpGainAnimationOptions {
+  /**
+   * Fired once each time the bar crosses a level threshold, at the moment the level
+   * ticks up and the bar lands on 100% (just before the badge pops). Use for level-up SFX.
+   * @param newLevel - The level just reached.
+   */
+  onLevelUp?: (newLevel: number) => void;
 }
 
 export interface ExpGainAnimationState {
@@ -35,9 +44,17 @@ export interface ExpGainAnimationState {
  * Honours `prefers-reduced-motion` by jumping straight to the final state.
  *
  * @param timeline - The pure animation timeline for this character (stable identity expected)
+ * @param options - Optional callbacks (e.g. {@link ExpGainAnimationOptions.onLevelUp} for SFX)
  * @returns The live animation state to render
  */
-export function useExpGainAnimation(timeline: ExpGainTimeline): ExpGainAnimationState {
+export function useExpGainAnimation(
+  timeline: ExpGainTimeline,
+  options?: ExpGainAnimationOptions,
+): ExpGainAnimationState {
+  // Held in a ref so a changing callback identity never re-runs the rAF effect below.
+  const onLevelUpRef = useRef(options?.onLevelUp);
+  onLevelUpRef.current = options?.onLevelUp;
+
   const [state, setState] = useState<ExpGainAnimationState>(() => ({
     percentage: timeline.segments[0]?.fromPercent ?? 0,
     level: timeline.startLevel,
@@ -55,13 +72,15 @@ export function useExpGainAnimation(timeline: ExpGainTimeline): ExpGainAnimation
 
     if (prefersReducedMotion) {
       const last = segments[segments.length - 1];
+      const finalLevel = timeline.startLevel + timeline.totalLevelUps;
       setState({
         percentage: last.toPercent,
-        level: timeline.startLevel + timeline.totalLevelUps,
+        level: finalLevel,
         badgeKey: timeline.totalLevelUps,
         hasLeveledUp: timeline.totalLevelUps > 0,
         isComplete: true,
       });
+      if (timeline.totalLevelUps > 0) onLevelUpRef.current?.(finalLevel);
       return;
     }
 
@@ -103,13 +122,16 @@ export function useExpGainAnimation(timeline: ExpGainTimeline): ExpGainAnimation
       // Segment finished.
       if (segment.levelsUp) {
         levelUpsSoFar += 1;
+        const newLevel = segment.level + 1;
         setState((prev) => ({
           ...prev,
           percentage: 100,
-          level: segment.level + 1,
+          level: newLevel,
           badgeKey: levelUpsSoFar,
           hasLeveledUp: true,
         }));
+        // Sound fires with the level tick, while the bar holds at 100% (LEVEL_UP_PAUSE_MS).
+        onLevelUpRef.current?.(newLevel);
         segmentIndex += 1;
         if (segmentIndex >= segments.length) {
           setState((prev) => ({ ...prev, isComplete: true }));
