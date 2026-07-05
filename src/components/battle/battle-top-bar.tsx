@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { Hourglass, Star, Swords } from 'lucide-react';
+import { Eye, Hourglass, Star, Swords } from 'lucide-react';
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
@@ -55,14 +55,18 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
               visibleTimers.map((timer) => (
                 <RadialCountdown
                   key={timer.id}
-                  durationMs={timer.intervalMs}
+                  durationMs={timer.durationMs}
                   cycleKey={timer.cycleKey}
                   paused={isPaused}
                   size="sm"
-                  tone="danger"
+                  tone={timer.isStandby ? 'gold' : 'danger'}
                   className="btb-threat-pie"
                 >
-                  <Swords className="btb-threat-icon" />
+                  {timer.isStandby ? (
+                    <Eye className="btb-threat-icon" />
+                  ) : (
+                    <Swords className="btb-threat-icon" />
+                  )}
                 </RadialCountdown>
               ))
             )}

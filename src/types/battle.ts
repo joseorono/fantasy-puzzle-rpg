@@ -61,4 +61,10 @@ export interface BattleState {
   lastMatchedType: OrbType | null;
   enemyAttackTimestamp?: number | null;
   lastSkillActivation: SkillActivationEvent | null;
+  /**
+   * Per-enemy start-of-battle standby delay (ms), keyed by enemy id. Generated once when
+   * the battle is created; each enemy waits this long "observing" before its attack loop
+   * begins, so attacks fan out instead of firing in unison. See {@link generateEnemyStandbyDelays}.
+   */
+  enemyStandbyMs: Record<string, number>;
 }

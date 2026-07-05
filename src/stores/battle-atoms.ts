@@ -319,6 +319,9 @@ export const scoreAtom = atom((get) => get(battleStateAtom).score);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
+// Per-enemy start-of-battle standby delays (ms), regenerated whenever a new battle is created.
+// `?? {}` guards any pre-existing state object without the field.
+export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandbyMs ?? {});
 
 // Atom to reduce a specific character's skill cooldown (e.g. from matching their color orbs)
 export const reduceSkillCooldownAtom = atom(null, (get, set, characterId: string, amount: number) => {
