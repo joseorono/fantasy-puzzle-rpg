@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { damagePartyAtom, enemiesAtom, enemyStandbyMsAtom, gameStatusAtom } from '~/stores/battle-atoms';
+import {
+  damagePartyAtom,
+  enemiesAtom,
+  enemyStandbyMsAtom,
+  endEnemyStandbyAtom,
+  gameStatusAtom,
+  standbyEnemyIdsAtom,
+} from '~/stores/battle-atoms';
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
 
 /** Per-enemy attack timing exposed to the UI. */
@@ -30,15 +37,17 @@ export interface EnemyAttackTimer {
  * (per-battle-stable) standby map — the standby→attack transition is handled *inside* the
  * timer callback, so it never re-runs the effect. `releaseAtRef` (absolute timestamps) is the
  * source of truth for the remaining wait, so a mid-battle rebuild (an enemy dies) resumes each
- * observer's countdown instead of restarting it. `standbyDone` is cosmetic state only.
+ * observer's countdown instead of restarting it. Which enemies are still observing lives in
+ * battle state (`standbyEnemyIds`), so the damage path can award preemptive-strike bonuses.
  */
 export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAttackTimer[] {
   const enemies = useAtomValue(enemiesAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
   const enemyStandbyMs = useAtomValue(enemyStandbyMsAtom);
+  const standbyEnemyIds = useAtomValue(standbyEnemyIdsAtom);
   const damageParty = useSetAtom(damagePartyAtom);
+  const endStandby = useSetAtom(endEnemyStandbyAtom);
   const [cycles, setCycles] = useState<Record<string, number>>({});
-  const [standbyDone, setStandbyDone] = useState<Record<string, true>>({});
 
   // Latest enemies, read inside the interval callbacks without widening deps.
   const enemiesRef = useRef(enemies);
@@ -55,11 +64,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     .map((enemy) => `${enemy.id}:${calculateEnemyAttackInterval(enemy)}`)
     .join('|');
 
-  // New battle (a fresh `enemyStandbyMs` object) → clear release times and phase/cycle state so
-  // every enemy re-observes from scratch. Runs on mount and on each new encounter.
+  // New battle (a fresh `enemyStandbyMs` object) → clear release times and ring-cycle state so
+  // every enemy re-observes from scratch. (The observing set itself is reset in createBattleState.)
   useEffect(() => {
     releaseAtRef.current = new Map();
-    setStandbyDone({});
     setCycles({});
   }, [enemyStandbyMs]);
 
@@ -96,27 +104,26 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       if (standbyMs > 0 && remaining > 0) {
         // Still observing — wait out the remaining standby, then flip to attacking in place.
         const t = setTimeout(() => {
-          setStandbyDone((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+          endStandby(id);
           startAttackLoop();
         }, remaining);
         disposers.push(() => clearTimeout(t));
       } else {
-        // Standby already elapsed (or none) — make sure the UI reflects "attacking", then attack.
-        if (standbyMs > 0) setStandbyDone((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+        // Standby already elapsed (or none) — make sure state reflects "attacking", then attack.
+        if (standbyMs > 0) endStandby(id);
         startAttackLoop();
       }
     }
 
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStatus, isBattlePaused, rosterSignature, enemyStandbyMs, damageParty]);
+  }, [gameStatus, isBattlePaused, rosterSignature, enemyStandbyMs, damageParty, endStandby]);
 
   return livingEnemies.map((enemy) => {
-    const standbyMs = enemyStandbyMs[enemy.id] ?? 0;
-    const isStandby = !standbyDone[enemy.id] && standbyMs > 0;
+    const isStandby = standbyEnemyIds.includes(enemy.id);
     return {
       id: enemy.id,
-      durationMs: isStandby ? standbyMs : calculateEnemyAttackInterval(enemy),
+      durationMs: isStandby ? (enemyStandbyMs[enemy.id] ?? 0) : calculateEnemyAttackInterval(enemy),
       cycleKey: isStandby ? `standby-${enemy.id}` : (cycles[enemy.id] ?? 0),
       isStandby,
     };

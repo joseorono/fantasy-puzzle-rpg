@@ -75,6 +75,7 @@ export function generateEnemyStandbyDelays(
  */
 export function createBattleState(party: CharacterData[], enemies: EnemyData[]): BattleState {
   const effectiveParty = getPartyWithEffectiveStats(party);
+  const enemyStandbyMs = generateEnemyStandbyDelays(enemies.map((e) => e.id));
 
   return {
     // currentHp is intentionally carried over from the incoming party (already clamped to
@@ -85,7 +86,10 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
       skillCooldown: resolveCharacterCooldown(char),
     })),
     enemies: enemies.map((e) => ({ ...e, currentHp: e.maxHp })),
-    enemyStandbyMs: generateEnemyStandbyDelays(enemies.map((e) => e.id)),
+    enemyStandbyMs,
+    // Every enemy that actually has a standby delay starts out observing.
+    standbyEnemyIds: enemies.map((e) => e.id).filter((id) => (enemyStandbyMs[id] ?? 0) > 0),
+    lastPreemptiveStrike: null,
     selectedEnemyId: enemies[0].id,
     board: createInitialBoard(),
     selectedOrb: null,

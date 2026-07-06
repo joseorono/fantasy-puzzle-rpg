@@ -67,4 +67,15 @@ export interface BattleState {
    * begins, so attacks fan out instead of firing in unison. See {@link generateEnemyStandbyDelays}.
    */
   enemyStandbyMs: Record<string, number>;
+  /**
+   * Ids of enemies still on their standby (observing, not yet attacking). Maintained by the
+   * attack-timer hook as each standby elapses; a hit on one of these lands as a "preemptive
+   * strike" (bonus damage). Initialized to every enemy with a non-zero standby delay.
+   */
+  standbyEnemyIds: string[];
+  /**
+   * Fires when a hit lands on a still-observing enemy, so the centered "Preemptive Strike!"
+   * callout can replay. The timestamp re-triggers the animation on repeat strikes.
+   */
+  lastPreemptiveStrike: { timestamp: number } | null;
 }
