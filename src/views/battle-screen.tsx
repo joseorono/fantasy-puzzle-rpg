@@ -7,6 +7,7 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
+import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
 import {
   gameStatusAtom,
   tickSkillCooldownsAtom,
@@ -97,6 +98,9 @@ export default function BattleScreen() {
       {/* Main container - constrained to game view height */}
       <div className="relative flex min-h-0 flex-1 flex-col">
         <BattleTopBar enemyTimers={enemyTimers} isBattlePaused={isBattlePaused} onPauseToggle={toggleBattlePause} />
+
+        {/* Centered callout when a hit lands on a still-observing enemy. */}
+        <PreemptiveStrikeIndicator />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
