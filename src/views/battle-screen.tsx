@@ -144,7 +144,7 @@ export default function BattleScreen() {
               <div className="board-grid-pattern pixel-art absolute inset-0" />
             </div>
 
-            <div className="relative z-1 flex flex-col items-center xl:-translate-y-8 sm:p-3 md:p-4">
+            <div className="relative z-1 flex flex-col items-center sm:p-3 md:p-4">
               <div id="boardWrapper" className="relative mx-auto max-w-xl">
                 <Match3Board isBattlePaused={isBattlePaused} />
               </div>
