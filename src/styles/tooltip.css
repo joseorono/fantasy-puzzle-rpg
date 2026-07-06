@@ -28,26 +28,6 @@
   fill: #d4a574;
 }
 
-/* Structured tooltip content — title + description, used by battle items and reusable elsewhere. */
-.battle-item-tooltip__name {
-  margin: 0 0 0.375rem 0;
-  text-align: center;
-  font-size: 0.6rem;
-  font-weight: bold;
-  color: #ffd700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-}
-
-.battle-item-tooltip__desc {
-  font-size: 0.7rem;
-  line-height: 1.5;
-  color: #e0e0e0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  text-align: center;
-}
-
 /* Animation states */
 [data-state='open'] .tooltip-content {
   animation: tooltip-fade-in 0.15s ease-out;
@@ -85,13 +65,5 @@
     font-size: 0.6rem;
     padding: 0.5rem 0.625rem;
     max-width: 14rem;
-  }
-
-  .battle-item-tooltip__name {
-    font-size: 0.5rem;
-  }
-
-  .battle-item-tooltip__desc {
-    font-size: 0.6rem;
   }
 }
