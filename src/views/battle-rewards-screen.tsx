@@ -18,12 +18,7 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import {
-  levelUp,
-  getRandomPotentialStats,
-  buildExpGainTimeline,
-  getExpThresholdForLevel,
-} from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
 import { getNewlyUnlockableSkills } from '~/lib/skill-system';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
@@ -343,7 +338,10 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
               </div>
               <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
-                <span className="item-type" style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}>
+                <span
+                  className="item-type"
+                  style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}
+                >
                   {getRarityLabel(item.rarity)}
                 </span>
               </span>
@@ -479,28 +477,32 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
         </div>
         <ExperienceBar percentage={percentage} variant="compact" />
         <div className="reward-exp-numbers pixel-font">
-          <span className="reward-exp-numbers__have number-flow-container">
-            <NumberFlow
-              value={currentExp}
-              format={INTEGER_FORMAT}
-              trend={1}
-              spinTiming={EXP_COUNTER_TIMING}
-              transformTiming={EXP_COUNTER_TIMING}
-              opacityTiming={EXP_COUNTER_TIMING}
-            />
-            <span className="reward-exp-numbers__unit">EXP</span>
-          </span>
-          <span className="reward-exp-numbers__missing number-flow-container">
-            <NumberFlow
-              value={missingExp}
-              format={INTEGER_FORMAT}
-              trend={-1}
-              spinTiming={EXP_COUNTER_TIMING}
-              transformTiming={EXP_COUNTER_TIMING}
-              opacityTiming={EXP_COUNTER_TIMING}
-            />
-            <span className="reward-exp-numbers__unit">Next Lv</span>
-          </span>
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--have">
+            <span className="reward-exp-numbers__label">EXP</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={currentExp}
+                format={INTEGER_FORMAT}
+                trend={1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--missing">
+            <span className="reward-exp-numbers__label">Next Lv</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={missingExp}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
         </div>
       </div>
       {hasLeveledUp && (

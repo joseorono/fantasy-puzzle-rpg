@@ -13,7 +13,7 @@
   background-position: center;
 }
 
-.exp-gained-container>.character-cards-grid {
+.exp-gained-container > .character-cards-grid {
   flex: 1;
   min-height: 0;
 }
@@ -64,9 +64,12 @@
 }
 
 .character-card {
-  background-image: linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
+  background-size:
+    auto,
+    50px 50px;
   background-position: center, center;
   border: 2px solid #5c3a1e;
   border-radius: 12px;
@@ -84,7 +87,7 @@
   min-height: 0;
   /* visible (not hidden) so the level-up bookmark can hang past the right edge;
          the card's rounded corners still hold via border-radius. */
-    overflow: visible;
+  overflow: visible;
 }
 
 /* Portrait sits absolutely on the left with outer spacing on the right.
@@ -100,6 +103,12 @@
   overflow: visible;
   line-height: 0;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Keep the level badge inside the portrait box instead of hanging past the edge. */
+.reward-portrait .level-tag {
+  top: 0;
+  left: 0;
 }
 
 .character-card .character-portrait {
@@ -209,39 +218,47 @@
   margin: 0 0 0.25rem 0;
 }
 
-
 /* Level-up indicator is a horizontal bookmark (indigolay) that hangs 25px past
    the card's right edge. Native art is 183×102 (~1.79:1). */
 .level-up-badge {
   position: absolute;
   top: 8px;
-    right: -16px;
+  right: -16px;
   z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 104px;
-    height: 58px;
-    /* Extra right padding keeps the label off the swallowtail notch so it reads
+  height: 58px;
+  /* Extra right padding keeps the label off the swallowtail notch so it reads
          centered on the flat red band. */
-    padding: 0 1rem 0.65rem 0.4rem;
-    background: url('/assets/bookmarks/ui-bookmark-horizontal-m-red.png') no-repeat center / contain;
-    image-rendering: pixelated;
+  padding: 0 1rem 0.65rem 0.4rem;
+  background: url('/assets/bookmarks/ui-bookmark-horizontal-m-red.png') no-repeat center / contain;
+  image-rendering: pixelated;
   white-space: nowrap;
   font-weight: 700;
   font-size: 0.78rem;
   color: #ffe9c2;
-    letter-spacing: 0.03em;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  letter-spacing: 0.03em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
 
 /* Appear-only entrance: the bookmark slides in from the edge it hangs off and
    overshoots with a slight tilt, so it reads as being slapped onto the card. */
 @keyframes levelUpAppear {
-  0% { transform: translateX(14px) scale(0.55) rotate(-7deg); opacity: 0; }
-  55% { transform: translateX(0) scale(1.14) rotate(2deg); opacity: 1; }
-  100% { transform: translateX(0) scale(1) rotate(0); opacity: 1; }
+  0% {
+    transform: translateX(14px) scale(0.55) rotate(-7deg);
+    opacity: 0;
+  }
+  55% {
+    transform: translateX(0) scale(1.14) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1) rotate(0);
+    opacity: 1;
+  }
 }
 
 /* The label lives on its own so it can animate independently of the static bookmark. */
@@ -267,17 +284,36 @@
 
 /* Subtle punch each time you gain a level, with a tiny side-to-side shake. */
 @keyframes levelUpTextPop {
-  0% { transform: scale(0.96) translateX(0); filter: brightness(1.25); }
-  30% { transform: scale(1.08) translateX(-1px); }
-  55% { transform: scale(1.04) translateX(1px); }
-  80% { transform: scale(1.01) translateX(-0.5px); }
-  100% { transform: scale(1) translateX(0); filter: brightness(1); }
+  0% {
+    transform: scale(0.96) translateX(0);
+    filter: brightness(1.25);
+  }
+  30% {
+    transform: scale(1.08) translateX(-1px);
+  }
+  55% {
+    transform: scale(1.04) translateX(1px);
+  }
+  80% {
+    transform: scale(1.01) translateX(-0.5px);
+  }
+  100% {
+    transform: scale(1) translateX(0);
+    filter: brightness(1);
+  }
 }
 
 /* Gentle continuous breathe — the "still leveling" heartbeat. */
 @keyframes levelUpTextIdle {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.03); filter: brightness(1.12); }
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.12);
+  }
 }
 
 /* Warm amber glow — no bright gold, keeps the parchment palette. Uses drop-shadow
@@ -314,27 +350,34 @@
 .reward-exp-numbers {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 0.1rem;
   margin-top: 0.3rem;
   font-size: 0.65rem;
+  width: 100%;
+  max-width: 80%;
 }
 
-.reward-exp-numbers__have {
-  color: #f4cd84;
+.reward-exp-numbers__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+}
+
+.reward-exp-numbers__row--have {
+  color: #ffffff;
   font-weight: 700;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.reward-exp-numbers__missing {
-  color: #d4a574;
+.reward-exp-numbers__row--missing {
+  color: #ffffff;
   opacity: 0.8;
   font-size: 0.85em;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.reward-exp-numbers__unit {
-  margin-left: 0.2em;
+.reward-exp-numbers__label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -352,9 +395,9 @@
 .rewards-resources-panel {
   display: flex;
   flex-wrap: wrap;
-    justify-content: center;
-    gap: 2.75rem;
-    margin-bottom: 1.5rem;
+  justify-content: center;
+  gap: 2.75rem;
+  margin-bottom: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -362,102 +405,105 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-image: linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
+  background-size:
+    auto,
+    50px 50px;
   background-position: center, center;
   border: 2px solid #5c3a1e;
-    border-radius: 12px;
-    padding: 0.6rem 0.6rem;
-    box-shadow:
-      0 8px 16px rgba(0, 0, 0, 0.7),
-      inset 0 0 0 2px rgba(212, 165, 116, 0.78),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-    flex: 1;
-    min-width: 110px;
-    max-width: 180px;
-    transition: all 0.2s ease;
-  }
+  border-radius: 12px;
+  padding: 0.6rem 0.6rem;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  flex: 1;
+  min-width: 110px;
+  max-width: 180px;
+  transition: all 0.2s ease;
+}
 
-  .rewards-resource-card:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 6px 12px rgba(0, 0, 0, 0.7),
-      inset 0 0 0 2px rgba(212, 165, 116, 0.85),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5),
-      0 0 8px rgba(212, 165, 116, 0.22);
-  }
+.rewards-resource-card:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(212, 165, 116, 0.22);
+}
 
-  .rewards-resource-card__icon {
-    flex-shrink: 0;
-  }
+.rewards-resource-card__icon {
+  flex-shrink: 0;
+}
 
-  .rewards-resource-card__content {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
-    gap: 0.5rem;
-  }
+.rewards-resource-card__content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 0.5rem;
+}
 
-  .rewards-resource-card__label {
-    font-family: monospace;
-    font-size: 1rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #d4a574;
-    letter-spacing: 0.05em;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
+.rewards-resource-card__label {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #d4a574;
+  letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
 
-  .rewards-resource-card__values {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 4px;
-    padding: 0.125rem 0.3rem;
-  }
+.rewards-resource-card__values {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  padding: 0.125rem 0.3rem;
+}
 
-  .rewards-resource-card__earned {
-    font-family: monospace;
-    font-size: 0.875rem;
-    font-weight: bold;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
+.rewards-resource-card__earned {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
 
-  .rewards-resource-card__arrow {
-    color: #d4a574;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
+.rewards-resource-card__arrow {
+  color: #d4a574;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
 
-  .rewards-resource-card__balance {
-    font-family: monospace;
-    font-size: 0.875rem;
-    font-weight: bold;
-    color: #e0e0e0;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-    opacity: 0.7;
-  }
+.rewards-resource-card__balance {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #e0e0e0;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  opacity: 0.7;
+}
 
-  /* Resource-specific value colors */
-  .rewards-resource-card--coins .rewards-resource-card__earned {
-    color: #ffd700;
-  }
+/* Resource-specific value colors */
+.rewards-resource-card--coins .rewards-resource-card__earned {
+  color: #ffd700;
+}
 
-  .rewards-resource-card--gold .rewards-resource-card__earned {
-    color: #ffd700;
-  }
+.rewards-resource-card--gold .rewards-resource-card__earned {
+  color: #ffd700;
+}
 
-  .rewards-resource-card--silver .rewards-resource-card__earned {
-    color: #c0c0c0;
-  }
+.rewards-resource-card--silver .rewards-resource-card__earned {
+  color: #c0c0c0;
+}
 
-  .rewards-resource-card--iron .rewards-resource-card__earned {
-    color: #71797e;
+.rewards-resource-card--iron .rewards-resource-card__earned {
+  color: #71797e;
 }
 
 .rewards-resource-card--copper .rewards-resource-card__earned {
@@ -524,9 +570,12 @@
 .items-found-container {
   flex: 1;
   min-height: 0;
-  background-image: linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
+  background-size:
+    auto,
+    50px 50px;
   background-position: center, center;
   border: 2px solid #5c3a1e;
   border-radius: 12px;
@@ -754,21 +803,19 @@
 @media (min-width: 1280px) {
   .rewards-resources-panel {
     gap: 2rem;
-
   }
 }
 
-  .finish-button,
-  .continue-button {
-    padding: 0.5rem 1.5rem;
-    font-size: 0.875rem;
-  }
+.finish-button,
+.continue-button {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+}
 
-  .item-entry-icon {
-    width: 32px;
-    height: 32px;
-  }
-
+.item-entry-icon {
+  width: 32px;
+  height: 32px;
+}
 
 @media (max-height: 550px) {
   .exp-gained-container,
@@ -815,36 +862,36 @@
 
   .level-up-badge {
     width: 84px;
-      height: 47px;
-      right: -20px;
-      padding: 0 1rem 0.25rem 0.4rem;
-      font-size: 0.62rem;
+    height: 47px;
+    right: -20px;
+    padding: 0 1rem 0.25rem 0.4rem;
+    font-size: 0.62rem;
   }
 
-                .rewards-resources-panel {
-                  gap: 0.25rem;
-                  margin-bottom: 0.5rem;
-                }
+  .rewards-resources-panel {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
 
-                .rewards-resource-card {
-                  padding: 0.2rem 0.375rem;
-                  gap: 0.25rem;
-                  min-width: 70px;
-                  border-radius: 6px;
-                }
+  .rewards-resource-card {
+    padding: 0.2rem 0.375rem;
+    gap: 0.25rem;
+    min-width: 70px;
+    border-radius: 6px;
+  }
 
-                .rewards-resource-card__label {
-                  font-size: 0.5rem;
-                }
+  .rewards-resource-card__label {
+    font-size: 0.5rem;
+  }
 
-                .rewards-resource-card__earned,
-                .rewards-resource-card__balance {
-                  font-size: 0.625rem;
-                }
+  .rewards-resource-card__earned,
+  .rewards-resource-card__balance {
+    font-size: 0.625rem;
+  }
 
-                .rewards-resource-card__arrow {
-                  font-size: 0.5rem;
-                }
+  .rewards-resource-card__arrow {
+    font-size: 0.5rem;
+  }
   .finish-button,
   .continue-button {
     padding: 0.375rem 1rem;
@@ -870,4 +917,3 @@
     padding: 0.0625rem 0.375rem;
   }
 }
-
