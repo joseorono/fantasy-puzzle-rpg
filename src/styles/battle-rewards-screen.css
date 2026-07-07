@@ -108,7 +108,7 @@
 /* Keep the level badge inside the portrait box instead of hanging past the edge. */
 .reward-portrait .level-tag {
   top: 0;
-  left: 0;
+  left: 2px;
 }
 
 .character-card .character-portrait {
