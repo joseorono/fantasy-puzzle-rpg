@@ -4,6 +4,7 @@ import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
+  EXP_COUNTER_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 import {
@@ -17,7 +18,12 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import { levelUp, getRandomPotentialStats, buildExpGainTimeline } from '~/lib/leveling-system';
+import {
+  levelUp,
+  getRandomPotentialStats,
+  buildExpGainTimeline,
+  getExpThresholdForLevel,
+} from '~/lib/leveling-system';
 import { getNewlyUnlockableSkills } from '~/lib/skill-system';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
@@ -452,6 +458,12 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
     onLevelUp: playLevelUpSound,
   });
 
+  // Derived straight from `percentage` (the same value driving the bar's width), so these
+  // numbers are mathematically locked to the bar's fill — same easing, same duration, every frame.
+  const expThreshold = getExpThresholdForLevel(level);
+  const currentExp = Math.round((percentage / 100) * expThreshold);
+  const missingExp = Math.max(0, expThreshold - currentExp);
+
   return (
     <div className="character-card">
       {/* Portrait carries the level on a hanging pennant tag in the top-left corner. */}
@@ -466,6 +478,30 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
           <span className="reward-class">{member.class}</span>
         </div>
         <ExperienceBar percentage={percentage} variant="compact" />
+        <div className="reward-exp-numbers pixel-font">
+          <span className="reward-exp-numbers__have number-flow-container">
+            <NumberFlow
+              value={currentExp}
+              format={INTEGER_FORMAT}
+              trend={1}
+              spinTiming={EXP_COUNTER_TIMING}
+              transformTiming={EXP_COUNTER_TIMING}
+              opacityTiming={EXP_COUNTER_TIMING}
+            />
+            <span className="reward-exp-numbers__unit">EXP</span>
+          </span>
+          <span className="reward-exp-numbers__missing number-flow-container">
+            <NumberFlow
+              value={missingExp}
+              format={INTEGER_FORMAT}
+              trend={-1}
+              spinTiming={EXP_COUNTER_TIMING}
+              transformTiming={EXP_COUNTER_TIMING}
+              opacityTiming={EXP_COUNTER_TIMING}
+            />
+            <span className="reward-exp-numbers__unit">Next Lv</span>
+          </span>
+        </div>
       </div>
       {hasLeveledUp && (
         // The bookmark animates once when it first appears (no key on the container),
