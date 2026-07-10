@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { cn } from '~/lib/utils';
@@ -52,7 +54,12 @@ export function ConfirmPanel({
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
       >
-        <button className="confirm-panel__close" onClick={onCancel} aria-label="Close" type="button" />
+        <ToffecCloseButton
+          variant="medieval2"
+          className="confirm-panel__close"
+          style={{ width: '26px', height: '26px' }}
+          onClick={onCancel}
+        />
 
         <div className="confirm-panel__header">
           {icon ? (
@@ -65,7 +72,7 @@ export function ConfirmPanel({
           </div>
         </div>
 
-        <div className="confirm-panel__divider" />
+        <RetroDivider variant={isDanger ? 'defeat' : 'default'} />
 
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 
@@ -73,7 +80,7 @@ export function ConfirmPanel({
           <ToffecButton variant="cream" size="xs" onClick={onCancel}>
             {cancelLabel}
           </ToffecButton>
-          <ToffecButton variant={isDanger ? 'orange' : 'tan'} size="xs" onClick={onConfirm}>
+          <ToffecButton variant={isDanger ? 'indigolay-red' : 'tan'} size="xs" onClick={onConfirm}>
             {confirmLabel}
           </ToffecButton>
         </div>

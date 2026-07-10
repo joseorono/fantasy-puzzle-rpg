@@ -208,6 +208,15 @@
 .battleArea .partySection {
   padding-top: var(--btb-height);
 }
+#boardSection {
+    padding-top: 5.5rem;
+}
+
+@media (max-height: 700px) {
+  #boardSection {
+    padding-top: 4rem;
+  }
+}
 
 .battleArea .enemySection {
   padding-top: 2rem;

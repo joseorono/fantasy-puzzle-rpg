@@ -1,0 +1,29 @@
+/* ==========================================
+   CREDITS MODAL
+   Reuses the start-menu modal panel visuals (.start-menu-modal-*) but overrides
+   the backdrop to be fixed + viewport-covering so it can be opened from any
+   screen — the title menu or the debug view (which scrolls).
+   ========================================== */
+
+.credits-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+}
+
+/* Stack the audio/graphics/links license sections with breathing room. */
+.credits-modal-body.credits-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Keep the long attribution URLs readable and on-theme inside the modal. */
+.credits-modal-body a {
+  color: #ffd082;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.credits-modal-body a:hover {
+  color: #ffe082;
+}

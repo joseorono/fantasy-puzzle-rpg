@@ -6,6 +6,7 @@ import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { BOMB_REFILL_CHANCE } from '~/constants/game';
+import { PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
   calculatePartyHpPercentage,
@@ -161,9 +162,15 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   const currentState = get(battleStateAtom);
   const selectedId = currentState.selectedEnemyId;
 
+  // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
+  const isPreemptive = (currentState.standbyEnemyIds ?? []).includes(selectedId);
+  const finalDamage = isPreemptive
+    ? Math.round(damage * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS))
+    : damage;
+
   const enemies = currentState.enemies.map((e) => {
     if (e.id !== selectedId) return e;
-    return { ...e, currentHp: subtractionWithMin(e.currentHp, damage, 0) };
+    return { ...e, currentHp: subtractionWithMin(e.currentHp, finalDamage, 0) };
   });
 
   // Check if selected enemy just died — auto-select next living enemy
@@ -178,12 +185,14 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   const allDead = enemies.every((e) => e.currentHp <= 0);
   const gameStatus = allDead ? 'won' : 'playing';
 
+  const timestamp = Date.now();
   set(battleStateAtom, {
     ...currentState,
     enemies,
     selectedEnemyId: newSelectedId,
     gameStatus,
-    lastDamage: { amount: damage, target: 'enemy', timestamp: Date.now(), enemyId: selectedId },
+    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId },
+    lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
 });
 
@@ -319,6 +328,24 @@ export const scoreAtom = atom((get) => get(battleStateAtom).score);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
+// Per-enemy start-of-battle standby delays (ms), regenerated whenever a new battle is created.
+// `?? {}` guards any pre-existing state object without the field.
+export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandbyMs ?? {});
+// Ids of enemies still observing (on standby). Drives the eye/gold ring and the preemptive-strike bonus.
+export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEnemyIds ?? []);
+// Centered "Preemptive Strike!" callout trigger (see PreemptiveStrikeIndicator).
+export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
+
+// Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer
+// hook as each enemy's observation window elapses.
+export const endEnemyStandbyAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  if (!currentState.standbyEnemyIds.includes(enemyId)) return;
+  set(battleStateAtom, {
+    ...currentState,
+    standbyEnemyIds: currentState.standbyEnemyIds.filter((id) => id !== enemyId),
+  });
+});
 
 // Atom to reduce a specific character's skill cooldown (e.g. from matching their color orbs)
 export const reduceSkillCooldownAtom = atom(null, (get, set, characterId: string, amount: number) => {

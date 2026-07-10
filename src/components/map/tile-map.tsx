@@ -464,7 +464,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     console.log('Opening chest:', currentNode.name);
 
     // Play chest opening sound immediately for instant feedback
-    soundService.playSound(SoundNames.bgNoiseMiner, 0.7, 0.1, 0.05);
+    soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
 
     // Roll a rarity for each equipment entry once, so the inventory grant and the
     // loot notification below show the same tiers.

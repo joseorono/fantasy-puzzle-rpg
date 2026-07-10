@@ -136,7 +136,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
               )}
             </button>
               </TooltipTrigger>
-              <TooltipContent>{item.name}: {item.description}</TooltipContent>
+              <TooltipContent className="battle-item-tooltip">{item.name}: {item.description}</TooltipContent>
             </Tooltip>
           </ToffecBeigeCornersWrapper>
         );

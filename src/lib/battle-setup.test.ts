@@ -1,6 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { createBattleState } from './battle-system';
+import { createBattleState, generateEnemyStandbyDelays } from './battle-system';
+import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
+
+/**
+ * Deterministic `[0, 1)` source that walks a fixed list of values, wrapping around.
+ * Lets us assert exact, reproducible standby splits without touching `Math.random`.
+ */
+function seededRng(values: number[]): () => number {
+  let i = 0;
+  return () => values[i++ % values.length];
+}
+
+const sumValues = (record: Record<string, number>) => Object.values(record).reduce((a, b) => a + b, 0);
 
 const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterData => ({
   id: 'test-warrior',
@@ -98,5 +110,56 @@ describe('createBattleState', () => {
     expect(state.lastDamage).toBeNull();
     expect(state.lastMatchedType).toBeNull();
     expect(state.lastSkillActivation).toBeNull();
+  });
+
+  it('should generate a standby delay for every enemy', () => {
+    const state = createBattleState(party, enemies);
+    expect(Object.keys(state.enemyStandbyMs).sort()).toEqual(['frog-1', 'frog-2']);
+  });
+});
+
+describe('generateEnemyStandbyDelays', () => {
+  it('returns an empty map for an empty roster', () => {
+    expect(generateEnemyStandbyDelays([])).toEqual({});
+  });
+
+  it('gives a single enemy the whole pooled total', () => {
+    // One roll consumed for the pool, no cut points needed for count === 1.
+    const delays = generateEnemyStandbyDelays(['solo'], seededRng([0]));
+    expect(Object.keys(delays)).toEqual(['solo']);
+    expect(delays.solo).toBe(ENEMY_STANDBY_MIN_MS);
+  });
+
+  it('produces exactly one non-negative integer entry per id', () => {
+    const ids = ['a', 'b', 'c', 'd'];
+    const delays = generateEnemyStandbyDelays(ids);
+    expect(Object.keys(delays).sort()).toEqual([...ids].sort());
+    for (const id of ids) {
+      expect(delays[id]).toBeGreaterThanOrEqual(0);
+      expect(Number.isInteger(delays[id])).toBe(true);
+    }
+  });
+
+  it('preserves the pooled total when re-splitting (sum invariant)', () => {
+    // rng always 0: every pool roll = MIN, so total = MIN * count; all cut points = 0,
+    // so the last enemy receives the entire total and the rest receive 0.
+    const ids = ['a', 'b', 'c'];
+    const delays = generateEnemyStandbyDelays(ids, seededRng([0]));
+    expect(sumValues(delays)).toBe(ENEMY_STANDBY_MIN_MS * ids.length);
+    expect(delays).toEqual({ a: 0, b: 0, c: ENEMY_STANDBY_MIN_MS * ids.length });
+  });
+
+  it('keeps the pooled total within [MIN*count, MAX*count] for any rng', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e'];
+    const total = sumValues(generateEnemyStandbyDelays(ids)); // real Math.random
+    expect(total).toBeGreaterThanOrEqual(ENEMY_STANDBY_MIN_MS * ids.length);
+    expect(total).toBeLessThanOrEqual(ENEMY_STANDBY_MAX_MS * ids.length);
+  });
+
+  it('is deterministic for a fixed rng', () => {
+    const ids = ['x', 'y', 'z'];
+    const a = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
+    const b = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
+    expect(a).toEqual(b);
   });
 });

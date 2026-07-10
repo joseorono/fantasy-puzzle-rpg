@@ -17,6 +17,20 @@ export default function AudioLicensesDialogContent() {
         </h3>
 
         <p>
+          LevelUp (levelUp) 320655__rhodesmas__level-up-01.mp3 by shinephoenixstormcrow -- License: Attribution 3.0
+          <a href="https://freesound.org/people/shinephoenixstormcrow/sounds/337049/">
+            https://freesound.org/people/shinephoenixstormcrow/sounds/337049/
+          </a>
+        </p>
+
+        <p>
+          LevelUp (levelUp) by Kenneth_Cooney -- License: Creative Commons 0
+          <a href="https://freesound.org/people/Kenneth_Cooney/sounds/609335/">
+            https://freesound.org/people/Kenneth_Cooney/sounds/609335/
+          </a>
+        </p>
+
+        <p>
           Close modal sound, Creative Commons 0, modusmogulus&nbsp;
           <a href="https://freesound.org/people/modusmogulus/sounds/735897/">
             https://freesound.org/people/modusmogulus/sounds/735897/

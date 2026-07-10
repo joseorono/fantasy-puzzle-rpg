@@ -45,7 +45,7 @@
     flex: 0 0 45%;
     width: 45%;
     max-height: 100vh;
-    overflow: auto;
+    overflow: hidden;
     border-top: none !important;
     border-left: 2px solid rgb(180, 83, 9);
   }
@@ -63,7 +63,8 @@
   min-height: 0;
 }
 
-@media (max-height: 700px) and (min-width: 1024px) {
+@media (max-height: 700px) {
+  /* Instead of scaling the whole board frame, shrink the actual content dimensions. */
   .partySection #party-display-root {
     gap: 0.5rem;
     padding-top: 0.5rem;
@@ -80,6 +81,38 @@
     transform: scale(0.92);
     transform-origin: center top;
   }
+
+  .match3BoardContainer .f05a-viewport > .flex-col {
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .match3BoardContainer .f05a-viewport .flex-row {
+    gap: 0.25rem;
+  }
+
+  .match3BoardContainer .f05a-viewport .orb-blue,
+  .match3BoardContainer .f05a-viewport .orb-green,
+  .match3BoardContainer .f05a-viewport .orb-purple,
+  .match3BoardContainer .f05a-viewport .orb-yellow,
+  .match3BoardContainer .f05a-viewport .orb-gray {
+    width: 40px !important;
+    height: 40px !important;
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+  }
+
+  #boardWrapper {
+    max-width: 32rem;
+  }
+
+  #boardSection {
+    padding-bottom: 0.25rem;
+  }
+
+  #boardSection > .relative.z-1 {
+    padding: 0.25rem;
+  }
 }
 
 .boardSection {
@@ -88,8 +121,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 #boardSection::before {
@@ -112,4 +144,10 @@
 .board-pattern-layer,
 #boardSection::before {
   pointer-events: none;
+}
+
+/* Tiled grid overlay for the board section (60×60 SVG, kept crisp via .pixel-art). */
+.board-grid-pattern {
+  background-image: url('/assets/bg/grid-pattern.svg');
+  background-repeat: repeat;
 }

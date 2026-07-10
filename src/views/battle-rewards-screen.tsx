@@ -4,6 +4,7 @@ import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
+  EXP_COUNTER_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 import {
@@ -17,7 +18,7 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import { levelUp, getRandomPotentialStats, buildExpGainTimeline } from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
 import { getNewlyUnlockableSkills } from '~/lib/skill-system';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
@@ -33,6 +34,21 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { RetroDivider } from '~/components/ui-custom/retro-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+
+/**
+ * Play the level-up jingle, throttled so the up-to-four party cards crossing a level on
+ * the same frame collapse into a single play instead of stacking into a loud blare.
+ * Sequential level-ups (≥ a segment apart) still each get their own play.
+ */
+let lastLevelUpSoundAt = -Infinity;
+function playLevelUpSound() {
+  const now = performance.now();
+  if (now - lastLevelUpSoundAt < 120) return;
+  lastLevelUpSoundAt = now;
+  soundService.playSound(SoundNames.levelUp, 0.8);
+}
 
 /**
  * Battle Rewards Screen View
@@ -322,7 +338,10 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
               </div>
               <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
-                <span className="item-type" style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}>
+                <span
+                  className="item-type"
+                  style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}
+                >
                   {getRarityLabel(item.rarity)}
                 </span>
               </span>
@@ -433,7 +452,15 @@ interface CharacterExpCardProps {
 function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
   // Build the timeline once so the rAF animation has a stable input.
   const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
-  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline);
+  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline, {
+    onLevelUp: playLevelUpSound,
+  });
+
+  // Derived straight from `percentage` (the same value driving the bar's width), so these
+  // numbers are mathematically locked to the bar's fill — same easing, same duration, every frame.
+  const expThreshold = getExpThresholdForLevel(level);
+  const currentExp = Math.round((percentage / 100) * expThreshold);
+  const missingExp = Math.max(0, expThreshold - currentExp);
 
   return (
     <div className="character-card">
@@ -449,6 +476,34 @@ function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
           <span className="reward-class">{member.class}</span>
         </div>
         <ExperienceBar percentage={percentage} variant="compact" />
+        <div className="reward-exp-numbers pixel-font">
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--have">
+            <span className="reward-exp-numbers__label">EXP</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={currentExp}
+                format={INTEGER_FORMAT}
+                trend={1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--missing">
+            <span className="reward-exp-numbers__label">Next Lv</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={missingExp}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+        </div>
       </div>
       {hasLeveledUp && (
         // The bookmark animates once when it first appears (no key on the container),

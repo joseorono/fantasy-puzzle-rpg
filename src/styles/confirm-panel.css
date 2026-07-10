@@ -76,17 +76,16 @@
 
 /* ─── Close button ─────────────────────────────────────────────────────── */
 
-.confirm-panel__close {
+.confirm-panel .confirm-panel__close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: calc(1.1rem + 0.75px);
+  right: 1.25rem;
   z-index: 3;
   width: 26px;
   height: 26px;
   padding: 0;
   border: none;
-  background: transparent url('/assets/icons/indigolay/Icon_x-circle.png') no-repeat center;
-  background-size: contain;
+  background: transparent;
   image-rendering: pixelated;
   cursor: pointer;
   transition:
@@ -94,12 +93,12 @@
     filter 0.15s ease;
 }
 
-.confirm-panel__close:hover {
+.confirm-panel .confirm-panel__close:hover {
   transform: scale(1.1);
   filter: brightness(1.15);
 }
 
-.confirm-panel__close:active {
+.confirm-panel .confirm-panel__close:active {
   transform: scale(0.92);
 }
 
@@ -154,18 +153,6 @@
   justify-content: center;
   text-align: center;
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
-}
-
-/* ─── Divider ──────────────────────────────────────────────────────────── */
-
-.confirm-panel__divider {
-  flex-shrink: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent);
-}
-
-.confirm-panel--danger .confirm-panel__divider {
-  background: linear-gradient(90deg, transparent, #6b1a1a 20%, #c0392b 50%, #6b1a1a 80%, transparent);
 }
 
 /* ─── Body (caller-supplied content) ───────────────────────────────────── */

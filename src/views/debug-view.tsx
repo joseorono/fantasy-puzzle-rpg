@@ -10,6 +10,7 @@ import TitleSignTestView from '~/views/title-sign-test';
 import RadialCountdownTestView from '~/views/radial-countdown-test';
 import SkillDebugView from '~/views/skill-debug';
 import DungeonDebugView from '~/views/dungeon-debug';
+import CreditsDebugView from '~/views/credits-debug';
 
 interface DebugSection {
   id: string;
@@ -28,6 +29,7 @@ const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'inventory', label: 'Inventory', Component: InventoryTestView },
   { id: 'resources', label: 'Resources', Component: ResourcesTestView },
   { id: 'sound', label: 'Sound', Component: SoundTestView },
+  { id: 'credits', label: 'Credits', Component: CreditsDebugView },
   { id: 'misc', label: 'Misc / Test', Component: TestView },
   // Recently added — kept further down now that they're stable.
   { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },

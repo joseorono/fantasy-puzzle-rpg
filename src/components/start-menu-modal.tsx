@@ -6,10 +6,11 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { Play, FolderOpen } from 'lucide-react';
+import { Play, FolderOpen, ScrollText } from 'lucide-react';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { CreditsModal } from '~/components/credits-modal';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -28,13 +29,14 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
-const MENU_ITEM_COUNT = 4;
+const MENU_ITEM_COUNT = 5;
 
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
   // Index of the keyboard-selected menu item (null = nothing selected yet, so
   // the toffec corners only appear once the player actually uses the keyboard).
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
 
   useEffect(() => {
     soundService.startMusic(SoundNames.startMenuMusic, 0.15);
@@ -83,6 +85,11 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     setActiveTab('settings');
   };
 
+  const handleOpenCredits = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setIsCreditsOpen(true);
+  };
+
   const handleShare = async () => {
     const url = window.location.href;
     try {
@@ -126,7 +133,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   // Arrow keys / WASD move the selection, Enter/Space activates it. The hook
   // always invokes the latest closure, so this reads current state directly.
   useWindowKeyDown((event) => {
-    if (activeTab !== 'main') return;
+    // The credits modal owns the keyboard while it's open (Escape to close).
+    if (activeTab !== 'main' || isCreditsOpen) return;
 
     const direction = getNavDirection(event.key);
     if (direction === 'down') {
@@ -140,7 +148,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       // nothing is selected yet.
       event.preventDefault();
       if (selectedIndex === null) return;
-      [handleStartGame, handleOpenLoad, handleShare, handleOpenSettings][selectedIndex]?.();
+      [handleStartGame, handleOpenLoad, handleOpenCredits, handleShare, handleOpenSettings][selectedIndex]?.();
     }
   });
 
@@ -169,16 +177,22 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
               Load Game
             </button>
           </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2}>
+            <button className="main-menu__button" onClick={handleOpenCredits}>
+              <ScrollText size={20} />
+              Credits
+            </button>
+          </ToffecBeigeCornersWrapper>
         </div>
       </div>
       <ToffecBeigeCornersWrapper className="main-menu__bookmark-corners">
         <button className="main-menu__bookmark-button" onClick={handleBookmark} aria-label="Bookmark" />
       </ToffecBeigeCornersWrapper>
       <div className="main-menu__actions">
-        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2} className="main-menu__action-corners">
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 3} className="main-menu__action-corners">
           <button className="main-menu__share-icon" onClick={handleShare} aria-label="Share" />
         </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 3} className="main-menu__action-corners">
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 4} className="main-menu__action-corners">
           <button className="main-menu__settings-icon" onClick={handleOpenSettings} aria-label="Settings" />
         </ToffecBeigeCornersWrapper>
       </div>
@@ -213,6 +227,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
           </div>
         </div>
       )}
+
+      <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
     </div>
   );
 }
