@@ -72,6 +72,7 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
   const [revealedCount, setRevealedCount] = useState(reduced ? result.criteria.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? result.stars : 0);
   const [canContinue, setCanContinue] = useState(reduced);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Timeline: reveal each row (tab click), then fill each star (coin), then enable Continue.
   useEffect(() => {
@@ -79,7 +80,7 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
       soundService.playSound(SoundNames.clickCoin, 0.6);
       return;
     }
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    const timers = timersRef.current;
     const { startDelayMs, rowStaggerMs, starStaggerMs, continueDelayMs } = RATING_REVEAL;
 
     result.criteria.forEach((_, i) => {
@@ -108,8 +109,22 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
       ),
     );
 
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
   }, [reduced, result]);
+
+  // Tap anywhere during the reveal to fast-forward to the finished state.
+  function handleSkip() {
+    if (canContinue) return;
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.length = 0;
+    setRevealedCount(result.criteria.length);
+    setFilledStars(result.stars);
+    setCanContinue(true);
+    soundService.playSound(SoundNames.clickCoin, 0.6);
+  }
 
   // Running points total across the revealed rows (clamped at 0, like the final score).
   const revealedTotal = Math.max(
@@ -120,7 +135,7 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
   const rankLabel = STAR_RANK_LABELS[result.stars] ?? '';
 
   return (
-    <div className="brs-backdrop">
+    <div className="brs-backdrop" onClick={handleSkip}>
       <IndigolayCornersWrapper alwaysVisible className="brs-card-wrap">
         <div className="brs-card">
           <header className="brs-header">
