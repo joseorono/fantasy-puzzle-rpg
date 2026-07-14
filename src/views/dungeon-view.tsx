@@ -226,16 +226,6 @@ export default function DungeonView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dungeon, floorIndex, eventIndex, phase]);
 
-  // Pop the flashy clear overlay once the run completes (and only when at least one floor was
-  // rated). Idempotent — setting the flag true twice is a no-op; a fresh run returns `phase` to
-  // 'browsing' and it only re-opens on the next completion.
-  useEffect(() => {
-    if (phase === 'complete' && summarizeFloorRatings(floorRatings).ratedFloors > 0) {
-      setShowClearOverlay(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
-
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
@@ -395,8 +385,14 @@ export default function DungeonView() {
                 )}
               </div>
               <div className="dungeon-card__action">
-                <ToffecButton variant="cream" size="sm" onClick={handleFinish}>
-                  Leave
+                <ToffecButton
+                  variant="cream"
+                  size="sm"
+                  onClick={() =>
+                    ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish()
+                  }
+                >
+                  Finish
                 </ToffecButton>
               </div>
             </div>
@@ -488,7 +484,8 @@ export default function DungeonView() {
         <DungeonClearScreen
           summary={ratingSummary}
           floors={ratedFloorRows}
-          onContinue={() => setShowClearOverlay(false)}
+          onContinue={handleFinish}
+          continueLabel="Leave"
         />
       )}
     </div>

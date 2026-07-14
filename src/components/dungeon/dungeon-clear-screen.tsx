@@ -36,8 +36,10 @@ interface DungeonClearScreenProps {
   summary: DungeonRatingSummary;
   /** Per-floor combat ratings, rated floors only, in descent order. */
   floors: DungeonClearFloorRow[];
-  /** Dismiss the overlay (falls back to the inline "Dungeon Cleared" card). */
+  /** Fired by the terminal button once the reveal is done (e.g. leave the dungeon). */
   onContinue: () => void;
+  /** Label for the terminal button. Defaults to "Continue". */
+  continueLabel?: string;
 }
 
 function prefersReducedMotion(): boolean {
@@ -73,7 +75,12 @@ function FloorRow({ name, stars, revealed }: { name: string; stars: number; reve
  * word/tagline and a NumberFlow star total land. Pure presentation; the run's rating data is
  * pre-shaped by the caller so this component stays stateless about the dungeon.
  */
-export function DungeonClearScreen({ summary, floors, onContinue }: DungeonClearScreenProps) {
+export function DungeonClearScreen({
+  summary,
+  floors,
+  onContinue,
+  continueLabel = 'Continue',
+}: DungeonClearScreenProps) {
   const reduced = prefersReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? floors.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? summary.averageStars : 0);
@@ -214,7 +221,7 @@ export function DungeonClearScreen({ summary, floors, onContinue }: DungeonClear
             disabled={!canContinue}
             className={cn('dcs-continue crt-top-highlight', canContinue && 'dcs-continue--ready')}
           >
-            Continue
+            {continueLabel}
           </ToffecButton>
         </div>
       </IndigolayCornersWrapper>
