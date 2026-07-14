@@ -7,7 +7,7 @@ import { createEmptyLootTable } from '~/types/loot';
 import { randIntInRange } from './math';
 import { rollRarity } from './rarity';
 import { addItemToInventory, type InventoryItem } from './inventory';
-import { addResources } from './resources';
+import { addResources, scaleResources } from './resources';
 import { randomBool } from './utils';
 import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 
@@ -18,14 +18,19 @@ import { CHEST_RARITY_BIAS } from '~/constants/rarity';
  * into a single loot table and total expReward.
  *
  * Equipment and consumable loot items are concatenated from all enemies.
- * Resource amounts (coins, gold, copper, silver, iron) are summed.
+ * Resource amounts (coins, gold, copper, silver, iron) are summed, then scaled by
+ * `resourceMultiplier` (a battle-rating loot bonus) — items and XP are never scaled.
  * The combined resources probability is set to 1 (guaranteed drop).
  *
  * @param enemies - Array of defeated enemies whose loot should be merged
+ * @param resourceMultiplier - Multiplier applied to the summed money + resources (default 1 = none)
  * @returns Combined loot table and total experience reward, or an empty
  *   loot table with 0 exp if the array is empty
  */
-export function combineLootFromEnemies(enemies: EnemyData[]): {
+export function combineLootFromEnemies(
+  enemies: EnemyData[],
+  resourceMultiplier: number = 1,
+): {
   lootTable: LootTable;
   expReward: number;
 } {
@@ -57,12 +62,15 @@ export function combineLootFromEnemies(enemies: EnemyData[]): {
     { coins: 0, gold: 0, copper: 0, silver: 0, iron: 0 },
   );
 
+  // Apply the rating loot bonus to money + resources only (items and XP are untouched).
+  const scaledResources = resourceMultiplier === 1 ? resources : scaleResources(resources, resourceMultiplier);
+
   return {
     lootTable: {
       equipableItems,
       consumableItems,
       resources: {
-        item: resources,
+        item: scaledResources,
         probability: 1 as ProbabilityNumber,
       },
     },

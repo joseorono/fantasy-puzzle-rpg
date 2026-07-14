@@ -17,6 +17,7 @@ import {
   MAX_ITEM_PENALTY,
   STAR_THRESHOLDS,
   RATING_POINTS_SCALE,
+  LOOT_MULTIPLIER_BY_STARS,
   type RatingCriterionKey,
 } from '~/constants/battle-rating';
 
@@ -52,14 +53,26 @@ export interface RatingCriterion {
 
 /** Full rating outcome. */
 export interface BattleRatingResult {
-  /** 1–3 stars (you always earn at least one for winning). */
+  /** 1–5 stars (you always earn at least one for winning). */
   stars: number;
   /** Total arcade points (>= 0), after the items penalty. */
   totalScore: number;
   /** Normalized total (0..1) used to derive the stars. */
   normalized: number;
+  /** Multiplier applied to earned money + resources (never items/XP). >= 1. */
+  lootMultiplier: number;
   /** Per-criterion breakdown, in display order. */
   criteria: RatingCriterion[];
+}
+
+/**
+ * The loot multiplier earned for a given star rating — scales money + resources only. Reads the
+ * tunable {@link LOOT_MULTIPLIER_BY_STARS} map; falls back to 1 (no bonus) for unmapped counts.
+ * @param stars Star rating (1..MAX_STARS).
+ * @returns A multiplier >= 1.
+ */
+export function getLootMultiplier(stars: number): number {
+  return LOOT_MULTIPLIER_BY_STARS[stars] ?? 1;
 }
 
 /** Clamps a value to the [0, 1] range. */
@@ -170,5 +183,5 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
 
   const totalScore = Math.max(0, criteria.reduce((sum, c) => sum + c.points, 0));
 
-  return { stars, totalScore, normalized, criteria };
+  return { stars, totalScore, normalized, lootMultiplier: getLootMultiplier(stars), criteria };
 }

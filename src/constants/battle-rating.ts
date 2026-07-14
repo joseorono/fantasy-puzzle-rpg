@@ -82,6 +82,19 @@ export const STAR_RANK_TAGLINES: Record<number, string> = {
 export const CLOSE_CALL_MAX_STARS = 2;
 
 /**
+ * Loot multiplier granted by the star rating — scales the money + resources earned from a battle
+ * (never items or XP). 1★ is baseline; a rare 5★ doubles your haul. Read only via
+ * `getLootMultiplier` in `~/lib/battle-rating.ts`.
+ */
+export const LOOT_MULTIPLIER_BY_STARS: Record<number, number> = {
+  1: 1.0,
+  2: 1.1,
+  3: 1.25,
+  4: 1.5,
+  5: 2.0,
+};
+
+/**
  * Send-off line shown on the VICTORY modal (after the rating screen), chosen by star rating —
  * from a scraped-by escape at 1 star to a total rout at 5.
  */
@@ -114,7 +127,9 @@ export const RATING_REVEAL = {
   rowStaggerMs: 450,
   /** Gap between each star filling in (also the click-coin cadence). */
   starStaggerMs: 380,
-  /** Delay after the last star before the Continue button enables. */
+  /** Delay after the last star before the "LOOT BONUS ×N" line pops. */
+  lootRevealDelayMs: 400,
+  /** Delay after the loot line before the Continue button enables. */
   continueDelayMs: 450,
 } as const;
 

@@ -77,8 +77,10 @@ export function BattleOverModal() {
     if (isVictory) {
       // Carry post-battle HP back to the persistent party before showing rewards.
       syncBattleHp(battleParty);
-      const { lootTable, expReward } = combineLootFromEnemies(enemies);
-      goToBattleRewards({ lootTable, expReward });
+      // The star rating grants a loot bonus on money + resources (not items/XP).
+      const lootMultiplier = ratingRef.current?.lootMultiplier ?? 1;
+      const { lootTable, expReward } = combineLootFromEnemies(enemies, lootMultiplier);
+      goToBattleRewards({ lootTable, expReward, lootMultiplier });
     } else {
       // Defeat: auto-heal the party, reset combat + navigation, and return to the start menu.
       // Also tear down any active dungeon run so re-entry starts fresh at Floor 1

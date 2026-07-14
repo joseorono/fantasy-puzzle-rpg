@@ -1,6 +1,7 @@
 import { expect, test, describe } from 'vitest';
 import {
   computeBattleRating,
+  getLootMultiplier,
   formatClearTime,
   formatThousands,
   type BattleRatingInput,
@@ -170,6 +171,34 @@ describe('computeBattleRating — penalty + breakdown', () => {
     expect(byKey.combo).toBe('x4');
     expect(byKey.hp).toBe('88%');
     expect(byKey.items).toBe('3');
+  });
+});
+
+describe('getLootMultiplier', () => {
+  test('maps each star tier to its multiplier (1★ baseline, 5★ double)', () => {
+    expect(getLootMultiplier(1)).toBe(1.0);
+    expect(getLootMultiplier(3)).toBe(1.25);
+    expect(getLootMultiplier(5)).toBe(2.0);
+  });
+
+  test('never decreases as stars increase', () => {
+    for (let s = 2; s <= 5; s++) {
+      expect(getLootMultiplier(s)).toBeGreaterThanOrEqual(getLootMultiplier(s - 1));
+    }
+  });
+
+  test('unmapped star counts fall back to 1 (no bonus)', () => {
+    expect(getLootMultiplier(0)).toBe(1);
+    expect(getLootMultiplier(99)).toBe(1);
+  });
+
+  test('computeBattleRating.lootMultiplier matches getLootMultiplier(stars)', () => {
+    const perfect = computeBattleRating(perfectRun);
+    expect(perfect.stars).toBe(5);
+    expect(perfect.lootMultiplier).toBe(getLootMultiplier(5));
+
+    const poor = computeBattleRating(poorRun);
+    expect(poor.lootMultiplier).toBe(getLootMultiplier(poor.stars));
   });
 });
 

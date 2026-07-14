@@ -14,6 +14,7 @@ import {
 } from '~/constants/battle-rating';
 import {
   INTEGER_FORMAT,
+  MULTIPLIER_FORMAT,
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
