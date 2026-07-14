@@ -118,13 +118,18 @@
   color: #c3b48f;
 }
 
+/* Slick gold chip — mirrors .brs-rng-tag's outlined form, tinted gold so it
+   still reads as a positive callout. text-shadow:none drops the inherited
+   .pixel-font drop shadow that muddies small text. */
 .brs-flawless {
-  padding: 0.08rem 0.3rem;
-  font-size: 0.42rem;
-  color: #2a1a0e;
-  background: #f6c453;
+  padding: 0.06rem 0.28rem;
+  font-size: 0.4rem;
+  color: #f6c453;
+  background: rgba(246, 196, 83, 0.12);
+  border: 1px solid rgba(246, 196, 83, 0.4);
   border-radius: 3px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
+  text-shadow: none;
 }
 .brs-rng-tag {
   padding: 0.06rem 0.28rem;
@@ -245,9 +250,9 @@
   color: #e8d9b8;
 }
 .brs-loot-mult {
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   color: #f6c453;
-  text-shadow: 0 0 6px rgba(246, 196, 83, 0.4);
+  text-shadow: 0 0 3px rgba(246, 196, 83, 0.22);
 }
 
 @keyframes brs-rank-in {
