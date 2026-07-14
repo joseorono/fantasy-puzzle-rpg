@@ -44,6 +44,7 @@ import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
 import { DialogueScene } from '~/components/dialogue';
 import { LootNotification } from '~/components/map/loot-notification';
+import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { TopBarResources } from '~/components/town/top-bar-resources';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -161,6 +162,7 @@ export default function DungeonView() {
   // ─── Local UI state ──────────────────────────────────────────────────
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
+  const [showClearOverlay, setShowClearOverlay] = useState(false);
   const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
 
   // The dungeon definition is passed by reference through the router (authored or generated).
@@ -224,6 +226,16 @@ export default function DungeonView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dungeon, floorIndex, eventIndex, phase]);
 
+  // Pop the flashy clear overlay once the run completes (and only when at least one floor was
+  // rated). Idempotent — setting the flag true twice is a no-op; a fresh run returns `phase` to
+  // 'browsing' and it only re-opens on the next completion.
+  useEffect(() => {
+    if (phase === 'complete' && summarizeFloorRatings(floorRatings).ratedFloors > 0) {
+      setShowClearOverlay(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
@@ -234,6 +246,13 @@ export default function DungeonView() {
 
   const isComplete = phase === 'complete';
   const ratingSummary = summarizeFloorRatings(floorRatings);
+  // Rated floors only (dialogue/chest-only floors are absent), in descent order, for the overlay.
+  const ratedFloorRows = dungeon.floors
+    .map((floor, idx) => {
+      const rating = floorRatings[idx];
+      return rating ? { name: floor.name, stars: rating.stars } : null;
+    })
+    .filter((row): row is { name: string; stars: number } => row !== null);
   const isBrowsing = phase === 'browsing' && !activeDialogue;
   const canEngage = isBrowsing && currentEvent !== undefined;
 
@@ -366,9 +385,11 @@ export default function DungeonView() {
                 {ratingSummary.ratedFloors > 0 && (
                   <div className="dungeon-rank">
                     <span className="dungeon-rank__label">Dungeon Rank</span>
-                    <FloorRatingStars stars={ratingSummary.averageStars} />
-                    <span className="dungeon-rank__word">
-                      {STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}
+                    <span className="dungeon-rank__value">
+                      <FloorRatingStars stars={ratingSummary.averageStars} />
+                      <span className="dungeon-rank__word">
+                        {STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}
+                      </span>
                     </span>
                   </div>
                 )}
@@ -463,6 +484,13 @@ export default function DungeonView() {
       {/* Inline overlays */}
       {activeDialogue && <DialogueScene scene={activeDialogue} onComplete={handleDialogueComplete} />}
       {currentLoot && <LootNotification loot={currentLoot} onClose={() => setCurrentLoot(null)} />}
+      {showClearOverlay && (
+        <DungeonClearScreen
+          summary={ratingSummary}
+          floors={ratedFloorRows}
+          onContinue={() => setShowClearOverlay(false)}
+        />
+      )}
     </div>
   );
 }

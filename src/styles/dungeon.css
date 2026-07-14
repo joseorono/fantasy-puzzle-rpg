@@ -262,27 +262,38 @@
   background: linear-gradient(180deg, rgba(212, 165, 116, 0.26) 0%, transparent 100%);
 }
 
-/* Overall dungeon rank on the cleared card: averaged stars + a rank word. */
+/* Overall dungeon rank on the cleared card: a compact framed row — "Dungeon Rank"
+   label on the left, averaged stars + rank word on the right. */
 .dungeon-rank {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.6rem;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.55rem;
+  background: rgba(246, 196, 83, 0.08);
+  border: 1px solid rgba(246, 196, 83, 0.4);
+  border-radius: 6px;
 }
 .dungeon-rank__label {
   font-size: 0.5rem;
   letter-spacing: 0.14em;
   color: #cbb98f;
 }
+.dungeon-rank__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .dungeon-rank .dungeon-floor__star {
-  width: 1rem;
-  height: 1rem;
+  width: 0.85rem;
+  height: 0.85rem;
 }
 .dungeon-rank__word {
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  color: #f0e4cf;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: #f6c453;
 }
 
 /* Rotated pixel-art diamond holding the event icon. */
