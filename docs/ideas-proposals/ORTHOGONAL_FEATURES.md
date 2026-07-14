@@ -33,12 +33,15 @@ are tracked but only lightly used (`score` now feeds the battle rating).
 
 - **Effort**: 🟢 Low (1 system, few files) · 🟡 Medium (new subsystem or cross-cutting) · 🔴 High (new pillar / lots of content/UX).
 - **Battle perf**: how much it loads the real-time loop (the 100ms cooldown/Guard tick, board match-resolution, and Jotai re-render pressure). Low / Med / High.
+- **Status**: each feature has a `- [ ]` checkbox under its heading — tick it (`- [x]`) when implemented. The summary matrix mirrors this: ✅ done · 🟡 partial · ⬜ not started.
 
 ---
 
 ## TIER 1 — Low effort, high spice (quick wins)
 
 ### 1. Enemy elemental weakness / resistance  🟢 · perf: **Low**
+
+- [ ] Implemented
 
 Give each enemy a `weakColor` (and optionally `resistColor`). Matching the weak color deals a
 bonus multiplier; resisted color is chipped. Optional spicy variant: the weakness **rotates**
@@ -50,6 +53,8 @@ every few seconds for live target-reading.
 
 ### 2. Momentum / "Fever" meter  🟢 · perf: **Low**
 
+- [ ] Implemented
+
 A streak meter that builds with consecutive matches and fast play and boosts **all** damage;
 it **decays or resets when the party takes a hit**. Repurposes the vestigial `score`/`turn`.
 
@@ -59,6 +64,8 @@ it **decays or resets when the party takes a hit**. Repurposes the vestigial `sc
 
 ### 3. Telegraphed heavy attacks (mid-battle wind-ups)  🟢–🟡 · perf: **Low–Med**
 
+- [ ] Implemented — *the always-on stagger cousin (see below) shipped; the telegraphed wind-up itself has not.*
+
 Extend the existing standby/preemptive concept from *opening only* to *recurring*: enemies
 periodically enter a visible "charging" state for N seconds. Enough damage (or a stun)
 **interrupts** it; otherwise a big hit lands.
@@ -66,9 +73,11 @@ periodically enter a visible "charging" state for N seconds. Enough damage (or a
 - *Orthogonal axis:* a **race/priority** layer — burst the charger vs. keep tempo.
 - *Differential:* elevates burst builds and target-switching skill.
 - *Touches:* `use-enemy-attack-timers.ts`, one enemy state field, telegraph UI (standby ring art already exists).
-- *See also:* [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md) — the always-on, low-drama cousin: every hit nudges this same attack timer back (VIT-resisted, hard-capped so it can't stunlock).
+- *See also:* [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md) — the always-on, low-drama cousin (✅ shipped): every hit nudges this same attack timer back (VIT-resisted, hard-capped so it can't stunlock).
 
 ### 4. Battle grade → loot/rarity bonus  🟢 · perf: **None** (end-of-battle)
+
+- [x] Implemented — shipped as the **arcade star rating** (`lib/battle-rating.ts`) + a **loot multiplier** on money/resources, rather than an S/A/B grade feeding `rarityBias`. Same "mastery → reward" axis.
 
 Turn the vestigial `score` into an **S/A/B grade** from speed + max combo + preemptive strikes,
 feeding `rarityBias` in `combineLootFromEnemies`.
@@ -76,8 +85,11 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 - *Orthogonal axis:* a **mastery/style** reward layer over the win/lose binary.
 - *Differential:* incentivizes optimizing *how* you win; strong replay hook.
 - *Touches:* battle-end path, `lib/loot.ts`, `lib/rarity.ts`.
+- *Shipped instead:* a 1–5★ rating (clear time / HP / combo / score / items) → `LOOT_MULTIPLIER_BY_STARS` scaling money + resources, with the results screen and rewards badge. Feeding `rarityBias` is still open if we want grade-gated *rarity* too.
 
 ### 5. Batch dungeon rewards into an end-of-run tally  🟢 · perf: **None**
+
+- [ ] Implemented — *partial:* the per-floor rating + overall **dungeon rank** + clear overlay shipped (`floorRatingsAtom`, `summarizeFloorRatings`, `DungeonClearScreen`); the **batched reward tally** itself (and combat gear drops) is still open.
 
 Not orthogonal by itself, but a **pacing enabler**. Dungeon combats *already* grant
 loot/EXP/level-up — each win routes through the shared `BattleRewardsScreen` and returns to the
@@ -102,6 +114,8 @@ tables; `goToBattleRewards` preserves `previousView: 'dungeon'`, so `goBack()` r
 
 ### 6. ⭐ Status Effect Engine (buffs & debuffs) — the keystone  🟡 · perf: **Med**
 
+- [ ] Implemented
+
 A generic effect system on **both heroes and enemies**: DoTs (poison/burn), control
 (stun/freeze = skip next attack), `vulnerable` (+dmg taken), `attack-up`, `regen`, `shield`.
 Effects tick on the **already-present 100ms loop** and are applied by skills, special orbs, or
@@ -115,6 +129,8 @@ enemy abilities.
 
 ### 7. New special tiles: blast & color-bomb  🟡 · perf: **Med**
 
+- [ ] Implemented
+
 Extend the existing `isBomb`/3×3-detonation/BFS-chain infra: **match-4 → blast orb** (clears a
 row or column on match); **match-5 → color orb** (clears all of one color).
 
@@ -124,6 +140,8 @@ row or column on match); **match-5 → color orb** (clears all of one color).
 
 ### 8. Hazard / obstacle orbs (enemy-applied)  🟡 · perf: **Med**
 
+- [ ] Implemented
+
 Enemies convert board orbs into **stone** (blocks matching until cleared by an adjacent match)
 or **cursed** (DoT if not cleared within N moves — ties into the status engine).
 
@@ -132,6 +150,8 @@ or **cursed** (DoT if not cleared within N moves — ties into the status engine
 - *Touches:* `match-3.ts` (new orb flags), an enemy ability, board tick, render.
 
 ### 9. Party Ultimate / Limit Break  🟡 · perf: **Low–Med**
+
+- [ ] Implemented
 
 The `fill-ultimate` / energy-potion language already implies this. Add a meter (shared or
 per-hero) charged by matches and damage taken; unleash a scripted payoff (screen-clear, full
@@ -143,6 +163,8 @@ heal, board reshuffle, party buff).
 
 ### 10. Hero active board-powers (class identity on the board)  🟡 · perf: **Med**
 
+- [ ] Implemented
+
 A second, cost-gated button per hero that **manipulates the board**: Rogue = shuffle, Mage =
 convert 3 orbs to a chosen color, Warrior = spawn a bomb, Healer = convert orbs to gray (Guard).
 
@@ -151,6 +173,8 @@ convert 3 orbs to a chosen color, Warrior = spawn a bomb, Healer = convert orbs 
 - *Touches:* a light skill-style system, board atoms (`clearRow`/`clearColumn`/`createBombOrb` already exist), UI.
 
 ### 11. Threat / taunt targeting  🟡 · perf: **Low**
+
+- [ ] Implemented
 
 Replace random party targeting with a **threat model**: high-damage heroes draw fire; Warrior
 can **taunt** to absorb hits.
@@ -161,6 +185,8 @@ can **taunt** to absorb hits.
 
 ### 12. Skill loadout: equip 2 active skills  🟡 · perf: **Low**
 
+- [ ] Implemented
+
 Today only one `selectedSkillId` is active. Let heroes slot **two** active skills.
 
 - *Orthogonal axis:* a **build-composition** dimension in the party layer.
@@ -168,6 +194,8 @@ Today only one `selectedSkillId` is active. Let heroes slot **two** active skill
 - *Touches:* `selectedSkillId` → array, skill activation UI, `party` slice.
 
 ### 13. Charms / accessories (3rd equipment slot) with on-match procs  🟡 · perf: **Low–Med**
+
+- [ ] Implemented
 
 Add an accessory slot granting **battle-behavior procs** rather than flat stats: e.g. "5% chance
 a match spawns a bomb", "gray matches also heal 2", "first hit each fight is blocked".
@@ -182,6 +210,8 @@ a match spawns a bomb", "gray matches also heal 2", "first hit each fight is blo
 
 ### 14. Enemy archetypes with real mechanics  🔴 · perf: **Med–High**
 
+- [ ] Implemented
+
 Distinct enemy kits built on #6/#1/#3: **shielded** (needs Guard-break or a specific color),
 **armored** (flat reduction vs. small matches), **splitter** (spawns adds on death within
 `MAX_ENEMIES_PER_BATTLE`), **enrage timer**, **enemy healer**, **summoner**.
@@ -192,6 +222,8 @@ Distinct enemy kits built on #6/#1/#3: **shielded** (needs Guard-break or a spec
 
 ### 15. Elemental reaction system  🔴 · perf: **Med**
 
+- [ ] Implemented
+
 Layer reactions on #1 + #6: applying two elements triggers a payoff (burn + freeze → shatter
 burst, etc.), Genshin-style.
 
@@ -201,6 +233,8 @@ burst, etc.), Genshin-style.
 
 ### 16. Formation / front–back rows  🔴 · perf: **Low runtime, High UI/model**
 
+- [ ] Implemented
+
 Position the party in front/back lines: front takes more hits but hits harder; back is
 protected. Skills can reposition.
 
@@ -208,6 +242,8 @@ protected. Skills can reposition.
 - *Touches:* party model, `damagePartyAtom` weighting, party/battle UI rework.
 
 ### 17. Passive trait / perk board  🔴 · perf: **None** (meta)
+
+- [ ] Implemented
 
 A per-character perk tree (distinct from stats and from the `licenses` credits UI): "matches of
 5+ pierce armor", "start each battle with 25 Guard", "revive once per battle".
@@ -217,6 +253,8 @@ A per-character perk tree (distinct from stats and from the `licenses` credits U
 - *Touches:* new progression slice + UI; hooks into combat via passive checks.
 
 ### 18. Wave / endless "Horde" battle mode  🔴 · perf: **Low–Med per wave**
+
+- [ ] Implemented
 
 A mode of escalating enemy waves with banking rewards and optional per-wave modifiers
 ("Omens"/"Curses": orbs fall faster, one color disabled, Guard off, +loot). Since there's no
@@ -231,26 +269,28 @@ for #6–#15.
 
 ## Summary matrix
 
-| # | Feature | Effort | Battle perf | New axis |
-|---|---------|--------|-------------|----------|
-| 1 | Enemy elemental weakness | 🟢 | Low | color-priority per enemy |
-| 2 | Momentum / Fever meter | 🟢 | Low | tempo / aggression |
-| 3 | Telegraphed heavy attacks | 🟢🟡 | Low–Med | race / interrupt priority |
-| 4 | Battle grade → loot | 🟢 | None | mastery / style |
-| 5 | Batch dungeon rewards (end-of-run tally) | 🟢 | None | (pacing enabler) |
-| 6 | ⭐ Status effect engine | 🟡 | Med | time / state |
-| 7 | Blast & color-bomb tiles | 🟡 | Med | match shape |
-| 8 | Hazard / obstacle orbs | 🟡 | Med | board-state management |
-| 9 | Party ultimate / limit break | 🟡 | Low–Med | bank vs spend |
-| 10 | Hero board-powers | 🟡 | Med | class board identity |
-| 11 | Threat / taunt targeting | 🟡 | Low | protect-the-squishy |
-| 12 | 2-skill loadout | 🟡 | Low | build composition |
-| 13 | Charms w/ on-match procs | 🟡 | Low–Med | economy ↔ battle procs |
-| 14 | Enemy archetypes | 🔴 | Med–High | per-fight puzzle |
-| 15 | Elemental reactions | 🔴 | Med | combo theorycraft |
-| 16 | Formation / rows | 🔴 | Low (UI High) | positioning |
-| 17 | Passive perk board | 🔴 | None | long-term progression |
-| 18 | Wave / Horde mode | 🔴 | Low–Med | endurance / run variety |
+| # | Feature | Status | Effort | Battle perf | New axis |
+|---|---------|--------|--------|-------------|----------|
+| 1 | Enemy elemental weakness | ⬜ | 🟢 | Low | color-priority per enemy |
+| 2 | Momentum / Fever meter | ⬜ | 🟢 | Low | tempo / aggression |
+| 3 | Telegraphed heavy attacks | ⬜ | 🟢🟡 | Low–Med | race / interrupt priority |
+| 4 | Battle grade → loot | ✅ | 🟢 | None | mastery / style |
+| 5 | Batch dungeon rewards (end-of-run tally) | 🟡 | 🟢 | None | (pacing enabler) |
+| 6 | ⭐ Status effect engine | ⬜ | 🟡 | Med | time / state |
+| 7 | Blast & color-bomb tiles | ⬜ | 🟡 | Med | match shape |
+| 8 | Hazard / obstacle orbs | ⬜ | 🟡 | Med | board-state management |
+| 9 | Party ultimate / limit break | ⬜ | 🟡 | Low–Med | bank vs spend |
+| 10 | Hero board-powers | ⬜ | 🟡 | Med | class board identity |
+| 11 | Threat / taunt targeting | ⬜ | 🟡 | Low | protect-the-squishy |
+| 12 | 2-skill loadout | ⬜ | 🟡 | Low | build composition |
+| 13 | Charms w/ on-match procs | ⬜ | 🟡 | Low–Med | economy ↔ battle procs |
+| 14 | Enemy archetypes | ⬜ | 🔴 | Med–High | per-fight puzzle |
+| 15 | Elemental reactions | ⬜ | 🔴 | Med | combo theorycraft |
+| 16 | Formation / rows | ⬜ | 🔴 | Low (UI High) | positioning |
+| 17 | Passive perk board | ⬜ | 🔴 | None | long-term progression |
+| 18 | Wave / Horde mode | ⬜ | 🔴 | Low–Med | endurance / run variety |
+
+*Also shipped (not a numbered idea above): **enemy stagger/flinch** — the always-on cousin of #3 (see [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md)).*
 
 ---
 
@@ -258,5 +298,5 @@ for #6–#15.
 
 **Status Effect Engine (#6) is the keystone** — it makes #3 (stun-interrupts), #8 (cursed
 orbs), #14 (enemy kits), and #15 (reactions) dramatically cheaper. Standalone quick wins with
-no dependencies: **#1, #2, #4, #7, #9**. Suggested first pass for maximum fun-per-effort:
+no dependencies: **#1, #2, #7, #9** (#4 is done). Suggested next pass for maximum fun-per-effort:
 **#1 + #2 + #9** (a spicy combat feel in days), then **#6** to unlock the deep tier.
