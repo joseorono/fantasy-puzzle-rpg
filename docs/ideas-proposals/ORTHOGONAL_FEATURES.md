@@ -66,6 +66,7 @@ periodically enter a visible "charging" state for N seconds. Enough damage (or a
 - *Orthogonal axis:* a **race/priority** layer — burst the charger vs. keep tempo.
 - *Differential:* elevates burst builds and target-switching skill.
 - *Touches:* `use-enemy-attack-timers.ts`, one enemy state field, telegraph UI (standby ring art already exists).
+- *See also:* [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md) — the always-on, low-drama cousin: every hit nudges this same attack timer back (VIT-resisted, hard-capped so it can't stunlock).
 
 ### 4. Battle grade → loot/rarity bonus  🟢 · perf: **None** (end-of-battle)
 
