@@ -217,6 +217,39 @@
   text-shadow: 0 0 6px rgba(217, 138, 106, 0.35);
 }
 
+/* ── Loot bonus (final beat after the stars) ── */
+.brs-loot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(246, 196, 83, 0.5);
+  border-radius: 999px;
+  background: rgba(118, 35, 35, 0.35);
+  /* Hidden until its reveal beat. */
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
+}
+.brs-loot--shown {
+  opacity: 1;
+  transform: scale(1);
+  animation: brs-rank-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.brs-loot-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: #e8d9b8;
+}
+.brs-loot-mult {
+  font-size: 0.95rem;
+  color: #f6c453;
+  text-shadow: 0 0 6px rgba(246, 196, 83, 0.4);
+}
+
 @keyframes brs-rank-in {
   from {
     opacity: 0;
@@ -252,10 +285,12 @@
   .brs-star--filled,
   .brs-rank,
   .brs-tagline,
+  .brs-loot--shown,
   .brs-continue--ready {
     animation: none !important;
   }
-  .brs-row {
+  .brs-row,
+  .brs-loot {
     transition: none !important;
   }
 }

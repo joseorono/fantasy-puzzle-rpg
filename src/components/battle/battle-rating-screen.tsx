@@ -49,17 +49,19 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
   const reduced = prefersReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? result.criteria.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? result.stars : 0);
+  const [showLoot, setShowLoot] = useState(reduced);
   const [canContinue, setCanContinue] = useState(reduced);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  // Timeline: reveal each row (tab click), then fill each star (coin), then enable Continue.
+  // Timeline: reveal each row (tab click), fill each star (coin), pop the loot bonus, then Continue.
   useEffect(() => {
     if (reduced) {
       soundService.playSound(SoundNames.clickCoin, 0.6);
       return;
     }
     const timers = timersRef.current;
-    const { startDelayMs, rowStaggerMs, starStaggerMs, continueDelayMs } = RATING_REVEAL;
+    const { startDelayMs, rowStaggerMs, starStaggerMs, lootRevealDelayMs, continueDelayMs } =
+      RATING_REVEAL;
 
     result.criteria.forEach((_, i) => {
       timers.push(
@@ -80,12 +82,15 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
       );
     }
 
+    const lootAt = starsStart + result.stars * starStaggerMs + lootRevealDelayMs;
     timers.push(
-      setTimeout(
-        () => setCanContinue(true),
-        starsStart + result.stars * starStaggerMs + continueDelayMs,
-      ),
+      setTimeout(() => {
+        setShowLoot(true);
+        soundService.playSound(SoundNames.clickCoin, 0.7);
+      }, lootAt),
     );
+
+    timers.push(setTimeout(() => setCanContinue(true), lootAt + continueDelayMs));
 
     return () => {
       timers.forEach(clearTimeout);
@@ -100,6 +105,7 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
     timersRef.current.length = 0;
     setRevealedCount(result.criteria.length);
     setFilledStars(result.stars);
+    setShowLoot(true);
     setCanContinue(true);
     soundService.playSound(SoundNames.clickCoin, 0.6);
   }
@@ -199,6 +205,19 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
                   {tagline}
                 </p>
               )}
+              <div className={cn('brs-loot', showLoot && 'brs-loot--shown')}>
+                <span className="brs-loot-label pixel-font">LOOT</span>
+                <span className="brs-loot-mult pixel-font number-flow-container">
+                  <NumberFlow
+                    value={showLoot ? result.lootMultiplier : 1}
+                    prefix="×"
+                    format={MULTIPLIER_FORMAT}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
+                </span>
+              </div>
             </div>
           )}
 

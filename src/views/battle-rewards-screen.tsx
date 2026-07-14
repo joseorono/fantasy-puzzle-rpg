@@ -94,7 +94,7 @@ export function BattleRewardsScreen() {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
   }
 
-  const { lootTable, expReward } = battleRewardsData;
+  const { lootTable, expReward, lootMultiplier } = battleRewardsData;
 
   const earnedResources: Resources = {
     coins: lootTable.resources?.item?.coins || 0,
@@ -114,7 +114,7 @@ export function BattleRewardsScreen() {
         (hasNoItems ? (
           <SkipToStep2 setStep={setStep} />
         ) : (
-          <ItemRewardsScreen lootTable={lootTable} onFinish={() => setStep(2)} />
+          <ItemRewardsScreen lootTable={lootTable} lootMultiplier={lootMultiplier} onFinish={() => setStep(2)} />
         ))}
 
       {/* Step 2: Show exp bar filling up */}
@@ -222,6 +222,8 @@ function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
  */
 interface ItemRewardsScreenProps {
   lootTable: LootTable;
+  /** Battle-rating loot bonus applied to the resources (shown as a badge when > 1). */
+  lootMultiplier?: number;
   onFinish: () => void;
 }
 
@@ -283,7 +285,7 @@ function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsRes
   );
 }
 
-function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
+function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewardsScreenProps) {
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
@@ -322,6 +324,11 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         <h1 className="victory-title rewards-section-title">
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
+        {lootMultiplier > 1 && (
+          <span className="rewards-loot-bonus pixel-font">
+            ×{lootMultiplier} Rating Bonus
+          </span>
+        )}
       </header>
 
       <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
