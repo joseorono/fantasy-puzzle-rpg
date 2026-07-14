@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParty, usePartyActions } from '~/stores/game-store';
 import { INITIAL_PARTY } from '~/constants/party';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 
 export default function PartyTestView() {
   const party = useParty();
@@ -92,8 +93,10 @@ export default function PartyTestView() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">EXP to Next Level:</span>
-                      <span className="text-white">{member.expToNextLevel}</span>
+                      <span className="text-slate-400">EXP (this level):</span>
+                      <span className="text-white">
+                        {member.currentLevelExp} / {getExpThresholdForLevel(member.level)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Color:</span>

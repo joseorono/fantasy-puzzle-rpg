@@ -160,7 +160,7 @@ export function BattleRewardsScreen() {
           const displayCharacter: CharacterData = {
             ...charCopy,
             level: charCopy.level + totalLevelUps,
-            expToNextLevel: currentPending.remainingExp,
+            currentLevelExp: currentPending.remainingExp,
           };
 
           // Auto-unlock any skills the character now qualifies for by level.
@@ -174,7 +174,7 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             unlockLevelSkills(updatedCharacter);
             // Move to next character
@@ -186,7 +186,7 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply level-up with only random stats (no player allocation)
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             unlockLevelSkills(updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
@@ -386,7 +386,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
     const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
       const updatedMember: CharacterData = {
         ...member,
-        expToNextLevel: member.expToNextLevel + expReward,
+        currentLevelExp: member.currentLevelExp + expReward,
       };
       partyActions.updateCharacter(member.id, updatedMember);
       return updatedMember;

@@ -22,7 +22,7 @@ export const MOSS_GOLEM: EnemyData = {
   attackDamage: 20, // Base damage before POW modifier
   guardBreak: 1.75, // Heavy slams chew through the party Guard meter
   lootTable: MOSS_GOLEM_LOOT,
-  expReward: 25,
+  expReward: 60,
   rarityBias: 1, // Tanky elite — slightly better odds at rarer gear
 };
 
@@ -49,7 +49,7 @@ export const SWAMP_FROG: EnemyData = {
   attackDamage: 8, // Low damage
   guardBreak: 0.6, // Light taps barely erode the party Guard meter
   lootTable: SWAMP_FROG_LOOT,
-  expReward: 10,
+  expReward: 30,
 };
 
 SWAMP_FROG.currentHp = SWAMP_FROG.maxHp;

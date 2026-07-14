@@ -16,23 +16,6 @@ import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from
  * For now, all RPG calculations are handled in rpg-calculations.ts
  */
 
-// TODO: Implement leveling system
-// - calculateExpToNextLevel(level: number): number
-// - calculateStatGrowth(baseStat: number, level: number, growthRate: number): number
-// - levelUp(character: CharacterData): CharacterData
-// - etc.
-
-// DO NOT IMPLEMENT WITHOUT CONSULTING JOSE
-
-/**
- * Calculates the amount of EXP required to reach a specific level
- *
- * @returns The amount of EXP required to reach a certain level (currently just an exponential function)
- */
-export function calculateExpToNextLevel(level: number): number {
-  return Math.trunc(level * level);
-}
-
 /**
  * The EXP required to clear a single level — the threshold the game actually uses to
  * decide level-ups (see `calculateLevelUpsForParty` in `battle-rewards.ts`). Shared by
@@ -77,14 +60,14 @@ export interface ExpGainTimeline {
  * EXP/level-up occurs).
  *
  * @param character - The party member in their pre-battle state (uses `level` and the
- *   `expToNextLevel` progress-within-current-level field)
+ *   `currentLevelExp` progress-within-current-level field)
  * @param expGained - EXP awarded from the battle
  * @returns The ordered animation timeline
  */
 export function buildExpGainTimeline(character: CharacterData, expGained: number): ExpGainTimeline {
   const startLevel = character.level;
   let level = startLevel;
-  let progress = Math.max(0, character.expToNextLevel);
+  let progress = Math.max(0, character.currentLevelExp);
   let remaining = Math.max(0, expGained);
 
   const segments: ExpGainSegment[] = [];
@@ -200,9 +183,10 @@ export function levelUp(
     character.maxHp = calculateMaxHp(character.baseHp, character.stats.vit, character.vitHpMultiplier);
   }
 
-  // Increase level and calculate new exp to next level
+  // Increase level; reset progress within the level. The caller sets the true leftover
+  // EXP (remainingExp) after this returns.
   character.level += levelUpAmount;
-  character.expToNextLevel = calculateExpToNextLevel(character.level);
+  character.currentLevelExp = 0;
 
   if (LEVELING_UP_HEALS_CHARACTER) {
     character.currentHp = character.maxHp;

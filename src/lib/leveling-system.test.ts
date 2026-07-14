@@ -28,32 +28,10 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   skillCooldown: 0,
   maxCooldown: 10,
   level: 1,
-  currentExp: 0,
-  expToNextLevel: 1,
+  currentLevelExp: 0,
   unlockedSkillIds: ['warrior-power-strike'],
   selectedSkillId: 'warrior-power-strike',
   ...overrides,
-});
-
-describe('calculateExpToNextLevel', () => {
-  it('should return level squared (truncated) for given level', () => {
-    expect(levelingSystem.calculateExpToNextLevel(1)).toBe(1);
-    expect(levelingSystem.calculateExpToNextLevel(2)).toBe(4);
-    expect(levelingSystem.calculateExpToNextLevel(5)).toBe(25);
-  });
-
-  it('should return 0 for level 0', () => {
-    expect(levelingSystem.calculateExpToNextLevel(0)).toBe(0);
-  });
-
-  it('should increase with level', () => {
-    const level1 = levelingSystem.calculateExpToNextLevel(1);
-    const level2 = levelingSystem.calculateExpToNextLevel(2);
-    const level3 = levelingSystem.calculateExpToNextLevel(3);
-
-    expect(level1).toBeLessThan(level2);
-    expect(level2).toBeLessThan(level3);
-  });
 });
 
 describe('getRandomPotentialStats', () => {
@@ -192,13 +170,13 @@ describe('levelUp', () => {
     expect(character.level).toBe(initialLevel + 3);
   });
 
-  it('should update expToNextLevel based on new level', () => {
-    const character = createTestCharacter();
+  it('should reset currentLevelExp to 0 after leveling (caller sets the leftover)', () => {
+    const character = createTestCharacter({ currentLevelExp: 5 });
     const chosenStats: CoreRPGStats = { pow: 0, vit: 0, spd: 0 };
 
     levelingSystem.levelUp(character, chosenStats, null, 2);
 
-    expect(character.expToNextLevel).toBe(levelingSystem.calculateExpToNextLevel(character.level));
+    expect(character.currentLevelExp).toBe(0);
   });
 
   it('should recalculate maxHp when vit is increased (chosen stat)', () => {
@@ -294,7 +272,7 @@ describe('getExpThresholdForLevel', () => {
 describe('buildExpGainTimeline', () => {
   it('produces a single partial segment when no level-up occurs', () => {
     // threshold(1) = floor(e) = 2; gaining 1 fills to 50%.
-    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
     const timeline = levelingSystem.buildExpGainTimeline(character, 1);
 
     expect(timeline.startLevel).toBe(1);
@@ -304,7 +282,7 @@ describe('buildExpGainTimeline', () => {
   });
 
   it('emits a static segment when no exp is gained', () => {
-    const character = createTestCharacter({ level: 1, expToNextLevel: 1 });
+    const character = createTestCharacter({ level: 1, currentLevelExp: 1 });
     const timeline = levelingSystem.buildExpGainTimeline(character, 0);
 
     expect(timeline.totalLevelUps).toBe(0);
@@ -315,7 +293,7 @@ describe('buildExpGainTimeline', () => {
 
   it('fills to 100% and resets to 0% when exactly hitting a threshold', () => {
     // threshold(1) = 2; gaining exactly 2 clears level 1.
-    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
     const timeline = levelingSystem.buildExpGainTimeline(character, 2);
 
     expect(timeline.totalLevelUps).toBe(1);
@@ -327,7 +305,7 @@ describe('buildExpGainTimeline', () => {
 
   it('emits one levelsUp segment per level on a multi-level gain', () => {
     // threshold(1) = 2, threshold(2) = 7; gaining 9 clears two levels.
-    const character = createTestCharacter({ level: 1, expToNextLevel: 0 });
+    const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
     const timeline = levelingSystem.buildExpGainTimeline(character, 9);
 
     expect(timeline.totalLevelUps).toBe(2);
@@ -344,11 +322,11 @@ describe('buildExpGainTimeline', () => {
       { level: 2, progress: 3, gained: 25 },
       { level: 3, progress: 10, gained: 100 },
     ]) {
-      const preBattle = createTestCharacter({ level, expToNextLevel: progress });
+      const preBattle = createTestCharacter({ level, currentLevelExp: progress });
       const timeline = levelingSystem.buildExpGainTimeline(preBattle, gained);
 
-      // calculateLevelUpsForParty expects members whose expToNextLevel already includes the reward.
-      const postBattle = createTestCharacter({ level, expToNextLevel: progress + gained });
+      // calculateLevelUpsForParty expects members whose currentLevelExp already includes the reward.
+      const postBattle = createTestCharacter({ level, currentLevelExp: progress + gained });
       const [pending] = calculateLevelUpsForParty([postBattle], gained);
 
       expect(timeline.totalLevelUps).toBe(pending.pendingLevelUps);
@@ -359,7 +337,7 @@ describe('buildExpGainTimeline', () => {
     // Infinity EXP keeps expProgress >= threshold forever; the level ceiling must halt
     // the loop so the character lands exactly on MAX_LEVEL.
     const startLevel = 1;
-    const character = createTestCharacter({ level: startLevel, expToNextLevel: 1 });
+    const character = createTestCharacter({ level: startLevel, currentLevelExp: 1 });
     const [pending] = calculateLevelUpsForParty([character], Infinity);
 
     expect(startLevel + pending.pendingLevelUps).toBe(MAX_LEVEL);

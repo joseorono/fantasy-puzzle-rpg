@@ -33,8 +33,8 @@ export interface CharacterData extends BaseStats {
   potentialStats: CoreRPGStats;
   maxCooldown: number; // Base cooldown before SPD modifications
   level: number;
-  currentExp: number;
-  expToNextLevel: number;
+  /** EXP accumulated within the current level (0..getExpThresholdForLevel(level)). */
+  currentLevelExp: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
   /** Rolled rarity of the equipped weapon; mirrors `equippedWeaponId`. */

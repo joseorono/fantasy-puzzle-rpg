@@ -4,6 +4,7 @@ import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -76,19 +77,14 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
   const expPercentage =
-    character.expToNextLevel > 0
-      ? Math.min(100, (character.expToNextLevel / calculateExpToNextLevel(character.level)) * 100)
+    character.currentLevelExp > 0
+      ? Math.min(100, (character.currentLevelExp / getExpThresholdForLevel(character.level)) * 100)
       : 0;
 
   // Calculate HP delta from VIT changes
   const currentMaxHp = character.maxHp;
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
   const maxHpDelta = previewMaxHp - currentMaxHp;
-
-  // Helper function for exp calculation (simplified for display)
-  function calculateExpToNextLevel(level: number): number {
-    return Math.floor(Math.exp(level));
-  }
 
   const maxStatValue = 100; // For meter display
 
@@ -142,7 +138,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <ExperienceBar
                 percentage={expPercentage}
-                label={`${character.expToNextLevel} / ${calculateExpToNextLevel(character.level)}`}
+                label={`${character.currentLevelExp} / ${getExpThresholdForLevel(character.level)}`}
                 variant="full"
               />
             </div>
