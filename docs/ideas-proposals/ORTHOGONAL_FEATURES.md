@@ -26,8 +26,8 @@ already gives the player (from `match-3.ts`, `rpg-calculations.ts`, `battle-atom
 
 What's **absent** today (fertile ground): no status effects/buffs/debuffs, only one special
 tile (wildcard bomb), enemies do uniform random-target basic hits with no abilities/telegraphs
-beyond the opening standby, no ultimate/limit system, no elemental weaknesses, `turn`/`score`
-are tracked but vestigial, and dungeon combat bypasses the rewards/level-up flow.
+beyond the opening standby, no ultimate/limit system, no elemental weaknesses, and `turn`/`score`
+are tracked but only lightly used (`score` now feeds the battle rating).
 
 **Rating legend**
 
@@ -77,13 +77,24 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 - *Differential:* incentivizes optimizing *how* you win; strong replay hook.
 - *Touches:* battle-end path, `lib/loot.ts`, `lib/rarity.ts`.
 
-### 5. Unify dungeon combat with the rewards/level-up flow  🟢 · perf: **None**
+### 5. Batch dungeon rewards into an end-of-run tally  🟢 · perf: **None**
 
-Not orthogonal by itself, but a **dynamism enabler**: dungeon wins currently skip
-loot/EXP/level-up. Routing them through the shared rewards flow (or a batched end-of-run tally)
-makes the fully-built dungeon system a real content pillar and a testbed for everything below.
+Not orthogonal by itself, but a **pacing enabler**. Dungeon combats *already* grant
+loot/EXP/level-up — each win routes through the shared `BattleRewardsScreen` and returns to the
+run (verified: the sample dungeon's `SWAMP_FROG`/`MOSS_GOLEM` carry `expReward` + resource loot
+tables; `goToBattleRewards` preserves `previousView: 'dungeon'`, so `goBack()` resumes the run via
+`resolveBattleWinAtom`). The open questions are *pacing and consistency*:
 
-- *Touches:* `dungeon-view.tsx` / `resolveBattleWinAtom`, `battle-rewards-screen.tsx`.
+- A full-screen loot → EXP → level-up flow **after every fight** interrupts the descent. Option:
+  accumulate combat rewards in a run-scoped atom and present **one end-of-run tally**, deferring
+  (or keeping) level-ups.
+- Chests use the lightweight `LootNotification`, combats use the full rewards screen — pick one
+  language for in-run rewards.
+- Enemy loot tables currently drop **only resources/coins** (empty `equipableItems`/`consumableItems`);
+  gear comes solely from chests. A real dungeon pillar probably wants combat gear drops too.
+
+- *Touches:* `dungeon-view.tsx` / `resolveBattleWinAtom`, `battle-rewards-screen.tsx`,
+  `dungeon-atoms.ts` (reward accumulator), enemy loot tables.
 
 ---
 
@@ -226,7 +237,7 @@ for #6–#15.
 | 2 | Momentum / Fever meter | 🟢 | Low | tempo / aggression |
 | 3 | Telegraphed heavy attacks | 🟢🟡 | Low–Med | race / interrupt priority |
 | 4 | Battle grade → loot | 🟢 | None | mastery / style |
-| 5 | Unify dungeon rewards | 🟢 | None | (enabler) |
+| 5 | Batch dungeon rewards (end-of-run tally) | 🟢 | None | (pacing enabler) |
 | 6 | ⭐ Status effect engine | 🟡 | Med | time / state |
 | 7 | Blast & color-bomb tiles | 🟡 | Med | match shape |
 | 8 | Hazard / obstacle orbs | 🟡 | Med | board-state management |
