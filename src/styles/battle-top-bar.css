@@ -72,6 +72,12 @@
   gap: 0.5rem;
 }
 
+/* Wrapper that hugs each pie so the ring can shake (via .ring-shake-*) on a stagger without
+   disturbing the flex row's spacing. */
+#battle-top-bar .btb-threat-shake {
+  display: inline-flex;
+}
+
 /* Seat each red pie on a dark ring so it separates from the red leather. */
 #battle-top-bar .btb-threat-pie {
   border-radius: 50%;

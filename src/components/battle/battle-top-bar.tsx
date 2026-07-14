@@ -4,6 +4,7 @@ import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
+import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import {
   INTEGER_FORMAT,
@@ -52,24 +53,39 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
             {visibleTimers.length === 0 ? (
               <span className="btb-threats-clear pixel-font">CLEAR</span>
             ) : (
-              visibleTimers.map((timer) => (
-                <RadialCountdown
-                  key={timer.id}
-                  durationMs={timer.durationMs}
-                  elapsedMs={timer.elapsedMs}
-                  cycleKey={timer.cycleKey}
-                  paused={isPaused}
-                  size="sm"
-                  tone={timer.isStandby ? 'gold' : 'danger'}
-                  className="btb-threat-pie"
-                >
-                  {timer.isStandby ? (
-                    <Eye className="btb-threat-icon" />
-                  ) : (
-                    <Swords className="btb-threat-icon" />
-                  )}
-                </RadialCountdown>
-              ))
+              visibleTimers.map((timer) => {
+                // A stagger bumps `staggerPulse.nonce`; re-keying the wrapper on it remounts + replays
+                // the shake (bigger on a maxed flinch). A plain new cycle leaves the nonce unchanged,
+                // so only the ring's own fill remounts (via `cycleKey`) — no shake.
+                const shakeClass =
+                  timer.staggerPulse?.level === 'max'
+                    ? 'ring-shake-lg'
+                    : timer.staggerPulse?.level === 'normal'
+                      ? 'ring-shake-sm'
+                      : undefined;
+                return (
+                  <div
+                    key={`${timer.id}-${timer.staggerPulse?.nonce ?? 0}`}
+                    className={cn('btb-threat-shake', shakeClass)}
+                  >
+                    <RadialCountdown
+                      durationMs={timer.durationMs}
+                      elapsedMs={timer.elapsedMs}
+                      cycleKey={timer.cycleKey}
+                      paused={isPaused}
+                      size="sm"
+                      tone={timer.isStandby ? 'gold' : 'danger'}
+                      className="btb-threat-pie"
+                    >
+                      {timer.isStandby ? (
+                        <Eye className="btb-threat-icon" />
+                      ) : (
+                        <Swords className="btb-threat-icon" />
+                      )}
+                    </RadialCountdown>
+                  </div>
+                );
+              })
             )}
             {overflowCount > 0 && <span className="btb-threats-more pixel-font">+{overflowCount}</span>}
           </div>

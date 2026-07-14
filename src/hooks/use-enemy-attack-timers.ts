@@ -34,6 +34,13 @@ export interface EnemyAttackTimer {
   cycleKey: number | string;
   /** True while the enemy is still on its start-of-battle standby (show the eye); false once attacking. */
   isStandby: boolean;
+  /**
+   * Bumped whenever a hit staggers this enemy, so the UI can shake the ring. `nonce` changes only on
+   * a real stagger (never on a plain new cycle); `level` is `'max'` on the hit that maxes the
+   * per-cycle flinch (fires the "STAGGER!" callout) for a bigger shake, else `'normal'`. Null while
+   * observing / before the first stagger.
+   */
+  staggerPulse: { nonce: number; level: 'normal' | 'max' } | null;
 }
 
 /**
@@ -81,6 +88,8 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   // Ring geometry captured at each (re)anchor, read during render.
   const ringDurationRef = useRef<Map<string, number>>(new Map());
   const ringElapsedRef = useRef<Map<string, number>>(new Map());
+  // Per-enemy stagger pulse (monotonic nonce + level), so the ring can shake on each applied stagger.
+  const staggerPulseRef = useRef<Map<string, { nonce: number; level: 'normal' | 'max' }>>(new Map());
   // One pending timeout per enemy (standby wait or the next attack), for cleanup.
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   // Guards against re-processing the same hit (effect re-runs / StrictMode double-invoke).
@@ -106,6 +115,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     staggerUsedRef.current = new Map();
     ringDurationRef.current = new Map();
     ringElapsedRef.current = new Map();
+    staggerPulseRef.current = new Map();
     setVersion({});
   }, [enemyStandbyMs]);
 
@@ -225,7 +235,11 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       // The hit that pushes this cycle over its cap "maxes" the flinch — flag it once (transition
       // only) so the enemy can pop a "STAGGER!" callout. Further hits this cycle apply 0 and skip.
       const capMs = interval * MAX_STAGGER_FRACTION_PER_CYCLE;
-      if (used < capMs && used + applied >= capMs - 1e-6) flagMaxFlinch(id);
+      const maxedFlinch = used < capMs && used + applied >= capMs - 1e-6;
+      if (maxedFlinch) flagMaxFlinch(id);
+      // Pulse the ring shake: bigger on the maxing hit, subtle otherwise.
+      const prevNonce = staggerPulseRef.current.get(id)?.nonce ?? 0;
+      staggerPulseRef.current.set(id, { nonce: prevNonce + 1, level: maxedFlinch ? 'max' : 'normal' });
       const release = (releaseAtRef.current.get(id) ?? now) + applied;
       releaseAtRef.current.set(id, release);
       // Re-anchor the ring to the extended release WITHOUT snapping to full: keep the same cycle
@@ -248,6 +262,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
         elapsedMs: 0,
         cycleKey: `standby-${id}`,
         isStandby: true,
+        staggerPulse: null,
       };
     }
     return {
@@ -256,6 +271,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       elapsedMs: ringElapsedRef.current.get(id) ?? 0,
       cycleKey: version[id] ?? 0,
       isStandby: false,
+      staggerPulse: staggerPulseRef.current.get(id) ?? null,
     };
   });
 }

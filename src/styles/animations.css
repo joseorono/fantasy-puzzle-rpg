@@ -49,6 +49,39 @@
   animation: shake 0.5s ease-in-out;
 }
 
+/* Stagger shake for the enemy attack-countdown ring (see battle-top-bar). Two tiers, mirroring the
+   enemy-recoil / enemy-recoil-strong pair: a subtle jitter on a normal stagger, a bigger, rotating
+   shove on the hit that maxes the flinch (lands with the "STAGGER!" callout). Transform-only. */
+@keyframes ring-shake-sm {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25%, 75% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+.ring-shake-sm {
+  animation: ring-shake-sm 0.25s ease-in-out;
+}
+
+@keyframes ring-shake-lg {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  15%, 45%, 75% {
+    transform: translate(-4px, 1px) rotate(-4deg);
+  }
+  30%, 60%, 90% {
+    transform: translate(4px, -1px) rotate(4deg);
+  }
+}
+.ring-shake-lg {
+  animation: ring-shake-lg 0.45s ease-in-out;
+}
+
 /* Orb fall animation */
 @keyframes fall-in {
   0% {
@@ -319,7 +352,9 @@
   .enemy-recoil,
   .enemy-recoil-strong,
   .damage-erupt,
-  .stagger-callout {
+  .stagger-callout,
+  .ring-shake-sm,
+  .ring-shake-lg {
     animation: none !important;
   }
 }
