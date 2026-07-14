@@ -81,6 +81,18 @@ export const STAR_RANK_TAGLINES: Record<number, string> = {
 /** At or below this star count, the flavor line reads as a warning (close call). */
 export const CLOSE_CALL_MAX_STARS = 2;
 
+/**
+ * Send-off line shown on the VICTORY modal (after the rating screen), chosen by star rating —
+ * from a scraped-by escape at 1 star to a total rout at 5.
+ */
+export const VICTORY_FLAVOR_BY_STARS: Record<number, string> = {
+  1: 'You barely escaped with your life.',
+  2: 'A hard-fought win.',
+  3: 'You live to fight another day!',
+  4: 'You did very well!',
+  5: 'They never stood a chance.',
+};
+
 // ─── Colors (warm palette; indigolay-red framing lives in the component/CSS) ──
 
 /** Filled star (warm gold, matches the project's flinch/callout amber). */
@@ -105,3 +117,4 @@ export const RATING_REVEAL = {
   /** Delay after the last star before the Continue button enables. */
   continueDelayMs: 450,
 } as const;
+

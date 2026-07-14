@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
 import type { CSSProperties } from 'react';
 import NumberFlow from '@number-flow/react';
 import { Star } from 'lucide-react';
-import {
-  partyAtom,
-  scoreAtom,
-  maxComboAtom,
-  itemsUsedAtom,
-  battleStartedAtAtom,
-} from '~/stores/battle-atoms';
-import { computeBattleRating } from '~/lib/battle-rating';
+import type { BattleRatingResult } from '~/lib/battle-rating';
 import {
   MAX_STARS,
   STAR_RANK_LABELS,
@@ -34,6 +26,8 @@ import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 
 interface BattleRatingScreenProps {
+  /** The precomputed rating (snapshot taken at the win moment by the parent). */
+  result: BattleRatingResult;
   /** Advance to the existing VICTORY summary card. */
   onContinue: () => void;
 }
@@ -50,26 +44,7 @@ function prefersReducedMotion(): boolean {
  * with a tab-click), then 1–3 stars fill left-to-right (each with a coin). Pure presentation; all
  * scoring lives in {@link computeBattleRating} and its constants.
  */
-export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
-  const party = useAtomValue(partyAtom);
-  const score = useAtomValue(scoreAtom);
-  const maxCombo = useAtomValue(maxComboAtom);
-  const itemsUsed = useAtomValue(itemsUsedAtom);
-  const startedAt = useAtomValue(battleStartedAtAtom);
-
-  // Snapshot the rating once, at mount (the win moment) — elapsed time must not drift on re-render.
-  const [result] = useState(() => {
-    const maxHpTotal = party.reduce((sum, c) => sum + c.maxHp, 0);
-    const currentHpTotal = party.reduce((sum, c) => sum + c.currentHp, 0);
-    return computeBattleRating({
-      elapsedMs: Date.now() - startedAt,
-      score,
-      maxCombo,
-      hpRemainingPct: maxHpTotal > 0 ? currentHpTotal / maxHpTotal : 0,
-      itemsUsed,
-    });
-  });
-
+export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenProps) {
   const reduced = prefersReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? result.criteria.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? result.stars : 0);
