@@ -56,6 +56,7 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
                 <RadialCountdown
                   key={timer.id}
                   durationMs={timer.durationMs}
+                  elapsedMs={timer.elapsedMs}
                   cycleKey={timer.cycleKey}
                   paused={isPaused}
                   size="sm"

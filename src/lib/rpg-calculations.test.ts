@@ -365,6 +365,63 @@ describe('Speed Calculations', () => {
 });
 
 // ============================================================================
+// Stagger (Flinch) Calculations
+// ============================================================================
+
+describe('Stagger Calculations', () => {
+  test('calculateStaggerPushMs: any real hit produces a positive push (everyone flinches)', () => {
+    expect(rpg.calculateStaggerPushMs(50, 300, 50, 4000)).toBeGreaterThan(0);
+    // Even a tiny hit on a very tanky enemy still flinches a little.
+    expect(rpg.calculateStaggerPushMs(1, 9999, 999, 4000)).toBeGreaterThan(0);
+  });
+
+  test('calculateStaggerPushMs: zero/negative damage or interval yields no push', () => {
+    expect(rpg.calculateStaggerPushMs(0, 300, 50, 4000)).toBe(0);
+    expect(rpg.calculateStaggerPushMs(-10, 300, 50, 4000)).toBe(0);
+    expect(rpg.calculateStaggerPushMs(50, 300, 50, 0)).toBe(0);
+  });
+
+  test('calculateStaggerPushMs: higher VIT resists (smaller push), monotonically', () => {
+    const lowVit = rpg.calculateStaggerPushMs(50, 300, 10, 4000);
+    const midVit = rpg.calculateStaggerPushMs(50, 300, 50, 4000);
+    const highVit = rpg.calculateStaggerPushMs(50, 300, 100, 4000);
+    expect(midVit).toBeLessThan(lowVit);
+    expect(highVit).toBeLessThan(midVit);
+  });
+
+  test('calculateStaggerPushMs: scales with damage up to the reference, then plateaus', () => {
+    const small = rpg.calculateStaggerPushMs(10, 300, 50, 4000);
+    const bigger = rpg.calculateStaggerPushMs(40, 300, 50, 4000);
+    expect(bigger).toBeGreaterThan(small);
+    // reference = 300 * 0.15 = 45; hits at or above 45 all reach damageRatio = 1 and plateau.
+    const atReference = rpg.calculateStaggerPushMs(45, 300, 50, 4000);
+    const wayAbove = rpg.calculateStaggerPushMs(9999, 300, 50, 4000);
+    expect(wayAbove).toBeCloseTo(atReference, 5);
+  });
+
+  test('clampStaggerToCycleBudget: a single push never exceeds the per-cycle cap', () => {
+    // cap = 4000 * 0.12 = 480ms
+    expect(rpg.clampStaggerToCycleBudget(10_000, 4000, 0)).toBe(480);
+  });
+
+  test('clampStaggerToCycleBudget: respects budget already spent, then zeroes out', () => {
+    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 300)).toBe(180); // 480 cap - 300 used
+    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 480)).toBe(0);
+    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 600)).toBe(0); // over-spent stays clamped
+  });
+
+  test('anti-stunlock: relentless huge hits can never push a cycle past the cap', () => {
+    const interval = 4000;
+    let used = 0;
+    for (let i = 0; i < 25; i++) {
+      const push = rpg.calculateStaggerPushMs(9999, 300, 50, interval);
+      used += rpg.clampStaggerToCycleBudget(push, interval, used);
+    }
+    expect(used).toBeLessThanOrEqual(interval * 0.12 + 1e-9);
+  });
+});
+
+// ============================================================================
 // HP Threshold
 // ============================================================================
 

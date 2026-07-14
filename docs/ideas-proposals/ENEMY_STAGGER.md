@@ -4,6 +4,9 @@
 > a little. Scaled by how hard the hit lands, sharply reduced by the enemy's **VIT**, and
 > **hard-capped per attack cycle** so you can slow an enemy but *never* stun-lock it.
 
+**Status: implemented** (see [Implementation](#implementation-as-built)). Tuning constants live in
+`src/constants/battle.ts`.
+
 **Verdict: viable, cheap, additive.** It gives VIT a second job (today it only feeds HP), makes
 hits feel reactive, and rewards focusing a target — without a new state machine or a new game
 loop. The no-stunlock guarantee is *provable from the cap*, not just tuned. Battle-perf impact:
@@ -125,8 +128,8 @@ referencing a flat constant (or the enemy's own `attackDamage`) instead of `enem
 > to the cap). At `0.10` vs `0.12`, one hard hit lands ~45–60% of the cap, so it takes ~2 hits to
 > saturate and VIT visibly changes how fast you get there.
 
-These live alongside the Guard constants in `rpg-calculations.ts` (with any player-facing tuning
-mirrored in `src/constants/party.ts`, next to `GUARD_CHARGE_PER_ORB`).
+These live in **`src/constants/battle.ts`** (next to `PREEMPTIVE_STRIKE_DAMAGE_BONUS` and the
+standby constants), so all stagger tuning sits in one place with the other battle knobs.
 
 ---
 
@@ -151,40 +154,40 @@ the frog every ~2921 ms — the fight's rhythm bends but never breaks.
 
 ---
 
-## Recommended implementation (not built in this doc)
+## Implementation (as built)
 
-1. **Promote the next-attack time into state.** Add `attackReleaseAt: Record<string, number>`
-   (and a per-cycle `staggerBudgetUsed: Record<string, number>`) to `BattleState`
-   (`src/types/battle.ts`), mirroring the existing `enemyStandbyMs` / `standbyEnemyIds` pattern.
-   Initialize in `createBattleState` (`src/lib/battle-system.ts`).
+The mechanic is fully contained in the attack-timer hook plus two pure helpers — it needed **no
+new `BattleState` field** and **no changes to `battle-atoms.ts`**, because the hook derives the
+stagger from the shared `lastDamage` channel (which already carries the hit `amount` and which
+enemy was struck).
 
-2. **Convert the attack loop to a self-rescheduling `setTimeout`** in
-   `use-enemy-attack-timers.ts`. On each wake: if `now < releaseAt[id]`, it was pushed back —
-   **re-defer** for the remaining delta; otherwise fire (`damageParty`), reset
-   `staggerBudgetUsed[id] = 0`, set `releaseAt[id] = now + interval`, restart the ring, and
-   reschedule. This is the same absolute-timestamp discipline `releaseAtRef` already uses for
-   standby, so a mid-battle rebuild (an enemy dies) still resumes each timer correctly rather than
-   restarting it.
+1. **Self-rescheduling attack loop.** `src/hooks/use-enemy-attack-timers.ts` now runs each
+   attacking enemy on a `setTimeout` anchored to an absolute `releaseAtRef[id]` (same
+   `performance.now()` discipline the standby phase already used) instead of a fixed
+   `setInterval`. On each wake: if `now < releaseAt`, it was pushed back → **re-defer** for the
+   remaining delta; otherwise fire (`damageParty`), reset the per-cycle stagger budget, open a
+   fresh cycle (`releaseAt = now + interval`, ring restarted), and reschedule.
 
-3. **Apply stagger on hit** in `damageEnemyAtom` (and the `enemy` / `allEnemy` branch of
-   `activateSkillAtom`): compute `appliedMs` with the clamp above and push `attackReleaseAt` later.
-   Write through a **ref mirror** the timer reads, so the common case needs **no effect rebuild**
-   (the roster effect's deps stay `rosterSignature`-gated — see Performance).
+2. **Stagger on hit (derived state).** A second effect keyed on `lastDamageAtom` runs once per
+   enemy-targeting hit: it computes `calculateStaggerPushMs`, clamps it against the per-cycle
+   budget (`clampStaggerToCycleBudget`), extends `releaseAtRef`, and re-anchors the ring. It skips
+   still-observing (standby) enemies. The running shot timer re-defers itself on its next wake, so
+   staggering never tears the timers down. AoE skills (`enemyIds`) stagger each enemy with its own
+   independent budget.
 
-4. **UI feedback.** Bump the target's ring `cycleKey` / `durationMs` so `RadialCountdown` visibly
-   jumps backward on a stagger. Optionally add an `enemy-flinch` keyframe next to
-   `enemy-recoil-strong` in `animations.css` (respect the reduced-motion block), driven off the
-   existing `lastDamageAtom` effect in `enemy-display.tsx`.
+3. **UI feedback.** `RadialCountdown` gained an optional `elapsedMs` prop applied as a negative
+   `animation-delay`. Because a stagger grows the ring's `durationMs` while `elapsedMs` stays
+   fixed to the cycle start, the fill **nudges backward proportionally to the push** (and empties
+   at the new release) — an honest flinch rather than a jarring snap-to-full. Wired through
+   `battle-top-bar.tsx`. The existing `enemy-recoil` sprite reaction already covers the hit
+   flinch, so no new keyframe was added.
 
-5. **Pure helper + tests.** Add `calculateStaggerPushMs(damage, enemyMaxHp, vit, interval)` (and
-   the per-cycle clamp) to `rpg-calculations.ts` with JSDoc. Unit-test in
-   `rpg-calculations.test.ts`, mirroring the existing `calculateAttackInterval` cases:
-   - `pushMs > 0` for any positive damage (minimum flinch always exists),
-   - monotonic **decrease** in VIT (higher VIT → smaller push),
-   - monotonic **increase** in damage up to the `damageRatio` cap,
-   - the per-cycle accumulation never exceeds `interval × MAX_STAGGER_FRACTION_PER_CYCLE`.
-
-   Add a `calculateStaggerPushMs` case to `rpg-calculations.bench.ts`.
+4. **Pure helpers + tests.** `calculateStaggerPushMs(damage, enemyMaxHp, vit, interval)` and
+   `clampStaggerToCycleBudget(pushMs, interval, usedMs)` live in `rpg-calculations.ts` (JSDoc'd,
+   importing the constants from `~/constants/battle`). Covered in `rpg-calculations.test.ts`
+   (positive push for any hit, VIT monotonicity, damage→plateau at the reference, and a
+   relentless-hits loop proving the per-cycle cap is never exceeded) and benched in
+   `rpg-calculations.bench.ts`.
 
 ---
 

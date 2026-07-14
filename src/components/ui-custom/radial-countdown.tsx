@@ -25,6 +25,13 @@ interface RadialCountdownProps extends VariantProps<typeof radialCountdownVarian
   /** Length of one countdown cycle, in milliseconds. */
   durationMs: number;
   /**
+   * Milliseconds already elapsed in the current cycle. Applied as a negative
+   * `animation-delay`, so a mid-cycle remount continues from where it visually
+   * is instead of snapping back to full — useful when `durationMs` is extended
+   * mid-cycle (e.g. an enemy stagger). Defaults to 0 (start from full).
+   */
+  elapsedMs?: number;
+  /**
    * Change this value to restart the depletion from full (e.g. an attack
    * counter). The animated layer is keyed on it, so a new value remounts it and
    * replays the CSS animation.
@@ -46,6 +53,7 @@ interface RadialCountdownProps extends VariantProps<typeof radialCountdownVarian
  */
 export function RadialCountdown({
   durationMs,
+  elapsedMs = 0,
   cycleKey,
   paused = false,
   size,
@@ -61,6 +69,8 @@ export function RadialCountdown({
         style={
           {
             animationDuration: `${durationMs}ms`,
+            // Negative delay starts the depletion partway through — anchors a mid-cycle remount.
+            animationDelay: elapsedMs > 0 ? `-${elapsedMs}ms` : undefined,
             animationPlayState: paused ? 'paused' : 'running',
           } as CSSProperties
         }
