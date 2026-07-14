@@ -369,9 +369,10 @@ export const recordMaxComboAtom = atom(null, (get, set, combo: number) => {
 });
 
 // Tallies a battle item consumption (a penalty in the victory rating). Called from the item bar.
+// `?? 0` mirrors the read selectors so a pre-existing state object without the field can't write NaN.
 export const recordItemUsedAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
-  set(battleStateAtom, { ...currentState, itemsUsed: currentState.itemsUsed + 1 });
+  set(battleStateAtom, { ...currentState, itemsUsed: (currentState.itemsUsed ?? 0) + 1 });
 });
 
 // Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer

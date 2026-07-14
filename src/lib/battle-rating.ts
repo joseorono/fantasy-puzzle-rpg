@@ -1,6 +1,6 @@
 /**
  * Arcade victory rating — pure scoring logic. Given a battle's end-of-fight stats, produces a
- * per-criterion breakdown and a 1–3 star result. UI-agnostic and fully unit-tested; all tunables
+ * per-criterion breakdown and a 1–5 star result. UI-agnostic and fully unit-tested; all tunables
  * live in `~/constants/battle-rating.ts`.
  *
  * Skill criteria (clear time, HP kept) dominate; RNG-heavy ones (match score, cascade combo) carry

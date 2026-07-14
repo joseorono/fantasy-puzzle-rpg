@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { STAT_BUTTON_HOLD } from '~/constants/ui';
 
 interface PressAndHoldOptions {
@@ -16,6 +16,7 @@ export interface PressAndHoldHandlers {
   onPointerUp: () => void;
   onPointerLeave: () => void;
   onPointerCancel: () => void;
+  onClickCapture: (event: ReactMouseEvent) => void;
 }
 
 /**
@@ -23,9 +24,14 @@ export interface PressAndHoldHandlers {
  *
  * The action is deliberately **not** fired on press — leave the single step to the element's own
  * `onClick`, so a plain click (or keyboard activation, which never emits pointer events) does
- * exactly one and there's no double-count. This hook only drives the *repeat train*: after
- * `initialDelayMs` it calls `action` on an interval that shrinks by `accelerationFactor` toward
- * `minIntervalMs`. Return `false` from `action` to stop early (e.g. nothing left to spend).
+ * exactly one. This hook only drives the *repeat train*: after `initialDelayMs` it calls `action`
+ * on an interval that shrinks by `accelerationFactor` toward `minIntervalMs`. Return `false` from
+ * `action` to stop early (e.g. nothing left to spend).
+ *
+ * A held press ends with the browser firing a trailing `click`; if the train ran, `onClickCapture`
+ * swallows that click so a hold contributes only its train (no extra `onClick` step on release).
+ * A tap fires no train, so its click passes through as the single step. Spread ALL returned
+ * handlers onto the element.
  *
  * Defaults come from {@link STAT_BUTTON_HOLD}. Spread the returned handlers onto the element.
  *
@@ -48,6 +54,9 @@ export function usePressAndHold(
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef(initialDelayMs);
+  // True once the repeat train has fired ≥1 tick this hold, so the trailing release-`click` can be
+  // swallowed instead of adding a spurious extra step on top of the train.
+  const didRepeatRef = useRef(false);
 
   function clear() {
     if (timerRef.current !== null) {
@@ -58,6 +67,7 @@ export function usePressAndHold(
 
   function scheduleNext() {
     timerRef.current = setTimeout(() => {
+      didRepeatRef.current = true;
       if (actionRef.current() === false) {
         clear();
         return;
@@ -71,8 +81,18 @@ export function usePressAndHold(
     // Only the primary button/touch/pen starts a hold.
     if (event.button !== 0) return;
     clear();
+    didRepeatRef.current = false;
     intervalRef.current = initialDelayMs;
     scheduleNext();
+  }
+
+  // Swallow the release-`click` after a hold that fired at least one repeat (capture phase runs
+  // before the element's own `onClick`, so stopping propagation there suppresses it). A tap fires
+  // no repeat, so its click passes through untouched as the single step.
+  function suppressPostHoldClick(event: ReactMouseEvent) {
+    if (!didRepeatRef.current) return;
+    event.stopPropagation();
+    didRepeatRef.current = false;
   }
 
   // Stop any running train if the component unmounts mid-hold.
@@ -83,5 +103,6 @@ export function usePressAndHold(
     onPointerUp: clear,
     onPointerLeave: clear,
     onPointerCancel: clear,
+    onClickCapture: suppressPostHoldClick,
   };
 }

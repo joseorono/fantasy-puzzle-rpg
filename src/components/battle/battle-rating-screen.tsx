@@ -42,7 +42,7 @@ function prefersReducedMotion(): boolean {
 
 /**
  * Arcade victory rating — shown before the VICTORY card. Criteria rows tick in one at a time (each
- * with a tab-click), then 1–3 stars fill left-to-right (each with a coin). Pure presentation; all
+ * with a tab-click), then 1–5 stars fill left-to-right (each with a coin). Pure presentation; all
  * scoring lives in {@link computeBattleRating} and its constants.
  */
 export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenProps) {

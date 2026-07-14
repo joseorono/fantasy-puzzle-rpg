@@ -1,6 +1,6 @@
 /* ─── Battle Rating Screen (arcade victory results) ──────────────────────────
    Shown before the VICTORY card. Indigolay-red framed parchment card; criteria
-   rows tick in one at a time, then 1–3 stars fill left-to-right. Reuses the
+   rows tick in one at a time, then 1–5 stars fill left-to-right. Reuses the
    gom-fade-in / modal-zoom-in keyframes from animations.css / battle-over-modal.css. */
 
 .brs-backdrop {

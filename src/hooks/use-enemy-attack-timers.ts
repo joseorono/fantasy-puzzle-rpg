@@ -173,9 +173,22 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
           }, remaining),
         );
       } else {
-        // Past standby (or none) — make sure state reflects "attacking", then open a fresh cycle.
+        // Past standby (or none) — make sure state reflects "attacking".
         if (isObserving) endStandby(id);
-        startCycle(id);
+        // Preserve an already-running attack cycle across a mid-battle rebuild (e.g. another enemy
+        // died and re-ran this effect): re-arm the shot against the EXISTING release time rather
+        // than opening a fresh cycle. Restarting would hand every survivor a free full interval and
+        // discard their accumulated stagger. Re-anchor the ring to its current progress so the
+        // countdown stays visually continuous. Only enemies with no live cycle start a fresh one.
+        if (releaseAtRef.current.has(id) && cycleStartRef.current.has(id)) {
+          const cycleStart = cycleStartRef.current.get(id)!;
+          ringDurationRef.current.set(id, releaseAtRef.current.get(id)! - cycleStart);
+          ringElapsedRef.current.set(id, now - cycleStart);
+          bumpVersion(id);
+          scheduleShot(id);
+        } else {
+          startCycle(id);
+        }
       }
     }
 
