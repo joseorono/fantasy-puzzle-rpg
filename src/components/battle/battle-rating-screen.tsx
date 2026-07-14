@@ -14,6 +14,8 @@ import { computeBattleRating } from '~/lib/battle-rating';
 import {
   MAX_STARS,
   STAR_RANK_LABELS,
+  STAR_RANK_TAGLINES,
+  CLOSE_CALL_MAX_STARS,
   RATING_REVEAL,
   STAR_COLOR_FILLED,
   STAR_COLOR_EMPTY,
@@ -133,6 +135,8 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
   );
 
   const rankLabel = STAR_RANK_LABELS[result.stars] ?? '';
+  const tagline = STAR_RANK_TAGLINES[result.stars] ?? '';
+  const isCloseCall = result.stars <= CLOSE_CALL_MAX_STARS;
 
   return (
     <div className="brs-backdrop" onClick={handleSkip}>
@@ -207,9 +211,18 @@ export function BattleRatingScreen({ onContinue }: BattleRatingScreenProps) {
             })}
           </div>
 
-          {filledStars >= result.stars && rankLabel && (
-            <div className="brs-rank title-sign title-sign--red title-sign--text-gold">
-              <span className="brs-rank-text title-sign__text pixel-font">{rankLabel}</span>
+          {filledStars >= result.stars && (
+            <div className="brs-rank-block">
+              {rankLabel && (
+                <div className="brs-rank title-sign title-sign--red title-sign--text-gold">
+                  <span className="brs-rank-text title-sign__text pixel-font">{rankLabel}</span>
+                </div>
+              )}
+              {tagline && (
+                <p className={cn('brs-tagline pixel-font', isCloseCall && 'brs-tagline--close')}>
+                  {tagline}
+                </p>
+              )}
             </div>
           )}
 

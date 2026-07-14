@@ -53,9 +53,9 @@ describe('formatThousands', () => {
 });
 
 describe('computeBattleRating — extremes', () => {
-  test('a fast, flawless, no-item clear earns 3 stars', () => {
+  test('a fast, flawless, no-item clear earns the max 5 stars', () => {
     const result = computeBattleRating(perfectRun);
-    expect(result.stars).toBe(3);
+    expect(result.stars).toBe(5);
     expect(result.normalized).toBeCloseTo(1, 5);
   });
 
@@ -173,30 +173,66 @@ describe('computeBattleRating — penalty + breakdown', () => {
   });
 });
 
-describe('computeBattleRating — star boundaries', () => {
-  test('exactly at the 3-star threshold earns 3 stars', () => {
-    // time full (0.4) + hp exactly 1.0 (0.4) = 0.8 = STAR_THRESHOLDS.three
+describe('computeBattleRating — star boundaries (1–5)', () => {
+  // Each case lands normalized exactly on a threshold; stars = 1 + (# thresholds cleared).
+  // Thresholds: [0.30, 0.52, 0.72, 0.90].
+
+  test('normalized 0.30 → 2 stars (time zero, HP 0.75 → 0.4*0.75)', () => {
     const result = computeBattleRating({
-      elapsedMs: TIME_FULL_MS,
+      elapsedMs: TIME_ZERO_MS, // subTime 0
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 1,
+      hpRemainingPct: 0.75, // 0.4 * 0.75 = 0.30
       itemsUsed: 0,
     });
-    expect(result.normalized).toBeCloseTo(0.8, 5);
+    expect(result.normalized).toBeCloseTo(0.3, 5);
+    expect(result.stars).toBe(2);
+  });
+
+  test('normalized 0.52 → 3 stars (time full + HP 0.30)', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_FULL_MS, // subTime 1 → 0.40
+      score: 0,
+      maxCombo: 0,
+      hpRemainingPct: 0.3, // 0.4 * 0.30 = 0.12
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.52, 5);
     expect(result.stars).toBe(3);
   });
 
-  test('exactly at the 2-star threshold earns 2 stars', () => {
-    // time full (0.4) + hp 0.25 (0.1) = 0.5 = STAR_THRESHOLDS.two
+  test('normalized 0.72 → 4 stars (time full + HP 0.80)', () => {
     const result = computeBattleRating({
-      elapsedMs: TIME_FULL_MS,
+      elapsedMs: TIME_FULL_MS, // 0.40
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.25,
+      hpRemainingPct: 0.8, // 0.4 * 0.80 = 0.32
       itemsUsed: 0,
     });
-    expect(result.normalized).toBeCloseTo(0.5, 5);
-    expect(result.stars).toBe(2);
+    expect(result.normalized).toBeCloseTo(0.72, 5);
+    expect(result.stars).toBe(4);
+  });
+
+  test('normalized 0.90 → 5 stars (time full + full HP + full score)', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_FULL_MS, // 0.40
+      score: SCORE_TARGET, // 0.10
+      maxCombo: 0,
+      hpRemainingPct: 1, // 0.40
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.9, 5);
+    expect(result.stars).toBe(5);
+  });
+
+  test('just below the first threshold stays at 1 star', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_ZERO_MS,
+      score: 0,
+      maxCombo: 0,
+      hpRemainingPct: 0.7, // 0.28 < 0.30
+      itemsUsed: 0,
+    });
+    expect(result.stars).toBe(1);
   });
 });

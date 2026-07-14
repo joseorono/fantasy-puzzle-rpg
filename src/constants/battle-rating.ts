@@ -47,24 +47,39 @@ export const MAX_ITEM_PENALTY = 0.5;
 
 // ─── Stars ───────────────────────────────────────────────────────────────────
 
-/** Total stars possible. */
-export const MAX_STARS = 3;
+/**
+ * Ascending normalized-total cutoffs (inclusive). You always start at 1 star for winning, then
+ * earn one more for each cutoff cleared: `stars = 1 + (# of thresholds ≤ normalized)`. Four
+ * cutoffs → up to 5 stars.
+ */
+export const STAR_THRESHOLDS = [0.3, 0.52, 0.72, 0.9] as const;
 
-/** Normalized-total cutoffs (inclusive) for each star count; below `two` → 1 star (you still won). */
-export const STAR_THRESHOLDS = {
-  three: 0.8,
-  two: 0.5,
-} as const;
+/** Total stars possible (1 for winning + one per threshold). */
+export const MAX_STARS = STAR_THRESHOLDS.length + 1;
 
 /** Points scale — a perfect (pre-penalty) run is worth ~this many "arcade points". */
 export const RATING_POINTS_SCALE = 1000;
 
-/** Short rank caption shown under the stars. */
+/** Short rank caption shown on the ribbon. Low tiers lean into the "you scraped by" framing. */
 export const STAR_RANK_LABELS: Record<number, string> = {
-  1: 'CLEAR',
-  2: 'GOOD',
-  3: 'GREAT',
+  1: 'SURVIVED',
+  2: 'CLEAR',
+  3: 'GOOD',
+  4: 'GREAT',
+  5: 'PERFECT',
 };
+
+/** Flavor line under the ribbon; low tiers emphasize how close the call was. */
+export const STAR_RANK_TAGLINES: Record<number, string> = {
+  1: 'That was close — you barely made it!',
+  2: 'A narrow escape. You scraped through.',
+  3: 'A solid victory.',
+  4: 'Masterfully fought!',
+  5: 'A flawless triumph!',
+};
+
+/** At or below this star count, the flavor line reads as a warning (close call). */
+export const CLOSE_CALL_MAX_STARS = 2;
 
 // ─── Colors (warm palette; indigolay-red framing lives in the component/CSS) ──
 

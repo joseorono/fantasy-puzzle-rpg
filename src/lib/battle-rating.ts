@@ -114,8 +114,8 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
   const itemPenalty = Math.min(Math.max(0, itemsUsed) * ITEM_PENALTY_PER_USE, MAX_ITEM_PENALTY);
   const normalized = clamp01(positive - itemPenalty);
 
-  const stars =
-    normalized >= STAR_THRESHOLDS.three ? 3 : normalized >= STAR_THRESHOLDS.two ? 2 : 1;
+  // 1 star for winning, +1 per cleared threshold.
+  const stars = STAR_THRESHOLDS.reduce((count, threshold) => count + (normalized >= threshold ? 1 : 0), 1);
 
   const isRng = (key: RatingCriterionKey) => RNG_HEAVY_CRITERIA.includes(key);
   const isFlawless = subHp >= 1;
