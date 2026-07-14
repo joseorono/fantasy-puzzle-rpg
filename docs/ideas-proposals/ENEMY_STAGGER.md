@@ -156,10 +156,11 @@ the frog every ~2921 ms — the fight's rhythm bends but never breaks.
 
 ## Implementation (as built)
 
-The mechanic is fully contained in the attack-timer hook plus two pure helpers — it needed **no
-new `BattleState` field** and **no changes to `battle-atoms.ts`**, because the hook derives the
-stagger from the shared `lastDamage` channel (which already carries the hit `amount` and which
-enemy was struck).
+The mechanic itself is contained in the attack-timer hook plus two pure helpers: the hook derives
+the stagger from the shared `lastDamage` channel (which already carries the hit `amount` and which
+enemy was struck), so the timing needs **no new battle state**. The only added state is one UI
+signal — `lastMaxFlinch` — for the "STAGGER!" callout, mirroring the existing `lastPreemptiveStrike`
+slot.
 
 1. **Self-rescheduling attack loop.** `src/hooks/use-enemy-attack-timers.ts` now runs each
    attacking enemy on a `setTimeout` anchored to an absolute `releaseAtRef[id]` (same
@@ -175,12 +176,16 @@ enemy was struck).
    staggering never tears the timers down. AoE skills (`enemyIds`) stagger each enemy with its own
    independent budget.
 
-3. **UI feedback.** `RadialCountdown` gained an optional `elapsedMs` prop applied as a negative
-   `animation-delay`. Because a stagger grows the ring's `durationMs` while `elapsedMs` stays
-   fixed to the cycle start, the fill **nudges backward proportionally to the push** (and empties
-   at the new release) — an honest flinch rather than a jarring snap-to-full. Wired through
-   `battle-top-bar.tsx`. The existing `enemy-recoil` sprite reaction already covers the hit
-   flinch, so no new keyframe was added.
+3. **UI feedback.** Two layers:
+   - *Ring nudge* — `RadialCountdown` gained an optional `elapsedMs` prop applied as a negative
+     `animation-delay`. Because a stagger grows the ring's `durationMs` while `elapsedMs` stays
+     fixed to the cycle start, the fill **nudges backward proportionally to the push** (and empties
+     at the new release) — an honest flinch rather than a jarring snap-to-full. Wired through
+     `battle-top-bar.tsx`. The existing `enemy-recoil` sprite reaction covers the per-hit flinch.
+   - *Max-flinch callout* — when a hit pushes a cycle **over its cap** (the moment further hits
+     stop delaying the attack), the hook flags `flagMaxFlinchAtom` once per cycle, and the struck
+     enemy pops a warm-amber "STAGGER!" float (`enemy-display.tsx` + the `stagger-callout` keyframe
+     in `animations.css`, reduced-motion guarded), styled like the per-enemy damage numbers.
 
 4. **Pure helpers + tests.** `calculateStaggerPushMs(damage, enemyMaxHp, vit, interval)` and
    `clampStaggerToCycleBudget(pushMs, interval, usedMs)` live in `rpg-calculations.ts` (JSDoc'd,

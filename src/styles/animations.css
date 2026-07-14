@@ -294,11 +294,32 @@
   animation: damage-erupt 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Max-flinch callout — pops from the enemy's center and drifts up when its attack timer hits the
+   per-cycle stagger cap. Warm amber (not neon), transform+opacity only so it's palette-safe. */
+@keyframes stagger-callout {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  22% { transform: translate(-50%, -75%) scale(1.15); opacity: 1; }
+  68% { transform: translate(-50%, -95%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -135%) scale(0.9); opacity: 0; }
+}
+
+.stagger-callout {
+  /* Base transform keeps it centered if the animation is disabled (reduced-motion). */
+  transform: translate(-50%, -50%);
+  animation: stagger-callout 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  color: #f6c453;
+  text-shadow:
+    0 1px 0 #3a1d08,
+    0 0 6px rgba(246, 196, 83, 0.5);
+  white-space: nowrap;
+}
+
 /* Respect reduced-motion: drop the recoil/eruption motion (damage + numbers still show). */
 @media (prefers-reduced-motion: reduce) {
   .enemy-recoil,
   .enemy-recoil-strong,
-  .damage-erupt {
+  .damage-erupt,
+  .stagger-callout {
     animation: none !important;
   }
 }

@@ -335,6 +335,18 @@ export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandb
 export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEnemyIds ?? []);
 // Centered "Preemptive Strike!" callout trigger (see PreemptiveStrikeIndicator).
 export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
+// Per-enemy "STAGGER!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
+export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
+
+// Flags an enemy reaching its per-cycle stagger cap, so the "STAGGER!" callout can replay.
+// Called by the attack-timer hook; the timestamp re-triggers the animation on later cycles.
+export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, {
+    ...currentState,
+    lastMaxFlinch: { enemyId, timestamp: Date.now() },
+  });
+});
 
 // Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer
 // hook as each enemy's observation window elapses.

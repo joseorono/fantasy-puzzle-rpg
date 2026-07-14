@@ -1,6 +1,12 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect } from 'react';
-import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
+import {
+  enemiesAtom,
+  selectedEnemyIdAtom,
+  selectEnemyAtom,
+  lastDamageAtom,
+  lastMaxFlinchAtom,
+} from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
@@ -17,11 +23,14 @@ interface EnemySpriteProps {
 function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
   const isDead = enemy.currentHp <= 0;
   const lastDamage = useAtomValue(lastDamageAtom);
+  const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
   const [isRecoiling, setIsRecoiling] = useState(false);
   const [isSkillHit, setIsSkillHit] = useState(false);
+  const [showStagger, setShowStagger] = useState(false);
+  const [staggerKey, setStaggerKey] = useState(0);
 
   // Show damage animation when this enemy is hit. Skills hit the selected enemy (enemyId)
   // or every living enemy (enemyIds); matches only ever set enemyId.
@@ -39,6 +48,16 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
       return () => clearTimeout(timer);
     }
   }, [lastDamage, enemy.id]);
+
+  // Pop a "STAGGER!" callout when this enemy maxes out its per-cycle flinch (further hits this
+  // cycle no longer delay its attack). Fires once per cap-out; the timestamp re-arms it next cycle.
+  useEffect(() => {
+    if (lastMaxFlinch?.enemyId !== enemy.id) return;
+    setShowStagger(true);
+    setStaggerKey((prev) => prev + 1);
+    const timer = setTimeout(() => setShowStagger(false), 900);
+    return () => clearTimeout(timer);
+  }, [lastMaxFlinch, enemy.id]);
 
   function handleClick() {
     if (isDead) return;
@@ -106,6 +125,16 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
                 isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
               }
             />
+          </div>
+        )}
+
+        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle stagger cap. */}
+        {showStagger && !isDead && (
+          <div
+            key={`stagger-${staggerKey}`}
+            className="stagger-callout pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
+          >
+            Stagger!
           </div>
         )}
 

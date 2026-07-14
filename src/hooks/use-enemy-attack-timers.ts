@@ -5,6 +5,7 @@ import {
   enemiesAtom,
   enemyStandbyMsAtom,
   endEnemyStandbyAtom,
+  flagMaxFlinchAtom,
   gameStatusAtom,
   lastDamageAtom,
   standbyEnemyIdsAtom,
@@ -15,6 +16,7 @@ import {
   calculateStaggerPushMs,
   clampStaggerToCycleBudget,
 } from '~/lib/rpg-calculations';
+import { MAX_STAGGER_FRACTION_PER_CYCLE } from '~/constants/battle';
 
 /** Per-enemy attack timing exposed to the UI. */
 export interface EnemyAttackTimer {
@@ -61,6 +63,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const lastDamage = useAtomValue(lastDamageAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const endStandby = useSetAtom(endEnemyStandbyAtom);
+  const flagMaxFlinch = useSetAtom(flagMaxFlinchAtom);
 
   // Per-enemy ring cycle counter; bumped on each attack AND each stagger to remount the ring.
   const [version, setVersion] = useState<Record<string, number>>({});
@@ -206,6 +209,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       if (applied <= 0) continue;
 
       staggerUsedRef.current.set(id, used + applied);
+      // The hit that pushes this cycle over its cap "maxes" the flinch — flag it once (transition
+      // only) so the enemy can pop a "STAGGER!" callout. Further hits this cycle apply 0 and skip.
+      const capMs = interval * MAX_STAGGER_FRACTION_PER_CYCLE;
+      if (used < capMs && used + applied >= capMs - 1e-6) flagMaxFlinch(id);
       const release = (releaseAtRef.current.get(id) ?? now) + applied;
       releaseAtRef.current.set(id, release);
       // Re-anchor the ring to the extended release WITHOUT snapping to full: keep the same cycle
