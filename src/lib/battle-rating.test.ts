@@ -117,8 +117,8 @@ describe('computeBattleRating — RNG criteria are weighted low', () => {
       hpRemainingPct: 0, // no HP
       itemsUsed: 0,
     });
-    // score+combo weights sum to 0.2 → well under the 2-star (0.5) cutoff.
-    expect(rngOnly.normalized).toBeCloseTo(0.2, 5);
+    // score+combo weights sum to 0.1 → well under the first (0.30) cutoff.
+    expect(rngOnly.normalized).toBeCloseTo(0.1, 5);
     expect(rngOnly.stars).toBe(1);
   });
 });
@@ -203,8 +203,8 @@ describe('getLootMultiplier', () => {
 });
 
 describe('computeBattleRating — star boundaries (1–5)', () => {
-  // Each case lands normalized exactly on a threshold; stars = 1 + (# thresholds cleared).
-  // Thresholds: [0.30, 0.52, 0.72, 0.90].
+  // Each case lands normalized on a threshold; stars = 1 + (# thresholds cleared).
+  // Thresholds: [0.30, 0.52, 0.72, 0.85]. Weights: time 0.5, hp 0.4, score 0.05, combo 0.05.
 
   test('normalized 0.30 → 2 stars (time zero, HP 0.75 → 0.4*0.75)', () => {
     const result = computeBattleRating({
@@ -218,9 +218,9 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
     expect(result.stars).toBe(2);
   });
 
-  test('normalized 0.52 → 3 stars (time full + HP 0.30)', () => {
+  test('normalized 0.52 → 3 stars (time 0.8 + HP 0.30)', () => {
     const result = computeBattleRating({
-      elapsedMs: TIME_FULL_MS, // subTime 1 → 0.40
+      elapsedMs: 50_000, // subTime 0.8 → 0.5 * 0.8 = 0.40
       score: 0,
       maxCombo: 0,
       hpRemainingPct: 0.3, // 0.4 * 0.30 = 0.12
@@ -230,24 +230,38 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
     expect(result.stars).toBe(3);
   });
 
-  test('normalized 0.72 → 4 stars (time full + HP 0.80)', () => {
+  test('normalized 0.72 → 4 stars (time full + HP 0.55)', () => {
     const result = computeBattleRating({
-      elapsedMs: TIME_FULL_MS, // 0.40
+      elapsedMs: TIME_FULL_MS, // subTime 1 → 0.50
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.8, // 0.4 * 0.80 = 0.32
+      hpRemainingPct: 0.55, // 0.4 * 0.55 = 0.22
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.72, 5);
     expect(result.stars).toBe(4);
   });
 
-  test('normalized 0.90 → 5 stars (time full + full HP + full score)', () => {
+  test('normalized 0.85 → 5 stars (time full + HP 0.875, no score/combo)', () => {
     const result = computeBattleRating({
-      elapsedMs: TIME_FULL_MS, // 0.40
-      score: SCORE_TARGET, // 0.10
+      elapsedMs: TIME_FULL_MS, // 0.50
+      score: 0,
       maxCombo: 0,
-      hpRemainingPct: 1, // 0.40
+      hpRemainingPct: 0.875, // 0.4 * 0.875 = 0.35
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.85, 5);
+    expect(result.stars).toBe(5);
+  });
+
+  test('a fast, flawless one-shot earns 5 stars with zero score/combo', () => {
+    // Regression: a short, dominant clear must not be capped at 4 stars just because the battle
+    // ended before score/combo could accumulate. Skill alone (time 0.5 + hp 0.4 = 0.9) clears 0.85.
+    const result = computeBattleRating({
+      elapsedMs: 4_000, // super short → subTime clamps to 1 → 0.50
+      score: 0, // no time to rack up score
+      maxCombo: 0, // no cascade
+      hpRemainingPct: 1, // untouched → 0.40
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.9, 5);

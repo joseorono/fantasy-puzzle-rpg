@@ -12,14 +12,17 @@
 export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'items';
 
 /**
- * Weights of the positive criteria (must sum to 1). Skill criteria (time, HP) dominate; the
- * RNG-heavy ones (score, combo) are deliberately minor. Items are a separate penalty, not here.
+ * Weights of the positive criteria (must sum to 1). Skill criteria (time, HP) dominate and are
+ * sized so that a fast, flawless clear reaches the top star tier on skill ALONE — score and combo
+ * need a sustained battle to accumulate, so a blitz/one-shot must not be capped for ending before
+ * they could build up. The RNG-heavy ones (score, combo) stay minor flair. Items are a separate
+ * penalty, not here.
  */
 export const RATING_WEIGHTS: Record<'time' | 'hp' | 'score' | 'combo', number> = {
-  time: 0.4,
+  time: 0.5,
   hp: 0.4,
-  score: 0.1,
-  combo: 0.1,
+  score: 0.05,
+  combo: 0.05,
 };
 
 /** Criteria whose outcome is heavily board-RNG dependent (flagged for the UI to de-emphasize). */
@@ -50,9 +53,10 @@ export const MAX_ITEM_PENALTY = 0.5;
 /**
  * Ascending normalized-total cutoffs (inclusive). You always start at 1 star for winning, then
  * earn one more for each cutoff cleared: `stars = 1 + (# of thresholds ≤ normalized)`. Four
- * cutoffs → up to 5 stars.
+ * cutoffs → up to 5 stars. The top cutoff (0.85) sits just under the skill ceiling (time 0.5 +
+ * hp 0.4 = 0.9) so a fast, flawless clear earns 5★ with margin — no score/combo required.
  */
-export const STAR_THRESHOLDS = [0.3, 0.52, 0.72, 0.9] as const;
+export const STAR_THRESHOLDS = [0.3, 0.52, 0.72, 0.85] as const;
 
 /** Total stars possible (1 for winning + one per threshold). */
 export const MAX_STARS = STAR_THRESHOLDS.length + 1;
