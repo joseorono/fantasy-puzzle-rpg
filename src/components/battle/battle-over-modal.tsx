@@ -9,6 +9,7 @@ import {
   maxComboAtom,
   itemsUsedAtom,
   battleStartedAtAtom,
+  lastBattleRatingAtom,
 } from '~/stores/battle-atoms';
 import { BattleRatingScreen } from '~/components/battle/battle-rating-screen';
 import { computeBattleRating, type BattleRatingResult } from '~/lib/battle-rating';
@@ -35,6 +36,7 @@ export function BattleOverModal() {
   const startedAt = useAtomValue(battleStartedAtAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
+  const setLastRating = useSetAtom(lastBattleRatingAtom);
   const setGameStarted = useSetAtom(isGameStartedAtom);
   const { goToBattleRewards, reset: resetRouter } = useRouterActions();
   const { syncBattleHp, fullyHealParty } = usePartyActions();
@@ -77,6 +79,9 @@ export function BattleOverModal() {
     if (isVictory) {
       // Carry post-battle HP back to the persistent party before showing rewards.
       syncBattleHp(battleParty);
+      // Publish the rating so a dungeon run can record this floor's stars on return
+      // (computed once here — the elapsed-time clock keeps running through the reward screens).
+      setLastRating(ratingRef.current);
       // The star rating grants a loot bonus on money + resources (not items/XP).
       const lootMultiplier = ratingRef.current?.lootMultiplier ?? 1;
       const { lootTable, expReward } = combineLootFromEnemies(enemies, lootMultiplier);

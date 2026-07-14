@@ -13,6 +13,7 @@ import {
   advanceFloorAtom,
   resetDungeonRunAtom,
   resolveBattleWinAtom,
+  floorRatingsAtom,
 } from '~/stores/dungeon-atoms';
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import {
@@ -33,6 +34,7 @@ import {
   getDungeonRestPool,
   isLastFloor,
   shouldRunEvent,
+  summarizeFloorRatings,
 } from '~/lib/dungeon-system';
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
@@ -52,6 +54,13 @@ import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { Star } from 'lucide-react';
+import {
+  MAX_STARS,
+  STAR_RANK_LABELS,
+  STAR_COLOR_FILLED,
+  STAR_COLOR_EMPTY,
+} from '~/constants/battle-rating';
 import { cn, getRandomElement } from '~/lib/utils';
 import {
   DUNGEON_COMBAT_FLAVOR,
@@ -79,6 +88,23 @@ function getEventMedallion(event: DungeonEvent | undefined, isBoss: boolean): Fr
   return 'broadsword';
 }
 
+/** Compact star row (filled up to `stars`, out of MAX_STARS) for a floor's combat rating. */
+function FloorRatingStars({ stars }: { stars: number }) {
+  return (
+    <span className="dungeon-floor__rating" aria-label={`${stars} of ${MAX_STARS} stars`}>
+      {Array.from({ length: MAX_STARS }, (_, i) => (
+        <Star
+          key={i}
+          className="dungeon-floor__star"
+          fill="currentColor"
+          strokeWidth={0}
+          style={{ color: i < stars ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY }}
+        />
+      ))}
+    </span>
+  );
+}
+
 /** Random flavor line for the current event (chosen once per event in an effect). */
 function pickEventFlavor(event: DungeonEvent | undefined, isBoss: boolean): string {
   if (!event) return getRandomElement(DUNGEON_CONTINUE_FLAVOR);
@@ -104,6 +130,7 @@ export default function DungeonView() {
   const isReplay = useAtomValue(isReplayAtom);
   const hasRested = useAtomValue(hasRestedOnFloorAtom);
   const restsUsed = useAtomValue(restsUsedAtom);
+  const floorRatings = useAtomValue(floorRatingsAtom);
 
   const startRun = useSetAtom(startDungeonRunAtom);
   const advanceEvent = useSetAtom(advanceEventAtom);
@@ -206,6 +233,7 @@ export default function DungeonView() {
   const floorBg = currentFloor ? getFloorBackground(dungeon, currentFloor) : dungeon.backgroundImage;
 
   const isComplete = phase === 'complete';
+  const ratingSummary = summarizeFloorRatings(floorRatings);
   const isBrowsing = phase === 'browsing' && !activeDialogue;
   const canEngage = isBrowsing && currentEvent !== undefined;
 
@@ -305,12 +333,16 @@ export default function DungeonView() {
           <div className="dungeon-track__list">
             {dungeon.floors.map((floor, idx) => {
               const state = idx < floorIndex ? 'completed' : idx === floorIndex ? 'current' : 'locked';
+              const rating = floorRatings[idx];
               return (
                 <div key={floor.id} className={cn('dungeon-floor', `dungeon-floor--${state}`)}>
                   <span className="dungeon-floor__mark">
                     {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
                   </span>
-                  <span className="dungeon-floor__name">{floor.name}</span>
+                  <div className="dungeon-floor__body">
+                    <span className="dungeon-floor__name">{floor.name}</span>
+                    {rating && <FloorRatingStars stars={rating.stars} />}
+                  </div>
                 </div>
               );
             })}
@@ -331,6 +363,15 @@ export default function DungeonView() {
               <div className="dungeon-card__divider" />
               <div className="dungeon-card__body">
                 <p className="dungeon-card__desc">{flavorLine}</p>
+                {ratingSummary.ratedFloors > 0 && (
+                  <div className="dungeon-rank">
+                    <span className="dungeon-rank__label">Dungeon Rank</span>
+                    <FloorRatingStars stars={ratingSummary.averageStars} />
+                    <span className="dungeon-rank__word">
+                      {STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="dungeon-card__action">
                 <ToffecButton variant="cream" size="sm" onClick={handleFinish}>

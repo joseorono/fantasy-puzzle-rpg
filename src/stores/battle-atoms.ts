@@ -32,6 +32,7 @@ import {
   isValidSwap,
   removeMatchedOrbsAndRefill,
 } from '~/lib/match-3';
+import type { BattleRatingResult } from '~/lib/battle-rating';
 
 // Use initial data from constants
 const initialParty = INITIAL_PARTY;
@@ -353,6 +354,12 @@ export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
 export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+
+// The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
+// so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
+// would be wrong, since the elapsed-time clock keeps running through the rating/rewards screens.
+// Null until the first victory of the session.
+export const lastBattleRatingAtom = atom<BattleRatingResult | null>(null);
 
 // Records the deepest cascade combo reached (keeps the running max). Called from the board.
 export const recordMaxComboAtom = atom(null, (get, set, combo: number) => {

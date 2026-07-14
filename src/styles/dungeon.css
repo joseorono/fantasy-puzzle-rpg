@@ -151,6 +151,25 @@
   flex-shrink: 0;
 }
 
+/* Name + optional rating stars, stacked to the right of the mark. */
+.dungeon-floor__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Per-floor combat rating: a compact row of small stars under the floor name. */
+.dungeon-floor__rating {
+  display: inline-flex;
+  gap: 0.08rem;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+.dungeon-floor__star {
+  width: 0.62rem;
+  height: 0.62rem;
+}
+
 .dungeon-floor--completed {
   color: #8a8175;
   opacity: 0.85;
@@ -241,6 +260,29 @@
 
 .dungeon-card--complete .dungeon-card__banner {
   background: linear-gradient(180deg, rgba(212, 165, 116, 0.26) 0%, transparent 100%);
+}
+
+/* Overall dungeon rank on the cleared card: averaged stars + a rank word. */
+.dungeon-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+}
+.dungeon-rank__label {
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  color: #cbb98f;
+}
+.dungeon-rank .dungeon-floor__star {
+  width: 1rem;
+  height: 1rem;
+}
+.dungeon-rank__word {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #f0e4cf;
 }
 
 /* Rotated pixel-art diamond holding the event icon. */

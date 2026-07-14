@@ -10,9 +10,16 @@ import {
   getFloorBackground,
   getDungeonRestPool,
   getDungeonEstimatedResources,
+  summarizeFloorRatings,
 } from './dungeon-system';
+import type { BattleRatingResult } from './battle-rating';
 import { SAMPLE_DUNGEON } from '~/constants/dungeons';
 import { createResources } from './resources';
+
+/** Minimal rating fixture — `summarizeFloorRatings` only reads `.stars`. */
+function ratingWithStars(stars: number): BattleRatingResult {
+  return { stars, totalScore: 0, normalized: 0, lootMultiplier: 1, criteria: [] };
+}
 
 const DIALOGUE_EVENT: DungeonEvent = {
   type: 'dialogue',
@@ -123,5 +130,26 @@ describe('getDungeonEstimatedResources', () => {
     expect(getDungeonEstimatedResources(SAMPLE_DUNGEON)).toEqual(
       createResources({ coins: 330, copper: 16, iron: 8 }),
     );
+  });
+});
+
+describe('summarizeFloorRatings', () => {
+  it('returns zeros when no floor was rated', () => {
+    expect(summarizeFloorRatings({})).toEqual({ ratedFloors: 0, totalStars: 0, averageStars: 0 });
+  });
+
+  it('ignores unrated (dialogue/chest-only) floors and averages the rest, rounding', () => {
+    // Floors 0 and 2 had combats (floor 1 was a chest — absent): (5 + 2) / 2 = 3.5 → 4.
+    expect(summarizeFloorRatings({ 0: ratingWithStars(5), 2: ratingWithStars(2) })).toEqual({
+      ratedFloors: 2,
+      totalStars: 7,
+      averageStars: 4,
+    });
+  });
+
+  it('rounds a fractional average to the nearest whole star (1.5 → 2)', () => {
+    expect(
+      summarizeFloorRatings({ 0: ratingWithStars(1), 1: ratingWithStars(2) }).averageStars,
+    ).toBe(2);
   });
 });
