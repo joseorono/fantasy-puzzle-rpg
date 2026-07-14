@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { gameStatusAtom, enemiesAtom, partyAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import { BattleRatingScreen } from '~/components/battle/battle-rating-screen';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { useRouterActions, usePartyActions } from '~/stores/game-store';
 import { isGameStartedAtom } from '~/stores/app-atoms';
@@ -22,9 +24,16 @@ export function BattleOverModal() {
   const { goToBattleRewards, reset: resetRouter } = useRouterActions();
   const { syncBattleHp, fullyHealParty } = usePartyActions();
 
+  // On victory, show the arcade rating first; the VICTORY card follows once dismissed.
+  const [victoryPhase, setVictoryPhase] = useState<'rating' | 'summary'>('rating');
+
   if (gameStatus === 'playing') return null;
 
   const isVictory = gameStatus === 'won';
+
+  if (isVictory && victoryPhase === 'rating') {
+    return <BattleRatingScreen onContinue={() => setVictoryPhase('summary')} />;
+  }
 
   function handleContinue() {
     if (isVictory) {

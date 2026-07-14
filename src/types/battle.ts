@@ -84,4 +84,10 @@ export interface BattleState {
    * timestamp re-triggers the animation each time an enemy maxes out again on a later cycle.
    */
   lastMaxFlinch: { enemyId: string; timestamp: number } | null;
+  /** `Date.now()` when the battle was created; drives the victory rating's clear-time criterion. */
+  startedAt: number;
+  /** Deepest cascade combo (chain length) reached this battle; feeds the victory rating. */
+  maxCombo: number;
+  /** Count of battle items consumed this battle; a penalty in the victory rating. */
+  itemsUsed: number;
 }

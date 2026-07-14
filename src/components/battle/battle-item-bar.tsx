@@ -8,6 +8,7 @@ import {
   clearBoardRowAtom,
   clearBoardColumnAtom,
   fillPartyUltimateAtom,
+  recordItemUsedAtom,
   gameStatusAtom,
   partyAtom,
 } from '~/stores/battle-atoms';
@@ -32,6 +33,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
+  const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
   const cooldownDuration = calculateItemCooldownInMs(party);
 
@@ -86,6 +88,8 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
     }
 
     inventoryActions.removeItem(item.id);
+    // Count this consumption for the victory rating (items used is a penalty).
+    recordItemUsed();
 
     // Start shared cooldown
     cooldownEndRef.current = Date.now() + cooldownDuration;

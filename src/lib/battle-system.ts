@@ -102,6 +102,9 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     lastDamage: null,
     lastMatchedType: null,
     lastSkillActivation: null,
+    startedAt: Date.now(),
+    maxCombo: 0,
+    itemsUsed: 0,
   };
 }
 

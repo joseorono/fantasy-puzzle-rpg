@@ -348,6 +348,25 @@ export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
   });
 });
 
+// ─── Victory-rating stats (see ~/lib/battle-rating.ts) ───────────────────────
+// Thin read selectors for the end-of-battle rating. `?? 0` guards any pre-existing state object.
+export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
+export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
+export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+
+// Records the deepest cascade combo reached (keeps the running max). Called from the board.
+export const recordMaxComboAtom = atom(null, (get, set, combo: number) => {
+  const currentState = get(battleStateAtom);
+  if (combo <= currentState.maxCombo) return;
+  set(battleStateAtom, { ...currentState, maxCombo: combo });
+});
+
+// Tallies a battle item consumption (a penalty in the victory rating). Called from the item bar.
+export const recordItemUsedAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, { ...currentState, itemsUsed: currentState.itemsUsed + 1 });
+});
+
 // Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer
 // hook as each enemy's observation window elapses.
 export const endEnemyStandbyAtom = atom(null, (get, set, enemyId: string) => {
