@@ -138,18 +138,22 @@ describe('summarizeFloorRatings', () => {
     expect(summarizeFloorRatings({})).toEqual({ ratedFloors: 0, totalStars: 0, averageStars: 0 });
   });
 
-  it('ignores unrated (dialogue/chest-only) floors and averages the rest, rounding', () => {
-    // Floors 0 and 2 had combats (floor 1 was a chest — absent): (5 + 2) / 2 = 3.5 → 4.
-    expect(summarizeFloorRatings({ 0: ratingWithStars(5), 2: ratingWithStars(2) })).toEqual({
+  it('ignores unrated (dialogue/chest-only) floors and rounds the average UP', () => {
+    // Floors 0 and 2 had combats (floor 1 was a chest — absent): (4 + 5) / 2 = 4.5 → 5.
+    expect(summarizeFloorRatings({ 0: ratingWithStars(4), 2: ratingWithStars(5) })).toEqual({
       ratedFloors: 2,
-      totalStars: 7,
-      averageStars: 4,
+      totalStars: 9,
+      averageStars: 5,
     });
   });
 
-  it('rounds a fractional average to the nearest whole star (1.5 → 2)', () => {
+  it('rounds even a low fractional average up (10/3 = 3.33 → 4)', () => {
     expect(
-      summarizeFloorRatings({ 0: ratingWithStars(1), 1: ratingWithStars(2) }).averageStars,
-    ).toBe(2);
+      summarizeFloorRatings({
+        0: ratingWithStars(3),
+        1: ratingWithStars(3),
+        2: ratingWithStars(4),
+      }).averageStars,
+    ).toBe(4);
   });
 });

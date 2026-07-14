@@ -104,16 +104,18 @@ export interface DungeonRatingSummary {
   ratedFloors: number;
   /** Sum of stars earned across all rated floors. */
   totalStars: number;
-  /** Mean stars, rounded to a whole star (1..MAX_STARS); 0 when no floor was rated. */
+  /** Mean stars, rounded UP to a whole star (1..MAX_STARS); 0 when no floor was rated. */
   averageStars: number;
 }
 
 /**
  * Summarizes a run's per-floor combat ratings into a single dungeon rank. Floors without a rating
- * (dialogue/chest-only) are ignored, so a peaceful floor never drags the average down. The rounded
- * `averageStars` is the headline "dungeon rank"; `totalStars` is kept for a possible score display.
+ * (dialogue/chest-only) are ignored, so a peaceful floor never drags the average down. The average
+ * is rounded UP (so, e.g., a 4★ and a 5★ floor yield a 5★ run) — the run rank is generous, taking
+ * the benefit of the doubt. `averageStars` is the headline "dungeon rank"; `totalStars` is kept for
+ * a possible score display.
  * @param floorRatings - Map of floor index → battle rating, as accumulated during the run
- * @returns The rated-floor count, total stars, and rounded average (0 if nothing was rated)
+ * @returns The rated-floor count, total stars, and rounded-up average (0 if nothing was rated)
  */
 export function summarizeFloorRatings(
   floorRatings: Record<number, BattleRatingResult>,
@@ -121,7 +123,7 @@ export function summarizeFloorRatings(
   const ratings = Object.values(floorRatings);
   const ratedFloors = ratings.length;
   const totalStars = ratings.reduce((sum, rating) => sum + rating.stars, 0);
-  const averageStars = ratedFloors === 0 ? 0 : Math.round(totalStars / ratedFloors);
+  const averageStars = ratedFloors === 0 ? 0 : Math.ceil(totalStars / ratedFloors);
   return { ratedFloors, totalStars, averageStars };
 }
 
