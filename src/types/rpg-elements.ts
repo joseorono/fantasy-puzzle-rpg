@@ -33,8 +33,12 @@ export interface CharacterData extends BaseStats {
   potentialStats: CoreRPGStats;
   maxCooldown: number; // Base cooldown before SPD modifications
   level: number;
-  currentExp: number;
-  expToNextLevel: number;
+  /**
+   * EXP progress within the current level — normally `0..getExpThresholdForLevel(level)`. It may
+   * transiently exceed the threshold right after a battle award, until the leveling system applies
+   * the pending level-ups and rolls the overflow into the next level.
+   */
+  currentLevelExp: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
   /** Rolled rarity of the equipped weapon; mirrors `equippedWeaponId`. */

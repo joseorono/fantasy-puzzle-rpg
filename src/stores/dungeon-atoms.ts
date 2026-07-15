@@ -11,6 +11,8 @@
  */
 
 import { atom } from 'jotai';
+import type { BattleRatingResult } from '~/lib/battle-rating';
+import { lastBattleRatingAtom } from '~/stores/battle-atoms';
 
 /** Coarse lifecycle phase of the active run. */
 export type DungeonPhase = 'browsing' | 'awaiting-battle' | 'complete';
@@ -26,6 +28,13 @@ export const isReplayAtom = atom(false);
 export const hasRestedOnFloorAtom = atom(false);
 /** Rests spent so far this run; capped by getDungeonRestPool(). Persists across floors. */
 export const restsUsedAtom = atom(0);
+/**
+ * Per-floor combat ratings earned this run, keyed by floor index. A floor gains an entry when its
+ * combat is won (see {@link resolveBattleWinAtom}); dialogue/chest-only floors stay absent. If a
+ * floor holds multiple combats, the latest win's rating wins. Persists across floors; cleared on
+ * run start/teardown. Powers the per-floor star display and the end-of-run dungeon rank.
+ */
+export const floorRatingsAtom = atom<Record<number, BattleRatingResult>>({});
 
 /**
  * Start (or restart) a dungeon run. Authoritative: resets every run atom before
@@ -41,6 +50,7 @@ export const startDungeonRunAtom = atom(
     set(isReplayAtom, params.isReplay);
     set(hasRestedOnFloorAtom, false);
     set(restsUsedAtom, 0);
+    set(floorRatingsAtom, {});
   },
 );
 
@@ -57,6 +67,14 @@ export const advanceEventAtom = atom(null, (get, set) => {
  */
 export const resolveBattleWinAtom = atom(null, (get, set) => {
   if (get(dungeonPhaseAtom) !== 'awaiting-battle') return;
+  // Record this floor's combat rating (published by the BattleOverModal on the win) before
+  // advancing. The phase guard above makes this run exactly once per combat, so a double-fired
+  // mount effect can't record twice.
+  const rating = get(lastBattleRatingAtom);
+  if (rating) {
+    const floorIndex = get(currentFloorIndexAtom);
+    set(floorRatingsAtom, { ...get(floorRatingsAtom), [floorIndex]: rating });
+  }
   set(dungeonPhaseAtom, 'browsing');
   set(currentEventIndexAtom, get(currentEventIndexAtom) + 1);
 });
@@ -77,4 +95,5 @@ export const resetDungeonRunAtom = atom(null, (_get, set) => {
   set(isReplayAtom, false);
   set(hasRestedOnFloorAtom, false);
   set(restsUsedAtom, 0);
+  set(floorRatingsAtom, {});
 });

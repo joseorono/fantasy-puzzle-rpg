@@ -1,5 +1,11 @@
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { calculatePercentage } from './math';
+import {
+  BASE_STAGGER_FRACTION,
+  MAX_STAGGER_FRACTION_PER_CYCLE,
+  STAGGER_REF_FRACTION,
+  STAGGER_VIT_DIVISOR,
+} from '~/constants/battle';
 
 /**
  * RPG Calculation Functions
@@ -354,6 +360,50 @@ export function resolveGuardedDamage(
  */
 export function decayGuard(guard: number, dt: number): number {
   return Math.max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt);
+}
+
+// ============================================================================
+// Stagger (Flinch) Calculations
+// ============================================================================
+
+/**
+ * Calculates the uncapped per-hit stagger push-back (ms) — how far a single hit delays the
+ * enemy's next attack, before the per-cycle cap. Scaled by how hard the hit lands relative to
+ * the enemy's max HP, and reduced by VIT on a diminishing (square-root) curve that never reaches
+ * zero, so every enemy always flinches a little. Apply {@link clampStaggerToCycleBudget} to the
+ * result to enforce the anti-stunlock cap. See docs/ideas-proposals/ENEMY_STAGGER.md.
+ * @param damage The damage dealt by the hit
+ * @param enemyMaxHp The enemy's maximum HP (durability reference for "how hard")
+ * @param vit The enemy's VIT stat (stagger resistance)
+ * @param interval The enemy's effective attack interval in ms
+ * @returns Uncapped push-back in milliseconds (>= 0)
+ */
+export function calculateStaggerPushMs(
+  damage: number,
+  enemyMaxHp: number,
+  vit: number,
+  interval: number,
+): number {
+  if (damage <= 0 || interval <= 0) return 0;
+  const reference = enemyMaxHp * STAGGER_REF_FRACTION;
+  const damageRatio = reference > 0 ? Math.min(1, damage / reference) : 1;
+  // Clamp VIT >= 0 so negative-stat edge cases can't NaN via Math.sqrt.
+  const vitResist = 1 / (1 + Math.sqrt(Math.max(0, vit)) / STAGGER_VIT_DIVISOR);
+  return interval * BASE_STAGGER_FRACTION * damageRatio * vitResist;
+}
+
+/**
+ * Clamps a stagger push against the remaining per-cycle budget so cumulative push-back between
+ * two of an enemy's attacks can never exceed `interval * MAX_STAGGER_FRACTION_PER_CYCLE`. This is
+ * the anti-stunlock guarantee: no hit pattern can stop the enemy from eventually attacking.
+ * @param pushMs The uncapped push from {@link calculateStaggerPushMs}
+ * @param interval The enemy's effective attack interval in ms
+ * @param usedMs Push-back already applied during the current attack cycle
+ * @returns The push-back to actually apply (>= 0), never exceeding the remaining budget
+ */
+export function clampStaggerToCycleBudget(pushMs: number, interval: number, usedMs: number): number {
+  const capMs = interval * MAX_STAGGER_FRACTION_PER_CYCLE;
+  return Math.max(0, Math.min(pushMs, capMs - usedMs));
 }
 
 // ============================================================================

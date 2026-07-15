@@ -66,3 +66,18 @@ export const HP_THRESHOLD_CLASS: Record<HpThreshold, string> = {
   medium: 'medium',
   low: 'low',
 };
+
+/**
+ * Press-and-hold auto-repeat tuning for the +/- stat-allocation buttons (level-up screen).
+ * Holding a button spends/refunds points ever faster: after `initialDelayMs`, each repeat's wait
+ * shrinks by `accelerationFactor` toward `minIntervalMs`. A plain click still does exactly one
+ * (the hold train never fires on press — the button's onClick handles the single step).
+ */
+export const STAT_BUTTON_HOLD = {
+  /** Wait before the first auto-repeat, so a quick click doesn't trigger the train. */
+  initialDelayMs: 350,
+  /** Fastest repeat interval the acceleration can reach. */
+  minIntervalMs: 28,
+  /** Each repeat multiplies the wait by this (< 1 = accelerate). */
+  accelerationFactor: 0.82,
+} as const;

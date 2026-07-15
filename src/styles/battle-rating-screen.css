@@ -1,0 +1,301 @@
+/* ─── Battle Rating Screen (arcade victory results) ──────────────────────────
+   Shown before the VICTORY card. Indigolay-red framed parchment card; criteria
+   rows tick in one at a time, then 1–5 stars fill left-to-right. Reuses the
+   gom-fade-in / modal-zoom-in keyframes from animations.css / battle-over-modal.css. */
+
+.brs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  animation: gom-fade-in 0.4s ease-out;
+}
+
+.brs-card-wrap {
+  max-width: 92%;
+}
+
+.brs-card {
+  position: relative;
+  width: 420px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.4rem 1.3rem 1.3rem;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  /* Indigolay-red double frame + warm gold inner liner. */
+  border: 4px solid #762323;
+  outline: 3px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #d4a574,
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    0 2px 0 #4d1717,
+    0 0 18px rgba(118, 35, 35, 0.35);
+  color: #f5e6c8;
+  animation: modal-zoom-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brs-header {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.2rem;
+}
+
+/* ── Criteria list ── */
+.brs-criteria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.brs-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.42rem 0.6rem;
+  font-size: 0.6rem;
+  background: rgba(42, 26, 14, 0.55);
+  border: 1px solid rgba(212, 165, 116, 0.32);
+  border-radius: 6px;
+  /* Hidden until revealed. */
+  opacity: 0;
+  transform: translateX(-12px);
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.28s ease-out;
+}
+.brs-row--revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.brs-row-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #e8d9b8;
+  letter-spacing: 0.03em;
+}
+.brs-row-value {
+  min-width: 3rem;
+  text-align: right;
+  font-size: 0.68rem;
+  color: #f5e6c8;
+}
+.brs-row-points {
+  min-width: 2.8rem;
+  text-align: right;
+  font-size: 0.68rem;
+  color: #e8c87e;
+}
+
+.brs-row--penalty {
+  border-color: rgba(217, 138, 106, 0.45);
+}
+.brs-row--penalty .brs-row-label {
+  color: #dcae9e;
+}
+.brs-row--penalty .brs-row-points {
+  color: #d98a6a;
+}
+
+/* RNG-heavy rows read as minor. */
+.brs-row--rng .brs-row-points {
+  color: #c3b48f;
+}
+
+/* Slick gold chip — mirrors .brs-rng-tag's outlined form, tinted gold so it
+   still reads as a positive callout. text-shadow:none drops the inherited
+   .pixel-font drop shadow that muddies small text. */
+.brs-flawless {
+  padding: 0.06rem 0.28rem;
+  font-size: 0.4rem;
+  color: #f6c453;
+  background: rgba(246, 196, 83, 0.12);
+  border: 1px solid rgba(246, 196, 83, 0.4);
+  border-radius: 3px;
+  letter-spacing: 0.03em;
+  text-shadow: none;
+}
+.brs-rng-tag {
+  padding: 0.06rem 0.28rem;
+  font-size: 0.4rem;
+  color: #d8cba8;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 3px;
+  text-transform: lowercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── Total ── */
+.brs-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.35rem 0.55rem 0.05rem;
+  margin-top: 0.05rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.4);
+}
+.brs-total-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: #e8d9b8;
+}
+.brs-total-value {
+  font-size: 1rem;
+  color: #f6c453;
+}
+
+/* ── Stars ── */
+.brs-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0 0.1rem;
+}
+.brs-star {
+  display: inline-flex;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+  transition: color 0.2s ease-out;
+}
+.brs-star-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+.brs-star--filled {
+  filter: drop-shadow(0 0 6px rgba(246, 196, 83, 0.7));
+  animation: brs-star-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes brs-star-pop {
+  0% {
+    transform: scale(0.3) rotate(-12deg);
+  }
+  60% {
+    transform: scale(1.25) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* ── Rank ribbon + flavor tagline ── */
+.brs-rank-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.brs-rank {
+  --ts-scale: 0.6;
+  margin: 0.05rem auto 0.05rem;
+  animation: brs-rank-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.brs-tagline {
+  margin: 0;
+  font-size: 0.52rem;
+  line-height: 1.4;
+  text-align: center;
+  color: #e0cfa8;
+  letter-spacing: 0.02em;
+  animation: brs-rank-in 0.4s ease-out both;
+}
+/* Low tiers: warm-red "close call" emphasis. */
+.brs-tagline--close {
+  color: #e6a07f;
+  text-shadow: 0 0 6px rgba(217, 138, 106, 0.35);
+}
+
+/* ── Loot bonus (final beat after the stars) ── */
+.brs-loot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(246, 196, 83, 0.5);
+  border-radius: 999px;
+  background: rgba(118, 35, 35, 0.35);
+  /* Hidden until its reveal beat. */
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
+}
+.brs-loot--shown {
+  opacity: 1;
+  transform: scale(1);
+  animation: brs-rank-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.brs-loot-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: #e8d9b8;
+}
+.brs-loot-mult {
+  font-size: 0.78rem;
+  color: #f6c453;
+  text-shadow: 0 0 3px rgba(246, 196, 83, 0.22);
+}
+
+@keyframes brs-rank-in {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Continue ── */
+.brs-continue {
+  align-self: center;
+  margin-top: 0.35rem;
+}
+.brs-continue--ready {
+  animation: brs-continue-pulse 1.5s ease-in-out infinite;
+}
+@keyframes brs-continue-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Respect reduced motion: no pops/pulses, everything shown static. */
+@media (prefers-reduced-motion: reduce) {
+  .brs-card,
+  .brs-star--filled,
+  .brs-rank,
+  .brs-tagline,
+  .brs-loot--shown,
+  .brs-continue--ready {
+    animation: none !important;
+  }
+  .brs-row,
+  .brs-loot {
+    transition: none !important;
+  }
+}

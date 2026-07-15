@@ -32,6 +32,7 @@ import {
   isValidSwap,
   removeMatchedOrbsAndRefill,
 } from '~/lib/match-3';
+import type { BattleRatingResult } from '~/lib/battle-rating';
 
 // Use initial data from constants
 const initialParty = INITIAL_PARTY;
@@ -335,6 +336,44 @@ export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandb
 export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEnemyIds ?? []);
 // Centered "Preemptive Strike!" callout trigger (see PreemptiveStrikeIndicator).
 export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
+// Per-enemy "STAGGER!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
+export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
+
+// Flags an enemy reaching its per-cycle stagger cap, so the "STAGGER!" callout can replay.
+// Called by the attack-timer hook; the timestamp re-triggers the animation on later cycles.
+export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, {
+    ...currentState,
+    lastMaxFlinch: { enemyId, timestamp: Date.now() },
+  });
+});
+
+// ─── Victory-rating stats (see ~/lib/battle-rating.ts) ───────────────────────
+// Thin read selectors for the end-of-battle rating. `?? 0` guards any pre-existing state object.
+export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
+export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
+export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+
+// The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
+// so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
+// would be wrong, since the elapsed-time clock keeps running through the rating/rewards screens.
+// Null until the first victory of the session.
+export const lastBattleRatingAtom = atom<BattleRatingResult | null>(null);
+
+// Records the deepest cascade combo reached (keeps the running max). Called from the board.
+export const recordMaxComboAtom = atom(null, (get, set, combo: number) => {
+  const currentState = get(battleStateAtom);
+  if (combo <= currentState.maxCombo) return;
+  set(battleStateAtom, { ...currentState, maxCombo: combo });
+});
+
+// Tallies a battle item consumption (a penalty in the victory rating). Called from the item bar.
+// `?? 0` mirrors the read selectors so a pre-existing state object without the field can't write NaN.
+export const recordItemUsedAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, { ...currentState, itemsUsed: (currentState.itemsUsed ?? 0) + 1 });
+});
 
 // Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer
 // hook as each enemy's observation window elapses.

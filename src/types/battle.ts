@@ -78,4 +78,16 @@ export interface BattleState {
    * callout can replay. The timestamp re-triggers the animation on repeat strikes.
    */
   lastPreemptiveStrike: { timestamp: number } | null;
+  /**
+   * Fires when an enemy reaches its per-cycle stagger (flinch) cap — the point where further hits
+   * this cycle no longer delay its attack — so the per-enemy "STAGGER!" callout can replay. The
+   * timestamp re-triggers the animation each time an enemy maxes out again on a later cycle.
+   */
+  lastMaxFlinch: { enemyId: string; timestamp: number } | null;
+  /** `Date.now()` when the battle was created; drives the victory rating's clear-time criterion. */
+  startedAt: number;
+  /** Deepest cascade combo (chain length) reached this battle; feeds the victory rating. */
+  maxCombo: number;
+  /** Count of battle items consumed this battle; a penalty in the victory rating. */
+  itemsUsed: number;
 }

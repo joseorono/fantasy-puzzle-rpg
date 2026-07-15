@@ -11,6 +11,7 @@ Base Systems:
   - [x] Item selling: a Sell tab in the Item Shop (consumables → coins at half value, min 1). (Jose)
   - [x] Blacksmith "Modify" tab: upgrade gear one rarity tier, or salvage it for materials. (Jose)
 - [x] Level-up/progression system. (Jose and Edd)
+  - [x] Hold-to-allocate stat buttons: press-and-hold +/− with accelerating auto-repeat. (Jose)
 - [x] Map system: with menus for each map node, and different nodes. Similar to the Fire Emblem The Sacred Stones (GBA) map, the Pokemon Emerald (GBA) fly map, or the Mario World (SNES) map. (WIP - Mauricio)
 - [ ] Battle system: Detailed elsewhere. (WIP by the whole Team)
   - [x] Party Guard meter: gray orbs charge a shared meter that blocks incoming damage. (Jose)
@@ -20,6 +21,9 @@ Base Systems:
   - [x] Hitstop: brief impact freeze for game feel. (Jose)
   - [x] Skill-name title-sign ribbons. (Jose)
   - [x] Party HP persists across battles. (Jose)
+  - [x] Enemy stagger ("flinch"): every hit nudges the enemy's next attack back, VIT-resisted and hard-capped per cycle so it can never stunlock. (Jose)
+  - [x] Post-battle arcade star rating: 1–5 stars scored from clear time, HP remaining, max combo, match score, and items used, with rank flavor. (Jose)
+  - [x] Rating → loot multiplier: better ratings scale money + resources (not items/XP) on the rewards screen. (Jose)
 
 Second-Order Systems:
 

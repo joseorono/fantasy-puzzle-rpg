@@ -27,21 +27,21 @@ export function calculateLevelUpsForParty(partyMembers: CharacterData[], expGain
     // Derive pre-battle EXP using expGained so the parameter is actually
     // part of the leveling calculation. This keeps behavior consistent
     // whether partyMembers already include the reward or not.
-    const expAfterBattle = character.expToNextLevel;
+    const expAfterBattle = character.currentLevelExp;
     const expBeforeBattle = Math.max(0, expAfterBattle - expGained);
     let expProgress = expBeforeBattle + expGained;
 
     // EXP required for the current level, matching the EXP bar display logic
-    let expToNextLevel = getExpThresholdForLevel(level);
+    let expThreshold = getExpThresholdForLevel(level);
 
     // Count how many times the character levels up based on their EXP progress.
     // Bounded by the level ceiling (MAX_LEVEL) and the per-battle cap so corrupt/debug
     // EXP can't spin the loop and lock the UI — mirrors the guards in buildExpGainTimeline.
-    while (expProgress >= expToNextLevel && level < MAX_LEVEL && levelUps < MAX_LEVEL_UPS_PER_BATTLE) {
+    while (expProgress >= expThreshold && level < MAX_LEVEL && levelUps < MAX_LEVEL_UPS_PER_BATTLE) {
       levelUps += 1;
-      expProgress -= expToNextLevel;
+      expProgress -= expThreshold;
       level += 1;
-      expToNextLevel = getExpThresholdForLevel(level);
+      expThreshold = getExpThresholdForLevel(level);
     }
 
     const remainingExp = expProgress;

@@ -94,7 +94,7 @@ export function BattleRewardsScreen() {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
   }
 
-  const { lootTable, expReward } = battleRewardsData;
+  const { lootTable, expReward, lootMultiplier } = battleRewardsData;
 
   const earnedResources: Resources = {
     coins: lootTable.resources?.item?.coins || 0,
@@ -114,7 +114,7 @@ export function BattleRewardsScreen() {
         (hasNoItems ? (
           <SkipToStep2 setStep={setStep} />
         ) : (
-          <ItemRewardsScreen lootTable={lootTable} onFinish={() => setStep(2)} />
+          <ItemRewardsScreen lootTable={lootTable} lootMultiplier={lootMultiplier} onFinish={() => setStep(2)} />
         ))}
 
       {/* Step 2: Show exp bar filling up */}
@@ -160,7 +160,7 @@ export function BattleRewardsScreen() {
           const displayCharacter: CharacterData = {
             ...charCopy,
             level: charCopy.level + totalLevelUps,
-            expToNextLevel: currentPending.remainingExp,
+            currentLevelExp: currentPending.remainingExp,
           };
 
           // Auto-unlock any skills the character now qualifies for by level.
@@ -174,7 +174,7 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             unlockLevelSkills(updatedCharacter);
             // Move to next character
@@ -186,7 +186,7 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply level-up with only random stats (no player allocation)
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             unlockLevelSkills(updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
@@ -222,6 +222,8 @@ function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
  */
 interface ItemRewardsScreenProps {
   lootTable: LootTable;
+  /** Battle-rating loot bonus applied to the resources (shown as a badge when > 1). */
+  lootMultiplier?: number;
   onFinish: () => void;
 }
 
@@ -283,7 +285,7 @@ function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsRes
   );
 }
 
-function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
+function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewardsScreenProps) {
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
@@ -322,6 +324,11 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         <h1 className="victory-title rewards-section-title">
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
+        {lootMultiplier > 1 && (
+          <span className="rewards-loot-bonus pixel-font">
+            ×{lootMultiplier} Rating Bonus
+          </span>
+        )}
       </header>
 
       <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
@@ -386,7 +393,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
     const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
       const updatedMember: CharacterData = {
         ...member,
-        expToNextLevel: member.expToNextLevel + expReward,
+        currentLevelExp: member.currentLevelExp + expReward,
       };
       partyActions.updateCharacter(member.id, updatedMember);
       return updatedMember;

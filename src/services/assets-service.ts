@@ -23,6 +23,7 @@ export const assetList: string[] = [
   '/assets/bg/item-shop-bg1.jpg',
   '/assets/bg/item-shop-bg2.jpg',
   '/assets/bg/reception-desk.jpg',
+  '/assets/bg/grid-pattern.svg',
   ...DUNGEON_BG_IMAGES,
 
   // Looping Backgrounds
@@ -105,6 +106,9 @@ export const assetList: string[] = [
   '/assets/hud/chip-currency.png',
 
   // Icons
+  '/assets/icons/indigolay/Icon_bookmark-fill.png',
+  '/assets/icons/indigolay/Icon_setting.png',
+  '/assets/icons/indigolay/Icon_share_.png',
   '/assets/icons/indigolay/icon-columns.png',
   '/assets/icons/indigolay/icon-hp.png',
   '/assets/icons/indigolay/icon-mute.png',

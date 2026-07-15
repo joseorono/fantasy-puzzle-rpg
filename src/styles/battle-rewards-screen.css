@@ -563,6 +563,20 @@
   flex-shrink: 0;
 }
 
+/* Rating loot-bonus badge — echoes the ×N shown on the rating screen. */
+.rewards-loot-bonus {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: #f6c453;
+  background: rgba(118, 35, 35, 0.4);
+  border: 1px solid rgba(246, 196, 83, 0.5);
+  border-radius: 999px;
+  text-shadow: 0 0 5px rgba(246, 196, 83, 0.35);
+}
+
 .victory-title {
   margin: 0;
 }

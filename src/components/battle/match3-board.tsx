@@ -13,6 +13,7 @@ import {
   reduceSkillCooldownAtom,
   incrementTurnAtom,
   addScoreAtom,
+  recordMaxComboAtom,
   addGuardAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
@@ -180,6 +181,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
   const addScore = useSetAtom(addScoreAtom);
+  const recordMaxCombo = useSetAtom(recordMaxComboAtom);
   const addGuard = useSetAtom(addGuardAtom);
   const setBattleState = useSetAtom(battleStateAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
@@ -372,6 +374,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // Advance the cascade chain so the next refill-driven match scores higher.
     cascadeLevelRef.current = cascadeLevel + 1;
+    // Track the deepest chain this battle for the victory rating (chain length = level + 1).
+    recordMaxCombo(cascadeLevel + 1);
 
     // Remove matched orbs after animation - this will trigger a new board state
     // which will cause this effect to run again and check for new (cascade) matches

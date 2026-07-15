@@ -86,6 +86,17 @@ export function getPercentageOfResources(resources: Resources, percentage: numbe
 }
 
 /**
+ * Scale every resource field by a factor, floored to whole units. Same math as
+ * {@link getPercentageOfResources} but named for multipliers >= 1 (e.g. a loot bonus).
+ * @param resources - The resources to scale
+ * @param factor - Multiplier (e.g. 1.5 for +50%); 1 is a no-op
+ * @returns New resources object with each field multiplied by `factor` and floored
+ */
+export function scaleResources(resources: Resources, factor: number): Resources {
+  return getPercentageOfResources(resources, factor);
+}
+
+/**
  * Validate that an amount is non-negative
  * @param amount - Amount to validate
  * @returns Validated amount (minimum 0)

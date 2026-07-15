@@ -18,6 +18,8 @@ import {
   calculateCharacterCooldown,
   calculatePartyCollectiveSpd,
   calculateItemCooldownInMs,
+  calculateStaggerPushMs,
+  clampStaggerToCycleBudget,
   getHpThreshold,
   createStats,
   validateStats,
@@ -39,8 +41,7 @@ const mockCharacter: CharacterData = {
   baseHp: 100,
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
-  currentExp: 0,
-  expToNextLevel: 100,
+  currentLevelExp: 100,
   unlockedSkillIds: ['warrior-power-strike'],
   selectedSkillId: 'warrior-power-strike',
 };
@@ -151,6 +152,18 @@ describe('Speed Calculations', () => {
 
   bench('calculateCharacterCooldown', () => {
     calculateCharacterCooldown(mockCharacter);
+  });
+});
+
+// ── Stagger Calculations ──
+
+describe('Stagger Calculations', () => {
+  bench('calculateStaggerPushMs', () => {
+    calculateStaggerPushMs(50, 300, 50, 4000);
+  });
+
+  bench('clampStaggerToCycleBudget', () => {
+    clampStaggerToCycleBudget(200, 4000, 100);
   });
 });
 

@@ -84,6 +84,8 @@ export type DebugViewData = object;
 export interface BattleRewardsViewData {
   lootTable: LootTable;
   expReward: number;
+  /** Battle-rating loot bonus already applied to the resources (for the "×N LOOT" badge). */
+  lootMultiplier?: number;
 }
 
 /**

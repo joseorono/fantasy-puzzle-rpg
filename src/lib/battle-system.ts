@@ -90,6 +90,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     // Every enemy that actually has a standby delay starts out observing.
     standbyEnemyIds: enemies.map((e) => e.id).filter((id) => (enemyStandbyMs[id] ?? 0) > 0),
     lastPreemptiveStrike: null,
+    lastMaxFlinch: null,
     selectedEnemyId: enemies[0].id,
     board: createInitialBoard(),
     selectedOrb: null,
@@ -101,6 +102,9 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     lastDamage: null,
     lastMatchedType: null,
     lastSkillActivation: null,
+    startedAt: Date.now(),
+    maxCombo: 0,
+    itemsUsed: 0,
   };
 }
 

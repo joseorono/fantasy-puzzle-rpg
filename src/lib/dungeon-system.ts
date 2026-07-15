@@ -6,6 +6,7 @@
 
 import type { DungeonDefinition, DungeonFloor, DungeonEvent } from '~/types/dungeon';
 import type { Resources } from '~/types/resources';
+import type { BattleRatingResult } from './battle-rating';
 import { DUNGEONS } from '~/constants/dungeons';
 import { DUNGEON_REST_POOL_DIVISOR, DUNGEON_REST_POOL_MINIMUM } from '~/constants/dungeon';
 import { createResources, addResources, getPercentageOfResources } from './resources';
@@ -95,6 +96,35 @@ export function getDungeonRestPool(dungeon: DungeonDefinition): number {
     DUNGEON_REST_POOL_MINIMUM,
     Math.floor(dungeon.floors.length / DUNGEON_REST_POOL_DIVISOR),
   );
+}
+
+/** Aggregate rank across a run's per-floor combat ratings. */
+export interface DungeonRatingSummary {
+  /** Number of floors that were rated (i.e. had a combat). */
+  ratedFloors: number;
+  /** Sum of stars earned across all rated floors. */
+  totalStars: number;
+  /** Mean stars, rounded UP to a whole star (1..MAX_STARS); 0 when no floor was rated. */
+  averageStars: number;
+}
+
+/**
+ * Summarizes a run's per-floor combat ratings into a single dungeon rank. Floors without a rating
+ * (dialogue/chest-only) are ignored, so a peaceful floor never drags the average down. The average
+ * is rounded UP (so, e.g., a 4★ and a 5★ floor yield a 5★ run) — the run rank is generous, taking
+ * the benefit of the doubt. `averageStars` is the headline "dungeon rank"; `totalStars` is kept for
+ * a possible score display.
+ * @param floorRatings - Map of floor index → battle rating, as accumulated during the run
+ * @returns The rated-floor count, total stars, and rounded-up average (0 if nothing was rated)
+ */
+export function summarizeFloorRatings(
+  floorRatings: Record<number, BattleRatingResult>,
+): DungeonRatingSummary {
+  const ratings = Object.values(floorRatings);
+  const ratedFloors = ratings.length;
+  const totalStars = ratings.reduce((sum, rating) => sum + rating.stars, 0);
+  const averageStars = ratedFloors === 0 ? 0 : Math.ceil(totalStars / ratedFloors);
+  return { ratedFloors, totalStars, averageStars };
 }
 
 /**

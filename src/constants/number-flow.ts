@@ -42,3 +42,9 @@ export const DECIMAL_2_FORMAT: Format = {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 };
+
+/** Format for multipliers — trims trailing zeros (×1.5, ×2, ×1.25). */
+export const MULTIPLIER_FORMAT: Format = {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+};

@@ -127,6 +127,49 @@ describe('combineLootFromEnemies', () => {
     expect(result.lootTable.resources.probability).toBe(1);
   });
 
+  it('scales money + resources by the multiplier (floored), leaving items and XP untouched', () => {
+    const enemy = createEnemy({
+      expReward: 40,
+      lootTable: createLootTable(
+        [{ item: mockSword }],
+        [{ item: mockPotion }],
+        { item: { coins: 10, gold: 5, copper: 3, silver: 1, iron: 2 } },
+      ),
+    });
+
+    const result = combineLootFromEnemies([enemy], 1.5);
+
+    // Resources scaled and floored: 10→15, 5→7, 3→4, 1→1, 2→3.
+    expect(result.lootTable.resources.item).toEqual({
+      coins: 15,
+      gold: 7,
+      copper: 4,
+      silver: 1,
+      iron: 3,
+    });
+    // Items and XP are never scaled.
+    expect(result.lootTable.equipableItems).toHaveLength(1);
+    expect(result.lootTable.equipableItems[0].item).toBe(mockSword);
+    expect(result.lootTable.consumableItems).toHaveLength(1);
+    expect(result.expReward).toBe(40);
+  });
+
+  it('multiplier of 1 (default) leaves resources unchanged', () => {
+    const enemy = createEnemy({
+      lootTable: createLootTable([], [], { item: { coins: 10, gold: 5, iron: 2 } }),
+    });
+    const withDefault = combineLootFromEnemies([enemy]);
+    const withOne = combineLootFromEnemies([enemy], 1);
+    expect(withOne.lootTable.resources.item).toEqual(withDefault.lootTable.resources.item);
+    expect(withOne.lootTable.resources.item).toEqual({
+      coins: 10,
+      gold: 5,
+      copper: 0,
+      silver: 0,
+      iron: 2,
+    });
+  });
+
   it('should concatenate equipable items from all enemies', () => {
     const enemies = [
       createEnemy({

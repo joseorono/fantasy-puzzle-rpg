@@ -1,5 +1,19 @@
+import { useRef, useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { gameStatusAtom, enemiesAtom, partyAtom, resetBattleAtom } from '~/stores/battle-atoms';
+import {
+  gameStatusAtom,
+  enemiesAtom,
+  partyAtom,
+  resetBattleAtom,
+  scoreAtom,
+  maxComboAtom,
+  itemsUsedAtom,
+  battleStartedAtAtom,
+  lastBattleRatingAtom,
+} from '~/stores/battle-atoms';
+import { BattleRatingScreen } from '~/components/battle/battle-rating-screen';
+import { computeBattleRating, type BattleRatingResult } from '~/lib/battle-rating';
+import { VICTORY_FLAVOR_BY_STARS } from '~/constants/battle-rating';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { useRouterActions, usePartyActions } from '~/stores/game-store';
 import { isGameStartedAtom } from '~/stores/app-atoms';
@@ -16,22 +30,62 @@ export function BattleOverModal() {
   const gameStatus = useAtomValue(gameStatusAtom);
   const enemies = useAtomValue(enemiesAtom);
   const battleParty = useAtomValue(partyAtom);
+  const score = useAtomValue(scoreAtom);
+  const maxCombo = useAtomValue(maxComboAtom);
+  const itemsUsed = useAtomValue(itemsUsedAtom);
+  const startedAt = useAtomValue(battleStartedAtAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
+  const setLastRating = useSetAtom(lastBattleRatingAtom);
   const setGameStarted = useSetAtom(isGameStartedAtom);
   const { goToBattleRewards, reset: resetRouter } = useRouterActions();
   const { syncBattleHp, fullyHealParty } = usePartyActions();
+
+  // On victory, show the arcade rating first; the VICTORY card follows once dismissed.
+  const [victoryPhase, setVictoryPhase] = useState<'rating' | 'summary'>('rating');
+  // Snapshot the rating once, at the win moment — shared by the rating screen and the send-off line.
+  const ratingRef = useRef<BattleRatingResult | null>(null);
 
   if (gameStatus === 'playing') return null;
 
   const isVictory = gameStatus === 'won';
 
+  if (isVictory && ratingRef.current === null) {
+    const maxHpTotal = battleParty.reduce((sum, c) => sum + c.maxHp, 0);
+    const currentHpTotal = battleParty.reduce((sum, c) => sum + c.currentHp, 0);
+    ratingRef.current = computeBattleRating({
+      elapsedMs: Date.now() - startedAt,
+      score,
+      maxCombo,
+      hpRemainingPct: maxHpTotal > 0 ? currentHpTotal / maxHpTotal : 0,
+      itemsUsed,
+    });
+  }
+
+  if (isVictory && victoryPhase === 'rating' && ratingRef.current) {
+    return (
+      <BattleRatingScreen
+        result={ratingRef.current}
+        onContinue={() => setVictoryPhase('summary')}
+      />
+    );
+  }
+
+  const victoryFlavor =
+    (ratingRef.current && VICTORY_FLAVOR_BY_STARS[ratingRef.current.stars]) ??
+    'You live to fight another day!';
+
   function handleContinue() {
     if (isVictory) {
       // Carry post-battle HP back to the persistent party before showing rewards.
       syncBattleHp(battleParty);
-      const { lootTable, expReward } = combineLootFromEnemies(enemies);
-      goToBattleRewards({ lootTable, expReward });
+      // Publish the rating so a dungeon run can record this floor's stars on return
+      // (computed once here — the elapsed-time clock keeps running through the reward screens).
+      setLastRating(ratingRef.current);
+      // The star rating grants a loot bonus on money + resources (not items/XP).
+      const lootMultiplier = ratingRef.current?.lootMultiplier ?? 1;
+      const { lootTable, expReward } = combineLootFromEnemies(enemies, lootMultiplier);
+      goToBattleRewards({ lootTable, expReward, lootMultiplier });
     } else {
       // Defeat: auto-heal the party, reset combat + navigation, and return to the start menu.
       // Also tear down any active dungeon run so re-entry starts fresh at Floor 1
@@ -79,7 +133,7 @@ export function BattleOverModal() {
             {isVictory ? (
               <>
                 <p style={{ marginBottom: '0.5rem' }}>Congratulations!</p>
-                <p>You live to fight another day!</p>
+                <p>{victoryFlavor}</p>
               </>
             ) : (
               <>
