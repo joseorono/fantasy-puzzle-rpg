@@ -27,3 +27,47 @@
 .credits-modal-body a:hover {
   color: #ffe082;
 }
+
+/* When the back button is showing on the left of the header, drop the manual
+   centering offset on the title — the back button now balances it out. */
+.start-menu-modal-header .credits-modal-title--back {
+  padding-left: 0;
+}
+
+.credits-modal-back.credits-modal-back {
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+/* Icons are plain pixel-art images (not lucide), so give them a fixed size
+   next to the button label instead of relying on an SVG's intrinsic size. */
+.credits-modal-nav-icon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   SECTION MENU — Graphics / Audio choice
+   Buttons themselves are plain ToffecButton + ToffecBeigeCornersWrapper
+   (same components used by the blacksmith/dungeon modals), laid out as a
+   single row with the icon inline before the label.
+   ========================================== */
+
+.credits-modal-menu {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.credits-modal-menu .toffec-button {
+  gap: 0.6rem;
+}
+
+@media (max-width: 480px) {
+  .credits-modal-menu {
+    gap: 1rem;
+  }
+}
