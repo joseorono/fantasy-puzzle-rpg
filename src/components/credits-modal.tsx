@@ -79,16 +79,20 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
 
         {/* Header bar */}
         <div className="start-menu-modal-header">
-          {section !== 'menu' && (
-            <ToffecButton variant="tan" size="xs" onClick={handleBack} className="credits-modal-back">
-              <img src="/assets/icons/indigolay/Icon_move-to-start.png" alt="" className="credits-modal-nav-icon" draggable={false} />
-              Back
-            </ToffecButton>
-          )}
+          <div className="credits-modal-header-slot credits-modal-header-slot--left">
+            {section !== 'menu' && (
+              <ToffecButton variant="cream" size="xs" onClick={handleBack} className="credits-modal-back">
+                <img src="/assets/icons/indigolay/Icon_move-to-start.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                Back
+              </ToffecButton>
+            )}
+          </div>
           <h2 className={`start-menu-modal-title ${section !== 'menu' ? 'credits-modal-title--back' : ''}`}>
             <NarikWoodBitFont text={SECTION_TITLES[section]} size={0.9} />
           </h2>
-          <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
+          <div className="credits-modal-header-slot credits-modal-header-slot--right">
+            <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
+          </div>
         </div>
 
         {/* Divider */}

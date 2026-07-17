@@ -18,6 +18,17 @@
 }
 
 /* Keep the long attribution URLs readable and on-theme inside the modal. */
+.credits-modal-body {
+  font-family: monospace;
+}
+
+/* Titles keep the default (non-monospace) font */
+.credits-modal-body h1,
+.credits-modal-body h2,
+.credits-modal-body h3 {
+  font-family: var(--font-body, system-ui);
+}
+
 .credits-modal-body a {
   color: #ffd082;
   text-decoration: underline;
@@ -28,8 +39,25 @@
   color: #ffe082;
 }
 
-/* When the back button is showing on the left of the header, drop the manual
-   centering offset on the title — the back button now balances it out. */
+/* Fixed-width slots for the header buttons so the title stays centered
+   regardless of the back button being wider than the close button. */
+.credits-modal-header-slot {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.credits-modal-header-slot--left {
+  justify-content: flex-start;
+}
+
+.credits-modal-header-slot--right {
+  justify-content: flex-end;
+}
+
+/* When the back button is showing, drop the manual centering offset
+   on the title — the equal-width slots balance it out. */
 .start-menu-modal-header .credits-modal-title--back {
   padding-left: 0;
 }
@@ -37,6 +65,7 @@
 .credits-modal-back.credits-modal-back {
   flex-shrink: 0;
   gap: 0.35rem;
+  min-width: 24px;
 }
 
 /* Icons are plain pixel-art images (not lucide), so give them a fixed size
@@ -44,8 +73,15 @@
 .credits-modal-nav-icon {
   width: 22px;
   height: 22px;
+  object-fit: contain;
   image-rendering: pixelated;
   flex-shrink: 0;
+}
+
+/* Ensure the pill-shaped ToffecButton never clips the icon */
+.credits-modal-back,
+.credits-modal-menu .toffec-button {
+  overflow: visible;
 }
 
 /* ==========================================
