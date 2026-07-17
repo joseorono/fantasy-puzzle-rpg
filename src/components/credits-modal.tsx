@@ -103,14 +103,14 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
           {section === 'menu' && (
             <div className="credits-modal-menu">
               <ToffecBeigeCornersWrapper>
-                <ToffecButton variant="tan" size="default" onClick={() => handleOpenSection('graphics')}>
-                  <img src="/assets/icons/indigolay/Icon_device-camera-video.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                <ToffecButton variant="cream" size="default" onClick={() => handleOpenSection('graphics')}>
+                  <img src="/assets/icons/indigolay/Icon_file-media.png" alt="" className="credits-modal-nav-icon" draggable={false} />
                   Graphics
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>
               <ToffecBeigeCornersWrapper>
-                <ToffecButton variant="orange" size="default" onClick={() => handleOpenSection('audio')}>
-                  <img src="/assets/icons/indigolay/Icon_megaphone.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                <ToffecButton variant="cream" size="default" onClick={() => handleOpenSection('audio')}>
+                  <img src="/assets/icons/indigolay/icon-unmute.png" alt="" className="credits-modal-nav-icon" draggable={false} />
                   Audio
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>

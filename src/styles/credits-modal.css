@@ -10,6 +10,13 @@
   z-index: 1000;
 }
 
+/* Match the f05a-viewport look (same board tile, no extra darkening —
+   the viewport's own gradient overlay classes are actually overridden by
+   its background-image, so the panel should look the same without one). */
+.credits-modal-backdrop .start-menu-modal-panel {
+  background-size: auto;
+}
+
 /* Stack the audio/graphics/links license sections with breathing room. */
 .credits-modal-body.credits-modal-body {
   display: flex;
@@ -27,6 +34,18 @@
 .credits-modal-body h2,
 .credits-modal-body h3 {
   font-family: var(--font-body, system-ui);
+}
+
+.credits-modal-body h1 {
+  font-size: 1.25rem !important;
+}
+
+.credits-modal-body h2 {
+  font-size: 1rem !important;
+}
+
+.credits-modal-body h3 {
+  font-size: 1rem !important;
 }
 
 /* Arrow indicator on each credit entry */
@@ -72,9 +91,10 @@
   justify-content: flex-end;
 }
 
-/* When the back button is showing, drop the manual centering offset
-   on the title — the equal-width slots balance it out. */
-.start-menu-modal-header .credits-modal-title--back {
+/* The credits modal centers its title using equal-width header slots
+   instead of the base modal's manual padding-left offset, so drop it
+   in both the menu and back-button states. */
+.start-menu-modal-header .start-menu-modal-title {
   padding-left: 0;
 }
 
@@ -98,6 +118,17 @@
 .credits-modal-back,
 .credits-modal-menu .toffec-button {
   overflow: visible;
+}
+
+/* Give the menu buttons enough vertical room so the 22px icons
+   aren't clipped by the pill's border-radius. Extra horizontal
+   padding pushes the icon away from the pill's curved edge. */
+.credits-modal-menu .toffec-button {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
+  min-height: 3.5rem;
 }
 
 /* ==========================================
