@@ -29,6 +29,22 @@
   font-family: var(--font-body, system-ui);
 }
 
+/* Arrow indicator on each credit entry */
+.credits-modal-body p {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.credits-modal-body p::before {
+  content: '\25B6';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  font-size: 0.6em;
+  color: #d4a574;
+  line-height: 1;
+}
+
 .credits-modal-body a {
   color: #ffd082;
   text-decoration: underline;
