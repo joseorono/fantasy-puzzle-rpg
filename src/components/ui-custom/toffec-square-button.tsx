@@ -17,10 +17,10 @@ const toffecSquareButtonVariants = cva(
         fairy3: 'toffec-square-btn--fairy3',
       },
       size: {
-        sm: 'w-6 h-6',
-        default: 'w-8 h-8',
-        lg: 'w-10 h-10',
-        xl: 'w-12 h-12',
+        sm: 'w-6 h-6 [--cb-corner:2px]',
+        default: 'w-8 h-8 [--cb-corner:3px]',
+        lg: 'w-10 h-10 [--cb-corner:4px]',
+        xl: 'w-12 h-12 [--cb-corner:5px]',
       },
       hasBg: {
         true: 'toffec-square-btn--has-bg',
