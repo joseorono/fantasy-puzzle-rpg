@@ -10,9 +10,8 @@ export const DUNGEON_COMBAT_FLAVOR: ReadonlyArray<string> = [
   'Claws scrape against stone — you are not alone.',
   'The air turns foul. Enemies close in.',
   'Shadows peel from the walls, hungry and waking.',
-  'Enemies ahead!',
-  'A fight is brewing.',
-  'Prepare for battle.',
+  'Enemies ahead. Prepare for battle!',
+  'A fight is brewing, you have no choice but to face them.',
 ];
 
 /** Shown for a boss-floor combat event. */
