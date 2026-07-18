@@ -223,7 +223,7 @@ function makePixelAccessor({ out, rowBytes, bitDepth, colorType, channels, palet
  */
 function measure({ sheet, cols, charW, charH, charset, alphaThreshold, colorThreshold }) {
   const { width, height, colorType, getPixel } = decodePng(readFileSync(sheet));
-  console.error(`decoded ${sheet}: ${width}x${height} colorType=${colorType}`);
+  console.error(`decoded ${sheet}: ${width}x${height} colorType=${colorType}`); // diagnostic → stderr
 
   const hasAlpha = colorType === 4 || colorType === 6 || colorType === 3;
   const bg = getPixel(0, 0); // corner pixel = assumed background for opaque sheets
@@ -345,6 +345,10 @@ function main() {
   const metrics = measure(config);
   const def = detectDefault(metrics, config.charset);
   const overrideCount = config.charset.length - def.count;
+
+  // Output convention: stdout carries the ready-to-paste TS (incl. the DEFAULT
+  // literal); stderr carries diagnostics only. This lets you pipe the code out
+  // cleanly, e.g. `node scripts/measure-bitmap-font.mjs narik > metrics.txt`.
   console.error(
     `default {l:${def.metric.l},w:${def.metric.w}} covers ${def.count}/${config.charset.length}; ${overrideCount} overrides`,
   );
