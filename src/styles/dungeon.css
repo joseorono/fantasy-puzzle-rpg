@@ -250,7 +250,7 @@
   justify-content: center;
   gap: 0.85rem;
   width: 100%;
-  padding: 0.9rem 1.25rem;
+  padding: 1rem 1.5rem;
   background: linear-gradient(180deg, rgba(200, 135, 46, 0.16) 0%, transparent 100%);
 }
 
