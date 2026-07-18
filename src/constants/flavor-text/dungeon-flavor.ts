@@ -30,10 +30,14 @@ export const DUNGEON_CHEST_FLAVOR: ReadonlyArray<string> = [
 
 /** Shown for a dialogue/scene event. */
 export const DUNGEON_DIALOGUE_FLAVOR: ReadonlyArray<string> = [
-  'A moment unfolds before you.',
-  'Voices echo through the passage.',
-  'The story of this place reveals itself.',
-  'You pause as the scene takes shape.',
+  'The air grows still. Something is about to happen.',
+  'You sense a shift in the atmosphere.',
+  'A strange feeling washes over the party.',
+  'For a moment, the dungeon seems to hold its breath.',
+  'You exchange a look with your companions. Something is different here.',
+  'The path ahead seems quiet, but it feels... expectant.',
+  'A memory of this place seems to surface, unbidden.',
+  "There's a story clinging to the very stones here.",
 ];
 
 /** Shown when no specific event is queued (between steps). */
