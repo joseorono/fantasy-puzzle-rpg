@@ -32,10 +32,13 @@ export interface BitmapFontConfig {
   /** Path to the 5× sprite sheet. */
   image5x: string;
   /**
-   * Optional per-glyph metrics. When present the font is rendered
+   * Sane default glyph metric. When present the font is rendered
    * proportionally (each glyph cropped to its ink width + {@link tracking}
-   * gap); when absent it falls back to fixed-cell monospace layout.
+   * gap), with {@link metrics} supplying per-glyph outliers; when absent the
+   * font falls back to fixed-cell monospace layout.
    */
+  defaultMetric?: GlyphMetric;
+  /** Per-glyph overrides — only glyphs that differ from {@link defaultMetric}. */
   metrics?: Record<string, GlyphMetric>;
   /** Uniform gap between glyphs, in native px (proportional mode only). */
   tracking?: number;
@@ -94,10 +97,13 @@ export function BitmapText({
   const sh = sheetRows * ch;
 
   // Native px → rendered px (relative to the cell), for proportional metrics.
-  const { metrics, tracking = 0, spaceWidth = 0 } = config;
+  // Proportional mode is active when the font declares a defaultMetric; each
+  // glyph then resolves as `metrics[char] ?? defaultMetric`.
+  const { defaultMetric, metrics, tracking = 0, spaceWidth = 0 } = config;
+  const proportional = defaultMetric !== undefined;
   const toPx = (nativePx: number) => (nativePx / config.charW) * cw;
-  const gap = metrics ? toPx(tracking) : 0;
-  const blankWidth = metrics ? toPx(spaceWidth) : cw;
+  const gap = proportional ? toPx(tracking) : 0;
+  const blankWidth = proportional ? toPx(spaceWidth) : cw;
 
   const containerStyle = {
     '--bf-img': `url(${image})`,
@@ -119,7 +125,7 @@ export function BitmapText({
               <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />
             );
           }
-          const metric = metrics?.[char];
+          const metric = proportional ? (metrics?.[char] ?? defaultMetric) : undefined;
           const charStyle: React.CSSProperties = metric
             ? {
                 width: `${toPx(metric.w)}px`,
