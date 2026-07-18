@@ -43,6 +43,12 @@ export interface BattleState {
   /** Party-wide Guard meter (0..GUARD_MAX). Charged by matching gray orbs; mitigates enemy attacks. */
   guard: number;
   gameStatus: BattleStatus;
+  /**
+   * True from the killing blow until the board settles, when all enemies are dead but the
+   * in-flight cascade is still resolving. Keeps `gameStatus: 'playing'` so the combo chain
+   * finishes and fully counts toward the victory rating; the settle branch then commits the win.
+   */
+  pendingVictory: boolean;
   lastDamage: {
     amount: number;
     target: ActionTarget;

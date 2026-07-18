@@ -109,6 +109,7 @@ describe('createBattleState', () => {
     expect(state.lastDamage).toBeNull();
     expect(state.lastMatchedType).toBeNull();
     expect(state.lastSkillActivation).toBeNull();
+    expect(state.pendingVictory).toBe(false);
   });
 
   it('should generate a standby delay for every enemy', () => {
