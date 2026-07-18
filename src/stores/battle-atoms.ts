@@ -161,6 +161,12 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
 // Atom to damage the selected enemy
 export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   const currentState = get(battleStateAtom);
+
+  // The fight is already decided and the win is just waiting on the cascade to settle. Any
+  // further chained hits land on corpses — no-op them so HP stays put and, crucially, no
+  // `lastDamage` fires (which would pop a damage number over a dead enemy).
+  if (currentState.pendingVictory) return;
+
   const selectedId = currentState.selectedEnemyId;
 
   // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
@@ -182,16 +188,17 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
     if (nextId) newSelectedId = nextId;
   }
 
-  // Check if ALL enemies are dead
+  // Check if ALL enemies are dead. Rather than flip to 'won' immediately (which would cut the
+  // combo chain short and freeze the rating early), mark victory as *pending* and keep playing so
+  // the in-flight cascade finishes and fully counts. The board's settle branch commits the win.
   const allDead = enemies.every((e) => e.currentHp <= 0);
-  const gameStatus = allDead ? 'won' : 'playing';
 
   const timestamp = Date.now();
   set(battleStateAtom, {
     ...currentState,
     enemies,
     selectedEnemyId: newSelectedId,
-    gameStatus,
+    pendingVictory: allDead,
     lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
@@ -267,10 +274,10 @@ export const healPartyAtom = atom(
     const currentState = get(battleStateAtom);
     const { amount, source } = params;
 
-    // Dead members take priority — revive the first one found
+    // Dead members take priority — revive the healer first, else the first one found
     const dead = getDeadMembers(currentState.party);
     if (dead.length > 0) {
-      const target = dead[0];
+      const target = dead.find((char) => char.class === 'healer') ?? dead[0];
       // Healer match: double healing. Potion: 1 HP + potion amount.
       const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
       const party = healPartyMember(currentState.party, target.id, reviveAmount);
@@ -322,6 +329,16 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 
 // Derived atom for game status
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
+// True while all enemies are dead but the killing-blow cascade is still resolving. The board
+// reads this to lock input during the finish and to commit the win once it settles.
+export const pendingVictoryAtom = atom((get) => get(battleStateAtom).pendingVictory);
+// Commits a pending victory once the board settles: flips to 'won' so the BattleOverModal
+// reveals the rating — by now the cascade has finished and `maxCombo` is final.
+export const commitPendingVictoryAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  if (!currentState.pendingVictory) return;
+  set(battleStateAtom, { ...currentState, gameStatus: 'won', pendingVictory: false });
+});
 // Narrow derived atoms so UI that only shows turn/score doesn't re-render on every
 // board/HP/match change (see BattleTopBar).
 export const turnAtom = atom((get) => get(battleStateAtom).turn);
@@ -354,6 +371,7 @@ export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
 export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);
 
 // The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
 // so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
@@ -566,6 +584,11 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     enemies,
     selectedEnemyId,
     gameStatus,
+    // A skill kill wins immediately: there's no in-flight cascade to preserve and no guaranteed
+    // board-settle event to commit a deferred win. Clear any pending flag so it can't go stale.
+    pendingVictory: false,
+    // Every character skill is an "ultimate"; count each successful activation for the rating bonus.
+    ultimateSkillsUsed: currentState.ultimateSkillsUsed + 1,
     lastDamage,
     lastSkillActivation: {
       characterId,

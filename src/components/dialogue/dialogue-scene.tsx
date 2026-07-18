@@ -1,5 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
+import { useSetAtom } from 'jotai';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
+import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
 import { useDialogue } from '~/hooks/use-dialogue';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { KeyboardKeys, isConfirmKey } from '~/constants/keyboard';
@@ -32,13 +34,18 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
     }
   }, [isLast, isComplete, onComplete, next]);
 
-  // Add/remove dialogue-active class to prevent page scrolling
+  const setDialogueActive = useSetAtom(isDialogueActiveAtom);
+
+  // Flag dialogue as active (blocks the pause menu) and add the body class that
+  // prevents page scrolling, for as long as a scene is mounted.
   useEffect(() => {
+    setDialogueActive(true);
     document.body.classList.add('dialogue-active');
     return () => {
+      setDialogueActive(false);
       document.body.classList.remove('dialogue-active');
     };
-  }, []);
+  }, [setDialogueActive]);
 
   // Keyboard controls
   useWindowKeyDown((e) => {

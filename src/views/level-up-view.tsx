@@ -8,6 +8,7 @@ import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -323,26 +324,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('pow')}
                     {...holdDecrease.pow}
                     disabled={pendingAllocations.pow === 0}
                     aria-label="Decrease Power"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('pow')}
                     {...holdIncrease.pow}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Power"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>
@@ -391,26 +392,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('vit')}
                     {...holdDecrease.vit}
                     disabled={pendingAllocations.vit === 0}
                     aria-label="Decrease Vitality"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('vit')}
                     {...holdIncrease.vit}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Vitality"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>
@@ -465,26 +466,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('spd')}
                     {...holdDecrease.spd}
                     disabled={pendingAllocations.spd === 0}
                     aria-label="Decrease Speed"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('spd')}
                     {...holdIncrease.spd}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Speed"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>

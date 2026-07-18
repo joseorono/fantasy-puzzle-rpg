@@ -1,6 +1,6 @@
-/* ToffecCloseButton Component Styles — pixel-art close (X) buttons */
+/* ToffecSquareButton — pixel-art square buttons (close / plus / minus glyphs) */
 
-.toffec-close-btn {
+.toffec-square-btn {
   position: relative;
   cursor: pointer;
   border: none;
@@ -14,36 +14,28 @@
   flex-shrink: 0;
 }
 
-.toffec-close-btn:disabled {
+.toffec-square-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* ───── Background square (pixel-art rounded corners via clip-path) ───── */
 
-.toffec-close-btn--has-bg::before {
+.toffec-square-btn--has-bg::before {
   content: '';
   position: absolute;
   inset: 0;
   border: 2px solid var(--cb-border);
   background: var(--cb-bg);
   box-shadow: inset 0 -4px 0 var(--cb-shadow);
-  /* Pixel-art corner clip: cut 2px from each corner */
-  clip-path: polygon(
-    2px 0%,
-    calc(100% - 2px) 0%,
-    100% 2px,
-    100% calc(100% - 2px),
-    calc(100% - 2px) 100%,
-    2px 100%,
-    0% calc(100% - 2px),
-    0% 2px
-  );
+  /* Subtle rounded corners that scale with size (--cb-corner, set per size
+     variant), so large buttons soften instead of looking harshly square. */
+  border-radius: var(--cb-corner, 2px);
 }
 
-/* ───── X mark (two rotated bars via pseudo-element) ───── */
+/* ───── Glyph (1–2 bars via pseudo-elements) ───── */
 
-.toffec-close-btn__x {
+.toffec-square-btn__glyph {
   position: relative;
   width: 100%;
   height: 100%;
@@ -53,8 +45,8 @@
   pointer-events: none;
 }
 
-.toffec-close-btn__x::before,
-.toffec-close-btn__x::after {
+.toffec-square-btn__glyph::before,
+.toffec-square-btn__glyph::after {
   content: '';
   position: absolute;
   width: var(--cb-x-thickness, 3px);
@@ -63,17 +55,30 @@
   border-radius: 0;
 }
 
-.toffec-close-btn__x::before {
+/* close (✕): two rotated bars */
+.toffec-square-btn__glyph--close::before {
   transform: rotate(45deg);
 }
-
-.toffec-close-btn__x::after {
+.toffec-square-btn__glyph--close::after {
   transform: rotate(-45deg);
 }
 
-/* Outlined X variants (medieval5, fairy1) — add outline via box-shadow */
-.toffec-close-btn--outlined .toffec-close-btn__x::before,
-.toffec-close-btn--outlined .toffec-close-btn__x::after {
+/* plus (+): one vertical bar + one horizontal bar */
+.toffec-square-btn__glyph--plus::after {
+  transform: rotate(90deg);
+}
+
+/* minus (−): a single horizontal bar */
+.toffec-square-btn__glyph--minus::before {
+  display: none;
+}
+.toffec-square-btn__glyph--minus::after {
+  transform: rotate(90deg);
+}
+
+/* Outlined glyph variants (medieval5, fairy1) — add outline via box-shadow */
+.toffec-square-btn__glyph--outlined::before,
+.toffec-square-btn__glyph--outlined::after {
   box-shadow:
     1px 0 0 var(--cb-x-outline),
     -1px 0 0 var(--cb-x-outline),
@@ -83,18 +88,18 @@
 
 /* ───── Hover / Active ───── */
 
-.toffec-close-btn:hover:not(:disabled) {
+.toffec-square-btn:hover:not(:disabled) {
   transform: scale(1.1);
 }
 
-.toffec-close-btn:active:not(:disabled) {
+.toffec-square-btn:active:not(:disabled) {
   transform: scale(0.95);
 }
 
 /* ───── Variant color tokens ───── */
 
 /* -- medieval1 (bg) -- */
-.toffec-close-btn--medieval1 {
+.toffec-square-btn--medieval1 {
   --cb-border: #653a2b;
   --cb-bg: #905540;
   --cb-shadow: #784533;
@@ -102,7 +107,7 @@
 }
 
 /* -- medieval2 (bg) -- */
-.toffec-close-btn--medieval2 {
+.toffec-square-btn--medieval2 {
   --cb-border: #6f4e35;
   --cb-bg: #ae7d58;
   --cb-shadow: #8a6041;
@@ -110,7 +115,7 @@
 }
 
 /* -- medieval3 (bg) -- */
-.toffec-close-btn--medieval3 {
+.toffec-square-btn--medieval3 {
   --cb-border: #6f3613;
   --cb-bg: #ba6733;
   --cb-shadow: #9f582c;
@@ -118,29 +123,29 @@
 }
 
 /* -- medieval4 (no bg, single color) -- */
-.toffec-close-btn--medieval4 {
+.toffec-square-btn--medieval4 {
   --cb-x-color: #9c4009;
 }
 
 /* -- medieval5 (no bg, outlined) -- */
-.toffec-close-btn--medieval5 {
+.toffec-square-btn--medieval5 {
   --cb-x-color: #b76737;
   --cb-x-outline: #1f1f1f;
 }
 
 /* -- medieval6 (no bg, single color) -- */
-.toffec-close-btn--medieval6 {
+.toffec-square-btn--medieval6 {
   --cb-x-color: #72330c;
 }
 
 /* -- fairy1 (no bg, outlined) -- */
-.toffec-close-btn--fairy1 {
+.toffec-square-btn--fairy1 {
   --cb-x-color: #71330e;
   --cb-x-outline: #000000;
 }
 
 /* -- fairy2 (bg) -- */
-.toffec-close-btn--fairy2 {
+.toffec-square-btn--fairy2 {
   --cb-border: #271002;
   --cb-bg: #451e07;
   --cb-shadow: #301505;
@@ -148,7 +153,7 @@
 }
 
 /* -- fairy3 (bg) -- */
-.toffec-close-btn--fairy3 {
+.toffec-square-btn--fairy3 {
   --cb-border: #3f1b05;
   --cb-bg: #71330e;
   --cb-shadow: #5c290b;

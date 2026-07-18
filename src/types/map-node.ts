@@ -2,6 +2,7 @@ import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { EnemyData } from './rpg-elements';
 import type { Resources } from './resources';
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
 
 // ─── General Map Types ────────────────────────────────────────────────
 
@@ -33,6 +34,10 @@ export interface InteractiveMapNode {
   description?: string;
   /** Loot payload for Treasure nodes */
   lootPayload?: LootTable;
+  /** Dungeon registry id (`DungeonDefinition.id`) this Dungeon node enters — resolved via the `DUNGEONS` registry */
+  dungeonId?: string;
+  /** Inline dungeon definition for a Dungeon node — takes precedence over `dungeonId` when both are set */
+  dungeon?: DungeonDefinition;
 }
 
 /**

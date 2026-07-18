@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import AudioLicensesDialogContent from '~/components/licenses/audio-licenses';
 import GraphicsLicensesDialogContent from '~/components/licenses/graphics-licenses';
 import LinksToLicensesDialogContent from '~/components/licenses/links-to-licenses';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
-import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
+import { ModalTitle } from '~/components/typography/modal-title';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { KeyboardKeys } from '~/constants/keyboard';
@@ -15,23 +19,50 @@ interface CreditsModalProps {
   onClose: () => void;
 }
 
+type CreditsSection = 'menu' | 'graphics' | 'audio';
+
+const SECTION_TITLES: Record<CreditsSection, string> = {
+  menu: 'Credits',
+  graphics: 'Graphics Credits',
+  audio: 'Audio Credits',
+};
+
 /**
  * Reusable credits/licenses modal. Reuses the start-menu modal panel visuals but with a
  * fixed, viewport-covering backdrop so it can be opened from any screen — the title menu
- * or the debug view. The actual attribution text lives in the `licenses/*` content
- * components, so this component is only responsible for the modal chrome.
+ * or the debug view. Shows a small menu with Graphics/Audio choices (local state only,
+ * one section visible at a time) with a back button to return to the menu. The actual
+ * attribution text lives in the `licenses/*` content components, so this component is
+ * only responsible for the modal chrome and navigation.
  */
 export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
+  const [section, setSection] = useState<CreditsSection>('menu');
+
   const handleClose = () => {
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
     onClose();
+    setSection('menu');
   };
 
-  // Escape closes the modal (only wired while it is open).
+  const handleOpenSection = (nextSection: CreditsSection) => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setSection(nextSection);
+  };
+
+  const handleBack = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setSection('menu');
+  };
+
+  // Escape backs out of a section first, then closes the modal (only wired while it is open).
   useWindowKeyDown((event) => {
     if (event.key === KeyboardKeys.Escape) {
       event.preventDefault();
-      handleClose();
+      if (section !== 'menu') {
+        handleBack();
+      } else {
+        handleClose();
+      }
     }
   }, isOpen);
 
@@ -48,20 +79,55 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
 
         {/* Header bar */}
         <div className="start-menu-modal-header">
-          <h2 className="start-menu-modal-title">
-            <NarikWoodBitFont text="Credits" size={0.9} />
-          </h2>
-          <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
+          <div className="credits-modal-header-slot credits-modal-header-slot--left">
+            {section !== 'menu' && (
+              <ToffecButton variant="cream" size="xs" onClick={handleBack} className="credits-modal-back">
+                <img src="/assets/icons/indigolay/icon-move-to-start.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                Back
+              </ToffecButton>
+            )}
+          </div>
+          <ModalTitle text={SECTION_TITLES[section]} />
+          <div className="credits-modal-header-slot credits-modal-header-slot--right">
+            <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
+          </div>
         </div>
 
         {/* Divider */}
-        <div className="start-menu-modal-divider" />
+        <IndigolayDivider variant="victory" />
 
-        {/* Content — all licenses/attributions stacked and scrollable */}
+        {/* Content — only the active section is rendered */}
         <div className="start-menu-modal-body credits-modal-body">
-          <AudioLicensesDialogContent />
-          <GraphicsLicensesDialogContent />
-          <LinksToLicensesDialogContent />
+          {section === 'menu' && (
+            <div className="credits-modal-menu">
+              <ToffecBeigeCornersWrapper>
+                <ToffecButton variant="cream" size="default" onClick={() => handleOpenSection('graphics')}>
+                  <img src="/assets/icons/indigolay/icon-file-media.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                  Graphics
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
+              <ToffecBeigeCornersWrapper>
+                <ToffecButton variant="cream" size="default" onClick={() => handleOpenSection('audio')}>
+                  <img src="/assets/icons/indigolay/icon-unmute.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                  Audio
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
+            </div>
+          )}
+
+          {section === 'graphics' && (
+            <>
+              <GraphicsLicensesDialogContent />
+              <LinksToLicensesDialogContent />
+            </>
+          )}
+
+          {section === 'audio' && (
+            <>
+              <AudioLicensesDialogContent />
+              <LinksToLicensesDialogContent />
+            </>
+          )}
         </div>
       </div>
     </div>

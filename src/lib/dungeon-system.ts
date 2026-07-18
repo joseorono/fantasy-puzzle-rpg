@@ -31,6 +31,22 @@ export function getFloor(dungeon: DungeonDefinition, floorIndex: number): Dungeo
 }
 
 /**
+ * Builds a floor's display title from its position and optional atomic name —
+ * the floor number is derived here so authored/randomized floor `name`s stay
+ * atomic (and stay correct after the randomizer shuffles floor order).
+ *
+ * With a name: "Floor 1: Shallow Den" (':' separator, present in the bitmap-font
+ * charset). Without one: just "Floor 1".
+ * @param floorIndex - Zero-based floor index.
+ * @param name - The floor's atomic name (e.g. "Shallow Den"), if any.
+ * @returns The display title.
+ */
+export function formatFloorTitle(floorIndex: number, name?: string): string {
+  const label = `Floor ${floorIndex + 1}`;
+  return name ? `${label}: ${name}` : label;
+}
+
+/**
  * Get an event within a floor by index.
  * @param floor - The floor being played
  * @param eventIndex - Zero-based event index

@@ -3,12 +3,14 @@ import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { Position } from '~/types/geometry';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
   isCompleted: boolean;
   onFight?: () => void;
   onEnter?: () => void;
+  onRandomize?: () => void;
   onOpenChest?: () => void;
   onViewDialogue?: () => void;
   characterPosition: Position;
@@ -31,6 +33,7 @@ export function NodeInteractionMenu({
   isCompleted,
   onFight,
   onEnter,
+  onRandomize,
   onOpenChest,
   onViewDialogue,
   characterPosition,
@@ -110,6 +113,24 @@ export function NodeInteractionMenu({
           </ToffecButton>
         )}
 
+        {node.type === 'Dungeon' && onRandomize && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* span wrapper: ToffecButton doesn't forward a ref for Radix to anchor to */}
+              <span className="nim-btn-tooltip">
+                <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onRandomize}>
+                  <FrostyRpgIcon name="skull" size={16} />
+                  Randomize
+                </ToffecButton>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[240px]">
+              A remixed run — shuffled floors and enemies with bonus loot, and no story. The boss still waits at the
+              end.
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {canOpenChest && onOpenChest && (
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
             <FrostyRpgIcon name="openChest" size={16} />
@@ -124,7 +145,8 @@ export function NodeInteractionMenu({
           </ToffecButton>
         )}
 
-        {node.dialogueScene && onViewDialogue && (
+        {/* Dungeon events play on descent, so no standalone Talk preview for them */}
+        {node.type !== 'Dungeon' && node.dialogueScene && onViewDialogue && (
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onViewDialogue}>
             <FrostyRpgIcon name="openBook" size={16} />
             Talk

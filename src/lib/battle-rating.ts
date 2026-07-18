@@ -15,6 +15,8 @@ import {
   COMBO_TARGET,
   ITEM_PENALTY_PER_USE,
   MAX_ITEM_PENALTY,
+  ULTIMATE_BONUS_PER_USE,
+  MAX_ULTIMATE_BONUS,
   STAR_THRESHOLDS,
   RATING_POINTS_SCALE,
   LOOT_MULTIPLIER_BY_STARS,
@@ -33,6 +35,8 @@ export interface BattleRatingInput {
   hpRemainingPct: number;
   /** Number of battle items consumed (penalty). */
   itemsUsed: number;
+  /** Number of ultimate skills used (capped bonus). Defaults to 0 when omitted. */
+  ultimateSkillsUsed?: number;
 }
 
 /** A single scored line on the results screen. */
@@ -41,9 +45,9 @@ export interface RatingCriterion {
   label: string;
   /** Preformatted achievement value, e.g. "0:42", "1,240", "x4", "88%", "2". */
   displayValue: string;
-  /** Signed points contribution (negative for the items penalty). */
+  /** Signed points contribution (negative for the items penalty, positive otherwise). */
   points: number;
-  /** True for the items-used penalty row. */
+  /** True for the items-used penalty row (styled distinctly; the only negative row). */
   isPenalty: boolean;
   /** True for board-RNG-dependent criteria (score, combo) so the UI can de-emphasize them. */
   isRngHeavy: boolean;
@@ -111,7 +115,7 @@ function toPoints(weightedNormalized: number): number {
  * @returns A star count, total points, and the per-criterion breakdown for display.
  */
 export function computeBattleRating(input: BattleRatingInput): BattleRatingResult {
-  const { elapsedMs, score, maxCombo, hpRemainingPct, itemsUsed } = input;
+  const { elapsedMs, score, maxCombo, hpRemainingPct, itemsUsed, ultimateSkillsUsed = 0 } = input;
 
   const subTime = normalizeTime(elapsedMs);
   const subHp = clamp01(hpRemainingPct);
@@ -125,7 +129,13 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
     RATING_WEIGHTS.combo * subCombo;
 
   const itemPenalty = Math.min(Math.max(0, itemsUsed) * ITEM_PENALTY_PER_USE, MAX_ITEM_PENALTY);
-  const normalized = clamp01(positive - itemPenalty);
+  // Using ultimates grants a small capped bonus on top of the positive score (outside the weight
+  // sum, so it never dents the skill ceiling — a flawless no-ultimate clear is already maxed).
+  const ultimateBonus = Math.min(
+    Math.max(0, ultimateSkillsUsed) * ULTIMATE_BONUS_PER_USE,
+    MAX_ULTIMATE_BONUS,
+  );
+  const normalized = clamp01(positive + ultimateBonus - itemPenalty);
 
   // 1 star for winning, +1 per cleared threshold.
   const stars = STAR_THRESHOLDS.reduce((count, threshold) => count + (normalized >= threshold ? 1 : 0), 1);
@@ -133,6 +143,8 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
   const isRng = (key: RatingCriterionKey) => RNG_HEAVY_CRITERIA.includes(key);
   const isFlawless = subHp >= 1;
 
+  // Rows are built in display order. Zero-contribution rows (combo/ultimates/items at 0) are
+  // omitted to keep the panel compact — they carry 0 points, so hiding them never shifts the total.
   const criteria: RatingCriterion[] = [
     {
       key: 'time',
@@ -152,15 +164,19 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       isRngHeavy: isRng('hp'),
       isFlawless,
     },
-    {
-      key: 'combo',
-      label: 'MAX COMBO',
-      displayValue: `x${Math.max(0, Math.floor(maxCombo))}`,
-      points: toPoints(RATING_WEIGHTS.combo * subCombo),
-      isPenalty: false,
-      isRngHeavy: isRng('combo'),
-      isFlawless: false,
-    },
+    ...(maxCombo > 0
+      ? [
+          {
+            key: 'combo' as const,
+            label: 'MAX COMBO',
+            displayValue: `x${Math.max(0, Math.floor(maxCombo))}`,
+            points: toPoints(RATING_WEIGHTS.combo * subCombo),
+            isPenalty: false,
+            isRngHeavy: isRng('combo'),
+            isFlawless: false,
+          },
+        ]
+      : []),
     {
       key: 'score',
       label: 'MATCH SCORE',
@@ -170,15 +186,32 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       isRngHeavy: isRng('score'),
       isFlawless: false,
     },
-    {
-      key: 'items',
-      label: 'ITEMS USED',
-      displayValue: `${Math.max(0, Math.floor(itemsUsed))}`,
-      points: -toPoints(itemPenalty),
-      isPenalty: true,
-      isRngHeavy: false,
-      isFlawless: false,
-    },
+    ...(ultimateSkillsUsed > 0
+      ? [
+          {
+            key: 'ultimates' as const,
+            label: 'ULTIMATES USED',
+            displayValue: `${Math.max(0, Math.floor(ultimateSkillsUsed))}`,
+            points: toPoints(ultimateBonus),
+            isPenalty: false,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
+    ...(itemsUsed > 0
+      ? [
+          {
+            key: 'items' as const,
+            label: 'ITEMS USED',
+            displayValue: `${Math.max(0, Math.floor(itemsUsed))}`,
+            points: -toPoints(itemPenalty),
+            isPenalty: true,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
   ];
 
   const totalScore = Math.max(0, criteria.reduce((sum, c) => sum + c.points, 0));

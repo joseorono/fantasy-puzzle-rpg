@@ -118,14 +118,10 @@
   flex-shrink: 0;
 }
 
+/* Base centering lives in `.modal-title`; this only adds the offset that keeps
+   the title visually centered against the right-only close button. */
 .start-menu-modal-title {
-  flex: 1;
-  margin: 0;
-  text-align: center;
-  padding-left: 40px; /* offset to keep title visually centered with close button on the right */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-left: 40px;
 }
 
 /* ==========================================

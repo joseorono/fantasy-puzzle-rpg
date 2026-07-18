@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { cn } from '~/lib/utils';
@@ -54,7 +54,7 @@ export function ConfirmPanel({
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
       >
-        <ToffecCloseButton
+        <ToffecSquareButton
           variant="medieval2"
           className="confirm-panel__close"
           style={{ width: '26px', height: '26px' }}
@@ -72,7 +72,7 @@ export function ConfirmPanel({
           </div>
         </div>
 
-        <RetroDivider variant={isDanger ? 'defeat' : 'default'} />
+        <IndigolayDivider variant={isDanger ? 'defeat' : 'default'} />
 
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 

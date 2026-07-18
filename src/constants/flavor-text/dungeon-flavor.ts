@@ -10,14 +10,18 @@ export const DUNGEON_COMBAT_FLAVOR: ReadonlyArray<string> = [
   'Claws scrape against stone — you are not alone.',
   'The air turns foul. Enemies close in.',
   'Shadows peel from the walls, hungry and waking.',
+  'Enemies ahead. Prepare for battle!',
+  'A fight is brewing, you have no choice but to face them.',
 ];
 
 /** Shown for a boss-floor combat event. */
 export const DUNGEON_BOSS_FLAVOR: ReadonlyArray<string> = [
   'A mighty presence blocks the way.',
   'The ground trembles. Something vast stirs.',
-  'This is the heart of the hollow — and it has a guardian.',
   'A monstrous silhouette rises to meet you.',
+  'A powerful foe awaits.',
+  "The area's guardian appears.",
+  'A great challenge lies before you.',
 ];
 
 /** Shown for a treasure-chest event. */
@@ -30,10 +34,15 @@ export const DUNGEON_CHEST_FLAVOR: ReadonlyArray<string> = [
 
 /** Shown for a dialogue/scene event. */
 export const DUNGEON_DIALOGUE_FLAVOR: ReadonlyArray<string> = [
-  'A moment unfolds before you.',
-  'Voices echo through the passage.',
-  'The story of this place reveals itself.',
-  'You pause as the scene takes shape.',
+  'The air grows still.',
+  'You sense a shift in the atmosphere.',
+  'You exchange a look with your companions. Seems like we should keep going.',
+  'The path ahead seems quiet, but it feels... expectant.',
+  'The path ahead seems quiet.',
+  'You pause for a moment.',
+  'A brief respite from the darkness.',
+  'The silence here is different.',
+  'You take a moment to look around.',
 ];
 
 /** Shown when no specific event is queued (between steps). */
@@ -41,6 +50,10 @@ export const DUNGEON_CONTINUE_FLAVOR: ReadonlyArray<string> = [
   'The way onward lies ahead.',
   'Deeper still the passage beckons.',
   'You steady yourself and press on.',
+  'The only way is forward.',
+  'Onward into the depths.',
+  'Another floor, another challenge.',
+  'You continue your descent.',
 ];
 
 /** Shown on the completion screen. */

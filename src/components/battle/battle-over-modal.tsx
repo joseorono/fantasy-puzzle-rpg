@@ -8,6 +8,7 @@ import {
   scoreAtom,
   maxComboAtom,
   itemsUsedAtom,
+  ultimateSkillsUsedAtom,
   battleStartedAtAtom,
   lastBattleRatingAtom,
 } from '~/stores/battle-atoms';
@@ -23,7 +24,7 @@ import { combineLootFromEnemies } from '~/lib/loot';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 export function BattleOverModal() {
@@ -33,6 +34,7 @@ export function BattleOverModal() {
   const score = useAtomValue(scoreAtom);
   const maxCombo = useAtomValue(maxComboAtom);
   const itemsUsed = useAtomValue(itemsUsedAtom);
+  const ultimateSkillsUsed = useAtomValue(ultimateSkillsUsedAtom);
   const startedAt = useAtomValue(battleStartedAtAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
@@ -59,6 +61,7 @@ export function BattleOverModal() {
       maxCombo,
       hpRemainingPct: maxHpTotal > 0 ? currentHpTotal / maxHpTotal : 0,
       itemsUsed,
+      ultimateSkillsUsed,
     });
   }
 
@@ -126,7 +129,7 @@ export function BattleOverModal() {
           </div>
 
           {/* Divider */}
-          <RetroDivider variant={isVictory ? 'victory' : 'defeat'} />
+          <IndigolayDivider variant={isVictory ? 'victory' : 'defeat'} />
 
           {/* Message */}
           <div className={cn('gom-message pixel-font', isVictory ? 'gom-message--victory' : 'gom-message--defeat')}>

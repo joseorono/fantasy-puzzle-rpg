@@ -4,6 +4,7 @@ import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import {
@@ -42,6 +43,8 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
   const isPaused = gameStatus !== 'playing' || isBattlePaused === true;
   const visibleTimers = enemyTimers.slice(0, MAX_VISIBLE_TIMERS);
   const overflowCount = enemyTimers.length - visibleTimers.length;
+  const pauseLabel = isBattlePaused ? 'Resume battle' : 'Pause battle';
+  const muteLabel = isMuted ? 'Unmute' : 'Mute';
 
   return (
     <header id="battle-top-bar">
@@ -114,30 +117,32 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
 
         {/* Actions */}
         <div className="btb-actions">
-          <button
-            className="btb-btn"
-            onClick={onPauseToggle}
-            aria-label={isBattlePaused ? 'Despausar batalla' : 'Pausar batalla'}
-          >
-            <img
-              className="btb-btn-icon btb-btn-icon--img"
-              src="/assets/icons/indigolay/icon-columns.png"
-              alt=""
-              draggable={false}
-            />
-          </button>
-          <button
-            className="btb-btn"
-            onClick={toggleMute}
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-          >
-            <img
-              className="btb-btn-icon btb-btn-icon--img"
-              src={isMuted ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
-              alt=""
-              draggable={false}
-            />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="btb-btn" onClick={onPauseToggle} aria-label={pauseLabel}>
+                <img
+                  className="btb-btn-icon btb-btn-icon--img"
+                  src="/assets/icons/indigolay/icon-columns.png"
+                  alt=""
+                  draggable={false}
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{pauseLabel}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="btb-btn" onClick={toggleMute} aria-label={muteLabel}>
+                <img
+                  className="btb-btn-icon btb-btn-icon--img"
+                  src={isMuted ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
+                  alt=""
+                  draggable={false}
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{muteLabel}</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </header>

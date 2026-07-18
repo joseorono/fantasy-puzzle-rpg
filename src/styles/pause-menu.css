@@ -423,7 +423,7 @@ box-shadow:
 .pause-menu-nav-icon {
   filter: grayscale(0.3) brightness(0.6) contrast(1.2);
   flex-shrink: 0;
-  image-rendering: pixelated;
+  image-rendering: auto;
   width: 24px;
   height: 24px;
   transition: all 0.2s ease;
@@ -1023,8 +1023,8 @@ box-shadow:
   font-weight: 400;
 }
 
-/* ToffecCloseButton hover state for equip slots */
-.pause-menu-equip-slot-row .toffec-close-btn:hover {
+/* ToffecSquareButton hover state for equip slots */
+.pause-menu-equip-slot-row .toffec-square-btn:hover {
   opacity: 1;
   filter: brightness(1.1);
 }
@@ -1052,7 +1052,7 @@ box-shadow:
   flex-shrink: 0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
   }
-  
+
   .pause-menu-equip-preview-grid {
     flex: 1;
     min-width: 0;
@@ -1478,6 +1478,6 @@ box-shadow:
   width: 2rem;
   height: 2rem;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
 }

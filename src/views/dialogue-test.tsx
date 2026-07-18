@@ -7,8 +7,10 @@ import {
 } from '~/constants/dialogue/scenes/test-scene';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { useRouterActions } from '~/stores/game-store';
 
 export function DialogueTestView() {
+  const { goBack } = useRouterActions();
   const [activeScene, setActiveScene] = useState<'test' | 'simple' | 'narrator' | null>(null);
   const [sceneKey, setSceneKey] = useState(0);
 
@@ -28,6 +30,8 @@ export function DialogueTestView() {
 
   return (
     <div className="dialogue-test-view">
+      {/* Back button, mirroring the TownHub leave button (.leave-btn from town.css) */}
+      <div className="leave-btn" onClick={goBack} />
       <div
         className="flex min-h-screen flex-col items-center justify-center gap-8 p-8"
         style={{

@@ -32,7 +32,7 @@ import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -436,7 +436,7 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
         ))}
       </div>
 
-      <RetroDivider variant="gold" className="rewards-divider" />
+      <IndigolayDivider variant="gold" className="rewards-divider" />
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 

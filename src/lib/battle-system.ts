@@ -99,12 +99,14 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     turn: 1,
     guard: 0,
     gameStatus: 'playing',
+    pendingVictory: false,
     lastDamage: null,
     lastMatchedType: null,
     lastSkillActivation: null,
     startedAt: Date.now(),
     maxCombo: 0,
     itemsUsed: 0,
+    ultimateSkillsUsed: 0,
   };
 }
 

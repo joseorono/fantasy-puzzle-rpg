@@ -13,6 +13,8 @@ import {
   COMBO_TARGET,
   MAX_ITEM_PENALTY,
   ITEM_PENALTY_PER_USE,
+  MAX_ULTIMATE_BONUS,
+  ULTIMATE_BONUS_PER_USE,
 } from '~/constants/battle-rating';
 
 // A fast, flawless, no-item clear — everything maxed.
@@ -108,6 +110,46 @@ describe('computeBattleRating — monotonicity', () => {
   });
 });
 
+describe('computeBattleRating — ultimate reward', () => {
+  const base: BattleRatingInput = {
+    elapsedMs: 60_000,
+    score: 1_000,
+    maxCombo: 2,
+    hpRemainingPct: 0.5,
+    itemsUsed: 0,
+  };
+
+  test('using more ultimates never lowers the rating, and raises it up to the cap', () => {
+    const none = computeBattleRating({ ...base, ultimateSkillsUsed: 0 }).normalized;
+    const some = computeBattleRating({ ...base, ultimateSkillsUsed: 2 }).normalized;
+    const capped = computeBattleRating({ ...base, ultimateSkillsUsed: 20 }).normalized;
+    expect(some).toBeGreaterThanOrEqual(none);
+    expect(capped).toBeGreaterThanOrEqual(some);
+    // Beyond the cap, the total lift equals MAX_ULTIMATE_BONUS.
+    expect(capped - none).toBeCloseTo(MAX_ULTIMATE_BONUS, 5);
+  });
+
+  test('the ultimate bonus is capped', () => {
+    const capReached = Math.ceil(MAX_ULTIMATE_BONUS / ULTIMATE_BONUS_PER_USE);
+    const a = computeBattleRating({ ...base, ultimateSkillsUsed: capReached }).normalized;
+    const b = computeBattleRating({ ...base, ultimateSkillsUsed: capReached + 10 }).normalized;
+    expect(a).toBeCloseTo(b, 5);
+  });
+
+  test('a flawless clear still earns 5 stars without using any ultimates', () => {
+    // Proves the reward is additive, not required — the skill ceiling is preserved.
+    const result = computeBattleRating({
+      elapsedMs: 4_000,
+      score: 0,
+      maxCombo: 0,
+      hpRemainingPct: 1,
+      itemsUsed: 0,
+      ultimateSkillsUsed: 0,
+    });
+    expect(result.stars).toBe(5);
+  });
+});
+
 describe('computeBattleRating — RNG criteria are weighted low', () => {
   test('maxing only score+combo (RNG) with poor skill stats cannot reach 3 stars', () => {
     const rngOnly = computeBattleRating({
@@ -134,11 +176,43 @@ describe('computeBattleRating — penalty + breakdown', () => {
     expect(b.normalized).toBeCloseTo(1 - MAX_ITEM_PENALTY, 5);
   });
 
-  test('breakdown has all five criteria, items is the only penalty', () => {
-    const { criteria } = computeBattleRating(perfectRun);
-    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'combo', 'score', 'items']);
+  test('breakdown lists rows in display order; items is the only penalty, ultimates a positive reward', () => {
+    // A fixture with every optional row present (combo/ultimates/items all > 0).
+    const { criteria } = computeBattleRating({ ...perfectRun, itemsUsed: 2, ultimateSkillsUsed: 2 });
+    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'combo', 'score', 'ultimates', 'items']);
     expect(criteria.filter((c) => c.isPenalty).map((c) => c.key)).toEqual(['items']);
     expect(criteria.filter((c) => c.isRngHeavy).map((c) => c.key)).toEqual(['combo', 'score']);
+    const ultimates = criteria.find((c) => c.key === 'ultimates')!;
+    expect(ultimates.isPenalty).toBe(false);
+    expect(ultimates.points).toBeGreaterThan(0);
+    expect(ultimates.displayValue).toBe('2');
+  });
+
+  test('zero-contribution rows (combo, ultimates, items) are omitted', () => {
+    const { criteria } = computeBattleRating({
+      elapsedMs: 40_000,
+      score: 500,
+      maxCombo: 0,
+      hpRemainingPct: 0.8,
+      itemsUsed: 0,
+      ultimateSkillsUsed: 0,
+    });
+    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'score']);
+  });
+
+  test('those rows appear once their values are non-zero', () => {
+    const { criteria } = computeBattleRating({
+      elapsedMs: 40_000,
+      score: 500,
+      maxCombo: 2,
+      hpRemainingPct: 0.8,
+      itemsUsed: 1,
+      ultimateSkillsUsed: 1,
+    });
+    const keys = criteria.map((c) => c.key);
+    expect(keys).toContain('combo');
+    expect(keys).toContain('ultimates');
+    expect(keys).toContain('items');
   });
 
   test('the items row reports negative points when items were used', () => {

@@ -35,6 +35,7 @@ import {
   isLastFloor,
   shouldRunEvent,
   summarizeFloorRatings,
+  formatFloorTitle,
 } from '~/lib/dungeon-system';
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
@@ -48,6 +49,7 @@ import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { TopBarResources } from '~/components/town/top-bar-resources';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
@@ -240,7 +242,7 @@ export default function DungeonView() {
   const ratedFloorRows = dungeon.floors
     .map((floor, idx) => {
       const rating = floorRatings[idx];
-      return rating ? { name: floor.name, stars: rating.stars } : null;
+      return rating ? { name: formatFloorTitle(idx, floor.name), stars: rating.stars } : null;
     })
     .filter((row): row is { name: string; stars: number } => row !== null);
   const isBrowsing = phase === 'browsing' && !activeDialogue;
@@ -329,7 +331,9 @@ export default function DungeonView() {
       <div className="dungeon-topbar">
         <div className="dungeon-topbar__left">
           <NarikWoodBitFont text={dungeon.name} size={1.1} />
-          <span className="dungeon-hp-chip">HP {totalCurrentHp} / {totalMaxHp}</span>
+          <span className="dungeon-hp-chip">
+            HP {totalCurrentHp} / {totalMaxHp}
+          </span>
         </div>
       </div>
 
@@ -337,19 +341,22 @@ export default function DungeonView() {
       <div className="dungeon-layout">
         <aside className="dungeon-track">
           <div className="dungeon-track__title">
-            <NarikWoodBitFont text="DESCENT" size={0.7} />
+            <NarikWoodBitFont text="DESCENT" size={0.9} />
           </div>
           <div className="dungeon-track__list">
             {dungeon.floors.map((floor, idx) => {
               const state = idx < floorIndex ? 'completed' : idx === floorIndex ? 'current' : 'locked';
               const rating = floorRatings[idx];
               return (
-                <div key={floor.id} className={cn('dungeon-floor', `dungeon-floor--${state}`)}>
+                <div
+                  key={floor.id}
+                  className={cn('dungeon-floor', `dungeon-floor--${state}`, floor.isBoss && 'dungeon-floor--boss')}
+                >
                   <span className="dungeon-floor__mark">
                     {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
                   </span>
                   <div className="dungeon-floor__body">
-                    <span className="dungeon-floor__name">{floor.name}</span>
+                    <span className="dungeon-floor__name">{formatFloorTitle(idx, floor.name)}</span>
                     {rating && <FloorRatingStars stars={rating.stars} />}
                   </div>
                 </div>
@@ -366,10 +373,11 @@ export default function DungeonView() {
                   <FrostyRpgIcon name="crown" size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
-                  <NarikWoodBitFont text="Dungeon Cleared" size={1.0} />
+                  <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
                 </div>
+                <div className="dungeon-card__banner-side" />
               </div>
-              <div className="dungeon-card__divider" />
+              <GradientDivider variant="gold" />
               <div className="dungeon-card__body">
                 <p className="dungeon-card__desc">{flavorLine}</p>
                 {ratingSummary.ratedFloors > 0 && (
@@ -377,9 +385,7 @@ export default function DungeonView() {
                     <span className="dungeon-rank__label">Dungeon Rank</span>
                     <span className="dungeon-rank__value">
                       <FloorRatingStars stars={ratingSummary.averageStars} />
-                      <span className="dungeon-rank__word">
-                        {STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}
-                      </span>
+                      <span className="dungeon-rank__word">{STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}</span>
                     </span>
                   </div>
                 )}
@@ -388,9 +394,7 @@ export default function DungeonView() {
                 <ToffecButton
                   variant="cream"
                   size="sm"
-                  onClick={() =>
-                    ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish()
-                  }
+                  onClick={() => (ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish())}
                 >
                   Finish
                 </ToffecButton>
@@ -403,16 +407,19 @@ export default function DungeonView() {
                   <FrostyRpgIcon name={getEventMedallion(currentEvent, isBoss)} size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
-                  <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.85} />
+                  <NarikWoodBitFont
+                    text={currentFloor ? formatFloorTitle(floorIndex, currentFloor.name) : ''}
+                    size={1}
+                  />
+                </div>
+                <div className="dungeon-card__banner-side">
                   {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}
                 </div>
               </div>
-              <div className="dungeon-card__divider" />
+              <GradientDivider variant={isBoss ? 'red' : 'gold'} />
               <div className="dungeon-card__body">
                 {isReplay && <p className="dungeon-card__replay">Replay — combats only</p>}
-                <p className="dungeon-card__desc">
-                  {phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}
-                </p>
+                <p className="dungeon-card__desc">{phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}</p>
               </div>
               <div className="dungeon-card__action">
                 {phase !== 'awaiting-battle' && (
@@ -473,7 +480,9 @@ export default function DungeonView() {
               </ToffecButton>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top">Abandon the run and return. You'll lose all progress in this dungeon.</TooltipContent>
+          <TooltipContent side="top">
+            Abandon the run and return. You'll lose all progress in this dungeon.
+          </TooltipContent>
         </Tooltip>
       </div>
 

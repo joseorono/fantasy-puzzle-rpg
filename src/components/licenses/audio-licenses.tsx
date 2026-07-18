@@ -1,13 +1,7 @@
 export default function AudioLicensesDialogContent() {
   return (
     <>
-      <div className="text-large flex flex-col justify-center gap-2 overflow-y-auto">
-        <h1 className="text-3xl">CREDITS</h1>
-
-        <h1 className="text-3xl" id="licences-and-credits">
-          Licences and Credits
-        </h1>
-
+      <div className="text-large flex flex-col justify-center gap-2">
         <h2 className="text-2xl" id="audio-assets-licences-and-credits-">
           Audio Assets - Licences and Credits
         </h2>

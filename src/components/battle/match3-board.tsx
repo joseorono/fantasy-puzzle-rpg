@@ -15,6 +15,8 @@ import {
   addScoreAtom,
   recordMaxComboAtom,
   addGuardAtom,
+  pendingVictoryAtom,
+  commitPendingVictoryAtom,
 } from '~/stores/battle-atoms';
 import type { Orb, BattleState } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
@@ -184,6 +186,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const recordMaxCombo = useSetAtom(recordMaxComboAtom);
   const addGuard = useSetAtom(addGuardAtom);
   const setBattleState = useSetAtom(battleStateAtom);
+  const pendingVictory = useAtomValue(pendingVictoryAtom);
+  const commitPendingVictory = useSetAtom(commitPendingVictoryAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
   // Combo multiplier currently shown in the cascade popup (0 = hidden, >=2 = visible)
@@ -236,6 +240,9 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // timer so the final cascade count stays readable for a beat.
     if (matches.size === 0) {
       setExplodingOrbs(new Set());
+      // If the killing blow landed mid-chain, the win was deferred so this cascade could
+      // finish and fully count toward the rating. Now that it's settled, commit the win.
+      if (pendingVictory) commitPendingVictory();
       return;
     }
 
@@ -392,8 +399,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   }, [board, damageEnemy, removeMatchedOrbs]);
 
   const handleOrbClick = (row: number, col: number) => {
-    // Don't allow clicks while processing a swap
-    if (isProcessingSwap || isBattlePaused === true) return;
+    // Don't allow clicks while processing a swap, paused, or during the post-kill combo finish.
+    if (isProcessingSwap || isBattlePaused === true || pendingVictory) return;
 
     if (!selectedOrb) {
       // First selection
@@ -439,9 +446,18 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     .map((char) => `dead-${char.color}`);
 
   return (
-    <div className="relative flex flex-1 justify-center">
+    <div className="relative flex flex-1 flex-col items-center justify-center">
+      <div className="match-badge-slot">
+        {highlightedMatches.size > 0 && (
+          <div className={cn('combo-pop match-badge pixel-font', highlightedMatches.size >= 5 && 'match-badge--big')}>
+            <span className="match-badge__count">{highlightedMatches.size}x</span>
+            <span className="match-badge__label">MATCH</span>
+          </div>
+        )}
+      </div>
+
       {/* Board container */}
-      <div className={cn('match3BoardContainer', deadColorClasses)}>
+      <div className={cn('match3BoardContainer', deadColorClasses, pendingVictory && 'pointer-events-none')}>
         <Franuka05aFrame>
           {/* Board grid */}
           <div className="flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
@@ -470,13 +486,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
           </div>
         </Franuka05aFrame>
       </div>
-
-      {/* Match-size indicator */}
-      {highlightedMatches.size > 0 && (
-        <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
-          {highlightedMatches.size >= 5 ? '5x MATCH!' : `${highlightedMatches.size} MATCH!`}
-        </div>
-      )}
 
       {/* Cascade combo popup — prominent, lingering, overlaid on the board */}
       {comboPopup >= 2 && (

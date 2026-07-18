@@ -22,8 +22,9 @@ export type DungeonEvent =
  */
 export interface DungeonFloor {
   id: string;
-  /** Display name, e.g. "Floor 1" or "B2 — The Crypt". */
-  name: string;
+  /** Optional atomic floor name (no "Floor N" prefix). Omit for a bare "Floor N"
+   *  title; the number is derived from position at display (see `formatFloorTitle`). */
+  name?: string;
   events: DungeonEvent[];
   isBoss?: boolean;
   /** Optional per-floor background override; falls back to the dungeon default. */

@@ -7,9 +7,10 @@ import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { Play, FolderOpen, ScrollText } from 'lucide-react';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { ModalTitle } from '~/components/typography/modal-title';
 import { CreditsModal } from '~/components/credits-modal';
 
 interface StartMenuModalProps {
@@ -208,10 +209,11 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
 
             {/* Header bar */}
             <div className="start-menu-modal-header">
-              <h2 className="start-menu-modal-title">
-                <NarikWoodBitFont text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]} size={0.9} />
-              </h2>
-              <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
+              <ModalTitle
+                text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}
+                className="start-menu-modal-title"
+              />
+              <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
             </div>
 
             {/* Divider */}

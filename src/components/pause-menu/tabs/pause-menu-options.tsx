@@ -68,7 +68,16 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Master Volume</span>
             <span className="pause-menu-option-value">{masterVolume}%</span>
           </div>
-          <FranukaSlider value={[masterVolume]} onValueChange={handleMasterChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
+          <FranukaSlider
+            value={[masterVolume]}
+            onValueChange={handleMasterChange}
+            min={0}
+            max={100}
+            step={1}
+            frameVariant="bookstyle"
+            fillInVariant="golden"
+            markerVariant="ridged"
+          />
         </div>
 
         <div className="pause-menu-option-row">
@@ -76,7 +85,16 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">Music Volume</span>
             <span className="pause-menu-option-value">{musicVolume}%</span>
           </div>
-          <FranukaSlider value={[musicVolume]} onValueChange={handleMusicChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
+          <FranukaSlider
+            value={[musicVolume]}
+            onValueChange={handleMusicChange}
+            min={0}
+            max={100}
+            step={1}
+            frameVariant="bookstyle"
+            fillInVariant="golden"
+            markerVariant="ridged"
+          />
         </div>
 
         <div className="pause-menu-option-row">
@@ -84,19 +102,25 @@ export function PauseMenuOptions() {
             <span className="pause-menu-option-label">SFX Volume</span>
             <span className="pause-menu-option-value">{sfxVolume}%</span>
           </div>
-          <FranukaSlider value={[sfxVolume]} onValueChange={handleSfxChange} min={0} max={100} step={1} frameVariant="bookstyle" fillInVariant="golden" markerVariant="ridged" />
+          <FranukaSlider
+            value={[sfxVolume]}
+            onValueChange={handleSfxChange}
+            min={0}
+            max={100}
+            step={1}
+            frameVariant="bookstyle"
+            fillInVariant="golden"
+            markerVariant="ridged"
+          />
         </div>
 
         <div className="pause-menu-option-row pause-menu-option-row--mute">
-          <button
-            type="button"
-            className="pause-menu-mute-toggle"
-            aria-pressed={isMuted}
-            onClick={handleMuteToggle}
-          >
+          <button type="button" className="pause-menu-mute-toggle" aria-pressed={isMuted} onClick={handleMuteToggle}>
             <img
               className="pause-menu-mute-toggle__icon"
-              src={isMuted === true ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'}
+              src={
+                isMuted === true ? '/assets/icons/indigolay/icon-mute.png' : '/assets/icons/indigolay/icon-unmute.png'
+              }
               alt=""
               draggable={false}
             />

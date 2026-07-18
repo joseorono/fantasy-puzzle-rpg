@@ -23,7 +23,12 @@ import {
   useFloorLootProgressActions,
   useRouterActions,
   useParty,
+  useDungeonProgressActions,
 } from '~/stores/game-store';
+import { getDungeonById } from '~/lib/dungeon-system';
+import { randomizeDungeon } from '~/lib/dungeon-randomizer';
+import type { DungeonDefinition } from '~/types/dungeon';
+import type { DungeonViewData } from '~/types/routing';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
@@ -79,6 +84,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
   const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
+  const [pendingDungeon, setPendingDungeon] = useState<DungeonViewData | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -102,6 +108,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const currentInventory = useGameStore((state) => state.inventory);
 
   const routerActions = useRouterActions();
+  const { isDungeonCompleted } = useDungeonProgressActions();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
 
@@ -394,6 +401,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       const nodeId = pendingFightNodeId;
       setPendingFightNodeId(null);
       startBattle(nodeId);
+      return;
+    }
+
+    // If a dungeon was pending after dialogue, descend now
+    if (pendingDungeon) {
+      const target = pendingDungeon;
+      setPendingDungeon(null);
+      routerActions.goToDungeon(target);
     }
   }
 
@@ -455,8 +470,53 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       return;
     }
 
-    // TODO: Navigate to dungeon screen
-    alert(`Entered ${enteredNode.name}!`);
+    if (enteredNode.type === 'Dungeon') {
+      enterDungeon(enteredNode, { randomized: false });
+    }
+  }
+
+  /** Enter the randomized "remix" of a Dungeon node — shuffled floors & enemies, bonus loot, no story. */
+  function handleNodeRandomize() {
+    if (!currentNode || currentNode.type !== 'Dungeon') return;
+    console.log('Randomizing dungeon:', currentNode.name);
+
+    const enteredNode = currentNode;
+
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+
+    enterDungeon(enteredNode, { randomized: true });
+  }
+
+  /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
+  function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
+    return node.dungeon ?? (node.dungeonId ? getDungeonById(node.dungeonId) : undefined);
+  }
+
+  /**
+   * Launch a Dungeon node's dungeon. Plays the node's pre-entry dialogue event first
+   * (mirroring the pre-fight flow); a randomized run is always a fresh, non-replay run.
+   */
+  function enterDungeon(node: InteractiveMapNode, { randomized }: { randomized: boolean }) {
+    const base = resolveDungeon(node);
+    if (!base) {
+      console.warn(`Dungeon node "${node.id}" has no resolvable dungeon (dungeon/dungeonId).`);
+      return;
+    }
+
+    const dungeon = randomized ? randomizeDungeon(base) : base;
+    const isReplay = randomized ? false : isDungeonCompleted(base.id);
+    const target: DungeonViewData = { dungeon, isReplay };
+
+    // If the node has a pre-entry dialogue event, play it first, then descend.
+    if (node.dialogueScene && MAP_00_DIALOGUE_SCENES[node.dialogueScene]) {
+      setPendingDungeon(target);
+      setDialogueKey((k) => k + 1);
+      setActiveDialogue(node.dialogueScene);
+      return;
+    }
+
+    routerActions.goToDungeon(target);
   }
 
   function handleNodeOpenChest() {
@@ -624,7 +684,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           icon = '🏠';
           break;
         case 'Dungeon':
-          color = isCompleted ? 'rgba(150, 150, 150, ' : 'rgba(105, 105, 105, ';
+          color = isCompleted ? 'rgba(128, 208, 198, ' : 'rgba(0, 176, 158, ';
           icon = '💀';
           break;
         case 'Treasure':
@@ -872,6 +932,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           isCompleted={isNodeCompleted(currentNode.type, currentNode.id)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
+          onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}
           onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={getCharacterScreenPosition()}
