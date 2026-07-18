@@ -9,6 +9,14 @@
 /*  Shared types & helpers                                             */
 /* ------------------------------------------------------------------ */
 
+/** Per-glyph metrics, in native px relative to the fixed cell. */
+export interface GlyphMetric {
+  /** Left bearing: transparent columns before the glyph ink. */
+  l: number;
+  /** Ink width, used as the glyph's advance width. */
+  w: number;
+}
+
 /** Describes a bitmap font sprite sheet. */
 export interface BitmapFontConfig {
   /** Every character in sprite order (left→right, top→bottom). */
@@ -23,6 +31,16 @@ export interface BitmapFontConfig {
   image1x: string;
   /** Path to the 5× sprite sheet. */
   image5x: string;
+  /**
+   * Optional per-glyph metrics. When present the font is rendered
+   * proportionally (each glyph cropped to its ink width + {@link tracking}
+   * gap); when absent it falls back to fixed-cell monospace layout.
+   */
+  metrics?: Record<string, GlyphMetric>;
+  /** Uniform gap between glyphs, in native px (proportional mode only). */
+  tracking?: number;
+  /** Advance width of a space, in native px (proportional mode only). */
+  spaceWidth?: number;
 }
 
 /** Pre-computes a character → [col, row] lookup from a config's charset. */
@@ -75,32 +93,42 @@ export function BitmapText({
   const sw = config.cols * cw;
   const sh = sheetRows * ch;
 
+  // Native px → rendered px (relative to the cell), for proportional metrics.
+  const { metrics, tracking = 0, spaceWidth = 0 } = config;
+  const toPx = (nativePx: number) => (nativePx / config.charW) * cw;
+  const gap = metrics ? toPx(tracking) : 0;
+  const blankWidth = metrics ? toPx(spaceWidth) : cw;
+
   const containerStyle = {
     '--bf-img': `url(${image})`,
     '--bf-cw': `${cw}px`,
     '--bf-ch': `${ch}px`,
     '--bf-sw': `${sw}px`,
     '--bf-sh': `${sh}px`,
+    '--bf-gap': `${gap}px`,
   } as React.CSSProperties;
 
   return (
     <span className="bf-text" style={containerStyle}>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true">
+      <span className="bf-row" aria-hidden="true">
         {Array.from(text).map((char, i) => {
           const pos = charMap.get(char);
           if (!pos) {
-            return <span key={i} className="bf-blank" />;
+            return (
+              <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />
+            );
           }
-          return (
-            <span
-              key={i}
-              className="bf-char"
-              style={{
+          const metric = metrics?.[char];
+          const charStyle: React.CSSProperties = metric
+            ? {
+                width: `${toPx(metric.w)}px`,
+                backgroundPosition: `${-(pos[0] * cw + toPx(metric.l))}px ${-pos[1] * ch}px`,
+              }
+            : {
                 backgroundPosition: `${-pos[0] * cw}px ${-pos[1] * ch}px`,
-              }}
-            />
-          );
+              };
+          return <span key={i} className="bf-char" style={charStyle} />;
         })}
       </span>
     </span>

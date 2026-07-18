@@ -4,6 +4,11 @@ import {
   type BitmapFontConfig,
   type BitmapTextProps,
 } from './bitmap-text';
+import {
+  NARIK_GLYPH_METRICS,
+  NARIK_SPACE_WIDTH,
+  NARIK_TRACKING,
+} from './narik-metrics';
 
 const CONFIG: BitmapFontConfig = {
   charset:
@@ -18,6 +23,9 @@ const CONFIG: BitmapFontConfig = {
   charH: 25,
   image1x: '/assets/fonts/Wood-narik.png',
   image5x: '/assets/fonts/Wood-5x-narik.png',
+  metrics: NARIK_GLYPH_METRICS,
+  tracking: NARIK_TRACKING,
+  spaceWidth: NARIK_SPACE_WIDTH,
 };
 
 const CHAR_MAP = buildCharMap(CONFIG.charset, CONFIG.cols);
