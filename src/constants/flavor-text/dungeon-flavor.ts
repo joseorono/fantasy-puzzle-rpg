@@ -42,6 +42,10 @@ export const DUNGEON_CONTINUE_FLAVOR: ReadonlyArray<string> = [
   'The way onward lies ahead.',
   'Deeper still the passage beckons.',
   'You steady yourself and press on.',
+  'The only way is forward.',
+  'Onward into the depths.',
+  'Another floor, another challenge.',
+  'You continue your descent.',
 ];
 
 /** Shown on the completion screen. */
