@@ -48,6 +48,7 @@ import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { TopBarResources } from '~/components/town/top-bar-resources';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
@@ -329,7 +330,9 @@ export default function DungeonView() {
       <div className="dungeon-topbar">
         <div className="dungeon-topbar__left">
           <NarikWoodBitFont text={dungeon.name} size={1.1} />
-          <span className="dungeon-hp-chip">HP {totalCurrentHp} / {totalMaxHp}</span>
+          <span className="dungeon-hp-chip">
+            HP {totalCurrentHp} / {totalMaxHp}
+          </span>
         </div>
       </div>
 
@@ -368,8 +371,9 @@ export default function DungeonView() {
                 <div className="dungeon-card__banner-title">
                   <NarikWoodBitFont text="Dungeon Cleared" size={1.0} />
                 </div>
+                <div className="dungeon-card__banner-side" />
               </div>
-              <div className="dungeon-card__divider" />
+              <GradientDivider variant="gold" />
               <div className="dungeon-card__body">
                 <p className="dungeon-card__desc">{flavorLine}</p>
                 {ratingSummary.ratedFloors > 0 && (
@@ -377,9 +381,7 @@ export default function DungeonView() {
                     <span className="dungeon-rank__label">Dungeon Rank</span>
                     <span className="dungeon-rank__value">
                       <FloorRatingStars stars={ratingSummary.averageStars} />
-                      <span className="dungeon-rank__word">
-                        {STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}
-                      </span>
+                      <span className="dungeon-rank__word">{STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}</span>
                     </span>
                   </div>
                 )}
@@ -388,9 +390,7 @@ export default function DungeonView() {
                 <ToffecButton
                   variant="cream"
                   size="sm"
-                  onClick={() =>
-                    ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish()
-                  }
+                  onClick={() => (ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish())}
                 >
                   Finish
                 </ToffecButton>
@@ -404,15 +404,15 @@ export default function DungeonView() {
                 </div>
                 <div className="dungeon-card__banner-title">
                   <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.85} />
+                </div>
+                <div className="dungeon-card__banner-side">
                   {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}
                 </div>
               </div>
-              <div className="dungeon-card__divider" />
+              <GradientDivider variant={isBoss ? 'red' : 'gold'} />
               <div className="dungeon-card__body">
                 {isReplay && <p className="dungeon-card__replay">Replay — combats only</p>}
-                <p className="dungeon-card__desc">
-                  {phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}
-                </p>
+                <p className="dungeon-card__desc">{phase === 'awaiting-battle' ? 'Entering battle…' : flavorLine}</p>
               </div>
               <div className="dungeon-card__action">
                 {phase !== 'awaiting-battle' && (
@@ -473,7 +473,9 @@ export default function DungeonView() {
               </ToffecButton>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top">Abandon the run and return. You'll lose all progress in this dungeon.</TooltipContent>
+          <TooltipContent side="top">
+            Abandon the run and return. You'll lose all progress in this dungeon.
+          </TooltipContent>
         </Tooltip>
       </div>
 

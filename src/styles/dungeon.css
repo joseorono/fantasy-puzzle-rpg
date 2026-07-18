@@ -329,19 +329,20 @@
 
 .dungeon-card__banner-title {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
 }
 
-.dungeon-card__divider {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent);
-}
-
-.dungeon-card--boss .dungeon-card__divider {
-  background: linear-gradient(90deg, transparent, #6b2a1a 20%, #c0392b 50%, #6b2a1a 80%, transparent);
+/* Right-hand banner slot (holds the BOSS tag, empty otherwise). Mirrors the
+   medallion's width so the title stays centred across the full banner. */
+.dungeon-card__banner-side {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 42px;
 }
 
 .dungeon-card__body {
@@ -353,6 +354,7 @@
 }
 
 .dungeon-card__boss-tag {
+  flex-shrink: 0;
   padding: 2px 10px;
   font-size: 0.55rem;
   font-weight: bold;

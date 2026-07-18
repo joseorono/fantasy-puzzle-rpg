@@ -24,7 +24,7 @@ import { combineLootFromEnemies } from '~/lib/loot';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { RetroDivider } from '~/components/dividers/retro-divider';
 import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 export function BattleOverModal() {

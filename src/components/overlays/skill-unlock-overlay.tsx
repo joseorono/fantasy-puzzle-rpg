@@ -2,7 +2,7 @@ import { useParty } from '~/stores/game-store';
 import { getSkillById } from '~/lib/skill-system';
 import { CHARACTER_ICONS } from '~/constants/party';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { RetroDivider } from '~/components/dividers/retro-divider';
 import { OverlayContainer } from './overlay-container';
 import type { OverlayRequest } from '~/stores/overlay-atoms';
 

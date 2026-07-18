@@ -1,0 +1,23 @@
+/*
+==================================
+    Dividers
+==================================
+
+  Styles for the shared divider components in src/components/dividers/.
+  Keep all divider CSS here (one stylesheet) rather than per-component modules.
+
+  - GradientDivider (gradient-divider.tsx): a thin horizontal gradient rule.
+  - RetroDivider (retro-divider.tsx) is Tailwind + inline styles only — no CSS here.
+*/
+
+.gradient-divider {
+  height: 2px;
+}
+
+.gradient-divider--gold {
+  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent);
+}
+
+.gradient-divider--red {
+  background: linear-gradient(90deg, transparent, #6b2a1a 20%, #c0392b 50%, #6b2a1a 80%, transparent);
+}

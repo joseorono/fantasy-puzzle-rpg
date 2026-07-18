@@ -442,6 +442,7 @@
 
 @import './styles/dungeon.css';
 
+@import './styles/dividers.css';
 @import './styles/top-bar-resources.css';
 
 @import './styles/pause-menu.css';

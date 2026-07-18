@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { RetroDivider } from '~/components/dividers/retro-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { cn } from '~/lib/utils';

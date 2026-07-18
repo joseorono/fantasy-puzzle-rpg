@@ -3,7 +3,7 @@ import { findEquipmentItem, getScaledEquipmentStats } from '~/lib/equipment-syst
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { RetroDivider } from '~/components/ui-custom/retro-divider';
+import { RetroDivider } from '~/components/dividers/retro-divider';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
