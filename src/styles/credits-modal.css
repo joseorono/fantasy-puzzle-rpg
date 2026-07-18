@@ -104,14 +104,24 @@
   min-width: 24px;
 }
 
-/* Icons are plain pixel-art images (not lucide), so give them a fixed size
-   next to the button label instead of relying on an SVG's intrinsic size. */
+/* Icons are plain image assets (not lucide), so give them a fixed size next to
+   the button label instead of relying on an SVG's intrinsic size. These indigolay
+   icons are detailed art, not native-res pixel art, so override the global
+   `image-rendering: pixelated` with smooth scaling — nearest-neighbor at this
+   non-integer size looks blocky. */
 .credits-modal-nav-icon {
   width: 22px;
   height: 22px;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
   flex-shrink: 0;
+}
+
+/* The Graphics/Audio menu buttons have more room than the compact Back pill,
+   so give their icons a larger presence (Back keeps the 22px base above). */
+.credits-modal-menu .credits-modal-nav-icon {
+  width: 30px;
+  height: 30px;
 }
 
 /* Ensure the pill-shaped ToffecButton never clips the icon */
