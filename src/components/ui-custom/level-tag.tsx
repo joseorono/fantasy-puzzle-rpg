@@ -1,4 +1,5 @@
-import { cn, formatLevel } from '~/lib/utils';
+import { cn } from '~/lib/utils';
+import { formatLevel } from '~/lib/text-utils';
 
 interface LevelTagProps {
   level: number;

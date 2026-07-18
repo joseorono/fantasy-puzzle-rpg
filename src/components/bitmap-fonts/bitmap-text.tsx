@@ -5,6 +5,8 @@
  * character map, then delegates rendering to {@link BitmapText}.
  */
 
+import { normalizeForBitmap } from '~/lib/text-utils';
+
 /* ------------------------------------------------------------------ */
 /*  Shared types & helpers                                             */
 /* ------------------------------------------------------------------ */
@@ -62,11 +64,6 @@ export function buildCharMap(
 /** Scales ≥ this value use the pre-scaled 5× sheet for sharper results. */
 const HI_RES_THRESHOLD = 5;
 
-const GLYPH_FALLBACKS: Record<string, string> = {
-  '–': '-',
-  '—': '-',
-};
-
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -113,17 +110,18 @@ export function BitmapText({ text, size = 1, config, charMap, sheetRows }: Inter
     '--bf-gap': `${gap}px`,
   } as React.CSSProperties;
 
+  const displayText = normalizeForBitmap(text);
+
   return (
     <span className="bf-text" style={containerStyle}>
       <span className="sr-only">{text}</span>
       <span className="bf-row" aria-hidden="true">
-        {Array.from(text).map((char, i) => {
-          const displayChar = GLYPH_FALLBACKS[char] ?? char;
-          const pos = charMap.get(displayChar);
+        {Array.from(displayText).map((char, i) => {
+          const pos = charMap.get(char);
           if (!pos) {
             return <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />;
           }
-          const metric = proportional ? (metrics?.[displayChar] ?? defaultMetric) : undefined;
+          const metric = proportional ? (metrics?.[char] ?? defaultMetric) : undefined;
           const charStyle: React.CSSProperties = metric
             ? {
                 width: `${toPx(metric.w)}px`,
