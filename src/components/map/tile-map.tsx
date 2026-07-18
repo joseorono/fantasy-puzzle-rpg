@@ -28,7 +28,6 @@ import {
 import { getDungeonById } from '~/lib/dungeon-system';
 import { randomizeDungeon } from '~/lib/dungeon-randomizer';
 import type { DungeonDefinition } from '~/types/dungeon';
-import type { DungeonViewData } from '~/types/routing';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
@@ -84,7 +83,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
   const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
-  const [pendingDungeon, setPendingDungeon] = useState<DungeonViewData | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
   const [pulseAnimation, setPulseAnimation] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -401,14 +399,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       const nodeId = pendingFightNodeId;
       setPendingFightNodeId(null);
       startBattle(nodeId);
-      return;
-    }
-
-    // If a dungeon was pending after dialogue, descend now
-    if (pendingDungeon) {
-      const target = pendingDungeon;
-      setPendingDungeon(null);
-      routerActions.goToDungeon(target);
     }
   }
 
@@ -494,8 +484,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   }
 
   /**
-   * Launch a Dungeon node's dungeon. Plays the node's pre-entry dialogue event first
-   * (mirroring the pre-fight flow); a randomized run is always a fresh, non-replay run.
+   * Launch a Dungeon node's dungeon. A randomized run is always a fresh, non-replay run;
+   * an authored run respects prior completion.
    */
   function enterDungeon(node: InteractiveMapNode, { randomized }: { randomized: boolean }) {
     const base = resolveDungeon(node);
@@ -506,17 +496,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
     const dungeon = randomized ? randomizeDungeon(base) : base;
     const isReplay = randomized ? false : isDungeonCompleted(base.id);
-    const target: DungeonViewData = { dungeon, isReplay };
 
-    // If the node has a pre-entry dialogue event, play it first, then descend.
-    if (node.dialogueScene && MAP_00_DIALOGUE_SCENES[node.dialogueScene]) {
-      setPendingDungeon(target);
-      setDialogueKey((k) => k + 1);
-      setActiveDialogue(node.dialogueScene);
-      return;
-    }
-
-    routerActions.goToDungeon(target);
+    routerActions.goToDungeon({ dungeon, isReplay });
   }
 
   function handleNodeOpenChest() {

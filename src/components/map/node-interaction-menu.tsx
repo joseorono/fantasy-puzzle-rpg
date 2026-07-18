@@ -145,8 +145,7 @@ export function NodeInteractionMenu({
           </ToffecButton>
         )}
 
-        {/* Dungeon events play on descent, so no standalone Talk preview for them */}
-        {node.type !== 'Dungeon' && node.dialogueScene && onViewDialogue && (
+        {node.dialogueScene && onViewDialogue && (
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onViewDialogue}>
             <FrostyRpgIcon name="openBook" size={16} />
             Talk
