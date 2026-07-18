@@ -12,7 +12,8 @@ export function DamageNumber({ target }: DamageNumberProps) {
   const [animationKey, setAnimationKey] = useState(0);
 
   useEffect(() => {
-    if (lastDamage && lastDamage.target === target) {
+    // Skip fully-blocked hits (amount 0) — the Guard bar's "BLOCK!" popup is the feedback there.
+    if (lastDamage && lastDamage.target === target && lastDamage.amount > 0) {
       setDisplayDamage(lastDamage.amount);
       setVisible(true);
       setAnimationKey((prev) => prev + 1); // Force new animation
@@ -37,11 +38,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
           animation: 'damage-float 1.2s ease-out forwards',
         }}
       >
-        <DamageDisplay
-          amount={displayDamage}
-          type={displayDamage > 20 ? 'critical' : 'damage'}
-          className="text-4xl md:text-5xl"
-        />
+        <DamageDisplay amount={displayDamage} type="damage" className="text-4xl md:text-5xl" />
       </div>
 
       {/* Impact flash effect */}
@@ -55,42 +52,6 @@ export function DamageNumber({ target }: DamageNumberProps) {
           animation: 'flash-fade 0.3s ease-out forwards',
         }}
       />
-
-      {/* Additional smaller damage numbers for impact */}
-      {displayDamage > 15 && (
-        <>
-          <div
-            key={`extra1-${animationKey}`}
-            className={cn(
-              'pointer-events-none absolute top-1/3 left-1/3 z-15',
-              'pixel-font-alt text-3xl font-bold md:text-4xl',
-              target === 'enemy' ? 'text-red-400' : 'text-orange-400',
-            )}
-            style={{
-              textShadow: '2px 2px 0px rgba(0,0,0,0.6)',
-              animation: 'damage-float 1s ease-out forwards',
-              animationDelay: '0.1s',
-            }}
-          >
-            -{Math.floor(displayDamage / 3)}
-          </div>
-          <div
-            key={`extra2-${animationKey}`}
-            className={cn(
-              'pointer-events-none absolute top-1/3 right-1/3 z-15',
-              'pixel-font-alt text-3xl font-bold md:text-4xl',
-              target === 'enemy' ? 'text-red-400' : 'text-orange-400',
-            )}
-            style={{
-              textShadow: '2px 2px 0px rgba(0,0,0,0.6)',
-              animation: 'damage-float 1s ease-out forwards',
-              animationDelay: '0.15s',
-            }}
-          >
-            -{Math.floor(displayDamage / 4)}
-          </div>
-        </>
-      )}
     </>
   );
 }

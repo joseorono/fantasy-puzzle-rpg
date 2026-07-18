@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { calculateExpToNextLevel, getRandomPotentialStats, levelUp } from './leveling-system';
+import { getRandomPotentialStats, levelUp } from './leveling-system';
 import type { CharacterData, CoreRPGStats } from '~/types';
 
 const createTestCharacter = (): CharacterData => ({
@@ -16,25 +16,13 @@ const createTestCharacter = (): CharacterData => ({
   skillCooldown: 0,
   maxCooldown: 10,
   level: 1,
-  expToNextLevel: 1,
+  currentLevelExp: 0,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
 });
 
 const chosenStat: CoreRPGStats = { pow: 1, vit: 1, spd: 0 };
 const randomStats: CoreRPGStats = { pow: 1, vit: 0, spd: 1 };
-
-describe('calculateExpToNextLevel', () => {
-  bench('level 1', () => {
-    calculateExpToNextLevel(1);
-  });
-
-  bench('level 10', () => {
-    calculateExpToNextLevel(10);
-  });
-
-  bench('level 50', () => {
-    calculateExpToNextLevel(50);
-  });
-});
 
 describe('getRandomPotentialStats', () => {
   bench('1 stat increase (includes setup)', () => {

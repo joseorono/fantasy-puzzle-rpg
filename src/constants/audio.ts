@@ -22,6 +22,8 @@ export enum SoundNames {
   startMenuMusic = 'startMenuMusic',
   bossFight = 'bossFight',
   fightMusicLoop = 'fightMusicLoop',
+  levelUp = 'levelUp',
+  rhodesmasChime = 'rhodesmasChime',
 }
 
 export const soundFiles = {
@@ -48,6 +50,8 @@ export const soundFiles = {
   [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.wav',
   [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.wav',
   [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.wav',
+  [SoundNames.levelUp]: '/assets/audio/ui/levelup.ogg',
+  [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
 };
 
 // Background sounds for the town hub (randomly selected on entry)
@@ -56,3 +60,9 @@ export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFa
 // Volume range for match-3 sounds (scaled by match size)
 export const MIN_MATCH_SOUND_VOLUME = 0.6;
 export const MAX_MATCH_SOUND_VOLUME = 1;
+
+/**
+ * Sound played when wildcard bomb orbs explode. Set to `null` to disable.
+ * Temporary: reuses the uncork SFX until a dedicated explosion sound exists.
+ */
+export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;

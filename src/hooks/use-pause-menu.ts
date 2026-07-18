@@ -1,18 +1,23 @@
 import { useEffect } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { isPauseMenuOpenAtom, activeMenuTabAtom } from '~/stores/pause-menu-atoms';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
+import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
 import { useCurrentView } from '~/stores/game-store';
+import { KeyboardKeys } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import type { ViewType } from '~/types/routing';
 
-const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards'];
+const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards', 'town-hub'];
 
 export function usePauseMenu() {
   const [isOpen, setIsOpen] = useAtom(isPauseMenuOpenAtom);
   const [activeTab, setActiveTab] = useAtom(activeMenuTabAtom);
   const currentView = useCurrentView();
+  const isDialogueActive = useAtomValue(isDialogueActiveAtom);
 
-  const isDisabled = DISABLED_VIEWS.includes(currentView);
+  // Blocked on certain views, and never opened over an active dialogue.
+  const isDisabled = DISABLED_VIEWS.includes(currentView) || isDialogueActive;
 
   function open() {
     if (isDisabled) return;
@@ -36,24 +41,20 @@ export function usePauseMenu() {
     setActiveTab(tab);
   }
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        toggle();
-      }
+  useWindowKeyDown((e) => {
+    if (e.key === KeyboardKeys.Escape) {
+      e.preventDefault();
+      toggle();
     }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
-  // Auto-close if navigating to a disabled view while open
+  // Auto-close if the menu becomes disabled while open (navigated to a disabled
+  // view, or a dialogue started).
   useEffect(() => {
     if (isOpen && isDisabled) {
       close();
     }
-  }, [currentView]);
+  }, [currentView, isDialogueActive]);
 
   return { isOpen, isDisabled, activeTab, open, close, toggle, selectTab };
 }

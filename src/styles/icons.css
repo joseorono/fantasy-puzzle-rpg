@@ -13,3 +13,14 @@
   flex-shrink: 0;
   background-repeat: no-repeat;
 }
+
+/*
+  Indigolay icons are detailed art, not native-res pixel art, so they must opt
+  out of the global `image-rendering: pixelated` (index.css `@layer base`) —
+  nearest-neighbor scaling makes them look blocky. Matched by path so every
+  indigolay icon renders smoothly without a per-usage class; this rule is
+  unlayered, so it wins over the layered base rule.
+*/
+img[src*='/icons/indigolay/'] {
+  image-rendering: auto;
+}

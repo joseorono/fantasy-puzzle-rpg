@@ -131,6 +131,13 @@ export function goToBattleDemo(currentState: RouterState, data: ViewDataMap['bat
 }
 
 /**
+ * Navigate to a dungeon run with required data
+ */
+export function goToDungeon(currentState: RouterState, data: ViewDataMap['dungeon']): NavigationResult {
+  return prepareNavigation(currentState, 'dungeon', data);
+}
+
+/**
  * Navigate to map demo
  */
 export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-demo']): NavigationResult {
@@ -171,7 +178,7 @@ export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']
  * returns to the view before battle (map, town, etc.) instead of back to battle.
  */
 export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
-  if (!canNavigate(currentState, 'battle-rewards')) {
+  if (!canNavigate()) {
     return {
       success: false,
       error: `Cannot navigate from ${currentState.currentView} to battle-rewards`,

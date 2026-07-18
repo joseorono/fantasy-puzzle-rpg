@@ -6,6 +6,8 @@
    Individual item slots styled to match the board's background. */
 
 .battle-item-slot {
+  width: 59.2px;
+  height: 76.2px;
   background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   background-size: 50px 50px;
@@ -41,4 +43,113 @@
   background: url('/assets/icons/skull-frostyrabbid.png') center / 90% no-repeat;
   pointer-events: none;
   opacity: 0.85;
+}
+
+/* ─── Guard Meter Feedback ───────────────────────────────────────────
+   The party Guard bar charges from gray matches and blocks enemy hits.
+   These animations keep charging/blocking reactive instead of a plain fill. */
+
+/* steelArmor icon pops each time guard is gained */
+.guard-icon-charging {
+  animation: guardIconCharge 0.45s ease-out;
+}
+
+@keyframes guardIconCharge {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* steelArmor icon glows steadily while the bar is full (a block is "loaded") */
+.guard-icon-full {
+  animation: guardIconFull 1.1s ease-in-out infinite;
+}
+
+@keyframes guardIconFull {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(186, 230, 253, 0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(186, 230, 253, 1));
+  }
+}
+
+/* Full bar pulses a ready-to-block ring */
+.guard-bar-full {
+  animation: guardBarFull 1.1s ease-in-out infinite;
+}
+
+@keyframes guardBarFull {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(186, 230, 253, 0);
+  }
+  50% {
+    box-shadow: 0 0 6px 1px rgba(186, 230, 253, 0.8);
+  }
+}
+
+/* Shimmer sweep across the fill while charging */
+.guard-shimmer {
+  animation: guardShimmer 0.45s ease-out;
+}
+
+@keyframes guardShimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* White flash that shatters outward when a hit is guarded/blocked */
+.guard-shatter {
+  animation: guardShatter 0.45s ease-out forwards;
+}
+
+@keyframes guardShatter {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/* "BLOCK!" / "GUARD" popup rises and fades */
+.guard-block-popup {
+  animation: guardBlockPopup 0.8s ease-out forwards;
+}
+
+@keyframes guardBlockPopup {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.15);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
 }

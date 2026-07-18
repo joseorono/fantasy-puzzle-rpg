@@ -1,4 +1,5 @@
 import type { CharacterData } from '~/types/rpg-elements';
+import type { RarityTier } from '~/constants/rarity';
 import type { BaseSlice } from '../../types/store';
 import type { EquipmentSlot } from '~/lib/equipment-system';
 
@@ -16,10 +17,14 @@ export interface PartyActions {
   setParty: (party: CharacterData[]) => void;
   updateCharacter: (characterId: string, character: CharacterData) => void;
   fullyHealParty: () => void;
+  fullyHealMember: (characterId: string) => void;
   isPartyFullyHealed: () => boolean;
   damageAllPartyMembers: (damage: number, canDie: boolean) => void;
-  equipItem: (characterId: string, itemId: string, slot: EquipmentSlot) => void;
+  syncBattleHp: (battleParty: CharacterData[]) => void;
+  equipItem: (characterId: string, itemId: string, slot: EquipmentSlot, rarity?: RarityTier) => void;
   unequipItem: (characterId: string, slot: EquipmentSlot) => void;
+  unlockSkillForCharacter: (characterId: string, skillId: string) => void;
+  selectSkillForCharacter: (characterId: string, skillId: string) => void;
 }
 
 /**

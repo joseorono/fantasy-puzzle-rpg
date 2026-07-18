@@ -1,4 +1,5 @@
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
 
 /**
  * Available views in the game
@@ -11,7 +12,8 @@ export type ViewType =
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
-  | 'battle-rewards';
+  | 'battle-rewards'
+  | 'dungeon';
 
 /**
  * Data for town hub view
@@ -36,42 +38,45 @@ export interface BattleViewData {
   enemyId: string;
   location?: string;
   canFlee?: boolean;
+  /** Background image URL for the battle panels; falls back to the default art. */
+  bgImage?: string;
 }
 
 /**
- * Data for map demo view
+ * Data for the dungeon view. The full dungeon object is passed by reference (authored
+ * dungeons are module constants; generated/randomized ones are one-off objects), so a run
+ * needs no registry lookup and future multi-dungeon locations can hand off any definition.
+ * `isReplay` is computed at entry from completion state.
  */
-export interface MapDemoViewData {
-  // No specific data needed for demo
+export interface DungeonViewData {
+  dungeon: DungeonDefinition;
+  isReplay: boolean;
 }
 
 /**
- * Data for map demo 2 view
+ * Data for map demo view (no specific data needed for demo)
  */
-export interface MapDemo2ViewData {
-  // No specific data needed for demo
-}
+export type MapDemoViewData = object;
 
 /**
- * Data for dialogue demo view
+ * Data for map demo 2 view (no specific data needed for demo)
  */
-export interface DialogueDemoViewData {
-  // No specific data needed for demo
-}
+export type MapDemo2ViewData = object;
 
 /**
- * Data for inventory view
+ * Data for dialogue demo view (no specific data needed for demo)
  */
-export interface InventoryViewData {
-  // No specific data needed for now
-}
+export type DialogueDemoViewData = object;
 
 /**
- * Data for debug view
+ * Data for inventory view (no specific data needed for now)
  */
-export interface DebugViewData {
-  // No specific data needed
-}
+export type InventoryViewData = object;
+
+/**
+ * Data for debug view (no specific data needed)
+ */
+export type DebugViewData = object;
 
 /**
  * Data for battle rewards view
@@ -79,6 +84,8 @@ export interface DebugViewData {
 export interface BattleRewardsViewData {
   lootTable: LootTable;
   expReward: number;
+  /** Battle-rating loot bonus already applied to the resources (for the "×N LOOT" badge). */
+  lootMultiplier?: number;
 }
 
 /**
@@ -93,6 +100,7 @@ export interface ViewDataMap {
   inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
+  dungeon: DungeonViewData;
 }
 
 /**
@@ -105,7 +113,8 @@ export type RouteStatus = TownHubViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &
-  BattleRewardsViewData;
+  BattleRewardsViewData &
+  DungeonViewData;
 
 /**
  * Router state

@@ -50,3 +50,6 @@ current-prompt.md
 
 # Tiled session files
 *.tiled-session
+
+# Developer-local Claude Code config (tool permissions, etc.)
+.claude/settings.local.json

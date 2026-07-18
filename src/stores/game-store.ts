@@ -13,6 +13,10 @@ import type { MapProgressSlice } from './slices/map-progress.types';
 import { createMapProgressSlice } from './slices/map-progress';
 import type { FloorLootProgressSlice } from './slices/floor-loot-progress.types';
 import { createFloorLootProgressSlice } from './slices/floor-loot-progress';
+import type { CraftingSlice } from './slices/crafting.types';
+import { createCraftingSlice } from './slices/crafting';
+import type { DungeonProgressSlice } from './slices/dungeon-progress.types';
+import { createDungeonProgressSlice } from './slices/dungeon-progress';
 import { GAME_STORE_NAME } from '~/constants/game';
 
 /**
@@ -25,12 +29,16 @@ export type GameStore = {
   router: RouterSlice['router'];
   mapProgress: MapProgressSlice['mapProgress'];
   floorLootProgress: FloorLootProgressSlice['floorLootProgress'];
+  crafting: CraftingSlice['crafting'];
+  dungeonProgress: DungeonProgressSlice['dungeonProgress'];
   actions: ResourcesSlice['actions'] &
     PartySlice['actions'] &
     InventorySlice['actions'] &
     RouterSlice['actions'] &
     MapProgressSlice['actions'] &
-    FloorLootProgressSlice['actions'];
+    FloorLootProgressSlice['actions'] &
+    CraftingSlice['actions'] &
+    DungeonProgressSlice['actions'];
   reset?: () => void;
 };
 
@@ -41,11 +49,13 @@ export const useGameStore = create<GameStore>()(
   devtools(
     immer((set, get) => {
       const resourcesSlice = createResourcesSlice(set);
-      const partySlice = createPartySlice(set);
+      const partySlice = createPartySlice(set, get);
       const inventorySlice = createInventorySlice(set);
       const routerSlice = createRouterSlice(set);
       const mapProgressSlice = createMapProgressSlice(set, get);
       const floorLootProgressSlice = createFloorLootProgressSlice(set, get);
+      const craftingSlice = createCraftingSlice(set);
+      const dungeonProgressSlice = createDungeonProgressSlice(set, get);
       return {
         ...resourcesSlice,
         ...partySlice,
@@ -53,6 +63,8 @@ export const useGameStore = create<GameStore>()(
         ...routerSlice,
         ...mapProgressSlice,
         ...floorLootProgressSlice,
+        ...craftingSlice,
+        ...dungeonProgressSlice,
         actions: {
           ...resourcesSlice.actions,
           ...partySlice.actions,
@@ -60,6 +72,8 @@ export const useGameStore = create<GameStore>()(
           ...routerSlice.actions,
           ...mapProgressSlice.actions,
           ...floorLootProgressSlice.actions,
+          ...craftingSlice.actions,
+          ...dungeonProgressSlice.actions,
         },
       };
     }),
@@ -131,4 +145,21 @@ export const useMapProgressActions = () => useGameStore((state) => state.actions
  */
 export const useFloorLootProgressState = () => useGameStore((state) => state.floorLootProgress);
 export const useFloorLootProgressActions = () => useGameStore((state) => state.actions.floorLootProgress);
+
+/**
+ * Selector hooks for crafting slice
+ */
+export const useCraftingState = () => useGameStore((state) => state.crafting);
+export const useCraftingActions = () => useGameStore((state) => state.actions.crafting);
+
+/**
+ * Get the current crafting pity counter
+ */
+export const useCraftingPity = () => useGameStore((state) => state.crafting.pity);
+
+/**
+ * Selector hooks for dungeon progress slice
+ */
+export const useDungeonProgressState = () => useGameStore((state) => state.dungeonProgress);
+export const useDungeonProgressActions = () => useGameStore((state) => state.actions.dungeonProgress);
 

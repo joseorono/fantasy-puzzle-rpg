@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterData } from '~/types/rpg-elements';
 import {
   fullyHealParty,
+  fullyHealMember,
   isPartyFullyHealed,
   damageAllPartyMembers,
   getLivingMembers,
@@ -9,6 +10,7 @@ import {
   damagePartyMember,
   healPartyMember,
   healAllLivingPartyMembers,
+  healAllByMaxHpPercent,
   isPartyDefeated,
 } from './party-system';
 
@@ -26,7 +28,9 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   baseHp: 100,
   potentialStats: { pow: 15, vit: 20, spd: 5 },
   level: 1,
-  expToNextLevel: 100,
+  currentLevelExp: 100,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
   ...overrides,
 });
 
@@ -305,6 +309,51 @@ describe('party system utilities', () => {
     });
   });
 
+  describe('fullyHealMember', () => {
+    it('should fully heal only the targeted member', () => {
+      const result = fullyHealMember(testParty, 'mage');
+      expect(result[0].currentHp).toBe(50); // unchanged
+      expect(result[1].currentHp).toBe(30); // unchanged
+      expect(result[2].currentHp).toBe(50); // healed to maxHp
+    });
+
+    it('should heal the targeted member from any HP to maxHp', () => {
+      const result = fullyHealMember(testParty, 'warrior');
+      expect(result[0].currentHp).toBe(100); // maxHp
+    });
+
+    it('should not modify the targeted member maxHp', () => {
+      const result = fullyHealMember(testParty, 'rogue');
+      expect(result[1].maxHp).toBe(60);
+    });
+
+    it('should preserve other character properties', () => {
+      const result = fullyHealMember(testParty, 'warrior');
+      expect(result[0].name).toBe('Warrior');
+      expect(result[0].class).toBe('warrior');
+      expect(result[0].stats.pow).toBe(15);
+    });
+
+    it('should leave an already fully healed member unchanged', () => {
+      const party = [createTestCharacter({ id: 'full', currentHp: 100, maxHp: 100 })];
+      const result = fullyHealMember(party, 'full');
+      expect(result[0].currentHp).toBe(100);
+    });
+
+    it('should return unchanged party if characterId not found', () => {
+      const result = fullyHealMember(testParty, 'nonexistent');
+      expect(result[0].currentHp).toBe(50);
+      expect(result[1].currentHp).toBe(30);
+      expect(result[2].currentHp).toBe(20);
+    });
+
+    it('should not mutate original party', () => {
+      const original = testParty.map((c) => ({ ...c }));
+      fullyHealMember(testParty, 'mage');
+      expect(testParty[2].currentHp).toBe(original[2].currentHp);
+    });
+  });
+
   describe('healAllLivingPartyMembers', () => {
     it('should heal all living members clamped to maxHp', () => {
       const result = healAllLivingPartyMembers(testParty, 999);
@@ -321,6 +370,47 @@ describe('party system utilities', () => {
       const result = healAllLivingPartyMembers(party, 25);
       expect(result[0].currentHp).toBe(0);
       expect(result[1].currentHp).toBe(35);
+    });
+  });
+
+  describe('healAllByMaxHpPercent', () => {
+    it('heals living members by a percentage of their own max HP', () => {
+      // warrior 50/100 +10% -> 60; rogue 30/60 +10% -> 36; mage 20/50 +10% -> 25
+      const result = healAllByMaxHpPercent(testParty, 0.1);
+      expect(result[0].currentHp).toBe(60);
+      expect(result[1].currentHp).toBe(36);
+      expect(result[2].currentHp).toBe(25);
+    });
+
+    it('rounds the heal amount up (ceil)', () => {
+      // 55 max * 10% = 5.5 -> ceil 6
+      const party = [createTestCharacter({ currentHp: 10, maxHp: 55 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(16);
+    });
+
+    it('clamps living members to max HP', () => {
+      const party = [createTestCharacter({ currentHp: 98, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(100);
+    });
+
+    it('revives dead members to 1 HP by default', () => {
+      const party = [createTestCharacter({ id: 'dead', currentHp: 0, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1);
+      expect(result[0].currentHp).toBe(1);
+    });
+
+    it('revives dead members to revivePercent of max HP when provided', () => {
+      const party = [createTestCharacter({ id: 'dead', currentHp: 0, maxHp: 100 })];
+      const result = healAllByMaxHpPercent(party, 0.1, 0.25);
+      expect(result[0].currentHp).toBe(25);
+    });
+
+    it('does not mutate the original party', () => {
+      const original = testParty.map((c) => ({ ...c }));
+      healAllByMaxHpPercent(testParty, 0.1);
+      expect(testParty[0].currentHp).toBe(original[0].currentHp);
     });
   });
 

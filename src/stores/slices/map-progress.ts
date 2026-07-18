@@ -1,4 +1,5 @@
 import type { MapProgressSlice, MapNodeType } from './map-progress.types';
+import type { SliceSet, SliceGet } from '~/types/store';
 
 /**
  * Initial map progress state
@@ -20,7 +21,10 @@ const INITIAL_MAP_PROGRESS_STATE = {
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => ({
+export const createMapProgressSlice = (
+  set: SliceSet<MapProgressSlice>,
+  get: SliceGet<MapProgressSlice>,
+): MapProgressSlice => ({
   mapProgress: INITIAL_MAP_PROGRESS_STATE,
 
   actions: {

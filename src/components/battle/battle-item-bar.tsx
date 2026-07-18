@@ -8,6 +8,7 @@ import {
   clearBoardRowAtom,
   clearBoardColumnAtom,
   fillPartyUltimateAtom,
+  recordItemUsedAtom,
   gameStatusAtom,
   partyAtom,
 } from '~/stores/battle-atoms';
@@ -19,7 +20,11 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import type { ConsumableItemData } from '~/types';
 
-export function BattleItemBar() {
+interface BattleItemBarProps {
+  isBattlePaused: boolean;
+}
+
+export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -28,6 +33,7 @@ export function BattleItemBar() {
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
+  const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
   const cooldownDuration = calculateItemCooldownInMs(party);
 
@@ -61,7 +67,7 @@ export function BattleItemBar() {
   const battleItems = ConsumableItems.filter((item) => item.usableInBattle && item.action);
 
   const handleUseItem = (item: ConsumableItemData) => {
-    if (gameStatus !== 'playing' || isOnCooldown) return;
+    if (gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown) return;
 
     const quantity = getItemQuantity(inventory, item.id);
     if (quantity <= 0 || !item.action) return;
@@ -82,6 +88,8 @@ export function BattleItemBar() {
     }
 
     inventoryActions.removeItem(item.id);
+    // Count this consumption for the victory rating (items used is a penalty).
+    recordItemUsed();
 
     // Start shared cooldown
     cooldownEndRef.current = Date.now() + cooldownDuration;
@@ -97,7 +105,7 @@ export function BattleItemBar() {
       {battleItems.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
-        const isDisabled = isEmpty || gameStatus !== 'playing' || isOnCooldown;
+        const isDisabled = isEmpty || gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown;
 
         return (
           <ToffecBeigeCornersWrapper key={item.id}>
@@ -107,7 +115,7 @@ export function BattleItemBar() {
                   onClick={() => handleUseItem(item)}
                   disabled={isDisabled}
                   className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-                    isEmpty || gameStatus !== 'playing'
+                    isEmpty || gameStatus !== 'playing' || isBattlePaused === true
                       ? 'cursor-not-allowed opacity-40'
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   }`}
@@ -132,7 +140,7 @@ export function BattleItemBar() {
               )}
             </button>
               </TooltipTrigger>
-              <TooltipContent>{item.name}: {item.description}</TooltipContent>
+              <TooltipContent className="battle-item-tooltip">{item.name}: {item.description}</TooltipContent>
             </Tooltip>
           </ToffecBeigeCornersWrapper>
         );

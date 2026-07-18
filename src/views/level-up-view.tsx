@@ -1,16 +1,20 @@
-import { useState } from 'react';
-import { ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowRightIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { LevelTag } from '~/components/ui-custom/level-tag';
+import { usePressAndHold } from '~/hooks/use-press-and-hold';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -45,21 +49,50 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
     spd: character.stats.spd + pendingAllocations.spd,
   };
 
-  function handleIncreaseStat(stat: StatType) {
-    if (pointsRemaining <= 0) return;
-    setPendingAllocations((prev) => ({
-      ...prev,
-      [stat]: prev[stat] + 1,
-    }));
+  // Mirror the latest allocation state into refs so the accelerating press-and-hold train (which
+  // fires from setTimeout callbacks) can guard itself without stale closures. Optimistically
+  // adjusted on each step and resynced to the committed state every render.
+  const pointsRemainingRef = useRef(pointsRemaining);
+  pointsRemainingRef.current = pointsRemaining;
+  const pendingRef = useRef(pendingAllocations);
+  pendingRef.current = pendingAllocations;
+
+  // Returns whether a point was actually allocated, so the hold train stops once points run out.
+  function handleIncreaseStat(stat: StatType): boolean {
+    if (pointsRemainingRef.current <= 0) return false;
+    pointsRemainingRef.current -= 1; // optimistic; resynced on next render
+    setPendingAllocations((prev) => {
+      const spent = prev.pow + prev.vit + prev.spd;
+      if (spent >= availablePoints) return prev; // hard cap — never overspend
+      return { ...prev, [stat]: prev[stat] + 1 };
+    });
+    return true;
   }
 
-  function handleDecreaseStat(stat: StatType) {
-    if (pendingAllocations[stat] <= 0) return;
-    setPendingAllocations((prev) => ({
-      ...prev,
-      [stat]: prev[stat] - 1,
-    }));
+  // Returns whether a point was actually refunded, so the hold train stops at zero.
+  function handleDecreaseStat(stat: StatType): boolean {
+    if (pendingRef.current[stat] <= 0) return false;
+    pendingRef.current = { ...pendingRef.current, [stat]: pendingRef.current[stat] - 1 }; // optimistic
+    pointsRemainingRef.current += 1;
+    setPendingAllocations((prev) => {
+      if (prev[stat] <= 0) return prev;
+      return { ...prev, [stat]: prev[stat] - 1 };
+    });
+    return true;
   }
+
+  // Press-and-hold bindings (accelerating auto-repeat) for each +/- button. onClick still handles
+  // the single step for a plain click / keyboard, so holds never double-count.
+  const holdIncrease = {
+    pow: usePressAndHold(() => handleIncreaseStat('pow')),
+    vit: usePressAndHold(() => handleIncreaseStat('vit')),
+    spd: usePressAndHold(() => handleIncreaseStat('spd')),
+  };
+  const holdDecrease = {
+    pow: usePressAndHold(() => handleDecreaseStat('pow')),
+    vit: usePressAndHold(() => handleDecreaseStat('vit')),
+    spd: usePressAndHold(() => handleDecreaseStat('spd')),
+  };
 
   function handleReset() {
     setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
@@ -75,19 +108,14 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
   const expPercentage =
-    character.expToNextLevel > 0
-      ? Math.min(100, (character.expToNextLevel / calculateExpToNextLevel(character.level)) * 100)
+    character.currentLevelExp > 0
+      ? Math.min(100, (character.currentLevelExp / getExpThresholdForLevel(character.level)) * 100)
       : 0;
 
   // Calculate HP delta from VIT changes
   const currentMaxHp = character.maxHp;
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
   const maxHpDelta = previewMaxHp - currentMaxHp;
-
-  // Helper function for exp calculation (simplified for display)
-  function calculateExpToNextLevel(level: number): number {
-    return Math.floor(Math.exp(level));
-  }
 
   const maxStatValue = 100; // For meter display
 
@@ -121,16 +149,13 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           {/* Left Column - Character Info & Derived Stats */}
           <div className="character-info-panel">
             <div className="character-identity">
-              <div style={{ position: 'relative' }}>
+              <div className="portrait-badge-wrap">
                 <img
                   src="/assets/portraits/Innkeeper_02.png"
                   alt={character.name}
                   className="character-portrait-small pixel-art"
                 />
-                <div className="level-badge pixel-border pixel-font text-xs">
-                  {character.level}
-                  <ArrowUpIcon className="level-badge-arrow" />
-                </div>
+                <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>
@@ -144,7 +169,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <ExperienceBar
                 percentage={expPercentage}
-                label={`${character.expToNextLevel} / ${calculateExpToNextLevel(character.level)}`}
+                label={`${character.currentLevelExp} / ${getExpThresholdForLevel(character.level)}`}
                 variant="full"
               />
             </div>
@@ -299,24 +324,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('pow')}
+                    {...holdDecrease.pow}
                     disabled={pendingAllocations.pow === 0}
                     aria-label="Decrease Power"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('pow')}
+                    {...holdIncrease.pow}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Power"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>
@@ -365,24 +392,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('vit')}
+                    {...holdDecrease.vit}
                     disabled={pendingAllocations.vit === 0}
                     aria-label="Decrease Vitality"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('vit')}
+                    {...holdIncrease.vit}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Vitality"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>
@@ -415,7 +444,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
               </div>
               <p className="stat-hint pixel-font text-xs">
-                Reduces skill cooldowns.{' '}
+                Reduces skill &amp; item cooldowns and charges Guard faster.{' '}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="info-icon cursor-help">ⓘ</span>
@@ -424,6 +453,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     -Reduces ultimate skill cooldown
                     <br />
                     -Reduces item cooldowns in battle
+                    <br />
+                    -Charges the party Guard meter faster
                   </TooltipContent>
                 </Tooltip>
               </p>
@@ -435,24 +466,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="minus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleDecreaseStat('spd')}
+                    {...holdDecrease.spd}
                     disabled={pendingAllocations.spd === 0}
                     aria-label="Decrease Speed"
-                  >
-                    −
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
                 <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
+                  <ToffecSquareButton
+                    icon="plus"
+                    variant="medieval1"
+                    size="default"
                     onClick={() => handleIncreaseStat('spd')}
+                    {...holdIncrease.spd}
                     disabled={pointsRemaining === 0}
                     aria-label="Increase Speed"
-                  >
-                    +
-                  </button>
+                  />
                 </ToffecBeigeCornersWrapper>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { combineLootFromEnemies } from './loot';
+import { combineLootFromEnemies, applyLootTable } from './loot';
 import { createEmptyLootTable, createLootTable } from '~/types/loot';
+import { createResources } from './resources';
 import type { EnemyData } from '~/types/rpg-elements';
 import type { ProbabilityNumber } from '~/types/number-types';
 import type { EquipmentItemData, ConsumableItemData } from '~/types/inventory';
@@ -126,6 +127,49 @@ describe('combineLootFromEnemies', () => {
     expect(result.lootTable.resources.probability).toBe(1);
   });
 
+  it('scales money + resources by the multiplier (floored), leaving items and XP untouched', () => {
+    const enemy = createEnemy({
+      expReward: 40,
+      lootTable: createLootTable(
+        [{ item: mockSword }],
+        [{ item: mockPotion }],
+        { item: { coins: 10, gold: 5, copper: 3, silver: 1, iron: 2 } },
+      ),
+    });
+
+    const result = combineLootFromEnemies([enemy], 1.5);
+
+    // Resources scaled and floored: 10→15, 5→7, 3→4, 1→1, 2→3.
+    expect(result.lootTable.resources.item).toEqual({
+      coins: 15,
+      gold: 7,
+      copper: 4,
+      silver: 1,
+      iron: 3,
+    });
+    // Items and XP are never scaled.
+    expect(result.lootTable.equipableItems).toHaveLength(1);
+    expect(result.lootTable.equipableItems[0].item).toBe(mockSword);
+    expect(result.lootTable.consumableItems).toHaveLength(1);
+    expect(result.expReward).toBe(40);
+  });
+
+  it('multiplier of 1 (default) leaves resources unchanged', () => {
+    const enemy = createEnemy({
+      lootTable: createLootTable([], [], { item: { coins: 10, gold: 5, iron: 2 } }),
+    });
+    const withDefault = combineLootFromEnemies([enemy]);
+    const withOne = combineLootFromEnemies([enemy], 1);
+    expect(withOne.lootTable.resources.item).toEqual(withDefault.lootTable.resources.item);
+    expect(withOne.lootTable.resources.item).toEqual({
+      coins: 10,
+      gold: 5,
+      copper: 0,
+      silver: 0,
+      iron: 2,
+    });
+  });
+
   it('should concatenate equipable items from all enemies', () => {
     const enemies = [
       createEnemy({
@@ -187,5 +231,51 @@ describe('combineLootFromEnemies', () => {
     expect(result.lootTable.consumableItems).toEqual([]);
     expect(result.lootTable.resources.item.coins).toBe(100);
     expect(result.lootTable.resources.item.gold).toBe(50);
+  });
+});
+
+describe('applyLootTable', () => {
+  it('adds guaranteed equipment, consumables, and resources to a snapshot', () => {
+    const loot = createLootTable(
+      [{ item: mockSword }],
+      [{ item: mockPotion }],
+      { item: { coins: 25, gold: 5 } },
+    );
+
+    const result = applyLootTable(loot, [], createResources({ coins: 10 }));
+
+    // One equipment stack (with a rolled rarity) + one consumable stack
+    const sword = result.inventory.find((i) => i.itemId === 'sword-1');
+    const potion = result.inventory.find((i) => i.itemId === 'potion-1');
+    expect(sword?.quantity).toBe(1);
+    expect(sword?.rarity).toBeDefined();
+    expect(potion?.quantity).toBe(1);
+    expect(potion?.rarity).toBeUndefined();
+
+    expect(result.resources.coins).toBe(35);
+    expect(result.resources.gold).toBe(5);
+  });
+
+  it('rolls a rarity for each equipment entry in rolledLoot', () => {
+    const loot = createLootTable([{ item: mockSword }]);
+    const result = applyLootTable(loot, [], createResources());
+    expect(result.rolledLoot.equipableItems[0].rarity).toBeDefined();
+  });
+
+  it('skips entries whose probability roll fails', () => {
+    const loot = createLootTable([{ item: mockSword, probability: 0 as ProbabilityNumber }]);
+    const result = applyLootTable(loot, [], createResources());
+    expect(result.inventory).toHaveLength(0);
+  });
+
+  it('does not mutate the input inventory or resources', () => {
+    const inventory = [{ itemId: 'existing', quantity: 1 }];
+    const resources = createResources({ coins: 10 });
+    const loot = createLootTable([{ item: mockSword }], [], { item: { coins: 5 } });
+
+    applyLootTable(loot, inventory, resources);
+
+    expect(inventory).toHaveLength(1);
+    expect(resources.coins).toBe(10);
   });
 });

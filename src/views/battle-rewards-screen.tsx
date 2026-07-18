@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
+  EXP_COUNTER_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 import {
@@ -17,15 +18,37 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
+import { getNewlyUnlockableSkills } from '~/lib/skill-system';
+import { useUnlockSkill } from '~/hooks/use-unlock-skill';
+import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
+import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+
+/**
+ * Play the level-up jingle, throttled so the up-to-four party cards crossing a level on
+ * the same frame collapse into a single play instead of stacking into a loud blare.
+ * Sequential level-ups (≥ a segment apart) still each get their own play.
+ */
+let lastLevelUpSoundAt = -Infinity;
+function playLevelUpSound() {
+  const now = performance.now();
+  if (now - lastLevelUpSoundAt < 120) return;
+  lastLevelUpSoundAt = now;
+  soundService.playSound(SoundNames.levelUp, 0.8);
+}
 
 /**
  * Battle Rewards Screen View
@@ -35,6 +58,7 @@ export function BattleRewardsScreen() {
   const [step, setStep] = useState(1);
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
+  const { unlock } = useUnlockSkill();
   const routerActions = useRouterActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
@@ -70,7 +94,7 @@ export function BattleRewardsScreen() {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
   }
 
-  const { lootTable, expReward } = battleRewardsData;
+  const { lootTable, expReward, lootMultiplier } = battleRewardsData;
 
   const earnedResources: Resources = {
     coins: lootTable.resources?.item?.coins || 0,
@@ -90,7 +114,7 @@ export function BattleRewardsScreen() {
         (hasNoItems ? (
           <SkipToStep2 setStep={setStep} />
         ) : (
-          <ItemRewardsScreen lootTable={lootTable} onFinish={() => setStep(2)} />
+          <ItemRewardsScreen lootTable={lootTable} lootMultiplier={lootMultiplier} onFinish={() => setStep(2)} />
         ))}
 
       {/* Step 2: Show exp bar filling up */}
@@ -136,15 +160,23 @@ export function BattleRewardsScreen() {
           const displayCharacter: CharacterData = {
             ...charCopy,
             level: charCopy.level + totalLevelUps,
-            expToNextLevel: currentPending.remainingExp,
+            currentLevelExp: currentPending.remainingExp,
           };
+
+          // Auto-unlock any skills the character now qualifies for by level.
+          function unlockLevelSkills(leveledCharacter: CharacterData) {
+            for (const skill of getNewlyUnlockableSkills(leveledCharacter, leveledCharacter.level)) {
+              unlock(leveledCharacter.id, skill.id);
+            }
+          }
 
           function handleConfirm(allocatedStats: CoreRPGStats) {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
+            unlockLevelSkills(updatedCharacter);
             // Move to next character
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
@@ -154,8 +186,9 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply level-up with only random stats (no player allocation)
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
+            unlockLevelSkills(updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
           }
@@ -189,41 +222,16 @@ function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
  */
 interface ItemRewardsScreenProps {
   lootTable: LootTable;
+  /** Battle-rating loot bonus applied to the resources (shown as a badge when > 1). */
+  lootMultiplier?: number;
   onFinish: () => void;
 }
 
-const RESOURCE_CONFIG = [
-  {
-    key: 'coins' as keyof Resources,
-    label: 'Coins',
-    iconName: 'coinPurse' as const,
-    colorClass: 'rewards-resource-row--coins',
-  },
-  {
-    key: 'gold' as keyof Resources,
-    label: 'Gold',
-    iconName: 'goldBar' as const,
-    colorClass: 'rewards-resource-row--gold',
-  },
-  {
-    key: 'silver' as keyof Resources,
-    label: 'Silver',
-    iconName: 'silverBar' as const,
-    colorClass: 'rewards-resource-row--silver',
-  },
-  {
-    key: 'iron' as keyof Resources,
-    label: 'Iron',
-    iconName: 'ironBar' as const,
-    colorClass: 'rewards-resource-row--iron',
-  },
-  {
-    key: 'copper' as keyof Resources,
-    label: 'Copper',
-    iconName: 'copperBar' as const,
-    colorClass: 'rewards-resource-row--copper',
-  },
-];
+const RESOURCE_CONFIG = RESOURCE_DISPLAY_ORDER.map((key) => ({
+  key,
+  label: RESOURCE_LABELS[key],
+  iconName: RESOURCE_ICON_NAMES[key],
+}));
 
 interface RewardsResourcesPanelProps {
   earnedResources: Resources;
@@ -277,7 +285,7 @@ function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsRes
   );
 }
 
-function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
+function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewardsScreenProps) {
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
@@ -296,9 +304,9 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
       resourcesActions.addResources(earnedResources);
     }
 
-    // Add equipment items to inventory
+    // Add equipment items to inventory, carrying each drop's rolled rarity
     for (const entry of lootTable.equipableItems) {
-      inventoryActions.addItem(entry.item.id, 1);
+      inventoryActions.addItem(entry.item.id, 1, entry.rarity);
     }
 
     // Add consumable items to inventory
@@ -316,6 +324,11 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         <h1 className="victory-title rewards-section-title">
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
+        {lootMultiplier > 1 && (
+          <span className="rewards-loot-bonus pixel-font">
+            ×{lootMultiplier} Rating Bonus
+          </span>
+        )}
       </header>
 
       <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
@@ -330,9 +343,14 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
               <div className="item-entry-icon">
                 {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
               </div>
-              <span className="item-name">
+              <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
-                <span className="item-type">EQUIPMENT</span>
+                <span
+                  className="item-type"
+                  style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}
+                >
+                  {getRarityLabel(item.rarity)}
+                </span>
               </span>
             </li>
           ))}
@@ -369,24 +387,13 @@ interface ExpBarFillingUpProps {
 function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFillingUpProps) {
   const partyMembers = useParty();
   const partyActions = usePartyActions();
-  const [progress, setProgress] = useState(0);
-
-  // Pre-calculate which characters will level up
-  const [levelUpSet] = useState(() => {
-    const preview = partyMembers.map((member) => ({
-      ...member,
-      expToNextLevel: member.expToNextLevel + expReward,
-    }));
-    const pending = calculateLevelUpsForParty(preview, expReward);
-    return new Set(pending.filter((p) => p.pendingLevelUps > 0).map((p) => p.charId));
-  });
 
   function handleContinue() {
     // Apply exp to all party members and compute the updated party snapshot
     const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
       const updatedMember: CharacterData = {
         ...member,
-        expToNextLevel: member.expToNextLevel + expReward,
+        currentLevelExp: member.currentLevelExp + expReward,
       };
       partyActions.updateCharacter(member.id, updatedMember);
       return updatedMember;
@@ -395,22 +402,6 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
     onFinish(updatedPartyMembers);
   }
 
-  // Animate the exp bar
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 2;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return next;
-      });
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="exp-gained-container">
       <header className="exp-gained-header">
@@ -418,39 +409,119 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
         <h1 className="exp-gained-title rewards-section-title">
           <NarikWoodBitFont text="Exp Gained" size={2} />
         </h1>
-        <div className="exp-gained-amount number-flow-container">
-          <NumberFlow
-            value={expReward}
-            format={INTEGER_FORMAT}
-            prefix="+"
-            trend={1}
-            spinTiming={SNAPPY_SPIN_TIMING}
-            transformTiming={SNAPPY_TRANSFORM_TIMING}
-            opacityTiming={SNAPPY_OPACITY_TIMING}
-          />
+        {/* EXP total on a tan ribbon banner (reuses the title-sign artwork) so it reads
+            as a labelled reward rather than a bare number. */}
+        <div
+          className="exp-gained-ribbon title-sign title-sign--tan title-sign--text-dark"
+          style={{ '--ts-scale': 0.42 } as CSSProperties}
+        >
+          <span className="title-sign__text pixel-font number-flow-container">
+            <NumberFlow
+              value={expReward}
+              format={INTEGER_FORMAT}
+              prefix="+"
+              suffix=" EXP"
+              trend={1}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+          </span>
         </div>
       </header>
 
       <div className="character-cards-grid">
         {partyMembers.slice(0, 4).map((member) => (
-          <div key={member.id} className="character-card">
-            <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
-            <div className="character-info">
-              <h3 className="character-name">{member.name}</h3>
-              <div className="character-level">Lv {member.level}</div>
-              <div className="exp-gained-text">EXP +{expReward}</div>
-              <ExperienceBar percentage={progress} variant="compact" />
-            </div>
-            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP</div>}
-          </div>
+          <CharacterExpCard key={member.id} member={member} expReward={expReward} />
         ))}
       </div>
+
+      <IndigolayDivider variant="gold" className="rewards-divider" />
 
       <RewardsResourcesPanel earnedResources={earnedResources} />
 
       <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
         Finish
       </ToffecButton>
+    </div>
+  );
+}
+
+/**
+ * A single party member's reward card: drives its EXP bar through the character's real
+ * gain timeline, popping the "Level Up" badge each time the bar actually crosses a level.
+ */
+interface CharacterExpCardProps {
+  member: CharacterData;
+  expReward: number;
+}
+
+function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
+  // Build the timeline once so the rAF animation has a stable input.
+  const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
+  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline, {
+    onLevelUp: playLevelUpSound,
+  });
+
+  // Derived straight from `percentage` (the same value driving the bar's width), so these
+  // numbers are mathematically locked to the bar's fill — same easing, same duration, every frame.
+  const expThreshold = getExpThresholdForLevel(level);
+  const currentExp = Math.round((percentage / 100) * expThreshold);
+  const missingExp = Math.max(0, expThreshold - currentExp);
+
+  return (
+    <div className="character-card">
+      {/* Portrait carries the level on a hanging pennant tag in the top-left corner. */}
+      <div className="reward-portrait">
+        <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+        <LevelTag level={level} />
+      </div>
+      <div className="character-info">
+        <h3 className="character-name">{member.name}</h3>
+        <div className="reward-sub pixel-font">
+          <span className="reward-level">Lv {level}</span>
+          <span className="reward-class">{member.class}</span>
+        </div>
+        <ExperienceBar percentage={percentage} variant="compact" />
+        <div className="reward-exp-numbers pixel-font">
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--have">
+            <span className="reward-exp-numbers__label">EXP</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={currentExp}
+                format={INTEGER_FORMAT}
+                trend={1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--missing">
+            <span className="reward-exp-numbers__label">Next Lv</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={missingExp}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+      {hasLeveledUp && (
+        // The bookmark animates once when it first appears (no key on the container),
+        // while the inner text re-keys on every level-up so it pops again — a live
+        // signal that you're still leveling.
+        <div className="level-up-badge level-up-badge--pop">
+          <span key={badgeKey} className="level-up-badge__text">
+            Level Up
+          </span>
+        </div>
+      )}
     </div>
   );
 }

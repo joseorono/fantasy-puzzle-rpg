@@ -9,6 +9,8 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
 import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
+import { getNavDirection } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
@@ -21,7 +23,11 @@ import {
   useFloorLootProgressActions,
   useRouterActions,
   useParty,
+  useDungeonProgressActions,
 } from '~/stores/game-store';
+import { getDungeonById } from '~/lib/dungeon-system';
+import { randomizeDungeon } from '~/lib/dungeon-randomizer';
+import type { DungeonDefinition } from '~/types/dungeon';
 import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
@@ -29,7 +35,8 @@ import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
-import { generateRandomResources } from '~/lib/loot';
+import { generateRandomResources, rollLootTableRarities } from '~/lib/loot';
+import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
@@ -99,6 +106,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const currentInventory = useGameStore((state) => state.inventory);
 
   const routerActions = useRouterActions();
+  const { isDungeonCompleted } = useDungeonProgressActions();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
 
@@ -313,45 +321,23 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     [currentMapId, currentResources, floorLootProgressActions, resourcesActions],
   );
 
-  // Handle keyboard input for character movement
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      // Prevent default scrolling behavior
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(event.key)) {
-        event.preventDefault();
-      }
+  // Handle keyboard input for character movement (arrow keys and WASD alike)
+  useWindowKeyDown((event) => {
+    const direction = getNavDirection(event.key);
+    if (!direction) return;
+    // Prevent default scrolling behavior
+    event.preventDefault();
 
-      setCharPosition((currentPos) => {
-        let newRow = currentPos.row;
-        let newCol = currentPos.col;
+    setCharPosition((currentPos) => {
+      let newRow = currentPos.row;
+      let newCol = currentPos.col;
+      if (direction === 'up') newRow -= 1;
+      else if (direction === 'down') newRow += 1;
+      else if (direction === 'left') newCol -= 1;
+      else newCol += 1;
 
-        switch (event.key) {
-          case 'ArrowUp':
-          case 'w':
-          case 'W':
-            newRow -= 1;
-            break;
-          case 'ArrowDown':
-          case 's':
-          case 'S':
-            newRow += 1;
-            break;
-          case 'ArrowLeft':
-          case 'a':
-          case 'A':
-            newCol -= 1;
-            break;
-          case 'ArrowRight':
-          case 'd':
-          case 'D':
-            newCol += 1;
-            break;
-          default:
-            return currentPos;
-        }
-
-        // Only move if the new position is a road tile
-        const canMove = isRoadTile(newRow, newCol);
+      // Only move if the new position is a road tile
+      const canMove = isRoadTile(newRow, newCol);
 
         if (canMove) {
           console.log(`✅ Moving to (${newRow}, ${newCol})`);
@@ -384,13 +370,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           return currentPos;
         }
       });
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isRoadTile, checkDialogueTrigger, checkInteractiveNode, checkFloorLoot, showNodeMenu, mapData]);
+  });
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
@@ -480,8 +460,44 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       return;
     }
 
-    // TODO: Navigate to dungeon screen
-    alert(`Entered ${enteredNode.name}!`);
+    if (enteredNode.type === 'Dungeon') {
+      enterDungeon(enteredNode, { randomized: false });
+    }
+  }
+
+  /** Enter the randomized "remix" of a Dungeon node — shuffled floors & enemies, bonus loot, no story. */
+  function handleNodeRandomize() {
+    if (!currentNode || currentNode.type !== 'Dungeon') return;
+    console.log('Randomizing dungeon:', currentNode.name);
+
+    const enteredNode = currentNode;
+
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+
+    enterDungeon(enteredNode, { randomized: true });
+  }
+
+  /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
+  function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
+    return node.dungeon ?? (node.dungeonId ? getDungeonById(node.dungeonId) : undefined);
+  }
+
+  /**
+   * Launch a Dungeon node's dungeon. A randomized run is always a fresh, non-replay run;
+   * an authored run respects prior completion.
+   */
+  function enterDungeon(node: InteractiveMapNode, { randomized }: { randomized: boolean }) {
+    const base = resolveDungeon(node);
+    if (!base) {
+      console.warn(`Dungeon node "${node.id}" has no resolvable dungeon (dungeon/dungeonId).`);
+      return;
+    }
+
+    const dungeon = randomized ? randomizeDungeon(base) : base;
+    const isReplay = randomized ? false : isDungeonCompleted(base.id);
+
+    routerActions.goToDungeon({ dungeon, isReplay });
   }
 
   function handleNodeOpenChest() {
@@ -489,9 +505,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     console.log('Opening chest:', currentNode.name);
 
     // Play chest opening sound immediately for instant feedback
-    soundService.playSound(SoundNames.bgNoiseMiner, 0.7, 0.1, 0.05);
+    soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
 
-    const loot = currentNode.lootPayload;
+    // Roll a rarity for each equipment entry once, so the inventory grant and the
+    // loot notification below show the same tiers.
+    const loot = rollLootTableRarities(currentNode.lootPayload, CHEST_RARITY_BIAS);
 
     // Apply loot to player inventory and resources using math utilities
     // Add equipment items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
@@ -500,12 +518,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       if (!randomBool(lootItem.probability)) return;
 
       const item = lootItem.item;
-      const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
+      const existingItem = currentInventory.items.find(
+        (invItem) => invItem.itemId === item.id && invItem.rarity === lootItem.rarity,
+      );
       const currentQuantity = existingItem?.quantity ?? 0;
       const newQuantity = additionWithMax(currentQuantity, 1, MAX_AMOUNT_PER_ITEM);
       const quantityToAdd = newQuantity - currentQuantity;
       if (quantityToAdd > 0) {
-        inventoryActions.addItem(item.id, quantityToAdd);
+        inventoryActions.addItem(item.id, quantityToAdd, lootItem.rarity);
       }
     });
 
@@ -645,7 +665,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           icon = '🏠';
           break;
         case 'Dungeon':
-          color = isCompleted ? 'rgba(150, 150, 150, ' : 'rgba(105, 105, 105, ';
+          color = isCompleted ? 'rgba(128, 208, 198, ' : 'rgba(0, 176, 158, ';
           icon = '💀';
           break;
         case 'Treasure':
@@ -893,6 +913,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           isCompleted={isNodeCompleted(currentNode.type, currentNode.id)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
+          onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}
           onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={getCharacterScreenPosition()}

@@ -19,6 +19,12 @@ export interface EquipmentItemData extends BaseItemData {
   vit: number;
   spd: number;
   forClass?: CharacterClass;
+  /**
+   * Bonus added to the per-level cascade combo multiplier while this item is equipped.
+   * Intentionally a very low percentual value (e.g. 0.02 = +2% per cascade level).
+   * Absent = 0. See `getEquipmentComboBonus` and `calculateComboMultiplier`.
+   */
+  comboBonus?: number;
 }
 
 export type ConsumableAction =
@@ -37,4 +43,4 @@ export interface ConsumableItemData extends BaseItemData {
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];
 export type ItemStoreParams = Array<ConsumableItemIds>;
 
-export interface KeyItemData extends BaseItemData {}
+export type KeyItemData = BaseItemData;

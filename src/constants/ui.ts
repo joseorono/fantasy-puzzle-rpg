@@ -37,6 +37,15 @@ export const HP_THRESHOLD_GRADIENT: Record<HpThreshold, string> = {
   low: 'from-red-600 to-red-500',
 };
 
+/** Tailwind gradient for the party Guard bar (steel/blue-gray, evokes the steelArmor icon) */
+export const GUARD_BAR_GRADIENT = 'from-slate-400 to-slate-300';
+
+/** Minimum opacity for party stats icons; remaining opacity scales with fill percentage up to 1. */
+export const PARTY_STATS_ICON_MIN_OPACITY = 0.6;
+
+/** Visual dimming filter used by low/empty party stats icons, aligned with the pause menu icon language. */
+export const PARTY_STATS_ICON_DIM_FILTER = 'grayscale(0.3) brightness(0.6) contrast(1.2)';
+
 /** Tailwind bg classes for enemy HP bars (battle) */
 export const ENEMY_HP_THRESHOLD_BG: Record<HpThreshold, string> = {
   high: 'bg-red-500',
@@ -57,3 +66,18 @@ export const HP_THRESHOLD_CLASS: Record<HpThreshold, string> = {
   medium: 'medium',
   low: 'low',
 };
+
+/**
+ * Press-and-hold auto-repeat tuning for the +/- stat-allocation buttons (level-up screen).
+ * Holding a button spends/refunds points ever faster: after `initialDelayMs`, each repeat's wait
+ * shrinks by `accelerationFactor` toward `minIntervalMs`. A plain click still does exactly one
+ * (the hold train never fires on press — the button's onClick handles the single step).
+ */
+export const STAT_BUTTON_HOLD = {
+  /** Wait before the first auto-repeat, so a quick click doesn't trigger the train. */
+  initialDelayMs: 350,
+  /** Fastest repeat interval the acceleration can reach. */
+  minIntervalMs: 28,
+  /** Each repeat multiplies the wait by this (< 1 = accelerate). */
+  accelerationFactor: 0.82,
+} as const;

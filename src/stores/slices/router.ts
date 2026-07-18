@@ -7,6 +7,7 @@ import {
   prepareSetViewData,
   goToTownHub as libGoToTownHub,
   goToBattleDemo as libGoToBattleDemo,
+  goToDungeon as libGoToDungeon,
   goToMapDemo as libGoToMapDemo,
   goToMapDemo2 as libGoToMapDemo2,
   goToDialogueDemo as libGoToDialogueDemo,
@@ -14,11 +15,12 @@ import {
   goToDebug as libGoToDebug,
   goToBattleRewards as libGoToBattleRewards,
 } from '~/lib/routing';
+import type { SliceSet } from '~/types/store';
 
 /**
  * Creates the router slice for the game store
  */
-export function createRouterSlice(set: any): RouterSlice {
+export function createRouterSlice(set: SliceSet<RouterSlice>): RouterSlice {
   return {
     router: INITIAL_ROUTER_STATE,
     actions: {
@@ -37,6 +39,17 @@ export function createRouterSlice(set: any): RouterSlice {
         goToBattleDemo: (data) => {
           set((state: RouterSlice) => {
             const result = libGoToBattleDemo(state.router, data);
+            if (result.success && result.nextState) {
+              state.router = result.nextState;
+            } else {
+              console.warn(`Navigation failed: ${result.error}`);
+            }
+          });
+        },
+
+        goToDungeon: (data) => {
+          set((state: RouterSlice) => {
+            const result = libGoToDungeon(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {

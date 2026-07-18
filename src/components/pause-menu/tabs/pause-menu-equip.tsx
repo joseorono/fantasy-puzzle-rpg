@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
-import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
+import { useParty, usePartyActions, useInventory, useCurrentView } from '~/stores/game-store';
+import { SkillSelector } from '~/components/pause-menu/skill-selector';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
@@ -14,21 +15,26 @@ import {
 } from '~/constants/number-flow';
 import {
   type EquipmentSlot,
+  type EquipmentInstance,
   findEquipmentItem,
   getEquipmentBonuses,
   getEffectiveStats,
+  getScaledEquipmentStats,
   getAvailableEquipmentForSlot,
 } from '~/lib/equipment-system';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import type { EquipmentItemData } from '~/types/inventory';
+import type { RarityTier } from '~/constants/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 
+// Warm parchment/gold stat palette — matches level-up-screen.css `.stat-name.*`
 const STAT_COLORS = {
-  pow: '#e53935',
-  vit: '#43a047',
-  spd: '#1e88e5',
+  pow: '#d48c46',
+  vit: '#e3bb92',
+  spd: '#d4a574',
 } as const;
 
 export function PauseMenuEquip() {
@@ -37,6 +43,8 @@ export function PauseMenuEquip() {
   const inventory = useInventory();
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
+
+  const isInBattle = useCurrentView() === 'battle-demo';
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
@@ -50,6 +58,8 @@ export function PauseMenuEquip() {
   const equippedArmor = selected.equippedArmorId ? findEquipmentItem(selected.equippedArmorId) : undefined;
 
   const availableItems = selectedSlot ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory) : [];
+  const equippedIdForSlot = selectedSlot === 'weapon' ? selected.equippedWeaponId : selected.equippedArmorId;
+  const equippedRarityForSlot = selectedSlot === 'weapon' ? selected.equippedWeaponRarity : selected.equippedArmorRarity;
 
   function handleSelectCharacter(id: string) {
     setSelectedId(id);
@@ -60,9 +70,9 @@ export function PauseMenuEquip() {
     setSelectedSlot((prev) => (prev === slot ? null : slot));
   }
 
-  function handleEquip(itemId: string) {
+  function handleEquip(itemId: string, rarity: RarityTier) {
     if (!selectedSlot) return;
-    partyActions.equipItem(selected.id, itemId, selectedSlot);
+    partyActions.equipItem(selected.id, itemId, selectedSlot, rarity);
     setSelectedSlot(null);
   }
 
@@ -73,21 +83,23 @@ export function PauseMenuEquip() {
 
   return (
     <div className="pause-menu-equip-tab">
-      <h2 className="mb-4">
+      <h2>
         <NarikRedwoodBitFont text="EQUIP" size={1.2} />
       </h2>
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-equip-top-section">
           <div className="pause-menu-party-roster">
-            {party.map((member) => (
-              <PartyMemberCard
-                key={member.id}
-                member={member}
-                variant="roster"
-                isActive={member.id === selectedId}
-                onClick={() => handleSelectCharacter(member.id)}
-              />
-            ))}
+            <div className="pause-menu-party-roster-list">
+              {party.map((member) => (
+                <PartyMemberCard
+                  key={member.id}
+                  member={member}
+                  variant="roster"
+                  isActive={member.id === selectedId}
+                  onClick={() => handleSelectCharacter(member.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="pause-menu-equip-main">
@@ -103,6 +115,7 @@ export function PauseMenuEquip() {
               <EquipSlotRow
                 label="Weapon"
                 item={equippedWeapon}
+                rarity={selected.equippedWeaponRarity}
                 isActive={selectedSlot === 'weapon'}
                 onToggle={() => handleToggleSlot('weapon')}
                 onUnequip={() => handleUnequip('weapon')}
@@ -110,6 +123,7 @@ export function PauseMenuEquip() {
               <EquipSlotRow
                 label="Armor"
                 item={equippedArmor}
+                rarity={selected.equippedArmorRarity}
                 isActive={selectedSlot === 'armor'}
                 onToggle={() => handleToggleSlot('armor')}
                 onUnequip={() => handleUnequip('armor')}
@@ -118,20 +132,36 @@ export function PauseMenuEquip() {
 
             {selectedSlot && (
               <div className="pause-menu-equip-available">
-                <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                <div className="pause-menu-equip-available-header">
+                  <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                  <ToffecSquareButton
+                    variant="medieval2"
+                    size="sm"
+                    hasBg={true}
+                    aria-label="Close"
+                    onClick={() => setSelectedSlot(null)}
+                  />
+                </div>
                 {availableItems.length === 0 ? (
                   <div className="pause-menu-equip-empty">
                     No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
                   </div>
                 ) : (
-                  availableItems.map((item) => (
-                    <EquipAvailableItem key={item.id} item={item} onEquip={() => handleEquip(item.id)} />
+                  availableItems.map((instance) => (
+                    <EquipAvailableItem
+                      key={`${instance.item.id}::${instance.rarity}`}
+                      instance={instance}
+                      isEquipped={instance.item.id === equippedIdForSlot && instance.rarity === equippedRarityForSlot}
+                      onEquip={() => handleEquip(instance.item.id, instance.rarity)}
+                    />
                   ))
                 )}
               </div>
             )}
 
-            <EquipStatPreview baseStats={selected.stats} bonuses={bonuses} effective={effective} />
+            <SkillSelector character={selected} disabled={isInBattle} />
+
+            <EquipStatPreview bonuses={bonuses} effective={effective} />
           </div>
         </div>
       </div>
@@ -142,23 +172,30 @@ export function PauseMenuEquip() {
 interface EquipSlotRowProps {
   label: string;
   item: EquipmentItemData | undefined;
+  rarity: RarityTier | undefined;
   isActive: boolean;
   onToggle: () => void;
   onUnequip: () => void;
 }
 
-function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotRowProps) {
+function EquipSlotRow({ label, item, rarity, isActive, onToggle, onUnequip }: EquipSlotRowProps) {
   return (
     <div className={cn('pause-menu-equip-slot-row', isActive && 'active')} onClick={onToggle}>
       <span className="slot-label">{label}</span>
       <span className="pause-menu-item-icon-slot">
         {item?.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
       </span>
-      <span className={cn('pause-menu-equip-slot-value', !item && 'empty')}>{item ? item.name : '— Empty —'}</span>
+      <span
+        className={cn('pause-menu-equip-slot-value', !item && 'empty')}
+        style={item ? { color: getRarityColor(rarity) } : undefined}
+      >
+        {item ? item.name : '— Empty —'}
+        {item && <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>}
+      </span>
       {item && (
         <Tooltip>
           <TooltipTrigger>
-            <ToffecCloseButton
+            <ToffecSquareButton
               variant="medieval2"
               size="sm"
               hasBg={true}
@@ -177,98 +214,98 @@ function EquipSlotRow({ label, item, isActive, onToggle, onUnequip }: EquipSlotR
 }
 
 interface EquipStatPreviewProps {
-  baseStats: { pow: number; vit: number; spd: number };
   bonuses: { pow: number; vit: number; spd: number };
   effective: { pow: number; vit: number; spd: number };
 }
 
-function EquipStatPreview({ baseStats, bonuses, effective }: EquipStatPreviewProps) {
+function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
   const stats = ['pow', 'vit', 'spd'] as const;
 
   return (
     <div className="pause-menu-equip-preview">
       <span className="pause-menu-equip-preview-title">Stats</span>
-      <div className="pause-menu-equip-preview-divider" />
-      {stats.map((stat, index) => (
-        <React.Fragment key={stat}>
-          <div className="pause-menu-equip-preview-stat-group">
-            <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
-              {stat}
-            </span>
-            <span className="pause-menu-equip-preview-base number-flow-container">
-              <NumberFlow
-                value={baseStats[stat]}
-                format={INTEGER_FORMAT}
-                spinTiming={SNAPPY_SPIN_TIMING}
-                transformTiming={SNAPPY_TRANSFORM_TIMING}
-                opacityTiming={SNAPPY_OPACITY_TIMING}
-              />
-            </span>
-            {bonuses[stat] !== 0 && (
-              <span
-                className={cn(
-                  'pause-menu-equip-stat-diff number-flow-container',
-                  bonuses[stat] > 0 ? 'positive' : 'negative',
-                )}
-              >
+      <div className="pause-menu-equip-preview-grid">
+        {stats.map((stat) => {
+          const diff = bonuses[stat];
+          return (
+            <div key={stat} className="pause-menu-equip-preview-stat-group">
+              <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
+                {stat}
+              </span>
+              <span className="pause-menu-equip-preview-total number-flow-container">
                 <NumberFlow
-                  value={bonuses[stat]}
+                  value={effective[stat]}
                   format={INTEGER_FORMAT}
-                  prefix={bonuses[stat] > 0 ? '+' : ''}
                   spinTiming={SNAPPY_SPIN_TIMING}
                   transformTiming={SNAPPY_TRANSFORM_TIMING}
                   opacityTiming={SNAPPY_OPACITY_TIMING}
                 />
               </span>
-            )}
-            <span className="pause-menu-equip-preview-total number-flow-container">
-              <NumberFlow
-                value={effective[stat]}
-                format={INTEGER_FORMAT}
-                spinTiming={SNAPPY_SPIN_TIMING}
-                transformTiming={SNAPPY_TRANSFORM_TIMING}
-                opacityTiming={SNAPPY_OPACITY_TIMING}
-              />
-            </span>
-          </div>
-          {index < stats.length - 1 && <div className="pause-menu-equip-preview-divider" />}
-        </React.Fragment>
-      ))}
+              {diff !== 0 && (
+                <span
+                  className={cn(
+                    'pause-menu-equip-stat-diff number-flow-container',
+                    diff > 0 ? 'positive' : 'negative',
+                  )}
+                >
+                  <NumberFlow
+                    value={diff}
+                    format={INTEGER_FORMAT}
+                    prefix={diff > 0 ? '+' : ''}
+                    spinTiming={SNAPPY_SPIN_TIMING}
+                    transformTiming={SNAPPY_TRANSFORM_TIMING}
+                    opacityTiming={SNAPPY_OPACITY_TIMING}
+                  />
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 interface EquipAvailableItemProps {
-  item: EquipmentItemData;
+  instance: EquipmentInstance;
+  isEquipped: boolean;
   onEquip: () => void;
 }
 
-function EquipAvailableItem({ item, onEquip }: EquipAvailableItemProps) {
+function EquipAvailableItem({ instance, isEquipped, onEquip }: EquipAvailableItemProps) {
+  const { item, rarity } = instance;
+  const stats = getScaledEquipmentStats(item, rarity);
   return (
-    <ToffecBeigeCornersWrapper className="pause-menu-equip-available-item">
+    <ToffecBeigeCornersWrapper className={cn('pause-menu-equip-available-item', isEquipped && 'is-equipped')}>
       <div className="pause-menu-equip-available-clickable" onClick={onEquip}>
         <span className="pause-menu-item-icon-slot">
           {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
         </span>
         <div className="pause-menu-equip-available-info">
-          <div className="pause-menu-equip-available-name">{item.name}</div>
+          <div className="pause-menu-equip-available-name-row">
+            <div className="pause-menu-equip-available-name" style={{ color: getRarityColor(rarity) }}>
+              {item.name}
+              <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>
+            </div>
+            {isEquipped && <span className="pause-menu-equip-available-badge">Equipped</span>}
+          </div>
           <div className="pause-menu-equip-available-stats">
-            {item.pow !== 0 && (
+            {stats.pow !== 0 && (
               <span className="pause-menu-item-stat-badge">
-                POW {item.pow > 0 ? '+' : ''}
-                {item.pow}
+                POW {stats.pow > 0 ? '+' : ''}
+                {stats.pow}
               </span>
             )}
-            {item.vit !== 0 && (
+            {stats.vit !== 0 && (
               <span className="pause-menu-item-stat-badge">
-                VIT {item.vit > 0 ? '+' : ''}
-                {item.vit}
+                VIT {stats.vit > 0 ? '+' : ''}
+                {stats.vit}
               </span>
             )}
-            {item.spd !== 0 && (
+            {stats.spd !== 0 && (
               <span className="pause-menu-item-stat-badge">
-                SPD {item.spd > 0 ? '+' : ''}
-                {item.spd}
+                SPD {stats.spd > 0 ? '+' : ''}
+                {stats.spd}
               </span>
             )}
           </div>

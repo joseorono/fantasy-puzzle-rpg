@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import InventoryTestView from '~/views/inventory-test';
 import ResourcesTestView from '~/views/resources-test';
 import SoundTestView from '~/views/sound-test';
@@ -5,27 +6,80 @@ import TestView from '~/views/test-view';
 import PartyTestView from '~/views/party-test';
 import RouterTestView from '~/views/router-test';
 import GlobalAnimationTest from '~/views/global-animation-test';
+import TitleSignTestView from '~/views/title-sign-test';
+import RadialCountdownTestView from '~/views/radial-countdown-test';
+import SkillDebugView from '~/views/skill-debug';
+import DungeonDebugView from '~/views/dungeon-debug';
+import CreditsDebugView from '~/views/credits-debug';
+
+interface DebugSection {
+  id: string;
+  label: string;
+  Component: ComponentType;
+  /** Hide this entry from the table of contents (e.g. the TOC itself). */
+  hideFromToc?: boolean;
+}
+
+const DEBUG_SECTIONS: DebugSection[] = [
+  { id: 'router', label: 'Router', Component: RouterTestView },
+  { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
+  { id: 'dungeon', label: 'Dungeon', Component: DungeonDebugView },
+  { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },
+  { id: 'party', label: 'Party', Component: PartyTestView },
+  { id: 'inventory', label: 'Inventory', Component: InventoryTestView },
+  { id: 'resources', label: 'Resources', Component: ResourcesTestView },
+  { id: 'sound', label: 'Sound', Component: SoundTestView },
+  { id: 'credits', label: 'Credits', Component: CreditsDebugView },
+  { id: 'misc', label: 'Misc / Test', Component: TestView },
+  // Recently added — kept further down now that they're stable.
+  { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
+  { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
+  { id: 'radial-countdown', label: 'Radial Countdown', Component: RadialCountdownTestView },
+];
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** Sticky table of contents; lives in DEBUG_SECTIONS so it can be reordered. */
+function TableOfContents() {
+  return (
+    <nav className="sticky top-0 z-10 border-b border-slate-700 bg-slate-900/95 px-6 py-3 backdrop-blur">
+      <h2 className="mb-2 text-sm font-bold tracking-wide text-slate-300 uppercase">
+        Table Of Contents - Debug Sections
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {DEBUG_SECTIONS.filter((section) => !section.hideFromToc).map((section) => (
+          <li key={section.id}>
+            <button
+              onClick={() => scrollToSection(section.id)}
+              className="rounded bg-slate-700 px-3 py-1 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
+            >
+              {section.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
 
 /**
- * Debug view containing all test components
+ * Debug view containing all test components, with a table of contents for
+ * quickly jumping to a given section.
  */
 export default function DebugView() {
   const dividerClasses = 'my-4 border-b border-gray-200';
+
   return (
     <>
-      <GlobalAnimationTest />
-      <hr className={dividerClasses} />
-      <RouterTestView />
-      <hr className={dividerClasses} />
-      <PartyTestView />
-      <hr className={dividerClasses} />
-      <InventoryTestView />
-      <hr className={dividerClasses} />
-      <ResourcesTestView />
-      <hr className={dividerClasses} />
-      <SoundTestView />
-      <hr className={dividerClasses} />
-      <TestView />
+      {DEBUG_SECTIONS.map((section, index) => (
+        <section key={section.id} id={section.id} className="scroll-mt-20">
+          {index > 0 && <hr className={dividerClasses} />}
+          <section.Component />
+        </section>
+      ))}
     </>
   );
 }
+

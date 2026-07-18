@@ -151,3 +151,13 @@ src/
 - The `main` branch is the primary branch
 - Documentation for game systems lives in `docs/`
 - Do not run build or dev commands to test your code, I will do that for you.
+
+## Pull Request Descriptions
+
+When asked to write or update a PR title/description, follow the house style established in [PR #25](https://github.com/joseorono/fantasy-puzzle-rpg/pull/25):
+
+- **Title**: `V<version> — <comma-separated summary of the main themes>` — a version prefix, an em-dash, then the headline features. Example: `V2.3 — Enemy stagger & rebalance, arcade victory ratings + loot bonus, QoL, patches`.
+- **Lead**: open the body with a one–two sentence summary of the batch that states the organizing principle (e.g., "Grouped by system.").
+- **Group by system/theme**: each group is an emoji-prefixed `##` heading (e.g., `## ⭐ Arcade victory rating & loot bonus`, `## ⚖️ Balance`, `## 📄 Documentation`, `## 🩹 Bug fixes`, `## 🧹 Housekeeping`).
+- **Within a section**: start with a **bold lead sentence** describing the feature at a high level, then bullet the specifics.
+- **Formatting**: bold key mechanics/terms; use inline `code` for files, functions, atoms, and constants, and name where tunables live (e.g., "all tunables in `src/constants/battle.ts`"). For bug fixes, explain the **root cause** and the fix, not just the symptom.

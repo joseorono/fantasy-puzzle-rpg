@@ -1,0 +1,112 @@
+.indigolay-checkbox {
+  position: relative;
+  gap: 0.75rem;
+  width: fit-content;
+  padding: 0;
+  cursor: pointer;
+}
+
+.indigolay-checkbox__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.indigolay-checkbox__input:focus-visible + .indigolay-checkbox__box {
+  outline: 2px solid #d4a574;
+  outline-offset: 3px;
+}
+
+.indigolay-checkbox__input:disabled + .indigolay-checkbox__box,
+.indigolay-checkbox__input:disabled ~ .indigolay-checkbox__text {
+  opacity: 0.6;
+}
+
+.indigolay-checkbox__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: url('/assets/checkboxes/indigolay-checkbox-bg.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.indigolay-checkbox__mark {
+  opacity: 0;
+  background: url('/assets/checkboxes/indigolay-checkbox-mark.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.indigolay-checkbox__input:checked + .indigolay-checkbox__box .indigolay-checkbox__mark {
+  opacity: 1;
+}
+
+.indigolay-checkbox__text {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #d4a574;
+  font-size: 0.7rem;
+}
+
+.indigolay-checkbox__input:checked ~ .indigolay-checkbox__text {
+  color: #e3bb92;
+}
+
+.indigolay-checkbox--sm .indigolay-checkbox__box {
+  width: 22px;
+  height: 22px;
+}
+
+.indigolay-checkbox--sm .indigolay-checkbox__mark {
+  width: 14px;
+  height: 14px;
+}
+
+.indigolay-checkbox--md .indigolay-checkbox__box {
+  width: 27.5px;
+  height: 27.5px;
+}
+
+.indigolay-checkbox--md .indigolay-checkbox__mark {
+  width: 17.5px;
+  height: 17.5px;
+}
+
+.indigolay-checkbox--lg .indigolay-checkbox__box {
+  width: 33px;
+  height: 33px;
+}
+
+.indigolay-checkbox--lg .indigolay-checkbox__mark {
+  width: 21px;
+  height: 21px;
+}
+
+.indigolay-checkbox--xl .indigolay-checkbox__box {
+  width: 38.5px;
+  height: 38.5px;
+}
+
+.indigolay-checkbox--xl .indigolay-checkbox__mark {
+  width: 24.5px;
+  height: 24.5px;
+}
+
+.indigolay-checkbox--2xl .indigolay-checkbox__box {
+  width: 44px;
+  height: 44px;
+}
+
+.indigolay-checkbox--2xl .indigolay-checkbox__mark {
+  width: 28px;
+  height: 28px;
+}

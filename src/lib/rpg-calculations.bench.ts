@@ -18,11 +18,14 @@ import {
   calculateCharacterCooldown,
   calculatePartyCollectiveSpd,
   calculateItemCooldownInMs,
+  calculateStaggerPushMs,
+  clampStaggerToCycleBudget,
   getHpThreshold,
   createStats,
   validateStats,
 } from './rpg-calculations';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
+import { createEmptyLootTable } from '~/types/loot';
 
 const mockCharacter: CharacterData = {
   id: 'test-warrior',
@@ -38,7 +41,9 @@ const mockCharacter: CharacterData = {
   baseHp: 100,
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
-  expToNextLevel: 100,
+  currentLevelExp: 100,
+  unlockedSkillIds: ['warrior-power-strike'],
+  selectedSkillId: 'warrior-power-strike',
 };
 
 const mockEnemy: EnemyData = {
@@ -52,6 +57,8 @@ const mockEnemy: EnemyData = {
   sprite: '',
   attackInterval: 4000,
   attackDamage: 25,
+  lootTable: createEmptyLootTable(),
+  expReward: 10,
 };
 
 const threeCharParty: CharacterData[] = [
@@ -145,6 +152,18 @@ describe('Speed Calculations', () => {
 
   bench('calculateCharacterCooldown', () => {
     calculateCharacterCooldown(mockCharacter);
+  });
+});
+
+// ── Stagger Calculations ──
+
+describe('Stagger Calculations', () => {
+  bench('calculateStaggerPushMs', () => {
+    calculateStaggerPushMs(50, 300, 50, 4000);
+  });
+
+  bench('clampStaggerToCycleBudget', () => {
+    clampStaggerToCycleBudget(200, 4000, 100);
   });
 });
 

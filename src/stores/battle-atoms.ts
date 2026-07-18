@@ -1,11 +1,21 @@
 import { atom } from 'jotai';
-import type { BattleState } from '~/types/battle';
+import type { BattleState, BattleStatus } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
-import { INITIAL_PARTY, INITIAL_ENEMIES, SKILL_DEFINITIONS, BASE_SKILL_DAMAGE } from '~/constants/party';
-import { calculatePartyHpPercentage, calculateCharacterCooldown, calculateSkillDamage } from '~/lib/rpg-calculations';
+import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
+import { BOMB_REFILL_CHANCE } from '~/constants/game';
+import { PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
+import { BASE_SKILL_DAMAGE } from '~/constants/skills';
+import {
+  calculatePartyHpPercentage,
+  calculateSkillDamage,
+  resolveGuardedDamage,
+  decayGuard,
+  GUARD_MAX,
+} from '~/lib/rpg-calculations';
+import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -22,6 +32,7 @@ import {
   isValidSwap,
   removeMatchedOrbsAndRefill,
 } from '~/lib/match-3';
+import type { BattleRatingResult } from '~/lib/battle-rating';
 
 // Use initial data from constants
 const initialParty = INITIAL_PARTY;
@@ -48,6 +59,10 @@ export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
   return calculatePartyHpPercentage(party);
 });
+
+// Derived atoms for the party Guard meter
+export const guardAtom = atom((get) => get(battleStateAtom).guard);
+export const guardPercentageAtom = atom((get) => (get(battleStateAtom).guard / GUARD_MAX) * 100);
 
 // Atom to select a target enemy
 export const selectEnemyAtom = atom(null, (get, set, enemyId: string) => {
@@ -108,22 +123,37 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
   const living = getLivingMembers(currentState.party);
   if (living.length === 0) return;
 
-  // Select a random living hero to take damage
+  // The Guard meter mitigates incoming damage before it reaches a hero. The attacking
+  // enemy's guardBreak only scales how hard the hit drains the bar, not the mitigation.
+  const attacker = attackerEnemyId
+    ? currentState.enemies.find((e) => e.id === attackerEnemyId)
+    : undefined;
+  const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
+    damage,
+    currentState.guard,
+    attacker?.guardBreak ?? 1,
+  );
+  const wasGuarded = damageTaken < damage;
+
+  // Select a random living hero to take the post-Guard damage
   const targetHero = getRandomElement(living);
 
-  const party = damagePartyMember(currentState.party, targetHero.id, damage);
+  const party = damagePartyMember(currentState.party, targetHero.id, damageTaken);
   const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
 
   set(battleStateAtom, {
     ...currentState,
     party,
+    guard: guardAfter,
     gameStatus,
     lastDamage: {
-      amount: damage,
+      amount: damageTaken,
       target: 'party',
       timestamp: Date.now(),
       characterId: targetHero.id,
       enemyId: attackerEnemyId,
+      wasGuarded,
+      blocked: wasFullBlock,
     },
   });
 });
@@ -131,11 +161,23 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
 // Atom to damage the selected enemy
 export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
   const currentState = get(battleStateAtom);
+
+  // The fight is already decided and the win is just waiting on the cascade to settle. Any
+  // further chained hits land on corpses — no-op them so HP stays put and, crucially, no
+  // `lastDamage` fires (which would pop a damage number over a dead enemy).
+  if (currentState.pendingVictory) return;
+
   const selectedId = currentState.selectedEnemyId;
+
+  // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
+  const isPreemptive = (currentState.standbyEnemyIds ?? []).includes(selectedId);
+  const finalDamage = isPreemptive
+    ? Math.round(damage * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS))
+    : damage;
 
   const enemies = currentState.enemies.map((e) => {
     if (e.id !== selectedId) return e;
-    return { ...e, currentHp: subtractionWithMin(e.currentHp, damage, 0) };
+    return { ...e, currentHp: subtractionWithMin(e.currentHp, finalDamage, 0) };
   });
 
   // Check if selected enemy just died — auto-select next living enemy
@@ -146,16 +188,19 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
     if (nextId) newSelectedId = nextId;
   }
 
-  // Check if ALL enemies are dead
+  // Check if ALL enemies are dead. Rather than flip to 'won' immediately (which would cut the
+  // combo chain short and freeze the rating early), mark victory as *pending* and keep playing so
+  // the in-flight cascade finishes and fully counts. The board's settle branch commits the win.
   const allDead = enemies.every((e) => e.currentHp <= 0);
-  const gameStatus = allDead ? 'won' : 'playing';
 
+  const timestamp = Date.now();
   set(battleStateAtom, {
     ...currentState,
     enemies,
     selectedEnemyId: newSelectedId,
-    gameStatus,
-    lastDamage: { amount: damage, target: 'enemy', timestamp: Date.now(), enemyId: selectedId },
+    pendingVictory: allDead,
+    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId },
+    lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
 });
 
@@ -177,18 +222,50 @@ export const resetBattleAtom = atom(null, (get, set) => {
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
 });
 
-// Atom to remove matched orbs and refill board
-export const removeMatchedOrbsAtom = atom(null, (get, set, matchedOrbIds: Set<string>) => {
-  if (matchedOrbIds.size === 0) return;
-
-  const currentState = get(battleStateAtom);
-  const newBoard = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds);
-
-  set(battleStateAtom, {
-    ...currentState,
-    board: newBoard,
-  });
+/**
+ * Re-arm the encounter when the battle view is entered onto an already-finished fight,
+ * so re-entry always starts fresh with enemies at full HP. No-op while a battle is in
+ * progress, so it never clobbers an encounter a caller just set up (e.g. the map's
+ * `setupBattleAtom`). Reuses the current encounter's enemies and the passed-in party.
+ */
+export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[]) => {
+  const state = get(battleStateAtom);
+  if (state.gameStatus === 'playing') return;
+  set(battleStateAtom, createBattleState(party, state.enemies));
 });
+
+// Atom to remove matched orbs and refill board.
+// `bombsToSpawn` guarantees that many refilled orbs become wildcard bombs
+// (on top of the per-orb random chance baked into removeMatchedOrbsAndRefill).
+export const removeMatchedOrbsAtom = atom(
+  null,
+  (
+    get,
+    set,
+    matchedOrbIds: Set<string>,
+    bombsToSpawn: number = 0,
+    bombRefillChance: number = BOMB_REFILL_CHANCE,
+    maxBombs: number = Infinity,
+  ): number => {
+    if (matchedOrbIds.size === 0) return 0;
+
+    const currentState = get(battleStateAtom);
+    const { board, bombsSpawned } = removeMatchedOrbsAndRefill(
+      currentState.board,
+      matchedOrbIds,
+      bombsToSpawn,
+      bombRefillChance,
+      maxBombs,
+    );
+
+    set(battleStateAtom, {
+      ...currentState,
+      board,
+    });
+
+    return bombsSpawned;
+  },
+);
 
 // Atom to heal the most damaged party member (revives dead members first)
 export const healPartyAtom = atom(
@@ -197,10 +274,10 @@ export const healPartyAtom = atom(
     const currentState = get(battleStateAtom);
     const { amount, source } = params;
 
-    // Dead members take priority — revive the first one found
+    // Dead members take priority — revive the healer first, else the first one found
     const dead = getDeadMembers(currentState.party);
     if (dead.length > 0) {
-      const target = dead[0];
+      const target = dead.find((char) => char.class === 'healer') ?? dead[0];
       // Healer match: double healing. Potion: 1 HP + potion amount.
       const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
       const party = healPartyMember(currentState.party, target.id, reviveAmount);
@@ -232,7 +309,7 @@ export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
@@ -246,15 +323,86 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard,
+    board: newBoard.board,
   });
 });
 
 // Derived atom for game status
 export const gameStatusAtom = atom((get) => get(battleStateAtom).gameStatus);
+// True while all enemies are dead but the killing-blow cascade is still resolving. The board
+// reads this to lock input during the finish and to commit the win once it settles.
+export const pendingVictoryAtom = atom((get) => get(battleStateAtom).pendingVictory);
+// Commits a pending victory once the board settles: flips to 'won' so the BattleOverModal
+// reveals the rating — by now the cascade has finished and `maxCombo` is final.
+export const commitPendingVictoryAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  if (!currentState.pendingVictory) return;
+  set(battleStateAtom, { ...currentState, gameStatus: 'won', pendingVictory: false });
+});
+// Narrow derived atoms so UI that only shows turn/score doesn't re-render on every
+// board/HP/match change (see BattleTopBar).
+export const turnAtom = atom((get) => get(battleStateAtom).turn);
+export const scoreAtom = atom((get) => get(battleStateAtom).score);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
+// Per-enemy start-of-battle standby delays (ms), regenerated whenever a new battle is created.
+// `?? {}` guards any pre-existing state object without the field.
+export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandbyMs ?? {});
+// Ids of enemies still observing (on standby). Drives the eye/gold ring and the preemptive-strike bonus.
+export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEnemyIds ?? []);
+// Centered "Preemptive Strike!" callout trigger (see PreemptiveStrikeIndicator).
+export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
+// Per-enemy "STAGGER!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
+export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
+
+// Flags an enemy reaching its per-cycle stagger cap, so the "STAGGER!" callout can replay.
+// Called by the attack-timer hook; the timestamp re-triggers the animation on later cycles.
+export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, {
+    ...currentState,
+    lastMaxFlinch: { enemyId, timestamp: Date.now() },
+  });
+});
+
+// ─── Victory-rating stats (see ~/lib/battle-rating.ts) ───────────────────────
+// Thin read selectors for the end-of-battle rating. `?? 0` guards any pre-existing state object.
+export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
+export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
+export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);
+
+// The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
+// so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
+// would be wrong, since the elapsed-time clock keeps running through the rating/rewards screens.
+// Null until the first victory of the session.
+export const lastBattleRatingAtom = atom<BattleRatingResult | null>(null);
+
+// Records the deepest cascade combo reached (keeps the running max). Called from the board.
+export const recordMaxComboAtom = atom(null, (get, set, combo: number) => {
+  const currentState = get(battleStateAtom);
+  if (combo <= currentState.maxCombo) return;
+  set(battleStateAtom, { ...currentState, maxCombo: combo });
+});
+
+// Tallies a battle item consumption (a penalty in the victory rating). Called from the item bar.
+// `?? 0` mirrors the read selectors so a pre-existing state object without the field can't write NaN.
+export const recordItemUsedAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  set(battleStateAtom, { ...currentState, itemsUsed: (currentState.itemsUsed ?? 0) + 1 });
+});
+
+// Marks an enemy's standby as over (it begins attacking). Idempotent — called by the attack-timer
+// hook as each enemy's observation window elapses.
+export const endEnemyStandbyAtom = atom(null, (get, set, enemyId: string) => {
+  const currentState = get(battleStateAtom);
+  if (!currentState.standbyEnemyIds.includes(enemyId)) return;
+  set(battleStateAtom, {
+    ...currentState,
+    standbyEnemyIds: currentState.standbyEnemyIds.filter((id) => id !== enemyId),
+  });
+});
 
 // Atom to reduce a specific character's skill cooldown (e.g. from matching their color orbs)
 export const reduceSkillCooldownAtom = atom(null, (get, set, characterId: string, amount: number) => {
@@ -279,7 +427,7 @@ export const fillPartyUltimateAtom = atom(null, (get, set, amount: number) => {
 
   const party = currentState.party.map((char) => {
     if (char.currentHp <= 0 || char.skillCooldown <= 0) return char;
-    const maxCooldown = calculateCharacterCooldown(char);
+    const maxCooldown = resolveCharacterCooldown(char);
     const reduction = maxCooldown * amount;
     return {
       ...char,
@@ -304,6 +452,28 @@ export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number
   });
 
   set(battleStateAtom, { ...currentState, party });
+});
+
+// Atom to add to the party Guard meter (e.g. from matching gray orbs)
+export const addGuardAtom = atom(null, (get, set, amount: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || amount <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: Math.min(GUARD_MAX, currentState.guard + amount),
+  });
+});
+
+// Atom to bleed the Guard meter over time (anti-hoard decay)
+export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing' || currentState.guard <= 0) return;
+
+  set(battleStateAtom, {
+    ...currentState,
+    guard: decayGuard(currentState.guard, deltaSeconds),
+  });
 });
 
 // Atom to increment turn counter
@@ -332,13 +502,18 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const character = currentState.party.find((c) => c.id === characterId);
   if (!character || character.currentHp <= 0 || character.skillCooldown > 0) return;
 
-  const skill = SKILL_DEFINITIONS[character.class];
+  const skill = getSelectedSkill(character);
   const amount = calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus);
 
   let party = currentState.party;
   let enemies = currentState.enemies;
   let selectedEnemyId = currentState.selectedEnemyId;
-  let gameStatus = currentState.gameStatus;
+  let gameStatus: BattleStatus = currentState.gameStatus;
+
+  // Capture which enemy/enemies took the hit BEFORE selection advances on death,
+  // so the flinch lands on the sprite that was actually struck.
+  const hitEnemyId = selectedEnemyId;
+  const hitEnemyIds = enemies.filter((e) => e.currentHp > 0).map((e) => e.id);
 
   if (skill.target === 'enemy') {
     // Damage the selected enemy
@@ -350,6 +525,23 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     // Check if selected enemy just died — auto-select next
     const damagedEnemy = enemies.find((e) => e.id === selectedEnemyId)!;
     if (damagedEnemy.currentHp <= 0) {
+      const nextId = getNextLivingEnemyId(enemies, selectedEnemyId);
+      if (nextId) selectedEnemyId = nextId;
+    }
+
+    // Check if ALL enemies are dead
+    if (enemies.every((e) => e.currentHp <= 0)) {
+      gameStatus = 'won';
+    }
+  } else if (skill.target === 'allEnemy') {
+    // Damage every living enemy
+    enemies = enemies.map((e) =>
+      e.currentHp <= 0 ? e : { ...e, currentHp: subtractionWithMin(e.currentHp, amount, 0) },
+    );
+
+    // Re-select if the current target died
+    const selectedEnemy = enemies.find((e) => e.id === selectedEnemyId);
+    if (selectedEnemy && selectedEnemy.currentHp <= 0) {
       const nextId = getNextLivingEnemyId(enemies, selectedEnemyId);
       if (nextId) selectedEnemyId = nextId;
     }
@@ -372,9 +564,19 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   // Put skill back on cooldown
   party = party.map((char) =>
     char.id === characterId
-      ? { ...char, skillCooldown: calculateCharacterCooldown(char) }
+      ? { ...char, skillCooldown: resolveCharacterCooldown(char) }
       : char,
   );
+
+  // Drive the enemy hit reaction (flinch + number) through the shared lastDamage channel.
+  // Heals are left out — they keep flowing through the party-side feedback.
+  const timestamp = Date.now();
+  let lastDamage = currentState.lastDamage;
+  if (skill.target === 'enemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, source: 'skill' };
+  } else if (skill.target === 'allEnemy') {
+    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, source: 'skill' };
+  }
 
   set(battleStateAtom, {
     ...currentState,
@@ -382,12 +584,18 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     enemies,
     selectedEnemyId,
     gameStatus,
+    // A skill kill wins immediately: there's no in-flight cascade to preserve and no guaranteed
+    // board-settle event to commit a deferred win. Clear any pending flag so it can't go stale.
+    pendingVictory: false,
+    // Every character skill is an "ultimate"; count each successful activation for the rating bonus.
+    ultimateSkillsUsed: currentState.ultimateSkillsUsed + 1,
+    lastDamage,
     lastSkillActivation: {
       characterId,
       skillName: skill.name,
       amount,
       isHeal: skill.target === 'ally' || skill.target === 'allAlly',
-      timestamp: Date.now(),
+      timestamp,
     },
   });
 });

@@ -1,6 +1,5 @@
 import type { CharacterData, OrbType, CharacterClass } from '~/types/rpg-elements';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
-import { calculateExpToNextLevel } from '~/lib/leveling-system';
 import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
 
@@ -12,9 +11,14 @@ export const BASE_MATCH_DAMAGE = 10; // Base damage for match-3
 export const BASE_MATCH_SCORE = 10; // Base score for any match
 export const MATCH_SIZE_BONUS_MULTIPLIER = 5; // Extra points per orb beyond 3
 
-// Default EXP needed for level 1 characters
-export const EXP_TO_LEVEL_ONE = calculateExpToNextLevel(1);
 export const LEVELING_UP_HEALS_CHARACTER = true;
+// Hard ceiling on a character's level. Levels run 1–99 (see the 2-digit level tag UI).
+export const MAX_LEVEL = 99;
+// Safety cap on level-ups awarded from a single battle, guarding against a runaway
+// loop on bad data (used when building the rewards-screen EXP animation timeline).
+export const MAX_LEVEL_UPS_PER_BATTLE = 99;
+/** Hard cap on how many enemies a single battle encounter may contain. */
+export const MAX_ENEMIES_PER_BATTLE = 4;
 
 // ─── Initial Party Setup ─────────────────────────────────────────────
 // Stats: POW (damage), VIT (HP), SPD (cooldown speed), vitHpMultiplier (HP scaling)
@@ -36,14 +40,15 @@ const partyBase: CharacterData[] = [
       spd: 10,
     },
     level: 1,
-    currentExp: 0,
     baseHp: 50,
-    expToNextLevel: EXP_TO_LEVEL_ONE,
+    currentLevelExp: 0,
     vitHpMultiplier: 6, // Tanky - highest HP scaling
     maxHp: calculateMaxHp(50, 20, 6),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 30,
+    unlockedSkillIds: ['warrior-power-strike'],
+    selectedSkillId: 'warrior-power-strike',
   },
   {
     id: 'rogue',
@@ -61,14 +66,15 @@ const partyBase: CharacterData[] = [
       spd: 20,
     },
     level: 1,
-    currentExp: 0,
     baseHp: 40,
-    expToNextLevel: EXP_TO_LEVEL_ONE,
+    currentLevelExp: 0,
     vitHpMultiplier: 3, // Glass cannon - lowest HP scaling
     maxHp: calculateMaxHp(40, 10, 3),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 20,
+    unlockedSkillIds: ['rogue-assassinate'],
+    selectedSkillId: 'rogue-assassinate',
   },
   {
     id: 'mage',
@@ -86,14 +92,15 @@ const partyBase: CharacterData[] = [
       spd: 17,
     },
     level: 1,
-    currentExp: 0,
     baseHp: 35,
-    expToNextLevel: EXP_TO_LEVEL_ONE,
+    currentLevelExp: 0,
     vitHpMultiplier: 4, // Fragile - low HP scaling
     maxHp: calculateMaxHp(35, 8, 4),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 50,
+    unlockedSkillIds: ['mage-arcane-blast'],
+    selectedSkillId: 'mage-arcane-blast',
   },
   {
     id: 'healer',
@@ -111,14 +118,15 @@ const partyBase: CharacterData[] = [
       spd: 17,
     },
     level: 1,
-    currentExp: 0,
     baseHp: 45,
-    expToNextLevel: EXP_TO_LEVEL_ONE,
+    currentLevelExp: 0,
     vitHpMultiplier: 5, // Balanced - moderate HP scaling
     maxHp: calculateMaxHp(45, 18, 5),
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 60,
+    unlockedSkillIds: ['healer-divine-heal'],
+    selectedSkillId: 'healer-divine-heal',
   },
 ];
 
@@ -234,55 +242,18 @@ export const HEALTH_BAR_COLORS: Record<OrbType, string> = {
 };
 
 // ─── Skills ──────────────────────────────────────────────────────────
-
-export type SkillTarget = 'enemy' | 'ally' | 'allAlly';
-
-export interface SkillDefinition {
-  name: string;
-  description: string;
-  icon: string;
-  baseDamageMultiplier: number;
-  flatDamageBonus: number;
-  target: SkillTarget;
-}
-
-/** Base damage value used for skill calculations */
-export const BASE_SKILL_DAMAGE = 15;
+// Skill definitions live in `~/constants/skills`; skill logic lives in
+// `~/lib/skill-system`. Each character owns a subset of those skills.
 
 /** Seconds of cooldown reduction per matched orb of a character's color */
 export const COOLDOWN_REDUCTION_PER_ORB = 0.3;
 
-export const SKILL_DEFINITIONS: Record<CharacterClass, SkillDefinition> = {
-  warrior: {
-    name: 'Power Strike',
-    description: 'A heavy blow dealing massive POW-scaled damage.',
-    icon: '⚔️',
-    baseDamageMultiplier: 3,
-    flatDamageBonus: 10,
-    target: 'enemy',
-  },
-  rogue: {
-    name: 'Assassinate',
-    description: 'A precise shot targeting a vital point for a burst of damage.',
-    icon: '🏹',
-    baseDamageMultiplier: 1,
-    flatDamageBonus: 30,
-    target: 'enemy',
-  },
-  mage: {
-    name: 'Arcane Blast',
-    description: 'Unleashes a devastating blast of arcane energy.',
-    icon: '✨',
-    baseDamageMultiplier: 5,
-    flatDamageBonus: 0,
-    target: 'enemy',
-  },
-  healer: {
-    name: 'Divine Heal',
-    description: 'Heals all party members with a powerful restorative spell.',
-    icon: '💚',
-    baseDamageMultiplier: 4,
-    flatDamageBonus: 0,
-    target: 'allAlly',
-  },
-};
+// ─── Guard Meter ─────────────────────────────────────────────────────
+// Gray orbs trade raw damage for a party-wide Guard meter. The guard math
+// (mitigation, drain, decay, charge rate) lives in `~/lib/rpg-calculations`.
+
+/** Multiplier applied to gray orbs' neutral match damage — gray trades damage for Guard. */
+export const GRAY_MATCH_DAMAGE_MULTIPLIER = 0.4; // was 1.0 (gray dealt full neutral base damage)
+
+/** Base guard charged per gray orb matched, before the SPD-derived Guard Charge Rate. */
+export const GUARD_CHARGE_PER_ORB = 6;

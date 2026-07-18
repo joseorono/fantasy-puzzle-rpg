@@ -1,10 +1,17 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect } from 'react';
-import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
+import {
+  enemiesAtom,
+  selectedEnemyIdAtom,
+  selectEnemyAtom,
+  lastDamageAtom,
+  lastMaxFlinchAtom,
+} from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
+import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 import type { EnemyData } from '~/types/rpg-elements';
 
 interface EnemySpriteProps {
@@ -16,20 +23,41 @@ interface EnemySpriteProps {
 function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
   const isDead = enemy.currentHp <= 0;
   const lastDamage = useAtomValue(lastDamageAtom);
+  const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
+  const [isRecoiling, setIsRecoiling] = useState(false);
+  const [isSkillHit, setIsSkillHit] = useState(false);
+  const [showStagger, setShowStagger] = useState(false);
+  const [staggerKey, setStaggerKey] = useState(0);
 
-  // Show damage animation when this enemy is hit
+  // Show damage animation when this enemy is hit. Skills hit the selected enemy (enemyId)
+  // or every living enemy (enemyIds); matches only ever set enemyId.
   useEffect(() => {
-    if (lastDamage && lastDamage.target === 'enemy' && lastDamage.enemyId === enemy.id) {
+    const isHit =
+      lastDamage?.target === 'enemy' &&
+      (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
+    if (isHit) {
       setDamageAmount(lastDamage.amount);
+      setIsSkillHit(lastDamage.source === 'skill');
       setShowDamage(true);
+      setIsRecoiling(true);
       setAnimationKey((prev) => prev + 1);
       const timer = setTimeout(() => setShowDamage(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [lastDamage, enemy.id]);
+
+  // Pop a "STAGGER!" callout when this enemy maxes out its per-cycle flinch (further hits this
+  // cycle no longer delay its attack). Fires once per cap-out; the timestamp re-arms it next cycle.
+  useEffect(() => {
+    if (lastMaxFlinch?.enemyId !== enemy.id) return;
+    setShowStagger(true);
+    setStaggerKey((prev) => prev + 1);
+    const timer = setTimeout(() => setShowStagger(false), 900);
+    return () => clearTimeout(timer);
+  }, [lastMaxFlinch, enemy.id]);
 
   function handleClick() {
     if (isDead) return;
@@ -38,32 +66,40 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {/* Enemy sprite container */}
-      <div className="group relative">
-        <div
-          onClick={handleClick}
-          className={cn(
-            'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
-            isDead
-              ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
-              : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
-            isSelected && !isDead && 'enemy-selected border-yellow-400',
-            'enemy-sprite-container',
-          )}
-        >
-          {enemy.sprite.startsWith('/') ? (
-            <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
-          ) : (
-            <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
-          )}
+      {/* Enemy sprite container — recoil lives here (not the hover-scaled inner box) */}
+      <div
+        className={cn('group relative', isRecoiling && (isSkillHit ? 'enemy-recoil-strong' : 'enemy-recoil'))}
+        onAnimationEnd={(e) => {
+          // animationend bubbles up from the flash/number children too — only the recoil clears it.
+          if (e.animationName.startsWith('enemy-recoil')) setIsRecoiling(false);
+        }}
+      >
+        <IndigolayCornersWrapper alwaysVisible={isSelected && !isDead}>
+          <div
+            onClick={handleClick}
+            className={cn(
+              'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
+              isDead
+                ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
+                : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
+              isSelected && !isDead && 'enemy-selected border-[#e3a43e]',
+              'enemy-sprite-container',
+            )}
+          >
+            {enemy.sprite.startsWith('/') ? (
+              <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
+            ) : (
+              <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+            )}
 
-          {/* Death indicator */}
-          {isDead && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
-            </div>
-          )}
-        </div>
+            {/* Death indicator */}
+            {isDead && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
+              </div>
+            )}
+          </div>
+        </IndigolayCornersWrapper>
 
         {/* Selected arrow indicator */}
         {isSelected && !isDead && (
@@ -72,25 +108,44 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           </div>
         )}
 
-        {/* Per-enemy damage number */}
+        {/* Per-enemy damage number. Skill hits erupt bigger and read as a warm crit chip;
+            match hits keep their snappy float. */}
         {showDamage && (
           <div
             key={animationKey}
-            className="damage-number pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8"
+            className={cn(
+              'pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8',
+              isSkillHit ? 'damage-erupt' : 'damage-number',
+            )}
           >
             <DamageDisplay
               amount={damageAmount}
-              type={damageAmount > 20 ? 'critical' : 'damage'}
-              className="text-xl sm:text-2xl md:text-3xl"
+              type={isSkillHit || damageAmount > 20 ? 'critical' : 'damage'}
+              className={
+                isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
+              }
             />
           </div>
         )}
 
-        {/* Impact flash effect on hit */}
+        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle stagger cap. */}
+        {showStagger && !isDead && (
+          <div
+            key={`stagger-${staggerKey}`}
+            className="stagger-callout pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
+          >
+            Stagger!
+          </div>
+        )}
+
+        {/* Impact flash effect on hit — a touch stronger for skills */}
         {showDamage && (
           <div
             key={`flash-${animationKey}`}
-            className="pointer-events-none absolute inset-0 rounded-lg bg-red-500/40"
+            className={cn(
+              'pointer-events-none absolute inset-0 rounded-lg',
+              isSkillHit ? 'bg-red-500/55' : 'bg-red-500/40',
+            )}
             style={{ animation: 'flash-fade 0.3s ease-out forwards' }}
           />
         )}
@@ -123,10 +178,10 @@ export function EnemyDisplay() {
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex xl:h-[45vh] 2xl:h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-full flex-col items-center justify-center gap-8 p-1 sm:p-2 md:p-4">
       {/* Enemy party grid */}
-      <div className="relative flex flex-1 items-center justify-center">
-        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-12 2xl:scale-100">
+      <div className="relative flex items-center justify-center">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-8">
           {enemies.map((enemy) => (
             <EnemySprite
               key={enemy.id}
@@ -139,9 +194,9 @@ export function EnemyDisplay() {
       </div>
 
       {/* Enemy section label */}
-      <div className="w-full max-w-xs px-2 mb-15 xl:mt-5 xl:py-2">
+      <div className="w-full max-w-xs">
         <div className="text-center">
-          <h2 className="pixel-font xl:-mt-5 scale-90 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+          <h2 className="pixel-font scale-90 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             ENEMIES
           </h2>
         </div>

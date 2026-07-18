@@ -2,6 +2,7 @@ import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { HP_THRESHOLD_CLASS } from '~/constants/ui';
 import { calculatePercentage } from '~/lib/math';
 import { getHpThreshold } from '~/lib/rpg-calculations';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { cn } from '~/lib/utils';
 import type { CharacterData } from '~/types/rpg-elements';
 
@@ -21,7 +22,7 @@ export function PartyMemberCard({
   const colors = CHARACTER_COLORS[member.class];
   const Icon = CHARACTER_ICONS[member.class];
   const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
-  const expPct = Math.round(calculatePercentage(member.currentExp, member.expToNextLevel));
+  const expPct = Math.round(calculatePercentage(member.currentLevelExp, getExpThresholdForLevel(member.level)));
   const isRoster = variant === 'roster';
   const isDead = member.currentHp <= 0;
 

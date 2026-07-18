@@ -1,7 +1,7 @@
 export default function GraphicsLicensesDialogContent() {
   return (
     <>
-      <div className="text-large flex flex-col justify-center gap-2 overflow-y-auto">
+      <div className="text-large flex flex-col justify-center gap-2">
         <h2 className="text-2xl" id="graphics-assets-licences-and-credits-">
           Graphics Assets - Licences and Credits
         </h2>

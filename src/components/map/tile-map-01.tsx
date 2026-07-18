@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 import { useGameStore, useMapProgressActions } from '~/stores/game-store';
+import { getNavDirection } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { MapInfoPanel } from './map-info-panel';
 
 const characterPlaceholder = '/assets/sprite/character-placeholder.png';
@@ -115,48 +117,26 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     console.error('❌ No walkable tiles found in map!');
   }, [mapData, isWalkable, walkableLayers, defaultPlayerPosition]);
 
-  // Handle keyboard input for character movement
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(event.key)) {
-        event.preventDefault();
-      }
+  // Handle keyboard input for character movement (arrow keys and WASD alike)
+  useWindowKeyDown((event) => {
+    const direction = getNavDirection(event.key);
+    if (!direction) return;
+    event.preventDefault();
 
-      let newRow = charPosition.row;
-      let newCol = charPosition.col;
+    let newRow = charPosition.row;
+    let newCol = charPosition.col;
+    if (direction === 'up') newRow -= 1;
+    else if (direction === 'down') newRow += 1;
+    else if (direction === 'left') newCol -= 1;
+    else newCol += 1;
 
-      switch (event.key) {
-        case 'ArrowUp':
-        case 'w':
-          newRow -= 1;
-          break;
-        case 'ArrowDown':
-        case 's':
-          newRow += 1;
-          break;
-        case 'ArrowLeft':
-        case 'a':
-          newCol -= 1;
-          break;
-        case 'ArrowRight':
-        case 'd':
-          newCol += 1;
-          break;
-        default:
-          return;
-      }
-
-      if (isWalkable(newRow, newCol)) {
-        setCharPosition({ row: newRow, col: newCol });
-        setDebugInfo(`Walking at (${newRow}, ${newCol})`);
-      } else {
-        setDebugInfo(`Blocked at (${newRow}, ${newCol})`);
-      }
+    if (isWalkable(newRow, newCol)) {
+      setCharPosition({ row: newRow, col: newCol });
+      setDebugInfo(`Walking at (${newRow}, ${newCol})`);
+    } else {
+      setDebugInfo(`Blocked at (${newRow}, ${newCol})`);
     }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [charPosition, isWalkable]);
+  });
 
   // Draw the map and character
   useEffect(() => {

@@ -60,6 +60,7 @@ a[href]:hover,
   --cursor-corner-inset: -2px;
   --cursor-corner-nudge: 2px;
   position: relative;
+  display: inline-flex;
   width: fit-content;
 }
 
@@ -84,6 +85,11 @@ a[href]:hover,
 .cursor-corners--always-visible .cursor-corner {
   opacity: 1;
   transition: none;
+}
+
+/* Force corners visible regardless of hover (e.g. keyboard selection) */
+.cursor-corners--force-display .cursor-corner {
+  opacity: 1;
 }
 
 /* Corner positions */
@@ -121,6 +127,23 @@ a[href]:hover,
 }
 
 .cursor-corners:hover .cursor-corner--br {
+  animation: cursor-nudge-br 1.2s ease-in-out 0.3s infinite;
+}
+
+/* Same inward-nudge animation when force-displayed (keyboard selection) */
+.cursor-corners--force-display .cursor-corner--tl {
+  animation: cursor-nudge-tl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--tr {
+  animation: cursor-nudge-tr 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--bl {
+  animation: cursor-nudge-bl 1.2s ease-in-out 0.3s infinite;
+}
+
+.cursor-corners--force-display .cursor-corner--br {
   animation: cursor-nudge-br 1.2s ease-in-out 0.3s infinite;
 }
 
@@ -196,4 +219,31 @@ a[href]:hover,
 
 .cursor-corners--toffeec-beige .cursor-corner--br {
   background-image: url('/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png');
+}
+
+/*
+=========================================================
+    Cursor Corners — Indigolay
+=========================================================
+*/
+
+/* Sit the brackets a touch further out so there's a small gap between
+   them and the golden border (matching indigolay's slot reference). */
+.cursor-corners--indigolay {
+  --cursor-corner-inset: -3px;
+}
+.cursor-corners--indigolay .cursor-corner--tl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--tr {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-topright.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--bl {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png');
+}
+
+.cursor-corners--indigolay .cursor-corner--br {
+  background-image: url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png');
 }

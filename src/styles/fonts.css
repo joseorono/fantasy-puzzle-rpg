@@ -35,10 +35,19 @@
   align-items: flex-start;
 }
 
+/* Glyph row: lays out characters with a per-font tracking gap. */
+.bf-row {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--bf-gap, 0);
+}
+
 .bf-char {
   display: inline-block;
   flex-shrink: 0;
   background-repeat: no-repeat;
+  /* Width defaults to a full cell (monospace); proportional fonts override
+     it per glyph via an inline style. */
   width: var(--bf-cw);
   height: var(--bf-ch);
   background-image: var(--bf-img);

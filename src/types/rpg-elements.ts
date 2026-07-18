@@ -1,4 +1,5 @@
 import type { LootTable } from './loot';
+import type { RarityTier } from '~/constants/rarity';
 
 export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
@@ -32,10 +33,22 @@ export interface CharacterData extends BaseStats {
   potentialStats: CoreRPGStats;
   maxCooldown: number; // Base cooldown before SPD modifications
   level: number;
-  currentExp: number;
-  expToNextLevel: number;
+  /**
+   * EXP progress within the current level — normally `0..getExpThresholdForLevel(level)`. It may
+   * transiently exceed the threshold right after a battle award, until the leveling system applies
+   * the pending level-ups and rolls the overflow into the next level.
+   */
+  currentLevelExp: number;
   equippedWeaponId?: string;
   equippedArmorId?: string;
+  /** Rolled rarity of the equipped weapon; mirrors `equippedWeaponId`. */
+  equippedWeaponRarity?: RarityTier;
+  /** Rolled rarity of the equipped armor; mirrors `equippedArmorId`. */
+  equippedArmorRarity?: RarityTier;
+  /** Ids of skills this character has unlocked (see `~/constants/skills`). */
+  unlockedSkillIds: string[];
+  /** Id of the currently active skill; resolved via `getSelectedSkill`. */
+  selectedSkillId: string;
 }
 
 // Enemy-specific stats
@@ -46,4 +59,11 @@ export interface EnemyData extends BaseStats {
   attackDamage: number; // Base damage before POW modifications
   lootTable: LootTable; // Loot dropped when defeated
   expReward: number; // Experience points rewarded when defeated
+  /** Drain multiplier on the party Guard meter per hit; default 1 (0.5 = barely erodes, 2+ = chews through). */
+  guardBreak?: number;
+  /**
+   * Luck bias applied to equipment-drop rarity rolls; default 0 (neutral odds).
+   * Higher values skew this enemy's drops toward rarer tiers. See `rollRarity`.
+   */
+  rarityBias?: number;
 }

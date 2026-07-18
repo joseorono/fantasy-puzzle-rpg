@@ -13,7 +13,7 @@
   background-position: center;
 }
 
-.exp-gained-container>.character-cards-grid {
+.exp-gained-container > .character-cards-grid {
   flex: 1;
   min-height: 0;
 }
@@ -40,56 +40,112 @@
 .rewards-section-subtitle {
   margin: 0 0 1rem 0;
 }
-.exp-gained-amount {
-  font-size: 1.125rem;
-  color: #ffd700;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  margin-top: 0.25rem;
+/* EXP total ribbon (title-sign artwork) sits centered under the heading. */
+.exp-gained-ribbon {
+  margin: 0.35rem auto 0;
+}
+
+/* Only bump the font for legibility — leave the shared title-sign vertical
+   centering (the --ts-text-nudge-y margin) untouched so it sits in the band
+   exactly like every other title-sign usage. */
+.exp-gained-ribbon .title-sign__text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+  margin-top: 4px;
 }
 
 .character-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 .character-card {
-  background-image: url('/assets/bg/looping/bg-board.png');
-  background-repeat: repeat;
-  background-size: 50px 50px;
-  background-position: center;
-  border: 3px solid #d4a574;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
   border-radius: 12px;
-  padding: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  padding-left: calc(0.5rem + 130px + 0.5rem + 1.2rem);
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   display: flex;
-  gap: 0.625rem;
+  align-items: center;
+  gap: 1.2rem;
   position: relative;
   min-height: 0;
-  overflow: hidden;
+  /* visible (not hidden) so the level-up bookmark can hang past the right edge;
+         the card's rounded corners still hold via border-radius. */
+  overflow: visible;
+}
+
+/* Portrait sits absolutely on the left with outer spacing on the right.
+   overflow: visible so the level-tag pennant can hang past the top-left corner. */
+.reward-portrait {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 130px;
+  height: calc(100% - 1rem);
+  margin-right: 0.5rem;
+  border-radius: 12px;
+  overflow: visible;
+  line-height: 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Keep the level badge inside the portrait box instead of hanging past the edge. */
+.reward-portrait .level-tag {
+  top: 0;
+  left: 2px;
 }
 
 .character-card .character-portrait {
-  width: 72px;
-    height: 72px;
-  border-radius: 8px;
-  border: 3px solid #d4a574;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 2px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.68),
+    0 3px 8px rgba(0, 0, 0, 0.45);
   object-fit: cover;
   position: relative;
   flex-shrink: 0;
 }
 
-@media (min-width: 1536px) {
-  .character-card .character-portrait {
-    margin-top: 4rem;
-    margin-left: 3rem;
-    scale: calc(2);
-  }
+/* Level + class share an aligned sub-row directly below the name. */
+.reward-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.reward-level {
+  color: #f4cd84;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.reward-class {
+  color: #d4a574;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 .character-card .character-info {
@@ -97,35 +153,56 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: transparent;
+  min-width: 0;
+  padding-left: 0.2rem;
 }
 
-@media (min-width: 1536px) {
+@media (min-width: 1280px) {
+  .character-card {
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    padding-left: calc(0.5rem + 160px + 0.5rem + 1.5rem);
+  }
+
+  .reward-portrait {
+    width: 160px;
+  }
+
   .character-card .character-portrait {
-    margin-top: 5rem;
-    margin-left: 3rem;
-    scale: calc(2);
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
   }
-  
-  .character-card .character-info {
-    margin-left: 6rem;
-    scale: calc(1.2);
+
+  .character-card .character-name {
+    font-size: 1.25rem;
   }
-  
+
+  .character-card .character-level,
+  .character-card .exp-gained-text {
+    font-size: 1rem;
+  }
+
   .rewards-resources-panel {
     gap: 2rem;
   }
-  
+
   .rewards-resource-card {
     gap: 3rem;
   }
 }
 
+/* Prominent name, styled like the pause menu's .party-member-card__name. */
 .character-card .character-name {
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #ffd700;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  margin: 0 0 0.125rem 0;
+  color: #fff8dc;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 0.1rem 0;
 }
 
 .character-card .character-level {
@@ -136,65 +213,191 @@
 
 .character-card .exp-gained-text {
   font-size: 0.875rem;
-  color: #ffd700;
+  color: #e3bb92;
   font-weight: 700;
   margin: 0 0 0.25rem 0;
 }
 
-
+/* Level-up indicator is a horizontal bookmark (indigolay) that hangs 25px past
+   the card's right edge. Native art is 183×102 (~1.79:1). */
 .level-up-badge {
   position: absolute;
-  top: 10px;
-  right: 8px;
-  background: linear-gradient(135deg, #ff6b35, #f7931e);
-  color: #fff;
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 900;
+  top: 8px;
+  right: -16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  height: 58px;
+  /* Extra right padding keeps the label off the swallowtail notch so it reads
+         centered on the flat red band. */
+  padding: 0 1rem 0.65rem 0.4rem;
+  background: url('/assets/bookmarks/ui-bookmark-horizontal-m-red.png') no-repeat center / contain;
+  image-rendering: pixelated;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #ffe9c2;
+  letter-spacing: 0.03em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+
+/* Appear-only entrance: the bookmark slides in from the edge it hangs off and
+   overshoots with a slight tilt, so it reads as being slapped onto the card. */
+@keyframes levelUpAppear {
+  0% {
+    transform: translateX(14px) scale(0.55) rotate(-7deg);
+    opacity: 0;
+  }
+  55% {
+    transform: translateX(0) scale(1.14) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* The label lives on its own so it can animate independently of the static bookmark. */
+.level-up-badge__text {
+  display: inline-block;
+  /* Per-level pop replays on each level-up (text is re-keyed); the idle breathe keeps
+     it alive between level-ups so the badge never reads as frozen. */
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
   text-transform: uppercase;
-  border: 1px solid #ffd700;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  /* Bounce effect */
-  animation: levelUpBounce 1s ease-in-out infinite;
+  letter-spacing: -0.01em;
+  color: #ffe9a8;
+  text-shadow:
+    -1px -1px 0 #3a1809,
+    1px -1px 0 #3a1809,
+    -1px 1px 0 #3a1809,
+    1px 1px 0 #3a1809,
+    0 2px 2px rgba(0, 0, 0, 0.8);
+  animation:
+    levelUpTextPop 0.4s ease-out both,
+    levelUpTextIdle 1.6s ease-in-out 0.4s infinite;
 }
 
-.level-up-badge::after {
-  content: "↑";
-  margin-left: 2px;
-  font-size: 0.875rem;
-  animation: arrowFloat 1.5s ease-in-out infinite;
-}
-
-@keyframes arrowFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-
-@keyframes levelUpBounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.05); }
-}
-
-/* O glow effect */
-@keyframes glowPulse {
-  0%, 100% { 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    border-color: #ffd700;
+/* Subtle punch each time you gain a level, with a tiny side-to-side shake. */
+@keyframes levelUpTextPop {
+  0% {
+    transform: scale(0.96) translateX(0);
+    filter: brightness(1.25);
   }
-  50% { 
-    box-shadow: 0 0 25px rgba(255, 215, 0, 1);
-    border-color: #fff;
+  30% {
+    transform: scale(1.08) translateX(-1px);
   }
+  55% {
+    transform: scale(1.04) translateX(1px);
+  }
+  80% {
+    transform: scale(1.01) translateX(-0.5px);
+  }
+  100% {
+    transform: scale(1) translateX(0);
+    filter: brightness(1);
+  }
+}
+
+/* Gentle continuous breathe — the "still leveling" heartbeat. */
+@keyframes levelUpTextIdle {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.12);
+  }
+}
+
+/* Warm amber glow — no bright gold, keeps the parchment palette. Uses drop-shadow
+   so the glow hugs the bookmark silhouette instead of a box. */
+@keyframes levelUpBookmarkGlow {
+  0% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 6px rgba(212, 165, 116, 0.6));
+  }
+  100% {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  }
+}
+
+/* Plays once when the bookmark first appears (no remount key), not on each level-up. */
+.level-up-badge--pop {
+  animation:
+    levelUpAppear 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    levelUpBookmarkGlow 0.7s ease-out;
+}
+
+/* The rewards bar is driven frame-by-frame by requestAnimationFrame (useExpGainAnimation),
+   so it must not also run a CSS width transition — that would lag the fill and animate the
+   reset-to-0 backwards. The level-up screen's ExperienceBar keeps its own transition. */
+.exp-gained-container .exp-bar__fill {
+  transition: none;
+}
+
+/* EXP have/missing readout directly under the bar. Values are NumberFlow-driven and
+   derived from the same `percentage` that fills the bar, so they tick up in lockstep
+   with it (see EXP_COUNTER_TIMING). */
+.reward-exp-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: 0.3rem;
+  font-size: 0.65rem;
+  width: 100%;
+  max-width: 80%;
+}
+
+.reward-exp-numbers__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+}
+
+.reward-exp-numbers__row--have {
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.reward-exp-numbers__row--missing {
+  color: #ffffff;
+  opacity: 0.8;
+  font-size: 0.85em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.reward-exp-numbers__label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Section divider between the party cards and the resource payout. */
+.rewards-divider {
+  width: 60%;
+  margin-inline: auto;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 /* Resources Panel — card-based layout (like Pause Menu / TownHub) */
 .rewards-resources-panel {
   display: flex;
   flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 1.5rem;
+  justify-content: center;
+  gap: 2.75rem;
+  margin-bottom: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -202,101 +405,105 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-image: url('/assets/bg/looping/bg-board.png');
-  background-repeat: repeat;
-  background-size: 50px 50px;
-  background-position: center;
-  border: 3px solid #d4a574;
-    border-radius: 12px;
-    padding: 0.6rem 0.6rem;
-    box-shadow:
-      0 8px 16px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-    flex: 1;
-    min-width: 100px;
-    max-width: 180px;
-    transition: all 0.2s ease;
-    scale: calc(1.1);
-  }
-  
-  .rewards-resource-card:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 6px 12px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.5),
-      0 0 8px rgba(255, 215, 0, 0.3);
-  }
-  
-  .rewards-resource-card__icon {
-    flex-shrink: 0;
-  }
-  
-  .rewards-resource-card__content {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
-    gap: 0.5rem;
-  }
-  
-  .rewards-resource-card__label {
-    font-family: monospace;
-    font-size: 1rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #d4a574;
-    letter-spacing: 0.05em;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 12px;
+  padding: 0.6rem 0.6rem;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  flex: 1;
+  min-width: 110px;
+  max-width: 180px;
+  transition: all 0.2s ease;
+}
 
-  .rewards-resource-card__values {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 4px;
-    padding: 0.125rem 0.3rem;
-  }
-  
-  .rewards-resource-card__earned {
-    font-family: monospace;
-    font-size: 0.875rem;
-    font-weight: bold;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
-  
-  .rewards-resource-card__arrow {
-    color: #d4a574;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
-  
-  .rewards-resource-card__balance {
-    font-family: monospace;
-    font-size: 0.875rem;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-    opacity: 0.7;
-  }
-  
-  /* Resource-specific value colors */
-  .rewards-resource-card--coins .rewards-resource-card__earned {
-    color: #ffd700;
-  }
-  
-  .rewards-resource-card--gold .rewards-resource-card__earned {
-    color: #ffd700;
-  }
-  
-  .rewards-resource-card--silver .rewards-resource-card__earned {
-    color: #c0c0c0;
-  }
-  
-  .rewards-resource-card--iron .rewards-resource-card__earned {
-    color: #71797e;
+.rewards-resource-card:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(212, 165, 116, 0.22);
+}
+
+.rewards-resource-card__icon {
+  flex-shrink: 0;
+}
+
+.rewards-resource-card__content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 0.5rem;
+}
+
+.rewards-resource-card__label {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #d4a574;
+  letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.rewards-resource-card__values {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  padding: 0.125rem 0.3rem;
+}
+
+.rewards-resource-card__earned {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.rewards-resource-card__arrow {
+  color: #d4a574;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.rewards-resource-card__balance {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #e0e0e0;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  opacity: 0.7;
+}
+
+/* Resource-specific value colors */
+.rewards-resource-card--coins .rewards-resource-card__earned {
+  color: #ffd700;
+}
+
+.rewards-resource-card--gold .rewards-resource-card__earned {
+  color: #ffd700;
+}
+
+.rewards-resource-card--silver .rewards-resource-card__earned {
+  color: #c0c0c0;
+}
+
+.rewards-resource-card--iron .rewards-resource-card__earned {
+  color: #71797e;
 }
 
 .rewards-resource-card--copper .rewards-resource-card__earned {
@@ -356,6 +563,20 @@
   flex-shrink: 0;
 }
 
+/* Rating loot-bonus badge — echoes the ×N shown on the rating screen. */
+.rewards-loot-bonus {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: #f6c453;
+  background: rgba(118, 35, 35, 0.4);
+  border: 1px solid rgba(246, 196, 83, 0.5);
+  border-radius: 999px;
+  text-shadow: 0 0 5px rgba(246, 196, 83, 0.35);
+}
+
 .victory-title {
   margin: 0;
 }
@@ -363,15 +584,19 @@
 .items-found-container {
   flex: 1;
   min-height: 0;
-  background-image: url('/assets/bg/looping/bg-board.png');
-  background-repeat: repeat;
-  background-size: 50px 50px;
-  background-position: center;
-  border: 3px solid #d4a574;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
   border-radius: 12px;
   padding: 1rem;
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
@@ -413,7 +638,7 @@
 }
 
 .item-name {
-  color: #fff;
+  color: #e0e0e0;
   font-size: 0.875rem;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
@@ -481,13 +706,28 @@
   .character-cards-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .character-card {
+    gap: 0.875rem;
+    padding: 0.625rem 0.75rem;
+    padding-left: calc(0.5rem + 120px + 0.5rem + 0.875rem);
+  }
+
+  .reward-portrait {
+    width: 120px;
   }
 
   .character-card .character-portrait {
-    width: 56px;
-      height: 56px;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+  }
+
+  .character-card .character-info {
+    padding-left: 0.1rem;
   }
 
   .item-entry-icon {
@@ -516,18 +756,24 @@
   }
 
   .character-cards-grid {
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
   .character-card {
     padding: 0.375rem 0.5rem;
-    gap: 0.5rem;
+    padding-left: calc(0.5rem + 110px + 0.5rem + 0.75rem);
+    gap: 0.75rem;
+  }
+
+  .reward-portrait {
+    width: 110px;
   }
 
   .character-card .character-portrait {
-    width: 56px;
-      height: 56px;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
   }
 
   .character-card .character-name {
@@ -551,33 +797,38 @@
     border-radius: 2px;
   }
 
-
-                .rewards-resources-panel {
-                  gap: 0.375rem;
-                  margin-bottom: 0.75rem;
-                }
-        
-                .rewards-resource-card {
-                  padding: 0.25rem 0.5rem;
-                  gap: 0.375rem;
-                  min-width: 80px;
-                }
-        
-                .rewards-resource-card__earned,
-                .rewards-resource-card__balance {
-                  font-size: 0.75rem;
+  .rewards-resources-panel {
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
   }
 
-  .finish-button,
-  .continue-button {
-    padding: 0.5rem 1.5rem;
-    font-size: 0.875rem;
+  .rewards-resource-card {
+    padding: 0.25rem 0.5rem;
+    gap: 0.375rem;
+    min-width: 80px;
   }
 
-  .item-entry-icon {
-    width: 32px;
-    height: 32px;
+  .rewards-resource-card__earned,
+  .rewards-resource-card__balance {
+    font-size: 0.75rem;
   }
+}
+
+@media (min-width: 1280px) {
+  .rewards-resources-panel {
+    gap: 2rem;
+  }
+}
+
+.finish-button,
+.continue-button {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+}
+
+.item-entry-icon {
+  width: 32px;
+  height: 32px;
 }
 
 @media (max-height: 550px) {
@@ -596,14 +847,21 @@
 
   .character-card {
     padding: 0.25rem 0.375rem;
-    gap: 0.375rem;
+    padding-left: calc(0.5rem + 90px + 0.5rem + 0.625rem);
+    gap: 0.625rem;
     border-width: 2px;
     border-radius: 8px;
   }
 
+  .reward-portrait {
+    width: 90px;
+    border-radius: 8px;
+  }
+
   .character-card .character-portrait {
-    width: 44px;
-      height: 44px;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
     border-width: 2px;
   }
 
@@ -617,34 +875,37 @@
   }
 
   .level-up-badge {
-    font-size: 0.5625rem;
-    padding: 0.125rem 0.375rem;
+    width: 84px;
+    height: 47px;
+    right: -20px;
+    padding: 0 1rem 0.25rem 0.4rem;
+    font-size: 0.62rem;
   }
 
-                .rewards-resources-panel {
-                  gap: 0.25rem;
-                  margin-bottom: 0.5rem;
-                }
-        
-                .rewards-resource-card {
-                  padding: 0.2rem 0.375rem;
-                  gap: 0.25rem;
-                  min-width: 70px;
-                  border-radius: 6px;
-                }
-        
-                .rewards-resource-card__label {
-                  font-size: 0.5rem;
-                }
-        
-                .rewards-resource-card__earned,
-                .rewards-resource-card__balance {
-                  font-size: 0.625rem;
-                }
-        
-                .rewards-resource-card__arrow {
-                  font-size: 0.5rem;
-                }
+  .rewards-resources-panel {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .rewards-resource-card {
+    padding: 0.2rem 0.375rem;
+    gap: 0.25rem;
+    min-width: 70px;
+    border-radius: 6px;
+  }
+
+  .rewards-resource-card__label {
+    font-size: 0.5rem;
+  }
+
+  .rewards-resource-card__earned,
+  .rewards-resource-card__balance {
+    font-size: 0.625rem;
+  }
+
+  .rewards-resource-card__arrow {
+    font-size: 0.5rem;
+  }
   .finish-button,
   .continue-button {
     padding: 0.375rem 1rem;
@@ -670,4 +931,3 @@
     padding: 0.0625rem 0.375rem;
   }
 }
-

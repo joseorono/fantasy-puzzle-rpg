@@ -4,12 +4,21 @@ import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { Play, FolderOpen, ArrowLeft } from 'lucide-react';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { Play, FolderOpen, ScrollText } from 'lucide-react';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { ModalTitle } from '~/components/typography/modal-title';
+import { CreditsModal } from '~/components/credits-modal';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
+  /** Forwarded for upcoming Load Game wiring; load is currently handled by the internal Load tab. */
+  onLoadGame?: () => void;
+  /** Forwarded for upcoming Credits wiring (not yet implemented). */
+  onCredits?: () => void;
 }
 
 type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
@@ -21,14 +30,35 @@ const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   settings: 'Settings',
 };
 
+const MENU_ITEM_COUNT = 5;
+
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
+  // Index of the keyboard-selected menu item (null = nothing selected yet, so
+  // the toffec corners only appear once the player actually uses the keyboard).
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
 
   useEffect(() => {
     soundService.startMusic(SoundNames.startMenuMusic, 0.15);
     return () => {
       soundService.stopMusic(SoundNames.startMenuMusic);
     };
+  }, []);
+
+  // Reset the keyboard selection whenever we leave the main view.
+  useEffect(() => {
+    if (activeTab !== 'main') setSelectedIndex(null);
+  }, [activeTab]);
+
+  // Drop the keyboard selection as soon as the mouse moves, so the keyboard
+  // selection corners never linger alongside a hovered button's corners.
+  useEffect(() => {
+    function clearKeyboardSelection() {
+      setSelectedIndex((prev) => (prev === null ? prev : null));
+    }
+    window.addEventListener('pointermove', clearKeyboardSelection);
+    return () => window.removeEventListener('pointermove', clearKeyboardSelection);
   }, []);
 
   const handleMenuClick = (callback: () => void, soundName: SoundNames = SoundNames.mechanicalClick) => {
@@ -56,6 +86,73 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     setActiveTab('settings');
   };
 
+  const handleOpenCredits = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setIsCreditsOpen(true);
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Fantasy Puzzle RPG', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to share:', error);
+      }
+    }
+  };
+
+  const handleBookmark = () => {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    const url = window.location.href;
+    const title = document.title || 'Fantasy Puzzle RPG';
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const shortcut = isMac ? 'Cmd+D' : 'Ctrl+D';
+
+    const ext = window.external as unknown as { AddFavorite?: (url: string, title: string) => void };
+    if (ext?.AddFavorite) {
+      // Legacy IE
+      ext.AddFavorite(url, title);
+      return;
+    }
+
+    const sidebar = (window as unknown as { sidebar?: { addPanel?: (title: string, url: string, param: string) => void } }).sidebar;
+    if (sidebar?.addPanel) {
+      // Legacy Firefox
+      sidebar.addPanel(title, url, '');
+      return;
+    }
+
+    window.alert(`Press ${shortcut} to bookmark this page.`);
+  };
+
+  // Arrow keys / WASD move the selection, Enter/Space activates it. The hook
+  // always invokes the latest closure, so this reads current state directly.
+  useWindowKeyDown((event) => {
+    // The credits modal owns the keyboard while it's open (Escape to close).
+    if (activeTab !== 'main' || isCreditsOpen) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction === 'down') {
+      event.preventDefault();
+      setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % MENU_ITEM_COUNT));
+    } else if (direction === 'up') {
+      event.preventDefault();
+      setSelectedIndex((prev) => (prev === null ? MENU_ITEM_COUNT - 1 : (prev - 1 + MENU_ITEM_COUNT) % MENU_ITEM_COUNT));
+    } else if (isConfirmKey(event.key)) {
+      // Always claim Enter/Space so they can't scroll the page, even when
+      // nothing is selected yet.
+      event.preventDefault();
+      if (selectedIndex === null) return;
+      [handleStartGame, handleOpenLoad, handleOpenCredits, handleShare, handleOpenSettings][selectedIndex]?.();
+    }
+  });
+
   const isModalOpen = activeTab !== 'main';
 
   return (
@@ -69,17 +166,37 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
         </div>
 
         <div className="main-menu__buttons">
-          <button className="main-menu__button" onClick={handleStartGame}>
-            <Play size={20} />
-            Start Game
-          </button>
-          <button className="main-menu__button" onClick={handleOpenLoad}>
-            <FolderOpen size={20} />
-            Load Game
-          </button>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 0}>
+            <button className="main-menu__button" onClick={handleStartGame}>
+              <Play size={20} />
+              Start Game
+            </button>
+          </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 1}>
+            <button className="main-menu__button" onClick={handleOpenLoad}>
+              <FolderOpen size={20} />
+              Load Game
+            </button>
+          </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 2}>
+            <button className="main-menu__button" onClick={handleOpenCredits}>
+              <ScrollText size={20} />
+              Credits
+            </button>
+          </ToffecBeigeCornersWrapper>
         </div>
       </div>
-      <button className="main-menu__settings-icon" onClick={handleOpenSettings} />
+      <ToffecBeigeCornersWrapper className="main-menu__bookmark-corners">
+        <button className="main-menu__bookmark-button" onClick={handleBookmark} aria-label="Bookmark" />
+      </ToffecBeigeCornersWrapper>
+      <div className="main-menu__actions">
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 3} className="main-menu__action-corners">
+          <button className="main-menu__share-icon" onClick={handleShare} aria-label="Share" />
+        </ToffecBeigeCornersWrapper>
+        <ToffecBeigeCornersWrapper forceDisplay={selectedIndex === 4} className="main-menu__action-corners">
+          <button className="main-menu__settings-icon" onClick={handleOpenSettings} aria-label="Settings" />
+        </ToffecBeigeCornersWrapper>
+      </div>
 
       {isModalOpen && (
         <div className="start-menu-modal-backdrop" onClick={handleBackToMain}>
@@ -92,15 +209,11 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
 
             {/* Header bar */}
             <div className="start-menu-modal-header">
-              <ToffecBeigeCornersWrapper>
-                <button className="start-menu-modal-back" onClick={handleBackToMain}>
-                  <ArrowLeft size={14} />
-                  <span style={{ fontSize: '0.7rem' }}>Back</span>
-                </button>
-              </ToffecBeigeCornersWrapper>
-              <h2 className="start-menu-modal-title">
-                <NarikWoodBitFont text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]} size={0.9} />
-              </h2>
+              <ModalTitle
+                text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}
+                className="start-menu-modal-title"
+              />
+              <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
             </div>
 
             {/* Divider */}
@@ -116,6 +229,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
           </div>
         </div>
       )}
+
+      <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
     </div>
   );
 }

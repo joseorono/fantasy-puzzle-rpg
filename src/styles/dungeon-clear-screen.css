@@ -1,0 +1,220 @@
+/* ─── Dungeon Clear Screen (run-complete results overlay) ────────────────────
+   Mirrors the battle rating screen: per-floor rows tick in, the overall rank
+   stars fill left-to-right, then a rank ribbon + star total land. Reuses the
+   shared gom-fade-in / modal-zoom-in / brs-star-pop / brs-rank-in /
+   brs-continue-pulse keyframes (from animations.css / battle-*-screen.css). */
+
+.dcs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 56;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  animation: gom-fade-in 0.4s ease-out;
+}
+
+.dcs-card-wrap {
+  max-width: 92%;
+}
+
+.dcs-card {
+  position: relative;
+  width: 420px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.4rem 1.3rem 1.3rem;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  /* Indigolay-red double frame + warm gold inner liner (matches .brs-card). */
+  border: 4px solid #762323;
+  outline: 3px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #d4a574,
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    0 2px 0 #4d1717,
+    0 0 18px rgba(118, 35, 35, 0.35);
+  color: #f5e6c8;
+  animation: modal-zoom-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dcs-header {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.2rem;
+}
+
+.dcs-divider {
+  height: 1px;
+  background: rgba(212, 165, 116, 0.4);
+  margin: 0.1rem 0;
+}
+
+/* ── Per-floor rows ── */
+.dcs-floors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.dcs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  padding: 0.42rem 0.6rem;
+  font-size: 0.6rem;
+  background: rgba(42, 26, 14, 0.55);
+  border: 1px solid rgba(212, 165, 116, 0.32);
+  border-radius: 6px;
+  /* Hidden until revealed. */
+  opacity: 0;
+  transform: translateX(-12px);
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.28s ease-out;
+}
+.dcs-row--revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+.dcs-row-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #e8d9b8;
+  letter-spacing: 0.03em;
+}
+.dcs-row-stars {
+  display: inline-flex;
+  gap: 0.08rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+.dcs-row-star {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+/* ── Overall rank stars ── */
+.dcs-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0 0.1rem;
+}
+.dcs-star {
+  display: inline-flex;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+  transition: color 0.2s ease-out;
+}
+.dcs-star-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+.dcs-star--filled {
+  filter: drop-shadow(0 0 6px rgba(246, 196, 83, 0.7));
+  animation: brs-star-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Rank ribbon + tagline ── */
+.dcs-rank-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+.dcs-rank {
+  --ts-scale: 0.6;
+  margin: 0.05rem auto;
+  animation: brs-rank-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.dcs-tagline {
+  margin: 0;
+  font-size: 0.52rem;
+  line-height: 1.4;
+  text-align: center;
+  color: #e0cfa8;
+  letter-spacing: 0.02em;
+  animation: brs-rank-in 0.4s ease-out both;
+}
+.dcs-tagline--close {
+  color: #e6a07f;
+  text-shadow: 0 0 6px rgba(217, 138, 106, 0.35);
+}
+
+/* ── Star total (final beat) ── */
+.dcs-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid rgba(246, 196, 83, 0.5);
+  border-radius: 999px;
+  background: rgba(118, 35, 35, 0.35);
+  /* Hidden until its reveal beat. */
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
+}
+.dcs-total--shown {
+  opacity: 1;
+  transform: scale(1);
+  animation: brs-rank-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.dcs-total-label {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  color: #e8d9b8;
+}
+.dcs-total-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-size: 0.64rem;
+  color: #f6c453;
+  text-shadow: 0 0 3px rgba(246, 196, 83, 0.22);
+}
+.dcs-total-max {
+  font-size: 0.5rem;
+  color: #cbb98f;
+}
+
+/* ── Continue ── */
+.dcs-continue {
+  align-self: center;
+  margin-top: 0.35rem;
+}
+.dcs-continue--ready {
+  animation: brs-continue-pulse 1.5s ease-in-out infinite;
+}
+
+/* Respect reduced motion: no pops/pulses, everything shown static. */
+@media (prefers-reduced-motion: reduce) {
+  .dcs-card,
+  .dcs-star--filled,
+  .dcs-rank,
+  .dcs-tagline,
+  .dcs-total--shown,
+  .dcs-continue--ready {
+    animation: none !important;
+  }
+  .dcs-row,
+  .dcs-total {
+    transition: none !important;
+  }
+}

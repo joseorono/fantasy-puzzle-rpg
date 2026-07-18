@@ -20,6 +20,30 @@
   100% { transform: translate(0, 0); }
 }
 
+/* ---- Hitstop freeze-frame (applied to #game-screen on impact) ---- */
+/* Pause every running animation underneath, plus a barely-perceptible scale punch for weight. */
+#game-screen.hitstop-freeze,
+#game-screen.hitstop-freeze * {
+  animation-play-state: paused !important;
+}
+
+#game-screen.hitstop-freeze {
+  transform: scale(1.012);
+  transition: transform 40ms ease-out;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #game-screen.hitstop-freeze,
+  #game-screen.hitstop-freeze * {
+    animation-play-state: running !important;
+  }
+  #game-screen.hitstop-freeze {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* ---- View Transition Circle (overlay mask) ---- */
 .anim-view-transition-circle {
   /* Base black overlay that will be masked */

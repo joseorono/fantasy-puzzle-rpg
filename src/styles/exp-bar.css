@@ -35,6 +35,30 @@
   border-radius: 2px;
 }
 
+.exp-bar--compact {
+  /* ---- Flash animation tweakables ---- */
+  --exp-flash-duration: 350ms;
+  --exp-flash-ease: ease-out;
+  --exp-flash-brightness: rgba(255, 255, 255, 1);
+  --exp-flash-glow-spread: 5px;
+  --exp-flash-glow-blur: 3px;
+}
+
+@keyframes expBarCompactFlash {
+  0% {
+    background: var(--exp-flash-brightness);
+    box-shadow: 0 0 var(--exp-flash-glow-blur) var(--exp-flash-glow-spread) var(--exp-flash-brightness);
+  }
+
+  100% {
+    background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
+    box-shadow: none;
+  }
+}
+
+.exp-bar--compact .exp-bar__fill--full {
+  animation: expBarCompactFlash var(--exp-flash-duration) var(--exp-flash-ease) forwards;
+}
 .exp-bar__label {
   position: absolute;
   top: 50%;
