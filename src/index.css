@@ -430,13 +430,11 @@
 
 @import './styles/start-menu-modal.css';
 
-@import './styles/credits-modal.css';
+@import './styles/modals.css';
 
 @import './styles/marquee.css';
 
 @import './styles/town.css';
-
-@import './styles/confirm-panel.css';
 
 @import './styles/salvage-confirm-dialog.css';
 

@@ -1,0 +1,398 @@
+/*
+==================================
+    Modals
+==================================
+
+  Shared and generic modal styles, consolidated into one stylesheet and split by
+  the named sections below. Modals with their own heavy frame keep their own file
+  (e.g. start-menu-modal.css); the credits modal reuses that frame, so only its
+  overrides live here (under CREDITS MODAL).
+*/
+
+/* ==========================================
+   MODAL TITLE
+   ========================================== */
+
+/* Standardized modal heading — rendered via the ModalTitle component
+   (src/components/typography/modal-title.tsx). Per-modal layout offsets are
+   applied through an additional class alongside this one. */
+.modal-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================
+   CONFIRM PANEL
+   ========================================== */
+
+/* Generic pixel-art confirmation modal shell (useConfirm → ConfirmDialog, e.g.
+   the "Leave Dungeon?" prompt). Shares the game-over / map-menu visual language:
+   a chunky triple border over the board texture, a diamond icon medallion,
+   gradient divider, and accent colors per variant (warm gold default, warning
+   red for `danger`).
+   NOTE: salvage-confirm-dialog.css builds on these classes, so this section must
+   stay imported before that file. */
+
+.confirm-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(4px);
+  animation: confirm-panel-fade 0.2s ease-out;
+}
+
+@keyframes confirm-panel-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Panel: chunky pixel-art frame (board texture + triple border) ─────── */
+
+.confirm-panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  color: #e0e0e0;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 4px solid #5c3a1e;
+  outline: 3px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 0 22px rgba(200, 135, 46, 0.22),
+    0 10px 34px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
+  overflow: hidden;
+  animation: confirm-panel-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes confirm-panel-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Danger variant: red frame accent. */
+.confirm-panel--danger {
+  border-color: #6b1a1a;
+  box-shadow:
+    inset 0 0 0 2px #8b2e2e,
+    0 0 22px rgba(139, 46, 46, 0.25),
+    0 10px 34px rgba(0, 0, 0, 0.8),
+    0 2px 0 #2a1a0e;
+}
+
+/* ─── Close button ─────────────────────────────────────────────────────── */
+
+.confirm-panel .confirm-panel__close {
+  position: absolute;
+  top: calc(1.1rem + 0.75px);
+  right: 1.25rem;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  image-rendering: pixelated;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.confirm-panel .confirm-panel__close:hover {
+  transform: scale(1.1);
+  filter: brightness(1.15);
+}
+
+.confirm-panel .confirm-panel__close:active {
+  transform: scale(0.92);
+}
+
+/* ─── Header: medallion + title ────────────────────────────────────────── */
+
+.confirm-panel__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 1.1rem 1.25rem 0.85rem;
+  background: linear-gradient(180deg, rgba(200, 135, 46, 0.16) 0%, transparent 100%);
+}
+
+.confirm-panel--danger .confirm-panel__header {
+  background: linear-gradient(180deg, rgba(139, 46, 46, 0.22) 0%, transparent 100%);
+}
+
+/* Rotated pixel-art diamond holding the icon (matches the game-over medallion). */
+.confirm-panel__medallion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 0.85rem;
+  transform: rotate(45deg);
+  background: #0e0a06;
+  border: 3px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.confirm-panel__medallion > * {
+  transform: rotate(-45deg);
+}
+
+.confirm-panel__medallion img {
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
+}
+
+.confirm-panel--danger .confirm-panel__medallion {
+  border-color: #6b1a1a;
+  box-shadow:
+    inset 0 0 0 2px #8b2e2e,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.confirm-panel__title {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* ─── Body (caller-supplied content) ───────────────────────────────────── */
+
+.confirm-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.1rem 1.25rem;
+}
+
+.confirm-panel__message {
+  font-size: 0.7rem;
+  line-height: 1.6;
+  text-align: center;
+  color: #e8dcc8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Actions ──────────────────────────────────────────────────────────── */
+
+.confirm-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  padding: 0.5rem 1.25rem 1.25rem;
+}
+
+@media (max-width: 480px) {
+  .confirm-panel {
+    max-width: 340px;
+  }
+
+  .confirm-panel__body {
+    padding: 1rem;
+  }
+
+  .confirm-panel__actions {
+    padding: 0.5rem 1rem 1rem;
+  }
+
+  .confirm-panel__actions button {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.75rem;
+  }
+}
+
+/* ==========================================
+   CREDITS MODAL
+   ========================================== */
+
+/* Reuses the start-menu modal panel visuals (.start-menu-modal-*) but overrides
+   the backdrop to be fixed + viewport-covering so it can be opened from any
+   screen — the title menu or the debug view (which scrolls). */
+
+.credits-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+}
+
+/* Match the f05a-viewport look (same board tile, no extra darkening —
+   the viewport's own gradient overlay classes are actually overridden by
+   its background-image, so the panel should look the same without one). */
+.credits-modal-backdrop .start-menu-modal-panel {
+  background-size: auto;
+}
+
+/* Stack the audio/graphics/links license sections with breathing room. */
+.credits-modal-body.credits-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Keep the long attribution URLs readable and on-theme inside the modal. */
+.credits-modal-body {
+  font-family: monospace;
+}
+
+/* Titles keep the default (non-monospace) font */
+.credits-modal-body h1,
+.credits-modal-body h2,
+.credits-modal-body h3 {
+  font-family: var(--font-body, system-ui);
+}
+
+.credits-modal-body h1 {
+  font-size: 1.25rem !important;
+}
+
+.credits-modal-body h2 {
+  font-size: 1rem !important;
+}
+
+.credits-modal-body h3 {
+  font-size: 1rem !important;
+}
+
+/* Arrow indicator on each credit entry */
+.credits-modal-body p {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.credits-modal-body p::before {
+  content: '\25B6';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  font-size: 0.6em;
+  color: #d4a574;
+  line-height: 1;
+}
+
+.credits-modal-body a {
+  color: #ffd082;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.credits-modal-body a:hover {
+  color: #ffe082;
+}
+
+/* Fixed-width slots for the header buttons so the title stays centered
+   regardless of the back button being wider than the close button. */
+.credits-modal-header-slot {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.credits-modal-header-slot--left {
+  justify-content: flex-start;
+}
+
+.credits-modal-header-slot--right {
+  justify-content: flex-end;
+}
+
+/* The credits modal centers its title via equal-width header slots (see
+   `.credits-modal-header-slot`), so `.modal-title` alone is enough — no
+   start-menu-style padding offset to cancel. */
+
+.credits-modal-back.credits-modal-back {
+  flex-shrink: 0;
+  gap: 0.35rem;
+  min-width: 24px;
+}
+
+/* Icons are plain image assets (not lucide), so give them a fixed size next to
+   the button label instead of relying on an SVG's intrinsic size. These indigolay
+   icons are detailed art, not native-res pixel art, so override the global
+   `image-rendering: pixelated` with smooth scaling — nearest-neighbor at this
+   non-integer size looks blocky. */
+.credits-modal-nav-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  image-rendering: auto;
+  flex-shrink: 0;
+}
+
+/* The Graphics/Audio menu buttons have more room than the compact Back pill,
+   so give their icons a larger presence (Back keeps the 22px base above). */
+.credits-modal-menu .credits-modal-nav-icon {
+  width: 30px;
+  height: 30px;
+}
+
+/* Ensure the pill-shaped ToffecButton never clips the icon */
+.credits-modal-back,
+.credits-modal-menu .toffec-button {
+  overflow: visible;
+}
+
+/* Give the menu buttons enough vertical room so the 22px icons
+   aren't clipped by the pill's border-radius. Extra horizontal
+   padding pushes the icon away from the pill's curved edge. */
+.credits-modal-menu .toffec-button {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
+  min-height: 3.5rem;
+}
+
+/* ─── Section menu: Graphics / Audio choice ────────────────────────────── */
+
+/* Buttons are plain ToffecButton + ToffecBeigeCornersWrapper (same components
+   used by the blacksmith/dungeon modals), laid out as a single row with the
+   icon inline before the label. */
+.credits-modal-menu {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.credits-modal-menu .toffec-button {
+  gap: 0.6rem;
+}
+
+@media (max-width: 480px) {
+  .credits-modal-menu {
+    gap: 1rem;
+  }
+}

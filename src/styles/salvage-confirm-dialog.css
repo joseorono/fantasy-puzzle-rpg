@@ -1,7 +1,8 @@
 /* ==========================================
    SALVAGE CONFIRM — body content for the generic ConfirmPanel shell
    Only the salvage-specific item preview lives here; the modal chrome
-   (backdrop, panel, corners, header, actions) comes from confirm-panel.css.
+   (backdrop, panel, corners, header, actions) comes from the CONFIRM PANEL
+   section of modals.css (which must import before this file).
    ========================================== */
 
 .salvage-confirm {

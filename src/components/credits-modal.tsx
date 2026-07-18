@@ -6,7 +6,7 @@ import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
-import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { ModalTitle } from '~/components/typography/modal-title';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { KeyboardKeys } from '~/constants/keyboard';
@@ -87,9 +87,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               </ToffecButton>
             )}
           </div>
-          <h2 className={`start-menu-modal-title ${section !== 'menu' ? 'credits-modal-title--back' : ''}`}>
-            <NarikWoodBitFont text={SECTION_TITLES[section]} size={0.9} />
-          </h2>
+          <ModalTitle text={SECTION_TITLES[section]} />
           <div className="credits-modal-header-slot credits-modal-header-slot--right">
             <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
           </div>
