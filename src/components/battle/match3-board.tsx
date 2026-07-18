@@ -446,7 +446,16 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     .map((char) => `dead-${char.color}`);
 
   return (
-    <div className="relative flex flex-1 justify-center">
+    <div className="relative flex flex-1 flex-col items-center justify-center">
+      <div className="match-badge-slot">
+        {highlightedMatches.size > 0 && (
+          <div className={cn('combo-pop match-badge pixel-font', highlightedMatches.size >= 5 && 'match-badge--big')}>
+            <span className="match-badge__count">{highlightedMatches.size}x</span>
+            <span className="match-badge__label">MATCH</span>
+          </div>
+        )}
+      </div>
+
       {/* Board container */}
       <div className={cn('match3BoardContainer', deadColorClasses, pendingVictory && 'pointer-events-none')}>
         <Franuka05aFrame>
@@ -477,13 +486,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
           </div>
         </Franuka05aFrame>
       </div>
-
-      {/* Match-size indicator */}
-      {highlightedMatches.size > 0 && (
-        <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 animate-bounce rounded-lg border-2 border-amber-400 bg-amber-600 px-2 py-1 text-sm font-bold text-white sm:-top-10 sm:px-3 sm:py-1.5 sm:text-base">
-          {highlightedMatches.size >= 5 ? '5x MATCH!' : `${highlightedMatches.size} MATCH!`}
-        </div>
-      )}
 
       {/* Cascade combo popup — prominent, lingering, overlaid on the board */}
       {comboPopup >= 2 && (
