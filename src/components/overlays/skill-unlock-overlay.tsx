@@ -2,7 +2,7 @@ import { useParty } from '~/stores/game-store';
 import { getSkillById } from '~/lib/skill-system';
 import { CHARACTER_ICONS } from '~/constants/party';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { RetroDivider } from '~/components/dividers/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { OverlayContainer } from './overlay-container';
 import type { OverlayRequest } from '~/stores/overlay-atoms';
 
@@ -46,7 +46,7 @@ export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayPro
             </p>
           </div>
 
-          <RetroDivider variant="victory" />
+          <IndigolayDivider variant="victory" />
 
           <div className="gom-message gom-message--victory">
             {/* Skill name on a red ribbon banner (reuses the title-sign artwork). */}

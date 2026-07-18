@@ -3,7 +3,7 @@ import { findEquipmentItem, getScaledEquipmentStats } from '~/lib/equipment-syst
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { RetroDivider } from '~/components/dividers/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
@@ -78,7 +78,7 @@ export function CraftingSuccessOverlay({ request, onDismiss }: CraftingSuccessOv
           <div className="crafting-success-subtitle">
             <NarikWoodBitFont text="Forging Success" size={1} />
           </div>
-          <RetroDivider variant="gold" />
+          <IndigolayDivider variant="gold" />
           <div className="crafting-success-stats">
             {stats.map((stat) => (
               <div className="crafting-success-stat" key={stat.label}>

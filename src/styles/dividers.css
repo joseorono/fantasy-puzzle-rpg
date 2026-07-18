@@ -7,7 +7,7 @@
   Keep all divider CSS here (one stylesheet) rather than per-component modules.
 
   - GradientDivider (gradient-divider.tsx): a thin horizontal gradient rule.
-  - RetroDivider (retro-divider.tsx) is Tailwind + inline styles only — no CSS here.
+  - IndigolayDivider (indigolay-divider.tsx) is Tailwind + inline styles only — no CSS here.
 */
 
 .gradient-divider {

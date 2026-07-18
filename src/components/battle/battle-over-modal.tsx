@@ -24,7 +24,7 @@ import { combineLootFromEnemies } from '~/lib/loot';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { RetroDivider } from '~/components/dividers/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { SparkleLayer } from '~/components/effects/sparkle-layer';
 
 export function BattleOverModal() {
@@ -129,7 +129,7 @@ export function BattleOverModal() {
           </div>
 
           {/* Divider */}
-          <RetroDivider variant={isVictory ? 'victory' : 'defeat'} />
+          <IndigolayDivider variant={isVictory ? 'victory' : 'defeat'} />
 
           {/* Message */}
           <div className={cn('gom-message pixel-font', isVictory ? 'gom-message--victory' : 'gom-message--defeat')}>

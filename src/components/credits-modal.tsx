@@ -5,7 +5,7 @@ import LinksToLicensesDialogContent from '~/components/licenses/links-to-license
 import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { RetroDivider } from '~/components/dividers/retro-divider';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -96,7 +96,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
         </div>
 
         {/* Divider */}
-        <RetroDivider variant="victory" />
+        <IndigolayDivider variant="victory" />
 
         {/* Content — only the active section is rendered */}
         <div className="start-menu-modal-body credits-modal-body">
