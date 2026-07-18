@@ -94,7 +94,7 @@ body.dialogue-active {
   transform: translateX(-50%);
   background-image: url('/assets/bg/looping/bg-board-2.png');
   background-repeat: repeat;
-  background-size: auto;
+  background-size: 5%;
   color: #f5e6c8;
   padding: 0.2rem 1.25rem;
   border: 1px solid #5e3a1a;
