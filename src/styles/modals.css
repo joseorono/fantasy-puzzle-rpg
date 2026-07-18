@@ -62,6 +62,12 @@
 /* ─── Panel: chunky pixel-art frame (board texture + triple border) ─────── */
 
 .confirm-panel {
+  /* Accent colors, swapped by the --danger variant below and inherited by the
+     header/medallion so the variant needs no per-part overrides. */
+  --cp-frame: #5c3a1e;
+  --cp-inset: #8b6914;
+  --cp-glow: rgba(200, 135, 46, 0.22);
+  --cp-header: rgba(200, 135, 46, 0.16);
   position: relative;
   width: 100%;
   max-width: 400px;
@@ -73,12 +79,12 @@
   background-repeat: repeat;
   background-size: 50px 50px;
   background-position: center;
-  border: 4px solid #5c3a1e;
+  border: 4px solid var(--cp-frame);
   outline: 3px solid #2a1a0e;
   outline-offset: -1px;
   box-shadow:
-    inset 0 0 0 2px #8b6914,
-    0 0 22px rgba(200, 135, 46, 0.22),
+    inset 0 0 0 2px var(--cp-inset),
+    0 0 22px var(--cp-glow),
     0 10px 34px rgba(0, 0, 0, 0.8),
     0 2px 0 #2a1a0e;
   overflow: hidden;
@@ -96,14 +102,12 @@
   }
 }
 
-/* Danger variant: red frame accent. */
+/* Danger variant: red accents (frame, header, medallion all follow the vars). */
 .confirm-panel--danger {
-  border-color: #6b1a1a;
-  box-shadow:
-    inset 0 0 0 2px #8b2e2e,
-    0 0 22px rgba(139, 46, 46, 0.25),
-    0 10px 34px rgba(0, 0, 0, 0.8),
-    0 2px 0 #2a1a0e;
+  --cp-frame: #6b1a1a;
+  --cp-inset: #8b2e2e;
+  --cp-glow: rgba(139, 46, 46, 0.25);
+  --cp-header: rgba(139, 46, 46, 0.22);
 }
 
 /* ─── Close button ─────────────────────────────────────────────────────── */
@@ -142,11 +146,7 @@
   align-items: center;
   flex-shrink: 0;
   padding: 1.1rem 1.25rem 0.85rem;
-  background: linear-gradient(180deg, rgba(200, 135, 46, 0.16) 0%, transparent 100%);
-}
-
-.confirm-panel--danger .confirm-panel__header {
-  background: linear-gradient(180deg, rgba(139, 46, 46, 0.22) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--cp-header) 0%, transparent 100%);
 }
 
 /* Rotated pixel-art diamond holding the icon (matches the game-over medallion). */
@@ -159,9 +159,9 @@
   margin-bottom: 0.85rem;
   transform: rotate(45deg);
   background: #0e0a06;
-  border: 3px solid #5c3a1e;
+  border: 3px solid var(--cp-frame);
   box-shadow:
-    inset 0 0 0 2px #8b6914,
+    inset 0 0 0 2px var(--cp-inset),
     0 3px 8px rgba(0, 0, 0, 0.7);
 }
 
@@ -171,13 +171,6 @@
 
 .confirm-panel__medallion img {
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
-}
-
-.confirm-panel--danger .confirm-panel__medallion {
-  border-color: #6b1a1a;
-  box-shadow:
-    inset 0 0 0 2px #8b2e2e,
-    0 3px 8px rgba(0, 0, 0, 0.7);
 }
 
 .confirm-panel__title {
@@ -277,10 +270,7 @@
   font-size: 1.25rem !important;
 }
 
-.credits-modal-body h2 {
-  font-size: 1rem !important;
-}
-
+.credits-modal-body h2,
 .credits-modal-body h3 {
   font-size: 1rem !important;
 }
@@ -339,15 +329,12 @@
 }
 
 /* Icons are plain image assets (not lucide), so give them a fixed size next to
-   the button label instead of relying on an SVG's intrinsic size. These indigolay
-   icons are detailed art, not native-res pixel art, so override the global
-   `image-rendering: pixelated` with smooth scaling — nearest-neighbor at this
-   non-integer size looks blocky. */
+   the button label instead of relying on an SVG's intrinsic size. (Smooth
+   scaling for indigolay icons is handled globally — see icons.css.) */
 .credits-modal-nav-icon {
   width: 22px;
   height: 22px;
   object-fit: contain;
-  image-rendering: auto;
   flex-shrink: 0;
 }
 
