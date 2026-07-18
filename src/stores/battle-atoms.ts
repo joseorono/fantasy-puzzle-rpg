@@ -274,10 +274,10 @@ export const healPartyAtom = atom(
     const currentState = get(battleStateAtom);
     const { amount, source } = params;
 
-    // Dead members take priority — revive the first one found
+    // Dead members take priority — revive the healer first, else the first one found
     const dead = getDeadMembers(currentState.party);
     if (dead.length > 0) {
-      const target = dead[0];
+      const target = dead.find((char) => char.class === 'healer') ?? dead[0];
       // Healer match: double healing. Potion: 1 HP + potion amount.
       const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
       const party = healPartyMember(currentState.party, target.id, reviveAmount);
