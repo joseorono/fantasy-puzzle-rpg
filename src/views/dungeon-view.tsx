@@ -341,7 +341,7 @@ export default function DungeonView() {
       <div className="dungeon-layout">
         <aside className="dungeon-track">
           <div className="dungeon-track__title">
-            <NarikWoodBitFont text="DESCENT" size={0.7} />
+            <NarikWoodBitFont text="DESCENT" size={0.9} />
           </div>
           <div className="dungeon-track__list">
             {dungeon.floors.map((floor, idx) => {
