@@ -179,7 +179,7 @@ const ICON_MAP = {
   mageStaff: [6, 8],
   crystalStaff: [7, 8],
   wand: [8, 8],
-  scepter: [9, 8],
+  redAxe: [9, 8],
   runeStaff: [10, 8],
   fireStaff: [11, 8],
   iceStaff: [12, 8],
