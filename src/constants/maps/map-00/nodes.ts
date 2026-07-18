@@ -16,6 +16,15 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     description: 'A group of monsters blocks your path',
   },
   {
+    id: 'dungeon_1',
+    type: 'Dungeon',
+    position: { row: 45, col: 48 },
+    name: 'Echoing Hollow',
+    dungeonId: 'sample-cave',
+    blocksMovement: false,
+    description: 'A yawning cave mouth breathes cold air — something stirs in the dark below',
+  },
+  {
     id: 'battle_2',
     type: 'Battle',
     position: { row: 40, col: 69 },

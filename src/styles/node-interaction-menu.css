@@ -126,6 +126,13 @@
   margin-top: 0.5rem;
 }
 
+/* Tooltip trigger wrapper (e.g. the dungeon Randomize button) — behave as a flex
+   row item so the button inside sizes like its unwrapped siblings. */
+.nim-btn-tooltip {
+  display: flex;
+  flex: 1;
+}
+
 .nim-btn {
   flex: 1;
   gap: 0.375rem;
