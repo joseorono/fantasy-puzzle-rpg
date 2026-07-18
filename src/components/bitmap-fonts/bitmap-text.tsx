@@ -62,6 +62,11 @@ export function buildCharMap(
 /** Scales ≥ this value use the pre-scaled 5× sheet for sharper results. */
 const HI_RES_THRESHOLD = 5;
 
+const GLYPH_FALLBACKS: Record<string, string> = {
+  '–': '-',
+  '—': '-',
+};
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -78,13 +83,7 @@ interface InternalProps extends BitmapTextProps {
   sheetRows: number;
 }
 
-export function BitmapText({
-  text,
-  size = 1,
-  config,
-  charMap,
-  sheetRows,
-}: InternalProps) {
+export function BitmapText({ text, size = 1, config, charMap, sheetRows }: InternalProps) {
   const useHiRes = size >= HI_RES_THRESHOLD;
   const image = useHiRes ? config.image5x : config.image1x;
   const nativeW = useHiRes ? config.charW * HI_RES_THRESHOLD : config.charW;
@@ -119,13 +118,12 @@ export function BitmapText({
       <span className="sr-only">{text}</span>
       <span className="bf-row" aria-hidden="true">
         {Array.from(text).map((char, i) => {
-          const pos = charMap.get(char);
+          const displayChar = GLYPH_FALLBACKS[char] ?? char;
+          const pos = charMap.get(displayChar);
           if (!pos) {
-            return (
-              <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />
-            );
+            return <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />;
           }
-          const metric = proportional ? (metrics?.[char] ?? defaultMetric) : undefined;
+          const metric = proportional ? (metrics?.[displayChar] ?? defaultMetric) : undefined;
           const charStyle: React.CSSProperties = metric
             ? {
                 width: `${toPx(metric.w)}px`,
