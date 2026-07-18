@@ -254,19 +254,45 @@ function measure({ sheet, cols, charW, charH, charset, alphaThreshold, colorThre
   return metrics;
 }
 
-/** Formats the metrics as a ready-to-paste TS object literal, grouped by row. */
-function formatLiteral(metrics, charset, cols) {
+/** Picks the most common `{ l, w }` pair — the sane default the font should use. */
+function detectDefault(metrics, charset) {
+  const counts = new Map(); // "l,w" -> { metric, count }
+  for (const c of charset) {
+    const m = metrics[c];
+    const k = `${m.l},${m.w}`;
+    const entry = counts.get(k) ?? { metric: m, count: 0 };
+    entry.count++;
+    counts.set(k, entry);
+  }
+  let best = null;
+  for (const entry of counts.values()) {
+    if (!best || entry.count > best.count) best = entry;
+  }
+  return best; // { metric, count }
+}
+
+/**
+ * Emits ready-to-paste TS: a DEFAULT literal plus an overrides-only object
+ * (glyphs that differ from the default), grouped by sprite row.
+ */
+function formatLiteral(metrics, charset, cols, def) {
   const key = (c) => (/[A-Za-z_$]/.test(c) ? c : JSON.stringify(c));
+  const isDefault = (c) => metrics[c].l === def.l && metrics[c].w === def.w;
+
   const rows = [];
   for (let r = 0; r < charset.length; r += cols) {
     const chunk = charset
       .slice(r, r + cols)
       .split('')
+      .filter((c) => !isDefault(c)) // outliers only
       .map((c) => `${key(c)}: { l: ${metrics[c].l}, w: ${metrics[c].w} }`)
       .join(', ');
-    rows.push('  ' + chunk + ',');
+    if (chunk) rows.push('  ' + chunk + ',');
   }
-  return '{\n' + rows.join('\n') + '\n}';
+
+  const defaultLiteral = `const DEFAULT = { l: ${def.l}, w: ${def.w} };`;
+  const overrides = rows.length ? '{\n' + rows.join('\n') + '\n}' : '{}';
+  return `${defaultLiteral}\n\n// Overrides (glyphs that differ from DEFAULT):\n${overrides}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -317,7 +343,12 @@ function main() {
   }
 
   const metrics = measure(config);
-  console.log(formatLiteral(metrics, config.charset, config.cols));
+  const def = detectDefault(metrics, config.charset);
+  const overrideCount = config.charset.length - def.count;
+  console.error(
+    `default {l:${def.metric.l},w:${def.metric.w}} covers ${def.count}/${config.charset.length}; ${overrideCount} overrides`,
+  );
+  console.log(formatLiteral(metrics, config.charset, config.cols, def.metric));
 }
 
 main();
