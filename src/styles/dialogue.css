@@ -146,7 +146,7 @@ body.dialogue-active {
     position: absolute;
     width: 16px;
     height: 16px;
-    background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+    background: radial-gradient(circle at 30% 30%, #eccb8a, #d4a574, #8b6914);
     border: 2px solid #8b6914;
     border-radius: 50%;
     box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5), inset 2px 2px 4px rgba(255, 255, 255, 0.2);
@@ -166,7 +166,7 @@ body.dialogue-active {
   font-family: monospace;
   font-size: 1rem;
   font-weight: bold;
-  color: #ffd700;
+  color: #e0a94a;
   text-transform: uppercase;
   margin-bottom: 0.75rem;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
@@ -199,7 +199,7 @@ body.dialogue-active {
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 12px solid #ffd700;
+  border-top: 12px solid #e0a94a;
   animation: indicator-bounce 0.8s ease-in-out infinite;
 }
 
@@ -354,7 +354,7 @@ body.dialogue-active {
     position: absolute;
     width: 16px;
     height: 16px;
-    background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+    background: radial-gradient(circle at 30% 30%, #eccb8a, #d4a574, #8b6914);
     border: 2px solid #8b6914;
     border-radius: 50%;
     box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5), inset 2px 2px 4px rgba(255, 255, 255, 0.2);
@@ -384,7 +384,7 @@ body.dialogue-active {
   font-family: monospace;
   font-size: 1.25rem;
   font-weight: bold;
-  color: #ffd700;
+  color: #e0a94a;
   text-transform: uppercase;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
   letter-spacing: 0.05em;
@@ -430,14 +430,14 @@ body.dialogue-active {
 .mh-dialogue {
   padding: 0.75rem;
   background-color: rgba(0, 0, 0, 0.3);
-  border-left: 3px solid #ffd700;
+  border-left: 3px solid #e0a94a;
 }
 
 .mh-dialogue-name {
   font-family: monospace;
   font-size: 0.875rem;
   font-weight: bold;
-  color: #ffd700;
+  color: #e0a94a;
   text-transform: uppercase;
   margin-bottom: 0.5rem;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
