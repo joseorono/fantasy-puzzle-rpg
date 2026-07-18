@@ -2,7 +2,7 @@ import { cn } from '~/lib/utils';
 import { NarikHeading } from '~/components/typography/narik-heading';
 
 /** Standard NarikWoodBitFont scale for modal titles. */
-export const MODAL_TITLE_BF_SIZE = 0.9;
+export const MODAL_TITLE_BF_SIZE = 1;
 
 interface ModalTitleProps {
   text: string;
@@ -20,3 +20,4 @@ interface ModalTitleProps {
 export function ModalTitle({ text, className, size = MODAL_TITLE_BF_SIZE }: ModalTitleProps) {
   return <NarikHeading as="h2" text={text} size={size} className={cn('modal-title', className)} />;
 }
+
