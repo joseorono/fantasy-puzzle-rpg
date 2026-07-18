@@ -371,6 +371,7 @@ export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
 export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
+export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);
 
 // The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
 // so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
@@ -586,6 +587,8 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     // A skill kill wins immediately: there's no in-flight cascade to preserve and no guaranteed
     // board-settle event to commit a deferred win. Clear any pending flag so it can't go stale.
     pendingVictory: false,
+    // Every character skill is an "ultimate"; count each successful activation for the rating bonus.
+    ultimateSkillsUsed: currentState.ultimateSkillsUsed + 1,
     lastDamage,
     lastSkillActivation: {
       characterId,

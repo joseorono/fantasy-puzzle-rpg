@@ -5,11 +5,13 @@
  *
  * Design intent: the rating rewards *skill* (fast clears, keeping HP, not leaning on items) and
  * only lightly rewards RNG-dependent outcomes (raw match score and cascade combos depend on how
- * the board falls), so those carry small weights.
+ * the board falls), so those carry small weights. Using ultimate skills grants a small capped
+ * bonus — like the item penalty, it lives *outside* the weight sum, so it lifts an imperfect run
+ * without cannibalizing the skill weights (a flawless no-ultimate clear still reaches 5★).
  */
 
 /** Rating criterion keys, in display order. */
-export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'items';
+export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'ultimates' | 'items';
 
 /**
  * Weights of the positive criteria (must sum to 1). Skill criteria (time, HP) dominate and are
@@ -47,6 +49,13 @@ export const COMBO_TARGET = 5;
 export const ITEM_PENALTY_PER_USE = 0.12;
 /** Cap on the total items penalty, so items can't drive the rating below the floor alone. */
 export const MAX_ITEM_PENALTY = 0.5;
+
+// ─── Ultimate-skills reward ──────────────────────────────────────────────────
+
+/** Normalized rating gained per ultimate skill used (a bonus, added outside the weight sum). */
+export const ULTIMATE_BONUS_PER_USE = 0.05;
+/** Cap on the total ultimate bonus, so it stays a nudge (a flawless run is already maxed). */
+export const MAX_ULTIMATE_BONUS = 0.15;
 
 // ─── Stars ───────────────────────────────────────────────────────────────────
 

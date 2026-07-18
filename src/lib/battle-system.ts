@@ -106,6 +106,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     startedAt: Date.now(),
     maxCombo: 0,
     itemsUsed: 0,
+    ultimateSkillsUsed: 0,
   };
 }
 
