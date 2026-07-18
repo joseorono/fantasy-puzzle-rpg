@@ -2,7 +2,7 @@ import { useState } from 'react';
 import AudioLicensesDialogContent from '~/components/licenses/audio-licenses';
 import GraphicsLicensesDialogContent from '~/components/licenses/graphics-licenses';
 import LinksToLicensesDialogContent from '~/components/licenses/links-to-licenses';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -89,7 +89,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
           </div>
           <ModalTitle text={SECTION_TITLES[section]} />
           <div className="credits-modal-header-slot credits-modal-header-slot--right">
-            <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
+            <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleClose} />
           </div>
         </div>
 

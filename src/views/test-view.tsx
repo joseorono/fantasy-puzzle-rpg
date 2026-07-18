@@ -1,6 +1,6 @@
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
@@ -98,21 +98,21 @@ export default function TestView() {
             </div>
           </Franuka05aFrame>
         </div>
-        {/* ToffecCloseButton variants */}
+        {/* ToffecSquareButton variants */}
         <div className="mt-6">
           <Franuka05aFrame>
             <div className="flex flex-col gap-6 p-4">
-              <h2 className="text-xl font-bold">ToffecCloseButton</h2>
+              <h2 className="text-xl font-bold">ToffecSquareButton</h2>
 
               {/* With background */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">With background (hasBg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg />
-                  <ToffecCloseButton variant="medieval2" hasBg />
-                  <ToffecCloseButton variant="medieval3" hasBg />
-                  <ToffecCloseButton variant="fairy2" hasBg />
-                  <ToffecCloseButton variant="fairy3" hasBg />
+                  <ToffecSquareButton variant="medieval1" hasBg />
+                  <ToffecSquareButton variant="medieval2" hasBg />
+                  <ToffecSquareButton variant="medieval3" hasBg />
+                  <ToffecSquareButton variant="fairy2" hasBg />
+                  <ToffecSquareButton variant="fairy3" hasBg />
                 </div>
               </div>
 
@@ -120,10 +120,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">No background (hasBg=false)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval4" hasBg={false} />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} />
-                  <ToffecCloseButton variant="medieval6" hasBg={false} />
-                  <ToffecCloseButton variant="fairy1" hasBg={false} />
+                  <ToffecSquareButton variant="medieval4" hasBg={false} />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} />
+                  <ToffecSquareButton variant="medieval6" hasBg={false} />
+                  <ToffecSquareButton variant="fairy1" hasBg={false} />
                 </div>
               </div>
 
@@ -131,10 +131,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Sizes (medieval1 with bg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg size="sm" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="default" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="lg" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="xl" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="sm" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="default" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="lg" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="xl" />
                 </div>
               </div>
 
@@ -142,10 +142,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Sizes (medieval5 no bg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="sm" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="default" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="lg" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="xl" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="sm" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="default" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="lg" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="xl" />
                 </div>
               </div>
 
@@ -153,9 +153,9 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Disabled</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg disabled />
-                  <ToffecCloseButton variant="fairy3" hasBg disabled />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} disabled />
+                  <ToffecSquareButton variant="medieval1" hasBg disabled />
+                  <ToffecSquareButton variant="fairy3" hasBg disabled />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} disabled />
                 </div>
               </div>
             </div>

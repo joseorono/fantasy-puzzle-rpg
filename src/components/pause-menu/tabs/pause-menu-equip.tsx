@@ -28,7 +28,7 @@ import type { RarityTier } from '~/constants/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 
 // Warm parchment/gold stat palette — matches level-up-screen.css `.stat-name.*`
 const STAT_COLORS = {
@@ -134,7 +134,7 @@ export function PauseMenuEquip() {
               <div className="pause-menu-equip-available">
                 <div className="pause-menu-equip-available-header">
                   <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
-                  <ToffecCloseButton
+                  <ToffecSquareButton
                     variant="medieval2"
                     size="sm"
                     hasBg={true}
@@ -195,7 +195,7 @@ function EquipSlotRow({ label, item, rarity, isActive, onToggle, onUnequip }: Eq
       {item && (
         <Tooltip>
           <TooltipTrigger>
-            <ToffecCloseButton
+            <ToffecSquareButton
               variant="medieval2"
               size="sm"
               hasBg={true}

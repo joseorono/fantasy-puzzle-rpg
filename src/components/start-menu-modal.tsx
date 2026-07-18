@@ -7,7 +7,7 @@ import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { Play, FolderOpen, ScrollText } from 'lucide-react';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ModalTitle } from '~/components/typography/modal-title';
@@ -213,7 +213,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
                 text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}
                 className="start-menu-modal-title"
               />
-              <ToffecCloseButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
+              <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />
             </div>
 
             {/* Divider */}
