@@ -1478,6 +1478,6 @@ box-shadow:
   width: 2rem;
   height: 2rem;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
 }
