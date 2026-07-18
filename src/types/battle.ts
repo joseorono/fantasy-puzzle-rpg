@@ -96,4 +96,6 @@ export interface BattleState {
   maxCombo: number;
   /** Count of battle items consumed this battle; a penalty in the victory rating. */
   itemsUsed: number;
+  /** Count of ultimate skills activated this battle; a capped bonus in the victory rating. */
+  ultimateSkillsUsed: number;
 }
