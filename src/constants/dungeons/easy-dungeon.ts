@@ -18,7 +18,7 @@ export const EASY_DUNGEON: DungeonDefinition = {
   floors: [
     {
       id: 'easy-floor-1',
-      name: 'Floor 1 — Shallow Den',
+      name: 'Shallow Den',
       events: [
         {
           type: 'combat',
@@ -30,7 +30,7 @@ export const EASY_DUNGEON: DungeonDefinition = {
     },
     {
       id: 'easy-floor-2',
-      name: 'Floor 2 — Lone Sentinel',
+      name: 'Lone Sentinel',
       backgroundImage: CAVE_BG_2,
       isBoss: true,
       events: [

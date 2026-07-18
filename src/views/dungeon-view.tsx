@@ -35,6 +35,7 @@ import {
   isLastFloor,
   shouldRunEvent,
   summarizeFloorRatings,
+  formatFloorTitle,
 } from '~/lib/dungeon-system';
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
@@ -241,7 +242,7 @@ export default function DungeonView() {
   const ratedFloorRows = dungeon.floors
     .map((floor, idx) => {
       const rating = floorRatings[idx];
-      return rating ? { name: floor.name, stars: rating.stars } : null;
+      return rating ? { name: formatFloorTitle(idx, floor.name), stars: rating.stars } : null;
     })
     .filter((row): row is { name: string; stars: number } => row !== null);
   const isBrowsing = phase === 'browsing' && !activeDialogue;
@@ -352,7 +353,7 @@ export default function DungeonView() {
                     {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
                   </span>
                   <div className="dungeon-floor__body">
-                    <span className="dungeon-floor__name">{floor.name}</span>
+                    <span className="dungeon-floor__name">{formatFloorTitle(idx, floor.name)}</span>
                     {rating && <FloorRatingStars stars={rating.stars} />}
                   </div>
                 </div>
@@ -403,7 +404,10 @@ export default function DungeonView() {
                   <FrostyRpgIcon name={getEventMedallion(currentEvent, isBoss)} size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
-                  <NarikWoodBitFont text={currentFloor?.name ?? ''} size={0.85} />
+                  <NarikWoodBitFont
+                    text={currentFloor ? formatFloorTitle(floorIndex, currentFloor.name) : ''}
+                    size={0.85}
+                  />
                 </div>
                 <div className="dungeon-card__banner-side">
                   {isBoss && <span className="dungeon-card__boss-tag">BOSS</span>}

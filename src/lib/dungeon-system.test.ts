@@ -4,6 +4,7 @@ import { createEmptyLootTable } from '~/types/loot';
 import {
   getEvent,
   getFloor,
+  formatFloorTitle,
   isLastEventOfFloor,
   isLastFloor,
   shouldRunEvent,
@@ -155,5 +156,17 @@ describe('summarizeFloorRatings', () => {
         2: ratingWithStars(4),
       }).averageStars,
     ).toBe(4);
+  });
+});
+
+describe('formatFloorTitle', () => {
+  it('prefixes the 1-based floor number with a colon separator', () => {
+    expect(formatFloorTitle(0, 'Shallow Den')).toBe('Floor 1: Shallow Den');
+    expect(formatFloorTitle(2, 'The Deep Hollow')).toBe('Floor 3: The Deep Hollow');
+  });
+
+  it('falls back to a bare "Floor N" when no name is given', () => {
+    expect(formatFloorTitle(0)).toBe('Floor 1');
+    expect(formatFloorTitle(4, '')).toBe('Floor 5');
   });
 });

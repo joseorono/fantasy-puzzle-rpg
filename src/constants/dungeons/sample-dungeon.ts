@@ -43,7 +43,7 @@ export const SAMPLE_DUNGEON: DungeonDefinition = {
   floors: [
     {
       id: 'sample-floor-1',
-      name: 'Floor 1 — Vanguard Gate',
+      name: 'Vanguard Gate',
       events: [
         { type: 'dialogue', scene: CAVE_INTRO },
         {
@@ -59,13 +59,13 @@ export const SAMPLE_DUNGEON: DungeonDefinition = {
     },
     {
       id: 'sample-floor-2',
-      name: 'Floor 2 — Hidden Cache',
+      name: 'Hidden Cache',
       backgroundImage: CAVE_BG_2,
       events: [{ type: 'chest', loot: ANCIENT_CHEST_LOOT }],
     },
     {
       id: 'sample-floor-3',
-      name: 'Floor 3 — The Deep Hollow',
+      name: 'The Deep Hollow',
       isBoss: true,
       events: [
         { type: 'dialogue', scene: BOSS_INTRO },
