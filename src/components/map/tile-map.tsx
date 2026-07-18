@@ -384,8 +384,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   }
 
   function handleDeclineDialogue() {
-    const triggerKey = `${charPosition.row},${charPosition.col}`;
-    setVisitedTriggers((prev) => new Set(prev).add(triggerKey));
     setShowTriggerModal(false);
     setPendingDialogue(null);
   }
