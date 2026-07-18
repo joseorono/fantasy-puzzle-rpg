@@ -348,7 +348,10 @@ export default function DungeonView() {
               const state = idx < floorIndex ? 'completed' : idx === floorIndex ? 'current' : 'locked';
               const rating = floorRatings[idx];
               return (
-                <div key={floor.id} className={cn('dungeon-floor', `dungeon-floor--${state}`)}>
+                <div
+                  key={floor.id}
+                  className={cn('dungeon-floor', `dungeon-floor--${state}`, floor.isBoss && 'dungeon-floor--boss')}
+                >
                   <span className="dungeon-floor__mark">
                     {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
                   </span>
