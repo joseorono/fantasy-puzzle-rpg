@@ -212,6 +212,10 @@
   flex-direction: row-reverse;
 }
 
+.confirm-panel__actions button {
+  min-width: 120px;
+}
+
 @media (max-width: 480px) {
   .confirm-panel {
     max-width: 340px;
