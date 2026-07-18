@@ -82,7 +82,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
           <div className="credits-modal-header-slot credits-modal-header-slot--left">
             {section !== 'menu' && (
               <ToffecButton variant="cream" size="xs" onClick={handleBack} className="credits-modal-back">
-                <img src="/assets/icons/indigolay/Icon_move-to-start.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                <img src="/assets/icons/indigolay/icon-move-to-start.png" alt="" className="credits-modal-nav-icon" draggable={false} />
                 Back
               </ToffecButton>
             )}
@@ -104,7 +104,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
             <div className="credits-modal-menu">
               <ToffecBeigeCornersWrapper>
                 <ToffecButton variant="cream" size="default" onClick={() => handleOpenSection('graphics')}>
-                  <img src="/assets/icons/indigolay/Icon_file-media.png" alt="" className="credits-modal-nav-icon" draggable={false} />
+                  <img src="/assets/icons/indigolay/icon-file-media.png" alt="" className="credits-modal-nav-icon" draggable={false} />
                   Graphics
                 </ToffecButton>
               </ToffecBeigeCornersWrapper>
