@@ -68,23 +68,6 @@ export const MAP_00_DIALOGUE_SCENES: Record<string, DialogueScene> = {
     ],
   },
 
-  'echoing-hollow': {
-    id: 'echoing-hollow',
-    characters: [NARRATOR_CHAR, KNIGHT_CHAR],
-    lines: [
-      {
-        id: 'eh-1',
-        speakerId: 'narrator',
-        text: 'A jagged mouth in the hillside breathes cold air. Every footstep you take echoes back from somewhere far below.',
-      },
-      {
-        id: 'eh-2',
-        speakerId: 'knight',
-        text: 'A hollow like this is never truly empty. Stay close — we descend together.',
-      },
-    ],
-  },
-
   // ─── Existing test scenes (used by coordinate-based DIALOGUE_TRIGGERS) ──
   test: TEST_DIALOGUE_SCENE,
   simple: SIMPLE_DIALOGUE_SCENE,
