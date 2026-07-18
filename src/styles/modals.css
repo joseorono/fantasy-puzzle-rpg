@@ -208,6 +208,10 @@
   padding: 0.5rem 1.25rem 1.25rem;
 }
 
+.confirm-panel--danger .confirm-panel__actions {
+  flex-direction: row-reverse;
+}
+
 @media (max-width: 480px) {
   .confirm-panel {
     max-width: 340px;
