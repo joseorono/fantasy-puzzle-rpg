@@ -370,7 +370,7 @@ export default function DungeonView() {
                   <FrostyRpgIcon name="crown" size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
-                  <NarikWoodBitFont text="Dungeon Cleared" size={1.0} />
+                  <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
                 </div>
                 <div className="dungeon-card__banner-side" />
               </div>
@@ -406,7 +406,7 @@ export default function DungeonView() {
                 <div className="dungeon-card__banner-title">
                   <NarikWoodBitFont
                     text={currentFloor ? formatFloorTitle(floorIndex, currentFloor.name) : ''}
-                    size={0.85}
+                    size={1}
                   />
                 </div>
                 <div className="dungeon-card__banner-side">
