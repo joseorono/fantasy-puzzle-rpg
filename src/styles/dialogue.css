@@ -380,15 +380,10 @@ body.dialogue-active {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+/* Standard modal heading (ModalTitle); the left offset keeps it centered
+   against the right-side close button, like the start-menu modal. */
 .mh-title {
-  font-family: monospace;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #e0a94a;
-  text-transform: uppercase;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.05em;
-  margin: 0;
+  padding-left: 40px;
 }
 
 .mh-close-button {
@@ -484,10 +479,6 @@ body.dialogue-active {
 
   .mh-header {
     padding: 0.75rem 1rem;
-  }
-
-  .mh-title {
-    font-size: 1rem;
   }
 
   .mh-content {
