@@ -326,7 +326,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="minus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleDecreaseStat('pow')}
                     {...holdDecrease.pow}
@@ -337,7 +337,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="plus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleIncreaseStat('pow')}
                     {...holdIncrease.pow}
@@ -394,7 +394,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="minus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleDecreaseStat('vit')}
                     {...holdDecrease.vit}
@@ -405,7 +405,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="plus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleIncreaseStat('vit')}
                     {...holdIncrease.vit}
@@ -468,7 +468,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="minus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleDecreaseStat('spd')}
                     {...holdDecrease.spd}
@@ -479,7 +479,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
                     icon="plus"
-                    variant="medieval1"
+                    variant="fairy3"
                     size="default"
                     onClick={() => handleIncreaseStat('spd')}
                     {...holdIncrease.spd}
