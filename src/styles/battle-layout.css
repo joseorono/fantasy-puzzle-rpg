@@ -63,7 +63,7 @@
   min-height: 0;
 }
 
-@media (max-height: 700px) {
+@media (max-height: 780px) {
   /* Instead of scaling the whole board frame, shrink the actual content dimensions. */
   .partySection #party-display-root {
     gap: 0.5rem;

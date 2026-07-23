@@ -72,7 +72,7 @@
 }
 
 /* Responsive */
-@media (max-height: 700px) {
+@media (max-height: 780px) {
   .exp-bar--full {
     height: 18px;
   }
