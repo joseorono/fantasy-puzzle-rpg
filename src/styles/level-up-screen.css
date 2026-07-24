@@ -302,56 +302,30 @@
 }
 
 .stat-chip {
-  padding: 0.35rem 0.65rem;
-  background: linear-gradient(180deg, rgba(48, 28, 16, 0.92) 0%, rgba(28, 15, 9, 0.96) 100%);
-  border: 1px solid rgba(212, 165, 116, 0.45);
-  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 20px 20px;
+  border: 2px solid #5c3a1e;
+  border-radius: 4px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.45rem;
+  gap: 0.5rem;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 3px 6px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 1px rgba(212, 165, 116, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.6);
   position: relative;
   transition: all 0.15s ease;
-}
-
-.stat-chip.pow {
-  border-color: rgba(240, 168, 104, 0.6);
-  background: linear-gradient(180deg, rgba(65, 35, 18, 0.92) 0%, rgba(38, 19, 9, 0.96) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(240, 168, 104, 0.25),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .stat-chip.pow .stat-chip-label {
   color: #f0a868;
 }
 
-.stat-chip.vit {
-  border-color: rgba(155, 227, 122, 0.55);
-  background: linear-gradient(180deg, rgba(30, 48, 22, 0.92) 0%, rgba(16, 28, 11, 0.96) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(155, 227, 122, 0.25),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 3px 6px rgba(0, 0, 0, 0.5);
-}
-
 .stat-chip.vit .stat-chip-label {
   color: #9be37a;
-}
-
-.stat-chip.spd {
-  border-color: rgba(121, 192, 255, 0.55);
-  background: linear-gradient(180deg, rgba(20, 40, 58, 0.92) 0%, rgba(10, 22, 34, 0.96) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(121, 192, 255, 0.25),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .stat-chip.spd .stat-chip-label {
@@ -363,7 +337,10 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
+  line-height: 1;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+  display: inline-flex;
+  align-items: center;
 }
 
 .stat-chip-value {
@@ -371,7 +348,10 @@
   font-weight: 900;
   color: #f7e3c4;
   white-space: nowrap;
+  line-height: 1;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+  display: inline-flex;
+  align-items: center;
 }
 
 .pending-changes-banner {

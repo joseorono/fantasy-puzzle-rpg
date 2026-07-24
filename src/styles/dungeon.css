@@ -108,10 +108,12 @@
   min-height: 0;
   padding: 0.85rem;
   color: #e0e0e0;
-  background-image: linear-gradient(180deg, rgba(42, 24, 16, 0.85), rgba(18, 11, 5, 0.93)),
-    url('/assets/bg/looping/bg-board.png');
+  background-image:
+    linear-gradient(180deg, rgba(42, 24, 16, 0.85), rgba(18, 11, 5, 0.93)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
+  background-size:
+    auto,
+    50px 50px;
   /* Match the action card's carved-wood frame (triple border + gold inset). */
   border: 4px solid #5c3a1e;
   outline: 3px solid #2a1a0e;
@@ -128,8 +130,8 @@
   margin-bottom: 0.6rem;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
   /* Gold gradient rule under the label, echoing the card's divider. */
-  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent)
-    bottom left / 100% 2px no-repeat;
+  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent) bottom left / 100%
+    2px no-repeat;
 }
 
 .dungeon-track__list {
@@ -436,20 +438,30 @@
   display: flex;
   justify-content: center;
   flex-shrink: 0;
-  padding: 0.6rem 1rem 4px 1rem;
-  }
-  
-  /* Seat the shared party bar as a framed panel in the dungeon: its default
-     border-bottom is meant for the pause menu, so swap it for the carved-wood
-     frame used by the track and action card. Scoped, so the pause menu is
-     unaffected. */
-  .dungeon-party .pause-menu-party-bar {
-    border: 3px solid #5c3a1e;
-    outline: 2px solid #2a1a0e;
-    outline-offset: -1px;
-    box-shadow:
-      inset 0 0 0 2px #8b6914,
-      0 4px 14px rgba(0, 0, 0, 0.6);
+  padding: 0.7rem 1rem 0.5rem;
+}
+
+/* Red panel with an ornate brass frame, imitating the UI_Btn_Red art in pure CSS:
+   dark outer edge -> gold band -> dark red liner -> red gradient face. */
+.dungeon-party .pause-menu-party-bar {
+  display: flex;
+  width: min(100%, 980px);
+  gap: 0.65rem;
+  padding: 0.75rem;
+  background-repeat: repeat;
+  background-size: 30px 30px;
+  border: 3px solid #c9a24a;
+  border-radius: 12px;
+  outline: 2px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #3d2817,
+    inset 0 2px 0 rgba(255, 220, 170, 0.15),
+    inset 0 -3px 6px rgba(20, 12, 6, 0.65),
+    0 0 0 1px #3a2410,
+    0 6px 16px rgba(0, 0, 0, 0.72);
+  align-items: center;
+  overflow-x: auto;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────── */
