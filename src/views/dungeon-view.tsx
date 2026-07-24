@@ -380,15 +380,6 @@ export default function DungeonView() {
               <GradientDivider variant="gold" />
               <div className="dungeon-card__body">
                 <p className="dungeon-card__desc">{flavorLine}</p>
-                {ratingSummary.ratedFloors > 0 && (
-                  <div className="dungeon-rank">
-                    <span className="dungeon-rank__label">Dungeon Rank</span>
-                    <span className="dungeon-rank__value">
-                      <FloorRatingStars stars={ratingSummary.averageStars} />
-                      <span className="dungeon-rank__word">{STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}</span>
-                    </span>
-                  </div>
-                )}
               </div>
               <div className="dungeon-card__action">
                 <ToffecButton
