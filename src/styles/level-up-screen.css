@@ -529,8 +529,8 @@
 .stat-arrow-icon {
   width: 0.9rem;
   height: 0.9rem;
-  stroke: #d4a574;
-  stroke-width: 3;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .stat-preview {

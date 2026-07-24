@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { ArrowRightIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
@@ -292,7 +291,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
+                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
@@ -359,7 +358,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
+                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
@@ -427,7 +426,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
+                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
