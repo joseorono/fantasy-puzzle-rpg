@@ -113,21 +113,22 @@
   width: 250px;
   flex-shrink: 0;
   min-height: 0;
-  padding: 0.85rem;
+  padding: 0.875rem;
   color: #e0e0e0;
   background-image:
-    linear-gradient(180deg, rgba(42, 24, 16, 0.85), rgba(18, 11, 5, 0.93)), url('/assets/bg/looping/bg-board.png');
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.6)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
   background-size:
     auto,
     50px 50px;
-  /* Match the action card's carved-wood frame (triple border + gold inset). */
-  border: 4px solid #5c3a1e;
-  outline: 3px solid #2a1a0e;
-  outline-offset: -1px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 12px;
   box-shadow:
-    inset 0 0 0 2px #8b6914,
-    0 8px 20px rgba(0, 0, 0, 0.8);
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .dungeon-track__title {
@@ -136,9 +137,7 @@
   padding-bottom: 0.6rem;
   margin-bottom: 0.6rem;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
-  /* Gold gradient rule under the label, echoing the card's divider. */
-  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent) bottom left / 100%
-    2px no-repeat;
+  border-bottom: 2px solid #d4a574;
 }
 
 .dungeon-track__list {
@@ -156,10 +155,11 @@
   padding: 0.45rem 0.6rem;
   font-size: 0.6rem;
   line-height: 1.4;
-  color: #c7b393;
-  background: rgba(20, 12, 6, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.45);
-  border-left: 3px solid rgba(139, 105, 20, 0.55);
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-left: 3px solid rgba(212, 165, 116, 0.4);
+  border-radius: 6px;
   box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
@@ -169,7 +169,7 @@
   flex-shrink: 0;
   text-align: center;
   font-size: 0.72rem;
-  color: #8b6914;
+  color: #d4a574;
 }
 
 /* Name + optional rating stars, stacked to the right of the mark. */
@@ -201,15 +201,22 @@
 
 .dungeon-floor--current {
   color: #f5ecd8;
-  background: linear-gradient(90deg, rgba(200, 135, 46, 0.3), rgba(200, 135, 46, 0.1));
-  border-color: rgba(212, 165, 116, 0.6);
-  border-left-color: #e0a94a;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(212, 165, 116, 0.06));
+  border-color: rgba(212, 165, 116, 0.5);
+  border-left-color: #d4a574;
   box-shadow:
-    inset 0 0 0 1px rgba(240, 210, 160, 0.22),
-    0 0 10px rgba(200, 135, 46, 0.22);
+    inset 0 0 0 1px rgba(212, 165, 116, 0.22),
+    0 0 8px rgba(212, 165, 116, 0.18);
 }
 .dungeon-floor--current .dungeon-floor__mark {
-  color: #f0c060;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: #e3bb92;
+  filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.5));
 }
 
 .dungeon-floor--locked {
