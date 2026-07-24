@@ -688,7 +688,7 @@
   }
 }
 
-@media (max-height: 700px) {
+@media (max-height: 780px) {
   .level-up-header {
     padding: 0.5rem 1rem;
   }
