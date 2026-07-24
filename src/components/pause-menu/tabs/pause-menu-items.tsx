@@ -12,6 +12,7 @@ import type { RarityTier } from '~/constants/rarity';
 import { getScaledEquipmentStats } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
@@ -237,31 +238,7 @@ export function PauseMenuItems() {
           )}
         </div>
       </div>
-      <div className="pause-menu-resources-bar">
-        {[
-          { key: 'coins', label: 'Coins', value: resources.coins, iconName: 'coinPurse' as const },
-          { key: 'gold', label: 'Gold', value: resources.gold, iconName: 'goldBar' as const },
-          { key: 'silver', label: 'Silver', value: resources.silver, iconName: 'silverBar' as const },
-          { key: 'iron', label: 'Iron', value: resources.iron, iconName: 'ironBar' as const },
-          { key: 'copper', label: 'Copper', value: resources.copper, iconName: 'copperBar' as const },
-        ].map((item) => (
-          <div key={item.key} className={`pause-menu-resource pause-menu-resource--${item.key}`}>
-            <FrostyRpgIcon name={item.iconName} size={24} className="pause-menu-resource__icon" />
-            <div className="pause-menu-resource__content">
-              <span className="pause-menu-resource__label">{item.label}</span>
-              <span className="pause-menu-resource__value number-flow-container">
-                <NumberFlow
-                  value={item.value}
-                  format={INTEGER_FORMAT}
-                  spinTiming={SNAPPY_SPIN_TIMING}
-                  transformTiming={SNAPPY_TRANSFORM_TIMING}
-                  opacityTiming={SNAPPY_OPACITY_TIMING}
-                />
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <PauseMenuResourcesBar />
     </>
   );
 }

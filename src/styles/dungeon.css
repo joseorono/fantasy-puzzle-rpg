@@ -41,10 +41,17 @@
 
 .dungeon-resources-bar {
   position: absolute;
-  top: 0;
+  top: 0.5rem;
   right: 0.5rem;
   z-index: 3;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.dungeon-resources-bar .pause-menu-resources-bar {
+  margin-top: 0;
+  border-top: none;
+  background: transparent;
+  padding: 0;
 }
 
 /* ─── Top bar ────────────────────────────────────────────────────────── */

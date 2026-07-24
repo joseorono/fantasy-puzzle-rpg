@@ -46,7 +46,7 @@ import type { DungeonEvent } from '~/types/dungeon';
 import { DialogueScene } from '~/components/dialogue';
 import { LootNotification } from '~/components/map/loot-notification';
 import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
-import { TopBarResources } from '~/components/town/top-bar-resources';
+import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
@@ -324,7 +324,7 @@ export default function DungeonView() {
 
       {/* Resources floated top-right, out of flow (mirrors the town hub) */}
       <div className="dungeon-resources-bar">
-        <TopBarResources resources={resources} />
+        <PauseMenuResourcesBar />
       </div>
 
       {/* Top bar: dungeon name + party HP chip */}
