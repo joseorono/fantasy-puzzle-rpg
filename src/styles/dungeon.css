@@ -168,7 +168,7 @@
   width: 1.1rem;
   flex-shrink: 0;
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: #d4a574;
 }
 
@@ -213,8 +213,9 @@
   align-items: center;
   justify-content: center;
   width: 1.6rem;
-  font-size: 1rem;
+  font-size: 1.4rem;
   line-height: 1;
+  padding-bottom: 10px;
   color: #e3bb92;
   filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.5));
 }
