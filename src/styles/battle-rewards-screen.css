@@ -571,7 +571,7 @@
   gap: 0.6rem;
   margin-top: 0.5rem;
   padding: 0.3rem 0.65rem;
-  background: rgba(246, 196, 83, 0.08);
+  background: rgb(121 85 72 / 50%);;
   border: 1px solid rgba(246, 196, 83, 0.4);
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
