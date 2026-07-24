@@ -325,9 +325,10 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
         {lootMultiplier > 1 && (
-          <span className="rewards-loot-bonus pixel-font">
-            ×{lootMultiplier} Rating Bonus
-          </span>
+          <div className="rewards-loot-bonus pixel-font">
+            <span className="rewards-loot-bonus__label">Rating Bonus</span>
+            <span className="rewards-loot-bonus__value">×{lootMultiplier}</span>
+          </div>
         )}
       </header>
 

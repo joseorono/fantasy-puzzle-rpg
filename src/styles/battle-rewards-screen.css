@@ -563,17 +563,34 @@
   flex-shrink: 0;
 }
 
-/* Rating loot-bonus badge — echoes the ×N shown on the rating screen. */
+/* Rating loot-bonus badge — reuses the framed .dungeon-rank style from the dungeon summary card. */
 .rewards-loot-bonus {
-  display: inline-block;
-  margin-top: 0.4rem;
-  padding: 0.15rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.65rem;
+  background: rgb(121 85 72 / 50%);;
+  border: 1px solid rgba(246, 196, 83, 0.4);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   font-size: 0.6rem;
-  letter-spacing: 0.08em;
   color: #f6c453;
-  background: rgba(118, 35, 35, 0.4);
-  border: 1px solid rgba(246, 196, 83, 0.5);
-  border-radius: 999px;
+}
+
+.rewards-loot-bonus__label {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #cbb98f;
+}
+
+.rewards-loot-bonus__value {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #f6c453;
   text-shadow: 0 0 5px rgba(246, 196, 83, 0.35);
 }
 
