@@ -188,15 +188,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 label={
                   <>
                     {character.currentHp}/{character.maxHp}
-                    {maxHpDelta !== 0 && (
-                      <span
-                        className="bar-text-delta number-flow-container"
-                        style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
-                      >
+                    {maxHpDelta > 0 && (
+                      <span className="bar-text-delta number-flow-container">
                         <NumberFlow
                           value={maxHpDelta}
                           format={INTEGER_FORMAT}
-                          prefix={maxHpDelta > 0 ? ' +' : ' '}
+                          prefix="+"
                           trend={1}
                           spinTiming={SNAPPY_SPIN_TIMING}
                           transformTiming={SNAPPY_TRANSFORM_TIMING}

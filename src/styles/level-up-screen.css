@@ -178,9 +178,15 @@
   --ib-filter: saturate(0.85);
 }
 
-/* Inline delta inside the HP bar's label. */
 .bar-text-delta {
+  margin-left: 0.5rem;
   font-size: 0.62rem;
+  font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #e9be76;
+    text-shadow:
+      0 0 6px rgba(233, 190, 118, 0.35),
+      0 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 .derived-stats {
@@ -845,11 +851,11 @@
         .stat-allocation-row {
           padding: 0.4rem 0.6rem;
         }
-    
+
         .stat-allocation-row+.stat-allocation-row {
           margin-top: 0.35rem;
         }
-    
+
         .stat-header {
           margin-bottom: 0.25rem;
   }
