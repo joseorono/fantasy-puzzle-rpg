@@ -231,8 +231,6 @@ export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: str
   healer: { bg: 'rgba(202, 138, 4, 0.85)', light: 'rgba(253, 224, 71, 0.5)' },
 };
 
-// ─── Health Bar Colors ───────────────────────────────────────────────
-
 // ─── Skills ──────────────────────────────────────────────────────────
 // Skill definitions live in `~/constants/skills`; skill logic lives in
 // `~/lib/skill-system`. Each character owns a subset of those skills.
