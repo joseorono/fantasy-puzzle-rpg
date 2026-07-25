@@ -1,42 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
   <title>More info</title>
-  <!-- Info badge, drawn pixel-by-pixel on a 16x16 grid to match the dungeon-floor
-       markers: expanded dark silhouette, warm face, lit upper-left arc, shadowed
-       lower arc, then the "i" cut out in dark. Kept bold because it renders at
-       roughly 13px next to the stat names. -->
-  <g fill="#2a1a0e">
-    <rect x="6" y="1" width="4" height="1" />
-    <rect x="4" y="2" width="8" height="1" />
-    <rect x="3" y="3" width="10" height="1" />
-    <rect x="2" y="4" width="12" height="1" />
-    <rect x="1" y="5" width="14" height="4" />
-    <rect x="2" y="9" width="12" height="1" />
-    <rect x="3" y="10" width="10" height="1" />
-    <rect x="4" y="11" width="8" height="1" />
-    <rect x="6" y="12" width="4" height="1" />
-  </g>
-  <g fill="#d4a574">
-    <rect x="6" y="2" width="4" height="1" />
-    <rect x="4" y="3" width="8" height="1" />
-    <rect x="3" y="4" width="10" height="1" />
-    <rect x="2" y="5" width="12" height="4" />
-    <rect x="3" y="9" width="10" height="1" />
-    <rect x="4" y="10" width="8" height="1" />
-    <rect x="6" y="11" width="4" height="1" />
-  </g>
-  <g fill="#f0dcb4">
-    <rect x="6" y="2" width="4" height="1" />
-    <rect x="4" y="3" width="4" height="1" />
-    <rect x="3" y="4" width="2" height="1" />
-    <rect x="2" y="5" width="1" height="2" />
-  </g>
-  <g fill="#8b6914">
-    <rect x="3" y="9" width="10" height="1" />
-    <rect x="4" y="10" width="8" height="1" />
-    <rect x="6" y="11" width="4" height="1" />
-  </g>
-  <g fill="#2a1a0e">
-    <rect x="7" y="4" width="2" height="1" />
-    <rect x="7" y="6" width="2" height="4" />
-  </g>
+  <!-- Smooth anti-aliased indigolay-style info coin. No crispEdges so the vector
+       gradients and rounded strokes scale cleanly without blocky pixelation. -->
+  <defs>
+    <radialGradient id="face" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff4cf" />
+      <stop offset="35%" stop-color="#f5c658" />
+      <stop offset="80%" stop-color="#c78d35" />
+      <stop offset="100%" stop-color="#8f5b22" />
+    </radialGradient>
+    <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d79a" />
+      <stop offset="45%" stop-color="#a06b35" />
+      <stop offset="100%" stop-color="#3e2412" />
+    </linearGradient>
+    <linearGradient id="inner-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Drop shadow -->
+  <circle cx="12" cy="12.5" r="10.5" fill="#120b05" opacity="0.35" />
+
+  <!-- Beveled rim -->
+  <circle cx="12" cy="12" r="10.5" fill="url(#rim)" stroke="#120b05" stroke-width="1" />
+  <circle cx="12" cy="12" r="9.5" fill="none" stroke="#ffffff" stroke-width="0.75" opacity="0.25" />
+
+  <!-- Gold face -->
+  <circle cx="12" cy="12" r="9" fill="url(#face)" />
+
+  <!-- Top specular sheen -->
+  <ellipse cx="9" cy="7" rx="4.5" ry="2.5" fill="url(#inner-shadow)" />
+
+  <!-- "i" dot -->
+  <circle cx="12" cy="7.2" r="1.6" fill="#120b05" />
+
+  <!-- "i" stem -->
+  <path d="M 12 10 v 7" stroke="#120b05" stroke-width="2.4" stroke-linecap="round" />
 </svg>
