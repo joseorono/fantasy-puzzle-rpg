@@ -39,7 +39,7 @@ import {
 } from '~/lib/dungeon-system';
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
-import { DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
+import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
@@ -89,6 +89,16 @@ function getEventMedallion(event: DungeonEvent | undefined, isBoss: boolean): Fr
   if (event.type === 'dialogue') return 'openBook';
   if (event.type === 'chest') return 'chest';
   return 'broadsword';
+}
+
+/**
+ * Marker icon for a floor in the descent track. Boss floors only flag danger while
+ * still locked — once reached or cleared, the current/completed marker takes over.
+ */
+function floorMarkIcon(state: 'completed' | 'current' | 'locked', isBoss?: boolean) {
+  if (state === 'completed') return DUNGEON_FLOOR_MARK_ICONS.completed;
+  if (state === 'current') return DUNGEON_FLOOR_MARK_ICONS.current;
+  return isBoss ? DUNGEON_FLOOR_MARK_ICONS.boss : DUNGEON_FLOOR_MARK_ICONS.locked;
 }
 
 /** Compact star row (filled up to `stars`, out of MAX_STARS) for a floor's combat rating. */
@@ -353,7 +363,11 @@ export default function DungeonView() {
                   className={cn('dungeon-floor', `dungeon-floor--${state}`, floor.isBoss && 'dungeon-floor--boss')}
                 >
                   <span className="dungeon-floor__mark">
-                    {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
+                    <img
+                      className="dungeon-floor__mark-icon"
+                      src={floorMarkIcon(state, floor.isBoss)}
+                      alt=""
+                    />
                   </span>
                   <div className="dungeon-floor__body">
                     <span className="dungeon-floor__name">{formatFloorTitle(idx, floor.name)}</span>

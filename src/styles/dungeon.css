@@ -164,12 +164,23 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
+/* Holds the per-state marker SVG. Fixed width so every floor name starts at the
+   same x regardless of which marker is showing. */
 .dungeon-floor__mark {
   width: 1.1rem;
   flex-shrink: 0;
-  text-align: center;
-  font-size: 1rem;
-  color: #d4a574;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dungeon-floor__mark-icon {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The SVGs are drawn on a 16px grid with crispEdges; this keeps the browser
+     from smoothing them when the rem size lands on a fractional pixel. */
+  image-rendering: pixelated;
 }
 
 /* Name + optional rating stars, stacked to the right of the mark. */
@@ -195,8 +206,10 @@
   color: #9a8f7e;
   border-left-color: rgba(157, 176, 106, 0.6); /* olive "done" accent */
 }
-.dungeon-floor--completed .dungeon-floor__mark {
-  color: #9db06a;
+/* Cleared floors recede — the marker's olive is baked into the SVG, so this only
+   pulls it back rather than recoloring it. */
+.dungeon-floor--completed .dungeon-floor__mark-icon {
+  opacity: 0.75;
 }
 
 .dungeon-floor--current {
@@ -208,15 +221,12 @@
     inset 0 0 0 1px rgba(212, 165, 116, 0.22),
     0 0 8px rgba(212, 165, 116, 0.18);
 }
+/* The active floor's arrowhead runs larger and picks up the gold glow. */
 .dungeon-floor--current .dungeon-floor__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.6rem;
-  font-size: 1.4rem;
-  line-height: 1;
-  padding-bottom: 10px;
-  color: #e3bb92;
+  width: 1.35rem;
+}
+
+.dungeon-floor--current .dungeon-floor__mark-icon {
   filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.5));
 }
 
@@ -225,16 +235,18 @@
   border-left-color: rgba(80, 66, 50, 0.55);
   opacity: 0.8;
 }
-.dungeon-floor--locked .dungeon-floor__mark {
-  color: #5a4f42;
+.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 0.7;
 }
 
 /* Boss floors flag danger in the track until cleared. */
 .dungeon-floor--boss:not(.dungeon-floor--completed) {
   border-left-color: rgba(192, 88, 62, 0.75);
 }
-.dungeon-floor--boss.dungeon-floor--locked .dungeon-floor__mark {
-  color: #c0563e;
+/* The helm carries its own ember red, so it stays at full strength even though
+   the rest of a locked row is dimmed. */
+.dungeon-floor--boss.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 1;
 }
 
 /* ─── Right: stage / action card ─────────────────────────────────────── */
