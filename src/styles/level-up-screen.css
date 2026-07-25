@@ -354,27 +354,68 @@
   align-items: center;
 }
 
+/* Hint pill under the stat chips. Takes its cue from the indigolay ribbon art —
+   deep wine ground, near-black outer edge, an inset gold ring, heraldic diamond
+   accents — but is pure CSS so it scales with the type. Stays in the same badge
+   family as .brs-loot / .rewards-loot-bonus, not the raised .stat-chip look. */
 .pending-changes-banner {
+  position: relative;
   display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92));
-    border: 1px solid rgba(212, 165, 116, 0.45);
-    border-radius: 999px;
-    padding: 0.5rem;
-    margin-top: 0.5rem;
+  align-items: center;
+  margin-top: 0.2rem;
+  padding: 0.34rem 1.05rem;
+  background: linear-gradient(180deg, rgba(140, 38, 50, 0.62) 0%, rgba(88, 21, 31, 0.68) 100%);
+  border: 1px solid rgba(26, 11, 13, 0.85);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 214, 156, 0.16),
+    inset 0 -3px 7px rgba(0, 0, 0, 0.4),
+    0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+/* Gold ring set in from the border — the double-frame is what reads as regal
+   on the indigolay panels; a single hairline reads as a plain chip. */
+.pending-changes-banner::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(233, 190, 118, 0.42);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.pending-changes-text,
+.pending-changes-hint {
+  position: relative;
+  font-size: 0.52rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  /* Overrides .pixel-font's chunky 2px offset shadow — at this size it muddies
+     the glyphs; a 1px drop reads as carved into the plaque instead. */
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75);
 }
 
 .pending-changes-text {
-  color: #e3bb92;
-  font-size: 0.625rem;
-    margin: 0;
+  color: #f2ddb8;
 }
 
 .pending-changes-hint {
-  color: #e0e0e0;
-  font-size: 0.625rem;
-  margin: 0;
+  padding-left: 0.85rem;
+  color: #e9be76;
+}
+
+/* Heraldic diamond separator in place of the plain dot. */
+.pending-changes-hint::before {
+  content: '';
+  position: absolute;
+  /* Centred in the hint's 0.85rem left padding (4.8px + half the 4px box = 6.8px). */
+  left: 0.3rem;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translateY(-50%) rotate(45deg);
+  background: #e9be76;
+  box-shadow: 0 0 4px rgba(233, 190, 118, 0.55);
 }
 
 .confirm-apply-button {

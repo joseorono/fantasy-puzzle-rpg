@@ -269,7 +269,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             {hasPendingChanges && (
               <div className="pending-changes-banner pixel-font">
                 <span className="pending-changes-text">Confirm to apply</span>
-                <span className="pending-changes-hint">· Reset to undo</span>
+                <span className="pending-changes-hint">Reset to undo</span>
               </div>
             )}
           </div>
@@ -291,7 +291,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
+                        <img
+                          className="stat-arrow-icon"
+                          src="/assets/icons/indigolay/Icon_arrow-right.png"
+                          alt="arrow"
+                        />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
@@ -358,7 +362,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
+                        <img
+                          className="stat-arrow-icon"
+                          src="/assets/icons/indigolay/Icon_arrow-right.png"
+                          alt="arrow"
+                        />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
@@ -426,7 +434,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
                     <>
                       <span className="stat-arrow">
-                        <img className="stat-arrow-icon" src="/assets/icons/indigolay/Icon_arrow-right.png" alt="arrow" />
+                        <img
+                          className="stat-arrow-icon"
+                          src="/assets/icons/indigolay/Icon_arrow-right.png"
+                          alt="arrow"
+                        />
                       </span>
                       <span className="stat-preview number-flow-container">
                         <NumberFlow
@@ -494,22 +506,14 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <ToffecButton
-                      variant="cream"
-                      onClick={handleConfirm}
-                      disabled={!allPointsAllocated}
-                    >
+                    <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
                       Confirm
                     </ToffecButton>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecButton
-                variant="tan"
-                onClick={handleReset}
-                disabled={!hasPendingChanges}
-              >
+              <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
                 Reset
               </ToffecButton>
             </div>
