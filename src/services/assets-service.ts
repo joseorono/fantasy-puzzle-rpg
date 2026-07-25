@@ -104,6 +104,7 @@ export const assetList: string[] = [
   '/assets/hud/bar-red.png',
   '/assets/hud/btn-sys.png',
   '/assets/hud/chip-currency.png',
+  '/assets/hud/progress-track.png',
 
   // Icons
   '/assets/icons/indigolay/Icon_bookmark-fill.png',

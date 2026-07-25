@@ -283,7 +283,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             <IndigolayDivider variant="gold" className="allocation-title-divider" />
 
             {/* Power Stat */}
-            <div className="stat-allocation-row">
+            <div className="stat-allocation-row pow">
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
@@ -359,7 +359,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             </div>
 
             {/* Vitality Stat */}
-            <div className="stat-allocation-row">
+            <div className="stat-allocation-row vit">
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
@@ -433,7 +433,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             </div>
 
             {/* Speed Stat */}
-            <div className="stat-allocation-row">
+            <div className="stat-allocation-row spd">
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
