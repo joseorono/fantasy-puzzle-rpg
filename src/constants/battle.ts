@@ -43,3 +43,9 @@ export const STAGGER_REF_FRACTION = 0.15;
  * matters less. Resistance stays in `(0, 1]`, so every enemy always flinches at least a little.
  */
 export const STAGGER_VIT_DIVISOR = 8;
+
+/**
+ * Notches drawn across the party HP and Guard bars. Purely visual — it does not
+ * segment the underlying values, which stay continuous percentages.
+ */
+export const PARTY_BAR_SEGMENTS = 10;

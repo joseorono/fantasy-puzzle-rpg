@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
-import { useInventory, useResources, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
+import { useInventory, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
 import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
 import { filterInventoryByType, getItemQuantity } from '~/lib/inventory';
 import { getHealableMembers, getDeadMembers, healPartyMember } from '~/lib/party-system';
@@ -43,7 +43,6 @@ function stackKey(itemId: string, rarity?: RarityTier): string {
 
 export function PauseMenuItems() {
   const inventory = useInventory();
-  const resources = useResources();
   const party = useParty();
   const inventoryActions = useInventoryActions();
   const partyActions = usePartyActions();

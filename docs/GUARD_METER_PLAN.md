@@ -64,7 +64,7 @@ guardAfterDt = max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt)
 | `GUARD_DRAIN_FRACTION` | `lib/rpg-calculations.ts` | `0.5` | Fraction of bar a full block drains, ×guardBreak |
 | `GUARD_DECAY_RATE` | `lib/rpg-calculations.ts` | `3` | Guard/sec bled at full bar (scales with fill) |
 | `GUARD_CHARGE_RATE_DIVISOR` | `lib/rpg-calculations.ts` | `25` | Higher = gentler SPD→charge scaling |
-| `GUARD_BAR_GRADIENT` | `constants/ui.ts` | slate | Guard bar fill color |
+| `.indigolay-bar--slate` | `ui-custom/styles/indigolay-bar.css` | slate | Guard bar fill (IndigolayBar `variant="slate"`) |
 
 ## Implementation map
 

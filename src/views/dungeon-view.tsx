@@ -60,7 +60,6 @@ import { SoundNames } from '~/constants/audio';
 import { Star } from 'lucide-react';
 import {
   MAX_STARS,
-  STAR_RANK_LABELS,
   STAR_COLOR_FILLED,
   STAR_COLOR_EMPTY,
 } from '~/constants/battle-rating';

@@ -104,7 +104,18 @@ export const assetList: string[] = [
   '/assets/hud/bar-red.png',
   '/assets/hud/btn-sys.png',
   '/assets/hud/chip-currency.png',
-  '/assets/hud/progress-track.png',
+
+  // HUD — indigolay progress bars (IndigolayBar)
+  '/assets/hud/indigolay/bar-track.png',
+  '/assets/hud/indigolay/bar-fill-orange.png',
+  '/assets/hud/indigolay/bar-fill-green.png',
+  '/assets/hud/indigolay/bar-fill-sky-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue-green.png',
+  '/assets/hud/indigolay/bar-fill-pink.png',
+  '/assets/hud/indigolay/bar-fill-purple.png',
+  '/assets/hud/indigolay/bar-fill-red.png',
+  '/assets/hud/indigolay/bar-fill-yellow.png',
 
   // Icons
   '/assets/icons/indigolay/Icon_bookmark-fill.png',

@@ -11,10 +11,10 @@ import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button'
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ExperienceBar } from '~/components/ui/experience-bar';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { usePressAndHold } from '~/hooks/use-press-and-hold';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
 import {
   SNAPPY_SPIN_TIMING,
@@ -167,10 +167,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="EXP" size={1} />
               </div>
-              <ExperienceBar
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="yellow"
+                size="lg"
                 percentage={expPercentage}
                 label={`${character.currentLevelExp} / ${getExpThresholdForLevel(character.level)}`}
-                variant="full"
               />
             </div>
 
@@ -178,28 +180,33 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="HP" size={1} />
               </div>
-              <div className="hp-bar-container">
-                <div className="hp-bar" style={{ width: `${hpPercentage}%` }} />
-                <div className="bar-text pixel-font text-xs">
-                  {character.currentHp}/{character.maxHp}
-                  {maxHpDelta !== 0 && (
-                    <span
-                      className="bar-text-delta number-flow-container"
-                      style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
-                    >
-                      <NumberFlow
-                        value={maxHpDelta}
-                        format={INTEGER_FORMAT}
-                        prefix={maxHpDelta > 0 ? ' +' : ' '}
-                        trend={1}
-                        spinTiming={SNAPPY_SPIN_TIMING}
-                        transformTiming={SNAPPY_TRANSFORM_TIMING}
-                        opacityTiming={SNAPPY_OPACITY_TIMING}
-                      />
-                    </span>
-                  )}
-                </div>
-              </div>
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="red"
+                size="lg"
+                percentage={hpPercentage}
+                label={
+                  <>
+                    {character.currentHp}/{character.maxHp}
+                    {maxHpDelta !== 0 && (
+                      <span
+                        className="bar-text-delta number-flow-container"
+                        style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
+                      >
+                        <NumberFlow
+                          value={maxHpDelta}
+                          format={INTEGER_FORMAT}
+                          prefix={maxHpDelta > 0 ? ' +' : ' '}
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
+                    )}
+                  </>
+                }
+              />
             </div>
 
             <DerivedStatsDisplay character={character} previewStats={previewStats} />
@@ -349,12 +356,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Power"
                   />
                 </ToffecBeigeCornersWrapper>
-                <div className="stat-meter">
-                  <div
-                    className="stat-meter-fill pow"
-                    style={{ width: `${((previewStats.pow + potentialStatPoints.pow) / STAT_METER_MAX) * 100}%` }}
-                  />
-                </div>
+                <IndigolayBar
+                  className="stat-meter"
+                  variant="orange"
+                  percentage={((previewStats.pow + potentialStatPoints.pow) / STAT_METER_MAX) * 100}
+                />
               </div>
             </div>
 
@@ -423,12 +429,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Vitality"
                   />
                 </ToffecBeigeCornersWrapper>
-                <div className="stat-meter">
-                  <div
-                    className="stat-meter-fill vit"
-                    style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / STAT_METER_MAX) * 100}%` }}
-                  />
-                </div>
+                <IndigolayBar
+                  className="stat-meter"
+                  variant="green"
+                  percentage={((previewStats.vit + potentialStatPoints.vit) / STAT_METER_MAX) * 100}
+                />
               </div>
             </div>
 
@@ -501,12 +506,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Speed"
                   />
                 </ToffecBeigeCornersWrapper>
-                <div className="stat-meter">
-                  <div
-                    className="stat-meter-fill spd"
-                    style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / STAT_METER_MAX) * 100}%` }}
-                  />
-                </div>
+                <IndigolayBar
+                  className="stat-meter"
+                  variant="sky-blue"
+                  percentage={((previewStats.spd + potentialStatPoints.spd) / STAT_METER_MAX) * 100}
+                />
               </div>
             </div>
 

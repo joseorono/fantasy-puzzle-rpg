@@ -1,0 +1,173 @@
+/* IndigolayBar — pixel-art progress bar on the indigolay HUD art.
+
+   The track is bar-track.png (104x39) 9-sliced through border-image, the same
+   technique as #battle-top-bar. `fill` paints the maroon channel; without it the
+   centre is transparent, since the art's corners are alpha-0. Slice values are the
+   measured frame thickness in source px (interior spans x 7-95, y 8-29).
+
+   Per-size border-width is the *rendered* cap size, so the caps downscale; the
+   heights below are chosen so the 24px-tall fill art lands on a clean integer
+   ratio (channel 8 = 3:1, 12 = 2:1, 24 = 1:1). Uneven sampling is what makes the
+   fill's three bands look ragged.
+
+   No border-radius or background here: border-image ignores the former and the
+   opaque art covers the latter. */
+
+.indigolay-bar {
+  position: relative;
+  box-sizing: border-box;
+  border-style: solid;
+  border-image-source: url('/assets/hud/indigolay/bar-track.png');
+  border-image-slice: 8 8 9 7 fill;
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
+}
+
+.indigolay-bar__fill {
+  position: relative;
+  height: 100%;
+  background-image: var(--ib-fill);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: var(--ib-filter, none);
+  image-rendering: pixelated;
+  /* Load-bearing: the inn's heal animation relies on this transition. */
+  transition: width 0.3s ease;
+}
+
+/* Notches drawn as a single repeating gradient rather than N child divs. */
+.indigolay-bar__segments {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(100% / var(--ib-segments, 10) - 1px),
+    rgba(0, 0, 0, 0.2) calc(100% / var(--ib-segments, 10) - 1px) calc(100% / var(--ib-segments, 10))
+  );
+}
+
+/* Sits over the whole channel rather than clipping to the fill — for flashes and
+   popups that must show at any fill level. */
+.indigolay-bar__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Centred on the border box: the borders are symmetric, so the padding-box centre
+   the transform resolves against coincides with the bar's visual centre. */
+.indigolay-bar__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: 700;
+  line-height: 1;
+  color: #f5e6c8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* ========== SIZES ========== */
+
+.indigolay-bar--xs {
+  height: 14px;
+  border-width: 3px;
+}
+
+.indigolay-bar--sm {
+  height: 16px;
+  border-width: 4px;
+}
+
+.indigolay-bar--default {
+  height: 20px;
+  border-width: 4px;
+}
+
+.indigolay-bar--lg {
+  height: 26px;
+  border-width: 4px;
+}
+
+.indigolay-bar--xl {
+  height: 32px;
+  border-width: 4px;
+}
+
+.indigolay-bar--xs .indigolay-bar__label,
+.indigolay-bar--sm .indigolay-bar__label {
+  font-size: 0.5rem;
+}
+
+.indigolay-bar--default .indigolay-bar__label {
+  font-size: 0.6rem;
+}
+
+.indigolay-bar--lg .indigolay-bar__label,
+.indigolay-bar--xl .indigolay-bar__label {
+  font-size: 0.7rem;
+}
+
+/* ========== COLOR VARIANTS ========== */
+
+/* saturate() pulls the source art toward the game's parchment palette — the same
+   re-tint trick IndigolayDivider uses on its ornament. Most fills are already
+   close (orange is a warm ochre, sky-blue a muted steel); green is the one that
+   is genuinely vivid, so it carries a real correction plus a shift toward olive. */
+
+.indigolay-bar--orange {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-orange.png');
+  --ib-filter: saturate(0.9);
+}
+
+.indigolay-bar--green {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-green.png');
+  --ib-filter: saturate(0.72) hue-rotate(-8deg);
+}
+
+.indigolay-bar--sky-blue {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
+  --ib-filter: saturate(0.9);
+}
+
+.indigolay-bar--blue {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-blue.png');
+  --ib-filter: saturate(0.85);
+}
+
+.indigolay-bar--blue-green {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-blue-green.png');
+  --ib-filter: saturate(0.8);
+}
+
+.indigolay-bar--pink {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-pink.png');
+  --ib-filter: saturate(0.85);
+}
+
+.indigolay-bar--purple {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-purple.png');
+  --ib-filter: saturate(0.85);
+}
+
+.indigolay-bar--red {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-red.png');
+  --ib-filter: saturate(0.9);
+}
+
+.indigolay-bar--yellow {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-yellow.png');
+  --ib-filter: saturate(0.9);
+}
+
+/* The pack ships no grey fill, so slate is the sky-blue art desaturated almost
+   flat — for the battle Guard bar, which is slate in the current design. */
+.indigolay-bar--slate {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
+  --ib-filter: saturate(0.12) brightness(1.06);
+}

@@ -167,49 +167,15 @@
   margin-bottom: 0;
 }
 
-/* The bar fills the rest of the row. */
-.progress-section .exp-bar,
-.progress-section .hp-bar-container {
+/* The bar (an IndigolayBar) fills the rest of the row. */
+.progress-section__bar {
   flex: 1;
   min-width: 0;
-  margin-bottom: 0;
 }
 
-.level-up-screen .hp-bar-container {
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(212, 165, 116, 0.45);
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 0.25rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
-}
-
-.level-up-screen .hp-bar-container {
-  height: 26px;
-}
-
-.hp-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #8b6f47 0%, #d4a574 100%);
-  border-radius: 6px;
-  transition: width 0.3s ease;
-}
-
-.bar-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #e0e0e0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  z-index: 1;
-}
-
+/* Inline delta inside the HP bar's label. */
 .bar-text-delta {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
 }
 
 .derived-stats {
@@ -637,49 +603,10 @@
   margin-bottom: 0.55rem;
 }
 
-/* Indigolay progress track (public/assets/hud/progress-track.png, 104x39), 9-sliced
-   through border-image so the bronze frame stays crisp while the channel stretches —
-   the same technique as #battle-top-bar. `fill` paints the maroon interior; without
-   it the centre would be transparent, since the art's corners are alpha-0.
-   Slice values are the measured frame thickness in source px (interior spans x 7-95,
-   y 8-29); border-width is the rendered size, so the caps downscale ~2x — the same
-   ratio battle-top-bar already ships. No border-radius or background here:
-   border-image ignores the former and covers the latter. */
+/* The stat meter is an IndigolayBar; only its flex sizing lives here. */
 .stat-meter {
   flex: 1;
   min-width: 0;
-  height: 18px;
-    box-sizing: border-box;
-  position: relative;
-  border-style: solid;
-    border-width: 4px;
-    border-image-source: url('/assets/hud/progress-track.png');
-    border-image-slice: 8 8 9 7 fill;
-    border-image-repeat: stretch;
-    image-rendering: pixelated;
-}
-
-/* Sits in the content box, which border-width insets on all sides, so it lands
-   inside the frame with no extra positioning. */
-.stat-meter-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-  /* Sheen along the top so the bar reads as filled metal, not flat paint. */
-  box-shadow: inset 0 1px 0 rgba(255, 226, 180, 0.28);
-}
-
-/* Dark-to-accent, ending on the same muted tone as the stat name above it. */
-.stat-meter-fill.pow {
-  background: linear-gradient(90deg, #5c2f14 0%, #a56d38 55%, #e09a63 100%);
-}
-
-.stat-meter-fill.vit {
-  background: linear-gradient(90deg, #37462a 0%, #6b8551 55%, #a9c281 100%);
-}
-
-.stat-meter-fill.spd {
-  background: linear-gradient(90deg, #2a4257 0%, #587a97 55%, #8fb4d4 100%);
 }
 
 /* Steppers + meter share one row — the meter takes whatever width is left. */
@@ -839,8 +766,15 @@
     margin-bottom: 0;
   }
 
-  .level-up-screen .hp-bar-container {
+  /* Drop the EXP/HP bars from `lg` (26px) to `default` metrics on short viewports.
+     Compound selector required: indigolay-bar.css is imported after this file, so a
+     bare .progress-section__bar would lose the specificity tie to .indigolay-bar--lg. */
+  .progress-section__bar.indigolay-bar {
     height: 20px;
+  }
+
+  .progress-section__bar .indigolay-bar__label {
+    font-size: 0.6rem;
   }
 
   .derived-stats {
@@ -910,10 +844,10 @@
     margin-bottom: 0.35rem;
   }
 
-    /* 3px caps keep a 9px channel at this height; 4px would leave only 3px of fill. */
-  .stat-meter {
-    height: 15px;
-      border-width: 3px;
+  /* 3px caps still leave a 12px channel, keeping the fill art's clean 2:1 downscale. */
+  .stat-meter.indigolay-bar {
+    height: 18px;
+    border-width: 3px;
   }
 
   .allocation-actions {

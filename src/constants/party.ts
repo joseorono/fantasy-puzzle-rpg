@@ -1,4 +1,4 @@
-import type { CharacterData, OrbType, CharacterClass } from '~/types/rpg-elements';
+import type { CharacterData, CharacterClass } from '~/types/rpg-elements';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
@@ -232,14 +232,6 @@ export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: str
 };
 
 // ─── Health Bar Colors ───────────────────────────────────────────────
-
-export const HEALTH_BAR_COLORS: Record<OrbType, string> = {
-  blue: 'from-blue-600 to-blue-500',
-  green: 'from-green-600 to-green-500',
-  purple: 'from-purple-600 to-purple-500',
-  yellow: 'from-yellow-600 to-yellow-500',
-  gray: 'from-gray-600 to-gray-500',
-};
 
 // ─── Skills ──────────────────────────────────────────────────────────
 // Skill definitions live in `~/constants/skills`; skill logic lives in

@@ -109,8 +109,7 @@
     inset 2px 2px 0 rgba(255, 255, 255, 0.1);
 }
 
-.party-member-card--roster.active .party-member-card__hp-bar,
-.party-member-card--roster.active .party-member-card__exp-bar,
+/* The bars are art-framed now, so only the icon takes the active border. */
 .party-member-card--roster.active .party-member-card__icon {
   border-color: rgba(212, 165, 116, 0.85);
 }
@@ -125,7 +124,7 @@
   background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: 3px solid #A98559;
-  height: 86px; /* Exactly matches the combined height of bars with solapamiento */
+  height: 86px; /* Taller than the bar stack; the column has slack below. */
   width: 64px;
   z-index: 4;
 }
@@ -162,29 +161,18 @@
   gap: 0.1rem;
   width: 90%;
   border-radius: 4px 4px 10px;
-  height: 46px; /* Adjusted for 86px total height */
+  height: 46px;
   flex-shrink: 0;
 }
 
+/* Now an IndigolayBar (size xs = 14px); the frame comes from the art, so only
+   width/stacking live here. */
 .party-member-card__exp-bar {
   width: 95%;
-  height: 12px; /* Adjusted for 86px total height */
-  background: #1a1008;
-  border: 2px solid #A98559;
-  border-radius: 4px;
   margin-top: -3px;
   position: relative;
   z-index: 2;
-  overflow: hidden;
   flex-shrink: 0;
-  border-bottom-right-radius: 6px;
-}
-
-.party-member-card__exp-fill {
-  height: 100%;
-  background: #ffcc00;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
-  transition: width 0.3s ease;
 }
 
 .party-member-card__name {
@@ -209,42 +197,13 @@
   text-overflow: ellipsis;
 }
 
+/* Also an IndigolayBar (size xs); colour comes from HP_THRESHOLD_BAR_VARIANT. */
 .party-member-card__hp-bar {
   width: 100%;
-  height: 23px;
-  background: #3D2817;
-  border-radius: 4px;
-  overflow: hidden;
   margin-top: 0;
   position: relative;
   z-index: 3;
-  border: 2px solid #A98559;
   flex-shrink: 0;
-}
-
-.party-member-card--bar .party-member-card__hp-bar,
-.party-member-card--roster .party-member-card__hp-bar {
-  height: 14px;
-  border-width: 3px;
-}
-
-.party-member-card__hp-fill {
-  height: 100%;
-  border-radius: 0;
-  transition: width 0.3s ease;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
-}
-
-.party-member-card__hp-fill.full {
-  background: #4ade80;
-}
-
-.party-member-card__hp-fill.medium {
-  background: #fbbf24;
-}
-
-.party-member-card__hp-fill.low {
-  background: #ef4444;
 }
 
 /* Dead state styling */
@@ -254,24 +213,19 @@
   opacity: 0.7;
 }
 
-.party-member-card.dead .party-member-card__hp-bar {
-  background: #2A1810;
-  border-color: #8B8680;
-}
-
 .party-member-card.dead .party-member-card__info-bar {
   background: #5A4A3A;
   border-color: #8B8680;
 }
 
-.party-member-card.dead .party-member-card__exp-bar {
-  background: #1a1008;
-  border-color: #8B8680;
+/* Grey the bars out with a filter rather than a background colour: the fill is a
+   PNG, and the `background` shorthand would reset background-image and blank it. */
+.party-member-card.dead .indigolay-bar {
+  filter: grayscale(1) brightness(0.72);
 }
 
-.party-member-card.dead .party-member-card__exp-fill {
-  background: #4A4037 !important;
-  box-shadow: none;
+.party-member-card.dead .indigolay-bar__fill {
+  filter: grayscale(1) brightness(0.5);
 }
 
 .party-member-card.dead .party-member-card__name {
@@ -280,11 +234,6 @@
 
 .party-member-card.dead .party-member-card__detail {
   color: #7A7570;
-}
-
-.party-member-card.dead .party-member-card__hp-fill {
-  background: #4A4037 !important;
-  box-shadow: none;
 }
 
 /* ─── Body (sidebar + content) ───────────────────────────────────────── */
