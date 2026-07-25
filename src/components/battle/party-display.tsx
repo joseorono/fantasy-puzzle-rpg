@@ -245,10 +245,14 @@ export function PartyDisplay() {
     }
   }, [lastDamage]);
 
-  // The HP bar tints to the last matched orb, falling back to its health threshold.
+  // The HP bar rests on its health threshold — the same mapping the pause-menu party
+  // cards use — and flashes the matched orb's colour for the pulse's lifetime.
+  // `showPulse` is what bounds that flash: `lastMatchedType` is only ever set on a
+  // match and never cleared, so keying off it alone pinned the tint for the whole
+  // battle and left the threshold branch unreachable.
   // Gray is excluded so a gray match doesn't wash the bar out mid-fight.
   const getHealthBarVariant = () => {
-    if (lastMatchedType && lastMatchedType !== 'gray') {
+    if (showPulse && lastMatchedType && lastMatchedType !== 'gray') {
       return ORB_TYPE_BAR_VARIANT[lastMatchedType];
     }
     return HP_THRESHOLD_BAR_VARIANT[getHpThreshold(partyHealthPercentage)];

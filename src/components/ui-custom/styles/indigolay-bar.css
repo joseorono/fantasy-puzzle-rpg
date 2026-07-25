@@ -23,16 +23,51 @@
   image-rendering: pixelated;
 }
 
+/* The fill is just the clipping box now — the sprite lives on stacked __layer
+   children so colour changes can crossfade. */
 .indigolay-bar__fill {
   position: relative;
   height: 100%;
-  background-image: var(--ib-fill);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  filter: var(--ib-filter, none);
-  image-rendering: pixelated;
   /* Load-bearing: the inn's heal animation relies on this transition. */
   transition: width 0.3s ease;
+}
+
+/* One sprite layer. 9-sliced the same way the track is, so the art's 4px rounded
+   caps render 1:1 and only its flat core (source x 4..87) stretches.
+
+   Stretching the whole 92px sprite instead (background-size: 100% 100%) blows its
+   1px anti-aliased margin up ~3.5x on a wide bar, which reads as a blurry fade at
+   both ends — `image-rendering: pixelated` can't help, because those pixels really
+   are semi-transparent and it scales the transparency faithfully.
+
+   Vertical slices are 0, so the sprite stretches top-to-bottom and the per-size
+   downscales stay clean (12px channel = 2:1, 8px = 3:1). */
+.indigolay-bar__layer {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0 4px;
+  border-image-source: var(--ib-fill);
+  border-image-slice: 0 4 0 4 fill;
+  border-image-repeat: stretch;
+  filter: var(--ib-filter, none);
+  image-rendering: pixelated;
+}
+
+/* Only the incoming layer animates; the outgoing one sits underneath at full
+   opacity and is unmounted when this finishes. */
+.indigolay-bar__layer--in {
+  animation: ib-layer-in var(--ib-fade, 0.4s) ease forwards;
+}
+
+@keyframes ib-layer-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Notches drawn as a single repeating gradient rather than N child divs. */
@@ -115,59 +150,60 @@
 
 /* ========== COLOR VARIANTS ========== */
 
-/* saturate() pulls the source art toward the game's parchment palette — the same
-   re-tint trick IndigolayDivider uses on its ornament. Most fills are already
-   close (orange is a warm ochre, sky-blue a muted steel); green is the one that
-   is genuinely vivid, so it carries a real correction plus a shift toward olive. */
+/* These sit on the layer, not the bar, because each crossfading layer needs its
+   own sprite.
 
-.indigolay-bar--orange {
+   The artist's colours ship as-is. Do NOT bake a desaturation in here: these are
+   shared by battle health bars, where a muted green reads as olive rather than
+   "healthy". Screens wanting a muted palette set --ib-filter on the bar itself
+   (see .stat-meter in level-up-screen.css) — it inherits down to the layer. */
+
+.indigolay-bar__layer--orange {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-orange.png');
-  --ib-filter: saturate(0.9);
 }
 
-.indigolay-bar--green {
+.indigolay-bar__layer--green {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-green.png');
-  --ib-filter: saturate(0.72) hue-rotate(-8deg);
 }
 
-.indigolay-bar--sky-blue {
+.indigolay-bar__layer--sky-blue {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
-  --ib-filter: saturate(0.9);
 }
 
-.indigolay-bar--blue {
+.indigolay-bar__layer--blue {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-blue.png');
-  --ib-filter: saturate(0.85);
 }
 
-.indigolay-bar--blue-green {
+.indigolay-bar__layer--blue-green {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-blue-green.png');
-  --ib-filter: saturate(0.8);
 }
 
-.indigolay-bar--pink {
+.indigolay-bar__layer--pink {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-pink.png');
-  --ib-filter: saturate(0.85);
 }
 
-.indigolay-bar--purple {
+.indigolay-bar__layer--purple {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-purple.png');
-  --ib-filter: saturate(0.85);
 }
 
-.indigolay-bar--red {
+.indigolay-bar__layer--red {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-red.png');
-  --ib-filter: saturate(0.9);
 }
 
-.indigolay-bar--yellow {
+.indigolay-bar__layer--yellow {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-yellow.png');
-  --ib-filter: saturate(0.9);
 }
 
 /* The pack ships no grey fill, so slate is the sky-blue art desaturated almost
-   flat — for the battle Guard bar, which is slate in the current design. */
-.indigolay-bar--slate {
+   flat — for the battle Guard bar, which is slate in the current design. This is
+   the one variant whose filter is intrinsic to the colour, not a screen's taste. */
+.indigolay-bar__layer--slate {
   --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
   --ib-filter: saturate(0.12) brightness(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indigolay-bar__layer--in {
+    animation-duration: 0.01ms;
+  }
 }

@@ -74,9 +74,14 @@
 }
 
 /* The HP fill eased over 500ms before the conversion (the Guard bar over 300ms,
-   which is the component default) — keep the slower feel on damage. */
+   which is the component default) — keep the slower feel on damage, and match it
+   for the green/yellow/red crossfade as HP crosses a threshold. */
 #party-hp-bar .indigolay-bar__fill {
   transition-duration: 0.5s;
+}
+
+#party-hp-bar {
+  --ib-fade: 0.5s;
 }
 
 /* ─── Guard Meter Feedback ───────────────────────────────────────────

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
@@ -45,14 +46,16 @@ interface IndigolayBarProps
 }
 
 /**
- * Pixel-art progress bar built on the indigolay HUD art: the track is a 9-sliced
- * PNG (`border-image` with `fill`, so the bronze frame stays crisp while the
- * channel stretches) and the fill is a matching per-colour PNG stretched to the
- * fill box. Sizes are picked so the 24px-tall fill art downscales by a clean
- * integer ratio — uneven sampling is what makes its bands look ragged.
+ * Pixel-art progress bar built on the indigolay HUD art: the track and the fill
+ * are both 9-sliced PNGs (`border-image` with `fill`), so the bronze frame and
+ * the fill's rounded caps stay crisp while only their flat middles stretch.
+ * Sizes are picked so the 24px-tall fill art downscales by a clean integer ratio
+ * — uneven sampling is what makes its bands look ragged.
  *
- * The fill sits in the content box, which `border-width` insets on all sides, so
- * it lands inside the frame with no extra positioning.
+ * Colour changes crossfade. `border-image-source` is not interpolatable, so a
+ * single layer could only hard-cut between sprites; instead the outgoing sprite
+ * is held underneath while the incoming one fades in over it. A bar whose variant
+ * never changes renders exactly one layer and pays nothing for this.
  */
 export function IndigolayBar({
   className,
@@ -66,6 +69,20 @@ export function IndigolayBar({
   ...props
 }: IndigolayBarProps) {
   const clamped = Math.min(100, Math.max(0, percentage));
+  // Resolved here as well as in cva: the layer class is built by interpolation, so
+  // an omitted variant would otherwise yield `--undefined` and render no sprite.
+  const activeVariant = variant ?? DEFAULT_BAR_VARIANT;
+
+  // The variant the bar has settled on; `outgoing` is the sprite still fading out
+  // beneath it. Kept in a ref because it must not itself trigger a render.
+  const settledVariant = useRef(activeVariant);
+  const [outgoing, setOutgoing] = useState<typeof activeVariant | null>(null);
+
+  useEffect(() => {
+    if (settledVariant.current === activeVariant) return;
+    setOutgoing(settledVariant.current);
+    settledVariant.current = activeVariant;
+  }, [activeVariant]);
 
   return (
     <div
@@ -73,10 +90,21 @@ export function IndigolayBar({
       aria-valuenow={Math.round(clamped)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={cn(indigolayBarVariants({ variant, size, className }))}
+      className={cn(indigolayBarVariants({ variant: activeVariant, size, className }))}
       {...props}
     >
       <div className="indigolay-bar__fill" style={{ width: `${clamped}%` }}>
+        {outgoing ? <div className={cn('indigolay-bar__layer', `indigolay-bar__layer--${outgoing}`)} /> : null}
+        <div
+          // Remounts on every colour change so the fade-in animation restarts.
+          key={activeVariant}
+          className={cn(
+            'indigolay-bar__layer',
+            `indigolay-bar__layer--${activeVariant}`,
+            outgoing && 'indigolay-bar__layer--in',
+          )}
+          onAnimationEnd={() => setOutgoing(null)}
+        />
         {children}
       </div>
       {segments ? (

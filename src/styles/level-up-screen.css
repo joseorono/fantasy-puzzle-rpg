@@ -171,6 +171,11 @@
 .progress-section__bar {
   flex: 1;
   min-width: 0;
+  /* Mute the fill art into this screen's parchment palette. Set here rather than in
+     the component: IndigolayBar ships the artist's colours because the same fills
+     drive battle health bars, where a muted green would read as olive. Inherits
+     down to .indigolay-bar__layer. */
+  --ib-filter: saturate(0.85);
 }
 
 /* Inline delta inside the HP bar's label. */
@@ -607,6 +612,15 @@
 .stat-meter {
   flex: 1;
   min-width: 0;
+  /* See .progress-section__bar — the parchment muting lives on the screen, not in
+     the component. VIT's green needs a stronger correction than the others. */
+  --ib-filter: saturate(0.85);
+}
+
+/* Targets the cva root class, which IndigolayBar still emits — the `vit` class is
+   on the row, not the bar, so `.stat-meter.vit` would never match. */
+.stat-meter.indigolay-bar--green {
+  --ib-filter: saturate(0.72) hue-rotate(-8deg);
 }
 
 /* Steppers + meter share one row — the meter takes whatever width is left. */
