@@ -14,6 +14,8 @@ import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ExperienceBar } from '~/components/ui/experience-bar';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { usePressAndHold } from '~/hooks/use-press-and-hold';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
+import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -116,7 +118,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
   const maxHpDelta = previewMaxHp - currentMaxHp;
 
-  const maxStatValue = 100; // For meter display
 
   return (
     <div className="level-up-screen">
@@ -279,12 +280,23 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             <h2 className="allocation-title">
               <NarikWoodBitFont text="Allocate Points" size={1.2} />
             </h2>
+            <IndigolayDivider variant="gold" className="allocation-title-divider" />
 
             {/* Power Stat */}
             <div className="stat-allocation-row">
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="info-icon" role="img" aria-label="About Power">
+                        <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      {character.class === 'healer' ? 'Increases your healing output' : 'Increases your damage output'}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.pow}</span>
@@ -312,19 +324,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
               </div>
               <p className="stat-hint pixel-font text-xs">
-                {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}{' '}
-                {/* <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {character.class === 'healer' ? 'Increases your healing output' : 'Increases your damage output'}
-                  </TooltipContent>
-                </Tooltip> */}
+                {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}
               </p>
-              <div className="stat-meter">
-                <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
-              </div>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
@@ -348,6 +349,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Power"
                   />
                 </ToffecBeigeCornersWrapper>
+                <div className="stat-meter">
+                  <div
+                    className="stat-meter-fill pow"
+                    style={{ width: `${((previewStats.pow + potentialStatPoints.pow) / STAT_METER_MAX) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -356,6 +363,16 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="info-icon" role="img" aria-label="About Vitality">
+                        <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.vit}</span>
@@ -382,21 +399,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   )}
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">
-                Increases your Maximum HP.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Increases your Maximum HP</TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill vit"
-                  style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / maxStatValue) * 100}%` }}
-                />
-              </div>
+              <p className="stat-hint pixel-font text-xs">Increases your Maximum HP.</p>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
@@ -420,6 +423,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Vitality"
                   />
                 </ToffecBeigeCornersWrapper>
+                <div className="stat-meter">
+                  <div
+                    className="stat-meter-fill vit"
+                    style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / STAT_METER_MAX) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -428,6 +437,20 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-header">
                 <div className="stat-name-group">
                   <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="info-icon" role="img" aria-label="About Speed">
+                        <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      -Reduces ultimate skill cooldown
+                      <br />
+                      -Reduces item cooldowns in battle
+                      <br />
+                      -Charges the party Guard meter faster
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="stat-values pixel-font text-xs">
                   <span className="stat-current">{character.stats.spd}</span>
@@ -454,27 +477,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   )}
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">
-                Reduces skill &amp; item cooldowns and charges Guard faster.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    -Reduces ultimate skill cooldown
-                    <br />
-                    -Reduces item cooldowns in battle
-                    <br />
-                    -Charges the party Guard meter faster
-                  </TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill spd"
-                  style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / maxStatValue) * 100}%` }}
-                />
-              </div>
+              <p className="stat-hint pixel-font text-xs">Reduces skill &amp; item cooldowns, charges Guard faster.</p>
               <div className="stat-controls">
                 <ToffecBeigeCornersWrapper>
                   <ToffecSquareButton
@@ -498,6 +501,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     aria-label="Increase Speed"
                   />
                 </ToffecBeigeCornersWrapper>
+                <div className="stat-meter">
+                  <div
+                    className="stat-meter-fill spd"
+                    style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / STAT_METER_MAX) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
 

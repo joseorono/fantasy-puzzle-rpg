@@ -67,6 +67,15 @@ export const HP_THRESHOLD_CLASS: Record<HpThreshold, string> = {
   low: 'low',
 };
 
+/** Custom pixel-art info badge used by the level-up stat tooltips. */
+export const INFO_ICON_SRC = '/assets/icons/ui/info-badge.svg';
+
+/**
+ * Denominator for the level-up stat meters — the notional stat ceiling, used for bar
+ * width only. Not a gameplay cap; nothing clamps stats to this value.
+ */
+export const STAT_METER_MAX = 100;
+
 /**
  * Press-and-hold auto-repeat tuning for the +/- stat-allocation buttons (level-up screen).
  * Holding a button spends/refunds points ever faster: after `initialDelayMs`, each repeat's wait

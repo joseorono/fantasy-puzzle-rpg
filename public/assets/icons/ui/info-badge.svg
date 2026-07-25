@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <title>More info</title>
+  <!-- Info badge, drawn pixel-by-pixel on a 16x16 grid to match the dungeon-floor
+       markers: expanded dark silhouette, warm face, lit upper-left arc, shadowed
+       lower arc, then the "i" cut out in dark. Kept bold because it renders at
+       roughly 13px next to the stat names. -->
+  <g fill="#2a1a0e">
+    <rect x="6" y="1" width="4" height="1" />
+    <rect x="4" y="2" width="8" height="1" />
+    <rect x="3" y="3" width="10" height="1" />
+    <rect x="2" y="4" width="12" height="1" />
+    <rect x="1" y="5" width="14" height="4" />
+    <rect x="2" y="9" width="12" height="1" />
+    <rect x="3" y="10" width="10" height="1" />
+    <rect x="4" y="11" width="8" height="1" />
+    <rect x="6" y="12" width="4" height="1" />
+  </g>
+  <g fill="#d4a574">
+    <rect x="6" y="2" width="4" height="1" />
+    <rect x="4" y="3" width="8" height="1" />
+    <rect x="3" y="4" width="10" height="1" />
+    <rect x="2" y="5" width="12" height="4" />
+    <rect x="3" y="9" width="10" height="1" />
+    <rect x="4" y="10" width="8" height="1" />
+    <rect x="6" y="11" width="4" height="1" />
+  </g>
+  <g fill="#f0dcb4">
+    <rect x="6" y="2" width="4" height="1" />
+    <rect x="4" y="3" width="4" height="1" />
+    <rect x="3" y="4" width="2" height="1" />
+    <rect x="2" y="5" width="1" height="2" />
+  </g>
+  <g fill="#8b6914">
+    <rect x="3" y="9" width="10" height="1" />
+    <rect x="4" y="10" width="8" height="1" />
+    <rect x="6" y="11" width="4" height="1" />
+  </g>
+  <g fill="#2a1a0e">
+    <rect x="7" y="4" width="2" height="1" />
+    <rect x="7" y="6" width="2" height="4" />
+  </g>
+</svg>
