@@ -79,20 +79,42 @@
 }
 
 .dungeon-hp-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 3px 12px;
-  font-size: 0.62rem;
-  font-weight: bold;
-  letter-spacing: 0.05em;
-  color: #e3bb92;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(212, 165, 116, 0.5);
-  border-radius: 999px;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
+  box-sizing: border-box;
+  height: 28px;
   flex-shrink: 0;
+  border-style: solid;
+  border-width: 4px 4px 4px 26px;
+  border-image-source: url('/assets/hud/chip-currency.png');
+  border-image-slice: 9 10 9 64 fill;
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
+}
+  
+  /* Sits in the art's circular well, which is part of the left border box — so it
+     needs a negative offset to reach outside the content box. -21px centres a 16px
+     icon in the 26px well. */
+  .dungeon-hp-chip__icon {
+    position: absolute;
+    left: -21px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+  }
+  
+  .dungeon-hp-chip__value {
+    padding-right: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: #f5e6c8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 /* ─── Main layout ────────────────────────────────────────────────────── */

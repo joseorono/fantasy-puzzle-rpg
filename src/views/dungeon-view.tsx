@@ -58,11 +58,7 @@ import { useConfirm } from '~/hooks/use-confirm';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Star } from 'lucide-react';
-import {
-  MAX_STARS,
-  STAR_COLOR_FILLED,
-  STAR_COLOR_EMPTY,
-} from '~/constants/battle-rating';
+import { MAX_STARS, STAR_COLOR_FILLED, STAR_COLOR_EMPTY } from '~/constants/battle-rating';
 import { cn, getRandomElement } from '~/lib/utils';
 import {
   DUNGEON_COMBAT_FLAVOR,
@@ -340,8 +336,11 @@ export default function DungeonView() {
       <div className="dungeon-topbar">
         <div className="dungeon-topbar__left">
           <NarikWoodBitFont text={dungeon.name} size={1.1} />
-          <span className="dungeon-hp-chip">
-            HP {totalCurrentHp} / {totalMaxHp}
+          <span className="dungeon-hp-chip" aria-label={`Party HP ${totalCurrentHp} of ${totalMaxHp}`}>
+            <img className="dungeon-hp-chip__icon" src="/assets/icons/indigolay/icon-hp.png" alt="" />
+            <span className="dungeon-hp-chip__value pixel-font" aria-hidden="true">
+              {totalCurrentHp} / {totalMaxHp}
+            </span>
           </span>
         </div>
       </div>
@@ -362,11 +361,7 @@ export default function DungeonView() {
                   className={cn('dungeon-floor', `dungeon-floor--${state}`, floor.isBoss && 'dungeon-floor--boss')}
                 >
                   <span className="dungeon-floor__mark">
-                    <img
-                      className="dungeon-floor__mark-icon"
-                      src={floorMarkIcon(state, floor.isBoss)}
-                      alt=""
-                    />
+                    <img className="dungeon-floor__mark-icon" src={floorMarkIcon(state, floor.isBoss)} alt="" />
                   </span>
                   <div className="dungeon-floor__body">
                     <span className="dungeon-floor__name">{formatFloorTitle(idx, floor.name)}</span>
