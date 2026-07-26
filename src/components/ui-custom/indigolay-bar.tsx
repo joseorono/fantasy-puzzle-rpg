@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
-const indigolayBarVariants = cva('indigolay-bar', {
+/** Kept in sync with `defaultVariants.variant` below, and used to resolve an omitted
+ *  `variant` prop — the layer class is built by interpolation, so `undefined` there
+ *  would yield `indigolay-bar__layer--undefined` and render no sprite. */
+const DEFAULT_BAR_VARIANT = 'orange';
+
+const indigolayBarVariants = cva('indigolay-bar indigolay-art', {
   variants: {
     variant: {
       orange: 'indigolay-bar--orange',
@@ -25,7 +30,7 @@ const indigolayBarVariants = cva('indigolay-bar', {
     },
   },
   defaultVariants: {
-    variant: 'orange',
+    variant: DEFAULT_BAR_VARIANT,
     size: 'default',
   },
 });
@@ -94,12 +99,12 @@ export function IndigolayBar({
       {...props}
     >
       <div className="indigolay-bar__fill" style={{ width: `${clamped}%` }}>
-        {outgoing ? <div className={cn('indigolay-bar__layer', `indigolay-bar__layer--${outgoing}`)} /> : null}
+        {outgoing ? <div className={cn('indigolay-bar__layer indigolay-art', `indigolay-bar__layer--${outgoing}`)} /> : null}
         <div
           // Remounts on every colour change so the fade-in animation restarts.
           key={activeVariant}
           className={cn(
-            'indigolay-bar__layer',
+            'indigolay-bar__layer indigolay-art',
             `indigolay-bar__layer--${activeVariant}`,
             outgoing && 'indigolay-bar__layer--in',
           )}

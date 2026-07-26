@@ -630,7 +630,6 @@
   width: 0.9rem;
   height: 0.9rem;
   object-fit: contain;
-  image-rendering: pixelated;
 }
 
 /* Same pending-gold as .stat-delta and .pending-changes-banner, so every

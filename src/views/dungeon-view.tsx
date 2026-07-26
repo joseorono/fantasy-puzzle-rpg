@@ -336,7 +336,7 @@ export default function DungeonView() {
       <div className="dungeon-topbar">
         <div className="dungeon-topbar__left">
           <NarikWoodBitFont text={dungeon.name} size={1.1} />
-          <span className="dungeon-hp-chip" aria-label={`Party HP ${totalCurrentHp} of ${totalMaxHp}`}>
+          <span className="dungeon-hp-chip indigolay-art" aria-label={`Party HP ${totalCurrentHp} of ${totalMaxHp}`}>
             <img className="dungeon-hp-chip__icon" src="/assets/icons/indigolay/icon-hp.png" alt="" />
             <span className="dungeon-hp-chip__value pixel-font" aria-hidden="true">
               {totalCurrentHp} / {totalMaxHp}

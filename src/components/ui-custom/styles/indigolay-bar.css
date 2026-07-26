@@ -20,7 +20,6 @@
   border-image-source: url('/assets/hud/indigolay/bar-track.png');
   border-image-slice: 8 8 9 7 fill;
   border-image-repeat: stretch;
-  image-rendering: pixelated;
 }
 
 /* The fill is just the clipping box now — the sprite lives on stacked __layer
@@ -37,8 +36,8 @@
 
    Stretching the whole 92px sprite instead (background-size: 100% 100%) blows its
    1px anti-aliased margin up ~3.5x on a wide bar, which reads as a blurry fade at
-   both ends — `image-rendering: pixelated` can't help, because those pixels really
-   are semi-transparent and it scales the transparency faithfully.
+   both ends — no image-rendering mode helps, because those pixels really are
+   semi-transparent and any scaling stretches the transparency with them.
 
    Vertical slices are 0, so the sprite stretches top-to-bottom and the per-size
    downscales stay clean (12px channel = 2:1, 8px = 3:1). */
@@ -52,7 +51,6 @@
   border-image-slice: 0 4 0 4 fill;
   border-image-repeat: stretch;
   filter: var(--ib-filter, none);
-  image-rendering: pixelated;
 }
 
 /* Only the incoming layer animates; the outgoing one sits underneath at full
