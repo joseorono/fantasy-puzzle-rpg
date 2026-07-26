@@ -126,5 +126,9 @@ export function randomizeDungeon(dungeon: DungeonDefinition): DungeonDefinition 
     name: `${dungeon.name} (Remix)`,
     backgroundImage: dungeon.backgroundImage,
     floors: [...normalFloors, bossFloor],
+    // The `-remix` id is throwaway — recording it would pollute the progress store with a
+    // key nothing reads. The remix also strips the story, so it must never stand in for a
+    // real clear of the base dungeon.
+    recordsCompletion: false,
   };
 }

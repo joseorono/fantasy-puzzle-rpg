@@ -51,6 +51,13 @@ export interface BattleViewData {
 export interface DungeonViewData {
   dungeon: DungeonDefinition;
   isReplay: boolean;
+  /**
+   * Surface to return to when the run ends, finished or abandoned. Captured automatically by
+   * `goToDungeon` from the launching view; callers may override it. Needed because a run's
+   * battle round-trip (dungeon → battle → rewards → goBack) lands back on the dungeon with
+   * `previousView` cleared, so `goBack()` on the way out would no-op.
+   */
+  returnView?: ViewType;
 }
 
 /**

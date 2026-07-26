@@ -42,4 +42,7 @@ export interface DungeonDefinition {
   backgroundImage: string;
   /** Played in order from index 0. */
   floors: DungeonFloor[];
+  /** Whether clearing this dungeon records completion. Defaults to true; generated
+   *  remixes set it false so their throwaway ids never enter the progress store. */
+  recordsCompletion?: boolean;
 }

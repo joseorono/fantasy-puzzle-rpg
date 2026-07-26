@@ -131,10 +131,14 @@ export function goToBattleDemo(currentState: RouterState, data: ViewDataMap['bat
 }
 
 /**
- * Navigate to a dungeon run with required data
+ * Navigate to a dungeon run with required data.
+ * Records the launching view in `returnView` (unless the caller supplied one) so the run can
+ * navigate back explicitly on Finish/Leave — see `DungeonViewData.returnView`.
  */
 export function goToDungeon(currentState: RouterState, data: ViewDataMap['dungeon']): NavigationResult {
-  return prepareNavigation(currentState, 'dungeon', data);
+  // Guard against a dungeon launching a dungeon, which would return to itself.
+  const entryView = currentState.currentView === 'dungeon' ? undefined : currentState.currentView;
+  return prepareNavigation(currentState, 'dungeon', { ...data, returnView: data.returnView ?? entryView });
 }
 
 /**

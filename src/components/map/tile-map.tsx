@@ -24,6 +24,7 @@ import {
   useRouterActions,
   useParty,
   useDungeonProgressActions,
+  useDungeonProgressState,
 } from '~/stores/game-store';
 import { getDungeonById } from '~/lib/dungeon-system';
 import { randomizeDungeon } from '~/lib/dungeon-randomizer';
@@ -40,6 +41,7 @@ import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
+import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import { demoMap } from '~/constants/maps/map-00/tiled-data';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
 
@@ -55,6 +57,27 @@ const DIALOGUE_TRIGGERS = [
   { row: 31, col: 83, scene: 'simple' },
   { row: 13, col: 71, scene: 'narrator' },
 ] as const;
+
+/** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
+function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
+  return node.dungeon ?? (node.dungeonId ? getDungeonById(node.dungeonId) : undefined);
+}
+
+/**
+ * Whether a map node is cleared. Dungeon nodes are a pure view of dungeon progress: the run
+ * itself records the clear in `dungeonProgress.completedDungeons`, so the node needs no second
+ * write in `mapProgress`, and a remix clear correctly doesn't count because we always look up
+ * the BASE dungeon. Every other node type reads map progress as before.
+ */
+function isMapNodeCompleted(
+  node: InteractiveMapNode,
+  completedDungeons: Record<string, boolean>,
+  isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean,
+): boolean {
+  if (node.type !== 'Dungeon') return isNodeCompleted(node.type, node.id);
+  const base = resolveDungeon(node);
+  return base ? completedDungeons[base.id] === true : false;
+}
 
 type DialogueSceneKey = string;
 
@@ -107,6 +130,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
   const routerActions = useRouterActions();
   const { isDungeonCompleted } = useDungeonProgressActions();
+  // Subscribed rather than read through the action: the action form is a get() call that
+  // renders can cache, so completion changes wouldn't repaint the marker or the menu.
+  const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
 
@@ -183,14 +209,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       const node = getNodeAtPosition(row, col);
       if (node && node.blocksMovement) {
         // Node blocks movement - check if it's completed
-        const isCompleted = isNodeCompleted(node.type, node.id);
+        const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
         return isCompleted; // Can only walk through if completed
       }
 
       // Any non-zero tile in the road layer is walkable
       return true;
     },
-    [mapData, isNodeCompleted],
+    [mapData, isNodeCompleted, completedDungeons],
   );
 
   // Verify starting position is valid on initialization
@@ -286,6 +312,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     }
   }, []);
 
+  // Returning from a battle or dungeon restores the player onto the node they entered from, but
+  // the menu only opens on movement — reopen it so the node is immediately interactive again.
+  useEffect(() => {
+    const saved = useGameStore.getState().mapProgress.characterPosition;
+    if (saved) checkInteractiveNode(saved.row, saved.col);
+  }, [checkInteractiveNode]);
+
   // Check and auto-collect floor loot
   const checkFloorLoot = React.useCallback(
     (row: number, col: number) => {
@@ -339,37 +372,37 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       // Only move if the new position is a road tile
       const canMove = isRoadTile(newRow, newCol);
 
-        if (canMove) {
-          console.log(`✅ Moving to (${newRow}, ${newCol})`);
-          setDebugInfo(`On road at (${newRow}, ${newCol})`);
+      if (canMove) {
+        console.log(`✅ Moving to (${newRow}, ${newCol})`);
+        setDebugInfo(`On road at (${newRow}, ${newCol})`);
 
-          // Play footstep sound
-          const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
-          footstepSystem.setSurface(surfaceType);
-          footstepSystem.playFootstep();
+        // Play footstep sound
+        const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
+        footstepSystem.setSurface(surfaceType);
+        footstepSystem.playFootstep();
 
-          // Close node menu when moving
-          if (showNodeMenu) {
-            setShowNodeMenu(false);
-            setCurrentNode(null);
-          }
-
-          // Check for dialogue triggers
-          checkDialogueTrigger(newRow, newCol);
-
-          // Check for interactive nodes
-          checkInteractiveNode(newRow, newCol);
-
-          // Check for floor loot (auto-collect)
-          checkFloorLoot(newRow, newCol);
-
-          return { row: newRow, col: newCol };
-        } else {
-          console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
-          setDebugInfo(`Blocked! Still at (${currentPos.row}, ${currentPos.col})`);
-          return currentPos;
+        // Close node menu when moving
+        if (showNodeMenu) {
+          setShowNodeMenu(false);
+          setCurrentNode(null);
         }
-      });
+
+        // Check for dialogue triggers
+        checkDialogueTrigger(newRow, newCol);
+
+        // Check for interactive nodes
+        checkInteractiveNode(newRow, newCol);
+
+        // Check for floor loot (auto-collect)
+        checkFloorLoot(newRow, newCol);
+
+        return { row: newRow, col: newCol };
+      } else {
+        console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
+        setDebugInfo(`Blocked! Still at (${currentPos.row}, ${currentPos.col})`);
+        return currentPos;
+      }
+    });
   });
 
   function handleAcceptDialogue() {
@@ -474,11 +507,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     setCurrentNode(null);
 
     enterDungeon(enteredNode, { randomized: true });
-  }
-
-  /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
-  function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
-    return node.dungeon ?? (node.dungeonId ? getDungeonById(node.dungeonId) : undefined);
   }
 
   /**
@@ -638,7 +666,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
     // Draw interactive node markers
     DEMO_MAP_NODES.forEach((node) => {
-      const isCompleted = mapProgressActions.isNodeCompleted(node.type, node.id);
+      const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
       const markerX = node.position.col * tileSize;
       const markerY = node.position.row * tileSize;
       const markerSize = tileSize;
@@ -814,7 +842,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     charPosition,
     visitedTriggers,
     pulseAnimation,
-    mapProgressActions,
+    isNodeCompleted,
+    completedDungeons,
     floorLootProgressActions,
     currentMapId,
     canvasReady,
@@ -839,12 +868,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   return (
     <>
       <div className="tilemap-container">
-        <MapInfoPanel
-          displayMapName={displayMapName}
-          debug={debug}
-          charPosition={charPosition}
-          status={debugInfo}
-        />
+        <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
         <div
           style={{
             position: 'relative',
@@ -894,7 +918,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
             />
           )}
         </div>
-
       </div>
 
       {/* Dialogue trigger confirmation modal */}
@@ -908,7 +931,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       {showNodeMenu && currentNode && canvasElement && (
         <NodeInteractionMenu
           node={currentNode}
-          isCompleted={isNodeCompleted(currentNode.type, currentNode.id)}
+          isCompleted={isMapNodeCompleted(currentNode, completedDungeons, isNodeCompleted)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
           onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}

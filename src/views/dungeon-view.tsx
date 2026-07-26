@@ -40,6 +40,7 @@ import {
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
 import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
+import { DEFAULT_VIEW } from '~/constants/routing';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
@@ -158,9 +159,9 @@ export default function DungeonView() {
   const { setInventory } = useInventoryActions();
   const resources = useResources();
   const { setResources } = useResourcesActions();
-  // Entry is debug-only in v1; navigate back explicitly because the router's
-  // previousView is null after the battle round-trip (goBack would no-op).
-  const { goToBattleDemo, goToDebug } = useRouterActions();
+  // A run returns to whichever surface launched it (map node, debug list, …). We can't use
+  // goBack(): the battle round-trip leaves the router's previousView null.
+  const { goToBattleDemo, goBackTo } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
 
   const pauseMenu = usePauseMenu();
@@ -205,7 +206,8 @@ export default function DungeonView() {
     if (event === undefined) {
       // Floor exhausted: advance to the next floor, or finish the dungeon.
       if (isLastFloor(dungeon, liveFloorIndex)) {
-        markDungeonCompleted(dungeon.id); // the single store write of the run
+        // The single store write of the run. Remixes opt out — their id is throwaway.
+        if (dungeon.recordsCompletion !== false) markDungeonCompleted(dungeon.id);
         setPhase('complete');
       } else {
         advanceFloor();
@@ -236,6 +238,8 @@ export default function DungeonView() {
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
+
+  const returnView = viewData.returnView ?? DEFAULT_VIEW;
 
   const currentFloor = getFloor(dungeon, floorIndex);
   const currentEvent = currentFloor ? getEvent(currentFloor, eventIndex) : undefined;
@@ -308,12 +312,12 @@ export default function DungeonView() {
     });
     if (!ok) return;
     resetRun();
-    goToDebug();
+    goBackTo(returnView);
   }
 
   function handleFinish() {
     resetRun();
-    goToDebug();
+    goBackTo(returnView);
   }
 
   const isBoss = currentFloor?.isBoss ?? false;
