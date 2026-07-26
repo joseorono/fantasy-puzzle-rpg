@@ -257,7 +257,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     forClass: 'mage',
     comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
-    iconName: 'scepter',
+    iconName: 'holyStaff',
   },
   {
     id: 'golden-plate-armor',
