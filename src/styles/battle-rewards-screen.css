@@ -340,8 +340,9 @@
 
 /* The rewards bar is driven frame-by-frame by requestAnimationFrame (useExpGainAnimation),
    so it must not also run a CSS width transition — that would lag the fill and animate the
-   reset-to-0 backwards. The level-up screen's ExperienceBar keeps its own transition. */
-.exp-gained-container .exp-bar__fill {
+   reset-to-0 backwards. Scoped to this screen rather than set on .exp-bar, because being
+   rAF-driven is a property of this caller, not of the component. */
+.exp-gained-container .indigolay-bar__fill {
   transition: none;
 }
 
@@ -802,13 +803,6 @@
   .character-card .exp-gained-text {
     font-size: 0.75rem;
     margin-bottom: 0.125rem;
-  }
-
-  /* Smaller EXP bar in battle rewards */
-  .character-card .exp-bar--compact {
-    height: 4px;
-    border-width: 1px;
-    border-radius: 2px;
   }
 
   .rewards-resources-panel {
