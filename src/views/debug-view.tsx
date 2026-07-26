@@ -1,4 +1,5 @@
-import type { ComponentType } from 'react';
+import { type ComponentType } from 'react';
+import { ScrollToTopButton } from '~/components/ui/scroll-to-top-button';
 import InventoryTestView from '~/views/inventory-test';
 import ResourcesTestView from '~/views/resources-test';
 import SoundTestView from '~/views/sound-test';
@@ -79,7 +80,7 @@ export default function DebugView() {
           <section.Component />
         </section>
       ))}
+      <ScrollToTopButton />
     </>
   );
 }
-
