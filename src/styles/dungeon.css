@@ -78,6 +78,11 @@
   white-space: nowrap;
 }
 
+/* Party HP chip on chip-currency.png, 9-sliced so the circular well and right cap
+   keep their shape while only the flat bar stretches (the battle .btb-badge stretches
+   the whole art, which would turn the well into an ellipse at this width).
+   Widths are the slices at the render scale, 28/68 — rounding them distorts the
+   well, which spans all three horizontal bands. */
 .dungeon-hp-chip {
   position: relative;
   display: inline-flex;
@@ -86,34 +91,35 @@
   height: 28px;
   flex-shrink: 0;
   border-style: solid;
-  border-width: 4px 4px 4px 26px;
+  border-width: 3.7px 4.1px 3.7px 26.4px;
   border-image-source: url('/assets/hud/chip-currency.png');
   border-image-slice: 9 10 9 64 fill;
   border-image-repeat: stretch;
-  image-rendering: pixelated;
 }
-  
-  /* Sits in the art's circular well, which is part of the left border box — so it
-     needs a negative offset to reach outside the content box. -21px centres a 16px
-     icon in the 26px well. */
-  .dungeon-hp-chip__icon {
-    position: absolute;
-    left: -21px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    image-rendering: pixelated;
-    filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
-  }
-  
-  .dungeon-hp-chip__value {
-    padding-right: 0.35rem;
-  font-size: 0.62rem;
+
+/* The well is part of the left border box, so the icon needs a negative left to
+   reach into it. Offsets track the well's disc centre (33.5, 33.5 of 68), which sits
+   just above the art's midpoint — hence 49.3% rather than 50%. */
+.dungeon-hp-chip__icon {
+  position: absolute;
+  left: -19.6px;
+  top: 49.3%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* Padding both sides: the content box starts flush against the well, so without a
+   left gap the digits collide with it. */
+.dungeon-hp-chip__value {
+  padding: 0 0.45rem 0 0.4rem;
+  font-size: 0.5rem;
   font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    color: #f5e6c8;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: #f5e6c8;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
