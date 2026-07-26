@@ -185,6 +185,7 @@
 
   .rewards-resources-panel {
     gap: 2rem;
+    margin-bottom: 0.3rem;
   }
 
   .rewards-resource-card {
@@ -558,7 +559,7 @@
 
 .victory-header {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -616,7 +617,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .items-found-header {
