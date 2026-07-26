@@ -17,12 +17,12 @@ interface NodeInteractionMenuProps {
 }
 
 const NODE_ICONS: Record<MapNodeType, FrostyRpgIconName> = {
-  Battle: 'broadsword',
-  Boss: 'crown',
-  Town: 'lantern',
+  Battle: 'steelSword',
+  Boss: 'redBook',
+  Town: 'elixir',
   Dungeon: 'skull',
-  Treasure: 'chest',
-  Mystery: 'orbPurple',
+  Treasure: 'parchment',
+  Mystery: 'pouch',
 };
 
 /**
@@ -101,14 +101,14 @@ export function NodeInteractionMenu({
       <div className="nim-actions">
         {canFight && onFight && (
           <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onFight}>
-            <FrostyRpgIcon name="broadsword" size={16} />
+            <FrostyRpgIcon name="steelSword" size={16} />
             Fight
           </ToffecButton>
         )}
 
         {canEnter && onEnter && (
           <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="lantern" size={16} />
+            <FrostyRpgIcon name="elixir" size={16} />
             Enter
           </ToffecButton>
         )}
@@ -133,14 +133,14 @@ export function NodeInteractionMenu({
 
         {canOpenChest && onOpenChest && (
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
-            <FrostyRpgIcon name="openChest" size={16} />
+            <FrostyRpgIcon name="sealedScroll" size={16} />
             Open
           </ToffecButton>
         )}
 
         {canInteract && onEnter && (
           <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="orbPurple" size={16} />
+            <FrostyRpgIcon name="pouch" size={16} />
             Interact
           </ToffecButton>
         )}

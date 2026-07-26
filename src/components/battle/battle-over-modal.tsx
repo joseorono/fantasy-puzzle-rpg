@@ -111,7 +111,7 @@ export function BattleOverModal() {
         <div className="gom-content">
           {/* Icon medallion */}
           <div className={cn('gom-icon', isVictory ? 'gom-icon--victory' : 'gom-icon--defeat')}>
-            <FrostyRpgIcon name={isVictory ? 'necklace' : 'skull'} size={40} />
+            <FrostyRpgIcon name={isVictory ? 'chalice' : 'skull'} size={40} />
           </div>
 
           {/* Title — bitmap font */}

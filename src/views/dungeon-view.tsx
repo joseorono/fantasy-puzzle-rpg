@@ -80,10 +80,10 @@ function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): strin
 /** Icon shown in the action card's pixel-art medallion, by the current event type. */
 function getEventMedallion(event: DungeonEvent | undefined, isBoss: boolean): FrostyRpgIconName {
   if (isBoss) return 'skull';
-  if (!event) return 'lantern';
+  if (!event) return 'elixir';
   if (event.type === 'dialogue') return 'openBook';
-  if (event.type === 'chest') return 'chest';
-  return 'broadsword';
+  if (event.type === 'chest') return 'parchment';
+  return 'steelSword';
 }
 
 /**
@@ -378,7 +378,7 @@ export default function DungeonView() {
             <div className="dungeon-card dungeon-card--complete">
               <div className="dungeon-card__banner">
                 <div className="dungeon-card__medallion">
-                  <FrostyRpgIcon name="crown" size={24} />
+                  <FrostyRpgIcon name="redBook" size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
                   <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
