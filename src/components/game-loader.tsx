@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { isGameStartedAtom } from '~/stores/app-atoms';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import { useRouterActions } from '~/stores/game-store';
 import { loaderService } from '~/services/loader-service';
 import { MIN_LOAD_TIME_MS } from '~/constants/game';
 import { SKIP_TO_DEBUG_VIEW } from '~/constants/dev';
+import { useWakeLock } from '~/hooks/use-wake-lock';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
@@ -23,8 +25,13 @@ export function GameLoader() {
   // Menu↔game gate lives in a global atom so flows like a game-over can return to the title.
   const isReady = useAtomValue(isGameStartedAtom);
   const setGameStarted = useSetAtom(isGameStartedAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const { goToDebug } = useRouterActions();
   const [showStartMenu, setShowStartMenu] = useState(false);
+
+  // Keep the screen awake while actively playing; release it behind the pause menu
+  // so the player isn't forced to keep the tab active just to let the display sleep.
+  useWakeLock(isReady && !isPauseMenuOpen);
 
   useEffect(() => {
     // Dev shortcut: skip the start menu and jump straight into the debug view.
