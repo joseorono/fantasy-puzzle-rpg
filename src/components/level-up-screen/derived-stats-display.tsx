@@ -9,6 +9,7 @@ import {
   calculateDamage,
   calculateItemCooldownInMs,
   calculateGuardChargeRate,
+  calculateGuardDecayResistance,
 } from '~/lib/rpg-calculations';
 import { useParty } from '~/stores/game-store';
 import {
@@ -40,16 +41,19 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
   const previewCooldown = calculateSkillCooldown(character.maxCooldown, previewStats.spd);
   const previewPower = calculateDamage(50, previewStats.pow);
 
-  // Calculate preview item cooldown with this character's SPD changed
+  // Party-level derived stats (item cooldown, guard) read collective stats, so they preview
+  // against a party with this character's pending stats swapped in.
   const previewParty = party.map((member) =>
-    member.id === character.id ? { ...member, stats: { ...member.stats, spd: previewStats.spd } } : member,
+    member.id === character.id ? { ...member, stats: previewStats } : member,
   );
   const previewItemCooldown = calculateItemCooldownInMs(previewParty);
 
-  // Guard Charge Rate is a party-level multiplier driven by collective living SPD,
-  // so its preview reuses the same SPD-swapped party as item cooldown.
   const currentGuardChargeRate = calculateGuardChargeRate(party);
   const previewGuardChargeRate = calculateGuardChargeRate(previewParty);
+
+  // Shown as the reduction (higher = the Guard bar bleeds slower), not the raw multiplier.
+  const currentGuardDecayReduction = (1 - calculateGuardDecayResistance(party)) * 100;
+  const previewGuardDecayReduction = (1 - calculateGuardDecayResistance(previewParty)) * 100;
 
   // Calculate deltas
   const maxHpDelta = previewMaxHp - currentMaxHp;
@@ -58,6 +62,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
   const powerDelta = previewPower - currentPower;
   const itemCooldownDelta = previewItemCooldown - currentItemCooldown;
   const guardChargeRateDelta = previewGuardChargeRate - currentGuardChargeRate;
+  const guardDecayReductionDelta = previewGuardDecayReduction - currentGuardDecayReduction;
 
   const isHealer = character.class === 'healer';
   const powerLabel = isHealer ? 'Healing Power' : 'Attack Power';
@@ -200,6 +205,34 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
                 format={DECIMAL_2_FORMAT}
                 prefix={guardChargeRateDelta > 0 ? '+' : ''}
                 trend={guardChargeRateDelta > 0 ? 1 : -1}
+                spinTiming={SNAPPY_SPIN_TIMING}
+                transformTiming={SNAPPY_TRANSFORM_TIMING}
+                opacityTiming={SNAPPY_OPACITY_TIMING}
+              />
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="derived-stat-row">
+        <span className="derived-stat-name pixel-font text-xs">Guard Decay Reduction</span>
+        <div className="derived-stat-value pixel-font number-flow-container text-xs">
+          <NumberFlow
+            value={previewGuardDecayReduction}
+            format={DECIMAL_2_FORMAT}
+            suffix="%"
+            trend={1}
+            spinTiming={SNAPPY_SPIN_TIMING}
+            transformTiming={SNAPPY_TRANSFORM_TIMING}
+            opacityTiming={SNAPPY_OPACITY_TIMING}
+          />
+          {guardDecayReductionDelta !== 0 && (
+            <span className="stat-delta number-flow-container">
+              <NumberFlow
+                value={guardDecayReductionDelta}
+                format={DECIMAL_2_FORMAT}
+                prefix={guardDecayReductionDelta > 0 ? '+' : ''}
+                trend={guardDecayReductionDelta > 0 ? 1 : -1}
                 spinTiming={SNAPPY_SPIN_TIMING}
                 transformTiming={SNAPPY_TRANSFORM_TIMING}
                 opacityTiming={SNAPPY_OPACITY_TIMING}

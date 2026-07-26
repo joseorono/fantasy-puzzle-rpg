@@ -6,14 +6,14 @@ import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { BOMB_REFILL_CHANCE } from '~/constants/game';
-import { PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
+import { GUARD_MAX, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
+  calculateGuardDecayResistance,
   calculatePartyHpPercentage,
   calculateSkillDamage,
   resolveGuardedDamage,
   decayGuard,
-  GUARD_MAX,
 } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import {
@@ -472,7 +472,11 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
 
   set(battleStateAtom, {
     ...currentState,
-    guard: decayGuard(currentState.guard, deltaSeconds),
+    guard: decayGuard(
+      currentState.guard,
+      deltaSeconds,
+      calculateGuardDecayResistance(currentState.party),
+    ),
   });
 });
 

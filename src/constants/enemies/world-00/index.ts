@@ -19,7 +19,7 @@ export const MOSS_GOLEM: EnemyData = {
   currentHp: 0, // Will be set to maxHp on init
   sprite: '/assets/enemy-sprites/gollux_idle.png',
   attackInterval: 4000, // Base interval (4 seconds)
-  attackDamage: 27, // Base damage before POW modifier (~30 after POW)
+  attackDamage: 24, // Base damage before POW modifier (30 after POW)
   guardBreak: 2.0, // Heavy slams chew through the party Guard meter
   lootTable: MOSS_GOLEM_LOOT,
   expReward: 60,
@@ -46,7 +46,7 @@ export const SWAMP_FROG: EnemyData = {
   currentHp: 0,
   sprite: '/assets/enemy-sprites/frogger_idle.png',
   attackInterval: 3000, // Faster attacks (3 seconds)
-  attackDamage: 11, // Low damage (~12 after POW)
+  attackDamage: 10, // Low damage (11 after POW)
   guardBreak: 0.8, // Light taps erode the party Guard meter
   lootTable: SWAMP_FROG_LOOT,
   expReward: 30,

@@ -219,6 +219,45 @@ describe('levelUp', () => {
     expect(character.maxHp).toBe(initialMaxHp);
   });
 
+  it('should heal only up to the pre-level-up maxHp when vit is increased', () => {
+    const character = createTestCharacter({ currentHp: 30 });
+    const chosenStats: CoreRPGStats = { pow: 0, vit: 2, spd: 0 };
+
+    levelingSystem.levelUp(character, chosenStats, null, 1);
+
+    expect(character.maxHp).toBe(130);
+    expect(character.currentHp).toBe(120);
+  });
+
+  it('should fully heal when vit is not increased', () => {
+    const character = createTestCharacter({ currentHp: 30 });
+    const chosenStats: CoreRPGStats = { pow: 2, vit: 0, spd: 0 };
+
+    levelingSystem.levelUp(character, chosenStats, null, 1);
+
+    expect(character.maxHp).toBe(120);
+    expect(character.currentHp).toBe(120);
+  });
+
+  it('should not fill the hp gained from vit when already at full hp', () => {
+    const character = createTestCharacter({ currentHp: 120 });
+    const chosenStats: CoreRPGStats = { pow: 0, vit: 2, spd: 0 };
+
+    levelingSystem.levelUp(character, chosenStats, null, 1);
+
+    expect(character.maxHp).toBe(130);
+    expect(character.currentHp).toBe(120);
+  });
+
+  it('should revive a defeated character up to the pre-level-up maxHp', () => {
+    const character = createTestCharacter({ currentHp: 0 });
+    const chosenStats: CoreRPGStats = { pow: 0, vit: 2, spd: 0 };
+
+    levelingSystem.levelUp(character, chosenStats, null, 1);
+
+    expect(character.currentHp).toBe(120);
+  });
+
   it('should handle zero stats for both chosen and random', () => {
     const character = createTestCharacter();
     const initialPow = character.stats.pow;

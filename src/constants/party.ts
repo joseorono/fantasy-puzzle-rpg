@@ -239,8 +239,9 @@ export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: str
 export const COOLDOWN_REDUCTION_PER_ORB = 0.3;
 
 // ─── Guard Meter ─────────────────────────────────────────────────────
-// Gray orbs trade raw damage for a party-wide Guard meter. The guard math
-// (mitigation, drain, decay, charge rate) lives in `~/lib/rpg-calculations`.
+// Gray orbs trade raw damage for a party-wide Guard meter. The guard tunables
+// (mitigation, drain, decay, charge rate) live in `~/constants/battle`, and the
+// math that consumes them in `~/lib/rpg-calculations`.
 
 /** Multiplier applied to gray orbs' neutral match damage — gray trades damage for Guard. */
 export const GRAY_MATCH_DAMAGE_MULTIPLIER = 0.4; // was 1.0 (gray dealt full neutral base damage)

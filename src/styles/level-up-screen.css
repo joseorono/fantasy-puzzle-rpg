@@ -229,8 +229,10 @@
 }
 
 .stat-delta {
+  display: inline-flex;
+    align-items: center;
   flex-shrink: 0;
-    padding: 0.14rem 0.42rem;
+  padding: 0.14rem 0.42rem;
     font-size: 0.6rem;
     font-weight: 700;
     line-height: 1;

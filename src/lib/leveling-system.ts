@@ -148,6 +148,9 @@ export function getRandomPotentialStats(potentialStats: CoreRPGStats, statAmount
 /**
  * Levels up a character
  *
+ * Healing (when LEVELING_UP_HEALS_CHARACTER is on) restores up to the max HP the character
+ * had *before* levelling, so HP gained from VIT this level starts unfilled.
+ *
  * @param character - The object representing the character to level up
  * @param randomStats - Stat chosen by the player to be increased, this will reduce the potential stat increases
  * @param chosenStat - The object representing the character to level up, which DOESN'T affect potential stats
@@ -162,6 +165,7 @@ export function levelUp(
 ): CharacterData {
   if (levelUpAmount <= 0) return character;
   const initialVit = character.stats.vit;
+  const initialMaxHp = character.maxHp;
 
   // If there's a valid stat to level up, increase the value and decrease the potential value
   if (randomStats) {
@@ -189,7 +193,7 @@ export function levelUp(
   character.currentLevelExp = 0;
 
   if (LEVELING_UP_HEALS_CHARACTER) {
-    character.currentHp = character.maxHp;
+    character.currentHp = Math.min(initialMaxHp, character.maxHp);
   }
   return character;
 }
