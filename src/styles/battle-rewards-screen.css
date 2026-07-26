@@ -343,6 +343,10 @@
   transition: none;
 }
 
+.exp-gained-container .indigolay-bar {
+  translate: -1.5px 0px;
+}
+
 /* EXP have/missing readout directly under the bar. Values are NumberFlow-driven and
    derived from the same `percentage` that fills the bar, so they tick up in lockstep
    with it (see EXP_COUNTER_TIMING). */
