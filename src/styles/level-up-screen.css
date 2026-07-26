@@ -583,8 +583,7 @@
 .info-icon {
   display: inline-flex;
   align-items: center;
-  /* 1rem maps the 16px source grid ~1:1, so the pixels stay square. Below this it
-     degrades into an unreadable blob. */
+  /* 1.25rem gives the "i" enough room so the dot is legible at small sizes. */
   width: 1rem;
   flex-shrink: 0;
   cursor: help;
