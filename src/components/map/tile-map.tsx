@@ -33,6 +33,12 @@ import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
+import {
+  MAP_NODE_MARKER_SIZE,
+  MAP_NODE_ICON_RATIO,
+  MAP_NODE_CHECK_RATIO,
+  MAP_NODE_CHECK_INSET_RATIO,
+} from '~/constants/map';
 import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
@@ -667,9 +673,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     // Draw interactive node markers
     DEMO_MAP_NODES.forEach((node) => {
       const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
-      const markerX = node.position.col * tileSize;
-      const markerY = node.position.row * tileSize;
-      const markerSize = tileSize;
+      const markerSize = MAP_NODE_MARKER_SIZE;
+      // Markers are bigger than a tile, so center them on the node's tile instead of
+      // top-left aligning to it.
+      const markerInset = (markerSize - tileSize) / 2;
+      const markerX = node.position.col * tileSize - markerInset;
+      const markerY = node.position.row * tileSize - markerInset;
 
       // Calculate pulse effect (0.5 to 1.0)
       const pulse = 0.5 + Math.sin(pulseAnimation) * 0.5;
@@ -729,7 +738,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       ctx.fillRect(markerX, markerY, markerSize, markerSize);
 
       // Draw icon
-      ctx.font = 'bold 12px monospace';
+      ctx.font = `bold ${markerSize * MAP_NODE_ICON_RATIO}px monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(icon, markerX + markerSize / 2, markerY + markerSize / 2);
@@ -741,9 +750,10 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
       // Draw completion checkmark
       if (isCompleted) {
+        const checkInset = markerSize * MAP_NODE_CHECK_INSET_RATIO;
         ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-        ctx.font = 'bold 10px monospace';
-        ctx.fillText('✓', markerX + markerSize - 4, markerY + 4);
+        ctx.font = `bold ${markerSize * MAP_NODE_CHECK_RATIO}px monospace`;
+        ctx.fillText('✓', markerX + markerSize - checkInset, markerY + checkInset);
       }
     });
 
