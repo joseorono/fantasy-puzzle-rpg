@@ -419,8 +419,8 @@ export type HpThreshold = 'high' | 'medium' | 'low';
  * @returns 'high' if >50%, 'medium' if >25%, 'low' otherwise
  */
 export function getHpThreshold(percentage: number): HpThreshold {
-  if (percentage > 50) return 'high';
-  if (percentage > 25) return 'medium';
+  if (percentage > 55) return 'high';
+  if (percentage > 30) return 'medium';
   return 'low';
 }
 
