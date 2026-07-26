@@ -280,10 +280,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
 
           {/* Right Column - Stat Allocation */}
           <div className="stat-allocation-panel">
-            <h2 className="allocation-title">
-              <NarikWoodBitFont text="Allocate Points" size={1.2} />
-            </h2>
-            <GradientDivider variant="gold" className="allocation-title-divider" />
+            <div className="allocation-header">
+              <h2 className="allocation-title">
+                <NarikWoodBitFont text="Allocate Points" size={1.2} />
+              </h2>
+              <GradientDivider variant="gold" className="allocation-title-divider" />
+            </div>
 
             {/* Stat cards share the panel's free height so the actions sit on the bottom padding line. */}
             <div className="stat-allocation-list">

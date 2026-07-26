@@ -197,7 +197,7 @@
   margin: -2px 0 0 0;
     padding: 0;
   }
-  
+
   .derived-stats-divider {
     margin: 0 0 0.6rem;
 }
@@ -457,7 +457,11 @@
   background-position: center, center;
   border: 2px solid #5c3a1e;
   border-radius: 12px;
-  padding: 0.95rem 1.15rem;
+  /* Vertical padding matches .character-display-panel's 0.875rem, with the bottom
+     bumped by 4px: the Toffec buttons paint a `0 4px 0` drop shadow below their
+     layout box, which would otherwise eat that much of the gap and leave them
+     visually tighter to the edge than the sibling panel's content. */
+  padding: 0.875rem 1.15rem 1.125rem;
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.7),
     inset 0 0 0 2px rgba(212, 165, 116, 0.78),
@@ -868,12 +872,18 @@
     font-size: 0.625rem;
   }
 
+  /* Matches .character-display-panel's compact 0.5rem, again +4px at the bottom for
+     the buttons' drop shadow. */
   .stat-allocation-panel {
-    padding: 0.6rem 0.9rem;
+    padding: 0.5rem 0.9rem 0.75rem;
   }
 
   .allocation-title {
     margin: -2px 0 0 0;
+  }
+
+  .allocation-header {
+    margin-bottom: 4px;
   }
 
   .allocation-title-divider {
