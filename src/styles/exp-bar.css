@@ -16,6 +16,8 @@
   --exp-flash-brightness: rgba(255, 255, 255, 1);
   --exp-flash-glow-spread: 5px;
   --exp-flash-glow-blur: 3px;
+  /* Peak opacity of the flash sheet. Below 1 so repeated level-ups don't strobe. */
+  --exp-flash-peak-opacity: 0.8;
 }
 
 /* Rendered in IndigolayBar's `overlay` slot, which already spans the whole channel. */
@@ -29,7 +31,7 @@
 
 @keyframes expBarFlash {
   from {
-    opacity: 1;
+    opacity: var(--exp-flash-peak-opacity);
   }
 
   to {
