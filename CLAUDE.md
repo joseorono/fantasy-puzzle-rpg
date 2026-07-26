@@ -75,6 +75,7 @@ src/
 - Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
 - Avoid enums; use maps instead
 - Use `cn()` from `~/lib/utils` for conditional class merging (clsx + tailwind-merge)
+- Avoid long comments if possible, if you need long comments to justify something it's praobably a hack and needs to be addressed. Don't hesitate to ask the users for input.
 
 ## React Patterns
 
