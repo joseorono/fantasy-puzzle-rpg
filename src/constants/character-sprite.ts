@@ -39,7 +39,7 @@ export const WALK_STAND_COLUMN = 0;
 export const SIT_FRAME_COUNT = 2;
 
 /** How many tiles tall the character should render (used for the scale calculation). */
-export const CHARACTER_HEIGHT_TILES = 2.5;
+export const CHARACTER_HEIGHT_TILES = 3.5;
 
 /** Milliseconds between walk animation frames. */
 export const WALK_FRAME_MS = 110;

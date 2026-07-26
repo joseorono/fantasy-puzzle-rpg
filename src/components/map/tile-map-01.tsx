@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 import { useGameStore, useMapProgressActions } from '~/stores/game-store';
-import { getNavDirection, isRunModifier } from '~/constants/keyboard';
+import { isRunModifier } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { useCharacterSprite } from '~/hooks/use-character-sprite';
+import { useCharacterMovement } from '~/hooks/use-character-movement';
 import MapCharacterSprite from './map-character-sprite';
 import { MapInfoPanel } from './map-info-panel';
 
@@ -31,9 +31,6 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
   const mapProgressActions = useMapProgressActions();
 
   const tileSize = mapData.tilewidth || 16;
-
-  // Character sprite animation state machine
-  const { spriteState, reportStep } = useCharacterSprite();
 
   // Load tileset image
   useEffect(() => {
@@ -106,31 +103,27 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     console.error('❌ No walkable tiles found in map!');
   }, [mapData, isWalkable, walkableLayers, defaultPlayerPosition]);
 
-  // Handle keyboard input for character movement (arrow keys and WASD alike)
-  useWindowKeyDown((event) => {
-    const direction = getNavDirection(event.key);
-    if (!direction) return;
-    event.preventDefault();
-
-    let newRow = charPosition.row;
-    let newCol = charPosition.col;
-    if (direction === 'up') newRow -= 1;
-    else if (direction === 'down') newRow += 1;
-    else if (direction === 'left') newCol -= 1;
-    else newCol += 1;
-
-    const canMove = isWalkable(newRow, newCol);
-    reportStep(direction, { moved: canMove, running: isRunModifier(event) });
-
-    if (canMove) {
-      setCharPosition({ row: newRow, col: newCol });
-      setDebugInfo(`Walking at (${newRow}, ${newCol})`);
-    } else {
-      setDebugInfo(`Blocked at (${newRow}, ${newCol})`);
-    }
+  // --- Smooth character movement (rAF-based) ---
+  const movement = useCharacterMovement({
+    initialRow: charPosition.row,
+    initialCol: charPosition.col,
+    tileSize,
+    displayScale: 1,
+    canMoveTo: (row, col) => isWalkable(row, col),
+    onTileEnter: (row, col) => {
+      setCharPosition({ row, col });
+      setDebugInfo(`Walking at (${row}, ${col})`);
+    },
   });
 
-  // Draw the map and character
+  useWindowKeyDown((event) => {
+    const dir = movement.onKeyDown(event.key);
+    if (!dir) return;
+    event.preventDefault();
+    movement.setRunning(isRunModifier(event));
+  });
+
+  // Draw the map
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -184,15 +177,15 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       }
     });
 
-  }, [tileset, mapData, visibleLayers, charPosition, tileSize]);
+  }, [tileset, mapData, visibleLayers, tileSize]);
 
   // Auto-scroll to center character
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const charX = charPosition.col * tileSize;
-    const charY = charPosition.row * tileSize;
+    const charX = movement.tileCol * tileSize;
+    const charY = movement.tileRow * tileSize;
 
     canvas.scrollIntoView({
       behavior: 'smooth',
@@ -206,7 +199,7 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       const scrollY = charY - parent.clientHeight / 2;
       parent.scrollTo({ left: scrollX, top: scrollY, behavior: 'smooth' });
     }
-  }, [charPosition, tileSize]);
+  }, [movement.tileCol, movement.tileRow, tileSize]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);
@@ -228,10 +221,11 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       <div className="canvas-wrapper" style={{ position: 'relative' }}>
         <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
         <MapCharacterSprite
-          position={charPosition}
+          pixelX={movement.pixelX}
+          pixelY={movement.pixelY}
           tileSize={tileSize}
           displayScale={1}
-          spriteState={spriteState}
+          spriteState={movement.spriteState}
         />
       </div>
     </div>

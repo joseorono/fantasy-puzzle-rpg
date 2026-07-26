@@ -5,8 +5,10 @@ import type { SpriteState } from '~/hooks/use-character-sprite';
 import '~/styles/map-character-sprite.css';
 
 interface MapCharacterSpriteProps {
-  /** Tile-space position of the character (row/col on the map grid). */
-  position: { row: number; col: number };
+  /** Continuous pixel X position of the character's feet anchor. */
+  pixelX: number;
+  /** Continuous pixel Y position of the character's feet anchor. */
+  pixelY: number;
   /** The pixel size of one map tile (before display scaling). */
   tileSize: number;
   /**
@@ -16,24 +18,22 @@ interface MapCharacterSpriteProps {
   displayScale: number;
   /** Current animation state from `useCharacterSprite`. */
   spriteState: SpriteState;
-  /** When true, the wrapper smoothly transitions between tile positions. */
-  enableTransition?: boolean;
 }
 
 /**
  * Renders an LPC character sprite on the map using CSS background-position.
  *
  * The component lays out a 64×64 pixel div, scales it to match the character
- * height (2.5 tiles), and shifts it so the character's feet sit on the target
- * tile. Transitions are off by default and enabled after the first canvas draw
- * to avoid a slide-in on mount.
+ * height (2.5 tiles), and centres it horizontally on the (pixelX, pixelY) anchor
+ * with the feet sitting on that point. Smoothness is provided by the rAF
+ * movement loop — this component uses no CSS transitions.
  */
 const MapCharacterSprite: React.FC<MapCharacterSpriteProps> = ({
-  position,
+  pixelX,
+  pixelY,
   tileSize,
   displayScale,
   spriteState,
-  enableTransition = false,
 }) => {
   const { mode, facing, frameIndex } = spriteState;
   const { x, y } = getSpriteFrameOrigin(mode, facing, frameIndex);
@@ -45,9 +45,8 @@ const MapCharacterSprite: React.FC<MapCharacterSpriteProps> = ({
       className="map-character-sprite-wrapper"
       style={{
         position: 'absolute',
-        left: position.col * tileSize * displayScale,
-        top: position.row * tileSize * displayScale,
-        transition: enableTransition ? 'left 0.2s ease-out, top 0.2s ease-out' : 'none',
+        left: pixelX,
+        top: pixelY,
         pointerEvents: 'none',
         zIndex: 10,
       }}
