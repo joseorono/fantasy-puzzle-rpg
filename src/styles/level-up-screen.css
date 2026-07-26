@@ -548,12 +548,14 @@
 .stat-name-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-start;
+  gap: 0.35rem;
 }
 
 .stat-name {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   /* Crisp 1px drop instead of .pixel-font's 2px offset — the chunky shadow is what
@@ -581,10 +583,16 @@
    stat name rather than trailing the hint sentence — inline it was what pushed the
    longer hints onto a second line. */
 .info-icon {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  /* 1.25rem gives the "i" enough room so the dot is legible at small sizes. */
+  justify-content: center;
+  /* Explicit dimensions so the tooltip trigger has a stable bounding box —
+     Radix uses the trigger's rect to position the tooltip content.
+     translateY(-1px) compensates for Press Start 2P's internal leading: the
+     uppercase glyphs sit at the top of the em, so the visual centre of the
+     stat-name text is slightly above its line-box centre. */
   width: 1rem;
+  translate: 0 -1.5px;
   flex-shrink: 0;
   cursor: help;
   opacity: 0.9;
@@ -606,7 +614,7 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
