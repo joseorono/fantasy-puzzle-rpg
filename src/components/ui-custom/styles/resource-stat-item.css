@@ -1,11 +1,14 @@
 /* ResourceStatItem — icon + label + animated value.
 
-   Two independent modifier axes sit on the same block:
-     .resource-stat--chip / --card       the skin (metrics and chrome)
-     .resource-stat--coins / --gold / …  the resource (value colour only)
+   Three independent modifier axes sit on the same block:
+     .resource-stat--chip / --card / --town   the skin (metrics and chrome)
+     .resource-stat--coins / --gold / …       the resource (value colour only)
+     .resource-stat--riveted                  the golden corner orbs
 
    The resource axis sets a custom property rather than colouring the value
-   directly, so the palette is declared once instead of once per skin. */
+   directly, so the palette is declared once instead of once per skin. A skin
+   must therefore never set `color` on __value — it would outrank the base rule
+   that reads the property and flatten every resource to one colour. */
 
 .resource-stat {
   display: flex;
@@ -19,6 +22,7 @@
 .resource-stat__content {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   line-height: 1;
 }
 
@@ -74,7 +78,9 @@
     inset 0 1px 0 rgba(255, 215, 0, 0.08);
 }
 
-/* The 24px sprite is drawn down to 16px here. */
+/* The width/height here are inert — SpriteIcon sets both inline, so the icon renders
+   at its 24px sprite size. Kept as-is from pause-menu.css; the circular mask and inset
+   shadow below are the parts that actually land. */
 .resource-stat--chip .resource-stat__icon {
   width: 16px;
   height: 16px;
@@ -82,12 +88,6 @@
   box-shadow:
     inset -1px -1px 2px rgba(0, 0, 0, 0.4),
     inset 1px 1px 2px rgba(255, 255, 255, 0.15);
-}
-
-/* Hugs its content. The card skin deliberately leaves this stretching, so its
-   values pill spans the full label width. */
-.resource-stat--chip .resource-stat__content {
-  align-items: flex-start;
 }
 
 .resource-stat--chip .resource-stat__label {
@@ -135,7 +135,9 @@
     0 0 8px rgba(212, 165, 116, 0.22);
 }
 
+/* Stretches rather than hugging, so the values pill spans the full label width. */
 .resource-stat--card .resource-stat__content {
+  align-items: stretch;
   gap: 0.5rem;
 }
 
@@ -172,6 +174,93 @@
   color: #e0e0e0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
   opacity: 0.7;
+}
+
+/* ========== TOWN SKIN (town hub, shop interiors) ========== */
+
+.resource-stat--town {
+  position: relative;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 2px solid #d4a574;
+  border-radius: 12px;
+  min-width: 110px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+/* Inert while `.town-resources-bar` sets pointer-events: none, but kept so the card
+   behaves if that wrapper ever becomes interactive. */
+.resource-stat--town:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.resource-stat--town .resource-stat__icon {
+  border: none;
+  box-shadow: none;
+}
+
+.resource-stat--town .resource-stat__content {
+  gap: 0.125rem;
+}
+
+.resource-stat--town .resource-stat__label {
+  font-size: 0.75rem;
+  color: #d4a574;
+  letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.resource-stat--town .resource-stat__value {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ========== RIVETS ==========
+
+   Two golden orbs hanging over the top corners. Independent of the skin, so any
+   card can wear them. The decoration owns `position: relative` — the absolutely
+   positioned pseudo-elements hard-require it. */
+
+.resource-stat--riveted {
+  position: relative;
+  /* Override per skin if a card wants larger orbs. */
+  --rs-rivet-size: 10px;
+  --rs-rivet-inset: 6px;
+}
+
+.resource-stat--riveted::before,
+.resource-stat--riveted::after {
+  content: '';
+  position: absolute;
+  /* Half the orb hangs above the frame. */
+  top: calc(var(--rs-rivet-size) / -2);
+  width: var(--rs-rivet-size);
+  height: var(--rs-rivet-size);
+  background: radial-gradient(circle at 30% 30%, #ffd700, #d4a574, #8b6914);
+  border: 1px solid #8b6914;
+  border-radius: 50%;
+  box-shadow:
+    inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.resource-stat--riveted::before {
+  left: var(--rs-rivet-inset);
+}
+
+.resource-stat--riveted::after {
+  right: var(--rs-rivet-inset);
 }
 
 /* ========== RESPONSIVE (card skin only) ==========
@@ -217,5 +306,32 @@
 
   .resource-stat--card .resource-stat__arrow {
     font-size: 0.5rem;
+  }
+}
+
+/* ========== RESPONSIVE (town skin) ==========
+
+   The wrapper's own breakpoints — including the scale() transforms — stay in
+   top-bar-resources.css. Only the card's rules moved. */
+
+@media (max-width: 768px) {
+  .resource-stat--town {
+    min-width: 80px;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .resource-stat--town .resource-stat__label {
+    font-size: 0.625rem;
+  }
+
+  .resource-stat--town .resource-stat__value {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .resource-stat--town {
+    width: 100%;
+    justify-content: center;
   }
 }

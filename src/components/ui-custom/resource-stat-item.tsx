@@ -15,6 +15,7 @@ const resourceStatItemVariants = cva('resource-stat', {
     variant: {
       chip: 'resource-stat--chip',
       card: 'resource-stat--card',
+      town: 'resource-stat--town',
     },
   },
   defaultVariants: {
@@ -22,7 +23,13 @@ const resourceStatItemVariants = cva('resource-stat', {
   },
 });
 
-/** Sprite size requested from the sheet; each skin sizes the rendered icon in CSS. */
+/**
+ * The sheet's native cell size, so each source pixel lands on exactly one screen pixel.
+ * Set here rather than in CSS because SpriteIcon writes width, height and background-size
+ * inline, so a class can't resize it. A skin needing bigger icons must use an integer
+ * multiple (48, 72): anything else resamples unevenly under `image-rendering: pixelated`
+ * and the art reads as lumpy.
+ */
 const ICON_SPRITE_SIZE = 24;
 
 interface ResourceStatItemProps extends VariantProps<typeof resourceStatItemVariants> {
@@ -37,12 +44,15 @@ interface ResourceStatItemProps extends VariantProps<typeof resourceStatItemVari
   prefix?: string;
   /** Forces the digit spin direction; omit to let NumberFlow read it from the delta. */
   trend?: number;
+  /** Hangs a golden orb over each top corner. Independent of the skin. */
+  riveted?: boolean;
   className?: string;
 }
 
 /**
  * One resource readout: icon, label, and an animated value. Shared by the pause
- * menu's compact bar and the battle-rewards cards, which differ only in skin.
+ * menu's compact bar, the battle-rewards cards and the town bar, which differ
+ * only in skin.
  */
 export function ResourceStatItem({
   resource,
@@ -53,10 +63,17 @@ export function ResourceStatItem({
   balance,
   prefix,
   trend,
+  riveted,
   className,
 }: ResourceStatItemProps) {
   return (
-    <div className={cn(resourceStatItemVariants({ variant, className }), `resource-stat--${resource}`)}>
+    <div
+      className={cn(
+        resourceStatItemVariants({ variant, className }),
+        `resource-stat--${resource}`,
+        riveted && 'resource-stat--riveted',
+      )}
+    >
       <FrostyRpgIcon name={iconName} size={ICON_SPRITE_SIZE} className="resource-stat__icon" />
       <div className="resource-stat__content">
         <span className="resource-stat__label">{label}</span>
