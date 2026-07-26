@@ -19,7 +19,6 @@
 }
 .exp-gained-header {
   text-align: center;
-  margin-bottom: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -60,6 +59,7 @@
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr 1fr;
   gap: 1.25rem;
+  margin-top: 1.25rem;
   margin-bottom: 1.25rem;
 }
 
@@ -397,7 +397,6 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 2.75rem;
-  margin-bottom: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -759,10 +758,6 @@
     padding: 0.5rem 1rem;
   }
 
-  .exp-gained-header {
-    margin-bottom: 0.25rem;
-  }
-
   .rewards-section-eyebrow {
     font-size: 0.6875rem;
   }
@@ -774,6 +769,7 @@
 
   .character-cards-grid {
     gap: 1rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
   }
 
@@ -816,7 +812,6 @@
 
   .rewards-resources-panel {
     gap: 0.375rem;
-    margin-bottom: 0.75rem;
   }
 
   .rewards-resource-card {
@@ -901,7 +896,6 @@
 
   .rewards-resources-panel {
     gap: 0.25rem;
-    margin-bottom: 0.5rem;
   }
 
   .rewards-resource-card {
