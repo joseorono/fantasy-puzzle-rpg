@@ -149,7 +149,7 @@ export const assetList: string[] = [
   '/assets/orbs/orb_yellow.png',
 
   // Sprites
-  '/assets/sprite/character-placeholder.png',
+  '/assets/sprite/placeholder.png',
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

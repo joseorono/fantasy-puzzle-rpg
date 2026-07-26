@@ -2,11 +2,11 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 import { useGameStore, useMapProgressActions } from '~/stores/game-store';
-import { getNavDirection } from '~/constants/keyboard';
+import { getNavDirection, isRunModifier } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useCharacterSprite } from '~/hooks/use-character-sprite';
+import MapCharacterSprite from './map-character-sprite';
 import { MapInfoPanel } from './map-info-panel';
-
-const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 
 interface CharacterPosition {
   row: number;
@@ -22,7 +22,6 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(newMap);
-  const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPosition;
@@ -32,6 +31,9 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
   const mapProgressActions = useMapProgressActions();
 
   const tileSize = mapData.tilewidth || 16;
+
+  // Character sprite animation state machine
+  const { spriteState, reportStep } = useCharacterSprite();
 
   // Load tileset image
   useEffect(() => {
@@ -45,19 +47,6 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       console.error('Failed to load tileset image:', tilesetImage);
     };
   }, [tilesetImage]);
-
-  // Load character image
-  useEffect(() => {
-    const img = new Image();
-    img.src = characterPlaceholder;
-    img.onload = () => {
-      console.log('Character loaded');
-      setCharacterImage(img);
-    };
-    img.onerror = () => {
-      console.error('Failed to load character image');
-    };
-  }, []);
 
   // Check if a position is walkable based on walkableLayers config
   const isWalkable = React.useCallback(
@@ -130,7 +119,10 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     else if (direction === 'left') newCol -= 1;
     else newCol += 1;
 
-    if (isWalkable(newRow, newCol)) {
+    const canMove = isWalkable(newRow, newCol);
+    reportStep(direction, { moved: canMove, running: isRunModifier(event) });
+
+    if (canMove) {
       setCharPosition({ row: newRow, col: newCol });
       setDebugInfo(`Walking at (${newRow}, ${newCol})`);
     } else {
@@ -192,26 +184,7 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       }
     });
 
-    // Draw character
-    if (characterImage) {
-      const charX = charPosition.col * tileSize;
-      const charY = charPosition.row * tileSize;
-
-      ctx.drawImage(characterImage, charX, charY, tileSize, tileSize);
-    } else {
-      // Fallback: draw a simple circle
-      const charX = charPosition.col * tileSize + tileSize / 2;
-      const charY = charPosition.row * tileSize + tileSize / 2;
-
-      ctx.beginPath();
-      ctx.arc(charX, charY, tileSize / 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#FFD700';
-      ctx.fill();
-      ctx.strokeStyle = '#FF8C00';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-  }, [tileset, mapData, visibleLayers, charPosition, characterImage, tileSize]);
+  }, [tileset, mapData, visibleLayers, charPosition, tileSize]);
 
   // Auto-scroll to center character
   useEffect(() => {
@@ -252,8 +225,14 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
         charPosition={charPosition}
         status={debugInfo}
       />
-      <div className="canvas-wrapper">
+      <div className="canvas-wrapper" style={{ position: 'relative' }}>
         <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
+        <MapCharacterSprite
+          position={charPosition}
+          tileSize={tileSize}
+          displayScale={1}
+          spriteState={spriteState}
+        />
       </div>
     </div>
   );

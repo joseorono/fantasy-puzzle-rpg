@@ -9,8 +9,10 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
 import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
-import { getNavDirection } from '~/constants/keyboard';
+import { getNavDirection, isRunModifier } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useCharacterSprite } from '~/hooks/use-character-sprite';
+import MapCharacterSprite from './map-character-sprite';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
@@ -50,9 +52,6 @@ import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import { demoMap } from '~/constants/maps/map-00/tiled-data';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
-
-// Character placeholder image path
-const characterPlaceholder = '/assets/sprite/character-placeholder.png';
 
 // Dialogue trigger coordinates
 const DIALOGUE_TRIGGERS = [
@@ -101,7 +100,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(demoMap);
-  const [characterImage, setCharacterImage] = useState<HTMLImageElement | null>(null);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPosition;
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
@@ -124,6 +122,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
+
+  // Character sprite animation state machine
+  const { spriteState, reportStep } = useCharacterSprite();
 
   // Get stable reference to isNodeCompleted function
   const isNodeCompleted = useGameStore((state) => state.actions.mapProgress.isNodeCompleted);
@@ -180,19 +181,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       console.error('Failed to load tileset image:', tilesetImage);
     };
   }, [tilesetImage]);
-
-  // Load character image
-  useEffect(() => {
-    const img = new Image();
-    img.src = characterPlaceholder;
-    img.onload = () => {
-      console.log('Character loaded');
-      setCharacterImage(img);
-    };
-    img.onerror = () => {
-      console.error('Failed to load character image');
-    };
-  }, []);
 
   // Check if a position is walkable (any non-zero tile in road layer)
   const isRoadTile = React.useCallback(
@@ -367,48 +355,45 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     // Prevent default scrolling behavior
     event.preventDefault();
 
-    setCharPosition((currentPos) => {
-      let newRow = currentPos.row;
-      let newCol = currentPos.col;
-      if (direction === 'up') newRow -= 1;
-      else if (direction === 'down') newRow += 1;
-      else if (direction === 'left') newCol -= 1;
-      else newCol += 1;
+    let newRow = charPosition.row;
+    let newCol = charPosition.col;
+    if (direction === 'up') newRow -= 1;
+    else if (direction === 'down') newRow += 1;
+    else if (direction === 'left') newCol -= 1;
+    else newCol += 1;
 
-      // Only move if the new position is a road tile
-      const canMove = isRoadTile(newRow, newCol);
+    // Only move if the new position is a road tile
+    const canMove = isRoadTile(newRow, newCol);
+    reportStep(direction, { moved: canMove, running: isRunModifier(event) });
 
-      if (canMove) {
-        console.log(`✅ Moving to (${newRow}, ${newCol})`);
-        setDebugInfo(`On road at (${newRow}, ${newCol})`);
+    if (canMove) {
+      setCharPosition({ row: newRow, col: newCol });
+      console.log(`✅ Moving to (${newRow}, ${newCol})`);
+      setDebugInfo(`On road at (${newRow}, ${newCol})`);
 
-        // Play footstep sound
-        const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
-        footstepSystem.setSurface(surfaceType);
-        footstepSystem.playFootstep();
+      // Play footstep sound
+      const surfaceType = determineSurfaceTypeFromPosition(newRow, newCol, mapData);
+      footstepSystem.setSurface(surfaceType);
+      footstepSystem.playFootstep();
 
-        // Close node menu when moving
-        if (showNodeMenu) {
-          setShowNodeMenu(false);
-          setCurrentNode(null);
-        }
-
-        // Check for dialogue triggers
-        checkDialogueTrigger(newRow, newCol);
-
-        // Check for interactive nodes
-        checkInteractiveNode(newRow, newCol);
-
-        // Check for floor loot (auto-collect)
-        checkFloorLoot(newRow, newCol);
-
-        return { row: newRow, col: newCol };
-      } else {
-        console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
-        setDebugInfo(`Blocked! Still at (${currentPos.row}, ${currentPos.col})`);
-        return currentPos;
+      // Close node menu when moving
+      if (showNodeMenu) {
+        setShowNodeMenu(false);
+        setCurrentNode(null);
       }
-    });
+
+      // Check for dialogue triggers
+      checkDialogueTrigger(newRow, newCol);
+
+      // Check for interactive nodes
+      checkInteractiveNode(newRow, newCol);
+
+      // Check for floor loot (auto-collect)
+      checkFloorLoot(newRow, newCol);
+    } else {
+      console.log(`❌ Blocked at (${newRow}, ${newCol}) - not a road tile`);
+      setDebugInfo(`Blocked! Still at (${charPosition.row}, ${charPosition.col})`);
+    }
   });
 
   function handleAcceptDialogue() {
@@ -845,7 +830,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     });
   }, [
     tileset,
-    characterImage,
     mapData,
     tileSize,
     visibleLayers,
@@ -904,27 +888,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
             }}
           />
 
-          {/* Character rendered as HTML element for smooth CSS transitions */}
-          {characterImage && canvasReady && (
-            <div
-              style={{
-                position: 'absolute',
-                // Center the character on the tile with scale factor
-                left: `${(charPosition.col * tileSize - tileSize * 0.25) * scale}px`,
-                top: `${(charPosition.row * tileSize - tileSize * 0.5) * scale}px`,
-                // Make character 2x wider and 2.5x taller than a tile, scaled
-                width: `${tileSize * 2 * scale}px`,
-                height: `${tileSize * 2.5 * scale}px`,
-                borderRadius: '5px',
-                backgroundImage: `url('${characterPlaceholder}')`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                imageRendering: 'pixelated',
-                transition: enableTransition ? 'left 0.2s ease-out, top 0.2s ease-out' : 'none',
-                pointerEvents: 'none',
-                zIndex: 10,
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-              }}
+          {/* Animated LPC character sprite */}
+          {canvasReady && (
+            <MapCharacterSprite
+              position={charPosition}
+              tileSize={tileSize}
+              displayScale={scale}
+              spriteState={spriteState}
+              enableTransition={enableTransition}
             />
           )}
         </div>

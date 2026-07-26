@@ -1,0 +1,10 @@
+.map-character-sprite-wrapper {
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+.map-character-sprite-inner {
+  /* Ensure crisp pixel rendering at any scale */
+  image-rendering: crisp-edges;
+}

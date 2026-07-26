@@ -72,6 +72,30 @@ export default function GraphicsLicensesDialogContent() {
           Golden UI - Bigger Than Ever edition, CC-BY-SA 3.0, by Buch.
           <a href="https://opengameart.org/users/buch">https://opengameart.org/users/buch</a>
         </p>
+
+        <p>
+          LPC Revised Character Spritesheet, CC-BY-SA 3.0 / GPL 3.0, by wulax, Stephen
+          Challener (Redshrike), and Johannes Sjölund&nbsp;
+          <a href="https://opengameart.org/content/lpc-revised-character-spritesheet">
+            https://opengameart.org/content/lpc-revised-character-spritesheet
+          </a>
+        </p>
+
+        <p>
+          Liberated Pixel Cup (LPC) Base Assets, CC-BY-SA 3.0 / GPL 3.0, by Stephen
+          &quot;Redshrike&quot; Challener and contributors&nbsp;
+          <a href="https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles">
+            https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+          </a>
+        </p>
+
+        <p>
+          LPC Revised Run and Jump, CC-BY-SA 3.0 / GPL 3.0, by wulax and Johannes
+          Sjölund&nbsp;
+          <a href="https://opengameart.org/content/lpc-revised-run-and-jump">
+            https://opengameart.org/content/lpc-revised-run-and-jump
+          </a>
+        </p>
       </div>
     </>
   );
