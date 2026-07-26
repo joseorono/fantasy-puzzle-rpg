@@ -1,6 +1,7 @@
 import NumberFlow from '@number-flow/react';
 import type { CharacterData } from '~/types/rpg-elements';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
 import {
   calculateMaxHp,
   calculateSkillCooldownFillRate,
@@ -66,6 +67,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
       <h3 className="derived-stats-title">
         <NarikWoodBitFont text="Derived Stats" size={1} />
       </h3>
+      <GradientDivider variant="gold" className="derived-stats-divider" />
 
       <div className="derived-stat-row">
         <span className="derived-stat-name pixel-font text-xs">Max HP</span>

@@ -167,7 +167,6 @@
   margin-bottom: 0;
 }
 
-/* The bar (an IndigolayBar) fills the rest of the row. */
 .progress-section__bar {
   flex: 1;
   min-width: 0;
@@ -195,9 +194,12 @@
 }
 
 .derived-stats-title {
-  margin: 0 0 0.75rem 0;
-  border-bottom: 2px solid #d4a574;
-  padding-bottom: 0.5rem;
+  margin: -2px 0 0 0;
+    padding: 0;
+  }
+  
+  .derived-stats-divider {
+    margin: 0 0 0.6rem;
 }
 
 .derived-stat-row {
@@ -463,15 +465,41 @@
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
   position: relative;
+  /* Column so .stat-allocation-list can claim the free height and pin the actions
+               to the bottom padding line. The panel is a grid item, so its height is already
+               definite — the slack was just pooling under the buttons. */
+    display: flex;
+    flex-direction: column;
 }
 
+/* Natural height, so the cards stay tucked under the heading with an even gap. The
+   panel's spare height is taken by .allocation-actions' auto margin instead — the
+   list must NOT flex-grow, or the slack gets spread between the cards. */
+.stat-allocation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Centred title over a GradientDivider (the rule used on the dungeon action card).
+   Replaces a filigree ornament that sat centred under a left-aligned title, so the
+   heading and its decoration disagreed on alignment.
+
+   Spacing is net of the sprite's own padding: the Narik sheet bakes 2px of
+   transparent rows above the ink and 5px below into every 25px cell — 2.4px / 6px
+   at size 1.2. That invisible 6px is why the heading looked like it had dead space
+   under it, so there is no padding-bottom here; the divider already clears the ink
+   by 6px on its own. The -2px trims the matching gap at the top. */
 .allocation-title {
-  margin: 0;
+  display: flex;
+    justify-content: center;
+    margin: -2px 0 0 0;
+    padding: 0;
+    filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
 }
 
-/* Filigree ornament replaces the old flat 2px rule under the title. */
 .allocation-title-divider {
-  margin: 0.3rem 0 0.65rem;
+  margin: 0 0 0.7rem;
 }
 
 /* Each stat is one recessed card, reusing the .dungeon-floor recipe (dungeon.css) —
@@ -487,8 +515,9 @@
   box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
 }
 
-.stat-allocation-row+.stat-allocation-row {
-  margin-top: 0.5rem;
+/* Cards keep their natural height; the list's gap/space-between does the spacing. */
+.stat-allocation-row {
+  flex-shrink: 0;
 }
 
 /* Accent rail carries stat identity at lower alpha than the name text, so it reads
@@ -639,8 +668,12 @@
 /* Stat +/− steppers are now ToffecSquareButton (icon="plus"/"minus"); their
    styling lives in the shared toffec-square-button.css. */
 
+/* The auto margin eats the panel's spare height, pinning the buttons to the bottom
+   padding line. Padding (not margin) carries the minimum gap from the last card,
+   since it has to survive the auto margin collapsing to 0 on a short panel. */
 .allocation-actions {
-  margin-top: 0.9rem;
+  margin-top: auto;
+    padding-top: 0.9rem;
   display: flex;
   flex-direction: row;
   gap: 0.75rem;
@@ -801,9 +834,8 @@
     margin-top: 0.5rem;
   }
 
-  .derived-stats-title {
-    margin-bottom: 0.375rem;
-    padding-bottom: 0.375rem;
+                                                                .derived-stats-divider {
+                                                                  margin: 0 0 0.4rem;
   }
 
   .derived-stat-row {
@@ -841,19 +873,19 @@
   }
 
   .allocation-title {
-    margin: 0;
+    margin: -2px 0 0 0;
   }
 
   .allocation-title-divider {
-    margin: 0.2rem 0 0.4rem;
+    margin: 0 0 0.45rem;
   }
 
         .stat-allocation-row {
           padding: 0.4rem 0.6rem;
         }
 
-        .stat-allocation-row+.stat-allocation-row {
-          margin-top: 0.35rem;
+                                                                .stat-allocation-list {
+                                                                  gap: 0.35rem;
         }
 
         .stat-header {
@@ -870,8 +902,10 @@
     border-width: 3px;
   }
 
+                                                                /* Padding, not margin — margin-top must stay `auto` so the buttons still sit on
+                                                                   the bottom padding line at short viewport heights. */
   .allocation-actions {
-    margin-top: 0.6rem;
+    padding-top: 0.6rem;
     gap: 0.375rem;
   }
 
