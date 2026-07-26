@@ -378,7 +378,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                        -Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                        <br />
+                        -Slows how fast the party Guard meter decays
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -407,7 +409,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                     )}
                   </div>
                 </div>
-                <p className="stat-hint pixel-font text-xs">Increases your Maximum HP.</p>
+                <p className="stat-hint pixel-font text-xs">Increases your Maximum HP, makes Guard last longer.</p>
                 <div className="stat-controls">
                   <ToffecBeigeCornersWrapper>
                     <ToffecSquareButton

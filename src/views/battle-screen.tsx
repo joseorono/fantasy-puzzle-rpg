@@ -20,6 +20,7 @@ import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { KeyboardKeys } from '~/constants/keyboard';
+import { BATTLE_TICK_DELTA_SECONDS, BATTLE_TICK_INTERVAL_MS } from '~/constants/battle';
 import { BattleTopBar } from '~/components/battle/battle-top-bar';
 import { useEnemyAttackTimers } from '~/hooks/use-enemy-attack-timers';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
@@ -75,9 +76,9 @@ export default function BattleScreen() {
     if (gameStatus !== 'playing' || isBattlePaused === true) return;
 
     const interval = setInterval(() => {
-      tickSkillCooldowns(0.1);
-      tickGuardDecay(0.1);
-    }, 100);
+      tickSkillCooldowns(BATTLE_TICK_DELTA_SECONDS);
+      tickGuardDecay(BATTLE_TICK_DELTA_SECONDS);
+    }, BATTLE_TICK_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [gameStatus, isBattlePaused, tickSkillCooldowns, tickGuardDecay]);
