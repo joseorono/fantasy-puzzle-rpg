@@ -240,6 +240,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // timer so the final cascade count stays readable for a beat.
     if (matches.size === 0) {
       setExplodingOrbs(new Set());
+      // Cascade chain is fully settled — unlock clicks for the next player move.
+      setIsProcessingSwap(false);
       // If the killing blow landed mid-chain, the win was deferred so this cascade could
       // finish and fully count toward the rating. Now that it's settled, commit the win.
       if (pendingVictory) commitPendingVictory();
@@ -420,16 +422,20 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
           cascadeLevelRef.current = 0;
           chainBombsSpawnedRef.current = 0;
           incrementTurn();
-          // processing flag will be cleared when matches are processed
-          setIsProcessingSwap(false);
+          // Keep isProcessingSwap=true during the entire cascade chain.
+          // Clearing it here lets clicks through while orbs are still pending
+          // removal (600ms timer), causing a race where a second swap cancels
+          // the first cascade's timer and orbs are never removed.
+          // The settle branch of the board effect clears this flag instead.
         } else {
           // Invalid swap - show shake animation and keep selection
           setInvalidSwap({ from: selectedOrb, to: { row, col } });
 
-          // Clear invalid swap state and allow new clicks after animation
+          // Unlock clicks immediately so the player can retry without delay.
+          // Only the shake animation cleanup stays inside the timeout.
+          setIsProcessingSwap(false);
           setTimeout(() => {
             setInvalidSwap(null);
-            setIsProcessingSwap(false);
             // Keep the first orb selected so user can try again
           }, 600);
         }
