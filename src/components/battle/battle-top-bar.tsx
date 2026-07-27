@@ -77,11 +77,7 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
                       tone={timer.isStandby ? 'gold' : 'danger'}
                       className="btb-threat-pie"
                     >
-                      {timer.isStandby ? (
-                        <Eye className="btb-threat-icon" />
-                      ) : (
-                        <Swords className="btb-threat-icon" />
-                      )}
+                      {timer.isStandby ? <Eye className="btb-threat-icon" /> : <Swords className="btb-threat-icon" />}
                     </RadialCountdown>
                   </div>
                 );

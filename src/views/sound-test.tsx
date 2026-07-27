@@ -94,15 +94,31 @@ export default function SoundTestView() {
         <ToffecButton variant="gray" onClick={handlePreload} disabled={isPreloading || isAudioLoaded}>
           {isPreloading ? 'Preloading…' : isAudioLoaded ? 'Audio Loaded' : 'Preload Audio'}
         </ToffecButton>
-        <ToffecButton variant="gray" onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</ToffecButton>
+        <ToffecButton variant="gray" onClick={handleToggleMute}>
+          {isMuted ? 'Unmute All' : 'Mute All'}
+        </ToffecButton>
         <div className="rounded bg-neutral-200 px-2 py-1 text-sm text-neutral-800">
           Loaded: {isAudioLoaded ? 'yes' : 'no'}
         </div>
       </div>
 
       <div className="max-w-xl space-y-3">
-        <LabeledSlider label="Master Volume" value={masterVolume} min={0} max={100} step={1} onChange={handleMasterChange} />
-        <LabeledSlider label="Music Volume" value={musicVolume} min={0} max={100} step={1} onChange={handleMusicChange} />
+        <LabeledSlider
+          label="Master Volume"
+          value={masterVolume}
+          min={0}
+          max={100}
+          step={1}
+          onChange={handleMasterChange}
+        />
+        <LabeledSlider
+          label="Music Volume"
+          value={musicVolume}
+          min={0}
+          max={100}
+          step={1}
+          onChange={handleMusicChange}
+        />
         <LabeledSlider label="SFX Volume" value={sfxVolume} min={0} max={100} step={1} onChange={handleSfxChange} />
         <LabeledSlider label="Play Volume" value={playVolume} onChange={setPlayVolume} />
         <LabeledSlider label="Play Variance" value={playVariance} onChange={setPlayVariance} />

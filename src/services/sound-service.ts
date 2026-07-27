@@ -4,6 +4,8 @@ import { betweenZeroAndOne, getRandomlyVariedValue } from '~/lib/math';
 import { SoundNames } from '~/constants/audio';
 import { soundFiles } from '~/constants/audio';
 import { AUDIO_DEFAULTS, AUDIO_STORAGE_KEYS } from '~/constants/storage-keys';
+import { readPersistedValue, writePersistedValue } from '~/lib/storage';
+import { mutedSchema, volumePercentSchema, type AudioSettings } from '~/types/audio-types';
 
 interface MusicPlayOptions {
   fadeIn?: boolean;
@@ -24,10 +26,7 @@ class SoundService {
   public musicVolume: number = 1; //between 0 and 1;
   public sfxVolume: number = 1; //between 0 and 1;
 
-  private activeMusicInstances = new Map<
-    SoundNames,
-    { mediaInstance: { volume: number }; baseVolume: number }
-  >();
+  private activeMusicInstances = new Map<SoundNames, { mediaInstance: { volume: number }; baseVolume: number }>();
 
   constructor() {
     if (!SoundService.instance) {
@@ -48,27 +47,21 @@ class SoundService {
    * and applies them so the SoundService starts with the user's saved preferences.
    */
   private initVolumeFromStorage() {
-    try {
-      const master = JSON.parse(
-        localStorage.getItem(AUDIO_STORAGE_KEYS.masterVolume) ?? String(AUDIO_DEFAULTS.masterVolume)
-      );
-      const music = JSON.parse(
-        localStorage.getItem(AUDIO_STORAGE_KEYS.musicVolume) ?? String(AUDIO_DEFAULTS.musicVolume)
-      );
-      const sfx = JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEYS.sfxVolume) ?? String(AUDIO_DEFAULTS.sfxVolume));
-      this.globalVolume = betweenZeroAndOne(master / 100, 'master');
-      this.musicVolume = betweenZeroAndOne(music / 100, 'music');
-      this.sfxVolume = betweenZeroAndOne(sfx / 100, 'sfx');
-    } catch {
-      // Use defaults if localStorage values are invalid
-    }
+    const settings: AudioSettings = {
+      masterVolume: readPersistedValue(
+        AUDIO_STORAGE_KEYS.masterVolume,
+        volumePercentSchema,
+        AUDIO_DEFAULTS.masterVolume,
+      ),
+      musicVolume: readPersistedValue(AUDIO_STORAGE_KEYS.musicVolume, volumePercentSchema, AUDIO_DEFAULTS.musicVolume),
+      sfxVolume: readPersistedValue(AUDIO_STORAGE_KEYS.sfxVolume, volumePercentSchema, AUDIO_DEFAULTS.sfxVolume),
+      muted: readPersistedValue(AUDIO_STORAGE_KEYS.muted, mutedSchema, AUDIO_DEFAULTS.muted),
+    };
 
-    try {
-      const muted = JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEYS.muted) ?? String(AUDIO_DEFAULTS.muted));
-      this.setMuted(muted === true);
-    } catch {
-      // Use defaults if localStorage values are invalid
-    }
+    this.globalVolume = betweenZeroAndOne(settings.masterVolume / 100, 'master');
+    this.musicVolume = betweenZeroAndOne(settings.musicVolume / 100, 'music');
+    this.sfxVolume = betweenZeroAndOne(settings.sfxVolume / 100, 'sfx');
+    this.setMuted(settings.muted);
   }
 
   shouldPreload(): boolean {
@@ -224,11 +217,7 @@ class SoundService {
       sound.unmuteAll();
     }
 
-    try {
-      localStorage.setItem(AUDIO_STORAGE_KEYS.muted, JSON.stringify(muted));
-    } catch {
-      // Persisting is best-effort; a full/blocked localStorage shouldn't break audio
-    }
+    writePersistedValue(AUDIO_STORAGE_KEYS.muted, muted);
   }
 }
 
