@@ -1,4 +1,5 @@
 import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
+import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -128,6 +129,9 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
+
+  // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
+  ...SKILL_ICON_SHEET_IMAGES,
 
   // Menu assets
   '/assets/menu/back-button-hover.png',
