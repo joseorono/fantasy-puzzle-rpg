@@ -71,9 +71,11 @@ export function BattleRewardsScreen() {
   useEffect(() => {
     if (step !== 3) return;
 
-    // No level-ups or all level-ups complete - navigate back
+    // No level-ups or all level-ups complete - navigate back.
+    // Deliberately no step reset: the screen unmounts on navigation, so state resets on the
+    // next entry anyway, and resetting here would replay (and re-grant) the whole reward
+    // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
-      setStep(1);
       routerActions.goBack();
       return;
     }
@@ -91,7 +93,7 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, setStep, routerActions]);
+  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;

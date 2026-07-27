@@ -31,6 +31,7 @@ import {
   useDungeonProgressState,
 } from '~/stores/game-store';
 import { getDungeonById } from '~/lib/dungeon-system';
+import { canGoBack } from '~/lib/routing';
 import { randomizeDungeon } from '~/lib/dungeon-randomizer';
 import type { DungeonDefinition } from '~/types/dungeon';
 import { addResources } from '~/lib/resources';
@@ -135,6 +136,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const currentInventory = useGameStore((state) => state.inventory);
 
   const routerActions = useRouterActions();
+  // Hide the back button rather than render a dead control: `goBack()` only
+  // warns when there's no previous view (e.g. the map opened as the entry view).
+  const canLeaveMap = useGameStore((state) => canGoBack(state.router));
   const { isDungeonCompleted } = useDungeonProgressActions();
   // Subscribed rather than read through the action: the action form is a get() call that
   // renders can cache, so completion changes wouldn't repaint the marker or the menu.
@@ -813,7 +817,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   return (
     <>
       <div className="tilemap-container">
-        <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
+        <MapInfoPanel
+          displayMapName={displayMapName}
+          debug={debug}
+          charPosition={charPosition}
+          status={debugInfo}
+          onLeave={canLeaveMap ? routerActions.goBack : undefined}
+        />
         <div
           ref={canvasContainerRef}
           style={{

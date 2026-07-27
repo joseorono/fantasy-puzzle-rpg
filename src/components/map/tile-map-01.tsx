@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
-import { useGameStore, useMapProgressActions } from '~/stores/game-store';
+import { useGameStore, useMapProgressActions, useRouterActions } from '~/stores/game-store';
+import { canGoBack } from '~/lib/routing';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
@@ -32,6 +33,10 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
   });
 
   const mapProgressActions = useMapProgressActions();
+  const routerActions = useRouterActions();
+  // Hide the back button rather than render a dead control: `goBack()` only
+  // warns when there's no previous view (e.g. the map opened as the entry view).
+  const canLeaveMap = useGameStore((state) => canGoBack(state.router));
 
   const tileSize = mapData.tilewidth || 16;
 
@@ -173,7 +178,13 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
 
   return (
     <div className="tilemap-container">
-      <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
+      <MapInfoPanel
+        displayMapName={displayMapName}
+        debug={debug}
+        charPosition={charPosition}
+        status={debugInfo}
+        onLeave={canLeaveMap ? routerActions.goBack : undefined}
+      />
       <div ref={canvasContainerRef} className="canvas-wrapper" style={{ position: 'relative' }}>
         <canvas
           ref={canvasRef}

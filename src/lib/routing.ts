@@ -178,8 +178,10 @@ export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']
 
 /**
  * Navigate to battle rewards
- * Preserves the pre-battle previousView so that goBack() from rewards
- * returns to the view before battle (map, town, etc.) instead of back to battle.
+ * When launched from a battle, keeps the pre-battle previousView so that goBack() from
+ * rewards returns to the view before battle (map, dungeon, town) instead of back into the
+ * finished battle. Launched from anywhere else (the debug demo) it behaves like normal
+ * navigation and returns to the launching view.
  */
 export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
   if (!canNavigate()) {
@@ -189,9 +191,14 @@ export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['
     };
   }
 
+  // The skip-the-battle rule only applies when a battle is what we're coming from. Applying
+  // it elsewhere would inherit an unrelated previousView and send goBack() somewhere the
+  // player never launched the rewards from.
+  const isFromBattle = currentState.currentView === 'battle-demo';
+
   const nextState: RouterState = {
     currentView: 'battle-rewards',
-    previousView: currentState.previousView, // keep pre-battle view, not battle
+    previousView: isFromBattle ? currentState.previousView : currentState.currentView,
     viewData: {
       ...currentState.viewData,
       'battle-rewards': data,

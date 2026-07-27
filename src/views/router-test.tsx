@@ -24,7 +24,7 @@ export default function RouterTestView() {
   } = useRouterActions();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2.5 p-5">
+    <div id="router-test" className="flex flex-col items-center justify-center gap-2.5 p-5">
       <h3 className="mb-2 text-xl font-bold">Router Test</h3>
 
       <div className="mb-2">

@@ -8,6 +8,7 @@
   width: 100vw;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative;
 }
 
 /* Responsive layout: stack on mobile, side-by-side on desktop */
