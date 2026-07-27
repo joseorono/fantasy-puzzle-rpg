@@ -1,4 +1,6 @@
 export interface ElectronAPI {
+  platform: string;
+  isElectron: boolean;
   app: {
     getVersion: () => Promise<string>;
     getPath: (name: string) => Promise<string>;

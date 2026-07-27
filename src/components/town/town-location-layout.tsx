@@ -54,7 +54,7 @@ export function TownLocationLayout({
       </div>
 
       <div className="shop-bottom">
-        <DialogueBox speakerName={character.name} text={dialogueText} isTyping={false} showIndicator={true} />
+        <DialogueBox speakerName={character.name} text={dialogueText} isTyping={false} showIndicator={false} />
         <MarqueeText type={marqueeType} variant="marquee--golden" />
       </div>
     </div>
