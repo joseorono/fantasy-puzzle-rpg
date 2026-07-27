@@ -63,6 +63,14 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Pixel RPG UI MEGA PACK (4 in 1), by Indigolay — bars, frames, icons, checkboxes,
+          tabs, cursors, skill icons and most other Indigolay graphics bought from them&nbsp;
+          <a href="https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1">
+            https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1
+          </a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack
