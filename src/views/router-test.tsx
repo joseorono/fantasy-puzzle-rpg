@@ -66,17 +66,6 @@ export default function RouterTestView() {
           Battle Demo
         </button>
 
-        {/* Generated from the registry, so a new map shows up here on its own. */}
-        {ALL_MAPS.map((map) => (
-          <button
-            key={map.id}
-            className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-            onClick={() => goToMap({ mapId: map.id })}
-          >
-            {map.displayMapName}
-          </button>
-        ))}
-
         <button
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
           onClick={() => goToDialogueDemo({})}
@@ -124,6 +113,23 @@ export default function RouterTestView() {
         >
           Go Back
         </button>
+      </div>
+
+      <div className="mt-4 flex flex-col items-center gap-2">
+        <h4 className="text-lg font-bold">Maps</h4>
+
+        {/* Generated from the registry, so a new map shows up here on its own. */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {ALL_MAPS.map((map) => (
+            <button
+              key={map.id}
+              className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+              onClick={() => goToMap({ mapId: map.id })}
+            >
+              {map.displayMapName}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
