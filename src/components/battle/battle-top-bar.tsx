@@ -1,8 +1,8 @@
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { Eye, Hourglass, Star, Swords } from 'lucide-react';
-import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
+import { isMutedAtom } from '~/stores/pause-menu-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { cn } from '~/lib/utils';
@@ -29,15 +29,12 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
   const turn = useAtomValue(turnAtom);
   const score = useAtomValue(scoreAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
-  const [isMuted, setIsMuted] = useState(() => soundService.isMuted());
+  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
 
   function toggleMute() {
-    if (isMuted) {
-      soundService.unmuteAll();
-    } else {
-      soundService.muteAll();
-    }
-    setIsMuted(!isMuted);
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    soundService.setMuted(nextMuted);
   }
 
   const isPaused = gameStatus !== 'playing' || isBattlePaused === true;

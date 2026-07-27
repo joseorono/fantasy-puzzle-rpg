@@ -3,7 +3,7 @@ import { useAtom } from 'jotai';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
+import { isMutedAtom, masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { Slider as EightBitSlider } from '~/components/ui/8bit/slider';
 
 interface LabeledSliderProps {
@@ -35,7 +35,7 @@ function LabeledSlider({ label, value, min = 0, max = 1, step = 0.01, onChange }
 }
 
 export default function SoundTestView() {
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [isAudioLoaded, setIsAudioLoaded] = useState<boolean>(soundService.audioLoaded === true);
   const [isPreloading, setIsPreloading] = useState<boolean>(false);
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
@@ -45,11 +45,6 @@ export default function SoundTestView() {
   const [playVariance, setPlayVariance] = useState<number>(0);
 
   useEffect(() => {
-    try {
-      setIsMuted(soundService.isMuted());
-    } catch {
-      // isMuted() can throw if AudioContext isn't ready yet
-    }
     // Do NOT auto-preload here to respect user gesture requirements for AudioContext
     setIsAudioLoaded(soundService.audioLoaded === true);
   }, []);
@@ -84,14 +79,9 @@ export default function SoundTestView() {
   };
 
   const handleToggleMute = () => {
-    const currentlyMuted = soundService.isMuted();
-    if (currentlyMuted === true) {
-      soundService.unmuteAll();
-      setIsMuted(false);
-    } else {
-      soundService.muteAll();
-      setIsMuted(true);
-    }
+    const nextMuted = isMuted !== true;
+    setIsMuted(nextMuted);
+    soundService.setMuted(nextMuted);
   };
 
   const soundNameList = Object.values(SoundNames);

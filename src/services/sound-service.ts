@@ -3,6 +3,7 @@ import { sound } from '@pixi/sound';
 import { betweenZeroAndOne, getRandomlyVariedValue } from '~/lib/math';
 import { SoundNames } from '~/constants/audio';
 import { soundFiles } from '~/constants/audio';
+import { AUDIO_DEFAULTS, AUDIO_STORAGE_KEYS } from '~/constants/storage-keys';
 
 interface MusicPlayOptions {
   fadeIn?: boolean;
@@ -43,17 +44,28 @@ class SoundService {
   }
 
   /**
-   * Reads persisted volume settings from localStorage (written by Jotai atomWithStorage)
+   * Reads persisted audio settings from localStorage (written by Jotai atomWithStorage)
    * and applies them so the SoundService starts with the user's saved preferences.
    */
   private initVolumeFromStorage() {
     try {
-      const master = JSON.parse(localStorage.getItem('fpg-master-volume') ?? '100');
-      const music = JSON.parse(localStorage.getItem('fpg-music-volume') ?? '80');
-      const sfx = JSON.parse(localStorage.getItem('fpg-sfx-volume') ?? '80');
+      const master = JSON.parse(
+        localStorage.getItem(AUDIO_STORAGE_KEYS.masterVolume) ?? String(AUDIO_DEFAULTS.masterVolume)
+      );
+      const music = JSON.parse(
+        localStorage.getItem(AUDIO_STORAGE_KEYS.musicVolume) ?? String(AUDIO_DEFAULTS.musicVolume)
+      );
+      const sfx = JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEYS.sfxVolume) ?? String(AUDIO_DEFAULTS.sfxVolume));
       this.globalVolume = betweenZeroAndOne(master / 100, 'master');
       this.musicVolume = betweenZeroAndOne(music / 100, 'music');
       this.sfxVolume = betweenZeroAndOne(sfx / 100, 'sfx');
+    } catch {
+      // Use defaults if localStorage values are invalid
+    }
+
+    try {
+      const muted = JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEYS.muted) ?? String(AUDIO_DEFAULTS.muted));
+      this.setMuted(muted === true);
     } catch {
       // Use defaults if localStorage values are invalid
     }
@@ -197,11 +209,26 @@ class SoundService {
   }
 
   muteAll() {
-    sound.muteAll();
+    this.setMuted(true);
   }
 
   unmuteAll() {
-    sound.unmuteAll();
+    this.setMuted(false);
+  }
+
+  /** Applies the mute state to the audio context and persists it so it survives a reload. */
+  setMuted(muted: boolean) {
+    if (muted) {
+      sound.muteAll();
+    } else {
+      sound.unmuteAll();
+    }
+
+    try {
+      localStorage.setItem(AUDIO_STORAGE_KEYS.muted, JSON.stringify(muted));
+    } catch {
+      // Persisting is best-effort; a full/blocked localStorage shouldn't break audio
+    }
   }
 }
 
