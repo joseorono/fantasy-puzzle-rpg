@@ -177,6 +177,7 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
       <div ref={canvasContainerRef} className="canvas-wrapper" style={{ position: 'relative' }}>
         <canvas
           ref={canvasRef}
+          className="cursor-hold-glow"
           {...movement.pointerHandlers}
           style={{ imageRendering: 'pixelated', display: 'block' }}
         />

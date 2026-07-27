@@ -827,6 +827,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
         >
           <canvas
             ref={canvasRef}
+            className="cursor-hold-glow"
             {...movement.pointerHandlers}
             style={{
               // `outline` rather than `border`: it takes no layout space, so the

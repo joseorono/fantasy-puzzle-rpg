@@ -1,14 +1,26 @@
 /* Custom cursor styles for the fantasy RPG */
 
+:root {
+  /* Single source for the cursor image, so anything that needs to keep the
+     custom cursor (e.g. the map canvas) can't drift to a native one. */
+  --cursor-gauntlet: url('/assets/cursors/mouse/dwarven-gauntlet-cursor.png');
+
+  /* Interaction-glow tunables, shared by the pulse and hold-glow animations. */
+  --cursor-glow: rgba(255, 255, 255, 0.8);
+  --cursor-glow-strong: rgba(255, 255, 255, 1);
+  --cursor-glow-radius: 8px;
+  --cursor-glow-radius-strong: 16px;
+}
+
 /* Base cursor - dwarven gauntlet */
 body {
-  cursor: url('/assets/cursors/mouse/dwarven-gauntlet-cursor.png'), auto;
+  cursor: var(--cursor-gauntlet), auto;
     /* 16 2 */
 }
 
 /* Override Tailwind's cursor-pointer class */
 .cursor-pointer {
-  cursor: url('/assets/cursors/mouse/dwarven-gauntlet-cursor.png') 8 8, auto !important;
+  cursor: var(--cursor-gauntlet) 8 8, auto !important;
 }
 
 /* Interactive elements - enhanced cursor effect */
@@ -19,7 +31,7 @@ input[type="button"]:hover,
 [onclick]:hover,
 a[href]:hover,
 .cursor-pointer:hover {
-  cursor: url('/assets/cursors/mouse/dwarven-gauntlet-cursor.png') 8 8, auto !important;
+  cursor: var(--cursor-gauntlet) 8 8, auto !important;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.2);
 }
 
@@ -42,10 +54,28 @@ a[href]:hover,
 
 @keyframes cursor-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.2);
+    filter: drop-shadow(0 0 var(--cursor-glow-radius) var(--cursor-glow)) brightness(1.2);
   }
   50% {
-    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 1)) brightness(1.4);
+    filter: drop-shadow(0 0 var(--cursor-glow-radius-strong) var(--cursor-glow-strong)) brightness(1.4);
+  }
+}
+
+/* Held-interaction glow.
+   The same breath as `cursor-pulse`, but drawn as a box-shadow around the
+   element instead of a filter over it — for surfaces too large to filter, where
+   `brightness()` would wash out the content (e.g. every tile of the map canvas).
+   Pairs with `:active`, so no JS state or re-render is involved. */
+.cursor-hold-glow:active {
+  animation: cursor-hold-glow 1s ease-in-out infinite;
+}
+
+@keyframes cursor-hold-glow {
+  0%, 100% {
+    box-shadow: 0 0 var(--cursor-glow-radius) var(--cursor-glow);
+  }
+  50% {
+    box-shadow: 0 0 var(--cursor-glow-radius-strong) var(--cursor-glow-strong);
   }
 }
 
