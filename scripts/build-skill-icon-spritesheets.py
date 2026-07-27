@@ -12,11 +12,13 @@ Usage — the resolution defaults to 102, or pass another one the pack ships:
     python scripts/build-skill-icon-spritesheets.py
     python scripts/build-skill-icon-spritesheets.py 64
     python scripts/build-skill-icon-spritesheets.py 204 --cols 8
+    python scripts/build-skill-icon-spritesheets.py 64 --no-manifest
 
 Outputs `indigolay-skills-<class>-<size>.png` plus a geometry manifest of the
-same name into public/assets/skills. The `indigolay-` prefix is load-bearing:
-src/styles/utilities.css opts every `indigolay-` asset out of the global
-`image-rendering: pixelated`, which would otherwise wreck this art.
+same name into public/assets/skills; `--no-manifest` writes only the PNGs. The
+`indigolay-` prefix is load-bearing: src/styles/utilities.css opts every
+`indigolay-` asset out of the global `image-rendering: pixelated`, which would
+otherwise wreck this art.
 
 Requires Pillow. The source pack lives outside the repo, at
     <OneDrive>/Documents/assets/indigolay-mega/PixelSkillIconsBookUI_PNG_v1.0/SkillIcon
@@ -90,7 +92,7 @@ def load_icon(path, size):
         return image.convert("RGBA")
 
 
-def build_class_sheet(src, size, class_folder, cols, out_dir):
+def build_class_sheet(src, size, class_folder, cols, out_dir, write_manifest=True):
     normal_dir = os.path.join(src, NORMAL_DIR, str(size), class_folder)
     disabled_dir = os.path.join(src, DISABLED_DIR, str(size), class_folder)
 
@@ -124,19 +126,20 @@ def build_class_sheet(src, size, class_folder, cols, out_dir):
 
     sheet.save(f"{base}.png", optimize=True)
 
-    manifest = {
-        "cellSize": size,
-        "cols": cols,
-        "rows": rows,
-        "iconCount": icon_count,
-        "sheetWidth": sheet_width,
-        "sheetHeight": sheet_height,
-        "halfWidth": half_width,
-        "disabledOffsetX": half_width,
-    }
-    with open(f"{base}.json", "w", encoding="utf-8") as handle:
-        json.dump(manifest, handle, indent=2)
-        handle.write("\n")
+    if write_manifest:
+        manifest = {
+            "cellSize": size,
+            "cols": cols,
+            "rows": rows,
+            "iconCount": icon_count,
+            "sheetWidth": sheet_width,
+            "sheetHeight": sheet_height,
+            "halfWidth": half_width,
+            "disabledOffsetX": half_width,
+        }
+        with open(f"{base}.json", "w", encoding="utf-8") as handle:
+            json.dump(manifest, handle, indent=2)
+            handle.write("\n")
 
     print(
         f"{slug:<18} {icon_count:>3} icons  {cols}x{rows} grid  "
@@ -156,6 +159,11 @@ def main():
     parser.add_argument("--cols", type=int, default=DEFAULT_COLS, help=f"columns per grid half (default {DEFAULT_COLS})")
     parser.add_argument("--src", default=DEFAULT_SRC, help="SkillIcon root of the source pack")
     parser.add_argument("--out", default=DEFAULT_OUT, help="output directory")
+    parser.add_argument(
+        "--no-manifest",
+        action="store_true",
+        help="write only the PNGs, skipping the .json geometry manifests",
+    )
     args = parser.parse_args()
 
     if args.cols < 1:
@@ -172,7 +180,9 @@ def main():
     os.makedirs(args.out, exist_ok=True)
 
     for class_folder in class_folders:
-        build_class_sheet(args.src, args.size, class_folder, args.cols, args.out)
+        build_class_sheet(
+            args.src, args.size, class_folder, args.cols, args.out, not args.no_manifest
+        )
 
 
 if __name__ == "__main__":
