@@ -1,98 +1,125 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { getNavDirection, type NavDirection } from '~/constants/keyboard';
+import { useRef, useEffect } from 'react';
+import { getNavDirection, isRunModifier, type NavDirection } from '~/constants/keyboard';
 
 export interface MultiKeyState {
-  dx: number;   // -1, 0, or 1
-  dy: number;   // -1, 0, or 1
+  /** -1, 0 or 1 — horizontal intent from all held keys. */
+  dx: number;
+  /** -1, 0 or 1 — vertical intent from all held keys. */
+  dy: number;
+  /** Cardinal direction the sprite should face, by first-key-pressed priority. */
   facing: NavDirection;
+  /** True while a run modifier is held. */
+  running: boolean;
 }
 
 /**
- * Tracks simultaneously-held directional keys (arrows/WASD) and resolves:
- * - dx/dy: grid offset combining all active directions (diagonal = ±1,±1)
- * - facing: which cardinal direction the sprite should face, using the
- *   "first key pressed" priority rule
+ * Tracks simultaneously-held directional keys plus the run modifier.
  *
- * Call onDirectionKeyDown in your keydown handler and onDirectionKeyUp in your
- * keyup listener. The stateRef is updated synchronously so the keydown handler
- * can read dx/dy immediately.
+ * State lives entirely in a ref and is never mirrored into React state: the
+ * consumer is a requestAnimationFrame loop that reads it synchronously, so
+ * re-rendering on every keypress would be pure overhead.
+ *
+ * Call `onDirectionKeyDown` from your keydown handler; keyup, the run modifier,
+ * and focus loss are handled here at the window level.
  */
 export function useMultiKeyDirection() {
   const activeRef = useRef<Set<NavDirection>>(new Set());
   const firstRef = useRef<NavDirection | null>(null);
-  const stateRef = useRef<MultiKeyState>({ dx: 0, dy: 0, facing: 'down' });
-  const [, tick] = useState(0);
+  const stateRef = useRef<MultiKeyState>({ dx: 0, dy: 0, facing: 'down', running: false });
 
-  const recompute = useCallback(() => {
-    const dirs = activeRef.current;
+  function recompute() {
+    const directions = activeRef.current;
     let dx = 0;
     let dy = 0;
-    // Accumulate movement from every active direction
-    for (const d of dirs) {
-      if (d === 'up') dy -= 1;
-      if (d === 'down') dy += 1;
-      if (d === 'left') dx -= 1;
-      if (d === 'right') dx += 1;
+
+    // Accumulate every active direction, then clamp — opposite keys cancel out.
+    for (const direction of directions) {
+      if (direction === 'up') dy -= 1;
+      if (direction === 'down') dy += 1;
+      if (direction === 'left') dx -= 1;
+      if (direction === 'right') dx += 1;
     }
-    // Clamp to -1 / 0 / +1 per axis
     dx = Math.max(-1, Math.min(1, dx));
     dy = Math.max(-1, Math.min(1, dy));
 
-    // Facing: first key pressed, or fall through to any active direction
-    let facing: NavDirection = 'down';
+    let facing: NavDirection = stateRef.current.facing;
     if (firstRef.current) {
       facing = firstRef.current;
-    } else if (dirs.size > 0) {
-      facing = [...dirs][0];
-    } else {
-      // keep last known facing from stateRef
-      facing = stateRef.current.facing;
+    } else if (directions.size > 0) {
+      facing = [...directions][0];
     }
 
-    stateRef.current = { dx, dy, facing };
-  }, []);
+    stateRef.current = { ...stateRef.current, dx, dy, facing };
+  }
 
   function onDirectionKeyDown(key: string): NavDirection | null {
-    const dir = getNavDirection(key);
-    if (!dir) return null;
+    const direction = getNavDirection(key);
+    if (!direction) return null;
 
-    // First key pressed wins the "first" slot
+    // The first key pressed wins the facing slot for the whole gesture.
     if (activeRef.current.size === 0) {
-      firstRef.current = dir;
+      firstRef.current = direction;
     }
-    activeRef.current.add(dir);
+    activeRef.current.add(direction);
     recompute();
-    tick((n) => n + 1);
-    return dir;
+    return direction;
   }
 
-  function onDirectionKeyUp(key: string): NavDirection | null {
-    const dir = getNavDirection(key);
-    if (!dir) return null;
+  function onDirectionKeyUp(key: string): void {
+    const direction = getNavDirection(key);
+    if (!direction) return;
 
-    activeRef.current.delete(dir);
+    activeRef.current.delete(direction);
 
-    // If the removed key was the first-pressed, promote another
-    if (firstRef.current === dir) {
-      const remaining = [...activeRef.current];
-      firstRef.current = remaining[0] ?? null;
+    // Promote another held key into the facing slot if the first one was released.
+    if (firstRef.current === direction) {
+      firstRef.current = [...activeRef.current][0] ?? null;
     }
-    if (activeRef.current.size === 0) {
-      firstRef.current = null;
-    }
-
     recompute();
-    tick((n) => n + 1);
-    return dir;
   }
 
-  // Attach keyup listener at the window level
+  /** Drops all held input. Used on focus loss so keys can't stay latched. */
+  function releaseAll(): void {
+    activeRef.current.clear();
+    firstRef.current = null;
+    stateRef.current = { ...stateRef.current, dx: 0, dy: 0, running: false };
+  }
+
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      onDirectionKeyUp(e.key);
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        stateRef.current = { ...stateRef.current, running: false };
+        return;
+      }
+      onDirectionKeyUp(event.key);
     };
-    window.addEventListener('keyup', handler);
-    return () => window.removeEventListener('keyup', handler);
+
+    // Owned here rather than in the map's keydown handler so holding Shift
+    // *while already walking* starts a run immediately, instead of waiting for
+    // the OS to repeat a direction key.
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const running = isRunModifier(event);
+      if (running !== stateRef.current.running) {
+        stateRef.current = { ...stateRef.current, running };
+      }
+    };
+
+    const handleBlur = () => releaseAll();
+    const handleVisibilityChange = () => {
+      if (document.hidden) releaseAll();
+    };
+
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

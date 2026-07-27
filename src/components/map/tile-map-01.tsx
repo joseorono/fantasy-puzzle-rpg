@@ -2,9 +2,10 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
 import { newMap } from '~/constants/maps/map-01/tiled-data';
 import { useGameStore, useMapProgressActions } from '~/stores/game-store';
-import { isRunModifier } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
+import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
+import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import MapCharacterSprite from './map-character-sprite';
 import { MapInfoPanel } from './map-info-panel';
 
@@ -20,6 +21,7 @@ interface TilemapMap01Props {
 const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
   const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(newMap);
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -45,70 +47,27 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     };
   }, [tilesetImage]);
 
-  // Check if a position is walkable based on walkableLayers config
+  // Ground walkability, flattened once so the movement loop's per-substep
+  // queries are a single array read instead of a scan over the layer list.
+  const walkableMask = React.useMemo(() => buildWalkableMask(mapData, walkableLayers), [mapData, walkableLayers]);
+
   const isWalkable = React.useCallback(
-    (row: number, col: number): boolean => {
-      // Check bounds
-      if (row < 0 || row >= mapData.height) return false;
-      if (col < 0 || col >= mapData.width) return false;
-
-      const dataIndex = row * mapData.width + col;
-
-      // Check if any walkable layer has a tile at this position
-      for (const layerName of walkableLayers) {
-        const layer = mapData.layers.find((l) => l.name === layerName);
-        if (layer && layer.data[dataIndex] !== 0) {
-          return true;
-        }
-      }
-
-      return false;
-    },
-    [mapData, walkableLayers],
+    (row: number, col: number): boolean => isMaskWalkable(walkableMask, row, col),
+    [walkableMask],
   );
 
-  // Verify starting position is valid on initialization
-  useEffect(() => {
-    if (walkableLayers.length === 0) {
-      console.error('❌ No walkable layers configured!');
-      return;
-    }
-
-    // Check store for saved position first (used when returning from combat)
-    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
-    const startRow = savedPosition?.row ?? defaultPlayerPosition.y;
-    const startCol = savedPosition?.col ?? defaultPlayerPosition.x;
-
-    // Update charPosition if store had a saved position
-    if (savedPosition) {
-      setCharPosition(savedPosition);
-    }
-
-    if (isWalkable(startRow, startCol)) {
-      console.log(`✅ Starting position (${startRow}, ${startCol}) is valid`);
-      return;
-    }
-
-    // Find nearest walkable tile
-    console.log(`🔍 Searching for nearest walkable tile...`);
-    for (let row = 0; row < mapData.height; row++) {
-      for (let col = 0; col < mapData.width; col++) {
-        if (isWalkable(row, col)) {
-          console.log(`✅ Fallback position found: Row ${row}, Col ${col}`);
-          setCharPosition({ row, col });
-          return;
-        }
-      }
-    }
-    console.error('❌ No walkable tiles found in map!');
-  }, [mapData, isWalkable, walkableLayers, defaultPlayerPosition]);
+  // The canvas is shrink-to-fit inside its container, so it is both scaled and
+  // possibly letterboxed. Render-only — the simulation stays in map pixels.
+  const { scale, offsetX, offsetY } = useCanvasMetrics(canvasRef, canvasContainerRef, mapData.width * tileSize);
 
   // --- Smooth character movement (rAF-based) ---
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
     initialCol: charPosition.col,
     tileSize,
-    displayScale: 1,
+    displayScale: scale,
+    offsetX,
+    offsetY,
     canMoveTo: (row, col) => isWalkable(row, col),
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
@@ -120,8 +79,27 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     const dir = movement.onKeyDown(event.key);
     if (!dir) return;
     event.preventDefault();
-    movement.setRunning(isRunModifier(event));
   });
+
+  // Place the character on spawn: prefer the saved position (returning from
+  // combat), else the configured default, else the first walkable tile.
+  const setCharacterPosition = movement.setPosition;
+  useEffect(() => {
+    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const start = savedPosition ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
+
+    const spawn = isMaskWalkable(walkableMask, start.row, start.col) ? start : findFirstWalkableTile(walkableMask);
+
+    if (!spawn) {
+      console.error('❌ No walkable tiles found in map!');
+      return;
+    }
+
+    setCharPosition(spawn);
+    setCharacterPosition(spawn.row, spawn.col);
+    // Spawn placement runs once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Draw the map
   useEffect(() => {
@@ -176,30 +154,7 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
         }
       }
     });
-
   }, [tileset, mapData, visibleLayers, tileSize]);
-
-  // Auto-scroll to center character
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const charX = movement.tileCol * tileSize;
-    const charY = movement.tileRow * tileSize;
-
-    canvas.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-      inline: 'center',
-    });
-
-    const parent = canvas.parentElement;
-    if (parent) {
-      const scrollX = charX - parent.clientWidth / 2;
-      const scrollY = charY - parent.clientHeight / 2;
-      parent.scrollTo({ left: scrollX, top: scrollY, behavior: 'smooth' });
-    }
-  }, [movement.tileCol, movement.tileRow, tileSize]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);
@@ -212,19 +167,13 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
 
   return (
     <div className="tilemap-container">
-      <MapInfoPanel
-        displayMapName={displayMapName}
-        debug={debug}
-        charPosition={charPosition}
-        status={debugInfo}
-      />
-      <div className="canvas-wrapper" style={{ position: 'relative' }}>
-        <canvas ref={canvasRef} style={{ imageRendering: 'pixelated' }} />
+      <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
+      <div ref={canvasContainerRef} className="canvas-wrapper" style={{ position: 'relative' }}>
+        <canvas ref={canvasRef} style={{ imageRendering: 'pixelated', display: 'block' }} />
         <MapCharacterSprite
-          pixelX={movement.pixelX}
-          pixelY={movement.pixelY}
+          positionRef={movement.characterRef}
           tileSize={tileSize}
-          displayScale={1}
+          displayScale={scale}
           spriteState={movement.spriteState}
         />
       </div>

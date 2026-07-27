@@ -41,17 +41,22 @@ export const SIT_FRAME_COUNT = 2;
 /** How many tiles tall the character should render (used for the scale calculation). */
 export const CHARACTER_HEIGHT_TILES = 3.5;
 
-/** Milliseconds between walk animation frames. */
-export const WALK_FRAME_MS = 110;
+/**
+ * Tiles the character must actually travel to advance one walk-cycle frame.
+ *
+ * Walk/run frames are driven by distance covered, not by a timer, so the legs
+ * always match the ground: the cadence scales automatically with speed, and
+ * pushing against a wall (zero distance) correctly stops the cycle instead of
+ * moonwalking. At WALK_TILES_PER_SECOND this reproduces the ~110 ms cadence
+ * the timer-based version used.
+ */
+export const WALK_TILES_PER_ANIM_FRAME = 0.55;
 
-/** Milliseconds between run animation frames. */
-export const RUN_FRAME_MS = 80;
+/** Same as WALK_TILES_PER_ANIM_FRAME for the run cycle (~80 ms at run speed). */
+export const RUN_TILES_PER_ANIM_FRAME = 0.62;
 
 /** Milliseconds between sit idle frame toggles. */
 export const SIT_FRAME_INTERVAL_MS = 5_000;
 
 /** Milliseconds of no movement before the character sits down. */
 export const IDLE_SIT_DELAY_MS = 60_000;
-
-/** Window after the last movement during which walk/run remains active. */
-export const MOVE_ANIMATION_WINDOW_MS = 250;

@@ -2,9 +2,12 @@
   width: 0;
   height: 0;
   overflow: visible;
+  /* The rAF movement loop writes `transform` every frame — keep it on its own
+     compositor layer so moving never triggers layout. */
+  will-change: transform;
 }
 
 .map-character-sprite-inner {
-  /* Ensure crisp pixel rendering at any scale */
-  image-rendering: crisp-edges;
+  /* Crisp pixel art at any scale. */
+  image-rendering: pixelated;
 }

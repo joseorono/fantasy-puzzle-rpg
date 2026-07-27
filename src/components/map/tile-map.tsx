@@ -9,9 +9,10 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
 import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
-import { isRunModifier } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
+import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
+import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import MapCharacterSprite from './map-character-sprite';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
@@ -96,8 +97,9 @@ interface TilemapComponentProps {
 }
 
 const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
-  const { tilesetImage, displayMapName, visibleLayers, defaultPlayerPosition, debug } = config;
+  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = config;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(demoMap);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
@@ -169,22 +171,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     };
   }, [tilesetImage]);
 
-  // Check if a position is walkable (any non-zero tile in road layer)
+  // Ground walkability, flattened once so the movement loop's per-substep
+  // queries are a single array read instead of a scan over the layer list.
+  const walkableMask = React.useMemo(() => buildWalkableMask(mapData, walkableLayers), [mapData, walkableLayers]);
+
+  // Check if a position is walkable (walkable ground, and no blocking node)
   const isRoadTile = React.useCallback(
     (row: number, col: number): boolean => {
-      const roadLayer = mapData.layers.find((layer) => layer.name === 'road');
-      if (!roadLayer) return false;
-
-      // Check bounds
-      if (row < 0 || row >= roadLayer.height) return false;
-      if (col < 0 || col >= roadLayer.width) return false;
-
-      // Get tile ID at position
-      const dataIndex = row * roadLayer.width + col;
-      const tileId = roadLayer.data[dataIndex];
-
-      // Check if there's a road tile
-      if (tileId === 0) return false;
+      if (!isMaskWalkable(walkableMask, row, col)) return false;
 
       // Check if there's an interactive node at this position
       const node = getNodeAtPosition(row, col);
@@ -194,63 +188,10 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
         return isCompleted; // Can only walk through if completed
       }
 
-      // Any non-zero tile in the road layer is walkable
       return true;
     },
-    [mapData, isNodeCompleted, completedDungeons],
+    [walkableMask, isNodeCompleted, completedDungeons],
   );
-
-  // Verify starting position is valid on initialization
-  useEffect(() => {
-    const roadLayer = mapData.layers.find((layer) => layer.name === 'road');
-    if (!roadLayer) {
-      console.error('❌ Road layer not found!');
-      setDebugInfo('ERROR: Road layer not found!');
-      return;
-    }
-
-    // Check store for saved position first (used when returning from combat)
-    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
-    const startRow = savedPosition?.row ?? defaultPlayerPosition.y;
-    const startCol = savedPosition?.col ?? defaultPlayerPosition.x;
-
-    // Update charPosition if store had a saved position
-    if (savedPosition) {
-      setCharPosition(savedPosition);
-    }
-
-    // Check if starting position is valid
-    if (startRow >= 0 && startRow < roadLayer.height && startCol >= 0 && startCol < roadLayer.width) {
-      const dataIndex = startRow * roadLayer.width + startCol;
-      const tileId = roadLayer.data[dataIndex];
-
-      if (tileId !== 0) {
-        console.log(`✅ Starting position (${startRow}, ${startCol}) is valid - TileID ${tileId}`);
-        setDebugInfo(`On road at (${startRow}, ${startCol})`);
-        return;
-      } else {
-        console.warn(`⚠️ Starting position (${startRow}, ${startCol}) is not a road tile (TileID: ${tileId})`);
-      }
-    }
-
-    // If starting position is invalid, find nearest road tile
-    console.log(`🔍 Searching for nearest road tile...`);
-    for (let row = 0; row < roadLayer.height; row++) {
-      for (let col = 0; col < roadLayer.width; col++) {
-        const dataIndex = row * roadLayer.width + col;
-        const tileId = roadLayer.data[dataIndex];
-
-        if (tileId !== 0) {
-          console.log(`✅ Fallback position found: Row ${row}, Col ${col}, TileID ${tileId}`);
-          setCharPosition({ row, col });
-          setDebugInfo(`On road at (${row}, ${col})`);
-          return;
-        }
-      }
-    }
-    console.error('❌ No road tiles found in map!');
-    setDebugInfo('ERROR: No road tiles found!');
-  }, [mapData, defaultPlayerPosition]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);
@@ -335,9 +276,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     [currentMapId, currentResources, floorLootProgressActions, resourcesActions],
   );
 
-  // Calculate scale factor for character positioning (must be before useCharacterMovement)
-  const canvasElement = canvasRef.current;
-  const scale = canvasElement ? canvasElement.offsetWidth / (mapData.width * tileSize) : 1;
+  // The canvas is shrink-to-fit and centred inside its container, so it is both
+  // scaled and letterboxed. Render-only — the simulation stays in map pixels.
+  const { scale, offsetX, offsetY } = useCanvasMetrics(canvasRef, canvasContainerRef, mapData.width * tileSize);
 
   // --- Smooth character movement (rAF-based) ---
   const movement = useCharacterMovement({
@@ -345,6 +286,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     initialCol: charPosition.col,
     tileSize,
     displayScale: scale,
+    offsetX,
+    offsetY,
     canMoveTo: (row, col) => isRoadTile(row, col),
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
@@ -373,13 +316,35 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   });
 
   // Direction keys still flow through useWindowKeyDown, but movement is now
-  // continuous — the handler only forwards the key and running state.
+  // continuous — the handler only forwards the key. Key release, the run
+  // modifier and focus loss are owned by useMultiKeyDirection.
   useWindowKeyDown((event) => {
     const dir = movement.onKeyDown(event.key);
     if (!dir) return;
     event.preventDefault();
-    movement.setRunning(isRunModifier(event));
   });
+
+  // Place the character on spawn: prefer the saved position (returning from
+  // combat), else the configured default, else the first walkable tile.
+  const setCharacterPosition = movement.setPosition;
+  useEffect(() => {
+    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const start = savedPosition ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
+
+    const spawn = isMaskWalkable(walkableMask, start.row, start.col) ? start : findFirstWalkableTile(walkableMask);
+
+    if (!spawn) {
+      console.error('❌ No walkable tiles found in map!');
+      setDebugInfo('ERROR: No walkable tiles found!');
+      return;
+    }
+
+    setCharPosition(spawn);
+    setCharacterPosition(spawn.row, spawn.col);
+    setDebugInfo(`On road at (${spawn.row}, ${spawn.col})`);
+    // Spawn placement runs once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
@@ -829,11 +794,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
   // Calculate character screen position for tooltip (uses continuous pixel position)
   const getCharacterScreenPosition = () => {
+    const canvasElement = canvasRef.current;
     if (!canvasElement) return { x: 0, y: 0 };
     const canvasRect = canvasElement.getBoundingClientRect();
+    const { x, y } = movement.getMapPosition();
     return {
-      x: canvasRect.left + movement.pixelX,
-      y: canvasRect.top + movement.pixelY,
+      x: canvasRect.left + x * scale,
+      y: canvasRect.top + y * scale,
     };
   };
 
@@ -842,6 +809,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       <div className="tilemap-container">
         <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
         <div
+          ref={canvasContainerRef}
           style={{
             position: 'relative',
             display: 'flex',
@@ -854,7 +822,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           <canvas
             ref={canvasRef}
             style={{
-              border: '1px solid #ccc',
+              // `outline` rather than `border`: it takes no layout space, so the
+              // measured scale and the sprite's origin stay exactly the canvas.
+              outline: '1px solid #ccc',
               background: '#87CEEB',
               imageRendering: 'pixelated',
               display: 'block',
@@ -866,11 +836,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
             }}
           />
 
-          {/* Animated LPC character sprite */}
+          {/* Animated LPC character sprite — offset by the canvas's position
+              inside this centring container, which letterboxes it. */}
           {canvasReady && (
             <MapCharacterSprite
-              pixelX={movement.pixelX}
-              pixelY={movement.pixelY}
+              positionRef={movement.characterRef}
               tileSize={tileSize}
               displayScale={scale}
               spriteState={movement.spriteState}
@@ -887,7 +857,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       />
 
       {/* Node interaction tooltip */}
-      {showNodeMenu && currentNode && canvasElement && (
+      {showNodeMenu && currentNode && canvasReady && (
         <NodeInteractionMenu
           node={currentNode}
           isCompleted={isMapNodeCompleted(currentNode, completedDungeons, isNodeCompleted)}
