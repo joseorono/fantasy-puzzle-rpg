@@ -53,3 +53,6 @@ current-prompt.md
 
 # Developer-local Claude Code config (tool permissions, etc.)
 .claude/settings.local.json
+
+# Local agent tooling cache (skill registry, etc.)
+.atl/
