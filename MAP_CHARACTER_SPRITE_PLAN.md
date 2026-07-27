@@ -1,6 +1,13 @@
 # Replace the map character placeholder with an animated LPC sprite
 
-> Findings + implementation plan, written for later review. **Status: planned, not implemented.**
+> Findings + original implementation plan. **Status: implemented and since superseded in parts.**
+>
+> The sprite sheet geometry, the walk/run/stand/sit behaviours and the shared-component requirement
+> below all shipped as written. The **movement model did not**: the discrete key-repeat stepping with
+> a `left/top 0.2s ease-out` transition described here was replaced by a continuous simulation, and
+> the timer-driven animation cadence was replaced by a distance-driven one. See
+> [docs/map-character-sprite-impl.md](docs/map-character-sprite-impl.md#movement-model) for what the
+> code actually does; treat the movement sections of this document as historical.
 
 ## Context
 

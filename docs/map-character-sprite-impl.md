@@ -1,6 +1,10 @@
 # Map Character Sprite — Implementation Reference
 
 > Extracted from `MAP_CHARACTER_SPRITE_PLAN.md` — dimensions, formulas, and step-by-step breakdown.
+>
+> The sheet geometry and frame math below are current. **"Implementation steps" is a historical
+> build checklist**: it is all shipped, and its movement/animation entries were superseded by the
+> [movement model](#movement-model) — walk/run frames are distance-driven now, not `setInterval`-driven.
 
 ## Sprite sheet reference
 
@@ -95,17 +99,74 @@ const k = (tileSize * CHARACTER_HEIGHT_TILES / 64) * displayScale;
 //   image-rendering: pixelated;
 ```
 
-`CHARACTER_HEIGHT_TILES = 2.5` keeps the same footprint as the current placeholder (~2 × 2.5 tiles).
+`CHARACTER_HEIGHT_TILES = 3.5` sets the rendered height of the sprite in tiles.
+
+## Movement model
+
+Movement is a continuous simulation in `useCharacterMovement` + `src/lib/map-movement.ts`, not
+discrete stepping. Four properties carry the feel:
+
+- **One coordinate space.** The simulation runs in *map pixels* — the space the canvas draws tiles
+  in. `displayScale` is applied only when the sprite's `transform` is written, so resizing the
+  window never moves, re-anchors or re-speeds the character.
+- **Fixed timestep.** Real time accumulates and is consumed in `MOVEMENT_STEP_SECONDS` substeps with
+  carry-over, so behaviour is identical at 30 or 144 fps and fast movement cannot tunnel through
+  walls. Frames longer than `MAX_FRAME_SECONDS` are discarded, never replayed.
+- **No React in the loop.** Position is written straight to the sprite element's `transform`
+  (rounded to whole screen pixels, so pixel art never lands on a fractional device pixel). React
+  state changes only when the tile or the sprite frame actually changes.
+- **Assists, not rails.** Diagonals are normalised to cardinal speed. Collision is resolved per axis
+  so the character slides along walls but cannot cut a pinhole corner. While moving along one axis
+  the character eases toward the tile's centre line (`PATH_CENTERING_*`), except when the tile ahead
+  is blocked — there it keeps its alignment so `CORNER_ASSIST_*` can slip it around a nearly-aligned
+  gap. Nothing is latched: every substep re-tests the wall.
+
+Tunables live in `src/constants/map-movement.ts`. `resolveMovementStep` is pure and covered by
+`src/lib/map-movement.test.ts`.
+
+## Input model
+
+Two producers feed one consumer. Both emit the same `MovementIntent`
+(`{ dirX, dirY, facing, running }`), a pure merge picks the winner, and the rAF loop only ever reads
+one direction and one gait:
+
+```
+held keys → useMultiKeyDirection → keyboardToIntent    ─┐
+                                                        ├─ mergeMovementIntents → resolveMovementStep
+held pointer → usePointerDirection → resolvePointerIntent ─┘
+```
+
+- **Keyboard wins** whenever a direction key is down, so reaching for the keys mid-drag takes over
+  instantly instead of fighting the pointer. Shift forces a run in either mode.
+- **Pointer = click-and-hold.** Direction is the vector from the character to the pointer; the gait
+  comes from the *distance* (`POINTER_RUN_DISTANCE_TILES`, with `POINTER_RUN_HYSTERESIS_TILES` so a
+  cursor resting on the boundary can't flutter the animation). Inside `POINTER_DEAD_ZONE_TILES` the
+  character stands still and keeps its facing, so arriving under the cursor stops cleanly.
+- **Both sources snap to the same eight directions** via one `OCTANT_VECTORS` table — including the
+  keyboard, which routes through `snapToOctant` rather than normalising separately, so the two paths
+  emit bit-identical vectors and cannot drift apart. Snapping is what keeps path centering engaged:
+  it only acts on single-axis movement, so a free-angle cursor would leave the character grazing tile
+  borders down every one-tile road.
+- **Pointer position is converted to map pixels at event time**, not per frame. That keeps a
+  layout-reading `getBoundingClientRect()` out of the animation loop, and a map-space target stays
+  correct if the window is resized mid-hold.
+
+Pointer capture keeps a drag alive off-canvas; `blur`/`visibilitychange` release it so nothing
+latches. `touch-action: none` on the canvas makes touch-drag steer rather than pan. Every rule above
+is a pure function in `src/lib/pointer-movement.ts`, covered by `src/lib/pointer-movement.test.ts`.
 
 ## Animation timing constants
 
-| Constant                  | Value     | Meaning |
-|---------------------------|-----------|---------|
-| `WALK_FRAME_MS`           | 110 ms    | Frame duration during walk |
-| `RUN_FRAME_MS`            | 80 ms     | Frame duration during run |
-| `SIT_FRAME_INTERVAL_MS`   | 5 000 ms  | Time between sit frame swaps |
-| `IDLE_SIT_DELAY_MS`       | 60 000 ms | Idle time before sitting (1 minute) |
-| `MOVE_ANIMATION_WINDOW_MS`| 250 ms    | Grace period after last step before returning to stand |
+Walk and run frames are driven by **distance travelled**, not a timer, so the cadence scales with
+speed automatically and pushing against a wall (zero distance) stops the cycle instead of
+moonwalking. Only the idle chain uses timers.
+
+| Constant                    | Value     | Meaning |
+|-----------------------------|-----------|---------|
+| `WALK_TILES_PER_ANIM_FRAME` | 0.55      | Tiles travelled per walk-cycle frame (~110 ms at walk speed) |
+| `RUN_TILES_PER_ANIM_FRAME`  | 0.62      | Tiles travelled per run-cycle frame (~80 ms at run speed) |
+| `SIT_FRAME_INTERVAL_MS`     | 5 000 ms  | Time between sit frame swaps |
+| `IDLE_SIT_DELAY_MS`         | 60 000 ms | Idle time before sitting (1 minute) |
 
 ## State machine diagram
 
@@ -148,7 +209,7 @@ const k = (tileSize * CHARACTER_HEIGHT_TILES / 64) * displayScale;
 - [ ] Frame counts: `RUN_FRAME_COUNT`, `WALK_FRAME_COUNT`, `SIT_FRAME_COUNT`
 - [ ] `WALK_STAND_COLUMN`
 - [ ] Display: `CHARACTER_HEIGHT_TILES`
-- [ ] Timing: `WALK_FRAME_MS`, `RUN_FRAME_MS`, `SIT_FRAME_INTERVAL_MS`, `IDLE_SIT_DELAY_MS`, `MOVE_ANIMATION_WINDOW_MS`
+- [ ] Timing: `WALK_TILES_PER_ANIM_FRAME`, `RUN_TILES_PER_ANIM_FRAME`, `SIT_FRAME_INTERVAL_MS`, `IDLE_SIT_DELAY_MS`
 
 **File:** `src/constants/keyboard.ts` (edit)
 
@@ -167,10 +228,10 @@ const k = (tileSize * CHARACTER_HEIGHT_TILES / 64) * displayScale;
 
 **File:** `src/hooks/use-character-sprite.ts` (new)
 
-- [ ] Returns `{ spriteState, reportStep }`
+- [ ] Returns `{ spriteState, updateSprite }`
 - [ ] `spriteState: { mode, facing, frameIndex }`
-- [ ] `reportStep(direction, { moved, running })` called from keydown handler
-- [ ] Walk/run frame advancement via `setInterval`
+- [ ] `updateSprite(mode, facing, frameIndex)` pushed from the movement loop; no-ops when unchanged
+- [ ] Walk/run frame index derived from distance travelled (no frame timer)
 - [ ] Idle→sit transition via `setTimeout`
 - [ ] Sit frame cycling via `setInterval`
 - [ ] Cleanup on unmount
@@ -180,31 +241,33 @@ const k = (tileSize * CHARACTER_HEIGHT_TILES / 64) * displayScale;
 
 **Files:** `src/components/map/map-character-sprite.tsx`, `src/styles/map-character-sprite.css` (new)
 
-- [ ] Props: `position: { row, col }`, `tileSize`, `displayScale`, `spriteState`, `enableTransition?: boolean`
-- [ ] Anchored `div` at tile position (left/top calc from col/row × tileSize)
+- [ ] Props: `positionRef`, `tileSize`, `displayScale`, `spriteState`
+- [ ] Zero-size anchor `div` positioned by the movement loop writing `transform: translate3d(...)`
 - [ ] Inner 64×64 `div` with `background-image` from spritesheet, `background-position` from `getSpriteFrameOrigin`
 - [ ] `transform: scale(k)` with `transform-origin: bottom center`
 - [ ] `image-rendering: pixelated`
 - [ ] No `border-radius` / `box-shadow`
-- [ ] Optional transition on position (`0.2s ease-out`)
+- [ ] No CSS transition on position — the rAF loop supplies the smoothness
 
 ### Step 5 — Wire tile-map.tsx (main map)
 
 **File:** `src/components/map/tile-map.tsx` (edit)
 
 - [ ] Remove `characterPlaceholder` const and `characterImage` state + loader
-- [ ] Restructure `useWindowKeyDown` handler: compute step outside `setCharPosition` updater
-- [ ] Call `reportStep(direction, { moved: canMove, running: isRunModifier(event) })`
-- [ ] Replace character `div` with `<MapCharacterSprite>`
-- [ ] Wire `spriteState` from hook, pass position/tileSize/scale
+- [ ] `useWindowKeyDown` only forwards direction keys; key release, the run modifier and focus loss
+      are owned by `useMultiKeyDirection`
+- [ ] Replace character `div` with `<MapCharacterSprite>`, passing `movement.characterRef`
+- [ ] Wrap canvas + sprite in a shrink-to-fit `position: relative` element so the sprite's absolute
+      origin *is* the canvas origin (the centred, letterboxed canvas would otherwise offset it)
+- [ ] Take `displayScale` from `useCanvasDisplayScale` (ResizeObserver), never a render-time layout read
 
 ### Step 6 — Wire tile-map-01.tsx (map-01)
 
 **File:** `src/components/map/tile-map-01.tsx` (edit)
 
 - [ ] Remove `characterImage` state + loader + canvas `drawImage`
-- [ ] Call `reportStep` from keydown handler
-- [ ] Render `<MapCharacterSprite displayScale={1}>` inside `.canvas-wrapper`
+- [ ] Same keydown wiring as Step 5
+- [ ] Render `<MapCharacterSprite>` inside `.canvas-wrapper` with the real `displayScale`
 - [ ] Ensure `.canvas-wrapper` is `position: relative`
 
 ### Step 7 — Supporting edits
