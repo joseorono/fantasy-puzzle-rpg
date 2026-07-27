@@ -142,17 +142,15 @@ export function goToDungeon(currentState: RouterState, data: ViewDataMap['dungeo
 }
 
 /**
- * Navigate to map demo
+ * Navigate to a map. `data.mapId` selects which one — every map shares this view.
+ * Records the launching view in `returnView` (unless the caller supplied one) so the map can
+ * still be left after a battle round-trip has cleared `previousView` — see
+ * `MapViewData.returnView`.
  */
-export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-demo']): NavigationResult {
-  return prepareNavigation(currentState, 'map-demo', data ?? {});
-}
-
-/**
- * Navigate to map demo 2
- */
-export function goToMapDemo2(currentState: RouterState, data?: ViewDataMap['map-demo-2']): NavigationResult {
-  return prepareNavigation(currentState, 'map-demo-2', data ?? {});
+export function goToMap(currentState: RouterState, data: ViewDataMap['map']): NavigationResult {
+  // Guard against a map launching a map, which would return to itself.
+  const entryView = currentState.currentView === 'map' ? undefined : currentState.currentView;
+  return prepareNavigation(currentState, 'map', { ...data, returnView: data.returnView ?? entryView });
 }
 
 /**

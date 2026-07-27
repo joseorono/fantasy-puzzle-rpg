@@ -1,5 +1,6 @@
 import type { BaseSlice } from '../../types/store';
 import type { GridPosition } from '../../types/geometry';
+import type { MapId } from '../../types/map';
 
 /**
  * Map node types
@@ -23,7 +24,8 @@ export interface MapProgressState {
   townsVisited: NodeProgress;
   treasuresFound: NodeProgress;
   mysteriesSolved: NodeProgress;
-  characterPosition: GridPosition | null;
+  /** Where the player stood on each map, so every map resumes at its own spot. */
+  characterPositions: Partial<Record<MapId, GridPosition>>;
 }
 
 /**
@@ -33,7 +35,7 @@ export interface MapProgressActions {
   completeNode: (nodeType: MapNodeType, nodeId: string) => void;
   isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean;
   resetProgress: () => void;
-  setCharacterPosition: (position: GridPosition) => void;
+  setCharacterPosition: (mapId: MapId, position: GridPosition) => void;
 }
 
 /**

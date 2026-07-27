@@ -1,14 +1,14 @@
 // components/Tilemap.tsx
 import React, { useRef, useEffect, useState } from 'react';
-import type { TilemapData, TiledMapConfig } from '../../types/tilemap';
+import type { TilemapData } from '../../types/tilemap';
+import type { MapDefinition } from '~/types/map';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
-import { MAP_00_DIALOGUE_SCENES } from '~/constants/maps/map-00/dialogue';
-import { getEncounterForNode } from '~/constants/maps/map-00/encounters';
+import { findNodeAt, findFloorLootAt, findDialogueTriggerAt } from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
@@ -17,8 +17,6 @@ import { clientToMapPoint } from '~/lib/pointer-movement';
 import MapCharacterSprite from './map-character-sprite';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
-import { DEMO_MAP_NODES, getNodeAtPosition } from '~/constants/maps/map-00/nodes';
-import { DEMO_FLOOR_LOOT, getFloorLootAtPosition } from '~/constants/maps/map-00/floor-loot';
 import {
   useMapProgressActions,
   useGameStore,
@@ -29,6 +27,7 @@ import {
   useParty,
   useDungeonProgressActions,
   useDungeonProgressState,
+  useViewData,
 } from '~/stores/game-store';
 import { getDungeonById } from '~/lib/dungeon-system';
 import { canGoBack } from '~/lib/routing';
@@ -53,18 +52,7 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
-import { demoMap } from '~/constants/maps/map-00/tiled-data';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
-
-// Dialogue trigger coordinates
-const DIALOGUE_TRIGGERS = [
-  { row: 6, col: 36, scene: 'test' },
-  { row: 22, col: 15, scene: 'simple' },
-  { row: 27, col: 40, scene: 'narrator' },
-  { row: 55, col: 19, scene: 'test' },
-  { row: 31, col: 83, scene: 'simple' },
-  { row: 13, col: 71, scene: 'narrator' },
-] as const;
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -95,17 +83,18 @@ interface CharacterPosition {
 }
 
 interface TilemapComponentProps {
-  config: TiledMapConfig;
+  /** The map to render and run. All content is read from here — nothing map-specific is imported. */
+  map: MapDefinition;
 }
 
-const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
-  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = config;
+const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
+  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
-  const [mapData] = useState<TilemapData>(demoMap);
+  const [mapData] = useState<TilemapData>(map.tiledData);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
-    const saved = useGameStore.getState().mapProgress.characterPosition;
+    const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -136,18 +125,27 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   const currentInventory = useGameStore((state) => state.inventory);
 
   const routerActions = useRouterActions();
-  // Hide the back button rather than render a dead control: `goBack()` only
-  // warns when there's no previous view (e.g. the map opened as the entry view).
+  // Where this map was entered from, captured by `goToMap`. Preferred over `goBack()`
+  // because a battle round-trip (map → battle → rewards → goBack) leaves the router's
+  // previousView null, which would strand the player on the map.
+  const returnView = useViewData('map')?.returnView;
+  // Hide the back button rather than render a dead control: with no return view, `goBack()`
+  // only warns when there's no previous view either (e.g. the map opened as the entry view).
   const canLeaveMap = useGameStore((state) => canGoBack(state.router));
+
+  function handleLeaveMap() {
+    if (returnView) {
+      routerActions.goBackTo(returnView);
+      return;
+    }
+    routerActions.goBack();
+  }
   const { isDungeonCompleted } = useDungeonProgressActions();
   // Subscribed rather than read through the action: the action form is a get() call that
   // renders can cache, so completion changes wouldn't repaint the marker or the menu.
   const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
-
-  // Map ID for floor loot tracking (hardcoded for demo map)
-  const currentMapId = 'map-00';
 
   // Pulse animation for markers
   useEffect(() => {
@@ -186,7 +184,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       if (!isMaskWalkable(walkableMask, row, col)) return false;
 
       // Check if there's an interactive node at this position
-      const node = getNodeAtPosition(row, col);
+      const node = findNodeAt(map.nodes, row, col);
       if (node && node.blocksMovement) {
         // Node blocks movement - check if it's completed
         const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
@@ -195,7 +193,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
 
       return true;
     },
-    [walkableMask, isNodeCompleted, completedDungeons],
+    [walkableMask, isNodeCompleted, completedDungeons, map.nodes],
   );
 
   // Persist character position to store on unmount so it survives view transitions
@@ -205,7 +203,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     // Persist character position to store on unmount
     // so it survives view transitions
     return () => {
-      mapProgressActions.setCharacterPosition(charPositionRef.current);
+      mapProgressActions.setCharacterPosition(map.id, charPositionRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -213,7 +211,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   // Check if character reached a dialogue trigger
   const checkDialogueTrigger = React.useCallback(
     (row: number, col: number) => {
-      const trigger = DIALOGUE_TRIGGERS.find((t) => t.row === row && t.col === col);
+      const trigger = findDialogueTriggerAt(map.dialogueTriggers, row, col);
 
       if (trigger) {
         const triggerKey = `${row},${col}`;
@@ -226,34 +224,37 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
         }
       }
     },
-    [visitedTriggers],
+    [visitedTriggers, map.dialogueTriggers],
   );
 
   // Check if character is standing on an interactive node
-  const checkInteractiveNode = React.useCallback((row: number, col: number) => {
-    const node = getNodeAtPosition(row, col);
-    if (node) {
-      console.log('Standing on interactive node:', node);
-      setCurrentNode(node);
-      setShowNodeMenu(true);
-    }
-  }, []);
+  const checkInteractiveNode = React.useCallback(
+    (row: number, col: number) => {
+      const node = findNodeAt(map.nodes, row, col);
+      if (node) {
+        console.log('Standing on interactive node:', node);
+        setCurrentNode(node);
+        setShowNodeMenu(true);
+      }
+    },
+    [map.nodes],
+  );
 
   // Returning from a battle or dungeon restores the player onto the node they entered from, but
   // the menu only opens on movement — reopen it so the node is immediately interactive again.
   useEffect(() => {
-    const saved = useGameStore.getState().mapProgress.characterPosition;
+    const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     if (saved) checkInteractiveNode(saved.row, saved.col);
-  }, [checkInteractiveNode]);
+  }, [checkInteractiveNode, map.id]);
 
   // Check and auto-collect floor loot
   const checkFloorLoot = React.useCallback(
     (row: number, col: number) => {
-      const floorLoot = getFloorLootAtPosition(row, col);
+      const floorLoot = findFloorLootAt(map.floorLoot, row, col);
 
       if (floorLoot) {
         // Check if already collected
-        const isCollected = floorLootProgressActions.isFloorLootCollected(currentMapId, floorLoot.id);
+        const isCollected = floorLootProgressActions.isFloorLootCollected(map.id,floorLoot.id);
 
         if (!isCollected) {
           console.log('Floor loot found:', floorLoot);
@@ -266,7 +267,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           resourcesActions.setResources(newResources);
 
           // Mark as collected in persistent state
-          floorLootProgressActions.collectFloorLoot(currentMapId, floorLoot.id);
+          floorLootProgressActions.collectFloorLoot(map.id, floorLoot.id);
 
           // Play sound feedback
           soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
@@ -278,7 +279,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
         }
       }
     },
-    [currentMapId, currentResources, floorLootProgressActions, resourcesActions],
+    [map.id, map.floorLoot, currentResources, floorLootProgressActions, resourcesActions],
   );
 
   // The canvas is shrink-to-fit and centred inside its container, so it is both
@@ -341,7 +342,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   // combat), else the configured default, else the first walkable tile.
   const setCharacterPosition = movement.setPosition;
   useEffect(() => {
-    const savedPosition = useGameStore.getState().mapProgress.characterPosition;
+    const savedPosition = useGameStore.getState().mapProgress.characterPositions[map.id];
     const start = savedPosition ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
 
     const spawn = isMaskWalkable(walkableMask, start.row, start.col) ? start : findFirstWalkableTile(walkableMask);
@@ -391,14 +392,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
    * Start a battle for the given encounter, setting up atoms and navigating.
    */
   function startBattle(nodeId: string) {
-    const encounter = getEncounterForNode(nodeId);
+    const encounter = map.encounters?.[nodeId];
     if (!encounter) {
       console.warn('No encounter found for node:', nodeId);
       return;
     }
 
     setupBattle({ enemies: encounter.enemies, party: partyMembers });
-    routerActions.goToBattleDemo({ enemyId: nodeId, location: 'map-00' });
+    routerActions.goToBattleDemo({ enemyId: nodeId, location: displayMapName });
   }
 
   // Node interaction handlers
@@ -414,7 +415,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     setCurrentNode(null);
 
     // If the node has a pre-fight dialogue, play it first
-    if (currentNode.dialogueScene && MAP_00_DIALOGUE_SCENES[currentNode.dialogueScene]) {
+    if (currentNode.dialogueScene && map.dialogueScenes?.[currentNode.dialogueScene]) {
       setPendingFightNodeId(currentNode.id);
       setDialogueKey((k) => k + 1);
       setActiveDialogue(currentNode.dialogueScene);
@@ -546,7 +547,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
   function handleNodeViewDialogue() {
     if (!currentNode || !currentNode.dialogueScene) return;
     console.log('Viewing dialogue for:', currentNode.name);
-    const scene = MAP_00_DIALOGUE_SCENES[currentNode.dialogueScene];
+    const scene = map.dialogueScenes?.[currentNode.dialogueScene];
     if (scene) {
       setDialogueKey((k) => k + 1);
       setActiveDialogue(currentNode.dialogueScene);
@@ -619,7 +620,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     });
 
     // Draw interactive node markers
-    DEMO_MAP_NODES.forEach((node) => {
+    (map.nodes ?? []).forEach((node) => {
       const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
       const markerSize = MAP_NODE_MARKER_SIZE;
       // Markers are bigger than a tile, so center them on the node's tile instead of
@@ -706,8 +707,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     });
 
     // Draw floor loot markers
-    DEMO_FLOOR_LOOT.forEach((lootSpot) => {
-      const isCollected = floorLootProgressActions.isFloorLootCollected(currentMapId, lootSpot.id);
+    (map.floorLoot ?? []).forEach((lootSpot) => {
+      const isCollected = floorLootProgressActions.isFloorLootCollected(map.id, lootSpot.id);
 
       // Don't render if already collected
       if (isCollected) return;
@@ -740,7 +741,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     });
 
     // Draw dialogue trigger markers
-    DIALOGUE_TRIGGERS.forEach((trigger) => {
+    (map.dialogueTriggers ?? []).forEach((trigger) => {
       const triggerKey = `${trigger.row},${trigger.col}`;
       const isVisited = visitedTriggers.has(triggerKey);
 
@@ -801,7 +802,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     isNodeCompleted,
     completedDungeons,
     floorLootProgressActions,
-    currentMapId,
+    map,
     canvasReady,
   ]);
 
@@ -825,7 +826,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
           debug={debug}
           charPosition={charPosition}
           status={debugInfo}
-          onLeave={canLeaveMap ? routerActions.goBack : undefined}
+          onLeave={returnView || canLeaveMap ? handleLeaveMap : undefined}
         />
         <div
           ref={canvasContainerRef}
@@ -904,10 +905,10 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       )}
 
       {/* Active dialogue scenes */}
-      {activeDialogue && MAP_00_DIALOGUE_SCENES[activeDialogue] && (
+      {activeDialogue && map.dialogueScenes?.[activeDialogue] && (
         <DialogueScene
           key={dialogueKey}
-          scene={MAP_00_DIALOGUE_SCENES[activeDialogue]}
+          scene={map.dialogueScenes[activeDialogue]}
           onComplete={handleDialogueComplete}
         />
       )}

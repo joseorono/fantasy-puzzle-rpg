@@ -3,6 +3,7 @@ import { useRouterActions, useRouterState, useParty } from '~/stores/game-store'
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
+import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 
 /**
@@ -15,8 +16,7 @@ export default function RouterTestView() {
   const {
     goToTownHub,
     goToBattleDemo,
-    goToMapDemo,
-    goToMapDemo2,
+    goToMap,
     goToDialogueDemo,
     goToBattleRewards,
     goToDebug,
@@ -66,19 +66,16 @@ export default function RouterTestView() {
           Battle Demo
         </button>
 
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo()}
-        >
-          Map Demo
-        </button>
-
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo2()}
-        >
-          Map Demo 2
-        </button>
+        {/* Generated from the registry, so a new map shows up here on its own. */}
+        {ALL_MAPS.map((map) => (
+          <button
+            key={map.id}
+            className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+            onClick={() => goToMap({ mapId: map.id })}
+          >
+            {map.displayMapName}
+          </button>
+        ))}
 
         <button
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
