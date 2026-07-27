@@ -1,6 +1,7 @@
 export interface ElectronAPI {
   platform: string;
   isElectron: boolean;
+  electronVersion: string;
   app: {
     getVersion: () => Promise<string>;
     getPath: (name: string) => Promise<string>;
@@ -16,10 +17,4 @@ export interface ElectronAPI {
     maximize: () => Promise<void>;
     close: () => Promise<void>;
   };
-}
-
-declare global {
-  interface Window {
-    electron: ElectronAPI;
-  }
 }

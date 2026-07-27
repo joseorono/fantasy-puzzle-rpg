@@ -1,14 +1,10 @@
-// Type definitions for Electron-specific globals
+// The preload bridge, as seen from the renderer. `window.electron` is optional
+// because the same bundle also ships to the browser, where nothing exposes it.
+// The contract itself lives with the preload script that publishes it.
+import type { ElectronAPI } from '../../electron/types';
 
-interface Window {
-  process?: {
-    type: string;
-  };
-}
-
-// Extend the NodeJS.Process interface
-declare namespace NodeJS {
-  interface ProcessVersions {
-    electron?: string;
+declare global {
+  interface Window {
+    electron?: ElectronAPI;
   }
 }
