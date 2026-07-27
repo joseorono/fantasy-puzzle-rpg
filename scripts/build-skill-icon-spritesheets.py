@@ -13,8 +13,10 @@ Usage — the resolution defaults to 102, or pass another one the pack ships:
     python scripts/build-skill-icon-spritesheets.py 64
     python scripts/build-skill-icon-spritesheets.py 204 --cols 8
 
-Outputs `skills-<class>-<size>.png` plus a geometry manifest of the same name
-into public/assets/skills.
+Outputs `indigolay-skills-<class>-<size>.png` plus a geometry manifest of the
+same name into public/assets/skills. The `indigolay-` prefix is load-bearing:
+src/styles/utilities.css opts every `indigolay-` asset out of the global
+`image-rendering: pixelated`, which would otherwise wreck this art.
 
 Requires Pillow. The source pack lives outside the repo, at
     <OneDrive>/Documents/assets/indigolay-mega/PixelSkillIconsBookUI_PNG_v1.0/SkillIcon
@@ -33,6 +35,9 @@ DISABLED_DIR = "02_Disabled"
 
 DEFAULT_SIZE = 102
 DEFAULT_COLS = 10
+
+# Keeps the sheets inside the `indigolay-` pixelation opt-out in utilities.css.
+OUTPUT_PREFIX = "indigolay-skills-"
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_OUT = os.path.join(REPO_ROOT, "public", "assets", "skills")
@@ -115,7 +120,7 @@ def build_class_sheet(src, size, class_folder, cols, out_dir):
         sheet.paste(load_icon(os.path.join(disabled_dir, filename), size), (x + half_width, y))
 
     slug = slugify_class(class_folder)
-    base = os.path.join(out_dir, f"skills-{slug}-{size}")
+    base = os.path.join(out_dir, f"{OUTPUT_PREFIX}{slug}-{size}")
 
     sheet.save(f"{base}.png", optimize=True)
 
@@ -135,7 +140,7 @@ def build_class_sheet(src, size, class_folder, cols, out_dir):
 
     print(
         f"{slug:<18} {icon_count:>3} icons  {cols}x{rows} grid  "
-        f"-> skills-{slug}-{size}.png ({sheet_width}x{sheet_height})"
+        f"-> {OUTPUT_PREFIX}{slug}-{size}.png ({sheet_width}x{sheet_height})"
     )
 
 
