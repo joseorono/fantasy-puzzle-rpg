@@ -2,7 +2,15 @@ import { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import type { NavDirection } from '~/constants/keyboard';
 import { useMultiKeyDirection } from '~/hooks/use-multi-key-direction';
 import { useCharacterSprite, type DrivenSpriteMode } from '~/hooks/use-character-sprite';
+import { usePointerDirection, type ToMapPoint } from '~/hooks/use-pointer-direction';
 import { resolveMovementStep, type MovementPointState } from '~/lib/map-movement';
+import {
+  isMovingIntent,
+  keyboardToIntent,
+  mergeMovementIntents,
+  resolvePointerIntent,
+  type MovementIntent,
+} from '~/lib/pointer-movement';
 import {
   MAX_FRAME_SECONDS,
   MOVEMENT_STEP_SECONDS,
@@ -29,11 +37,19 @@ export interface UseCharacterMovementOptions {
   offsetX?: number;
   /** Canvas's top edge relative to the sprite's positioning container, in CSS pixels. */
   offsetY?: number;
+  /**
+   * Converts viewport coordinates to map pixels. Supplying it enables
+   * click-and-hold movement; spread the returned `pointerHandlers` onto the canvas.
+   */
+  toMapPoint?: ToMapPoint;
   /** Predicate: can the character occupy tile (row, col)? */
   canMoveTo: (row: number, col: number) => boolean;
   /** Called when the character's logical tile changes (footsteps, loot checks, etc.). */
   onTileEnter?: (row: number, col: number) => void;
 }
+
+/** Used when no `toMapPoint` was supplied, so pointer input is simply inert. */
+const NO_MAP_POINT: ToMapPoint = () => null;
 
 /**
  * Drives continuous, frame-rate-independent character movement on a tile map.
@@ -52,11 +68,29 @@ export interface UseCharacterMovementOptions {
  * so behaviour is identical at 30 or 144 fps and fast movement cannot tunnel
  * through walls. Collision, wall-sliding and the road assists live in
  * `resolveMovementStep`.
+ *
+ * Input comes from two producers that both emit a `MovementIntent`:
+ * held keys (`useMultiKeyDirection`) and a held pointer (`usePointerDirection`,
+ * enabled by passing `toMapPoint`). `mergeMovementIntents` picks the winner —
+ * the keyboard whenever a direction key is down — so the rAF loop only ever
+ * reads one direction and one gait. Every rule in that path is a pure function
+ * in `~/lib/pointer-movement`.
  */
 export function useCharacterMovement(options: UseCharacterMovementOptions) {
-  const { initialRow, initialCol, tileSize, displayScale, offsetX = 0, offsetY = 0, canMoveTo, onTileEnter } = options;
+  const {
+    initialRow,
+    initialCol,
+    tileSize,
+    displayScale,
+    offsetX = 0,
+    offsetY = 0,
+    toMapPoint = NO_MAP_POINT,
+    canMoveTo,
+    onTileEnter,
+  } = options;
 
   const multiKey = useMultiKeyDirection();
+  const pointer = usePointerDirection(toMapPoint);
   const { spriteState, updateSprite } = useCharacterSprite();
 
   const characterRef = useRef<HTMLDivElement | null>(null);
@@ -80,6 +114,10 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   const rafHandleRef = useRef(0);
   const animationDistanceRef = useRef(0);
   const isMovingRef = useRef(false);
+  // Carried between frames so facing survives idle frames and the pointer's
+  // walk↔run hysteresis has a previous value to compare against.
+  const facingRef = useRef<NavDirection>('down');
+  const isRunningRef = useRef(false);
 
   const [tileRow, setTileRow] = useState(initialRow);
   const [tileCol, setTileCol] = useState(initialCol);
@@ -148,10 +186,28 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
         accumulatorRef.current += elapsed;
       }
 
-      const { dx, dy, facing, running } = multiKey.stateRef.current;
-      const hasInput = dx !== 0 || dy !== 0;
-
       const size = tileSizeRef.current;
+
+      // --- resolve this frame's movement intent ---
+      // Keyboard and pointer both produce the same shape; the merge decides who
+      // drives. Both go through the same octant table, so a held key and a held
+      // pointer emit identical direction vectors.
+      const keyboardIntent = keyboardToIntent(multiKey.stateRef.current);
+      const pointerState = pointer.stateRef.current;
+      const pointerIntent: MovementIntent = pointerState.active
+        ? resolvePointerIntent(pointerState, pointRef.current, size, {
+            facing: facingRef.current,
+            running: isRunningRef.current,
+          })
+        : { dirX: 0, dirY: 0, facing: facingRef.current, running: false };
+
+      const intent = mergeMovementIntents(keyboardIntent, pointerIntent, facingRef.current);
+      const hasInput = isMovingIntent(intent);
+      const { facing, running } = intent;
+
+      facingRef.current = facing;
+      isRunningRef.current = hasInput && running;
+
       const walkSpeed = WALK_TILES_PER_SECOND * size;
       const speed = running ? walkSpeed * RUN_SPEED_MULTIPLIER : walkSpeed;
 
@@ -164,9 +220,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
       if (!hasInput) {
         accumulatorRef.current = 0;
       } else {
-        // Diagonals are normalised so they travel at the same speed as cardinals.
-        const length = Math.hypot(dx, dy);
-        const input = { dirX: dx / length, dirY: dy / length, speed, walkSpeed };
+        const input = { dirX: intent.dirX, dirY: intent.dirY, speed, walkSpeed };
         const context = {
           tileSize: size,
           stepSeconds: MOVEMENT_STEP_SECONDS,
@@ -241,5 +295,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     setPosition,
     /** Call from `useWindowKeyDown` to forward a direction key press. */
     onKeyDown: (key: string): NavDirection | null => multiKey.onDirectionKeyDown(key),
+    /** Spread onto the canvas to enable click-and-hold (and touch-drag) movement. */
+    pointerHandlers: pointer.pointerHandlers,
   };
 }

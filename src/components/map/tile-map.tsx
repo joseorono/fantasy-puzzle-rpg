@@ -13,6 +13,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
+import { clientToMapPoint } from '~/lib/pointer-movement';
 import MapCharacterSprite from './map-character-sprite';
 import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
@@ -288,6 +289,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
     displayScale: scale,
     offsetX,
     offsetY,
+    toMapPoint: (clientX, clientY) => {
+      const canvasElement = canvasRef.current;
+      if (!canvasElement) return null;
+      return clientToMapPoint(clientX, clientY, canvasElement.getBoundingClientRect(), scale);
+    },
     canMoveTo: (row, col) => isRoadTile(row, col),
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
@@ -821,6 +827,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
         >
           <canvas
             ref={canvasRef}
+            {...movement.pointerHandlers}
             style={{
               // `outline` rather than `border`: it takes no layout space, so the
               // measured scale and the sprite's origin stay exactly the canvas.

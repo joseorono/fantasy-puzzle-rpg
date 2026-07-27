@@ -50,3 +50,25 @@ export const CORNER_ASSIST_MAX_OFFSET_TILES = 0.45;
 
 /** Corner-assist nudge speed, as a ratio of walk speed. */
 export const CORNER_ASSIST_SPEED_RATIO = 0.9;
+
+// --- pointer (click-and-hold) movement ---
+
+/**
+ * Pointer closer than this to the character (in tiles) produces no movement.
+ * Without it the character would jitter once it arrives under the cursor.
+ */
+export const POINTER_DEAD_ZONE_TILES = 0.8;
+
+/**
+ * At or beyond this pointer distance (in tiles) the character runs.
+ * Roughly one character height (`CHARACTER_HEIGHT_TILES`), so "pull the cursor
+ * about a body-length away" reads naturally on screen.
+ */
+export const POINTER_RUN_DISTANCE_TILES = 3.5;
+
+/**
+ * Once running, the character keeps running until the pointer comes this much
+ * nearer than the threshold — stops the gait flickering when the cursor hovers
+ * right on the boundary.
+ */
+export const POINTER_RUN_HYSTERESIS_TILES = 0.75;

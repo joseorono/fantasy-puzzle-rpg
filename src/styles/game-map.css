@@ -83,6 +83,14 @@
   max-width: 100%;
   max-height: calc(100vh - 10rem);
   object-fit: contain;
+  /* Click-and-hold moves the character. `touch-action: none` lets a touch drag
+     steer instead of panning the page — the map never scrolls anyway. */
+  cursor: pointer;
+  touch-action: none;
+}
+
+.tilemap-container canvas:active {
+  cursor: grabbing;
 }
 
 @media (min-width: 1024px) {

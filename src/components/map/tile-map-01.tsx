@@ -6,6 +6,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
+import { clientToMapPoint } from '~/lib/pointer-movement';
 import MapCharacterSprite from './map-character-sprite';
 import { MapInfoPanel } from './map-info-panel';
 
@@ -68,6 +69,11 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     displayScale: scale,
     offsetX,
     offsetY,
+    toMapPoint: (clientX, clientY) => {
+      const canvasElement = canvasRef.current;
+      if (!canvasElement) return null;
+      return clientToMapPoint(clientX, clientY, canvasElement.getBoundingClientRect(), scale);
+    },
     canMoveTo: (row, col) => isWalkable(row, col),
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
@@ -169,7 +175,11 @@ const TilemapMap01: React.FC<TilemapMap01Props> = ({ config }) => {
     <div className="tilemap-container">
       <MapInfoPanel displayMapName={displayMapName} debug={debug} charPosition={charPosition} status={debugInfo} />
       <div ref={canvasContainerRef} className="canvas-wrapper" style={{ position: 'relative' }}>
-        <canvas ref={canvasRef} style={{ imageRendering: 'pixelated', display: 'block' }} />
+        <canvas
+          ref={canvasRef}
+          {...movement.pointerHandlers}
+          style={{ imageRendering: 'pixelated', display: 'block' }}
+        />
         <MapCharacterSprite
           positionRef={movement.characterRef}
           tileSize={tileSize}
