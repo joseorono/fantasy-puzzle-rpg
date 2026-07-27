@@ -299,6 +299,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ config }) => {
       return clientToMapPoint(clientX, clientY, canvasElement.getBoundingClientRect(), scale);
     },
     canMoveTo: (row, col) => isRoadTile(row, col),
+    // An event prompt is a decision, not scenery — walking away from one is how you miss it.
+    // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
+    isPaused: showTriggerModal || activeDialogue !== null,
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);

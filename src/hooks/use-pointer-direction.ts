@@ -104,5 +104,5 @@ export function usePointerDirection(toMapPoint: ToMapPoint) {
     onPointerCancel,
   };
 
-  return { stateRef, pointerHandlers };
+  return { stateRef, pointerHandlers, release };
 }

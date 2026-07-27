@@ -44,6 +44,12 @@ export interface UseCharacterMovementOptions {
   toMapPoint?: ToMapPoint;
   /** Predicate: can the character occupy tile (row, col)? */
   canMoveTo: (row: number, col: number) => boolean;
+  /**
+   * Freezes the character while something else owns the screen (a blocking modal, a
+   * dialogue scene). Input is dropped rather than buffered, so nothing latches across
+   * the pause.
+   */
+  isPaused?: boolean;
   /** Called when the character's logical tile changes (footsteps, loot checks, etc.). */
   onTileEnter?: (row: number, col: number) => void;
 }
@@ -87,6 +93,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     toMapPoint = NO_MAP_POINT,
     canMoveTo,
     onTileEnter,
+    isPaused = false,
   } = options;
 
   const multiKey = useMultiKeyDirection();
@@ -108,6 +115,10 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   const offsetRef = useRef({ x: offsetX, y: offsetY });
   const canMoveToRef = useRef(canMoveTo);
   const onTileEnterRef = useRef(onTileEnter);
+  // Read during render so the loop and `onKeyDown` see the pause on the very next frame,
+  // not one commit later.
+  const isPausedRef = useRef(isPaused);
+  isPausedRef.current = isPaused;
 
   const lastTimeRef = useRef(0);
   const accumulatorRef = useRef(0);
@@ -132,6 +143,16 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   useEffect(() => {
     tileSizeRef.current = tileSize;
   }, [tileSize]);
+
+  // Whatever was held when the pause began must not survive it: a key still down (or a
+  // pointer still captured) would send the character walking the instant the modal closes.
+  useEffect(() => {
+    if (!isPaused) return;
+    multiKey.releaseAll();
+    pointer.release();
+    // Both helpers close over refs only, so their identity is not a meaningful dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPaused]);
 
   /**
    * Writes the character's map-pixel position to the DOM: scaled to screen
@@ -184,6 +205,18 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
       // replaying them — a hitch must never teleport the character.
       if (elapsed > 0 && elapsed <= MAX_FRAME_SECONDS) {
         accumulatorRef.current += elapsed;
+      }
+
+      // Paused: hold position and stand. Facing is kept so resuming looks continuous, and
+      // banked time is dropped so the character can't lurch forward when play resumes.
+      if (isPausedRef.current) {
+        accumulatorRef.current = 0;
+        if (isMovingRef.current) {
+          isMovingRef.current = false;
+          setIsMoving(false);
+        }
+        updateSprite('stand', facingRef.current, 0);
+        return;
       }
 
       const size = tileSizeRef.current;
@@ -293,8 +326,9 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     getMapPosition: () => ({ x: pointRef.current.x, y: pointRef.current.y }),
     /** Teleport to a tile centre (spawn placement / position restore). */
     setPosition,
-    /** Call from `useWindowKeyDown` to forward a direction key press. */
-    onKeyDown: (key: string): NavDirection | null => multiKey.onDirectionKeyDown(key),
+    /** Call from `useWindowKeyDown` to forward a direction key press. Ignored while paused. */
+    onKeyDown: (key: string): NavDirection | null =>
+      isPausedRef.current ? null : multiKey.onDirectionKeyDown(key),
     /** Spread onto the canvas to enable click-and-hold (and touch-drag) movement. */
     pointerHandlers: pointer.pointerHandlers,
   };

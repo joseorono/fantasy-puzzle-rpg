@@ -78,7 +78,7 @@ export function useMultiKeyDirection() {
     recompute();
   }
 
-  /** Drops all held input. Used on focus loss so keys can't stay latched. */
+  /** Drops all held input. Used on focus loss, and while paused, so keys can't stay latched. */
   function releaseAll(): void {
     activeRef.current.clear();
     firstRef.current = null;
@@ -123,5 +123,5 @@ export function useMultiKeyDirection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { stateRef, onDirectionKeyDown };
+  return { stateRef, onDirectionKeyDown, releaseAll };
 }
