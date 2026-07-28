@@ -12,7 +12,7 @@ const INITIAL_MAP_PROGRESS_STATE = {
   treasuresFound: {},
   mysteriesSolved: {},
   shopsVisited: {},
-  characterPosition: null,
+  characterPositions: {},
 };
 
 /**
@@ -77,10 +77,10 @@ export const createMapProgressSlice = (
         }
       },
 
-      setCharacterPosition: (position) =>
+      setCharacterPosition: (mapId, position) =>
         set(
           (state: MapProgressSlice) => {
-            state.mapProgress.characterPosition = position;
+            state.mapProgress.characterPositions[mapId] = position;
           },
           false,
           'mapProgress/setCharacterPosition',

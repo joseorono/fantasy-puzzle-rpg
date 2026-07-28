@@ -67,33 +67,33 @@ export default function TestView() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <FrostyRpgIcon name="herb" size={32} />
-                <FrostyRpgIcon name="berries" size={32} />
-                <FrostyRpgIcon name="mushroom" size={32} />
-                <FrostyRpgIcon name="feather" size={32} />
-                <FrostyRpgIcon name="blueCrystal" size={32} />
-                <FrostyRpgIcon name="redCrystal" size={32} />
-                <FrostyRpgIcon name="purpleCrystal" size={32} />
+                <FrostyRpgIcon name="twigs" size={32} />
+                <FrostyRpgIcon name="blueFlower" size={32} />
+                <FrostyRpgIcon name="purpleHerb" size={32} />
+                <FrostyRpgIcon name="sprout" size={32} />
+                <FrostyRpgIcon name="stone" size={32} />
+                <FrostyRpgIcon name="root" size={32} />
                 <FrostyRpgIcon name="coinPurse" size={32} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <FrostyRpgIcon name="bookRed" size={32} />
-                <FrostyRpgIcon name="silverKey" size={32} />
+                <FrostyRpgIcon name="candle" size={32} />
+                <FrostyRpgIcon name="ruby" size={32} />
                 <FrostyRpgIcon name="skull" size={32} />
-                <FrostyRpgIcon name="compass" size={32} />
-                <FrostyRpgIcon name="ring" size={32} />
-                <FrostyRpgIcon name="bomb" size={32} />
-                <FrostyRpgIcon name="coins" size={32} />
-                <FrostyRpgIcon name="chalice" size={32} />
+                <FrostyRpgIcon name="greenOre" size={32} />
+                <FrostyRpgIcon name="oreNuggets" size={32} />
+                <FrostyRpgIcon name="feather" size={32} />
+                <FrostyRpgIcon name="fairyDust" size={32} />
+                <FrostyRpgIcon name="fishFin" size={32} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <FrostyRpgIcon name="shortSword" size={32} />
-                <FrostyRpgIcon name="flameSword" size={32} />
-                <FrostyRpgIcon name="battleAxe" size={32} />
-                <FrostyRpgIcon name="longbow" size={32} />
-                <FrostyRpgIcon name="mageStaff" size={32} />
-                <FrostyRpgIcon name="ironArmor" size={32} />
-                <FrostyRpgIcon name="steelHelm" size={32} />
-                <FrostyRpgIcon name="shield" size={32} />
+                <FrostyRpgIcon name="copperSword" size={32} />
+                <FrostyRpgIcon name="venomSword" size={32} />
+                <FrostyRpgIcon name="ashBow" size={32} />
+                <FrostyRpgIcon name="crimsonBow" size={32} />
+                <FrostyRpgIcon name="spikedMace" size={32} />
+                <FrostyRpgIcon name="furCoat" size={32} />
+                <FrostyRpgIcon name="plateArmor" size={32} />
+                <FrostyRpgIcon name="goldArmor" size={32} />
               </div>
             </div>
           </Franuka05aFrame>

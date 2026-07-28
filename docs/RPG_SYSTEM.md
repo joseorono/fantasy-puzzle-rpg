@@ -7,20 +7,29 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 
 ### Power (POW)
 **Effect**: Increases damage output
-- **Formula**: `damage = baseDamage * (1 + POW/100)`
-- **Example**: 20 POW = 20% damage increase
+- **Formula**: `damage = baseDamage * (1 + POW * POW_DAMAGE_PERCENT_PER_POINT / 100)`
+- **Coefficient**: `POW_DAMAGE_PERCENT_PER_POINT = 2` (in `src/constants/battle.ts`) — 2% per point
+- **Example**: 20 POW = 40% damage increase
 - **Applies to**:
   - Character match-3 damage
+  - Character (and healer) skill damage
   - Enemy attack damage
 
 ### Vitality (VIT)
-**Effect**: Increases maximum HP
+**Effect**: Increases maximum HP, and makes the party Guard meter last longer
 - **Formula**: `maxHP = baseHP + (VIT * multiplier)`
 - **Default multiplier**: 5 HP per VIT point
 - **Example**: 20 VIT = +100 HP
 - **Applies to**:
   - Character HP pool contribution
   - Enemy HP
+  - **Guard Decay Resistance** (derived) — the party's collective VIT slows how fast the shared Guard
+    meter bleeds, via `calculateGuardDecayResistance(party) = 1 / (1 + livingVit / GUARD_DECAY_VIT_DIVISOR)`.
+    A diminishing (hyperbolic) curve that stays in `(0, 1]`, so VIT makes the shield last but never
+    freezes it. Pairs with SPD's Guard Charge Rate: SPD builds the shield fast, VIT makes it last.
+  - **Stagger resistance** (enemies only) — VIT reduces how far each hit pushes back an enemy's next
+    attack, on a diminishing (sqrt) curve. See the Enemy Stagger section in
+    [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md).
 
 ### Speed (SPD)
 **Effect**: Reduces cooldowns and attack intervals
@@ -177,8 +186,8 @@ Refer to the source file for the complete and up-to-date type definitions.
 - **Matches needed to win**: 15-30 depending on match size and character POW
 
 ### Stat Scaling
-- **POW**: Linear scaling, 1% damage per point
-- **VIT**: Linear scaling, 5 HP per point
+- **POW**: Linear scaling, 2% damage per point (`POW_DAMAGE_PERCENT_PER_POINT`)
+- **VIT**: Linear scaling for HP (5 per point); diminishing (hyperbolic) for Guard decay resistance
 - **SPD**: Diminishing returns (hyperbolic), more effective at lower values
 
 ## Future Enhancements

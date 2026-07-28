@@ -18,7 +18,7 @@ A store-based routing system for the game that provides full control over naviga
 
 - `town-hub` - Main town hub (contains blacksmith, inn, and item Shop as sub-locations)
 - `battle-demo` - Battle demo screen
-- `map-demo` - Map demo
+- `map` - Any map; `mapId` in the view data selects which one from `MAP_REGISTRY`
 - `dialogue-demo` - Dialogue demo
 - `inventory` - Inventory management
 - `debug` - Debug/test view
@@ -123,7 +123,7 @@ Each view has a dedicated type-safe method:
 
 - `goToTownHub(data)` - Navigate to town hub (data required)
 - `goToBattleDemo(data)` - Navigate to battle demo (data required)
-- `goToMapDemo(data?)` - Navigate to map demo
+- `goToMap(data)` - Navigate to a map (`{ mapId }` required)
 - `goToDialogueDemo(data?)` - Navigate to dialogue demo
 - `goToInventory(data?)` - Navigate to inventory
 - `goToDebug(data?)` - Navigate to debug view
@@ -295,7 +295,7 @@ The routing logic is separated into pure functions in `/src/lib/routing.ts`:
 **Type-Safe Navigation Functions:**
 - `goToTownHub(currentState, data)` - Navigate to town hub
 - `goToBattleDemo(currentState, data)` - Navigate to battle demo
-- `goToMapDemo(currentState, data?)` - Navigate to map demo
+- `goToMap(currentState, data)` - Navigate to a map; records the launching view as `returnView`
 - `goToDialogueDemo(currentState, data?)` - Navigate to dialogue demo
 - `goToInventory(currentState, data?)` - Navigate to inventory
 - `goToDebug(currentState, data?)` - Navigate to debug

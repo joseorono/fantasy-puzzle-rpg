@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <title>Floor cleared</title>
+  <!-- Olive check. Drawn as three stacked strokes: dark outline, body, then a
+       thin highlight along the upper edge for the indigolay bevel. -->
+  <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M3 8 L6.5 11.5 L13 5" stroke="#222a12" stroke-width="6" />
+    <path d="M3 8 L6.5 11.5 L13 5" stroke="#9db06a" stroke-width="3.6" />
+    <path d="M3.6 7.4 L6.5 10.3 L12.4 4.4" stroke="#d8e6a8" stroke-width="1.2" />
+  </g>
+</svg>

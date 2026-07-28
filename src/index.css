@@ -455,11 +455,17 @@
 
 @import './components/ui-custom/styles/toffec-button.css';
 
+@import './components/ui-custom/styles/indigolay-bar.css';
+
 @import './components/ui-custom/styles/indigolay-checkbox.css';
 
 @import './components/ui-custom/styles/indigolay-tab.css';
 
+@import './components/skill-sprite-icons/styles/indigolay-skill-icon.css';
+
 @import './components/ui-custom/styles/level-tag.css';
+
+@import './components/ui-custom/styles/resource-stat-item.css';
 
 @import './components/ui-custom/styles/toffec-square-button.css';
 

@@ -48,3 +48,11 @@ export function getNavDirection(key: string): NavDirection | null {
 export function isConfirmKey(key: string): boolean {
   return key === KeyboardKeys.Enter || key === KeyboardKeys.Space;
 }
+
+/**
+ * Detects whether the running modifier (Shift) is held during a keyboard event.
+ * Used by character movement to toggle walk ↔ run speed.
+ */
+export function isRunModifier(event: KeyboardEvent): boolean {
+  return event.shiftKey;
+}

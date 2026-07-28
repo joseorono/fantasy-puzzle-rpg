@@ -1,4 +1,4 @@
-import type { CharacterData, OrbType, CharacterClass } from '~/types/rpg-elements';
+import type { CharacterData, CharacterClass } from '~/types/rpg-elements';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
@@ -231,16 +231,6 @@ export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: str
   healer: { bg: 'rgba(202, 138, 4, 0.85)', light: 'rgba(253, 224, 71, 0.5)' },
 };
 
-// ─── Health Bar Colors ───────────────────────────────────────────────
-
-export const HEALTH_BAR_COLORS: Record<OrbType, string> = {
-  blue: 'from-blue-600 to-blue-500',
-  green: 'from-green-600 to-green-500',
-  purple: 'from-purple-600 to-purple-500',
-  yellow: 'from-yellow-600 to-yellow-500',
-  gray: 'from-gray-600 to-gray-500',
-};
-
 // ─── Skills ──────────────────────────────────────────────────────────
 // Skill definitions live in `~/constants/skills`; skill logic lives in
 // `~/lib/skill-system`. Each character owns a subset of those skills.
@@ -249,8 +239,9 @@ export const HEALTH_BAR_COLORS: Record<OrbType, string> = {
 export const COOLDOWN_REDUCTION_PER_ORB = 0.3;
 
 // ─── Guard Meter ─────────────────────────────────────────────────────
-// Gray orbs trade raw damage for a party-wide Guard meter. The guard math
-// (mitigation, drain, decay, charge rate) lives in `~/lib/rpg-calculations`.
+// Gray orbs trade raw damage for a party-wide Guard meter. The guard tunables
+// (mitigation, drain, decay, charge rate) live in `~/constants/battle`, and the
+// math that consumes them in `~/lib/rpg-calculations`.
 
 /** Multiplier applied to gray orbs' neutral match damage — gray trades damage for Guard. */
 export const GRAY_MATCH_DAMAGE_MULTIPLIER = 0.4; // was 1.0 (gray dealt full neutral base damage)

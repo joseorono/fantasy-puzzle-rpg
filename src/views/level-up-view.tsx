@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { ArrowRightIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
@@ -12,9 +11,11 @@ import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button'
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ExperienceBar } from '~/components/ui/experience-bar';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { usePressAndHold } from '~/hooks/use-press-and-hold';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
+import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -117,8 +118,6 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
   const maxHpDelta = previewMaxHp - currentMaxHp;
 
-  const maxStatValue = 100; // For meter display
-
   return (
     <div className="level-up-screen">
       {/* Header */}
@@ -167,10 +166,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="EXP" size={1} />
               </div>
-              <ExperienceBar
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="yellow"
+                size="lg"
                 percentage={expPercentage}
                 label={`${character.currentLevelExp} / ${getExpThresholdForLevel(character.level)}`}
-                variant="full"
               />
             </div>
 
@@ -178,28 +179,30 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="HP" size={1} />
               </div>
-              <div className="hp-bar-container">
-                <div className="hp-bar" style={{ width: `${hpPercentage}%` }} />
-                <div className="bar-text pixel-font text-xs">
-                  {character.currentHp}/{character.maxHp}
-                  {maxHpDelta !== 0 && (
-                    <span
-                      className="bar-text-delta number-flow-container"
-                      style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
-                    >
-                      <NumberFlow
-                        value={maxHpDelta}
-                        format={INTEGER_FORMAT}
-                        prefix={maxHpDelta > 0 ? ' +' : ' '}
-                        trend={1}
-                        spinTiming={SNAPPY_SPIN_TIMING}
-                        transformTiming={SNAPPY_TRANSFORM_TIMING}
-                        opacityTiming={SNAPPY_OPACITY_TIMING}
-                      />
-                    </span>
-                  )}
-                </div>
-              </div>
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="red"
+                size="lg"
+                percentage={hpPercentage}
+                label={
+                  <>
+                    {character.currentHp}/{character.maxHp}
+                    {maxHpDelta > 0 && (
+                      <span className="bar-text-delta number-flow-container">
+                        <NumberFlow
+                          value={maxHpDelta}
+                          format={INTEGER_FORMAT}
+                          prefix="+"
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
+                    )}
+                  </>
+                }
+              />
             </div>
 
             <DerivedStatsDisplay character={character} previewStats={previewStats} />
@@ -270,223 +273,251 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             {hasPendingChanges && (
               <div className="pending-changes-banner pixel-font">
                 <span className="pending-changes-text">Confirm to apply</span>
-                <span className="pending-changes-hint">· Reset to undo</span>
+                <span className="pending-changes-hint">Reset to undo</span>
               </div>
             )}
           </div>
 
           {/* Right Column - Stat Allocation */}
           <div className="stat-allocation-panel">
-            <h2 className="allocation-title">
-              <NarikWoodBitFont text="Allocate Points" size={1.2} />
-            </h2>
-
-            {/* Power Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
-                </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.pow}</span>
-                  {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.pow + potentialStatPoints.pow}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="stat-hint pixel-font text-xs">
-                {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}{' '}
-                {/* <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {character.class === 'healer' ? 'Increases your healing output' : 'Increases your damage output'}
-                  </TooltipContent>
-                </Tooltip> */}
-              </p>
-              <div className="stat-meter">
-                <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="minus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleDecreaseStat('pow')}
-                    {...holdDecrease.pow}
-                    disabled={pendingAllocations.pow === 0}
-                    aria-label="Decrease Power"
-                  />
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="plus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleIncreaseStat('pow')}
-                    {...holdIncrease.pow}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Power"
-                  />
-                </ToffecBeigeCornersWrapper>
-              </div>
+            <div className="allocation-header">
+              <h2 className="allocation-title">
+                <NarikWoodBitFont text="Allocate Points" size={1.2} />
+              </h2>
+              <GradientDivider variant="gold" className="allocation-title-divider" />
             </div>
 
-            {/* Vitality Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
+            {/* Stat cards share the panel's free height so the actions sit on the bottom padding line. */}
+            <div className="stat-allocation-list">
+              {/* Power Stat */}
+              <div className="stat-allocation-row pow">
+                <div className="stat-header">
+                  <div className="stat-name-group">
+                    <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="info-icon" role="img" aria-label="About Power">
+                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        {character.class === 'healer'
+                          ? 'Increases your healing output'
+                          : 'Increases your damage output'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="stat-values pixel-font text-xs">
+                    <span className="stat-current">{character.stats.pow}</span>
+                    {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
+                      <>
+                        <span className="stat-arrow">
+                          <img
+                            className="stat-arrow-icon"
+                            src="/assets/icons/indigolay/Icon_arrow-right.png"
+                            alt="arrow"
+                          />
+                        </span>
+                        <span className="stat-preview number-flow-container">
+                          <NumberFlow
+                            value={previewStats.pow + potentialStatPoints.pow}
+                            format={INTEGER_FORMAT}
+                            trend={1}
+                            spinTiming={SNAPPY_SPIN_TIMING}
+                            transformTiming={SNAPPY_TRANSFORM_TIMING}
+                            opacityTiming={SNAPPY_OPACITY_TIMING}
+                          />
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.vit}</span>
-                  {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.vit + potentialStatPoints.vit}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
+                <p className="stat-hint pixel-font text-xs">
+                  {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}
+                </p>
+                <div className="stat-controls">
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="minus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleDecreaseStat('pow')}
+                      {...holdDecrease.pow}
+                      disabled={pendingAllocations.pow === 0}
+                      aria-label="Decrease Power"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="plus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleIncreaseStat('pow')}
+                      {...holdIncrease.pow}
+                      disabled={pointsRemaining === 0}
+                      aria-label="Increase Power"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <IndigolayBar
+                    className="stat-meter"
+                    variant="orange"
+                    percentage={((previewStats.pow + potentialStatPoints.pow) / STAT_METER_MAX) * 100}
+                  />
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">
-                Increases your Maximum HP.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Increases your Maximum HP</TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill vit"
-                  style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / maxStatValue) * 100}%` }}
-                />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="minus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleDecreaseStat('vit')}
-                    {...holdDecrease.vit}
-                    disabled={pendingAllocations.vit === 0}
-                    aria-label="Decrease Vitality"
-                  />
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="plus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleIncreaseStat('vit')}
-                    {...holdIncrease.vit}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Vitality"
-                  />
-                </ToffecBeigeCornersWrapper>
-              </div>
-            </div>
 
-            {/* Speed Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
+              {/* Vitality Stat */}
+              <div className="stat-allocation-row vit">
+                <div className="stat-header">
+                  <div className="stat-name-group">
+                    <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="info-icon" role="img" aria-label="About Vitality">
+                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        -Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                        <br />
+                        -Slows how fast the party Guard meter decays
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="stat-values pixel-font text-xs">
+                    <span className="stat-current">{character.stats.vit}</span>
+                    {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
+                      <>
+                        <span className="stat-arrow">
+                          <img
+                            className="stat-arrow-icon"
+                            src="/assets/icons/indigolay/Icon_arrow-right.png"
+                            alt="arrow"
+                          />
+                        </span>
+                        <span className="stat-preview number-flow-container">
+                          <NumberFlow
+                            value={previewStats.vit + potentialStatPoints.vit}
+                            format={INTEGER_FORMAT}
+                            trend={1}
+                            spinTiming={SNAPPY_SPIN_TIMING}
+                            transformTiming={SNAPPY_TRANSFORM_TIMING}
+                            opacityTiming={SNAPPY_OPACITY_TIMING}
+                          />
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.spd}</span>
-                  {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.spd + potentialStatPoints.spd}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
+                <p className="stat-hint pixel-font text-xs">Increases your Maximum HP, makes Guard last longer.</p>
+                <div className="stat-controls">
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="minus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleDecreaseStat('vit')}
+                      {...holdDecrease.vit}
+                      disabled={pendingAllocations.vit === 0}
+                      aria-label="Decrease Vitality"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="plus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleIncreaseStat('vit')}
+                      {...holdIncrease.vit}
+                      disabled={pointsRemaining === 0}
+                      aria-label="Increase Vitality"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <IndigolayBar
+                    className="stat-meter"
+                    variant="green"
+                    percentage={((previewStats.vit + potentialStatPoints.vit) / STAT_METER_MAX) * 100}
+                  />
                 </div>
               </div>
-              <p className="stat-hint pixel-font text-xs">
-                Reduces skill &amp; item cooldowns and charges Guard faster.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    -Reduces ultimate skill cooldown
-                    <br />
-                    -Reduces item cooldowns in battle
-                    <br />
-                    -Charges the party Guard meter faster
-                  </TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill spd"
-                  style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / maxStatValue) * 100}%` }}
-                />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="minus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleDecreaseStat('spd')}
-                    {...holdDecrease.spd}
-                    disabled={pendingAllocations.spd === 0}
-                    aria-label="Decrease Speed"
+
+              {/* Speed Stat */}
+              <div className="stat-allocation-row spd">
+                <div className="stat-header">
+                  <div className="stat-name-group">
+                    <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="info-icon" role="img" aria-label="About Speed">
+                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        -Reduces ultimate skill cooldown
+                        <br />
+                        -Reduces item cooldowns in battle
+                        <br />
+                        -Charges the party Guard meter faster
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="stat-values pixel-font text-xs">
+                    <span className="stat-current">{character.stats.spd}</span>
+                    {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
+                      <>
+                        <span className="stat-arrow">
+                          <img
+                            className="stat-arrow-icon"
+                            src="/assets/icons/indigolay/Icon_arrow-right.png"
+                            alt="arrow"
+                          />
+                        </span>
+                        <span className="stat-preview number-flow-container">
+                          <NumberFlow
+                            value={previewStats.spd + potentialStatPoints.spd}
+                            format={INTEGER_FORMAT}
+                            trend={1}
+                            spinTiming={SNAPPY_SPIN_TIMING}
+                            transformTiming={SNAPPY_TRANSFORM_TIMING}
+                            opacityTiming={SNAPPY_OPACITY_TIMING}
+                          />
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <p className="stat-hint pixel-font text-xs">
+                  Reduces skill &amp; item cooldowns, charges Guard faster.
+                </p>
+                <div className="stat-controls">
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="minus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleDecreaseStat('spd')}
+                      {...holdDecrease.spd}
+                      disabled={pendingAllocations.spd === 0}
+                      aria-label="Decrease Speed"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper>
+                    <ToffecSquareButton
+                      icon="plus"
+                      variant="fairy3"
+                      size="default"
+                      onClick={() => handleIncreaseStat('spd')}
+                      {...holdIncrease.spd}
+                      disabled={pointsRemaining === 0}
+                      aria-label="Increase Speed"
+                    />
+                  </ToffecBeigeCornersWrapper>
+                  <IndigolayBar
+                    className="stat-meter"
+                    variant="sky-blue"
+                    percentage={((previewStats.spd + potentialStatPoints.spd) / STAT_METER_MAX) * 100}
                   />
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <ToffecSquareButton
-                    icon="plus"
-                    variant="medieval1"
-                    size="default"
-                    onClick={() => handleIncreaseStat('spd')}
-                    {...holdIncrease.spd}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Speed"
-                  />
-                </ToffecBeigeCornersWrapper>
+                </div>
               </div>
             </div>
 
@@ -495,22 +526,14 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <ToffecButton
-                      variant="cream"
-                      onClick={handleConfirm}
-                      disabled={!allPointsAllocated}
-                    >
+                    <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
                       Confirm
                     </ToffecButton>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecButton
-                variant="tan"
-                onClick={handleReset}
-                disabled={!hasPendingChanges}
-              >
+              <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
                 Reset
               </ToffecButton>
             </div>

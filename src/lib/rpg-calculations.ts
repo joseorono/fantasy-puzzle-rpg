@@ -2,7 +2,17 @@ import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { calculatePercentage } from './math';
 import {
   BASE_STAGGER_FRACTION,
+  CASCADE_DAMAGE_BONUS_PER_LEVEL,
+  GUARD_CHARGE_RATE_DIVISOR,
+  GUARD_DECAY_RATE,
+  GUARD_DECAY_VIT_DIVISOR,
+  GUARD_DRAIN_FRACTION,
+  GUARD_MAX,
+  GUARD_MIN_THRESHOLD,
+  MAX_COMBO_MULTIPLIER,
+  MAX_GUARD_REDUCTION,
   MAX_STAGGER_FRACTION_PER_CYCLE,
+  POW_DAMAGE_PERCENT_PER_POINT,
   STAGGER_REF_FRACTION,
   STAGGER_VIT_DIVISOR,
 } from '~/constants/battle';
@@ -76,7 +86,7 @@ export function calculatePartyHpPercentage(party: CharacterData[]): number {
 
 /**
  * Calculates damage output based on power stat.
- * Formula: baseDamage * (1 + (POW / 100))
+ * Formula: baseDamage * (1 + (POW * POW_DAMAGE_PERCENT_PER_POINT / 100))
  * @param baseDamage Base damage value
  * @param pow Power stat
  * @returns Calculated damage (rounded)
@@ -84,8 +94,8 @@ export function calculatePartyHpPercentage(party: CharacterData[]): number {
 export function calculateDamage(baseDamage: number, pow: number): number {
   // Use scaled integer math to avoid floating point precision issues
   // Example: 100 * 1.15 may evaluate to 114.999... causing floor to return 114.
-  // Compute as (baseDamage * (100 + pow)) / 100 instead.
-  return Math.floor((baseDamage * (100 + pow)) / 100);
+  // Compute as (baseDamage * (100 + powPercent)) / 100 instead.
+  return Math.floor((baseDamage * (100 + pow * POW_DAMAGE_PERCENT_PER_POINT)) / 100);
 }
 
 /**
@@ -125,16 +135,6 @@ export function calculateCharacterDamage(character: CharacterData, baseDamage: n
 export function calculateEnemyDamage(enemy: EnemyData): number {
   return calculateDamage(enemy.attackDamage, enemy.stats.pow);
 }
-
-/**
- * Combo bonus coefficient. Damage scales with the SQUARE ROOT of cascade depth
- * (diminishing returns), so deep chains keep rewarding without exploding. The
- * initial post-swap match is cascade level 0. Equipment combo bonus adds to this.
- */
-export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.35;
-
-/** Hard ceiling on the cascade combo multiplier, regardless of chain depth. */
-export const MAX_COMBO_MULTIPLIER = 2.0;
 
 /**
  * Calculates the cascade combo multiplier for a given cascade depth.
@@ -284,21 +284,6 @@ export function calculateItemCooldownInMs(party: CharacterData[]): number {
 // Guard Calculations
 // ============================================================================
 
-/** Maximum value of the party Guard meter (a full bar). */
-export const GUARD_MAX = 100;
-
-/** Reduction cap: 1 = a full Guard bar can fully block one attack. */
-export const MAX_GUARD_REDUCTION = 1;
-
-/** Fraction of the Guard bar a full-strength block consumes, before guardBreak scaling. */
-export const GUARD_DRAIN_FRACTION = 0.5;
-
-/** Guard points bled per second at a full bar; scales down with fill (anti-hoard decay). */
-export const GUARD_DECAY_RATE = 3;
-
-/** Divisor controlling how steeply party SPD raises the Guard Charge Rate (higher = gentler). */
-export const GUARD_CHARGE_RATE_DIVISOR = 25;
-
 /**
  * Calculates the party's Guard Charge Rate — a multiplier on the guard gained from matching
  * gray orbs. Scales with the collective SPD of living members on a diminishing (square-root)
@@ -315,6 +300,25 @@ export function calculateGuardChargeRate(party: CharacterData[]): number {
   // Clamp to >= 0: negative-SPD equipment can drag the collective SPD below zero,
   // and Math.sqrt of a negative would return NaN and poison the entire Guard meter.
   return 1 + Math.sqrt(Math.max(0, livingSpd)) / GUARD_CHARGE_RATE_DIVISOR;
+}
+
+/**
+ * Calculates the party's Guard decay resistance — a multiplier on the passive bleed rate, where
+ * lower is better. Scales with the collective VIT of living members on a diminishing (hyperbolic)
+ * curve that never reaches 0, so stacking VIT makes the shield last without ever freezing it.
+ * Pairs with {@link calculateGuardChargeRate}: SPD builds the shield fast, VIT makes it last.
+ * Formula: 1 / (1 + livingCollectiveVit / GUARD_DECAY_VIT_DIVISOR)
+ * @param party Array of character data
+ * @returns Decay multiplier in (0, 1] — 1 at zero VIT, approaching 0 as VIT grows
+ */
+export function calculateGuardDecayResistance(party: CharacterData[]): number {
+  const livingVit = party.reduce(
+    (total, char) => (char.currentHp > 0 ? total + char.stats.vit : total),
+    0,
+  );
+  // Clamp to >= 0 for the same reason as calculateGuardChargeRate: negative-VIT equipment could
+  // otherwise drive the divisor negative and invert the decay into growth.
+  return 1 / (1 + Math.max(0, livingVit) / GUARD_DECAY_VIT_DIVISOR);
 }
 
 /** Result of resolving an incoming hit against the Guard meter. */
@@ -353,13 +357,18 @@ export function resolveGuardedDamage(
 
 /**
  * Bleeds the Guard meter over time, faster the fuller the bar (anti-hoard decay).
- * Formula: guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt
+ * Because the bleed is proportional to fill, it approaches zero asymptotically — so anything under
+ * GUARD_MIN_THRESHOLD snaps to exactly 0, letting callers stop ticking a bar that is empty in all
+ * but name.
+ * Formula: guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt * decayResistance
  * @param guard Current guard value
  * @param dt Elapsed time in seconds
- * @returns The decayed guard value, floored at 0
+ * @param decayResistance Multiplier on the bleed rate, from {@link calculateGuardDecayResistance}
+ * @returns The decayed guard value, snapped to 0 once negligible
  */
-export function decayGuard(guard: number, dt: number): number {
-  return Math.max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt);
+export function decayGuard(guard: number, dt: number, decayResistance: number = 1): number {
+  const next = guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt * decayResistance;
+  return next < GUARD_MIN_THRESHOLD ? 0 : next;
 }
 
 // ============================================================================
@@ -419,8 +428,8 @@ export type HpThreshold = 'high' | 'medium' | 'low';
  * @returns 'high' if >50%, 'medium' if >25%, 'low' otherwise
  */
 export function getHpThreshold(percentage: number): HpThreshold {
-  if (percentage > 50) return 'high';
-  if (percentage > 25) return 'medium';
+  if (percentage > 55) return 'high';
+  if (percentage > 30) return 'medium';
   return 'low';
 }
 

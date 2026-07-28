@@ -8,6 +8,7 @@
   width: 100vw;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative;
 }
 
 /* Responsive layout: stack on mobile, side-by-side on desktop */
@@ -83,6 +84,12 @@
   max-width: 100%;
   max-height: calc(100vh - 10rem);
   object-fit: contain;
+  /* Click-and-hold moves the character. Keep the custom gauntlet cursor with
+     the interactive hotspot (matching buttons) rather than a native pointer.
+     `touch-action: none` lets a touch drag steer instead of panning the page —
+     the map never scrolls anyway. */
+  cursor: var(--cursor-gauntlet) 8 8, auto;
+  touch-action: none;
 }
 
 @media (min-width: 1024px) {

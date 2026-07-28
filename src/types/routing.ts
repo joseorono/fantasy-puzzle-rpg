@@ -1,5 +1,6 @@
 import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
+import type { MapId } from './map';
 
 /**
  * Available views in the game
@@ -7,8 +8,7 @@ import type { DungeonDefinition } from './dungeon';
 export type ViewType =
   | 'town-hub'
   | 'battle-demo'
-  | 'map-demo'
-  | 'map-demo-2'
+  | 'map'
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
@@ -51,17 +51,28 @@ export interface BattleViewData {
 export interface DungeonViewData {
   dungeon: DungeonDefinition;
   isReplay: boolean;
+  /**
+   * Surface to return to when the run ends, finished or abandoned. Captured automatically by
+   * `goToDungeon` from the launching view; callers may override it. Needed because a run's
+   * battle round-trip (dungeon → battle → rewards → goBack) lands back on the dungeon with
+   * `previousView` cleared, so `goBack()` on the way out would no-op.
+   */
+  returnView?: ViewType;
 }
 
 /**
- * Data for map demo view (no specific data needed for demo)
+ * Data for the map view. `mapId` selects the definition from `MAP_REGISTRY`, so every map
+ * shares this one view rather than each getting its own.
+ *
+ * `returnView` works exactly like `DungeonViewData.returnView`: a battle round-trip
+ * (map → battle → rewards → goBack) lands back on the map with `previousView` cleared, so
+ * the map keeps its own record of where it was entered from. Without it the way out
+ * disappears the first time you fight something.
  */
-export type MapDemoViewData = object;
-
-/**
- * Data for map demo 2 view (no specific data needed for demo)
- */
-export type MapDemo2ViewData = object;
+export interface MapViewData {
+  mapId: MapId;
+  returnView?: ViewType;
+}
 
 /**
  * Data for dialogue demo view (no specific data needed for demo)
@@ -94,8 +105,7 @@ export interface BattleRewardsViewData {
 export interface ViewDataMap {
   'town-hub': TownHubViewData;
   'battle-demo': BattleViewData;
-  'map-demo': MapDemoViewData;
-  'map-demo-2': MapDemo2ViewData;
+  map: MapViewData;
   'dialogue-demo': DialogueDemoViewData;
   inventory: InventoryViewData;
   debug: DebugViewData;
@@ -108,8 +118,7 @@ export interface ViewDataMap {
  */
 export type RouteStatus = TownHubViewData &
   BattleViewData &
-  MapDemoViewData &
-  MapDemo2ViewData &
+  MapViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &

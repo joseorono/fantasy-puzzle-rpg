@@ -45,6 +45,45 @@
   opacity: 0.85;
 }
 
+/* ─── Party HP + Guard bars (IndigolayBar) ──────────────────────────
+   Both render at `size="sm"` (16px); these restore the responsive heights the
+   bars had as Tailwind utilities (h-4 / sm:h-5 / xl:h-4).
+
+   ID selectors are deliberate. indigolay-bar.css is imported after this file, so
+   a class selector would lose the specificity tie to .indigolay-bar--sm; an ID
+   (1-0-0) outranks it regardless of import order. */
+
+#party-hp-bar,
+#party-guard-bar {
+  height: 16px;
+  border-width: 4px;
+}
+
+@media (min-width: 640px) {
+  #party-hp-bar,
+  #party-guard-bar {
+    height: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  #party-hp-bar,
+  #party-guard-bar {
+    height: 16px;
+  }
+}
+
+/* The HP fill eased over 500ms before the conversion (the Guard bar over 300ms,
+   which is the component default) — keep the slower feel on damage, and match it
+   for the green/yellow/red crossfade as HP crosses a threshold. */
+#party-hp-bar .indigolay-bar__fill {
+  transition-duration: 0.5s;
+}
+
+#party-hp-bar {
+  --ib-fade: 0.5s;
+}
+
 /* ─── Guard Meter Feedback ───────────────────────────────────────────
    The party Guard bar charges from gray matches and blocks enemy hits.
    These animations keep charging/blocking reactive instead of a plain fill. */

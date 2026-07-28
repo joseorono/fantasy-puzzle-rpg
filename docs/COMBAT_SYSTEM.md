@@ -188,7 +188,12 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
 ### Guard Meter
 The party shares a **Guard** meter (`BattleState.guard`, `0..GUARD_MAX`) — its own defensive resource,
 charged by matching gray orbs. Math lives in `src/lib/rpg-calculations.ts`; balance constants in
-`src/constants/party.ts` (gray damage/charge) and `rpg-calculations.ts` (mitigation/drain/decay).
+`src/constants/battle.ts` (mitigation/drain/decay/charge rate) and `src/constants/party.ts`
+(gray damage, per-orb charge).
+
+Three independent stats/levers move the meter, so none of them alone trivializes defense:
+**SPD** charges it faster, **VIT** makes it last longer, and the enemy's **`guardBreak`** decides how
+much a block costs.
 
 - **Charging:** matching gray adds `matchSize × GUARD_CHARGE_PER_ORB × guardChargeRate`, where the
   SPD-derived `calculateGuardChargeRate(party)` scales charge with the living party's collective SPD
@@ -201,6 +206,12 @@ charged by matching gray orbs. Math lives in `src/lib/rpg-calculations.ts`; bala
   **not** weaken mitigation, so a full bar always fully blocks.
 - **Anti-hoard decay:** Guard bleeds over time proportional to its fill (`decayGuard`, ticked in the
   battle screen's cooldown loop), so a full bar can't be parked — blocking a big hit is a timing play.
+  The bleed is scaled by `calculateGuardDecayResistance(party) = 1 / (1 + livingVit / GUARD_DECAY_VIT_DIVISOR)`,
+  a diminishing (hyperbolic) curve in the living party's collective VIT that stays in `(0, 1]` — VIT
+  makes the shield last but can never freeze it. Because both this and the charge rate count only
+  *living* members, a party that is losing people charges slower **and** bleeds faster.
+  Decay is proportional to fill, so it only approaches zero asymptotically; anything under
+  `GUARD_MIN_THRESHOLD` snaps to exactly 0 so an empty bar stops ticking.
 - **Feedback:** the Guard bar (steelArmor icon, below the HEROES HP bar) shimmers while charging, glows
   when full, and shatters with a "BLOCK!"/"GUARD" popup + clang when it mitigates a hit.
 

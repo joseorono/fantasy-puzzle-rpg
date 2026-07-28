@@ -5,6 +5,28 @@
   image-rendering: crisp-edges;
 }
 
+/*
+  Indigolay art is detailed art, not native-res pixel art, so it must opt out of
+  the global `image-rendering: pixelated` (index.css `@layer base`) —
+  nearest-neighbour scaling makes it look blocky. These rules are unlayered, so
+  they win over the layered base rule.
+
+  The artist supplied far more than icons, so match every indigolay path rather
+  than just `/icons/`. `/indigolay/` covers the icons, hud bars, decorations and
+  indicators folders; the `indigolay-` prefix covers assets filed by name instead
+  (e.g. /checkboxes/indigolay-checkbox-bg.png).
+
+  An attribute selector only reaches <img> elements, so surfaces painted through
+  CSS — `background-image`, and especially `border-image`, which IndigolayBar and
+  .dungeon-hp-chip use — must opt out themselves: add `.indigolay-art`, or set
+  `image-rendering: auto` in the component's own rule.
+*/
+img[src*='/indigolay/'],
+img[src*='indigolay-'],
+.indigolay-art {
+  image-rendering: auto;
+}
+
 /* Retro screen effect */
 .retro-screen {
   position: relative;

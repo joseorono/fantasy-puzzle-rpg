@@ -41,10 +41,17 @@
 
 .dungeon-resources-bar {
   position: absolute;
-  top: 0;
+  top: 0.5rem;
   right: 0.5rem;
   z-index: 3;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.dungeon-resources-bar .pause-menu-resources-bar {
+  margin-top: 0;
+  border-top: none;
+  background: transparent;
+  padding: 0;
 }
 
 /* ─── Top bar ────────────────────────────────────────────────────────── */
@@ -71,21 +78,49 @@
   white-space: nowrap;
 }
 
+/* Party HP chip on chip-currency.png, 9-sliced so the circular well and right cap
+   keep their shape while only the flat bar stretches (the battle .btb-badge stretches
+   the whole art, which would turn the well into an ellipse at this width).
+   Widths are the slices at the render scale, 28/68 — rounding them distorts the
+   well, which spans all three horizontal bands. */
 .dungeon-hp-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 3px 12px;
-  font-size: 0.62rem;
-  font-weight: bold;
-  letter-spacing: 0.05em;
-  color: #e3bb92;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(212, 165, 116, 0.5);
-  border-radius: 999px;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
+  box-sizing: border-box;
+  height: 28px;
   flex-shrink: 0;
+  border-style: solid;
+  border-width: 3.7px 4.1px 3.7px 26.4px;
+  border-image-source: url('/assets/hud/chip-currency.png');
+  border-image-slice: 9 10 9 64 fill;
+  border-image-repeat: stretch;
+}
+
+/* The well is part of the left border box, so the icon needs a negative left to
+   reach into it. Offsets track the well's disc centre (33.5, 33.5 of 68), which sits
+   just above the art's midpoint — hence 49.3% rather than 50%. */
+.dungeon-hp-chip__icon {
+  position: absolute;
+  left: -19.6px;
+  top: 49.3%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* Padding both sides: the content box starts flush against the well, so without a
+   left gap the digits collide with it. */
+.dungeon-hp-chip__value {
+  padding: 0 0.45rem 0 0.4rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: #f5e6c8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 /* ─── Main layout ────────────────────────────────────────────────────── */
@@ -106,19 +141,22 @@
   width: 250px;
   flex-shrink: 0;
   min-height: 0;
-  padding: 0.85rem;
+  padding: 0.875rem;
   color: #e0e0e0;
-  background-image: linear-gradient(180deg, rgba(42, 24, 16, 0.85), rgba(18, 11, 5, 0.93)),
-    url('/assets/bg/looping/bg-board.png');
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.6)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
-  /* Match the action card's carved-wood frame (triple border + gold inset). */
-  border: 4px solid #5c3a1e;
-  outline: 3px solid #2a1a0e;
-  outline-offset: -1px;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 12px;
   box-shadow:
-    inset 0 0 0 2px #8b6914,
-    0 8px 20px rgba(0, 0, 0, 0.8);
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .dungeon-track__title {
@@ -127,9 +165,7 @@
   padding-bottom: 0.6rem;
   margin-bottom: 0.6rem;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
-  /* Gold gradient rule under the label, echoing the card's divider. */
-  background: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent)
-    bottom left / 100% 2px no-repeat;
+  border-bottom: 2px solid #d4a574;
 }
 
 .dungeon-track__list {
@@ -147,20 +183,32 @@
   padding: 0.45rem 0.6rem;
   font-size: 0.6rem;
   line-height: 1.4;
-  color: #c7b393;
-  background: rgba(20, 12, 6, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.45);
-  border-left: 3px solid rgba(139, 105, 20, 0.55);
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-left: 3px solid rgba(212, 165, 116, 0.4);
+  border-radius: 6px;
   box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
+/* Holds the per-state marker SVG. Fixed width so every floor name starts at the
+   same x regardless of which marker is showing. */
 .dungeon-floor__mark {
   width: 1.1rem;
   flex-shrink: 0;
-  text-align: center;
-  font-size: 0.72rem;
-  color: #8b6914;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dungeon-floor__mark-icon {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The SVGs are drawn on a 16px grid with crispEdges; this keeps the browser
+     from smoothing them when the rem size lands on a fractional pixel. */
+  image-rendering: pixelated;
 }
 
 /* Name + optional rating stars, stacked to the right of the mark. */
@@ -186,21 +234,28 @@
   color: #9a8f7e;
   border-left-color: rgba(157, 176, 106, 0.6); /* olive "done" accent */
 }
-.dungeon-floor--completed .dungeon-floor__mark {
-  color: #9db06a;
+/* Cleared floors recede — the marker's olive is baked into the SVG, so this only
+   pulls it back rather than recoloring it. */
+.dungeon-floor--completed .dungeon-floor__mark-icon {
+  opacity: 0.75;
 }
 
 .dungeon-floor--current {
   color: #f5ecd8;
-  background: linear-gradient(90deg, rgba(200, 135, 46, 0.3), rgba(200, 135, 46, 0.1));
-  border-color: rgba(212, 165, 116, 0.6);
-  border-left-color: #e0a94a;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(212, 165, 116, 0.06));
+  border-color: rgba(212, 165, 116, 0.5);
+  border-left-color: #d4a574;
   box-shadow:
-    inset 0 0 0 1px rgba(240, 210, 160, 0.22),
-    0 0 10px rgba(200, 135, 46, 0.22);
+    inset 0 0 0 1px rgba(212, 165, 116, 0.22),
+    0 0 8px rgba(212, 165, 116, 0.18);
 }
+/* The active floor's arrowhead runs larger and picks up the gold glow. */
 .dungeon-floor--current .dungeon-floor__mark {
-  color: #f0c060;
+  width: 1.35rem;
+}
+
+.dungeon-floor--current .dungeon-floor__mark-icon {
+  filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.5));
 }
 
 .dungeon-floor--locked {
@@ -208,16 +263,18 @@
   border-left-color: rgba(80, 66, 50, 0.55);
   opacity: 0.8;
 }
-.dungeon-floor--locked .dungeon-floor__mark {
-  color: #5a4f42;
+.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 0.7;
 }
 
 /* Boss floors flag danger in the track until cleared. */
 .dungeon-floor--boss:not(.dungeon-floor--completed) {
   border-left-color: rgba(192, 88, 62, 0.75);
 }
-.dungeon-floor--boss.dungeon-floor--locked .dungeon-floor__mark {
-  color: #c0563e;
+/* The helm carries its own ember red, so it stays at full strength even though
+   the rest of a locked row is dimmed. */
+.dungeon-floor--boss.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 1;
 }
 
 /* ─── Right: stage / action card ─────────────────────────────────────── */
@@ -436,20 +493,30 @@
   display: flex;
   justify-content: center;
   flex-shrink: 0;
-  padding: 0.6rem 1rem 4px 1rem;
-  }
-  
-  /* Seat the shared party bar as a framed panel in the dungeon: its default
-     border-bottom is meant for the pause menu, so swap it for the carved-wood
-     frame used by the track and action card. Scoped, so the pause menu is
-     unaffected. */
-  .dungeon-party .pause-menu-party-bar {
-    border: 3px solid #5c3a1e;
-    outline: 2px solid #2a1a0e;
-    outline-offset: -1px;
-    box-shadow:
-      inset 0 0 0 2px #8b6914,
-      0 4px 14px rgba(0, 0, 0, 0.6);
+  padding: 0.7rem 1rem 0.5rem;
+}
+
+/* Red panel with an ornate brass frame, imitating the UI_Btn_Red art in pure CSS:
+   dark outer edge -> gold band -> dark red liner -> red gradient face. */
+.dungeon-party .pause-menu-party-bar {
+  display: flex;
+  width: min(100%, 980px);
+  gap: 0.65rem;
+  padding: 0.75rem;
+  background-repeat: repeat;
+  background-size: 30px 30px;
+  border: 3px solid #c9a24a;
+  border-radius: 12px;
+  outline: 2px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #3d2817,
+    inset 0 2px 0 rgba(255, 220, 170, 0.15),
+    inset 0 -3px 6px rgba(20, 12, 6, 0.65),
+    0 0 0 1px #3a2410,
+    0 6px 16px rgba(0, 0, 0, 0.72);
+  align-items: center;
+  overflow-x: auto;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────── */

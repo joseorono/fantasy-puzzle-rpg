@@ -45,9 +45,20 @@ guardAfter  = max(0, guard - drain)
 // charge rate: diminishing in the living party's collective SPD
 guardChargeRate = 1 + sqrt(livingCollectiveSpd) / GUARD_CHARGE_RATE_DIVISOR
 
-// anti-hoard decay: faster the fuller the bar
-guardAfterDt = max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt)
+// decay resistance: diminishing in the living party's collective VIT, always in (0, 1]
+decayResistance = 1 / (1 + livingCollectiveVit / GUARD_DECAY_VIT_DIVISOR)
+
+// anti-hoard decay: faster the fuller the bar, slowed by VIT, snapped to 0 once negligible
+next         = guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt * decayResistance
+guardAfterDt = next < GUARD_MIN_THRESHOLD ? 0 : next
 ```
+
+The decay snap matters: because the bleed is proportional to fill, it only *approaches* zero. Without
+`GUARD_MIN_THRESHOLD` the meter never lands, so `tickGuardDecayAtom`'s `guard <= 0` early-return never
+fires and every Guard subscriber re-renders at the tick rate for the rest of the battle.
+
+Both derived rates count only **living** members, so a party that is losing people charges slower and
+bleeds faster.
 
 `resolveGuardedDamage` returns `{ damageTaken, guardAfter, wasFullBlock }`. At `GUARD_DRAIN_FRACTION =
 0.5`, a full-bar block consumes 50% of the bar at `guardBreak 1` (100→50), 100% at `guardBreak 2`
@@ -59,17 +70,22 @@ guardAfterDt = max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt)
 | --- | --- | --- | --- |
 | `GRAY_MATCH_DAMAGE_MULTIPLIER` | `constants/party.ts` | `0.4` | Gray's neutral chip damage (was 1.0) |
 | `GUARD_CHARGE_PER_ORB` | `constants/party.ts` | `6` | Base guard per gray orb, before charge rate |
-| `GUARD_MAX` | `lib/rpg-calculations.ts` | `100` | Full bar |
-| `MAX_GUARD_REDUCTION` | `lib/rpg-calculations.ts` | `1` | Cap on mitigation (1 = full bar fully blocks) |
-| `GUARD_DRAIN_FRACTION` | `lib/rpg-calculations.ts` | `0.5` | Fraction of bar a full block drains, ×guardBreak |
-| `GUARD_DECAY_RATE` | `lib/rpg-calculations.ts` | `3` | Guard/sec bled at full bar (scales with fill) |
-| `GUARD_CHARGE_RATE_DIVISOR` | `lib/rpg-calculations.ts` | `25` | Higher = gentler SPD→charge scaling |
-| `GUARD_BAR_GRADIENT` | `constants/ui.ts` | slate | Guard bar fill color |
+| `GUARD_MAX` | `constants/battle.ts` | `100` | Full bar |
+| `MAX_GUARD_REDUCTION` | `constants/battle.ts` | `1` | Cap on mitigation (1 = full bar fully blocks) |
+| `GUARD_DRAIN_FRACTION` | `constants/battle.ts` | `0.5` | Fraction of bar a full block drains, ×guardBreak |
+| `GUARD_DECAY_RATE` | `constants/battle.ts` | `3` | Guard/sec bled at full bar (scales with fill) |
+| `GUARD_CHARGE_RATE_DIVISOR` | `constants/battle.ts` | `25` | Higher = gentler SPD→charge scaling |
+| `GUARD_DECAY_VIT_DIVISOR` | `constants/battle.ts` | `150` | Higher = gentler VIT→decay-resistance scaling |
+| `GUARD_MIN_THRESHOLD` | `constants/battle.ts` | `0.5` | Guard below this snaps to 0 so the bar stops ticking |
+| `BATTLE_TICK_INTERVAL_MS` | `constants/battle.ts` | `100` | Decay/cooldown tick rate (delta is derived from it) |
+| `.indigolay-bar--slate` | `ui-custom/styles/indigolay-bar.css` | slate | Guard bar fill (IndigolayBar `variant="slate"`) |
 
 ## Implementation map
 
-- **Math + constants:** `lib/rpg-calculations.ts` (`calculateGuardChargeRate`, `resolveGuardedDamage`,
-  `decayGuard`); gray/charge knobs in `constants/party.ts`; bar color in `constants/ui.ts`.
+- **Tunables:** `constants/battle.ts` is the single place to tweak Guard numbers; gray damage and
+  per-orb charge stay in `constants/party.ts`; bar color in `constants/ui.ts`.
+- **Math:** `lib/rpg-calculations.ts` (`calculateGuardChargeRate`, `calculateGuardDecayResistance`,
+  `resolveGuardedDamage`, `decayGuard`).
 - **State:** `BattleState.guard` + `lastDamage.wasGuarded`/`blocked` in `types/battle.ts`;
   `EnemyData.guardBreak?` in `types/rpg-elements.ts`; `guard: 0` seeded in `lib/battle-system.ts`.
 - **Atoms (`stores/battle-atoms.ts`):** `guardAtom`, `guardPercentageAtom`, `addGuardAtom`,
@@ -77,11 +93,12 @@ guardAfterDt = max(0, guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt)
   for all incoming party damage) using the attacker's `guardBreak`.
 - **Charge:** `components/battle/match3-board.tsx` — gray matches charge guard and deal tuned-down
   chip damage.
-- **Decay tick:** `views/battle-screen.tsx` — `tickGuardDecay(0.1)` rides the existing cooldown loop.
+- **Decay tick:** `views/battle-screen.tsx` — `tickGuardDecay(BATTLE_TICK_DELTA_SECONDS)` rides the
+  existing cooldown loop; `tickGuardDecayAtom` supplies the party's VIT-derived decay resistance.
 - **UI:** `components/battle/party-display.tsx` — HEROES label moved left of a compact HP + Guard bar
   stack; `steelArmor` `FrostyRpgIcon` precedes the Guard bar; charge shimmer, full-bar glow, and a
   shatter + "BLOCK!"/"GUARD" popup with a clang SFX. Keyframes in `styles/battle-elements.css`.
-- **Showcase:** Moss Golem `guardBreak: 1.75` (heavy slams), Swamp Frog `guardBreak: 0.6` (light taps).
+- **Showcase:** Moss Golem `guardBreak: 2.0` (heavy slams), Swamp Frog `guardBreak: 0.8` (light taps).
 
 ## Verification
 

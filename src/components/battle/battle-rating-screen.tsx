@@ -21,7 +21,7 @@ import {
 } from '~/constants/number-flow';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { cn } from '~/lib/utils';
+import { cn, prefersReducedMotion } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
@@ -31,13 +31,6 @@ interface BattleRatingScreenProps {
   result: BattleRatingResult;
   /** Advance to the existing VICTORY summary card. */
   onContinue: () => void;
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-  );
 }
 
 /**
@@ -60,25 +53,30 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
       return;
     }
     const timers = timersRef.current;
-    const { startDelayMs, rowStaggerMs, starStaggerMs, lootRevealDelayMs, continueDelayMs } =
-      RATING_REVEAL;
+    const { startDelayMs, rowStaggerMs, starStaggerMs, lootRevealDelayMs, continueDelayMs } = RATING_REVEAL;
 
     result.criteria.forEach((_, i) => {
       timers.push(
-        setTimeout(() => {
-          setRevealedCount(i + 1);
-          soundService.playSound(SoundNames.clickChangeTab, 0.5, 0.1, 0.05);
-        }, startDelayMs + i * rowStaggerMs),
+        setTimeout(
+          () => {
+            setRevealedCount(i + 1);
+            soundService.playSound(SoundNames.clickChangeTab, 0.5, 0.1, 0.05);
+          },
+          startDelayMs + i * rowStaggerMs,
+        ),
       );
     });
 
     const starsStart = startDelayMs + result.criteria.length * rowStaggerMs + 250;
     for (let s = 0; s < result.stars; s++) {
       timers.push(
-        setTimeout(() => {
-          setFilledStars(s + 1);
-          soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
-        }, starsStart + s * starStaggerMs),
+        setTimeout(
+          () => {
+            setFilledStars(s + 1);
+            soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
+          },
+          starsStart + s * starStaggerMs,
+        ),
       );
     }
 
@@ -183,9 +181,7 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
                 <span
                   key={i}
                   className={cn('brs-star', isFilled && 'brs-star--filled')}
-                  style={
-                    { color: isFilled ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY } as CSSProperties
-                  }
+                  style={{ color: isFilled ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY } as CSSProperties}
                 >
                   <Star className="brs-star-icon" fill="currentColor" strokeWidth={1.5} />
                 </span>
@@ -201,9 +197,7 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
                 </div>
               )}
               {tagline && (
-                <p className={cn('brs-tagline pixel-font', isCloseCall && 'brs-tagline--close')}>
-                  {tagline}
-                </p>
+                <p className={cn('brs-tagline pixel-font', isCloseCall && 'brs-tagline--close')}>{tagline}</p>
               )}
               <div className={cn('brs-loot', showLoot && 'brs-loot--shown')}>
                 <span className="brs-loot-label pixel-font">LOOT</span>

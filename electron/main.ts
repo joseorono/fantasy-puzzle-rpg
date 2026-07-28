@@ -1,30 +1,45 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
-import fs from 'fs';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const isDev = process.env.NODE_ENV === 'development';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const isDev = !app.isPackaged;
 
 let mainWindow: BrowserWindow | null = null;
 
-function createWindow() {
+function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
     minWidth: 800,
     minHeight: 600,
+    show: false,
+    autoHideMenuBar: true,
+    title: 'Fantasy Puzzle RPG',
     webPreferences: {
-      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      sandbox: true,
     },
   });
 
-  const startUrl = isDev ? 'http://localhost:5173' : `file://${path.join(__dirname, '../renderer/index.html')}`;
+  mainWindow.on('ready-to-show', () => {
+    mainWindow?.show();
+  });
 
-  mainWindow.loadURL(startUrl);
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
 
   if (isDev) {
+    mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   }
 
   mainWindow.on('closed', () => {
@@ -32,7 +47,15 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -40,23 +63,15 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
+// IPC Handlers — App
+ipcMain.handle('app:get-version', () => app.getVersion());
 
-// IPC Handlers - App
-ipcMain.handle('app:get-version', () => {
-  return app.getVersion();
-});
-
-ipcMain.handle('app:get-path', (event, name: string) => {
+ipcMain.handle('app:get-path', (_event, name: string) => {
   return app.getPath(name as Parameters<typeof app.getPath>[0]);
 });
 
-// IPC Handlers - File Operations
-ipcMain.handle('file:read', async (event, filePath: string) => {
+// IPC Handlers — File Operations
+ipcMain.handle('file:read', async (_event, filePath: string) => {
   try {
     return fs.readFileSync(filePath, 'utf-8');
   } catch (error) {
@@ -64,7 +79,7 @@ ipcMain.handle('file:read', async (event, filePath: string) => {
   }
 });
 
-ipcMain.handle('file:write', async (event, filePath: string, data: string) => {
+ipcMain.handle('file:write', async (_event, filePath: string, data: string) => {
   try {
     const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
@@ -76,7 +91,7 @@ ipcMain.handle('file:write', async (event, filePath: string, data: string) => {
   }
 });
 
-ipcMain.handle('file:delete', async (event, filePath: string) => {
+ipcMain.handle('file:delete', async (_event, filePath: string) => {
   try {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -86,15 +101,13 @@ ipcMain.handle('file:delete', async (event, filePath: string) => {
   }
 });
 
-ipcMain.handle('file:exists', async (event, filePath: string) => {
+ipcMain.handle('file:exists', async (_event, filePath: string) => {
   return fs.existsSync(filePath);
 });
 
-// IPC Handlers - Window
+// IPC Handlers — Window
 ipcMain.handle('window:minimize', () => {
-  if (mainWindow) {
-    mainWindow.minimize();
-  }
+  mainWindow?.minimize();
 });
 
 ipcMain.handle('window:maximize', () => {
@@ -108,8 +121,5 @@ ipcMain.handle('window:maximize', () => {
 });
 
 ipcMain.handle('window:close', () => {
-  if (mainWindow) {
-    mainWindow.close();
-  }
+  mainWindow?.close();
 });
-

@@ -20,3 +20,16 @@ export const DUNGEON_REST_POOL_MINIMUM = 1;
  */
 export const REMIX_CHEST_MIN_RESOURCE_PERCENT = 0.1; // 10%
 export const REMIX_CHEST_MAX_RESOURCE_PERCENT = 0.25; // 25%
+
+/**
+ * Marker icons for each floor state in the descent track. Custom pixel-art SVGs
+ * drawn on a 16px grid, styled after the indigolay icon set (dark outline, warm
+ * fill, lit top bevel). Colors are baked per state, so the track markers are
+ * recolored here rather than via CSS.
+ */
+export const DUNGEON_FLOOR_MARK_ICONS = {
+  completed: '/assets/icons/dungeon-floors/floor-completed.svg',
+  current: '/assets/icons/dungeon-floors/floor-current.svg',
+  boss: '/assets/icons/dungeon-floors/floor-boss.svg',
+  locked: '/assets/icons/dungeon-floors/floor-locked.svg',
+} as const;

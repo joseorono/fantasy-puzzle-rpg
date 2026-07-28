@@ -39,14 +39,15 @@ import {
 } from '~/lib/dungeon-system';
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
-import { DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
+import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
+import { DEFAULT_VIEW } from '~/constants/routing';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
 import { DialogueScene } from '~/components/dialogue';
 import { LootNotification } from '~/components/map/loot-notification';
 import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
-import { TopBarResources } from '~/components/town/top-bar-resources';
+import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
@@ -58,12 +59,7 @@ import { useConfirm } from '~/hooks/use-confirm';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Star } from 'lucide-react';
-import {
-  MAX_STARS,
-  STAR_RANK_LABELS,
-  STAR_COLOR_FILLED,
-  STAR_COLOR_EMPTY,
-} from '~/constants/battle-rating';
+import { MAX_STARS, STAR_COLOR_FILLED, STAR_COLOR_EMPTY } from '~/constants/battle-rating';
 import { cn, getRandomElement } from '~/lib/utils';
 import {
   DUNGEON_COMBAT_FLAVOR,
@@ -85,10 +81,20 @@ function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): strin
 /** Icon shown in the action card's pixel-art medallion, by the current event type. */
 function getEventMedallion(event: DungeonEvent | undefined, isBoss: boolean): FrostyRpgIconName {
   if (isBoss) return 'skull';
-  if (!event) return 'lantern';
+  if (!event) return 'elixir';
   if (event.type === 'dialogue') return 'openBook';
-  if (event.type === 'chest') return 'chest';
-  return 'broadsword';
+  if (event.type === 'chest') return 'parchment';
+  return 'steelSword';
+}
+
+/**
+ * Marker icon for a floor in the descent track. Boss floors only flag danger while
+ * still locked — once reached or cleared, the current/completed marker takes over.
+ */
+function floorMarkIcon(state: 'completed' | 'current' | 'locked', isBoss?: boolean) {
+  if (state === 'completed') return DUNGEON_FLOOR_MARK_ICONS.completed;
+  if (state === 'current') return DUNGEON_FLOOR_MARK_ICONS.current;
+  return isBoss ? DUNGEON_FLOOR_MARK_ICONS.boss : DUNGEON_FLOOR_MARK_ICONS.locked;
 }
 
 /** Compact star row (filled up to `stars`, out of MAX_STARS) for a floor's combat rating. */
@@ -153,9 +159,9 @@ export default function DungeonView() {
   const { setInventory } = useInventoryActions();
   const resources = useResources();
   const { setResources } = useResourcesActions();
-  // Entry is debug-only in v1; navigate back explicitly because the router's
-  // previousView is null after the battle round-trip (goBack would no-op).
-  const { goToBattleDemo, goToDebug } = useRouterActions();
+  // A run returns to whichever surface launched it (map node, debug list, …). We can't use
+  // goBack(): the battle round-trip leaves the router's previousView null.
+  const { goToBattleDemo, goBackTo } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
 
   const pauseMenu = usePauseMenu();
@@ -200,7 +206,8 @@ export default function DungeonView() {
     if (event === undefined) {
       // Floor exhausted: advance to the next floor, or finish the dungeon.
       if (isLastFloor(dungeon, liveFloorIndex)) {
-        markDungeonCompleted(dungeon.id); // the single store write of the run
+        // The single store write of the run. Remixes opt out — their id is throwaway.
+        if (dungeon.recordsCompletion !== false) markDungeonCompleted(dungeon.id);
         setPhase('complete');
       } else {
         advanceFloor();
@@ -231,6 +238,8 @@ export default function DungeonView() {
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
+
+  const returnView = viewData.returnView ?? DEFAULT_VIEW;
 
   const currentFloor = getFloor(dungeon, floorIndex);
   const currentEvent = currentFloor ? getEvent(currentFloor, eventIndex) : undefined;
@@ -303,12 +312,12 @@ export default function DungeonView() {
     });
     if (!ok) return;
     resetRun();
-    goToDebug();
+    goBackTo(returnView);
   }
 
   function handleFinish() {
     resetRun();
-    goToDebug();
+    goBackTo(returnView);
   }
 
   const isBoss = currentFloor?.isBoss ?? false;
@@ -324,15 +333,18 @@ export default function DungeonView() {
 
       {/* Resources floated top-right, out of flow (mirrors the town hub) */}
       <div className="dungeon-resources-bar">
-        <TopBarResources resources={resources} />
+        <PauseMenuResourcesBar />
       </div>
 
       {/* Top bar: dungeon name + party HP chip */}
       <div className="dungeon-topbar">
         <div className="dungeon-topbar__left">
           <NarikWoodBitFont text={dungeon.name} size={1.1} />
-          <span className="dungeon-hp-chip">
-            HP {totalCurrentHp} / {totalMaxHp}
+          <span className="dungeon-hp-chip indigolay-art" aria-label={`Party HP ${totalCurrentHp} of ${totalMaxHp}`}>
+            <img className="dungeon-hp-chip__icon" src="/assets/icons/indigolay/icon-hp.png" alt="" />
+            <span className="dungeon-hp-chip__value pixel-font" aria-hidden="true">
+              {totalCurrentHp} / {totalMaxHp}
+            </span>
           </span>
         </div>
       </div>
@@ -353,7 +365,7 @@ export default function DungeonView() {
                   className={cn('dungeon-floor', `dungeon-floor--${state}`, floor.isBoss && 'dungeon-floor--boss')}
                 >
                   <span className="dungeon-floor__mark">
-                    {state === 'completed' ? '✓' : state === 'current' ? '▸' : floor.isBoss ? '☠' : '·'}
+                    <img className="dungeon-floor__mark-icon" src={floorMarkIcon(state, floor.isBoss)} alt="" />
                   </span>
                   <div className="dungeon-floor__body">
                     <span className="dungeon-floor__name">{formatFloorTitle(idx, floor.name)}</span>
@@ -370,7 +382,7 @@ export default function DungeonView() {
             <div className="dungeon-card dungeon-card--complete">
               <div className="dungeon-card__banner">
                 <div className="dungeon-card__medallion">
-                  <FrostyRpgIcon name="crown" size={24} />
+                  <FrostyRpgIcon name="redBook" size={24} />
                 </div>
                 <div className="dungeon-card__banner-title">
                   <NarikWoodBitFont text="Dungeon Cleared" size={1.2} />
@@ -380,15 +392,6 @@ export default function DungeonView() {
               <GradientDivider variant="gold" />
               <div className="dungeon-card__body">
                 <p className="dungeon-card__desc">{flavorLine}</p>
-                {ratingSummary.ratedFloors > 0 && (
-                  <div className="dungeon-rank">
-                    <span className="dungeon-rank__label">Dungeon Rank</span>
-                    <span className="dungeon-rank__value">
-                      <FloorRatingStars stars={ratingSummary.averageStars} />
-                      <span className="dungeon-rank__word">{STAR_RANK_LABELS[ratingSummary.averageStars] ?? ''}</span>
-                    </span>
-                  </div>
-                )}
               </div>
               <div className="dungeon-card__action">
                 <ToffecButton

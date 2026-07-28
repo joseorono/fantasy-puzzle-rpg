@@ -11,14 +11,16 @@ import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
-import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS, HEALTH_BAR_COLORS } from '~/constants/party';
+import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS } from '~/constants/party';
 import {
   HP_THRESHOLD_BG,
-  HP_THRESHOLD_GRADIENT,
-  GUARD_BAR_GRADIENT,
+  HP_THRESHOLD_BAR_VARIANT,
+  ORB_TYPE_BAR_VARIANT,
   PARTY_STATS_ICON_MIN_OPACITY,
   PARTY_STATS_ICON_DIM_FILTER,
 } from '~/constants/ui';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
+import { PARTY_BAR_SEGMENTS } from '~/constants/battle';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import { triggerHitstop } from '~/lib/animation-strategies';
@@ -243,12 +245,17 @@ export function PartyDisplay() {
     }
   }, [lastDamage]);
 
-  // Determine health bar color
-  const getHealthBarColor = () => {
-    if (lastMatchedType && lastMatchedType !== 'gray') {
-      return HEALTH_BAR_COLORS[lastMatchedType];
+  // The HP bar rests on its health threshold — the same mapping the pause-menu party
+  // cards use — and flashes the matched orb's colour for the pulse's lifetime.
+  // `showPulse` is what bounds that flash: `lastMatchedType` is only ever set on a
+  // match and never cleared, so keying off it alone pinned the tint for the whole
+  // battle and left the threshold branch unreachable.
+  // Gray is excluded so a gray match doesn't wash the bar out mid-fight.
+  const getHealthBarVariant = () => {
+    if (showPulse && lastMatchedType && lastMatchedType !== 'gray') {
+      return ORB_TYPE_BAR_VARIANT[lastMatchedType];
     }
-    return HP_THRESHOLD_GRADIENT[getHpThreshold(partyHealthPercentage)];
+    return HP_THRESHOLD_BAR_VARIANT[getHpThreshold(partyHealthPercentage)];
   };
 
   return (
@@ -285,31 +292,16 @@ export function PartyDisplay() {
             >
               <img src="/assets/icons/indigolay/icon-hp.png" alt="HP" className="h-5 w-5" />
             </span>
-            <div
+            <IndigolayBar
               id="party-hp-bar"
-              className="relative h-4 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-5 xl:h-4"
+              className={cn('min-w-0 flex-1', showPulse && 'brightness-125')}
+              variant={getHealthBarVariant()}
+              size="sm"
+              percentage={partyHealthPercentage}
+              segments={PARTY_BAR_SEGMENTS}
             >
-              <div
-                id="party-hp-fill"
-                className={cn(
-                  'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-500',
-                  getHealthBarColor(),
-                  showPulse && 'brightness-125',
-                )}
-                style={{ width: `${partyHealthPercentage}%` }}
-              >
-                <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                <div className="absolute inset-0 flex">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="flex-1 border-r border-black/20" />
-                  ))}
-                </div>
-              </div>
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{ boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' }}
-              />
-            </div>
+              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            </IndigolayBar>
             <span
               id="party-hp-percent"
               className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"
@@ -343,57 +335,41 @@ export function PartyDisplay() {
                 )}
               />
             </span>
-            <div
+            <IndigolayBar
               id="party-guard-bar"
-              className={cn(
-                'relative h-4 flex-1 rounded-none border border-gray-700 bg-gray-800 sm:h-5 xl:h-4',
-                isGuardFull && 'guard-bar-full',
-              )}
+              className={cn('min-w-0 flex-1', isGuardFull && 'guard-bar-full')}
+              variant="slate"
+              size="sm"
+              percentage={guardPercentage}
+              segments={PARTY_BAR_SEGMENTS}
+              overlay={
+                guardBlock && (
+                  <div
+                    key={guardBlock.key}
+                    className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+                  >
+                    <div
+                      className={cn('guard-shatter absolute inset-0', guardBlock.full ? 'bg-white/70' : 'bg-white/30')}
+                    />
+                    <span
+                      className={cn(
+                        'guard-block-popup pixel-font relative font-bold text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.85)]',
+                        guardBlock.full ? 'text-[11px] sm:text-sm' : 'text-[8px] sm:text-[10px]',
+                      )}
+                    >
+                      {guardBlock.full ? 'BLOCK!' : 'GUARD'}
+                    </span>
+                  </div>
+                )
+              }
             >
               <div
-                id="party-guard-fill"
                 className={cn(
-                  'relative h-full overflow-hidden bg-gradient-to-r transition-all duration-300',
-                  GUARD_BAR_GRADIENT,
+                  'absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent',
+                  guardCharging ? 'guard-shimmer' : 'opacity-0',
                 )}
-                style={{ width: `${guardPercentage}%` }}
-              >
-                <div
-                  className={cn(
-                    'absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent',
-                    guardCharging ? 'guard-shimmer' : 'opacity-0',
-                  )}
-                />
-                <div className="absolute inset-0 flex">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="flex-1 border-r border-black/20" />
-                  ))}
-                </div>
-              </div>
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{ boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' }}
               />
-              {/* Shatter flash + "BLOCK!" / "GUARD" popup when a hit is mitigated */}
-              {guardBlock && (
-                <div
-                  key={guardBlock.key}
-                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
-                >
-                  <div
-                    className={cn('guard-shatter absolute inset-0', guardBlock.full ? 'bg-white/70' : 'bg-white/30')}
-                  />
-                  <span
-                    className={cn(
-                      'guard-block-popup pixel-font relative font-bold text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.85)]',
-                      guardBlock.full ? 'text-[11px] sm:text-sm' : 'text-[8px] sm:text-[10px]',
-                    )}
-                  >
-                    {guardBlock.full ? 'BLOCK!' : 'GUARD'}
-                  </span>
-                </div>
-              )}
-            </div>
+            </IndigolayBar>
             <span
               id="party-guard-percent"
               className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"

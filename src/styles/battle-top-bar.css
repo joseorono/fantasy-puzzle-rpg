@@ -218,9 +218,9 @@
     padding-top: 5.5rem;
 }
 
-@media (max-height: 700px) {
+@media (max-height: 780px) {
   #boardSection {
-    padding-top: 4rem;
+    padding-top: 4.5rem;
   }
 }
 

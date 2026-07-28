@@ -1,4 +1,5 @@
 import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
+import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -105,6 +106,18 @@ export const assetList: string[] = [
   '/assets/hud/btn-sys.png',
   '/assets/hud/chip-currency.png',
 
+  // HUD — indigolay progress bars (IndigolayBar)
+  '/assets/hud/indigolay/bar-track.png',
+  '/assets/hud/indigolay/bar-fill-orange.png',
+  '/assets/hud/indigolay/bar-fill-green.png',
+  '/assets/hud/indigolay/bar-fill-sky-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue-green.png',
+  '/assets/hud/indigolay/bar-fill-pink.png',
+  '/assets/hud/indigolay/bar-fill-purple.png',
+  '/assets/hud/indigolay/bar-fill-red.png',
+  '/assets/hud/indigolay/bar-fill-yellow.png',
+
   // Icons
   '/assets/icons/indigolay/Icon_bookmark-fill.png',
   '/assets/icons/indigolay/Icon_setting.png',
@@ -116,6 +129,9 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
+
+  // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
+  ...SKILL_ICON_SHEET_IMAGES,
 
   // Menu assets
   '/assets/menu/back-button-hover.png',
@@ -137,7 +153,7 @@ export const assetList: string[] = [
   '/assets/orbs/orb_yellow.png',
 
   // Sprites
-  '/assets/sprite/character-placeholder.png',
+  '/assets/sprite/placeholder.png',
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

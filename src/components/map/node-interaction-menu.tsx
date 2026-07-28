@@ -4,6 +4,7 @@ import type { Position } from '~/types/geometry';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { cn } from '~/lib/utils';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
@@ -17,12 +18,12 @@ interface NodeInteractionMenuProps {
 }
 
 const NODE_ICONS: Record<MapNodeType, FrostyRpgIconName> = {
-  Battle: 'broadsword',
-  Boss: 'crown',
-  Town: 'lantern',
+  Battle: 'steelSword',
+  Boss: 'redBook',
+  Town: 'elixir',
   Dungeon: 'skull',
-  Treasure: 'chest',
-  Mystery: 'orbPurple',
+  Treasure: 'parchment',
+  Mystery: 'pouch',
 };
 
 /**
@@ -42,6 +43,8 @@ export function NodeInteractionMenu({
   const canEnter = node.type === 'Town' || node.type === 'Dungeon';
   const canOpenChest = node.type === 'Treasure' && !isCompleted;
   const canInteract = node.type === 'Mystery';
+  // The remix is a post-clear replay mode — it only unlocks once the dungeon has been beaten.
+  const canRandomize = node.type === 'Dungeon' && isCompleted;
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;
@@ -101,14 +104,14 @@ export function NodeInteractionMenu({
       <div className="nim-actions">
         {canFight && onFight && (
           <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onFight}>
-            <FrostyRpgIcon name="broadsword" size={16} />
+            <FrostyRpgIcon name="steelSword" size={16} />
             Fight
           </ToffecButton>
         )}
 
         {canEnter && onEnter && (
           <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="lantern" size={16} />
+            <FrostyRpgIcon name="elixir" size={16} />
             Enter
           </ToffecButton>
         )}
@@ -116,31 +119,40 @@ export function NodeInteractionMenu({
         {node.type === 'Dungeon' && onRandomize && (
           <Tooltip>
             <TooltipTrigger asChild>
-              {/* span wrapper: ToffecButton doesn't forward a ref for Radix to anchor to */}
-              <span className="nim-btn-tooltip">
-                <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onRandomize}>
+              {/* span wrapper: ToffecButton doesn't forward a ref for Radix to anchor to. The
+                  disabled button drops pointer events so hover still reaches this span —
+                  browsers don't dispatch pointer events on disabled controls. */}
+              <span className={cn('nim-btn-tooltip', !canRandomize && 'cursor-not-allowed')}>
+                <ToffecButton
+                  variant="indigolay-red"
+                  size="sm"
+                  className="nim-btn disabled:pointer-events-none"
+                  onClick={onRandomize}
+                  disabled={!canRandomize}
+                >
                   <FrostyRpgIcon name="skull" size={16} />
                   Randomize
                 </ToffecButton>
               </span>
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
-              A remixed run — shuffled floors and enemies with bonus loot, and no story. The boss still waits at the
-              end.
+              {canRandomize
+                ? 'A remixed run — shuffled floors and enemies with bonus loot, and no story. The boss still waits at the end.'
+                : 'Clear this dungeon first to unlock its remix — shuffled floors and enemies with bonus loot, and no story.'}
             </TooltipContent>
           </Tooltip>
         )}
 
         {canOpenChest && onOpenChest && (
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
-            <FrostyRpgIcon name="openChest" size={16} />
+            <FrostyRpgIcon name="sealedScroll" size={16} />
             Open
           </ToffecButton>
         )}
 
         {canInteract && onEnter && (
           <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="orbPurple" size={16} />
+            <FrostyRpgIcon name="pouch" size={16} />
             Interact
           </ToffecButton>
         )}

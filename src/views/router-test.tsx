@@ -3,6 +3,7 @@ import { useRouterActions, useRouterState, useParty } from '~/stores/game-store'
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
+import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 
 /**
@@ -15,8 +16,7 @@ export default function RouterTestView() {
   const {
     goToTownHub,
     goToBattleDemo,
-    goToMapDemo,
-    goToMapDemo2,
+    goToMap,
     goToDialogueDemo,
     goToBattleRewards,
     goToDebug,
@@ -24,7 +24,7 @@ export default function RouterTestView() {
   } = useRouterActions();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2.5 p-5">
+    <div id="router-test" className="flex flex-col items-center justify-center gap-2.5 p-5">
       <h3 className="mb-2 text-xl font-bold">Router Test</h3>
 
       <div className="mb-2">
@@ -64,20 +64,6 @@ export default function RouterTestView() {
           }}
         >
           Battle Demo
-        </button>
-
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo()}
-        >
-          Map Demo
-        </button>
-
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo2()}
-        >
-          Map Demo 2
         </button>
 
         <button
@@ -127,6 +113,23 @@ export default function RouterTestView() {
         >
           Go Back
         </button>
+      </div>
+
+      <div className="mt-4 flex flex-col items-center gap-2">
+        <h4 className="text-lg font-bold">Maps</h4>
+
+        {/* Generated from the registry, so a new map shows up here on its own. */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {ALL_MAPS.map((map) => (
+            <button
+              key={map.id}
+              className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+              onClick={() => goToMap({ mapId: map.id })}
+            >
+              {map.displayMapName}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

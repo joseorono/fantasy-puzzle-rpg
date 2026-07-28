@@ -68,7 +68,7 @@ export function DialogueTestView() {
             </ToffecButton>
 
             <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={() => startScene('narrator')}>
-              <FrostyRpgIcon name="orbPurple" size={16} />
+              <FrostyRpgIcon name="pouch" size={16} />
               Narrator Cutscene
             </ToffecButton>
 
@@ -84,7 +84,7 @@ export function DialogueTestView() {
         <div className="nim w-[420px]">
           <div className="nim-header">
             <div className="nim-icon-wrapper">
-              <FrostyRpgIcon name="lantern" size={28} />
+              <FrostyRpgIcon name="elixir" size={28} />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="nim-title pixel-font">Controls</h2>
@@ -105,7 +105,7 @@ export function DialogueTestView() {
         <div className="nim w-[420px]">
           <div className="nim-header">
             <div className="nim-icon-wrapper">
-              <FrostyRpgIcon name="orbPurple" size={28} />
+              <FrostyRpgIcon name="pouch" size={28} />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="nim-title pixel-font">Features</h2>

@@ -146,3 +146,10 @@ export const RATING_REVEAL = {
   continueDelayMs: 450,
 } as const;
 
+/** Cadence for the battle-rewards resource cards counting up, one after another. */
+export const REWARDS_RESOURCE_REVEAL = {
+  /** Delay after the panel mounts before the first resource counts up. */
+  startDelayMs: 300,
+  /** Gap between each resource starting its count. */
+  staggerMs: 220,
+} as const;

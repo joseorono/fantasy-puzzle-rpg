@@ -23,14 +23,9 @@ export interface RouterSlice {
       goToDungeon: (data: ViewDataMap['dungeon']) => void;
 
       /**
-       * Navigate to map demo
+       * Navigate to a map, selected by `data.mapId`
        */
-      goToMapDemo: (data?: ViewDataMap['map-demo']) => void;
-
-      /**
-       * Navigate to map demo 2
-       */
-      goToMapDemo2: (data?: ViewDataMap['map-demo-2']) => void;
+      goToMap: (data: ViewDataMap['map']) => void;
 
       /**
        * Navigate to dialogue demo

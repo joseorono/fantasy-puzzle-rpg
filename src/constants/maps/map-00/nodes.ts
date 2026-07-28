@@ -166,17 +166,3 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
   },
 ];
 
-/**
- * Get a node by its position
- */
-export function getNodeAtPosition(row: number, col: number): InteractiveMapNode | undefined {
-  return DEMO_MAP_NODES.find((node) => node.position.row === row && node.position.col === col);
-}
-
-/**
- * Get a node by its ID
- */
-export function getNodeById(id: string): InteractiveMapNode | undefined {
-  return DEMO_MAP_NODES.find((node) => node.id === id);
-}
-

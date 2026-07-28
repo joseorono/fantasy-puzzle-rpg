@@ -30,6 +30,9 @@ import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
+import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
+import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
+import { prefersReducedMotion } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -68,9 +71,11 @@ export function BattleRewardsScreen() {
   useEffect(() => {
     if (step !== 3) return;
 
-    // No level-ups or all level-ups complete - navigate back
+    // No level-ups or all level-ups complete - navigate back.
+    // Deliberately no step reset: the screen unmounts on navigation, so state resets on the
+    // next entry anyway, and resetting here would replay (and re-grant) the whole reward
+    // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
-      setStep(1);
       routerActions.goBack();
       return;
     }
@@ -88,7 +93,7 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, setStep, routerActions]);
+  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
@@ -240,47 +245,48 @@ interface RewardsResourcesPanelProps {
 
 function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
   const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
+  const reduced = prefersReducedMotion();
+  const [revealedCount, setRevealedCount] = useState(reduced ? activeResources.length : 0);
+
+  // NumberFlow renders its first value statically and only rolls on a change, so each
+  // card mounts at zero (and at the pre-reward balance) and flips to its real figure a
+  // beat later. Depends on the length, not the array: `activeResources` is rebuilt every
+  // render, which would re-arm every timer and the reveal would never land.
+  useEffect(() => {
+    if (reduced) return;
+    const timers = activeResources.map((_, i) =>
+      setTimeout(
+        () => setRevealedCount(i + 1),
+        REWARDS_RESOURCE_REVEAL.startDelayMs + i * REWARDS_RESOURCE_REVEAL.staggerMs,
+      ),
+    );
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, activeResources.length]);
 
   if (activeResources.length === 0) return null;
 
   return (
     <div className="rewards-resources-panel">
-      {activeResources.map((r) => (
-        <div key={r.key} className={`rewards-resource-card rewards-resource-card--${r.key}`}>
-          <FrostyRpgIcon name={r.iconName} size={24} className="rewards-resource-card__icon" />
-          <div className="rewards-resource-card__content">
-            <span className="rewards-resource-card__label">{r.label}</span>
-            <div className="rewards-resource-card__values">
-              <span className="rewards-resource-card__earned number-flow-container">
-                <NumberFlow
-                  value={earnedResources[r.key]}
-                  format={INTEGER_FORMAT}
-                  prefix="+"
-                  trend={1}
-                  spinTiming={SNAPPY_SPIN_TIMING}
-                  transformTiming={SNAPPY_TRANSFORM_TIMING}
-                  opacityTiming={SNAPPY_OPACITY_TIMING}
-                />
-              </span>
-              {currentResources && (
-                <>
-                  <span className="rewards-resource-card__arrow">{'\u2192'}</span>
-                  <span className="rewards-resource-card__balance number-flow-container">
-                    <NumberFlow
-                      value={currentResources[r.key] + earnedResources[r.key]}
-                      format={INTEGER_FORMAT}
-                      trend={1}
-                      spinTiming={SNAPPY_SPIN_TIMING}
-                      transformTiming={SNAPPY_TRANSFORM_TIMING}
-                      opacityTiming={SNAPPY_OPACITY_TIMING}
-                    />
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+      {activeResources.map((r, index) => {
+        const earned = index < revealedCount ? earnedResources[r.key] : 0;
+
+        return (
+          <ResourceStatItem
+            key={r.key}
+            variant="card"
+            resource={r.key}
+            label={r.label}
+            iconName={r.iconName}
+            prefix="+"
+            trend={1}
+            value={earned}
+            // Starts at what the player owns now and climbs to the post-reward total.
+            // The store itself is still credited on Continue, so this stays arithmetic.
+            balance={currentResources ? currentResources[r.key] + earned : undefined}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -325,9 +331,10 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
         {lootMultiplier > 1 && (
-          <span className="rewards-loot-bonus pixel-font">
-            ×{lootMultiplier} Rating Bonus
-          </span>
+          <div className="rewards-loot-bonus pixel-font">
+            <span className="rewards-loot-bonus__label">Rating Bonus</span>
+            <span className="rewards-loot-bonus__value">×{lootMultiplier}</span>
+          </div>
         )}
       </header>
 

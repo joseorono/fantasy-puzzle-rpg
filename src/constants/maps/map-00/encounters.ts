@@ -5,7 +5,7 @@ import { MOSS_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
  * Enemy encounter compositions for each fight node on map-00.
  * Each key corresponds to a node ID from nodes.ts.
  */
-const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
+export const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
   // ─── Regular Battles ────────────────────────────────────────────────
   battle_1: {
     enemies: [
@@ -84,10 +84,3 @@ const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
     ],
   },
 };
-
-/**
- * Look up the encounter definition for a given node ID.
- */
-export function getEncounterForNode(nodeId: string): EncounterDefinition | undefined {
-  return MAP_00_ENCOUNTERS[nodeId];
-}

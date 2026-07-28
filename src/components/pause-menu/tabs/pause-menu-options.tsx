@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
-import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
+import { isMutedAtom, masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
@@ -9,15 +8,7 @@ export function PauseMenuOptions() {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
   const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
   const [sfxVolume, setSfxVolume] = useAtom(sfxVolumeAtom);
-  const [isMuted, setIsMuted] = useState(false);
-
-  useEffect(() => {
-    try {
-      setIsMuted(soundService.isMuted());
-    } catch {
-      setIsMuted(false);
-    }
-  }, []);
+  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
 
   function handleMasterChange(value: number[]) {
     const vol = value[0];
@@ -38,23 +29,9 @@ export function PauseMenuOptions() {
   }
 
   function handleMuteToggle() {
-    // Read the service's mute state at toggle time so we don't desync if mute
-    // was changed elsewhere (e.g. the battle top bar) while this menu was open.
-    let currentlyMuted = isMuted;
-    try {
-      currentlyMuted = soundService.isMuted();
-    } catch {
-      currentlyMuted = isMuted;
-    }
-
-    if (currentlyMuted) {
-      soundService.unmuteAll();
-      setIsMuted(false);
-      return;
-    }
-
-    soundService.muteAll();
-    setIsMuted(true);
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    soundService.setMuted(nextMuted);
   }
 
   return (

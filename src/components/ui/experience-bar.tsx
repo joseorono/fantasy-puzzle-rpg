@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { cn } from '~/lib/utils';
 
 const experienceBarVariants = cva('exp-bar', {
@@ -13,23 +14,41 @@ const experienceBarVariants = cva('exp-bar', {
   },
 });
 
+/** Variant → IndigolayBar size. `full` maps to `lg`, matching the level-up screen's EXP bar. */
+const EXP_BAR_SIZE = {
+  compact: 'xs',
+  full: 'lg',
+} as const;
+
+const DEFAULT_EXP_BAR_VARIANT = 'full';
+
 interface ExperienceBarProps extends VariantProps<typeof experienceBarVariants> {
   /** Fill percentage (0–100) */
   percentage: number;
   /** Optional text overlay (e.g. "45 / 100") */
-  label?: string;
+  label?: React.ReactNode;
   className?: string;
 }
 
+/**
+ * The game's EXP bar: an {@link IndigolayBar} in the shared yellow fill, plus the
+ * white flash it pops on landing at 100%. The flash is a sheet fading out rather
+ * than a keyframe on the fill, which is a `border-image` sprite with no background.
+ */
 export function ExperienceBar({ percentage, label, variant, className }: ExperienceBarProps) {
+  const resolvedVariant = variant ?? DEFAULT_EXP_BAR_VARIANT;
+
   return (
-    <div className={cn(experienceBarVariants({ variant, className }))}>
-      <div
-        className={cn('exp-bar__fill', percentage >= 100 && 'exp-bar__fill--full')}
-        style={{ width: `${percentage}%` }}
-      />
-      {label && <div className="exp-bar__label pixel-font text-xs">{label}</div>}
-    </div>
+    <IndigolayBar
+      className={cn(experienceBarVariants({ variant: resolvedVariant, className }))}
+      variant="yellow"
+      size={EXP_BAR_SIZE[resolvedVariant]}
+      percentage={percentage}
+      label={label}
+      // Not on a layer: IndigolayBar's layer onAnimationEnd clears its crossfade
+      // state without checking which animation ended.
+      overlay={percentage >= 100 ? <span className="exp-bar__flash" /> : null}
+    />
   );
 }
 
