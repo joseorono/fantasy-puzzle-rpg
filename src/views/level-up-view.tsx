@@ -300,10 +300,17 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
-                        {character.class === 'healer'
-                          ? 'Increases your healing output'
-                          : 'Increases your damage output'}
+                      <TooltipContent side="right">
+                        <ul className="indigolay-list">
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">
+                              {character.class === 'healer'
+                                ? 'Increases your healing output'
+                                : 'Increases your damage output'}
+                            </span>
+                          </li>
+                        </ul>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -377,10 +384,19 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
-                        -Raises Maximum HP, scaled by this character&apos;s VIT multiplier
-                        <br />
-                        -Slows how fast the party Guard meter decays
+                      <TooltipContent side="right">
+                        <ul className="indigolay-list">
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">
+                              Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                            </span>
+                          </li>
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">Slows how fast the party Guard meter decays</span>
+                          </li>
+                        </ul>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -452,12 +468,21 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
-                        -Reduces ultimate skill cooldown
-                        <br />
-                        -Reduces item cooldowns in battle
-                        <br />
-                        -Charges the party Guard meter faster
+                      <TooltipContent side="right">
+                        <ul className="indigolay-list">
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">Reduces ultimate skill cooldown</span>
+                          </li>
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">Reduces item cooldowns in battle</span>
+                          </li>
+                          <li className="indigolay-list__item">
+                            <span className="indigolay-list__bullet">◆</span>
+                            <span className="indigolay-list__text">Charges the party Guard meter faster</span>
+                          </li>
+                        </ul>
                       </TooltipContent>
                     </Tooltip>
                   </div>
