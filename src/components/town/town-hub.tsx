@@ -45,6 +45,17 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     }
   }, [currentLocation]);
 
+  // Pre-decode sub-location background images so section switching is instantaneous
+  useEffect(() => {
+    Object.values(subLocationBackgrounds).forEach((bgUrl) => {
+      const img = new Image();
+      img.src = bgUrl;
+      if ('decode' in img) {
+        img.decode().catch(() => {});
+      }
+    });
+  }, [subLocationBackgrounds]);
+
   const handleGoToPlace = (place: Exclude<townLocations, 'town-hub'>) => {
     soundService.playSound(SoundNames.mechanicalClick, 0.4, 0.1);
     setCurrentLocation(place);
