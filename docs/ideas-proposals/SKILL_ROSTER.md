@@ -65,15 +65,18 @@ movement, and menus. A level-up lands every 2–3 battles on average.
 
 Both kinds are tiered, and the numbering carries meaning: **tier 0 is what you start with.**
 
-- **Actives — Tier 0…3.** Tier 0 is the class's default Ultimate: unlocked at level 1, free, and the
+- **Actives — Tier 0…3.** Tier 0 is the class's default Ultimate: owned from level 1, free, and the
   `selectedSkillId` a new character begins with. It guarantees **no hero ever has an empty active
-  slot**. Tiers 1–3 are alternatives the player may swap into that one slot.
+  slot**. Tiers 1–3 are alternatives the player may swap into that one slot — reaching their level
+  makes them *purchasable*, and unlocking costs resources (`ACTIVE_TIER_COSTS`: 100c+5 iron /
+  250c+5 silver / 400c+5 silver+5 gold). Unlike passives, actives have **no tier-order
+  prerequisite** — they are sidegrades, not a stack.
 - **Passives — Tier 1…4.** No tier 0 — a character starts with none. Passives are **not equipped**:
   unlocking one turns it on permanently, and every unlocked passive applies at once.
 
 | | Tier 0 | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Actives** — level-gated, free | **L1** | L7 | L14 | L21 | — |
+| **Actives** — level **and** resources (tier 0 free) | **L1** | L7 | L14 | L21 | — |
 | **Passives** — level **and** resources | — | L4 | L10 | L17 | L24 |
 
 Interleaved against the curve in §1, unlocks land at roughly these battle counts:

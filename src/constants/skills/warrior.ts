@@ -1,6 +1,6 @@
 import type { SkillDefinition, PassiveSkillDefinition, SkillIconPosition } from '~/types/skills';
 import { packIcon } from './icons';
-import { ACTIVE_TIER_LEVELS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+import { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
 
 /**
  * 🛡️ Warrior — Berserker-flavoured icons (blood, fire, raw force).
@@ -31,6 +31,7 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     target: 'enemy',
     cooldownMultiplier: 1,
     unlockLevel: ACTIVE_TIER_LEVELS[0],
+    cost: ACTIVE_TIER_COSTS[0],
   },
   {
     id: 'warrior-whirlwind',
@@ -44,6 +45,7 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     target: 'allEnemy',
     cooldownMultiplier: 1.4,
     unlockLevel: ACTIVE_TIER_LEVELS[1],
+    cost: ACTIVE_TIER_COSTS[1],
   },
   {
     id: 'warrior-sharp-blow',
@@ -57,6 +59,7 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     target: 'enemy',
     cooldownMultiplier: 0.7,
     unlockLevel: ACTIVE_TIER_LEVELS[2],
+    cost: ACTIVE_TIER_COSTS[2],
   },
   {
     id: 'warrior-overwhelm',
@@ -70,6 +73,7 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     target: 'enemy',
     cooldownMultiplier: 1.6,
     unlockLevel: ACTIVE_TIER_LEVELS[3],
+    cost: ACTIVE_TIER_COSTS[3],
   },
 ];
 

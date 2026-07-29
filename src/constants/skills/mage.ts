@@ -1,6 +1,6 @@
 import type { SkillDefinition, PassiveSkillDefinition, SkillIconPosition } from '~/types/skills';
 import { packIcon } from './icons';
-import { ACTIVE_TIER_LEVELS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+import { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
 
 /**
  * 🔮 Mage — one spell per element for maximum visual variety.
@@ -32,6 +32,7 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     target: 'enemy',
     cooldownMultiplier: 1,
     unlockLevel: ACTIVE_TIER_LEVELS[0],
+    cost: ACTIVE_TIER_COSTS[0],
   },
   {
     id: 'mage-chain-lightning',
@@ -45,6 +46,7 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     target: 'allEnemy',
     cooldownMultiplier: 1.3,
     unlockLevel: ACTIVE_TIER_LEVELS[1],
+    cost: ACTIVE_TIER_COSTS[1],
   },
   {
     id: 'mage-ice-bolt',
@@ -58,6 +60,7 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     target: 'enemy',
     cooldownMultiplier: 0.7,
     unlockLevel: ACTIVE_TIER_LEVELS[2],
+    cost: ACTIVE_TIER_COSTS[2],
   },
   {
     id: 'mage-meteor',
@@ -71,6 +74,7 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     target: 'allEnemy',
     cooldownMultiplier: 1.6,
     unlockLevel: ACTIVE_TIER_LEVELS[3],
+    cost: ACTIVE_TIER_COSTS[3],
   },
 ];
 

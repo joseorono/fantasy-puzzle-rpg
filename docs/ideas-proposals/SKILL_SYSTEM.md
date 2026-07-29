@@ -99,9 +99,12 @@ The whole design depends on keeping these apart. Use these words everywhere, in 
 | Registry | `SKILL_REGISTRY` | `PASSIVE_REGISTRY` |
 | Character state | `unlockedSkillIds` + `selectedSkillId` | `unlockedPassiveIds` |
 | Tiers | **0–3** (tier 0 = the free default, equipped from level 1) | **1–4** (a hero starts with none) |
-| Unlock gate | Character level (free): L1 / 7 / 14 / 21 | Level **and** resources: L4 / 10 / 17 / 24 |
+| Unlock gate | Level **and** resources: L1 / 7 / 14 / 21 (tier 0 free) | Level **and** resources: L4 / 10 / 17 / 24 |
 
-Tier 0 is what guarantees no hero ever has an empty active slot, and `DEFAULT_SKILL_BY_CLASS`
+Reaching a level only makes a skill *purchasable* — every unlock beyond tier 0 costs resources
+at the Skills tab (`ACTIVE_TIER_COSTS` / `PASSIVE_TIER_COSTS` in `src/constants/skills/tiers.ts`);
+nothing is granted free on level-up. Tier 0 is what guarantees no hero ever has an empty active
+slot, and `DEFAULT_SKILL_BY_CLASS`
 becomes *derived* from each class's tier-0 entry rather than hand-maintained. Gate levels are
 calibrated against the EXP curve — see [`SKILL_ROSTER.md`](./SKILL_ROSTER.md) §1–§2.
 

@@ -1,14 +1,15 @@
-import type { KeyboardEvent, Ref } from 'react';
+import type { KeyboardEvent, ReactNode, Ref } from 'react';
 import { cn } from '~/lib/utils';
 import type { CharacterClass } from '~/types/rpg-elements';
 import type { SkillIconPosition } from '~/types/skills';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { LevelTag } from '~/components/ui-custom/level-tag';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 /** Native slot-frame art is 137x147; rendered size keeps that aspect. */
 const SLOT_ASPECT = 147 / 137;
 /** Fraction of the slot width the seated icon occupies (frame interior is ~107/137). */
-const SLOT_ICON_FRACTION = 0.76;
+const SLOT_ICON_FRACTION = 0.72;
 
 interface SkillSlotProps {
   characterClass: CharacterClass;
@@ -22,6 +23,10 @@ interface SkillSlotProps {
   selected: boolean;
   /** This active skill is the character's equipped Ultimate. */
   equipped?: boolean;
+  /** Plays the unlock flare (ring + brightness + icon colour bloom). */
+  flash?: boolean;
+  /** Hover tooltip body; locked slots use it to surface name + cost. */
+  tooltip?: ReactNode;
   /** Rendered slot width in px. */
   size?: number;
   disabled?: boolean;
@@ -45,18 +50,21 @@ export function SkillSlot({
   unlockLevel,
   selected,
   equipped = false,
-  size = 84,
+  flash = false,
+  tooltip,
+  size = 80,
   disabled = false,
   onSelect,
   onKeyDown,
   buttonRef,
 }: SkillSlotProps) {
   const iconSize = Math.round(size * SLOT_ICON_FRACTION);
-  return (
+
+  const button = (
     <button
       ref={buttonRef}
       type="button"
-      className={cn('skill-slot', { locked, equipped, active: selected, disabled })}
+      className={cn('skill-slot', { locked, equipped, active: selected, disabled, 'just-unlocked': flash })}
       style={{ width: size, height: Math.round(size * SLOT_ASPECT) }}
       onClick={onSelect}
       onKeyDown={onKeyDown}
@@ -99,5 +107,15 @@ export function SkillSlot({
       )}
       {locked && <LevelTag level={unlockLevel} className="skill-slot__level-tag" />}
     </button>
+  );
+
+  if (!tooltip) return button;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={6}>
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
   );
 }

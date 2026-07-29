@@ -1,19 +1,21 @@
 import { cn } from '~/lib/utils';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { SkillDefinition, PassiveSkillDefinition, SkillTarget } from '~/types/skills';
+import type { Resources } from '~/types/resources';
 import { canAfford } from '~/lib/resources';
 import { useResources } from '~/stores/game-store';
-import { isPassiveUnlocked, hasPreviousPassiveTier } from '~/lib/skill-system';
+import { isPassiveUnlocked, hasPreviousPassiveTier, isSkillUnlocked } from '~/lib/skill-system';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { describePassiveModifiers } from './passive-descriptions';
 
+// Short on purpose — the active stat strip must fit one line in Press Start 2P.
 const TARGET_LABELS: Record<SkillTarget, string> = {
-  enemy: 'Single enemy',
+  enemy: 'One enemy',
   allEnemy: 'All enemies',
-  ally: 'Lowest-HP ally',
+  ally: 'Weakest ally',
   allAlly: 'Whole party',
 };
 
@@ -30,14 +32,15 @@ interface SkillDetailPanelProps {
   /** True while a battle is in progress — every action locks. */
   isInBattle: boolean;
   onEquip: (skillId: string) => void;
-  onRequestUnlock: (passive: PassiveSkillDefinition) => void;
+  onRequestUnlock: (selection: SkillSelection) => void;
 }
 
 /**
  * The parchment detail panel under the slot rows: featured icon on the gold
  * deco frame, name, tier/gate line, description, effect list, and the action
- * row (Equip for actives, explicit cost + gated Unlock for passives).
- * Dark-on-parchment text — the panel art is bright cream.
+ * row. Every locked skill — active or passive — shows its resource price
+ * explicitly next to the Unlock button; a blocked unlock names the failing
+ * gate. Dark-on-parchment text, no pixel-font shadow (it smears at small sizes).
  */
 export function SkillDetailPanel({
   character,
@@ -51,27 +54,29 @@ export function SkillDetailPanel({
   const def = isActive ? selection.skill : selection.passive;
 
   const heals = isActive && (selection.skill.target === 'ally' || selection.skill.target === 'allAlly');
-  const tierLabel = isActive
-    ? selection.skill.tier === 0
-      ? 'Starting Ultimate'
-      : `Tier ${ROMAN_TIERS[selection.skill.tier - 1]} Ultimate · unlocks at Lv ${selection.skill.unlockLevel}`
-    : `Tier ${ROMAN_TIERS[selection.passive.tier - 1]} Passive · requires Lv ${selection.passive.unlockLevel}`;
+  const kindLabel = isActive ? 'Ultimate' : 'Passive';
+  const tierLabel =
+    isActive && selection.skill.tier === 0
+      ? 'Starting Ultimate — every hero begins with this'
+      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`;
 
   return (
     <div className="skill-detail" key={def.id}>
       <div className="skill-detail__header">
-        <SkillDecoIcon characterClass={def.class} position={def.icon} size={82} className="skill-detail__deco" />
+        <SkillDecoIcon characterClass={def.class} position={def.icon} size={72} className="skill-detail__deco" />
         <div className="skill-detail__title-group">
           <div className="skill-detail__name">
             <NarikWoodBitFont text={def.name.toUpperCase()} size={1} />
           </div>
-          <div className="skill-detail__tier pixel-font">{tierLabel}</div>
+          <div className="skill-detail__tier">{tierLabel}</div>
         </div>
       </div>
 
       <p className="skill-detail__description">{def.description}</p>
 
-      <ul className="skill-detail__stats indigolay-list indigolay-list--compact">
+      {/* Actives: one horizontal strip with engraved separators. Passives: their
+          sentence-length effect lines stack instead. */}
+      <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
         {isActive ? (
           <>
             <DetailStat label={TARGET_LABELS[selection.skill.target]} />
@@ -88,103 +93,87 @@ export function SkillDetailPanel({
         ) : (
           describePassiveModifiers(selection.passive.modifiers).map((line) => <DetailStat key={line} label={line} />)
         )}
-      </ul>
+      </div>
 
       <SkillDetailActions
         character={character}
         selection={selection}
+        resources={resources}
         isInBattle={isInBattle}
-        canAffordCost={!isActive && canAfford(resources, selection.passive.cost)}
         onEquip={onEquip}
         onRequestUnlock={onRequestUnlock}
       />
 
-      {isInBattle && <div className="skill-detail__battle-lock pixel-font">Locked during battle</div>}
+      {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
     </div>
   );
 }
 
 function DetailStat({ label, highlight = false }: { label: string; highlight?: boolean }) {
-  return (
-    <li className="indigolay-list__item">
-      <span
-        className={cn(
-          'indigolay-list__bullet',
-          highlight ? 'indigolay-list__bullet--gold' : 'indigolay-list__bullet--amber',
-        )}
-      >
-        ◆
-      </span>
-      <span className="indigolay-list__text skill-detail__stat-text">{label}</span>
-    </li>
-  );
+  return <span className={cn('skill-detail__stat', highlight && 'skill-detail__stat--highlight')}>{label}</span>;
 }
 
 interface SkillDetailActionsProps {
   character: CharacterData;
   selection: SkillSelection;
+  resources: Resources;
   isInBattle: boolean;
-  canAffordCost: boolean;
   onEquip: (skillId: string) => void;
-  onRequestUnlock: (passive: PassiveSkillDefinition) => void;
+  onRequestUnlock: (selection: SkillSelection) => void;
 }
 
 function SkillDetailActions({
   character,
   selection,
+  resources,
   isInBattle,
-  canAffordCost,
   onEquip,
   onRequestUnlock,
 }: SkillDetailActionsProps) {
-  if (selection.kind === 'active') {
-    const skill = selection.skill;
-    const unlocked = character.unlockedSkillIds.includes(skill.id);
-    const equipped = character.selectedSkillId === skill.id;
-    if (!unlocked) {
-      return <div className="skill-detail__gate-note pixel-font">Unlocks free at Lv {skill.unlockLevel}</div>;
-    }
+  const isActive = selection.kind === 'active';
+  const def = isActive ? selection.skill : selection.passive;
+
+  // Owned skills: actives offer Equip; passives are simply always on.
+  if (isActive && isSkillUnlocked(character, selection.skill.id)) {
+    const equipped = character.selectedSkillId === def.id;
     return (
       <div className="skill-detail__actions">
-        <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(skill.id)}>
+        <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
           {equipped ? 'Equipped' : 'Equip'}
         </ToffecButton>
       </div>
     );
   }
-
-  const passive = selection.passive;
-  if (isPassiveUnlocked(character, passive.id)) {
-    return (
-      <div className="skill-detail__gate-note skill-detail__gate-note--owned pixel-font">Learned — always active</div>
-    );
+  if (!isActive && isPassiveUnlocked(character, selection.passive.id)) {
+    return <div className="skill-detail__gate-note skill-detail__gate-note--owned">Learned — always active</div>;
   }
 
-  // Locked passive: show the price explicitly, and say which gate is failing.
-  const needsPrevious = !hasPreviousPassiveTier(character, passive);
-  const needsLevel = character.level < passive.unlockLevel;
+  // Locked: show the price explicitly, and say exactly which gate is failing.
+  const affordable = canAfford(resources, def.cost);
+  const needsPrevious = !isActive && !hasPreviousPassiveTier(character, selection.passive);
+  const needsLevel = character.level < def.unlockLevel;
   const blockedReason = needsPrevious
-    ? `Unlock Tier ${ROMAN_TIERS[passive.tier - 2]} first`
+    ? `Unlock Tier ${ROMAN_TIERS[selection.kind === 'passive' ? selection.passive.tier - 2 : 0]} first`
     : needsLevel
-      ? `Requires Lv ${passive.unlockLevel}`
-      : !canAffordCost
+      ? `Requires Lv ${def.unlockLevel}`
+      : !affordable
         ? 'Not enough resources'
         : null;
 
   return (
     <div className="skill-detail__actions skill-detail__actions--unlock">
-      <div className={cn('skill-detail__cost', !canAffordCost && 'skill-detail__cost--short')}>
-        <CostBadges resources={passive.cost} />
+      <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
+        <CostBadges resources={def.cost} />
       </div>
       <ToffecButton
         variant="orange"
         size="xs"
         disabled={Boolean(blockedReason) || isInBattle}
-        onClick={() => onRequestUnlock(passive)}
+        onClick={() => onRequestUnlock(selection)}
       >
         Unlock
       </ToffecButton>
-      {blockedReason && <div className="skill-detail__gate-note pixel-font">{blockedReason}</div>}
+      {blockedReason && <div className="skill-detail__gate-note">{blockedReason}</div>}
     </div>
   );
 }

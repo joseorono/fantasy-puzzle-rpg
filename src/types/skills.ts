@@ -47,8 +47,13 @@ export interface SkillDefinition {
   target: SkillTarget;
   /** Charge-speed factor for the cooldown: 1 = base, > 1 slower, < 1 faster. */
   cooldownMultiplier: number;
-  /** Character level at which this skill auto-unlocks (1 = starting skill). */
+  /** Character level at which this skill becomes purchasable (1 = starting skill). */
   unlockLevel: number;
+  /**
+   * Resource price at the pause-menu Skills tab. Reaching `unlockLevel` only makes
+   * the skill purchasable; unlocking costs this. All-zero = free (tier 0 only).
+   */
+  cost: Resources;
 }
 
 /**

@@ -1,49 +1,53 @@
 import { useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useParty, usePartyActions, useResources, useResourcesActions, useCurrentView } from '~/stores/game-store';
-import type { PassiveSkillDefinition } from '~/types/skills';
+import type { Resources } from '~/types/resources';
 import { getSkillsForClass, getPassivesForClass, isSkillUnlocked, isPassiveUnlocked } from '~/lib/skill-system';
 import { canAfford } from '~/lib/resources';
+import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useUnlockPassive } from '~/hooks/use-unlock-passive';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection } from '~/constants/keyboard';
-import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { ConfirmPanel } from '~/components/confirm-dialog/confirm-panel';
 import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
-import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { SkillSlot } from '~/components/pause-menu/skills/skill-slot';
 import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/skills/skill-detail-panel';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
 
+/** How long the just-unlocked slot flare plays. Matches the CSS animations. */
+const UNLOCK_FLASH_MS = 950;
+
 /**
  * The Skills tab: pick a hero, browse their Active (Ultimate) track and Passive
  * track as framed Indigolay slots, inspect any slot in the parchment detail
- * panel, equip Ultimates, and buy passives with crafting resources.
+ * panel, and unlock skills with crafting resources — reaching a level only
+ * makes a skill purchasable. Tier-0 Ultimates are the free starting kit.
  */
 export function PauseMenuSkills() {
   const party = useParty();
   const partyActions = usePartyActions();
   const resources = useResources();
   const resourcesActions = useResourcesActions();
-  const { unlock } = useUnlockPassive();
+  const unlockActive = useUnlockSkill().unlock;
+  const unlockPassive = useUnlockPassive().unlock;
   const isInBattle = useCurrentView() === 'battle-demo';
 
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selection, setSelection] = useState<{ row: 'active' | 'passive'; index: number }>({ row: 'active', index: 0 });
-  const [pendingUnlock, setPendingUnlock] = useState<PassiveSkillDefinition | null>(null);
+  const [pendingUnlock, setPendingUnlock] = useState<SkillSelection | null>(null);
+  const [justUnlockedId, setJustUnlockedId] = useState<string | null>(null);
   const slotRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
 
-  const colors = CHARACTER_COLORS[selected.class];
-  const Icon = CHARACTER_ICONS[selected.class];
   const actives = getSkillsForClass(selected.class);
   const passives = getPassivesForClass(selected.class);
 
@@ -87,14 +91,30 @@ export function PauseMenuSkills() {
     partyActions.selectSkillForCharacter(selected.id, skillId);
   }
 
-  function handleConfirmUnlock() {
-    const passive = pendingUnlock;
-    setPendingUnlock(null);
-    if (!passive || !canAfford(resources, passive.cost)) return;
-    soundService.playSound(SoundNames.clickCoin);
-    resourcesActions.reduceResources(passive.cost);
-    unlock(selected.id, passive.id);
+  function flashSlot(id: string) {
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    setJustUnlockedId(id);
+    flashTimerRef.current = setTimeout(() => setJustUnlockedId(null), UNLOCK_FLASH_MS);
   }
+
+  function handleConfirmUnlock() {
+    const pending = pendingUnlock;
+    setPendingUnlock(null);
+    if (!pending) return;
+    const def = pending.kind === 'active' ? pending.skill : pending.passive;
+    if (!canAfford(resources, def.cost)) return;
+    soundService.playSound(SoundNames.clickCoin);
+    resourcesActions.reduceResources(def.cost);
+    if (pending.kind === 'active') unlockActive(selected.id, def.id);
+    else unlockPassive(selected.id, def.id);
+    flashSlot(def.id);
+  }
+
+  const pendingDef = pendingUnlock
+    ? pendingUnlock.kind === 'active'
+      ? pendingUnlock.skill
+      : pendingUnlock.passive
+    : null;
 
   return (
     <>
@@ -115,38 +135,35 @@ export function PauseMenuSkills() {
         </div>
 
         <div className="pause-menu-skills-main pixel-scrollbar">
-          <PauseMenuCharacterHeader
-            name={selected.name}
-            classNameText={selected.class}
-            level={selected.level}
-            Icon={Icon}
-            colors={colors}
-          />
-
           <div className="pause-menu-skills-section">
             <div className="pause-menu-skills-section-label pixel-font">
               Active <span className="pause-menu-skills-section-hint">one equipped at a time</span>
             </div>
             <IndigolayDivider />
             <div className="pause-menu-skills-row">
-              {actives.map((skill, index) => (
-                <ToffecBeigeCornersWrapper key={skill.id} className="skill-slot-wrapper">
-                  <SkillSlot
-                    characterClass={selected.class}
-                    icon={skill.icon}
-                    name={skill.name}
-                    locked={!isSkillUnlocked(selected, skill.id)}
-                    unlockLevel={skill.unlockLevel}
-                    selected={selection.row === 'active' && selection.index === index}
-                    equipped={selected.selectedSkillId === skill.id}
-                    onSelect={() => selectSlot('active', index)}
-                    onKeyDown={(e) => handleSlotKeyDown(e, 'active', index)}
-                    buttonRef={(el) => {
-                      slotRefs.current[`active-${index}`] = el;
-                    }}
-                  />
-                </ToffecBeigeCornersWrapper>
-              ))}
+              {actives.map((skill, index) => {
+                const locked = !isSkillUnlocked(selected, skill.id);
+                return (
+                  <ToffecBeigeCornersWrapper key={skill.id} className="skill-slot-wrapper">
+                    <SkillSlot
+                      characterClass={selected.class}
+                      icon={skill.icon}
+                      name={skill.name}
+                      locked={locked}
+                      unlockLevel={skill.unlockLevel}
+                      selected={selection.row === 'active' && selection.index === index}
+                      equipped={selected.selectedSkillId === skill.id}
+                      flash={justUnlockedId === skill.id}
+                      tooltip={locked ? <SlotTooltip name={skill.name} cost={skill.cost} /> : undefined}
+                      onSelect={() => selectSlot('active', index)}
+                      onKeyDown={(e) => handleSlotKeyDown(e, 'active', index)}
+                      buttonRef={(el) => {
+                        slotRefs.current[`active-${index}`] = el;
+                      }}
+                    />
+                  </ToffecBeigeCornersWrapper>
+                );
+              })}
             </div>
           </div>
 
@@ -156,23 +173,28 @@ export function PauseMenuSkills() {
             </div>
             <IndigolayDivider />
             <div className="pause-menu-skills-row pause-menu-skills-row--passive">
-              {passives.map((passive, index) => (
-                <ToffecBeigeCornersWrapper key={passive.id} className="skill-slot-wrapper">
-                  <SkillSlot
-                    characterClass={selected.class}
-                    icon={passive.icon}
-                    name={passive.name}
-                    locked={!isPassiveUnlocked(selected, passive.id)}
-                    unlockLevel={passive.unlockLevel}
-                    selected={selection.row === 'passive' && selection.index === index}
-                    onSelect={() => selectSlot('passive', index)}
-                    onKeyDown={(e) => handleSlotKeyDown(e, 'passive', index)}
-                    buttonRef={(el) => {
-                      slotRefs.current[`passive-${index}`] = el;
-                    }}
-                  />
-                </ToffecBeigeCornersWrapper>
-              ))}
+              {passives.map((passive, index) => {
+                const locked = !isPassiveUnlocked(selected, passive.id);
+                return (
+                  <ToffecBeigeCornersWrapper key={passive.id} className="skill-slot-wrapper">
+                    <SkillSlot
+                      characterClass={selected.class}
+                      icon={passive.icon}
+                      name={passive.name}
+                      locked={locked}
+                      unlockLevel={passive.unlockLevel}
+                      selected={selection.row === 'passive' && selection.index === index}
+                      flash={justUnlockedId === passive.id}
+                      tooltip={locked ? <SlotTooltip name={passive.name} cost={passive.cost} /> : undefined}
+                      onSelect={() => selectSlot('passive', index)}
+                      onKeyDown={(e) => handleSlotKeyDown(e, 'passive', index)}
+                      buttonRef={(el) => {
+                        slotRefs.current[`passive-${index}`] = el;
+                      }}
+                    />
+                  </ToffecBeigeCornersWrapper>
+                );
+              })}
             </div>
           </div>
 
@@ -186,19 +208,22 @@ export function PauseMenuSkills() {
         </div>
       </div>
 
-      {pendingUnlock && (
+      {pendingUnlock && pendingDef && (
         <ConfirmPanel
-          title="Learn Passive"
+          title={pendingUnlock.kind === 'active' ? 'Learn Skill' : 'Learn Passive'}
           confirmLabel="Unlock"
           cancelLabel="Cancel"
           onConfirm={handleConfirmUnlock}
           onCancel={() => setPendingUnlock(null)}
         >
           <div className="skill-unlock-confirm">
-            <SkillDecoIcon characterClass={pendingUnlock.class} position={pendingUnlock.icon} size={72} />
-            <div className="skill-unlock-confirm__name pixel-font">{pendingUnlock.name}</div>
+            <SkillDecoIcon characterClass={pendingDef.class} position={pendingDef.icon} size={72} />
+            <div className="skill-unlock-confirm__name pixel-font">{pendingDef.name}</div>
             <ul className="indigolay-list indigolay-list--compact">
-              {describePassiveModifiers(pendingUnlock.modifiers).map((line) => (
+              {(pendingUnlock.kind === 'active'
+                ? [pendingDef.description]
+                : describePassiveModifiers(pendingUnlock.passive.modifiers)
+              ).map((line) => (
                 <li key={line} className="indigolay-list__item">
                   <span className="indigolay-list__bullet indigolay-list__bullet--amber">◆</span>
                   <span className="indigolay-list__text">{line}</span>
@@ -206,11 +231,22 @@ export function PauseMenuSkills() {
               ))}
             </ul>
             <div className="skill-unlock-confirm__cost">
-              <CostBadges resources={pendingUnlock.cost} />
+              <CostBadges resources={pendingDef.cost} />
             </div>
           </div>
         </ConfirmPanel>
       )}
     </>
+  );
+}
+
+function SlotTooltip({ name, cost }: { name: string; cost: Resources }) {
+  return (
+    <div className="skill-slot-tooltip">
+      <div className="font-bold">{name}</div>
+      <div className="skill-slot-tooltip__cost">
+        <CostBadges resources={cost} />
+      </div>
+    </div>
   );
 }

@@ -1,9 +1,13 @@
-import { useParty, usePartyActions } from '~/stores/game-store';
-import { getSkillsForClass, isSkillUnlocked } from '~/lib/skill-system';
+import { useParty, usePartyActions, useResources, useResourcesActions } from '~/stores/game-store';
+import { getSkillsForClass, getPassivesForClass, isSkillUnlocked, isPassiveUnlocked } from '~/lib/skill-system';
 import { DEFAULT_SKILL_BY_CLASS } from '~/constants/skills';
-import { CHARACTER_ICONS } from '~/constants/party';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
+import { useUnlockPassive } from '~/hooks/use-unlock-passive';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
+import { createResources } from '~/lib/resources';
 import type { CharacterData } from '~/types/rpg-elements';
+
+const DEBUG_LEVELS = [1, 4, 10, 17, 24, 30];
 
 /**
  * Debug panel for arbitrarily unlocking, selecting, and resetting character skills.
@@ -12,7 +16,16 @@ import type { CharacterData } from '~/types/rpg-elements';
 export default function SkillDebugView() {
   const party = useParty();
   const partyActions = usePartyActions();
+  const resources = useResources();
+  const resourcesActions = useResourcesActions();
   const { unlock } = useUnlockSkill();
+  const unlockPassive = useUnlockPassive().unlock;
+
+  function setPartyLevel(level: number) {
+    for (const member of party) {
+      partyActions.updateCharacter(member.id, { ...member, level });
+    }
+  }
 
   function resetToDefault(member: CharacterData) {
     const defaultId = DEFAULT_SKILL_BY_CLASS[member.class];
@@ -28,7 +41,33 @@ export default function SkillDebugView() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
       <div className="mx-auto max-w-6xl">
         <h1 className="mb-2 text-4xl font-bold text-white">Skill System Debug</h1>
-        <p className="mb-8 text-slate-300">Unlock, select, and reset character skills</p>
+        <p className="mb-4 text-slate-300">Unlock, select, and reset character skills</p>
+
+        <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-3">
+          <button
+            onClick={() =>
+              resourcesActions.addResources(
+                createResources({ coins: 1000, iron: 50, silver: 25, gold: 25, copper: 25 }),
+              )
+            }
+            className="rounded bg-amber-600 px-3 py-1 text-sm font-semibold text-white transition-colors hover:bg-amber-500"
+          >
+            +1000c / +50 iron / +25 silver / +25 gold
+          </button>
+          <span className="text-xs text-slate-400">
+            coins {resources.coins} · iron {resources.iron} · silver {resources.silver} · gold {resources.gold}
+          </span>
+          <span className="ml-2 text-xs text-slate-500">Party level:</span>
+          {DEBUG_LEVELS.map((level) => (
+            <button
+              key={level}
+              onClick={() => setPartyLevel(level)}
+              className="rounded bg-slate-600 px-2 py-1 text-xs font-semibold text-white transition-colors hover:bg-slate-500"
+            >
+              {level}
+            </button>
+          ))}
+        </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {party.map((member) => {
@@ -54,15 +93,12 @@ export default function SkillDebugView() {
                   {skills.map((skill) => {
                     const unlocked = isSkillUnlocked(member, skill.id);
                     const selected = member.selectedSkillId === skill.id;
-                    const Icon = CHARACTER_ICONS[skill.class];
                     return (
-                      <div
-                        key={skill.id}
-                        className="flex items-center justify-between rounded bg-slate-700 px-3 py-2"
-                      >
+                      <div key={skill.id} className="flex items-center justify-between rounded bg-slate-700 px-3 py-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
-                            <Icon className="h-4 w-4 shrink-0" /> {skill.name}
+                            <SkillIcon characterClass={skill.class} position={skill.icon} size={16} sheetSize={32} />{' '}
+                            {skill.name}
                             {selected && <span className="ml-2 text-xs text-amber-300">ACTIVE</span>}
                           </div>
                           <div className="text-xs text-slate-400">
@@ -85,6 +121,41 @@ export default function SkillDebugView() {
                             Select
                           </button>
                         </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">Passives</div>
+                  {getPassivesForClass(member.class).map((passive) => {
+                    const unlocked = isPassiveUnlocked(member, passive.id);
+                    return (
+                      <div
+                        key={passive.id}
+                        className="flex items-center justify-between rounded bg-slate-700 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
+                            <SkillIcon
+                              characterClass={passive.class}
+                              position={passive.icon}
+                              size={16}
+                              sheetSize={32}
+                            />{' '}
+                            {passive.name}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            tier {passive.tier} · unlock Lv {passive.unlockLevel}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => unlockPassive(member.id, passive.id)}
+                          disabled={unlocked}
+                          className="rounded bg-purple-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40"
+                        >
+                          {unlocked ? 'Learned' : 'Unlock free'}
+                        </button>
                       </div>
                     );
                   })}

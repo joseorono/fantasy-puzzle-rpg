@@ -29,6 +29,7 @@ import {
   classSheetIconCount,
 } from '~/constants/skills';
 import type { CharacterClass } from '~/types/rpg-elements';
+import type { Resources } from '~/types/resources';
 import type { CharacterData } from '~/types/rpg-elements';
 
 function makeCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
@@ -87,6 +88,19 @@ describe('registry shape', () => {
     for (const cls of classes) {
       const icons = [...SKILLS_BY_CLASS[cls], ...PASSIVES_BY_CLASS[cls]].map((d) => `${d.icon.row}:${d.icon.col}`);
       expect(new Set(icons).size).toBe(icons.length);
+    }
+  });
+
+  it('prices every unlock: tier-0 actives are free, everything else costs resources', () => {
+    const totalCost = (cost: Resources) => Object.values(cost).reduce((sum: number, v: number) => sum + v, 0);
+    for (const cls of classes) {
+      for (const skill of SKILLS_BY_CLASS[cls]) {
+        if (skill.tier === 0) expect(totalCost(skill.cost), `${skill.id} should be free`).toBe(0);
+        else expect(totalCost(skill.cost), `${skill.id} should cost resources`).toBeGreaterThan(0);
+      }
+      for (const passive of PASSIVES_BY_CLASS[cls]) {
+        expect(totalCost(passive.cost), `${passive.id} should cost resources`).toBeGreaterThan(0);
+      }
     }
   });
 });

@@ -41,6 +41,7 @@ function SkillCelebration({
       dismissOnBackdropClick={dismissOnBackdropClick ?? true}
       autoDismissMs={autoDismissMs ?? 3200}
       sparkleCount={20}
+      backdropClassName="skill-celebration-backdrop"
     >
       <div className="gom-modal gom-modal--victory">
         <div className="gom-content">

@@ -12,7 +12,7 @@ import { HEALER_ACTIVES, HEALER_PASSIVES } from './healer';
  */
 
 export { packIcon, CLASS_SKILL_SHEET, classSheetIconCount } from './icons';
-export { ACTIVE_TIER_LEVELS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+export { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
 
 /** Base damage value used for all skill damage calculations. */
 export const BASE_SKILL_DAMAGE = 15;
