@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { Position } from '~/types/geometry';
@@ -15,6 +16,7 @@ interface NodeInteractionMenuProps {
   onOpenChest?: () => void;
   onViewDialogue?: () => void;
   characterPosition: Position;
+  isClosing?: boolean;
 }
 
 const NODE_ICONS: Record<MapNodeType, FrostyRpgIconName> = {
@@ -38,7 +40,19 @@ export function NodeInteractionMenu({
   onOpenChest,
   onViewDialogue,
   characterPosition,
+  isClosing: externalIsClosing = false,
 }: NodeInteractionMenuProps) {
+  const [isClosingInternal, setIsClosingInternal] = useState(false);
+  const isClosing = externalIsClosing || isClosingInternal;
+
+  const handleAction = (actionFn?: () => void) => {
+    if (!actionFn || isClosingInternal) return;
+    setIsClosingInternal(true);
+    setTimeout(() => {
+      actionFn();
+    }, 180);
+  };
+
   const canFight = node.type === 'Battle' || node.type === 'Boss';
   const canEnter = node.type === 'Town' || node.type === 'Dungeon';
   const canOpenChest = node.type === 'Treasure' && !isCompleted;
@@ -56,7 +70,7 @@ export function NodeInteractionMenu({
 
   return (
     <div
-      className="nim fixed z-50"
+      className={`nim fixed z-50 ${isClosing ? 'nim--leaving' : ''}`}
       style={{
         left: `${finalLeft}px`,
         top: `${finalTop}px`,
@@ -103,14 +117,14 @@ export function NodeInteractionMenu({
       {/* Action buttons */}
       <div className="nim-actions">
         {canFight && onFight && (
-          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onFight}>
+          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={() => handleAction(onFight)}>
             <FrostyRpgIcon name="steelSword" size={16} />
             Fight
           </ToffecButton>
         )}
 
         {canEnter && onEnter && (
-          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onEnter}>
+          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={() => handleAction(onEnter)}>
             <FrostyRpgIcon name="elixir" size={16} />
             Enter
           </ToffecButton>
@@ -127,7 +141,7 @@ export function NodeInteractionMenu({
                   variant="indigolay-red"
                   size="sm"
                   className="nim-btn disabled:pointer-events-none"
-                  onClick={onRandomize}
+                  onClick={() => handleAction(onRandomize)}
                   disabled={!canRandomize}
                 >
                   <FrostyRpgIcon name="skull" size={16} />
@@ -144,21 +158,21 @@ export function NodeInteractionMenu({
         )}
 
         {canOpenChest && onOpenChest && (
-          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => handleAction(onOpenChest)}>
             <FrostyRpgIcon name="sealedScroll" size={16} />
             Open
           </ToffecButton>
         )}
 
         {canInteract && onEnter && (
-          <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={onEnter}>
+          <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={() => handleAction(onEnter)}>
             <FrostyRpgIcon name="pouch" size={16} />
             Interact
           </ToffecButton>
         )}
 
         {node.dialogueScene && onViewDialogue && (
-          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onViewDialogue}>
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => handleAction(onViewDialogue)}>
             <FrostyRpgIcon name="openBook" size={16} />
             Talk
           </ToffecButton>

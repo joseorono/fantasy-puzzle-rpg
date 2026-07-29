@@ -109,6 +109,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [canvasReady, setCanvasReady] = useState(false);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
+  const [closingNode, setClosingNode] = useState<{ node: InteractiveMapNode; position: Position } | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
 
@@ -312,10 +313,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       footstepSystem.setSurface(surfaceType);
       footstepSystem.playFootstep();
 
-      // Close node menu when moving
-      if (showNodeMenu) {
+      // Close node menu with exit transition when moving
+      if (showNodeMenu && currentNode) {
+        setClosingNode({ node: currentNode, position: getCharacterScreenPosition() });
         setShowNodeMenu(false);
         setCurrentNode(null);
+        setTimeout(() => setClosingNode(null), 180);
       }
 
       // Check for dialogue triggers
@@ -879,8 +882,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       />
 
       {/* Node interaction tooltip */}
-      {showNodeMenu && currentNode && canvasReady && (
+      {showNodeMenu && currentNode && canvasReady ? (
         <NodeInteractionMenu
+          key={currentNode.id}
           node={currentNode}
           isCompleted={isMapNodeCompleted(currentNode, completedDungeons, isNodeCompleted)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
@@ -890,7 +894,15 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={getCharacterScreenPosition()}
         />
-      )}
+      ) : closingNode && canvasReady ? (
+        <NodeInteractionMenu
+          key={`closing-${closingNode.node.id}`}
+          node={closingNode.node}
+          isCompleted={isMapNodeCompleted(closingNode.node, completedDungeons, isNodeCompleted)}
+          characterPosition={closingNode.position}
+          isClosing
+        />
+      ) : null}
 
       {/* Loot notification */}
       {currentLoot && <LootNotification loot={currentLoot} onClose={() => setCurrentLoot(null)} />}
