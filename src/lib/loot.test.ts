@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { combineLootFromEnemies, applyLootTable } from './loot';
+import { getTotalExpToReachLevel } from './leveling-system';
 import { createEmptyLootTable, createLootTable } from '~/types/loot';
 import { createResources } from './resources';
+import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
+import { BASE_MATCH_DAMAGE } from '~/constants/party';
 import type { EnemyData } from '~/types/rpg-elements';
 import type { ProbabilityNumber } from '~/types/number-types';
 import type { EquipmentItemData, ConsumableItemData } from '~/types/inventory';
@@ -87,11 +90,7 @@ describe('combineLootFromEnemies', () => {
   });
 
   it('should sum exp rewards from multiple enemies', () => {
-    const enemies = [
-      createEnemy({ expReward: 10 }),
-      createEnemy({ expReward: 20 }),
-      createEnemy({ expReward: 35 }),
-    ];
+    const enemies = [createEnemy({ expReward: 10 }), createEnemy({ expReward: 20 }), createEnemy({ expReward: 35 })];
 
     const result = combineLootFromEnemies(enemies);
     expect(result.expReward).toBe(65);
@@ -130,11 +129,9 @@ describe('combineLootFromEnemies', () => {
   it('scales money + resources by the multiplier (floored), leaving items and XP untouched', () => {
     const enemy = createEnemy({
       expReward: 40,
-      lootTable: createLootTable(
-        [{ item: mockSword }],
-        [{ item: mockPotion }],
-        { item: { coins: 10, gold: 5, copper: 3, silver: 1, iron: 2 } },
-      ),
+      lootTable: createLootTable([{ item: mockSword }], [{ item: mockPotion }], {
+        item: { coins: 10, gold: 5, copper: 3, silver: 1, iron: 2 },
+      }),
     });
 
     const result = combineLootFromEnemies([enemy], 1.5);
@@ -204,9 +201,7 @@ describe('combineLootFromEnemies', () => {
 
   it('should preserve item drop probabilities', () => {
     const enemy = createEnemy({
-      lootTable: createLootTable([
-        { item: mockSword, probability: 0.3 as ProbabilityNumber },
-      ]),
+      lootTable: createLootTable([{ item: mockSword, probability: 0.3 as ProbabilityNumber }]),
     });
 
     const result = combineLootFromEnemies([enemy]);
@@ -236,11 +231,7 @@ describe('combineLootFromEnemies', () => {
 
 describe('applyLootTable', () => {
   it('adds guaranteed equipment, consumables, and resources to a snapshot', () => {
-    const loot = createLootTable(
-      [{ item: mockSword }],
-      [{ item: mockPotion }],
-      { item: { coins: 25, gold: 5 } },
-    );
+    const loot = createLootTable([{ item: mockSword }], [{ item: mockPotion }], { item: { coins: 25, gold: 5 } });
 
     const result = applyLootTable(loot, [], createResources({ coins: 10 }));
 
@@ -277,5 +268,23 @@ describe('applyLootTable', () => {
 
     expect(inventory).toHaveLength(1);
     expect(resources.coins).toBe(10);
+  });
+});
+
+describe('EXP piñata debug encounter', () => {
+  it('pays exactly the EXP needed to reach its target level', () => {
+    // The victory path the demo actually takes: battle-over-modal sums the defeated
+    // enemies here. The split across frogs must not lose EXP to rounding.
+    const { expReward } = combineLootFromEnemies(EXP_PINATA_FROGS);
+
+    expect(expReward).toBe(EXP_PINATA_TOTAL_EXP);
+    expect(expReward).toBe(getTotalExpToReachLevel(EXP_PINATA_TARGET_LEVEL));
+  });
+
+  it('is harmless enough to be a free win', () => {
+    for (const frog of EXP_PINATA_FROGS) {
+      expect(frog.maxHp).toBeLessThanOrEqual(BASE_MATCH_DAMAGE);
+      expect(frog.attackDamage).toBeLessThanOrEqual(1);
+    }
   });
 });

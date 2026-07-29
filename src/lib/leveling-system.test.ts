@@ -402,3 +402,42 @@ describe('buildExpGainTimeline', () => {
     expect(pending.pendingLevelUps).toBeLessThanOrEqual(MAX_LEVEL_UPS_PER_BATTLE);
   });
 });
+
+describe('getTotalExpToReachLevel', () => {
+  it('costs nothing to reach the level you already start on, or below', () => {
+    expect(levelingSystem.getTotalExpToReachLevel(1)).toBe(0);
+    expect(levelingSystem.getTotalExpToReachLevel(0)).toBe(0);
+    expect(levelingSystem.getTotalExpToReachLevel(-5)).toBe(0);
+  });
+
+  it('reaching level 2 costs exactly the level 1 threshold', () => {
+    expect(levelingSystem.getTotalExpToReachLevel(2)).toBe(levelingSystem.getExpThresholdForLevel(1));
+  });
+
+  it('sums every threshold below the target', () => {
+    const target = 16;
+    let expected = 0;
+    for (let level = 1; level < target; level += 1) {
+      expected += levelingSystem.getExpThresholdForLevel(level);
+    }
+
+    expect(levelingSystem.getTotalExpToReachLevel(target)).toBe(expected);
+  });
+
+  it('clamps to MAX_LEVEL rather than growing past the level ceiling', () => {
+    expect(levelingSystem.getTotalExpToReachLevel(MAX_LEVEL + 50)).toBe(
+      levelingSystem.getTotalExpToReachLevel(MAX_LEVEL),
+    );
+  });
+
+  it('actually lands a level-1 character on the target level', () => {
+    // The contract the EXP piñata debug encounter depends on: award this much and the
+    // character reaches exactly the target, with nothing left toward the next level.
+    const target = 16;
+    const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
+    const totalExp = levelingSystem.getTotalExpToReachLevel(target);
+    const [pending] = calculateLevelUpsForParty([{ ...character, currentLevelExp: totalExp }], totalExp);
+
+    expect(1 + pending.pendingLevelUps).toBe(target);
+  });
+});

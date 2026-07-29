@@ -38,6 +38,28 @@ export function getExpThresholdForLevel(level: number): number {
   return Math.floor(EXP_BASE * level ** EXP_CURVE_POWER);
 }
 
+/**
+ * Total EXP a level-1 character must bank to reach `targetLevel` — every threshold
+ * along the way, summed. Derived from {@link getExpThresholdForLevel} rather than
+ * written down, so it follows any retune of `~/constants/progression`.
+ *
+ * @param targetLevel - Level to reach; clamped to `MAX_LEVEL`, and anything at or below 1 costs nothing
+ * @returns Total EXP required
+ * @example
+ * ```ts
+ * getTotalExpToReachLevel(2);  // 12
+ * getTotalExpToReachLevel(16); // 4531
+ * ```
+ */
+export function getTotalExpToReachLevel(targetLevel: number): number {
+  const ceiling = Math.min(Math.floor(targetLevel), MAX_LEVEL);
+  let total = 0;
+  for (let level = 1; level < ceiling; level += 1) {
+    total += getExpThresholdForLevel(level);
+  }
+  return total;
+}
+
 /** One step of the rewards-screen EXP bar animation (a single level the bar passes through). */
 export interface ExpGainSegment {
   /** Level shown while this segment fills. */

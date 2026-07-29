@@ -3,6 +3,7 @@ import { useRouterActions, useRouterState, useParty } from '~/stores/game-store'
 import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
+import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
 import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 
@@ -13,15 +14,8 @@ export default function RouterTestView() {
   const router = useRouterState();
   const party = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
-  const {
-    goToTownHub,
-    goToBattleDemo,
-    goToMap,
-    goToDialogueDemo,
-    goToBattleRewards,
-    goToDebug,
-    goBack,
-  } = useRouterActions();
+  const { goToTownHub, goToBattleDemo, goToMap, goToDialogueDemo, goToBattleRewards, goToDebug, goBack } =
+    useRouterActions();
 
   return (
     <div id="router-test" className="flex flex-col items-center justify-center gap-2.5 p-5">
@@ -64,6 +58,21 @@ export default function RouterTestView() {
           }}
         >
           Battle Demo
+        </button>
+
+        <button
+          className="rounded bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-600"
+          onClick={() => {
+            setupBattle({ enemies: EXP_PINATA_FROGS, party });
+            goToBattleDemo({
+              enemyId: EXP_PINATA_FROGS[0].id,
+              location: 'Swamp',
+              canFlee: true,
+            });
+          }}
+          title={`Three harmless frogs worth ${EXP_PINATA_TOTAL_EXP} EXP between them — clears a level-1 party to level ${EXP_PINATA_TARGET_LEVEL}.`}
+        >
+          EXP Piñata Frogs (→ Lv {EXP_PINATA_TARGET_LEVEL})
         </button>
 
         <button
