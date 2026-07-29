@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { activeOverlayAtom } from '~/stores/overlay-atoms';
-import { SkillUnlockOverlay } from './skill-unlock-overlay';
+import { SkillUnlockOverlay, PassiveUnlockOverlay } from './skill-unlock-overlay';
 import { CraftingSuccessOverlay } from './crafting-success-overlay';
 
 /**
@@ -17,6 +17,8 @@ export function OverlayHost() {
   switch (overlay.kind) {
     case 'skill-unlock':
       return <SkillUnlockOverlay request={overlay} onDismiss={dismiss} />;
+    case 'passive-unlock':
+      return <PassiveUnlockOverlay request={overlay} onDismiss={dismiss} />;
     case 'crafting-success':
       return <CraftingSuccessOverlay request={overlay} onDismiss={dismiss} />;
     default:

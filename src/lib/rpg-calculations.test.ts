@@ -24,8 +24,9 @@ const mockCharacter: CharacterData = {
   potentialStats: { pow: 20, vit: 15, spd: 10 },
   level: 1,
   currentLevelExp: 100,
-  unlockedSkillIds: ['warrior-power-strike'],
-  selectedSkillId: 'warrior-power-strike',
+  unlockedSkillIds: ['warrior-smash'],
+  selectedSkillId: 'warrior-smash',
+  unlockedPassiveIds: [],
 };
 
 const mockEnemy: EnemyData = {
@@ -453,31 +454,42 @@ describe('Stagger Calculations', () => {
 // HP Threshold
 // ============================================================================
 
+// Cutoffs are hardcoded rather than imported so a rebalance of getHpThreshold
+// has to update these deliberately instead of silently redefining the boundary.
 describe('HP Threshold', () => {
-  test('getHpThreshold: Returns high above 50%', () => {
+  test('getHpThreshold: Returns high above 55%', () => {
     expect(rpg.getHpThreshold(100)).toBe('high');
     expect(rpg.getHpThreshold(75)).toBe('high');
-    expect(rpg.getHpThreshold(51)).toBe('high');
+    expect(rpg.getHpThreshold(56)).toBe('high');
   });
 
-  test('getHpThreshold: Returns medium between 26-50%', () => {
-    expect(rpg.getHpThreshold(50)).toBe('medium');
+  test('getHpThreshold: Returns medium between 30% (exclusive) and 55% (inclusive)', () => {
+    expect(rpg.getHpThreshold(55)).toBe('medium');
     expect(rpg.getHpThreshold(40)).toBe('medium');
-    expect(rpg.getHpThreshold(26)).toBe('medium');
+    expect(rpg.getHpThreshold(31)).toBe('medium');
   });
 
-  test('getHpThreshold: Returns low at 25% and below', () => {
-    expect(rpg.getHpThreshold(25)).toBe('low');
+  test('getHpThreshold: Returns low at 30% and below', () => {
+    expect(rpg.getHpThreshold(30)).toBe('low');
     expect(rpg.getHpThreshold(10)).toBe('low');
     expect(rpg.getHpThreshold(0)).toBe('low');
   });
 
-  test('getHpThreshold: Boundary at exactly 50 is medium', () => {
-    expect(rpg.getHpThreshold(50)).toBe('medium');
+  test('getHpThreshold: High/medium boundary sits exactly at 55', () => {
+    expect(rpg.getHpThreshold(55.01)).toBe('high');
+    expect(rpg.getHpThreshold(55)).toBe('medium');
+    expect(rpg.getHpThreshold(54.99)).toBe('medium');
   });
 
-  test('getHpThreshold: Boundary at exactly 25 is low', () => {
-    expect(rpg.getHpThreshold(25)).toBe('low');
+  test('getHpThreshold: Medium/low boundary sits exactly at 30', () => {
+    expect(rpg.getHpThreshold(30.01)).toBe('medium');
+    expect(rpg.getHpThreshold(30)).toBe('low');
+    expect(rpg.getHpThreshold(29.99)).toBe('low');
+  });
+
+  test('getHpThreshold: Clamps nothing — out-of-range values still tier by cutoff', () => {
+    expect(rpg.getHpThreshold(150)).toBe('high');
+    expect(rpg.getHpThreshold(-10)).toBe('low');
   });
 });
 
@@ -508,6 +520,15 @@ describe('Item Cooldown', () => {
   test('calculateItemCooldownInMs: Zero SPD returns base cooldown', () => {
     const zeroSpdParty = [{ ...mockCharacter, stats: { pow: 0, vit: 0, spd: 0 } }];
     expect(rpg.calculateItemCooldownInMs(zeroSpdParty)).toBe(10000);
+  });
+
+  test('calculateItemCooldownInMs: Flat bonus SPD (passive) shortens the cooldown', () => {
+    const zeroSpdParty = [{ ...mockCharacter, stats: { pow: 0, vit: 0, spd: 0 } }];
+    // +10 effective SPD: floor(10000 / 1.1) = 9090
+    expect(rpg.calculateItemCooldownInMs(zeroSpdParty, 10)).toBe(9090);
+    expect(rpg.calculateItemCooldownInMs(zeroSpdParty, 10)).toBeLessThan(
+      rpg.calculateItemCooldownInMs(zeroSpdParty),
+    );
   });
 });
 

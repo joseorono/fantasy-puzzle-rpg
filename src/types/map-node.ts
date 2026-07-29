@@ -7,7 +7,7 @@ import type { DungeonDefinition } from './dungeon';
 // ─── General Map Types ────────────────────────────────────────────────
 
 // Valid sublocations of any town
-export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store' | 'skill-trainer';
+export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store';
 
 // ─── Interactive Map Nodes ────────────────────────────────────────────
 

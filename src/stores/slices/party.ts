@@ -7,7 +7,11 @@ import {
   damageAllPartyMembers as damageAllPartyMembersLib,
   applyHpFromBattle,
 } from '~/lib/party-system';
-import { unlockSkill as unlockSkillLib, selectSkill as selectSkillLib } from '~/lib/skill-system';
+import {
+  unlockSkill as unlockSkillLib,
+  selectSkill as selectSkillLib,
+  unlockPassive as unlockPassiveLib,
+} from '~/lib/skill-system';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { RarityTier } from '~/constants/rarity';
 import type { EquipmentSlot } from '~/lib/equipment-system';
@@ -131,6 +135,16 @@ export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartyS
           },
           false,
           'party/selectSkillForCharacter',
+        ),
+      unlockPassiveForCharacter: (characterId: string, passiveId: string) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = unlockPassiveLib(state.party.members[index], passiveId);
+          },
+          false,
+          'party/unlockPassiveForCharacter',
         ),
     },
   },

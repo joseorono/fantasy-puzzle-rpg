@@ -2,6 +2,7 @@ import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { cn } from '~/lib/utils';
 import { PauseMenuItems } from './tabs/pause-menu-items';
 import { PauseMenuEquip } from './tabs/pause-menu-equip';
+import { PauseMenuSkills } from './tabs/pause-menu-skills';
 import { PauseMenuStats } from './tabs/pause-menu-stats';
 import { PauseMenuOptions } from './tabs/pause-menu-options';
 import { PauseMenuSave } from './tabs/pause-menu-save';
@@ -12,12 +13,14 @@ export function PauseMenuContent() {
   const contentClassName = cn('pause-menu-content', {
     'pause-menu-content--equip': activeTab === 'equip',
     'pause-menu-content--items': activeTab === 'items',
+    'pause-menu-content--skills': activeTab === 'skills',
   });
 
   return (
     <div className={contentClassName}>
       {activeTab === 'items' && <PauseMenuItems />}
       {activeTab === 'equip' && <PauseMenuEquip />}
+      {activeTab === 'skills' && <PauseMenuSkills />}
       {activeTab === 'stats' && <PauseMenuStats />}
       {activeTab === 'options' && <PauseMenuOptions />}
       {activeTab === 'save' && <PauseMenuSave />}

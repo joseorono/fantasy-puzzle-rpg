@@ -29,8 +29,9 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   potentialStats: { pow: 15, vit: 20, spd: 5 },
   level: 1,
   currentLevelExp: 100,
-  unlockedSkillIds: ['warrior-power-strike'],
-  selectedSkillId: 'warrior-power-strike',
+  unlockedSkillIds: ['warrior-smash'],
+  selectedSkillId: 'warrior-smash',
+  unlockedPassiveIds: [],
   ...overrides,
 });
 

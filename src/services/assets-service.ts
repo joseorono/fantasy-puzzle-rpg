@@ -133,6 +133,14 @@ export const assetList: string[] = [
   // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
   ...SKILL_ICON_SHEET_IMAGES,
 
+  // Skills tab chrome (slot frames, deco frame, parchment panel, equip mark)
+  '/assets/skills/ui/indigolay-slot-normal.png',
+  '/assets/skills/ui/indigolay-slot-hover.png',
+  '/assets/skills/ui/indigolay-slot-selected.png',
+  '/assets/skills/ui/indigolay-skill-slot-deco.png',
+  '/assets/skills/ui/indigolay-skill-panel-text-area.png',
+  '/assets/skills/ui/indigolay-icon-equip.png',
+
   // Menu assets
   '/assets/menu/back-button-hover.png',
   '/assets/menu/back-button.png',

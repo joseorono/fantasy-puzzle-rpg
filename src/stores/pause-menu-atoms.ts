@@ -14,7 +14,7 @@ const volumeStorage = createValidatedStorage(volumePercentSchema);
 const mutedStorage = createValidatedStorage(mutedSchema);
 const reducedMotionStorage = createValidatedStorage(reducedMotionSchema);
 
-export const PAUSE_MENU_TABS = ['items', 'equip', 'stats', 'options', 'save', 'load'] as const;
+export const PAUSE_MENU_TABS = ['items', 'equip', 'skills', 'stats', 'options', 'save', 'load'] as const;
 export type PauseMenuTab = (typeof PAUSE_MENU_TABS)[number];
 
 export const isPauseMenuOpenAtom = atom(false);

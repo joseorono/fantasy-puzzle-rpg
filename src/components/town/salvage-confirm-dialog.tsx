@@ -3,7 +3,7 @@ import { ConfirmPanel } from '~/components/confirm-dialog/confirm-panel';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { getScaledEquipmentStats, type OwnedEquipmentInstance } from '~/lib/equipment-system';
 import type { Resources } from '~/types/resources';
-import { CostBadges } from './cost-badge';
+import { CostBadges } from '~/components/ui-custom/cost-badge';
 
 interface SalvageConfirmDialogProps {
   instance: OwnedEquipmentInstance;

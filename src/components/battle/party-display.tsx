@@ -23,6 +23,7 @@ import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { PARTY_BAR_SEGMENTS } from '~/constants/battle';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { triggerHitstop } from '~/lib/animation-strategies';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
@@ -167,7 +168,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
         <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
           {isSkillReady ? (
             <span className="inline-flex items-center gap-1 text-amber-300">
-              <Icon className="h-3 w-3" /> {skill.name}
+              <SkillIcon characterClass={character.class} position={skill.icon} size={12} sheetSize={32} /> {skill.name}
             </span>
           ) : (
             `CD: ${Math.ceil(character.skillCooldown)}s`

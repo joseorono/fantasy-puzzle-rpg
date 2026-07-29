@@ -15,6 +15,7 @@ import {
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
+import { getPartyPassiveModifiers } from '~/lib/skill-system';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
@@ -35,7 +36,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
   const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party);
+  const cooldownDuration = calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
 
   const [cooldownProgress, setCooldownProgress] = useState(1); // 1 = ready, 0 = just started
   const cooldownEndRef = useRef<number>(0);

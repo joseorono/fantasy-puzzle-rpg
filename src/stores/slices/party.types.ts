@@ -25,6 +25,7 @@ export interface PartyActions {
   unequipItem: (characterId: string, slot: EquipmentSlot) => void;
   unlockSkillForCharacter: (characterId: string, skillId: string) => void;
   selectSkillForCharacter: (characterId: string, skillId: string) => void;
+  unlockPassiveForCharacter: (characterId: string, passiveId: string) => void;
 }
 
 /**

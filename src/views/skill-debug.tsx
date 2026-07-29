@@ -20,6 +20,7 @@ export default function SkillDebugView() {
       ...member,
       unlockedSkillIds: [defaultId],
       selectedSkillId: defaultId,
+      unlockedPassiveIds: [],
     });
   }
 

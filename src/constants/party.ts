@@ -47,8 +47,9 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 30,
-    unlockedSkillIds: ['warrior-power-strike'],
-    selectedSkillId: 'warrior-power-strike',
+    unlockedSkillIds: ['warrior-smash'],
+    selectedSkillId: 'warrior-smash',
+    unlockedPassiveIds: [],
   },
   {
     id: 'rogue',
@@ -73,8 +74,9 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 20,
-    unlockedSkillIds: ['rogue-assassinate'],
-    selectedSkillId: 'rogue-assassinate',
+    unlockedSkillIds: ['rogue-aimed-shot'],
+    selectedSkillId: 'rogue-aimed-shot',
+    unlockedPassiveIds: [],
   },
   {
     id: 'mage',
@@ -99,8 +101,9 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 50,
-    unlockedSkillIds: ['mage-arcane-blast'],
-    selectedSkillId: 'mage-arcane-blast',
+    unlockedSkillIds: ['mage-fireball'],
+    selectedSkillId: 'mage-fireball',
+    unlockedPassiveIds: [],
   },
   {
     id: 'healer',
@@ -125,8 +128,9 @@ const partyBase: CharacterData[] = [
     currentHp: 0,
     skillCooldown: 0,
     maxCooldown: 60,
-    unlockedSkillIds: ['healer-divine-heal'],
-    selectedSkillId: 'healer-divine-heal',
+    unlockedSkillIds: ['healer-heal'],
+    selectedSkillId: 'healer-heal',
+    unlockedPassiveIds: [],
   },
 ];
 

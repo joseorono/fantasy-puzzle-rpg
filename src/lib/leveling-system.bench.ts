@@ -17,8 +17,9 @@ const createTestCharacter = (): CharacterData => ({
   maxCooldown: 10,
   level: 1,
   currentLevelExp: 0,
-  unlockedSkillIds: ['warrior-power-strike'],
-  selectedSkillId: 'warrior-power-strike',
+  unlockedSkillIds: ['warrior-smash'],
+  selectedSkillId: 'warrior-smash',
+  unlockedPassiveIds: [],
 });
 
 const chosenStat: CoreRPGStats = { pow: 1, vit: 1, spd: 0 };

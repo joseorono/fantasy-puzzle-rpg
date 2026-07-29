@@ -1,49 +1,61 @@
 import { useParty } from '~/stores/game-store';
-import { getSkillById } from '~/lib/skill-system';
-import { CHARACTER_ICONS } from '~/constants/party';
+import { getSkillById, getPassiveById } from '~/lib/skill-system';
+import type { CharacterClass } from '~/types/rpg-elements';
+import type { SkillIconPosition } from '~/types/skills';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
+import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { OverlayContainer } from './overlay-container';
-import type { OverlayRequest } from '~/stores/overlay-atoms';
-
-interface SkillUnlockOverlayProps {
-  request: Extract<OverlayRequest, { kind: 'skill-unlock' }>;
-  onDismiss: () => void;
-}
+import type { OverlayOptions, OverlayRequest } from '~/stores/overlay-atoms';
 
 /**
- * Celebration content for a skill unlock. Presentation only — the backdrop,
- * dismissal, and sparkles are handled by `OverlayContainer`.
+ * Celebration content for skill unlocks — both kinds. The featured icon is the
+ * skill's real Indigolay art seated on the gold deco frame. Presentation only:
+ * backdrop, dismissal, and sparkles are handled by `OverlayContainer`.
  */
-export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayProps) {
-  const party = useParty();
 
-  const skill = getSkillById(request.skillId);
-  if (!skill) return null;
+interface SkillCelebrationProps extends OverlayOptions {
+  onDismiss: () => void;
+  title: string;
+  subtitle: string;
+  skillName: string;
+  description: string;
+  characterClass: CharacterClass;
+  icon: SkillIconPosition;
+}
 
-  const Icon = CHARACTER_ICONS[skill.class];
-  const character = party.find((m) => m.id === request.characterId);
-
+function SkillCelebration({
+  onDismiss,
+  title,
+  subtitle,
+  skillName,
+  description,
+  characterClass,
+  icon,
+  dismissOnBackdropClick,
+  autoDismissMs,
+}: SkillCelebrationProps) {
   return (
     <OverlayContainer
       onDismiss={onDismiss}
-      dismissOnBackdropClick={request.dismissOnBackdropClick ?? true}
-      autoDismissMs={request.autoDismissMs ?? 3200}
+      dismissOnBackdropClick={dismissOnBackdropClick ?? true}
+      autoDismissMs={autoDismissMs ?? 3200}
       sparkleCount={20}
     >
       <div className="gom-modal gom-modal--victory">
         <div className="gom-content">
-          <div className="gom-icon gom-icon--victory">
-            <Icon size={32} color="#fff" />
-          </div>
+          <SkillDecoIcon
+            characterClass={characterClass}
+            position={icon}
+            size={96}
+            className="skill-deco-icon--celebrate"
+          />
 
           <div className="gom-title-group">
             <div className="gom-title">
-              <NarikWoodBitFont text="SKILL UNLOCKED" size={1} />
+              <NarikWoodBitFont text={title} size={1} />
             </div>
-            <p className="gom-subtitle pixel-font">
-              {character ? `${character.name} learned a new skill!` : 'A new skill was learned!'}
-            </p>
+            <p className="gom-subtitle pixel-font">{subtitle}</p>
           </div>
 
           <IndigolayDivider variant="victory" />
@@ -52,13 +64,65 @@ export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayPro
             {/* Skill name on a red ribbon banner (reuses the title-sign artwork). */}
             <div className="title-sign title-sign--red title-sign--text-gold" style={{ margin: '0 auto 0.75rem' }}>
               <span className="title-sign__text pixel-font" style={{ fontSize: '13px' }}>
-                {skill.name}
+                {skillName}
               </span>
             </div>
-            <p>{skill.description}</p>
+            <p>{description}</p>
           </div>
         </div>
       </div>
     </OverlayContainer>
+  );
+}
+
+interface SkillUnlockOverlayProps {
+  request: Extract<OverlayRequest, { kind: 'skill-unlock' }>;
+  onDismiss: () => void;
+}
+
+export function SkillUnlockOverlay({ request, onDismiss }: SkillUnlockOverlayProps) {
+  const party = useParty();
+  const skill = getSkillById(request.skillId);
+  if (!skill) return null;
+  const character = party.find((m) => m.id === request.characterId);
+
+  return (
+    <SkillCelebration
+      onDismiss={onDismiss}
+      dismissOnBackdropClick={request.dismissOnBackdropClick}
+      autoDismissMs={request.autoDismissMs}
+      title="SKILL UNLOCKED"
+      subtitle={character ? `${character.name} learned a new skill!` : 'A new skill was learned!'}
+      skillName={skill.name}
+      description={skill.description}
+      characterClass={skill.class}
+      icon={skill.icon}
+    />
+  );
+}
+
+interface PassiveUnlockOverlayProps {
+  request: Extract<OverlayRequest, { kind: 'passive-unlock' }>;
+  onDismiss: () => void;
+}
+
+export function PassiveUnlockOverlay({ request, onDismiss }: PassiveUnlockOverlayProps) {
+  const party = useParty();
+  const passive = getPassiveById(request.passiveId);
+  if (!passive) return null;
+  const character = party.find((m) => m.id === request.characterId);
+
+  return (
+    <SkillCelebration
+      onDismiss={onDismiss}
+      dismissOnBackdropClick={request.dismissOnBackdropClick}
+      autoDismissMs={request.autoDismissMs}
+      title="PASSIVE LEARNED"
+      subtitle={character ? `${character.name} grows stronger!` : 'The party grows stronger!'}
+      skillName={passive.name}
+      description={passive.description}
+      characterClass={passive.class}
+      icon={passive.icon}
+    />
   );
 }

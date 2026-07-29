@@ -7,6 +7,7 @@ import { getSelectedSkill } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import {
   SNAPPY_SPIN_TIMING,
@@ -152,7 +153,8 @@ export function PauseMenuStats() {
 
           <div className="pause-menu-stats-skill">
             <div className="pause-menu-stats-skill-name">
-              <Icon className="pause-menu-skill-option-icon" size={14} /> {activeSkill.name}
+              <SkillIcon characterClass={selected.class} position={activeSkill.icon} size={18} sheetSize={32} />{' '}
+              {activeSkill.name}
             </div>
             <div className="pause-menu-stats-skill-desc">{activeSkill.description}</div>
           </div>

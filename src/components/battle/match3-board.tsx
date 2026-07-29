@@ -29,6 +29,7 @@ import {
 } from '~/lib/rpg-calculations';
 import { findLineMatches, expandBombExplosions } from '~/lib/match-3';
 import { getEquipmentComboBonus } from '~/lib/equipment-system';
+import { getCharacterPassiveModifiers, getPartyPassiveModifiers } from '~/lib/skill-system';
 import {
   BASE_MATCH_DAMAGE,
   COOLDOWN_REDUCTION_PER_ORB,
@@ -322,20 +323,25 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // Per-color effects: each matched color's character acts off the full match size.
     // Collect the damage/heal each living character applies, then resolve them together
     // after the highlight delay so the hitstop + match sound fire once for the whole move.
-    const pendingEffects: Array<{ amount: number; isHeal: boolean }> = [];
+    const pendingEffects: Array<{ amount: number; isHeal: boolean; characterId?: string }> = [];
     for (const matchedType of matchedTypes) {
       const matchingCharacter = party.find((char) => char.color === matchedType);
       const isCharacterDead = matchingCharacter ? matchingCharacter.currentHp <= 0 : false;
       const characterPow = matchingCharacter?.stats.pow ?? 0;
 
-      // Each hero applies their own equipment combo bonus on top of the cascade level.
+      // Each hero applies their own equipment combo bonus and passive cascade bonus
+      // on top of the cascade level.
       const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
-      const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus);
+      const charPassives = matchingCharacter ? getCharacterPassiveModifiers(matchingCharacter) : null;
+      const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus + (charPassives?.cascadeBonus ?? 0));
 
       // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
       // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER.
       const isGrayMatch = matchedType === 'gray';
-      const baseTotalDamage = calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier);
+      const baseTotalDamage = Math.floor(
+        calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier) *
+          (charPassives?.matchDamageMultiplier ?? 1),
+      );
       const totalDamage = isGrayMatch
         ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
         : baseTotalDamage;
@@ -351,11 +357,19 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
       // Charge scales with match size and the party's SPD-derived Guard Charge Rate.
       if (isGrayMatch) {
-        addGuard(matches.size * GUARD_CHARGE_PER_ORB * calculateGuardChargeRate(party));
+        addGuard(
+          matches.size *
+            GUARD_CHARGE_PER_ORB *
+            (calculateGuardChargeRate(party) + getPartyPassiveModifiers(party).guardChargeRateBonus),
+        );
       }
 
       // Healer's default action heals the most damaged ally instead of dealing damage.
-      pendingEffects.push({ amount: totalDamage, isHeal: matchingCharacter?.class === 'healer' });
+      pendingEffects.push({
+        amount: totalDamage,
+        isHeal: matchingCharacter?.class === 'healer',
+        characterId: matchingCharacter?.id,
+      });
     }
 
     // Show highlight for a moment, then resolve every matched color's effect together.
@@ -365,7 +379,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
         if (effect.isHeal) {
           healParty({ amount: effect.amount, source: 'match' });
         } else {
-          damageEnemy(effect.amount);
+          damageEnemy({ amount: effect.amount, characterId: effect.characterId });
           didDamage = true;
         }
       }

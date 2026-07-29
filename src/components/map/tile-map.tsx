@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
+import type { Position } from '~/types/geometry';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
