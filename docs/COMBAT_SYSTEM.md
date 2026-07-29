@@ -10,6 +10,8 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Attack Damage**: 25 HP per attack (distributed across all living party members)
 - **Visual Timer**: Red pulsing countdown timer in the header shows "ATTACK IN: Xs"
 - **Auto-pause**: Timer stops when game is over (won/lost)
+- **Stagger / Flinch**: Player hits delay the enemy's next attack timer up to a hard-capped limit per attack cycle (see [Enemy Stagger System](#enemy-stagger-flinch-system)).
+
 
 ### Player Attack System
 - **Match-3 Damage**: Making matches deals damage to the enemy
@@ -31,10 +33,25 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top
   - Glow effect on matched orbs (400ms)
   - Scale-down and fade-out animation (200ms)
-  - Gravity effect: remaining orbs fall down
   - New random orbs spawn at the top to refill the board
 
+### Enemy Stagger (Flinch) System
+- **Mechanic**: Player hits push back the targeted enemy's next attack timer by a small delay.
+- **Push Formula**: `pushMs = interval × BASE_STAGGER_FRACTION × damageRatio × vitResist`
+  - `damageRatio = min(1, damage / (enemyMaxHp × STAGGER_REF_FRACTION))` — scaled by hit intensity relative to 15% of max HP (`STAGGER_REF_FRACTION` = 0.15).
+  - `vitResist = 1 / (1 + √max(0, VIT) / STAGGER_VIT_DIVISOR)` — diminishing resistance curve (`STAGGER_VIT_DIVISOR` = 8). High VIT enemies flinch less.
+  - `BASE_STAGGER_FRACTION` = 0.10 (10% base delay multiplier).
+- **Anti-Stunlock Hard Cap**:
+  - The total accumulated stagger per attack cycle is capped at `MAX_STAGGER_FRACTION_PER_CYCLE` (12% of the enemy's attack interval).
+  - Guarantees an enemy will always fire within `interval × (1 + 0.12)` of its previous attack regardless of hit rate.
+  - The budget resets to 0 whenever the enemy fires its attack.
+- **Visual Feedback**:
+  - **Countdown Ring Nudge**: The timer ring (`RadialCountdown`) nudges backward on hit.
+  - **"STAGGER!" Callout**: Pop of warm-amber "STAGGER!" text over the enemy sprite when a hit reaches the per-cycle cap.
+- **Implementation**: Pure formulas in `src/lib/rpg-calculations.ts` (`calculateStaggerPushMs`, `clampStaggerToCycleBudget`), timers in `src/hooks/use-enemy-attack-timers.ts`, and tunables in `src/constants/battle.ts`.
+
 ### Win/Lose Conditions
+
 
 #### Victory (Won)
 - Triggered when enemy HP reaches 0
