@@ -901,6 +901,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           resources={collectedFloorLoot}
           onClose={() => setCollectedFloorLoot(null)}
           characterPosition={getCharacterScreenPosition()}
+          tileSize={tileSize}
+          displayScale={scale}
         />
       )}
 
