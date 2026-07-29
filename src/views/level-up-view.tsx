@@ -300,7 +300,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
                         {character.class === 'healer'
                           ? 'Increases your healing output'
                           : 'Increases your damage output'}
@@ -377,7 +377,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
                         -Raises Maximum HP, scaled by this character&apos;s VIT multiplier
                         <br />
                         -Slows how fast the party Guard meter decays
@@ -452,7 +452,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                           <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="right" className="font-mono text-xs sm:text-sm">
                         -Reduces ultimate skill cooldown
                         <br />
                         -Reduces item cooldowns in battle
