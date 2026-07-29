@@ -98,7 +98,12 @@ The whole design depends on keeping these apart. Use these words everywhere, in 
 | Type | `SkillDefinition` | `PassiveSkillDefinition` |
 | Registry | `SKILL_REGISTRY` | `PASSIVE_REGISTRY` |
 | Character state | `unlockedSkillIds` + `selectedSkillId` | `unlockedPassiveIds` |
-| Unlock gate | Character level (free) | Level **and** resources |
+| Tiers | **0–3** (tier 0 = the free default, equipped from level 1) | **1–4** (a hero starts with none) |
+| Unlock gate | Character level (free): L1 / 7 / 14 / 21 | Level **and** resources: L4 / 10 / 17 / 24 |
+
+Tier 0 is what guarantees no hero ever has an empty active slot, and `DEFAULT_SKILL_BY_CLASS`
+becomes *derived* from each class's tier-0 entry rather than hand-maintained. Gate levels are
+calibrated against the EXP curve — see [`SKILL_ROSTER.md`](./SKILL_ROSTER.md) §1–§2.
 
 `SkillDefinition` is **not renamed**. It is already precisely the active-skill shape, and it is
 referenced across ~15 files including eight test/bench fixtures. Renaming buys nothing but churn —
@@ -128,9 +133,9 @@ export const CLASS_SKILL_SHEET: Record<CharacterClass, SkillSheetSlug> = {
 export type SkillIconPosition = GridPosition;
 ```
 
-`SkillDefinition` gains exactly one field, `icon: SkillIconPosition`. A thin
-`<SkillIcon class={...} position={...} disabled={...} />` wrapper picks the right sheet component
-so callers never touch slugs.
+`SkillDefinition` gains two fields: `icon: SkillIconPosition` and `tier: 0 | 1 | 2 | 3` (see §3 —
+tier 0 is the class default). A thin `<SkillIcon class={...} position={...} disabled={...} />`
+wrapper picks the right sheet component so callers never touch slugs.
 
 Valid position ranges, from `SKILL_SHEETS`:
 
@@ -196,8 +201,8 @@ export interface PassiveSkillDefinition {
   /** Stable unique key, e.g. `warrior-t1-bulwark`. */
   id: string;
   class: CharacterClass;
-  /** Position on the class's 3-node track. Tier N requires tier N-1. */
-  tier: 1 | 2 | 3;
+  /** Position on the class's 4-node track. Tier N requires tier N-1. */
+  tier: 1 | 2 | 3 | 4;
   name: string;
   description: string;
   icon: SkillIconPosition;
@@ -217,59 +222,13 @@ it as `?? []` at every access point so existing saves migrate silently. Passives
 
 ## 5. Proposed content
 
-Three tiers × four classes. Every effect below is expressible in §4.2 and resolvable from party
-state alone. Values are **first-pass** and belong in `src/constants/skills.ts`.
+**Superseded — the full roster lives in [`SKILL_ROSTER.md`](./SKILL_ROSTER.md).**
 
-### 🛡️ Warrior (Blue) — the wall
-
-| Tier | Name | Effect | Modifiers |
-| ---: | :--- | :--- | :--- |
-| 1 | **Bulwark** | The party's Guard bleeds away more slowly. | `guardDecayResistanceMultiplier: 0.88` |
-| 2 | **Shield Wall** | Gray matches build Guard faster. | `guardChargeRateBonus: 0.15` |
-| 3 | **Shield Slam** | His Ultimate hits harder and slams Guard back up. | `skillDamageMultiplier: 1.2`, `skillGuardRestore: 15` |
-
-### 🏹 Rogue / Archer (Green) — tempo
-
-| Tier | Name | Effect | Modifiers |
-| ---: | :--- | :--- | :--- |
-| 1 | **Momentum** | Cascades ramp up faster. | `cascadeBonus: 0.05` |
-| 2 | **Pressure** | Her hits push the enemy's attack timer harder. | `staggerPushMultiplier: 1.5` |
-| 3 | **Killing Rhythm** | Her Ultimate charges noticeably faster. | `skillCooldownMultiplier: 0.85` |
-
-### 🔮 Mage (Purple) — burst
-
-| Tier | Name | Effect | Modifiers |
-| ---: | :--- | :--- | :--- |
-| 1 | **Focus** | Sharper Ultimates. | `skillDamageMultiplier: 1.15` |
-| 2 | **Overchannel** | Purple matches bite deeper. | `matchDamageMultiplier: 1.15` |
-| 3 | **Arcane Overload** | A far bigger nuke, with a longer wind-up. | `skillDamageMultiplier: 1.25`, `skillCooldownMultiplier: 1.15` |
-
-### 📜 Healer (Yellow) — sustain
-
-| Tier | Name | Effect | Modifiers |
-| ---: | :--- | :--- | :--- |
-| 1 | **Quick Remedy** | The party's item cooldown comes back sooner. | `itemCooldownSpdBonus: 10` |
-| 2 | **Radiant Blessing** | Her Ultimate also restores Guard. | `skillGuardRestore: 20` |
-| 3 | **Grace of Haste** | Heals come around much faster. | `skillCooldownMultiplier: 0.8` |
-
-Notes on the shape of this table:
-
-- **Every modifier key is used at least once**, and no two classes have the same tier-1 identity.
-- **Mage tier 3 is the only explicit trade-off** (more damage, slower charge). One is enough for a
-  short game — more turns unlocks into arithmetic homework.
-- Warrior tier 3 and Healer tier 2 both use `skillGuardRestore` on purpose: it's the shared
-  "support the Guard meter" verb, reached from two different directions.
-
-### Proposed costs
-
-Level gates at 3 / 6 / 9 mirror the existing `unlockLevel` rhythm in `SKILL_REGISTRY`. Prices lean
-on metals rather than coins so this becomes a genuine crafting sink.
-
-| Tier | Level | Cost |
-| ---: | ---: | :--- |
-| 1 | 3 | 150 coins, 5 iron |
-| 2 | 6 | 300 coins, 10 iron, 5 silver |
-| 3 | 9 | 500 coins, 10 silver, 5 gold |
+That document defines all 32 skills (4 actives, tiers 0–3, and 4 passives, tiers 1–4, per class),
+each matched to a verified Indigolay icon via its `packIcon(n)` addressing scheme, plus the
+per-tier resource costs, cross-class stacking analysis, and the migration table from the current
+nine skills. Every passive there is expressible in §4.2's key set and resolvable from party state
+alone — the constraints §6 depends on.
 
 ---
 
@@ -341,38 +300,14 @@ passives are not permitted to reach past them.
 
 ## 8. UI — a Skills tab in the pause menu
 
-The town Skills Trainer is going away. Skill management moves to a new pause-menu tab, next to
-Equip and Stats.
+**Superseded — the full UI design lives in [`SKILL_MENU_UI.md`](./SKILL_MENU_UI.md).**
 
-- `'skills'` added to `PAUSE_MENU_TABS` (`src/stores/pause-menu-atoms.ts`) and to `TABS` in
-  `pause-menu-sidebar.tsx`.
-- New `src/components/pause-menu/tabs/pause-menu-skills.tsx`, wired into `pause-menu-content.tsx`.
-- Layout mirrors the Stats tab: `PartyMemberCard variant="roster"` down the left, selected
-  character on the right, split into the two sections from §3.
-
-```
-┌──────────┬──────────────────────────────────────────────────────┐
-│ ▸Warrior │  ⚔ Kaelen — Warrior — Lv 7                           │
-│  Rogue   │  ──────────────────────────────────────────────────  │
-│  Mage    │  ACTIVE  ( one at a time )                           │
-│  Healer  │   [◆ Power Strike]  [◆ Cleave]  [◆ Execute]          │
-│          │                                                      │
-│          │  PASSIVE  ( all unlocked apply )                     │
-│          │   [◆ Bulwark] ─→ [◆ Shield Wall] ─→ [◇ Shield Slam]  │
-│          │    unlocked        unlocked          Lv 9 · 500c…    │
-└──────────┴──────────────────────────────────────────────────────┘
-```
-
-- `SkillSelector` **moves here** from the Equip tab — picking your Ultimate belongs with skills,
-  not with gear. The Equip tab keeps weapon/armour and the stat preview.
-- Locked passive nodes render via `IndigolaySkillIcon`'s built-in `disabled` crossfade — no extra
-  art, no extra CSS.
-- Unlock button enables on `level >= unlockLevel && canAfford(resources, cost) && tier-1 unlocked`.
-  It should show *which* gate is failing, not just grey out.
-- **The whole tab honours the existing `isInBattle` lock.** The pause menu opens mid-battle
-  (`pause-menu-equip.tsx:162`), and per §6 the battle snapshot is frozen at start — so a mid-battle
-  purchase would silently not apply. Lock it, and say why, the same way `SkillSelector` already
-  does with "Locked during battle".
+In one paragraph: a new `'skills'` pause-menu tab (roster on the left, per-character Active and
+Passive slot rows plus a detail panel on the right), styled after the IndigoLay skill-book preview
+using the pack's slot frames and panel art, with equip/unlock actions, explicit resource costs in
+the detail panel, and the whole tab honouring the `isInBattle` lock — per §6, the battle snapshot
+is frozen at battle start, so a mid-battle purchase would silently not apply. The old inline
+`SkillSelector` in the Equip tab is superseded by the new tab and gets removed with it.
 
 ---
 
@@ -397,7 +332,11 @@ The two-kind split resolves this cleanly:
 
 ## 10. Implementation phases
 
-Each phase is independently shippable.
+Each phase is independently shippable. Content source of truth:
+[`SKILL_ROSTER.md`](./SKILL_ROSTER.md); UI source of truth:
+[`SKILL_MENU_UI.md`](./SKILL_MENU_UI.md) — whose §9 revises this ordering to **UI before engine**
+(acceptable because passive modifiers are additive; the tab can ship with passives visible and
+unlockable before their combat hookups land).
 
 **Phase 1 — icons only. No mechanics change.**
 `icon` on `SkillDefinition`, the `CLASS_SKILL_SHEET` map, a `SkillIcon` wrapper, positions picked

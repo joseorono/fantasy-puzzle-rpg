@@ -107,6 +107,10 @@ col = (packIndex - 1) % 10
 
 `UI_SkillIcon_WR_52_ReleasePower.png` is therefore *always* `{ row: 5, col: 1 }`.
 
+Every pick below has been **visually reviewed against the rendered sheets** — not just
+index-verified. Where a filename's art didn't match its skill's job (a flaming flail standing in
+for the starter party heal), the pick was swapped, so the table is safe to trust on both counts.
+
 **Never hand-write `{row, col}` pairs.** Define a helper and reference icons by their pack number,
 so every pick is auditable against its filename at a glance:
 
@@ -171,7 +175,7 @@ semantically instead of numerically:
 const ICON = {
   smash: packIcon(7),            // WR_07_Smash
   whirlwind: packIcon(33),       // WR_33_Whirlwind
-  bleed: packIcon(5),            // WR_05_Bleed
+  sharpBlow: packIcon(10),       // WR_10_SharpBlow
   overwhelm: packIcon(54),       // WR_54_Overwhelm
   ironSkin: packIcon(18),        // WR_18_IronSkin
   bloodRoar: packIcon(15),       // WR_15_BloodRoar
@@ -194,11 +198,11 @@ and stagger, but through berserker imagery — iron skin and roaring, not shield
 | ---: | ---: | :--- | :--- | :--- | ---: | ---: | ---: |
 | 0 | 1 | **Smash** | `packIcon(7)` · `WR_07_Smash` · r0c6 | enemy | 3 | 10 | 1.0 |
 | 1 | 7 | **Whirlwind** | `packIcon(33)` · `WR_33_Whirlwind` · r3c2 | allEnemy | 2 | 0 | 1.4 |
-| 2 | 14 | **Bleed** | `packIcon(5)` · `WR_05_Bleed` · r0c4 | enemy | 1.5 | 5 | **0.7** |
+| 2 | 14 | **Sharp Blow** | `packIcon(10)` · `WR_10_SharpBlow` · r0c9 | enemy | 1.5 | 5 | **0.7** |
 | 3 | 21 | **Overwhelm** | `packIcon(54)` · `WR_54_Overwhelm` · r5c3 | enemy | 4 | 20 | 1.6 |
 
-*Bleed is a cheap fast hit named for its icon — it is **not** a damage-over-time effect, which the
-combat system does not support.*
+*Sharp Blow is the fast, cheap sidegrade — a golden fist strike whose name promises exactly what it
+does. (An earlier draft called it "Bleed", which wrongly implied a damage-over-time system.)*
 
 ### Passives
 
@@ -207,7 +211,7 @@ combat system does not support.*
 | 1 | 4 | **Iron Skin** | `packIcon(18)` · `WR_18_IronSkin` · r1c7 | `guardDecayResistanceMultiplier: 0.88` |
 | 2 | 10 | **Blood Roar** | `packIcon(15)` · `WR_15_BloodRoar` · r1c4 | `staggerPushMultiplier: 1.5` |
 | 3 | 17 | **Indomitable Will** | `packIcon(50)` · `WR_50_IndomitableWill` · r4c9 | `guardChargeRateBonus: 0.15` |
-| 4 | 24 | **Release Power** | `packIcon(52)` · `WR_52_ReleasePower` · r5c1 | `skillDamageMultiplier: 1.2`, `skillGuardRestore: 15` |
+| 4 | 24 | **Unleash Power** | `packIcon(52)` · `WR_52_ReleasePower` · r5c1 | `skillDamageMultiplier: 1.2`, `skillGuardRestore: 15` |
 
 ---
 
@@ -231,9 +235,12 @@ archery, hunting, and shadow.
 | Tier | Lv | Name | Icon | Modifiers |
 | ---: | ---: | :--- | :--- | :--- |
 | 1 | 4 | **Hawk Eye** | `packIcon(6)` · `AC_06_HawkEye` · r0c5 | `cascadeBonus: 0.05` |
-| 2 | 10 | **Hunter's Mark** | `packIcon(17)` · `AC_17_HuntersMark` · r1c6 | `staggerPushMultiplier: 1.5` |
-| 3 | 17 | **Expose Weakness** | `packIcon(71)` · `AC_71_ExposeWeakness` · r7c0 | `matchDamageMultiplier: 1.12` |
+| 2 | 10 | **Wolf's Howl** | `packIcon(15)` · `AC_15_WolfsHowl` · r1c4 | `staggerPushMultiplier: 1.5` |
+| 3 | 17 | **Backstab** | `packIcon(53)` · `AC_53_Backstab` · r5c2 | `matchDamageMultiplier: 1.12` |
 | 4 | 24 | **Shadow Dash** | `packIcon(50)` · `AC_50_ShadowDash` · r4c9 | `skillCooldownMultiplier: 0.85` |
+
+*Wolf's Howl deliberately twins the Warrior's Blood Roar — the game's two `staggerPushMultiplier`
+passives are both a beast's cry that makes enemies flinch, one per damage-dealer archetype.*
 
 ---
 
@@ -278,13 +285,15 @@ aura, sanctuary — no herbs, springs, or fairies.
 
 | Tier | Lv | Name | Icon | Target | Dmg × | Flat | Charge × |
 | ---: | ---: | :--- | :--- | :--- | ---: | ---: | ---: |
-| 0 | 1 | **Holy Nova** | `packIcon(50)` · `PR_50_HolyNova` · r4c9 | allAlly | 4 | 0 | 1.0 |
+| 0 | 1 | **Heal** | `packIcon(4)` · `PR_04_Heal` · r0c3 | allAlly | 4 | 0 | 1.0 |
 | 1 | 7 | **Salvation** | `packIcon(47)` · `PR_47_Salvation` · r4c6 | ally | 6 | 0 | **0.7** |
 | 2 | 14 | **Light Judgment** | `packIcon(6)` · `PR_06_LightJudgment` · r0c5 | allEnemy | 2.5 | 10 | 1.3 |
-| 3 | 21 | **Sanctuary** | `packIcon(27)` · `PR_27_Sanctuary` · r2c6 | allAlly | 6 | 0 | 1.5 |
+| 3 | 21 | **Resurrection** | `packIcon(49)` · `PR_49_Resurrection` · r4c8 | allAlly | 6 | 0 | 1.5 |
 
-*`allAlly` heals the living and revives the dead at half value (`healAndReviveAllPartyMembers`), so
-Sanctuary is the party's recovery button; `ally` targets the lowest-HP% living member only.*
+*Tier 0 is plainly named **Heal** on purpose — the classic JRPG starter, marked by the
+unmistakable heart-in-a-gold-ring icon. `allAlly` heals the living and revives the dead at half
+value (`healAndReviveAllPartyMembers`), which is why the tier-3 is **Resurrection** — its winged
+halo icon and its name both state the mechanic. `ally` targets the lowest-HP% living member only.*
 
 ### Passives
 
@@ -357,11 +366,12 @@ Every existing active is reworked. The ids change, so three groups of references
 | `rogue-fan-of-knives` | → `rogue-multishot` (tier 1) |
 | `mage-arcane-blast` | → `mage-fireball` (tier 0) |
 | `mage-chain-lightning` | → `mage-chain-lightning` (tier 1, retuned) |
-| `healer-divine-heal` | → `healer-holy-nova` (tier 0) |
+| `healer-divine-heal` | → `healer-heal` (tier 0) |
 | `healer-mending-touch` | → `healer-salvation` (tier 1) |
 
-New this roster: `warrior-bleed`, `rogue-shadow-strike`, `rogue-arrow-storm`, `mage-ice-bolt`,
-`mage-meteor`, `healer-light-judgment`, `healer-sanctuary`, plus all 16 passives.
+New this roster: `warrior-sharp-blow`, `rogue-shadow-strike`, `rogue-arrow-storm`, `mage-ice-bolt`,
+`mage-meteor`, `healer-light-judgment`, `healer-resurrection`, plus all 16 passives (rogue's
+staggering and match-damage passives are `rogue-wolfs-howl` and `rogue-backstab`).
 
 **Call sites to update:**
 
@@ -383,11 +393,8 @@ New this roster: `warrior-bleed`, `rogue-shadow-strike`, `rogue-arrow-storm`, `m
    curve across later worlds is settled, so the constants in `src/constants/progression.ts` should
    be re-checked once world-01+ enemies exist. `EXP_BASE` scales the whole game uniformly;
    `EXP_CURVE_POWER` changes its shape and should move in steps of 0.1.
-2. **Rogue's Expose Weakness vs. Mage's Mana Burst** are both `matchDamageMultiplier` at similar
-   values. They read as the same passive on two heroes. If that feels flat, swap the Rogue's to a
-   second `cascadeBonus` step (it already owns cascades) and let the Mage keep raw match damage.
-3. **Is the Healer's Light Judgment worth its slot?** Giving up the party's only heal for a turn is
+2. **Is the Healer's Light Judgment worth its slot?** Giving up the party's only heal for a turn is
    a steep cost in a fight that runs 30–50 s. It may need to be strictly better damage than the
    Mage's AoE to justify itself, or be moved to tier 3 where the player has other options.
-4. **Warrior tier-0 Smash is deliberately plain.** If the opening battles feel dull, the fast-charge
-   Bleed may be the better tier 0, moving Smash to tier 2.
+3. **Warrior tier-0 Smash is deliberately plain.** If the opening battles feel dull, the fast-charge
+   Sharp Blow may be the better tier 0, moving Smash to tier 2.
