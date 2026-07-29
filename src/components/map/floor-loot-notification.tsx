@@ -22,8 +22,6 @@ export function FloorLootNotification({
   resources,
   onClose,
   characterPosition,
-  tileSize,
-  displayScale,
 }: FloorLootNotificationProps) {
   const [isVisible, setIsVisible] = useState(true);
 
