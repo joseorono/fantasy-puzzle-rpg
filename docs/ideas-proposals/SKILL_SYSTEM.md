@@ -5,7 +5,7 @@
 > modifiers unlocked along a short linear track per hero). Give every skill a real icon from the
 > Indigolay pack, and move all skill management into the pause menu.
 
-**Status: proposal.** Tuning constants would live in `src/constants/skills.ts`.
+**Status: implemented.** Data lives in `src/constants/skills/` (one file per character); passive aggregation in `src/lib/skill-system.ts`.
 
 **Verdict: viable in stages.** Phase 1 (icons) is pure presentation and ships on its own. Phase 2
 (passives) adds no new battle systems — every effect is a number folded into math that already

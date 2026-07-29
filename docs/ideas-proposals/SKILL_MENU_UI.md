@@ -4,7 +4,7 @@
 > IndigoLay's own skill-book preview — framed icon slots, a parchment detail panel, equip and
 > unlock flows — built almost entirely from components and conventions the codebase already has.
 
-**Status: proposal.** Companion docs: [`SKILL_SYSTEM.md`](./SKILL_SYSTEM.md) (architecture),
+**Status: implemented** — tab in `src/components/pause-menu/tabs/pause-menu-skills.tsx`, pieces in `src/components/pause-menu/skills/`, styles in `src/styles/pause-menu-skills.css`. Companion docs: [`SKILL_SYSTEM.md`](./SKILL_SYSTEM.md) (architecture),
 [`SKILL_ROSTER.md`](./SKILL_ROSTER.md) (the 32 skills and their icons).
 
 Design intent: **eye candy through the pack's own chrome, restraint everywhere else.** The
@@ -126,7 +126,7 @@ sheet (`sheetSize={64}`), the detail panel's featured icon from the default 102.
 
 ## 5. The SkillSlot
 
-New component `src/components/pause-menu/skill-slot.tsx`, BEM block `.skill-slot`. One `<button>`
+New component `src/components/pause-menu/skills/skill-slot.tsx`, BEM block `.skill-slot`. One `<button>`
 with stacked layers, exactly the crossfade technique `IndigolaySkillIcon` itself uses:
 
 ```

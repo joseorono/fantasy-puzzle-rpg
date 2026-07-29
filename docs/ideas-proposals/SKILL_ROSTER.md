@@ -4,7 +4,7 @@
 > (Tier 1–4) for each of the four heroes**, 32 in total, every one matched to a specific verified
 > icon from the Indigolay pack.
 
-**Status: proposal.** Architecture lives in [`SKILL_SYSTEM.md`](./SKILL_SYSTEM.md) — the
+**Status: implemented** — data in `src/constants/skills/`, one file per character. Architecture lives in [`SKILL_SYSTEM.md`](./SKILL_SYSTEM.md) — the
 Active/Passive split, the closed `PassiveModifiers` key set, resolve-once-at-battle-start, and the
 pause-menu Skills tab. **This document supersedes its §5** and widens its `tier: 1 | 2 | 3` to
 `0 | 1 | 2 | 3` for actives and `1 | 2 | 3 | 4` for passives.
