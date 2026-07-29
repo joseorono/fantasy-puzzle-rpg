@@ -3,6 +3,7 @@ import * as rpg from './rpg-calculations';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { createEmptyLootTable } from '~/types/loot';
 import { GUARD_DECAY_RATE, GUARD_MAX, MAX_COMBO_MULTIPLIER, POW_DAMAGE_PERCENT_PER_POINT } from '~/constants/battle';
+import { ENEMY_EXP_FLAT } from '~/constants/progression';
 
 // ============================================================================
 // Test Data
@@ -161,6 +162,26 @@ describe('Damage Calculations', () => {
   test('calculateEnemyDamage: Uses enemy POW and base damage', () => {
     const result = rpg.calculateEnemyDamage(mockEnemy);
     expect(result).toBe(32); // 25 * (1 + 15*2/100) = 32.5 -> 32
+  });
+
+  test('calculateEnemyExpReward: scales with max HP', () => {
+    expect(rpg.calculateEnemyExpReward(400)).toBe(62); // 400/8 + 12
+    expect(rpg.calculateEnemyExpReward(68)).toBe(21); // 68/8 + 12 = 20.5 -> 21
+  });
+
+  test('calculateEnemyExpReward: a tankier enemy is never worth less EXP', () => {
+    // The inversion this guards: hand-authored values let a 68 HP trash mob out-earn a
+    // 400 HP elite per second of fighting. Monotonicity in maxHp makes that impossible.
+    let previous = -Infinity;
+    for (const maxHp of [0, 50, 68, 150, 400, 1200]) {
+      const reward = rpg.calculateEnemyExpReward(maxHp);
+      expect(reward).toBeGreaterThanOrEqual(previous);
+      previous = reward;
+    }
+  });
+
+  test('calculateEnemyExpReward: even a 0 HP enemy grants the flat floor', () => {
+    expect(rpg.calculateEnemyExpReward(0)).toBe(ENEMY_EXP_FLAT);
   });
 
   test('calculateMatchDamage: 3-match without power', () => {

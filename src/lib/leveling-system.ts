@@ -1,6 +1,7 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
 import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { EXP_BASE, EXP_CURVE_POWER } from '~/constants/progression';
 /**
  * Leveling System
  *
@@ -21,11 +22,20 @@ import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from
  * decide level-ups (see `calculateLevelUpsForParty` in `battle-rewards.ts`). Shared by
  * the level-up logic and the rewards-screen bar animation so the two can't drift.
  *
+ * Polynomial, not exponential: tuned with {@link calculateEnemyExpReward} for a ~3 hour
+ * run ending around level 30. Constants live in `~/constants/progression`.
+ *
  * @param level - The character's current level
  * @returns EXP needed to advance out of that level
+ * @example
+ * ```ts
+ * getExpThresholdForLevel(1);  // 12
+ * getExpThresholdForLevel(10); // 379
+ * getExpThresholdForLevel(30); // 1971
+ * ```
  */
 export function getExpThresholdForLevel(level: number): number {
-  return Math.floor(Math.exp(level));
+  return Math.floor(EXP_BASE * level ** EXP_CURVE_POWER);
 }
 
 /** One step of the rewards-screen EXP bar animation (a single level the bar passes through). */

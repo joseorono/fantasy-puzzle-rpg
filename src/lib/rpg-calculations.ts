@@ -16,6 +16,7 @@ import {
   STAGGER_REF_FRACTION,
   STAGGER_VIT_DIVISOR,
 } from '~/constants/battle';
+import { ENEMY_EXP_FLAT, ENEMY_EXP_PER_HP } from '~/constants/progression';
 
 /**
  * RPG Calculation Functions
@@ -134,6 +135,29 @@ export function calculateCharacterDamage(character: CharacterData, baseDamage: n
  */
 export function calculateEnemyDamage(enemy: EnemyData): number {
   return calculateDamage(enemy.attackDamage, enemy.stats.pow);
+}
+
+/**
+ * Calculates the EXP an enemy awards, derived from its max HP.
+ *
+ * Durability is the honest proxy for what a fight costs the player: there is no
+ * defense stat, so time-to-kill tracks max HP directly. Tying the reward to it stops
+ * weak-but-numerous enemies from out-earning elites per second, which is what
+ * hand-authored values drift into. The flat term keeps trash worth clearing.
+ *
+ * Formula: `maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT`, tuned alongside
+ * {@link getExpThresholdForLevel} for a ~3 hour, ~level-30 campaign.
+ *
+ * @param maxHp Enemy max HP
+ * @returns EXP reward, rounded to a whole number
+ * @example
+ * ```ts
+ * calculateEnemyExpReward(400); // 62 — a tanky elite
+ * calculateEnemyExpReward(68);  // 21 — a trash mob
+ * ```
+ */
+export function calculateEnemyExpReward(maxHp: number): number {
+  return Math.round(maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT);
 }
 
 /**

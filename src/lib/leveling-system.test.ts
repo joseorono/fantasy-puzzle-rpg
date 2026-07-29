@@ -3,6 +3,7 @@ import * as levelingSystem from './leveling-system';
 import { calculateMaxHp } from './rpg-calculations';
 import { calculateLevelUpsForParty } from './battle-rewards';
 import { MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { EXP_BASE, EXP_CURVE_POWER } from '~/constants/progression';
 import type { CharacterData, CoreRPGStats } from '~/types';
 
 // Helper function to create a test character
@@ -301,18 +302,35 @@ describe('levelUp', () => {
 });
 
 describe('getExpThresholdForLevel', () => {
-  it('matches Math.floor(Math.exp(level))', () => {
-    for (const level of [1, 2, 3, 4, 5]) {
-      expect(levelingSystem.getExpThresholdForLevel(level)).toBe(Math.floor(Math.exp(level)));
+  it('matches the polynomial curve', () => {
+    for (const level of [1, 2, 3, 4, 5, 10, 30]) {
+      expect(levelingSystem.getExpThresholdForLevel(level)).toBe(Math.floor(EXP_BASE * level ** EXP_CURVE_POWER));
     }
+  });
+
+  it('pins the tuned reference points', () => {
+    expect(levelingSystem.getExpThresholdForLevel(1)).toBe(12);
+    expect(levelingSystem.getExpThresholdForLevel(10)).toBe(379);
+    expect(levelingSystem.getExpThresholdForLevel(30)).toBe(1971);
+  });
+
+  it('grows sub-exponentially, so late levels stay reachable', () => {
+    // The regression this guards: an exponential curve puts everything past ~level 10
+    // out of reach at any enemy EXP value. Cumulative EXP to level 30 must stay within
+    // a campaign's worth of battles.
+    let cumulative = 0;
+    for (let level = 1; level < 30; level++) {
+      cumulative += levelingSystem.getExpThresholdForLevel(level);
+    }
+    expect(cumulative).toBeLessThan(30_000);
   });
 });
 
 describe('buildExpGainTimeline', () => {
   it('produces a single partial segment when no level-up occurs', () => {
-    // threshold(1) = floor(e) = 2; gaining 1 fills to 50%.
+    // threshold(1) = 12; gaining 6 fills to 50%.
     const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
-    const timeline = levelingSystem.buildExpGainTimeline(character, 1);
+    const timeline = levelingSystem.buildExpGainTimeline(character, 6);
 
     expect(timeline.startLevel).toBe(1);
     expect(timeline.totalLevelUps).toBe(0);
@@ -321,19 +339,19 @@ describe('buildExpGainTimeline', () => {
   });
 
   it('emits a static segment when no exp is gained', () => {
-    const character = createTestCharacter({ level: 1, currentLevelExp: 1 });
+    const character = createTestCharacter({ level: 1, currentLevelExp: 6 });
     const timeline = levelingSystem.buildExpGainTimeline(character, 0);
 
     expect(timeline.totalLevelUps).toBe(0);
     expect(timeline.segments).toHaveLength(1);
-    // threshold(1) = 2; sitting at 1/2 = 50%, no movement.
+    // threshold(1) = 12; sitting at 6/12 = 50%, no movement.
     expect(timeline.segments[0]).toMatchObject({ fromPercent: 50, toPercent: 50, levelsUp: false });
   });
 
   it('fills to 100% and resets to 0% when exactly hitting a threshold', () => {
-    // threshold(1) = 2; gaining exactly 2 clears level 1.
+    // threshold(1) = 12; gaining exactly 12 clears level 1.
     const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
-    const timeline = levelingSystem.buildExpGainTimeline(character, 2);
+    const timeline = levelingSystem.buildExpGainTimeline(character, 12);
 
     expect(timeline.totalLevelUps).toBe(1);
     expect(timeline.segments).toHaveLength(2);
@@ -343,9 +361,9 @@ describe('buildExpGainTimeline', () => {
   });
 
   it('emits one levelsUp segment per level on a multi-level gain', () => {
-    // threshold(1) = 2, threshold(2) = 7; gaining 9 clears two levels.
+    // threshold(1) = 12, threshold(2) = 33; gaining 45 clears two levels.
     const character = createTestCharacter({ level: 1, currentLevelExp: 0 });
-    const timeline = levelingSystem.buildExpGainTimeline(character, 9);
+    const timeline = levelingSystem.buildExpGainTimeline(character, 45);
 
     expect(timeline.totalLevelUps).toBe(2);
     const levelUpSegments = timeline.segments.filter((s) => s.levelsUp);
@@ -356,10 +374,10 @@ describe('buildExpGainTimeline', () => {
   it('agrees with calculateLevelUpsForParty on the total level-up count', () => {
     for (const { level, progress, gained } of [
       { level: 1, progress: 0, gained: 1 },
-      { level: 1, progress: 0, gained: 2 },
-      { level: 1, progress: 0, gained: 9 },
-      { level: 2, progress: 3, gained: 25 },
-      { level: 3, progress: 10, gained: 100 },
+      { level: 1, progress: 0, gained: 12 },
+      { level: 1, progress: 0, gained: 45 },
+      { level: 2, progress: 3, gained: 120 },
+      { level: 3, progress: 10, gained: 600 },
     ]) {
       const preBattle = createTestCharacter({ level, currentLevelExp: progress });
       const timeline = levelingSystem.buildExpGainTimeline(preBattle, gained);
