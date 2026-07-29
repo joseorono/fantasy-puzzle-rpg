@@ -32,7 +32,7 @@ import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
 import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
-import { prefersReducedMotion } from '~/lib/utils';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -245,7 +245,7 @@ interface RewardsResourcesPanelProps {
 
 function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
   const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
-  const reduced = prefersReducedMotion();
+  const reduced = isReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? activeResources.length : 0);
 
   // NumberFlow renders its first value statically and only rolls on a change, so each

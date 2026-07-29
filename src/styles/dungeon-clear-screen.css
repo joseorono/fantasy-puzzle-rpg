@@ -203,18 +203,5 @@
   animation: brs-continue-pulse 1.5s ease-in-out infinite;
 }
 
-/* Respect reduced motion: no pops/pulses, everything shown static. */
-@media (prefers-reduced-motion: reduce) {
-  .dcs-card,
-  .dcs-star--filled,
-  .dcs-rank,
-  .dcs-tagline,
-  .dcs-total--shown,
-  .dcs-continue--ready {
-    animation: none !important;
-  }
-  .dcs-row,
-  .dcs-total {
-    transition: none !important;
-  }
-}
+/* Reduced motion is handled globally in styles/reduced-motion.css; the reveal timeline itself is
+   skipped in dungeon-clear-screen.tsx, which mounts every floor already revealed. */

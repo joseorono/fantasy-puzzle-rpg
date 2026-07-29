@@ -41,7 +41,7 @@ export function PreemptiveStrikeIndicator() {
   return (
     <div
       key={animationKey}
-      className="pointer-events-none absolute top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2"
+      className="motion-hold pointer-events-none absolute top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2"
       style={{ animation: 'damage-float 1.2s ease-out forwards' }}
     >
       <span

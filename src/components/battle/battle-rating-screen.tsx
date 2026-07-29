@@ -21,7 +21,8 @@ import {
 } from '~/constants/number-flow';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { cn, prefersReducedMotion } from '~/lib/utils';
+import { isReducedMotion } from '~/lib/reduced-motion';
+import { cn } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
@@ -39,7 +40,7 @@ interface BattleRatingScreenProps {
  * scoring lives in {@link computeBattleRating} and its constants.
  */
 export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenProps) {
-  const reduced = prefersReducedMotion();
+  const reduced = isReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? result.criteria.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? result.stars : 0);
   const [showLoot, setShowLoot] = useState(reduced);

@@ -200,8 +200,4 @@
   --ib-filter: saturate(0.12) brightness(1.06);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .indigolay-bar__layer--in {
-    animation-duration: 0.01ms;
-  }
-}
+/* Reduced motion is handled globally in src/styles/reduced-motion.css. */

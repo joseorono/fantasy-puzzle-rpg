@@ -284,18 +284,5 @@
   }
 }
 
-/* Respect reduced motion: no pops/pulses, everything shown static. */
-@media (prefers-reduced-motion: reduce) {
-  .brs-card,
-  .brs-star--filled,
-  .brs-rank,
-  .brs-tagline,
-  .brs-loot--shown,
-  .brs-continue--ready {
-    animation: none !important;
-  }
-  .brs-row,
-  .brs-loot {
-    transition: none !important;
-  }
-}
+/* Reduced motion is handled globally in styles/reduced-motion.css; the reveal timeline itself is
+   skipped in battle-rating-screen.tsx, which mounts every row already revealed. */

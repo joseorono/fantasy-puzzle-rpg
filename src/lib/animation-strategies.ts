@@ -5,6 +5,7 @@
  * - GameScreen: Apply class to #game-screen element
  */
 import { ANIMATION_CONFIG, HITSTOP_DURATION_MS, type GlobalAnimationType } from '~/constants/animation-system';
+import { isReducedMotion } from '~/lib/reduced-motion';
 
 /**
  * Apply animation class to the appropriate element based on strategy
@@ -68,9 +69,7 @@ export function triggerHitstop(durationMs: number = HITSTOP_DURATION_MS): void {
   if (typeof document === 'undefined') return;
 
   // Reduced-motion users opt out of the freeze entirely (CSS alone can't stop us adding the class).
-  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-    return;
-  }
+  if (isReducedMotion()) return;
 
   const gameScreen = document.getElementById('game-screen');
   if (!gameScreen) return;

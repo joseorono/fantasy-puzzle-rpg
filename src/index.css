@@ -474,3 +474,6 @@
 @import './styles/sliders.css';
 
 @import './styles/lists.css';
+
+/* Last so its overrides win over every animation defined above. */
+@import './styles/reduced-motion.css';

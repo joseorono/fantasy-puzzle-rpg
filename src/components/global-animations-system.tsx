@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useRef, useState, useEffect } from 'react';
 import { auxSleepFor } from '~/lib/utils';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import { type GlobalAnimationType } from '~/constants/animation-system';
 import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
 
@@ -21,6 +22,13 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
   const trigger = useCallback(async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
+    // Reduced motion skips the flourish outright: the CSS override ends the animation in ~1ms, so
+    // waiting out its full duration would leave the player staring at a still screen for a beat.
+    if (isReducedMotion()) {
+      onEnd?.();
+      return;
+    }
+
     callbackRef.current = onEnd || null;
     setAnimation(type);
     // Wait for the animation duration

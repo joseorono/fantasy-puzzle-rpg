@@ -33,16 +33,7 @@
   will-change: transform;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  #game-screen.hitstop-freeze,
-  #game-screen.hitstop-freeze * {
-    animation-play-state: running !important;
-  }
-  #game-screen.hitstop-freeze {
-    transform: none !important;
-    transition: none !important;
-  }
-}
+/* Reduced motion cancels the freeze — see styles/reduced-motion.css and `triggerHitstop`. */
 
 /* ---- View Transition Circle (overlay mask) ---- */
 .anim-view-transition-circle {

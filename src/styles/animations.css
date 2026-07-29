@@ -430,17 +430,7 @@
   white-space: nowrap;
 }
 
-/* Respect reduced-motion: drop the recoil/eruption motion (damage + numbers still show). */
-@media (prefers-reduced-motion: reduce) {
-  .enemy-recoil,
-  .enemy-recoil-strong,
-  .damage-erupt,
-  .stagger-callout,
-  .ring-shake-sm,
-  .ring-shake-lg {
-    animation: none !important;
-  }
-}
+/* Reduced motion (recoil, eruptions, shakes) is handled globally in styles/reduced-motion.css. */
 
 /* Ace Attorney-style skill burst overlay */
 @keyframes skill-burst-in {

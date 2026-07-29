@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import type { ExpGainTimeline } from '~/lib/leveling-system';
 
 /** Milliseconds of fill time per percent travelled (a full 0→100 fill ≈ 600ms before clamping). */
@@ -41,7 +42,7 @@ export interface ExpGainAnimationState {
  * Fills the bar to its real position; on each level crossing it fills to 100%, pops the
  * badge, holds briefly, resets to 0%, and refills — once per level gained.
  *
- * Honours `prefers-reduced-motion` by jumping straight to the final state.
+ * Honours the Reduced Motion setting by jumping straight to the final state.
  *
  * @param timeline - The pure animation timeline for this character (stable identity expected)
  * @param options - Optional callbacks (e.g. {@link ExpGainAnimationOptions.onLevelUp} for SFX)
@@ -67,10 +68,7 @@ export function useExpGainAnimation(
     const segments = timeline.segments;
     if (segments.length === 0) return;
 
-    const prefersReducedMotion =
-      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-    if (prefersReducedMotion) {
+    if (isReducedMotion()) {
       const last = segments[segments.length - 1];
       const finalLevel = timeline.startLevel + timeline.totalLevelUps;
       setState({

@@ -24,8 +24,4 @@
   transition: opacity var(--isi-fade, 120ms) ease;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .indigolay-skill-icon__layer {
-    transition-duration: 0.01ms;
-  }
-}
+/* Reduced motion is handled globally in src/styles/reduced-motion.css. */

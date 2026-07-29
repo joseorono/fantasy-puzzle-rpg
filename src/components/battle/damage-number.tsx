@@ -33,7 +33,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
       {/* Main damage number with 8bitcn styling */}
       <div
         key={animationKey}
-        className="damage-number pointer-events-none absolute top-1/4 left-1/2 z-20 -translate-x-1/2"
+        className="damage-number motion-hold pointer-events-none absolute top-1/4 left-1/2 z-20 -translate-x-1/2"
         style={{
           animation: 'damage-float 1.2s ease-out forwards',
         }}

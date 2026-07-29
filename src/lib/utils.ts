@@ -7,16 +7,6 @@ export function cn(...inputs: ClassValue[]) {
 
 export const noop = () => {};
 
-/**
- * Whether the user has asked the OS to reduce motion. Reveal timelines should skip
- * straight to their final state when this is true.
- *
- * @returns `true` if `prefers-reduced-motion: reduce` matches
- */
-export function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-}
-
 export function shuffleArray<T>(argArray: T[]) {
   // Durstenfeld shuffle array
   const array = argArray.slice(); // Copy the array, don't mutate the original
