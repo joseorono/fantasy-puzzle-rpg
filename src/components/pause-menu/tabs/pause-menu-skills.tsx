@@ -10,7 +10,9 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection } from '~/constants/keyboard';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
-import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { INFO_ICON_SRC } from '~/constants/ui';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { ConfirmPanel } from '~/components/confirm-dialog/confirm-panel';
 import { CostBadges } from '~/components/ui-custom/cost-badge';
@@ -137,9 +139,24 @@ export function PauseMenuSkills() {
         <div className="pause-menu-skills-main pixel-scrollbar">
           <div className="pause-menu-skills-section">
             <div className="pause-menu-skills-section-label pixel-font">
-              Active <span className="pause-menu-skills-section-hint">one equipped at a time</span>
+              <span>Active</span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="info-icon" role="img" aria-label="About Active Skills">
+                    <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <ul className="indigolay-list">
+                    <li className="indigolay-list__item">
+                      <span className="indigolay-list__bullet">◆</span>
+                      <span className="indigolay-list__text">One equipped at a time</span>
+                    </li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
             </div>
-            <IndigolayDivider />
+            <GradientDivider variant="gold" className="my-1" />
             <div className="pause-menu-skills-row">
               {actives.map((skill, index) => {
                 const locked = !isSkillUnlocked(selected, skill.id);
@@ -169,9 +186,24 @@ export function PauseMenuSkills() {
 
           <div className="pause-menu-skills-section">
             <div className="pause-menu-skills-section-label pixel-font">
-              Passive <span className="pause-menu-skills-section-hint">all learned passives apply</span>
+              <span>Passive</span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="info-icon" role="img" aria-label="About Passive Skills">
+                    <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <ul className="indigolay-list">
+                    <li className="indigolay-list__item">
+                      <span className="indigolay-list__bullet">◆</span>
+                      <span className="indigolay-list__text">All learned passives apply</span>
+                    </li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
             </div>
-            <IndigolayDivider />
+            <GradientDivider variant="gold" className="my-1" />
             <div className="pause-menu-skills-row pause-menu-skills-row--passive">
               {passives.map((passive, index) => {
                 const locked = !isPassiveUnlocked(selected, passive.id);

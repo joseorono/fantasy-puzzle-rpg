@@ -34,8 +34,7 @@
   overflow-y: auto;
   padding: 2px 8px 8px 2px;
 }
-
-/* ── Section headers ──────────────────────────────────────────────────────── */
+/* ── Section headers ──────────────────────────────────────────────────────── */
 
 .pause-menu-skills-section {
   display: flex;
@@ -44,19 +43,37 @@
 }
 
 .pause-menu-skills-section-label {
-  font-size: 0.66rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #e3bb92;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
-.pause-menu-skills-section-hint {
-  margin-left: 0.5rem;
-  font-size: 0.54rem;
-  letter-spacing: 0.05em;
-  text-transform: none;
-  color: rgba(227, 187, 146, 0.6);
+.pause-menu-skills-section-label .info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  cursor: help;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.pause-menu-skills-section-label .info-icon:hover {
+  opacity: 1;
+}
+
+.pause-menu-skills-section-label .info-icon__img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* ── Slot rows ─────────────────────────────────────────────────────────────
