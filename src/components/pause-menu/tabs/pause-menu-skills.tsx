@@ -22,6 +22,8 @@ import { SkillSlot } from '~/components/pause-menu/skills/skill-slot';
 import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/skills/skill-detail-panel';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
 
+import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
+
 /** How long the just-unlocked slot flare plays. Matches the CSS animations. */
 const UNLOCK_FLASH_MS = 950;
 
@@ -147,12 +149,9 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <ul className="indigolay-list">
-                    <li className="indigolay-list__item">
-                      <span className="indigolay-list__bullet">◆</span>
-                      <span className="indigolay-list__text">One equipped at a time</span>
-                    </li>
-                  </ul>
+                  <IndigoLayStyledLists variant="chevron">
+                    <IndigolayStyledListItem>One equipped at a time</IndigolayStyledListItem>
+                  </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -194,12 +193,9 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <ul className="indigolay-list">
-                    <li className="indigolay-list__item">
-                      <span className="indigolay-list__bullet">◆</span>
-                      <span className="indigolay-list__text">All learned passives apply</span>
-                    </li>
-                  </ul>
+                  <IndigoLayStyledLists variant="chevron">
+                    <IndigolayStyledListItem>All learned passives apply</IndigolayStyledListItem>
+                  </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -251,17 +247,14 @@ export function PauseMenuSkills() {
           <div className="skill-unlock-confirm">
             <SkillDecoIcon characterClass={pendingDef.class} position={pendingDef.icon} size={72} />
             <div className="skill-unlock-confirm__name pixel-font">{pendingDef.name}</div>
-            <ul className="indigolay-list indigolay-list--compact">
+            <IndigoLayStyledLists variant="chevron" compact>
               {(pendingUnlock.kind === 'active'
                 ? [pendingDef.description]
                 : describePassiveModifiers(pendingUnlock.passive.modifiers)
               ).map((line) => (
-                <li key={line} className="indigolay-list__item">
-                  <span className="indigolay-list__bullet indigolay-list__bullet--amber">◆</span>
-                  <span className="indigolay-list__text">{line}</span>
-                </li>
+                <IndigolayStyledListItem key={line}>{line}</IndigolayStyledListItem>
               ))}
-            </ul>
+            </IndigoLayStyledLists>
             <div className="skill-unlock-confirm__cost">
               <CostBadges resources={pendingDef.cost} />
             </div>

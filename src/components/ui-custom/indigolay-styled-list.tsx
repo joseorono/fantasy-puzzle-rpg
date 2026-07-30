@@ -31,7 +31,7 @@ const indigolayStyledListVariants = cva(
       },
     },
     defaultVariants: {
-      variant: 'indigolay',
+      variant: 'chevron',
       size: 'default',
       compact: false,
       bordered: false,
@@ -112,7 +112,7 @@ export function IndigolayStyledListItem({
   bulletClassName,
 }: IndigolayStyledListItemProps) {
   const context = useContext(IndigoLayListContext);
-  const effectiveBullet = bullet ?? context.bulletSymbol ?? '◆';
+  const effectiveBullet = bullet ?? context.bulletSymbol ?? DEFAULT_BULLET_ICONS.chevron;
 
   return (
     <li className={cn('indigolay-list__item IndigoLayStyledLists__item', className)}>
@@ -135,13 +135,13 @@ export interface IndigoLayStyledListsProps
 }
 
 /**
- * Reusable modal list component built on the Indigolay design system.
- * Supports variants: 'indigolay', 'gilded', 'regal', 'shading', 'chevron', 'send', 'sovereign', 'sovereign-shading'.
- * Items have transparent backgrounds matching game tooltips & modal popups by default.
+ * Reusable modal/tooltip list component built on the Indigolay design system.
+ * Defaults to 'chevron' variant for standard tooltips and popups.
+ * Supports variants: 'chevron' (default), 'send', 'indigolay', 'gilded', 'regal', 'shading', 'sovereign', 'sovereign-shading'.
  */
 export function IndigoLayStyledLists({
   className,
-  variant = 'indigolay',
+  variant = 'chevron',
   size,
   compact,
   bordered = false,
@@ -150,7 +150,7 @@ export function IndigoLayStyledLists({
   children,
   ...props
 }: IndigoLayStyledListsProps) {
-  const activeVariant: IndigoLayListVariant = variant ?? 'indigolay';
+  const activeVariant: IndigoLayListVariant = variant ?? 'chevron';
   const defaultBullet = bulletSymbol ?? DEFAULT_BULLET_ICONS[activeVariant];
 
   return (

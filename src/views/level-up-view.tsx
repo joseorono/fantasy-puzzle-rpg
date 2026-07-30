@@ -16,6 +16,7 @@ import { usePressAndHold } from '~/hooks/use-press-and-hold';
 import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
+import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -301,16 +302,13 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <ul className="indigolay-list">
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">
-                              {character.class === 'healer'
-                                ? 'Increases your healing output'
-                                : 'Increases your damage output'}
-                            </span>
-                          </li>
-                        </ul>
+                        <IndigoLayStyledLists variant="chevron">
+                          <IndigolayStyledListItem>
+                            {character.class === 'healer'
+                              ? 'Increases your healing output'
+                              : 'Increases your damage output'}
+                          </IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -385,18 +383,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <ul className="indigolay-list">
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">
-                              Raises Maximum HP, scaled by this character&apos;s VIT multiplier
-                            </span>
-                          </li>
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">Slows how fast the party Guard meter decays</span>
-                          </li>
-                        </ul>
+                        <IndigoLayStyledLists variant="chevron">
+                          <IndigolayStyledListItem>
+                            Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                          </IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Slows how fast the party Guard meter decays</IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -469,20 +461,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <ul className="indigolay-list">
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">Reduces ultimate skill cooldown</span>
-                          </li>
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">Reduces item cooldowns in battle</span>
-                          </li>
-                          <li className="indigolay-list__item">
-                            <span className="indigolay-list__bullet">◆</span>
-                            <span className="indigolay-list__text">Charges the party Guard meter faster</span>
-                          </li>
-                        </ul>
+                        <IndigoLayStyledLists variant="chevron">
+                          <IndigolayStyledListItem>Reduces ultimate skill cooldown</IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Reduces item cooldowns in battle</IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Charges the party Guard meter faster</IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>
