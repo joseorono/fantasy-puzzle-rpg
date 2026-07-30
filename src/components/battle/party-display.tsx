@@ -164,29 +164,32 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       </div>
 
       {/* Skill cooldown bar */}
-      <div className="w-full max-w-[70px] sm:max-w-[80px]">
-        <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
+      <div className="w-full max-w-[75px] sm:max-w-[85px]">
+        <div className="pixel-font mb-0.5 flex items-center justify-center min-h-[14px]">
           {isSkillReady ? (
-            <span className="inline-flex items-center gap-1 text-amber-300">
-              <SkillIcon characterClass={character.class} position={skill.icon} size={12} sheetSize={32} /> {skill.name}
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#f2d2af] drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
+              <SkillIcon characterClass={character.class} position={skill.icon} size={12} sheetSize={32} />
+              <span className="truncate max-w-[55px] sm:max-w-[65px]">{skill.name}</span>
             </span>
           ) : (
-            `CD: ${Math.ceil(character.skillCooldown)}s`
+            <span className="pixel-font text-[9px] font-bold text-white tracking-wider drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] sm:text-[10px]">
+              CD: <span className="text-[#f2d2af] font-extrabold">{Math.ceil(character.skillCooldown)}s</span>
+            </span>
           )}
         </div>
-        <div className="relative h-2 rounded-none border border-gray-700 bg-gray-800 sm:h-2.5">
+        <div className="relative h-2 rounded-sm border border-[#5c3e23] bg-[#120a05] sm:h-2.5">
           <div
             className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
           </div>
           {/* Pixel border effect */}
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 rounded-sm"
             style={{
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.6)',
             }}
           />
         </div>

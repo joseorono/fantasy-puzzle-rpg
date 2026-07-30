@@ -130,14 +130,19 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                 <NarikWoodBitFont text={String(quantity)} size={1} />
               </div>
 
-              {/* Cooldown pie overlay */}
+              {/* Cooldown pie overlay & countdown text */}
               {isOnCooldown && !isEmpty && (
-                <div
-                  className="pointer-events-none absolute inset-0 rounded"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                  }}
-                />
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded"
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                    {Math.max(1, Math.ceil((cooldownEndRef.current - Date.now()) / 1000))}s
+                  </div>
+                </>
               )}
             </button>
               </TooltipTrigger>
