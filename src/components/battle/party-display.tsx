@@ -127,13 +127,14 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
             )}
           </div>
 
-          {/* Pixel border effect */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-lg"
-            style={{
-              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
-            }}
-          />
+          {/* Ready Skill Badge seated on top-right corner of the character frame */}
+          {!isDead && isSkillReady && (
+            <div className="pointer-events-none absolute -top-3 -right-3 z-20 flex items-center justify-center">
+              <div className="relative flex items-center justify-center rounded border-2 border-[#d4a574] p-0 overflow-hidden shadow-md">
+                <SkillIcon characterClass={character.class} position={skill.icon} size={28} sheetSize={32} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Damage number animation with 8bitcn styling */}
@@ -155,25 +156,29 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       {/* Character name */}
       <div
         className={cn(
-          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          'pixel-font flex h-3.5 items-center justify-center text-[8px] font-bold uppercase sm:text-[10px]',
           isDead ? 'text-gray-500 line-through' : colors.text,
         )}
       >
-        {character.name}
+        <span className="truncate">{character.name}</span>
         {isDead && <span className="ml-0.5 text-red-500">✝</span>}
       </div>
 
       {/* Skill cooldown bar */}
       <div className="w-full max-w-[75px] sm:max-w-[85px]">
-        <div className="pixel-font mb-0.5 flex items-center justify-center min-h-[14px]">
+        <div className="pixel-font mb-0.5 flex h-4 items-center justify-center overflow-hidden text-center">
           {isSkillReady ? (
-            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#f2d2af] drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
-              <SkillIcon characterClass={character.class} position={skill.icon} size={12} sheetSize={32} />
-              <span className="truncate max-w-[55px] sm:max-w-[65px]">{skill.name}</span>
+            <span
+              className={cn(
+                'pixel-font text-[9px] font-extrabold uppercase tracking-wider drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] truncate max-w-[75px] sm:max-w-[85px] sm:text-[10px]',
+                colors.text,
+              )}
+            >
+              {skill.name}
             </span>
           ) : (
-            <span className="pixel-font text-[9px] font-bold text-white tracking-wider drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] sm:text-[10px]">
-              CD: <span className="text-[#f2d2af] font-extrabold">{Math.ceil(character.skillCooldown)}s</span>
+            <span className="pixel-font text-[9px] font-medium text-[#b0a8a0] tracking-wider drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
+              CD: <span className="font-bold text-[#f2d2af]">{Math.ceil(character.skillCooldown)}s</span>
             </span>
           )}
         </div>
