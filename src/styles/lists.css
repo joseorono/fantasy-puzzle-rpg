@@ -1,46 +1,274 @@
-/* ─── Indigolay Styled List (BEM) ────────────────────────────────────────── */
+/* ─── Indigolay Styled List (BEM & IndigoLayStyledLists) ─────────────────── */
 
-.indigolay-list {
+.indigolay-list,
+.indigolay-styled-list,
+.IndigoLayStyledLists {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
   gap: 0.375rem;
   text-align: left;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.indigolay-list--compact {
-  gap: 0.25rem;
+.indigolay-list--compact,
+.indigolay-styled-list--compact,
+.IndigoLayStyledLists--compact {
+  gap: 0.25rem !important;
 }
 
-.indigolay-list__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.375rem;
+.indigolay-list--sm,
+.indigolay-styled-list--sm,
+.IndigoLayStyledLists--sm {
+  font-size: 0.75rem;
+}
+
+.indigolay-list--lg,
+.indigolay-styled-list--lg,
+.IndigoLayStyledLists--lg {
+  font-size: 0.9rem;
+}
+
+/* Base item style (Clean transparent layout matching modal tooltips & popups) */
+.indigolay-list__item,
+.indigolay-styled-list__item,
+.IndigoLayStyledLists__item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.4rem;
   font-family: monospace;
   font-size: 0.8rem;
-  line-height: 1.4;
-  color: #e0e0e0;
+  line-height: 1.45;
+  color: var(--il-text-color, #e0e0e0);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.15rem 0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  transition: all 0.15s ease;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.indigolay-list__bullet {
-  color: #d4a574;
+/* Bullet styling base */
+.indigolay-list__bullet,
+.indigolay-styled-list__bullet,
+.IndigoLayStyledLists__bullet {
   font-weight: bold;
   user-select: none;
   flex-shrink: 0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin-top: 0.15em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
+/* Image bullet sizing & pixel rendering */
+.indigolay-list__bullet-img,
+.indigolay-styled-list__bullet-img,
+.IndigoLayStyledLists__bullet-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  display: block;
+}
+
+.indigolay-list__text,
+.indigolay-styled-list__text,
+.IndigoLayStyledLists__text {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 1. Indigolay Variant (Cyan / Indigo Glow)                                  */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--indigolay,
+.indigolay-styled-list--indigolay,
+.IndigoLayStyledLists--indigolay {
+  --il-bullet-color: #38bdf8;
+  --il-bullet-glow: rgba(56, 189, 248, 0.75);
+  --il-text-color: #e0e7ff;
+}
+
+.indigolay-list--indigolay .indigolay-list__bullet,
+.indigolay-styled-list--indigolay .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--indigolay .IndigoLayStyledLists__bullet {
+  color: var(--il-bullet-color);
+  filter: drop-shadow(0 0 4px var(--il-bullet-glow));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 2. Gilded Variant (Rich Gold / Amber Metallic Glow)                        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--gilded,
+.indigolay-styled-list--gilded,
+.IndigoLayStyledLists--gilded {
+  --il-bullet-color: #fbbf24;
+  --il-bullet-glow: rgba(251, 191, 36, 0.85);
+  --il-text-color: #fef3c7;
+}
+
+.indigolay-list--gilded .indigolay-list__bullet,
+.indigolay-styled-list--gilded .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--gilded .IndigoLayStyledLists__bullet {
+  color: var(--il-bullet-color);
+  filter: drop-shadow(0 0 5px var(--il-bullet-glow));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 3. Regal Variant (Royal Purple & Crimson Magenta Glow)                    */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--regal,
+.indigolay-styled-list--regal,
+.IndigoLayStyledLists--regal {
+  --il-bullet-color: #e879f9;
+  --il-bullet-glow: rgba(232, 121, 249, 0.85);
+  --il-text-color: #fae8ff;
+}
+
+.indigolay-list--regal .indigolay-list__bullet,
+.indigolay-styled-list--regal .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--regal .IndigoLayStyledLists__bullet {
+  color: var(--il-bullet-color);
+  filter: drop-shadow(0 0 5px var(--il-bullet-glow));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 4. Shading Variant (Deep Embossed Shading / Obsidian Contrast)             */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--shading,
+.indigolay-styled-list--shading,
+.IndigoLayStyledLists--shading {
+  --il-bullet-color: #94a3b8;
+  --il-bullet-glow: rgba(148, 163, 184, 0.5);
+  --il-text-color: #f8fafc;
+}
+
+.indigolay-list--shading .indigolay-list__bullet,
+.indigolay-styled-list--shading .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--shading .IndigoLayStyledLists__bullet {
+  color: var(--il-bullet-color);
+  filter: drop-shadow(0 0 3px var(--il-bullet-glow));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 5. Chevron Variant (Icon Chevron Right Bullet)                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--chevron,
+.indigolay-styled-list--chevron,
+.IndigoLayStyledLists--chevron {
+  --il-text-color: #e0e0e0;
+}
+
+.indigolay-list--chevron .indigolay-list__bullet,
+.indigolay-styled-list--chevron .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--chevron .IndigoLayStyledLists__bullet {
+  filter: drop-shadow(0 0 3px rgba(212, 165, 116, 0.5));
+}
+
+.indigolay-list--chevron .indigolay-list__bullet:empty::before,
+.indigolay-styled-list--chevron .indigolay-styled-list__bullet:empty::before,
+.IndigoLayStyledLists--chevron .IndigoLayStyledLists__bullet:empty::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('/assets/icons/indigolay/Icon_chevron-right.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 6. Send Variant (Icon Send Bullet)                                        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--send,
+.indigolay-styled-list--send,
+.IndigoLayStyledLists--send {
+  --il-text-color: #e0e0e0;
+}
+
+.indigolay-list--send .indigolay-list__bullet,
+.indigolay-styled-list--send .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--send .IndigoLayStyledLists__bullet {
+  filter: drop-shadow(0 0 3px rgba(212, 165, 116, 0.5));
+}
+
+.indigolay-list--send .indigolay-list__bullet:empty::before,
+.indigolay-styled-list--send .indigolay-styled-list__bullet:empty::before,
+.IndigoLayStyledLists--send .IndigoLayStyledLists__bullet:empty::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('/assets/icons/indigolay/Icon_send.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Optional Bordered Modifier (adds item boxes when explicitly requested)   */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  padding: 0.4rem 0.65rem !important;
+  background: rgba(30, 27, 75, 0.45) !important;
+  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+  border-left: 3px solid #6366f1 !important;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.indigolay-list--gilded.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--gilded.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--gilded.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  background: linear-gradient(90deg, rgba(69, 39, 16, 0.5) 0%, rgba(35, 20, 8, 0.6) 100%) !important;
+  border: 1px solid #d97706 !important;
+  border-left: 3px solid #fbbf24 !important;
+}
+
+.indigolay-list--regal.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--regal.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--regal.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  background: linear-gradient(90deg, rgba(59, 7, 66, 0.5) 0%, rgba(24, 9, 38, 0.65) 100%) !important;
+  border: 1px solid #a855f7 !important;
+  border-left: 3px solid #e879f9 !important;
+}
+
+.indigolay-list--shading.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--shading.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--shading.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
+  border: 1px solid rgba(71, 85, 105, 0.8) !important;
+  border-left: 3px solid #64748b !important;
+}
+
+/* Bullet color helpers retained for backward compatibility */
 .indigolay-list__bullet--gold {
-  color: #ffd700;
+  color: #ffd700 !important;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8)) !important;
 }
 
 .indigolay-list__bullet--amber {
-  color: #d4a574;
-}
-
-.indigolay-list__text {
-  flex: 1;
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.8)) !important;
 }

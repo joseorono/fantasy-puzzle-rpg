@@ -12,6 +12,7 @@ import RadialCountdownTestView from '~/views/radial-countdown-test';
 import SkillDebugView from '~/views/skill-debug';
 import DungeonDebugView from '~/views/dungeon-debug';
 import CreditsDebugView from '~/views/credits-debug';
+import ListStylesTestView from '~/views/list-styles-test';
 
 interface DebugSection {
   id: string;
@@ -26,6 +27,7 @@ const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
   { id: 'dungeon', label: 'Dungeon', Component: DungeonDebugView },
   { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },
+  { id: 'list-styles', label: 'List Styles', Component: ListStylesTestView },
   { id: 'party', label: 'Party', Component: PartyTestView },
   { id: 'inventory', label: 'Inventory', Component: InventoryTestView },
   { id: 'resources', label: 'Resources', Component: ResourcesTestView },
