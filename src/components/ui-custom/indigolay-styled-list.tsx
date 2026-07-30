@@ -2,7 +2,7 @@ import { createContext, useContext, type ReactNode, type HTMLAttributes } from '
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
-export type IndigoLayListVariant = 'indigolay' | 'gilded' | 'regal' | 'shading' | 'chevron' | 'send';
+export type IndigoLayListVariant = 'indigolay' | 'gilded' | 'regal' | 'shading' | 'chevron' | 'send' | 'sovereign' | 'sovereign-shading';
 
 const indigolayStyledListVariants = cva(
   'indigolay-list IndigoLayStyledLists indigolay-styled-list',
@@ -15,6 +15,8 @@ const indigolayStyledListVariants = cva(
         shading: 'indigolay-list--shading IndigoLayStyledLists--shading',
         chevron: 'indigolay-list--chevron IndigoLayStyledLists--chevron',
         send: 'indigolay-list--send IndigoLayStyledLists--send',
+        sovereign: 'indigolay-list--sovereign IndigoLayStyledLists--sovereign',
+        'sovereign-shading': 'indigolay-list--sovereign-shading IndigoLayStyledLists--sovereign-shading',
       },
       size: {
         sm: 'indigolay-list--sm IndigoLayStyledLists--sm',
@@ -37,11 +39,40 @@ const indigolayStyledListVariants = cva(
   }
 );
 
+/** Metallic gold diamond with specular sheen for the Sovereign variant */
+const SovereignGoldDiamond = (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 16 16"
+    fill="none"
+    className="indigolay-list__bullet-img IndigoLayStyledLists__bullet-img inline-block select-none"
+    style={{ filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.9))' }}
+  >
+    <defs>
+      <linearGradient id="sovereignGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#fff8cf" />
+        <stop offset="25%" stopColor="#ffd700" />
+        <stop offset="50%" stopColor="#996515" />
+        <stop offset="75%" stopColor="#ffeea1" />
+        <stop offset="100%" stopColor="#d4af37" />
+      </linearGradient>
+    </defs>
+    {/* Base metallic gold diamond */}
+    <polygon points="8,1 15,8 8,15 1,8" fill="url(#sovereignGoldGrad)" stroke="#573802" strokeWidth="0.8" />
+    <polygon points="8,3 13,8 8,13 3,8" fill="url(#sovereignGoldGrad)" opacity="0.95" />
+    {/* Specular sheen reflection highlight */}
+    <polygon points="8,2 12,6 7,7" fill="#ffffff" opacity="0.65" />
+  </svg>
+);
+
 const DEFAULT_BULLET_ICONS: Record<IndigoLayListVariant, ReactNode> = {
   indigolay: '◆',
   gilded: '✦',
   regal: '❖',
   shading: '◈',
+  sovereign: SovereignGoldDiamond,
+  'sovereign-shading': SovereignGoldDiamond,
   chevron: (
     <img
       src="/assets/icons/indigolay/Icon_chevron-right.png"
@@ -105,7 +136,7 @@ export interface IndigoLayStyledListsProps
 
 /**
  * Reusable modal list component built on the Indigolay design system.
- * Supports variants: 'indigolay', 'gilded', 'regal', 'shading', 'chevron', 'send'.
+ * Supports variants: 'indigolay', 'gilded', 'regal', 'shading', 'chevron', 'send', 'sovereign', 'sovereign-shading'.
  * Items have transparent backgrounds matching game tooltips & modal popups by default.
  */
 export function IndigoLayStyledLists({

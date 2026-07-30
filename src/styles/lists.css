@@ -109,7 +109,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 2. Gilded Variant (Rich Gold / Amber Metallic Glow)                        */
+/* 2. Gilded Variant (Restored: Rich Gold / Amber Metallic Glow)              */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--gilded,
@@ -166,19 +166,26 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 5. Chevron Variant (Icon Chevron Right Bullet)                            */
+/* 5. Chevron Variant (Icon Chevron Right Bullet + Shading Depth)            */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--chevron,
 .indigolay-styled-list--chevron,
 .IndigoLayStyledLists--chevron {
-  --il-text-color: #e0e0e0;
+  --il-text-color: #f8fafc;
 }
 
 .indigolay-list--chevron .indigolay-list__bullet,
 .indigolay-styled-list--chevron .indigolay-styled-list__bullet,
 .IndigoLayStyledLists--chevron .IndigoLayStyledLists__bullet {
-  filter: drop-shadow(0 0 3px rgba(212, 165, 116, 0.5));
+  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
+}
+
+.indigolay-list--chevron .indigolay-list__text,
+.indigolay-styled-list--chevron .indigolay-styled-list__text,
+.IndigoLayStyledLists--chevron .IndigoLayStyledLists__text {
+  color: #f8fafc;
+  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.9);
 }
 
 .indigolay-list--chevron .indigolay-list__bullet:empty::before,
@@ -192,22 +199,30 @@
   background-size: contain;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 6. Send Variant (Icon Send Bullet)                                        */
+/* 6. Send Variant (Icon Send Bullet + Enhanced Shading Depth)               */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--send,
 .indigolay-styled-list--send,
 .IndigoLayStyledLists--send {
-  --il-text-color: #e0e0e0;
+  --il-text-color: #ffffff;
 }
 
 .indigolay-list--send .indigolay-list__bullet,
 .indigolay-styled-list--send .indigolay-styled-list__bullet,
 .IndigoLayStyledLists--send .IndigoLayStyledLists__bullet {
-  filter: drop-shadow(0 0 3px rgba(212, 165, 116, 0.5));
+  filter: drop-shadow(1.5px 2px 2px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
+}
+
+.indigolay-list--send .indigolay-list__text,
+.indigolay-styled-list--send .indigolay-styled-list__text,
+.IndigoLayStyledLists--send .IndigoLayStyledLists__text {
+  color: #ffffff;
+  text-shadow: 0 0 3px #000000, 1.5px 2px 3px rgba(0, 0, 0, 0.95);
 }
 
 .indigolay-list--send .indigolay-list__bullet:empty::before,
@@ -221,6 +236,75 @@
   background-size: contain;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  filter: drop-shadow(1.5px 2px 2px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 7. Sovereign Variant (SVG Metallic Gold Gradient Bullet + Crisp White Text) */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--sovereign,
+.indigolay-styled-list--sovereign,
+.IndigoLayStyledLists--sovereign {
+  --il-text-color: #f8fafc;
+}
+
+.indigolay-list--sovereign .indigolay-list__text,
+.indigolay-styled-list--sovereign .indigolay-styled-list__text,
+.IndigoLayStyledLists--sovereign .IndigoLayStyledLists__text {
+  color: #f8fafc;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.indigolay-list--sovereign .indigolay-list__bullet:empty::before,
+.indigolay-styled-list--sovereign .indigolay-styled-list__bullet:empty::before,
+.IndigoLayStyledLists--sovereign .IndigoLayStyledLists__bullet:empty::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fff8cf'/%3E%3Cstop offset='25%25' stop-color='%23ffd700'/%3E%3Cstop offset='50%25' stop-color='%23996515'/%3E%3Cstop offset='75%25' stop-color='%23ffeea1'/%3E%3Cstop offset='100%25' stop-color='%23d4af37'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='8,1 15,8 8,15 1,8' fill='url(%23g)' stroke='%23573802' stroke-width='0.8'/%3E%3Cpolygon points='8,2 12,6 7,7' fill='%23ffffff' opacity='0.65'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.9));
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 8. Sovereign Shading Variant (Subtle Soft Embossed Shadow)                */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.indigolay-list--sovereign-shading,
+.indigolay-styled-list--sovereign-shading,
+.IndigoLayStyledLists--sovereign-shading {
+  --il-text-color: #f8fafc;
+}
+
+.indigolay-list--sovereign-shading .indigolay-list__bullet,
+.indigolay-styled-list--sovereign-shading .indigolay-styled-list__bullet,
+.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__bullet {
+  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
+}
+
+.indigolay-list--sovereign-shading .indigolay-list__text,
+.indigolay-styled-list--sovereign-shading .indigolay-styled-list__text,
+.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__text {
+  color: #f8fafc;
+  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.9);
+}
+
+.indigolay-list--sovereign-shading .indigolay-list__bullet:empty::before,
+.indigolay-styled-list--sovereign-shading .indigolay-styled-list__bullet:empty::before,
+.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__bullet:empty::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fff8cf'/%3E%3Cstop offset='25%25' stop-color='%23ffd700'/%3E%3Cstop offset='50%25' stop-color='%23996515'/%3E%3Cstop offset='75%25' stop-color='%23ffeea1'/%3E%3Cstop offset='100%25' stop-color='%23d4af37'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='8,1 15,8 8,15 1,8' fill='url(%23g)' stroke='%23573802' stroke-width='0.8'/%3E%3Cpolygon points='8,2 12,6 7,7' fill='%23ffffff' opacity='0.65'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -260,6 +344,22 @@
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
   border: 1px solid rgba(71, 85, 105, 0.8) !important;
   border-left: 3px solid #64748b !important;
+}
+
+.indigolay-list--sovereign.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--sovereign.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--sovereign.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  background: linear-gradient(90deg, rgba(78, 48, 12, 0.75) 0%, rgba(45, 24, 6, 0.85) 100%) !important;
+  border: 1px solid #f59e0b !important;
+  border-left: 3px solid #ffd700 !important;
+}
+
+.indigolay-list--sovereign-shading.indigolay-list--bordered .indigolay-list__item,
+.indigolay-styled-list--sovereign-shading.indigolay-styled-list--bordered .indigolay-styled-list__item,
+.IndigoLayStyledLists--sovereign-shading.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
+  background: linear-gradient(180deg, rgba(20, 25, 35, 0.85) 0%, rgba(10, 12, 18, 0.95) 100%) !important;
+  border: 1px solid rgba(180, 135, 40, 0.6) !important;
+  border-left: 3px solid #ffd700 !important;
 }
 
 /* Bullet color helpers retained for backward compatibility */

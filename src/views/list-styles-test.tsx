@@ -46,6 +46,22 @@ const VARIANTS: VariantConfig[] = [
     frameClasses: 'border-slate-600/80 shadow-[0_0_20px_rgba(148,163,184,0.2)]',
   },
   {
+    id: 'sovereign',
+    label: 'SOVEREIGN ULTIMATE GOLD',
+    subtitle: 'Realistic metallic gold SVG diamond with specular sheen',
+    dividerVariant: 'gold',
+    badgeColor: 'text-amber-200 border-amber-400/50 bg-amber-950/60 font-bold',
+    frameClasses: 'border-amber-500/90 shadow-[0_0_25px_rgba(251,191,36,0.35)]',
+  },
+  {
+    id: 'sovereign-shading',
+    label: 'SOVEREIGN GOLD SHADING',
+    subtitle: 'Sovereign metallic gold diamond with deep embossed shading contrast',
+    dividerVariant: 'gold',
+    badgeColor: 'text-amber-200 border-slate-400/50 bg-stone-950/80 font-bold',
+    frameClasses: 'border-amber-600/90 shadow-[0_0_25px_rgba(0,0,0,0.6)]',
+  },
+  {
     id: 'chevron',
     label: 'CHEVRON LIST STYLE',
     subtitle: 'Standard transparent list with Icon_chevron-right.png bullet',
@@ -86,10 +102,7 @@ export default function ListStylesTestView() {
             Modal List Styles — IndigoLayStyledLists
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Visual de las 6 variantes de listas sin fondo por defecto sobre contenedores de modal: <code className="text-cyan-300">indigolay</code>,{' '}
-            <code className="text-amber-300">gilded</code>, <code className="text-purple-300">regal</code>,{' '}
-            <code className="text-slate-300">shading</code>, <code className="text-indigo-300">chevron</code> e{' '}
-            <code className="text-indigo-300">send</code>.
+            Visual de las variantes de listas sobre contenedores de modal: <code className="text-amber-200">sovereign</code> y la variante con sombreado <code className="text-amber-300">sovereign-shading</code>.
           </p>
         </div>
 
@@ -132,7 +145,7 @@ export default function ListStylesTestView() {
         </div>
       </div>
 
-      {/* 6 Modal Container Previews */}
+      {/* Modal Container Previews */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {VARIANTS.map((v) => (
           <div
