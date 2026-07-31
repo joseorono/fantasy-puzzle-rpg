@@ -2,21 +2,16 @@ import { createContext, useContext, type ReactNode, type HTMLAttributes } from '
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
-export type IndigoLayListVariant = 'indigolay' | 'gilded' | 'regal' | 'shading' | 'chevron' | 'send' | 'sovereign' | 'sovereign-shading';
+export type IndigoLayListVariant = 'chevron' | 'send' | 'sovereign';
 
 const indigolayStyledListVariants = cva(
   'indigolay-list IndigoLayStyledLists indigolay-styled-list',
   {
     variants: {
       variant: {
-        indigolay: 'indigolay-list--indigolay IndigoLayStyledLists--indigolay',
-        gilded: 'indigolay-list--gilded IndigoLayStyledLists--gilded',
-        regal: 'indigolay-list--regal IndigoLayStyledLists--regal',
-        shading: 'indigolay-list--shading IndigoLayStyledLists--shading',
         chevron: 'indigolay-list--chevron IndigoLayStyledLists--chevron',
         send: 'indigolay-list--send IndigoLayStyledLists--send',
         sovereign: 'indigolay-list--sovereign IndigoLayStyledLists--sovereign',
-        'sovereign-shading': 'indigolay-list--sovereign-shading IndigoLayStyledLists--sovereign-shading',
       },
       size: {
         sm: 'indigolay-list--sm IndigoLayStyledLists--sm',
@@ -67,12 +62,7 @@ const SovereignGoldDiamond = (
 );
 
 const DEFAULT_BULLET_ICONS: Record<IndigoLayListVariant, ReactNode> = {
-  indigolay: '◆',
-  gilded: '✦',
-  regal: '❖',
-  shading: '◈',
   sovereign: SovereignGoldDiamond,
-  'sovereign-shading': SovereignGoldDiamond,
   chevron: (
     <img
       src="/assets/icons/indigolay/Icon_chevron-right.png"
@@ -136,8 +126,7 @@ export interface IndigoLayStyledListsProps
 
 /**
  * Reusable modal/tooltip list component built on the Indigolay design system.
- * Defaults to 'chevron' variant for standard tooltips and popups.
- * Supports variants: 'chevron' (default), 'send', 'indigolay', 'gilded', 'regal', 'shading', 'sovereign', 'sovereign-shading'.
+ * Supports 3 clean variants: 'chevron' (default), 'send', and 'sovereign'.
  */
 export function IndigoLayStyledLists({
   className,

@@ -302,7 +302,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <IndigoLayStyledLists variant="chevron">
+                        <IndigoLayStyledLists variant="send">
                           <IndigolayStyledListItem>
                             {character.class === 'healer'
                               ? 'Increases your healing output'

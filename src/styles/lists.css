@@ -54,7 +54,7 @@
   font-family: monospace;
   font-size: 0.78rem;
   line-height: 1.4;
-  color: var(--il-text-color, #e0e0e0);
+  color: var(--il-text-color, #f8fafc);
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -121,83 +121,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 1. Indigolay Variant (Cyan / Indigo Glow)                                  */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-.indigolay-list--indigolay,
-.indigolay-styled-list--indigolay,
-.IndigoLayStyledLists--indigolay {
-  --il-bullet-color: #38bdf8;
-  --il-bullet-glow: rgba(56, 189, 248, 0.75);
-  --il-text-color: #e0e7ff;
-}
-
-.indigolay-list--indigolay .indigolay-list__bullet,
-.indigolay-styled-list--indigolay .indigolay-styled-list__bullet,
-.IndigoLayStyledLists--indigolay .IndigoLayStyledLists__bullet {
-  color: var(--il-bullet-color);
-  filter: drop-shadow(0 0 4px var(--il-bullet-glow));
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* 2. Gilded Variant (Restored: Rich Gold / Amber Metallic Glow)              */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-.indigolay-list--gilded,
-.indigolay-styled-list--gilded,
-.IndigoLayStyledLists--gilded {
-  --il-bullet-color: #fbbf24;
-  --il-bullet-glow: rgba(251, 191, 36, 0.85);
-  --il-text-color: #fef3c7;
-}
-
-.indigolay-list--gilded .indigolay-list__bullet,
-.indigolay-styled-list--gilded .indigolay-styled-list__bullet,
-.IndigoLayStyledLists--gilded .IndigoLayStyledLists__bullet {
-  color: var(--il-bullet-color);
-  filter: drop-shadow(0 0 5px var(--il-bullet-glow));
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* 3. Regal Variant (Royal Purple & Crimson Magenta Glow)                    */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-.indigolay-list--regal,
-.indigolay-styled-list--regal,
-.IndigoLayStyledLists--regal {
-  --il-bullet-color: #e879f9;
-  --il-bullet-glow: rgba(232, 121, 249, 0.85);
-  --il-text-color: #fae8ff;
-}
-
-.indigolay-list--regal .indigolay-list__bullet,
-.indigolay-styled-list--regal .indigolay-styled-list__bullet,
-.IndigoLayStyledLists--regal .IndigoLayStyledLists__bullet {
-  color: var(--il-bullet-color);
-  filter: drop-shadow(0 0 5px var(--il-bullet-glow));
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* 4. Shading Variant (Deep Embossed Shading / Obsidian Contrast)             */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-.indigolay-list--shading,
-.indigolay-styled-list--shading,
-.IndigoLayStyledLists--shading {
-  --il-bullet-color: #94a3b8;
-  --il-bullet-glow: rgba(148, 163, 184, 0.5);
-  --il-text-color: #f8fafc;
-}
-
-.indigolay-list--shading .indigolay-list__bullet,
-.indigolay-styled-list--shading .indigolay-styled-list__bullet,
-.IndigoLayStyledLists--shading .IndigoLayStyledLists__bullet {
-  color: var(--il-bullet-color);
-  filter: drop-shadow(0 0 3px var(--il-bullet-glow));
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* 5. Chevron Variant (Icon Chevron Right Bullet + Shading Depth)            */
+/* 1. Chevron Variant (Icon Chevron Right Bullet + Shading Depth)            */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--chevron,
@@ -234,7 +158,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 6. Send Variant (Icon Send Bullet + Enhanced Shading Depth)               */
+/* 2. Send Variant (Icon Send Bullet + Enhanced Shading Depth)               */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--send,
@@ -271,7 +195,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 7. Sovereign Variant (SVG Metallic Gold Gradient Bullet + Crisp White Text) */
+/* 3. Sovereign Variant (SVG Metallic Gold Gradient Bullet + Crisp White Text) */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 .indigolay-list--sovereign,
@@ -302,43 +226,6 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* 8. Sovereign Shading Variant (Subtle Soft Embossed Shadow)                */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-.indigolay-list--sovereign-shading,
-.indigolay-styled-list--sovereign-shading,
-.IndigoLayStyledLists--sovereign-shading {
-  --il-text-color: #f8fafc;
-}
-
-.indigolay-list--sovereign-shading .indigolay-list__bullet,
-.indigolay-styled-list--sovereign-shading .indigolay-styled-list__bullet,
-.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__bullet {
-  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
-}
-
-.indigolay-list--sovereign-shading .indigolay-list__text,
-.indigolay-styled-list--sovereign-shading .indigolay-styled-list__text,
-.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__text {
-  color: #f8fafc;
-  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.9);
-}
-
-.indigolay-list--sovereign-shading .indigolay-list__bullet:empty::before,
-.indigolay-styled-list--sovereign-shading .indigolay-styled-list__bullet:empty::before,
-.IndigoLayStyledLists--sovereign-shading .IndigoLayStyledLists__bullet:empty::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fff8cf'/%3E%3Cstop offset='25%25' stop-color='%23ffd700'/%3E%3Cstop offset='50%25' stop-color='%23996515'/%3E%3Cstop offset='75%25' stop-color='%23ffeea1'/%3E%3Cstop offset='100%25' stop-color='%23d4af37'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='8,1 15,8 8,15 1,8' fill='url(%23g)' stroke='%23573802' stroke-width='0.8'/%3E%3Cpolygon points='8,2 12,6 7,7' fill='%23ffffff' opacity='0.65'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  filter: drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.85));
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
 /* Optional Bordered Modifier (adds item boxes when explicitly requested)   */
 /* ────────────────────────────────────────────────────────────────────────── */
 
@@ -353,43 +240,11 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
 }
 
-.indigolay-list--gilded.indigolay-list--bordered .indigolay-list__item,
-.indigolay-styled-list--gilded.indigolay-styled-list--bordered .indigolay-styled-list__item,
-.IndigoLayStyledLists--gilded.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
-  background: linear-gradient(90deg, rgba(69, 39, 16, 0.5) 0%, rgba(35, 20, 8, 0.6) 100%) !important;
-  border: 1px solid #d97706 !important;
-  border-left: 3px solid #fbbf24 !important;
-}
-
-.indigolay-list--regal.indigolay-list--bordered .indigolay-list__item,
-.indigolay-styled-list--regal.indigolay-styled-list--bordered .indigolay-styled-list__item,
-.IndigoLayStyledLists--regal.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
-  background: linear-gradient(90deg, rgba(59, 7, 66, 0.5) 0%, rgba(24, 9, 38, 0.65) 100%) !important;
-  border: 1px solid #a855f7 !important;
-  border-left: 3px solid #e879f9 !important;
-}
-
-.indigolay-list--shading.indigolay-list--bordered .indigolay-list__item,
-.indigolay-styled-list--shading.indigolay-styled-list--bordered .indigolay-styled-list__item,
-.IndigoLayStyledLists--shading.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
-  border: 1px solid rgba(71, 85, 105, 0.8) !important;
-  border-left: 3px solid #64748b !important;
-}
-
 .indigolay-list--sovereign.indigolay-list--bordered .indigolay-list__item,
 .indigolay-styled-list--sovereign.indigolay-styled-list--bordered .indigolay-styled-list__item,
 .IndigoLayStyledLists--sovereign.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
   background: linear-gradient(90deg, rgba(78, 48, 12, 0.75) 0%, rgba(45, 24, 6, 0.85) 100%) !important;
   border: 1px solid #f59e0b !important;
-  border-left: 3px solid #ffd700 !important;
-}
-
-.indigolay-list--sovereign-shading.indigolay-list--bordered .indigolay-list__item,
-.indigolay-styled-list--sovereign-shading.indigolay-styled-list--bordered .indigolay-styled-list__item,
-.IndigoLayStyledLists--sovereign-shading.IndigoLayStyledLists--bordered .IndigoLayStyledLists__item {
-  background: linear-gradient(180deg, rgba(20, 25, 35, 0.85) 0%, rgba(10, 12, 18, 0.95) 100%) !important;
-  border: 1px solid rgba(180, 135, 40, 0.6) !important;
   border-left: 3px solid #ffd700 !important;
 }
 

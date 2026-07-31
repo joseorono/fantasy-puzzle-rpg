@@ -14,36 +14,20 @@ interface VariantConfig {
 
 const VARIANTS: VariantConfig[] = [
   {
-    id: 'indigolay',
-    label: 'INDIGOLAY SPELLS & ABILITIES',
-    subtitle: 'Classic cyan & indigo spectral glow style',
+    id: 'chevron',
+    label: 'CHEVRON LIST STYLE (DEFAULT)',
+    subtitle: 'Standard list style with Icon_chevron-right.png bullet',
     dividerVariant: 'default',
-    badgeColor: 'text-cyan-400 border-cyan-500/40 bg-cyan-950/50',
+    badgeColor: 'text-indigo-300 border-indigo-500/40 bg-indigo-950/50',
     frameClasses: 'border-indigo-600/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]',
   },
   {
-    id: 'gilded',
-    label: 'GILDED TREASURES & REWARDS',
-    subtitle: 'Rich metallic gold & amber style for loot & masteries',
-    dividerVariant: 'gold',
-    badgeColor: 'text-amber-300 border-amber-500/40 bg-amber-950/50',
-    frameClasses: 'border-amber-600/80 shadow-[0_0_20px_rgba(245,158,11,0.25)]',
-  },
-  {
-    id: 'regal',
-    label: 'REGAL CROWN & MASTERY',
-    subtitle: 'Majestic purple & magenta royal style for noble abilities',
-    dividerVariant: 'victory',
-    badgeColor: 'text-purple-300 border-purple-500/40 bg-purple-950/50',
-    frameClasses: 'border-purple-600/80 shadow-[0_0_20px_rgba(168,85,247,0.25)]',
-  },
-  {
-    id: 'shading',
-    label: 'SHADED STATS & ATTRIBUTES',
-    subtitle: 'Deep embossed dark obsidian contrast for stats & lore',
-    dividerVariant: 'silver',
-    badgeColor: 'text-slate-300 border-slate-500/40 bg-slate-950/50',
-    frameClasses: 'border-slate-600/80 shadow-[0_0_20px_rgba(148,163,184,0.2)]',
+    id: 'send',
+    label: 'SEND LIST STYLE',
+    subtitle: 'Standard list style with Icon_send.png bullet & enhanced shading',
+    dividerVariant: 'default',
+    badgeColor: 'text-cyan-300 border-cyan-500/40 bg-cyan-950/50',
+    frameClasses: 'border-cyan-600/80 shadow-[0_0_20px_rgba(6,182,212,0.25)]',
   },
   {
     id: 'sovereign',
@@ -52,30 +36,6 @@ const VARIANTS: VariantConfig[] = [
     dividerVariant: 'gold',
     badgeColor: 'text-amber-200 border-amber-400/50 bg-amber-950/60 font-bold',
     frameClasses: 'border-amber-500/90 shadow-[0_0_25px_rgba(251,191,36,0.35)]',
-  },
-  {
-    id: 'sovereign-shading',
-    label: 'SOVEREIGN GOLD SHADING',
-    subtitle: 'Sovereign metallic gold diamond with deep embossed shading contrast',
-    dividerVariant: 'gold',
-    badgeColor: 'text-amber-200 border-slate-400/50 bg-stone-950/80 font-bold',
-    frameClasses: 'border-amber-600/90 shadow-[0_0_25px_rgba(0,0,0,0.6)]',
-  },
-  {
-    id: 'chevron',
-    label: 'CHEVRON LIST STYLE',
-    subtitle: 'Standard transparent list with Icon_chevron-right.png bullet',
-    dividerVariant: 'default',
-    badgeColor: 'text-indigo-300 border-indigo-500/40 bg-indigo-950/50',
-    frameClasses: 'border-indigo-600/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]',
-  },
-  {
-    id: 'send',
-    label: 'SEND LIST STYLE',
-    subtitle: 'Standard transparent list with Icon_send.png bullet',
-    dividerVariant: 'default',
-    badgeColor: 'text-indigo-300 border-indigo-500/40 bg-indigo-950/50',
-    frameClasses: 'border-indigo-600/80 shadow-[0_0_20px_rgba(99,102,241,0.25)]',
   },
 ];
 
@@ -102,7 +62,8 @@ export default function ListStylesTestView() {
             Modal List Styles — IndigoLayStyledLists
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Visual de las variantes de listas sobre contenedores de modal: <code className="text-amber-200">sovereign</code> y la variante con sombreado <code className="text-amber-300">sovereign-shading</code>.
+            Variantes activas: <code className="text-indigo-300">chevron</code> (default),{' '}
+            <code className="text-cyan-300">send</code> y <code className="text-amber-200">sovereign</code>.
           </p>
         </div>
 
@@ -145,8 +106,8 @@ export default function ListStylesTestView() {
         </div>
       </div>
 
-      {/* Modal Container Previews */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      {/* 3 Modal Container Previews */}
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {VARIANTS.map((v) => (
           <div
             key={v.id}
