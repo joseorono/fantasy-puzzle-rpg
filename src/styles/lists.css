@@ -23,7 +23,7 @@
 .indigolay-list--sm,
 .indigolay-styled-list--sm,
 .IndigoLayStyledLists--sm {
-  font-size: 0.72rem !important;
+  font-size: 0.85rem !important;
   gap: 0.25rem !important;
 }
 
@@ -33,14 +33,14 @@
 .indigolay-list--sm .indigolay-list__bullet:empty::before,
 .indigolay-styled-list--sm .indigolay-styled-list__bullet:empty::before,
 .IndigoLayStyledLists--sm .IndigoLayStyledLists__bullet:empty::before {
-  width: 12px !important;
-  height: 12px !important;
+  width: 14px !important;
+  height: 14px !important;
 }
 
 .indigolay-list--lg,
 .indigolay-styled-list--lg,
 .IndigoLayStyledLists--lg {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
 /* Base item style (Clean transparent layout matching modal tooltips & popups) */
@@ -50,9 +50,10 @@
   display: flex !important;
   flex-direction: row !important;
   align-items: flex-start !important;
-  gap: 0.35rem;
+  gap: 0.45rem;
   font-family: monospace;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   line-height: 1.4;
   color: var(--il-text-color, #f8fafc);
   background: transparent !important;
@@ -70,20 +71,24 @@
 [role="tooltip"] .indigolay-list__item,
 [data-side] .indigolay-list__item,
 .skill-slot-tooltip .indigolay-list__item,
-.skill-unlock-confirm .indigolay-list__item {
-  font-size: 0.72rem !important;
-  line-height: 1.35 !important;
+.skill-unlock-confirm .indigolay-list__item,
+.tooltip-content .indigolay-list__item {
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
 }
 
 [role="tooltip"] .indigolay-list__bullet-img,
 [data-side] .indigolay-list__bullet-img,
 .skill-slot-tooltip .indigolay-list__bullet-img,
 .skill-unlock-confirm .indigolay-list__bullet-img,
+.tooltip-content .indigolay-list__bullet-img,
 [role="tooltip"] .indigolay-list__bullet:empty::before,
 [data-side] .indigolay-list__bullet:empty::before,
-.skill-unlock-confirm .indigolay-list__bullet:empty::before {
-  width: 12px !important;
-  height: 12px !important;
+.skill-unlock-confirm .indigolay-list__bullet:empty::before,
+.tooltip-content .indigolay-list__bullet:empty::before {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 /* Bullet styling base */
@@ -105,8 +110,8 @@
 .indigolay-list__bullet-img,
 .indigolay-styled-list__bullet-img,
 .IndigoLayStyledLists__bullet-img {
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
   object-fit: contain;
   image-rendering: pixelated;
   flex-shrink: 0;
@@ -118,6 +123,7 @@
 .IndigoLayStyledLists__text {
   flex: 1;
   word-break: break-word;
+  font-weight: 600;
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
