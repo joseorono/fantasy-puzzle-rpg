@@ -132,6 +132,10 @@ function DetailStat({ label, highlight = false }: { label: string; highlight?: b
   return <span className={cn('skill-detail__stat', highlight && 'skill-detail__stat--highlight')}>{label}</span>;
 }
 
+function StatDivider() {
+  return <span className="skill-detail__divider" aria-hidden="true" />;
+}
+
 /** The active skill's one-line stat strip, resolved at its current level. */
 function ActiveStatStrip({ skill, level }: { skill: SkillDefinition; level: number }) {
   const stats = resolveActiveSkillStats(skill, level);
@@ -139,11 +143,13 @@ function ActiveStatStrip({ skill, level }: { skill: SkillDefinition; level: numb
   return (
     <>
       <DetailStat label={TARGET_LABELS[skill.target]} />
+      <StatDivider />
       <DetailStat
         label={`${heals ? 'Heal' : 'Dmg'} ×${stats.baseDamageMultiplier}${
           stats.flatDamageBonus > 0 ? ` +${stats.flatDamageBonus}` : ''
         }`}
       />
+      <StatDivider />
       <DetailStat label={`Charge ×${stats.cooldownMultiplier}`} highlight={stats.cooldownMultiplier < 1} />
     </>
   );

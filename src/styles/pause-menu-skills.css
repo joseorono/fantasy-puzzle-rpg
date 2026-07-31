@@ -34,7 +34,8 @@
   overflow-y: auto;
   padding: 2px 8px 8px 2px;
 }
-/* ── Section headers ──────────────────────────────────────────────────────── */
+
+/* ── Section headers ──────────────────────────────────────────────────────── */
 
 .pause-menu-skills-section {
   display: flex;
@@ -399,50 +400,86 @@
   color: #33200f;
 }
 
-/* Horizontal stat strip: items separated by engraved vertical bars. Actives
-   have three short, bounded stats — one guaranteed line at this size. */
+/* Horizontal stat strip: styled as a single gilded copper resource card container */
 .skill-detail__stats {
   display: flex;
   align-items: center;
+  justify-content: space-around;
   white-space: nowrap;
   overflow: hidden;
+  padding: 0.45rem 0.75rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)),
+    url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1.5px rgba(212, 165, 116, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .skill-detail__stat {
-  font-size: 0.65rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
   line-height: 1.35;
-  color: #33200f;
+  color: #f2d2af;
+  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.95);
   white-space: nowrap;
 }
 
 .skill-detail__stat--highlight {
-  color: #8a5a10;
+  color: #ffd700;
   font-weight: bold;
+  text-shadow:
+    0 0 4px rgba(255, 215, 0, 0.4),
+    1px 1.5px 2px rgba(0, 0, 0, 0.95);
 }
 
-.skill-detail__stats:not(.skill-detail__stats--stack) .skill-detail__stat + .skill-detail__stat {
-  margin-left: 0.55rem;
-  padding-left: 0.55rem;
-  border-left: 1px solid rgba(107, 67, 36, 0.45);
-  box-shadow: inset 1px 0 0 rgba(255, 250, 235, 0.55);
+/* Gilded vertical divider element (flex child centered via justify-content: space-around) */
+.skill-detail__divider {
+  display: inline-block;
+  width: 2px;
+  height: 1.1rem;
+  flex-shrink: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(212, 165, 116, 0.1) 0%,
+    #ffd700 25%,
+    #b87333 50%,
+    #ffd700 75%,
+    rgba(212, 165, 116, 0.1) 100%
+  );
+  box-shadow:
+    0 0 3px rgba(255, 215, 0, 0.5),
+    -1px 0 2px rgba(0, 0, 0, 0.8);
+  border-radius: 1px;
 }
 
-/* Passive effect lines are sentence-length — stack them instead of stripping. */
+/* Passive effect lines stack inside card */
 .skill-detail__stats--stack {
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.25rem;
+  gap: 0.35rem;
   white-space: normal;
 }
 
 .skill-detail__stats--stack .skill-detail__stat {
   white-space: normal;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
+  color: #f2d2af;
 }
 
 .skill-detail__stats--stack .skill-detail__stat::before {
   content: '◆ ';
-  color: #a06820;
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
 /* ── Next-level upgrade preview: current → next rows, gains in green ─────── */
