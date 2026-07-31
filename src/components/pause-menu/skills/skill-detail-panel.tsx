@@ -9,6 +9,9 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { CostBadges } from '~/components/ui-custom/cost-badge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { describePassiveModifiers } from './passive-descriptions';
 
 // Short on purpose — the active stat strip must fit one line in Press Start 2P.
@@ -40,7 +43,8 @@ interface SkillDetailPanelProps {
  * deco frame, name, tier/gate line, description, effect list, and the action
  * row. Every locked skill — active or passive — shows its resource price
  * explicitly next to the Unlock button; a blocked unlock names the failing
- * gate. Dark-on-parchment text, no pixel-font shadow (it smears at small sizes).
+ * gate in a tooltip over the disabled button. Dark-on-parchment text, no
+ * pixel-font shadow (it smears at small sizes).
  */
 export function SkillDetailPanel({
   character,
@@ -138,9 +142,11 @@ function SkillDetailActions({
     const equipped = character.selectedSkillId === def.id;
     return (
       <div className="skill-detail__actions">
-        <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
-          {equipped ? 'Equipped' : 'Equip'}
-        </ToffecButton>
+        <ToffecBeigeCornersWrapper>
+          <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
+            {equipped ? 'Equipped' : 'Equip'}
+          </ToffecButton>
+        </ToffecBeigeCornersWrapper>
       </div>
     );
   }
@@ -160,11 +166,8 @@ function SkillDetailActions({
         ? 'Not enough resources'
         : null;
 
-  return (
-    <div className="skill-detail__actions skill-detail__actions--unlock">
-      <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
-        <CostBadges resources={def.cost} />
-      </div>
+  const unlockButton = (
+    <ToffecBeigeCornersWrapper>
       <ToffecButton
         variant="orange"
         size="xs"
@@ -173,7 +176,30 @@ function SkillDetailActions({
       >
         Unlock
       </ToffecButton>
-      {blockedReason && <div className="skill-detail__gate-note">{blockedReason}</div>}
+    </ToffecBeigeCornersWrapper>
+  );
+
+  return (
+    <div className="skill-detail__actions skill-detail__actions--unlock">
+      <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
+        <CostBadges resources={def.cost} />
+      </div>
+      {/* The disabled button swallows pointer events (see the CSS pointer-events
+          override), so the span is the hover surface for the gate tooltip. */}
+      {blockedReason ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <span className="skill-detail__blocked-trigger">{unlockButton}</span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <IndigoLayStyledLists variant="chevron">
+              <IndigolayStyledListItem>{blockedReason}</IndigolayStyledListItem>
+            </IndigoLayStyledLists>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        unlockButton
+      )}
     </div>
   );
 }

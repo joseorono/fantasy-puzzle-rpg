@@ -367,9 +367,13 @@
   color: #6b4324;
 }
 
+/* Sentence-length body text reads in monospace (the dialogue/list body style),
+   not Press Start 2P — the pixel font is for labels, not paragraphs. */
 .skill-detail__description {
-  font-size: 0.78rem;
-  line-height: 1.5;
+  font-family: monospace;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
   color: #33200f;
 }
 
@@ -427,6 +431,33 @@
   flex-wrap: wrap;
 }
 
+/* The toffec pill is visually 4px taller than its layout box (the ledge is a
+   box-shadow) and sinks 2px on hover — give the brackets extra room, and drop
+   the bottom pair past the ledge so nothing overlaps the button art. */
+.skill-detail__actions .cursor-corners {
+  --cursor-corner-inset: -3px;
+}
+
+.skill-detail__actions .cursor-corners .cursor-corner--bl,
+.skill-detail__actions .cursor-corners .cursor-corner--br {
+  bottom: calc(var(--cursor-corner-inset) - 3px);
+}
+
+/* A disabled action button must not swallow pointer events — hover has to
+   reach the tooltip trigger span that explains the failing gate. */
+.skill-detail__actions .toffec-button:disabled {
+  pointer-events: none;
+}
+
+/* And the bracket cursor stays hidden on it — corners read as "clickable". */
+.skill-detail__actions .cursor-corners:has(.toffec-button:disabled) .cursor-corner {
+  opacity: 0;
+}
+
+.skill-detail__blocked-trigger {
+  display: inline-flex;
+}
+
 /* ── Cost chips — restyled for parchment, overriding town.css .cost-badge ── */
 
 .skill-detail__cost {
@@ -480,8 +511,10 @@
 }
 
 .skill-detail__gate-note {
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
   color: #8a4a22;
 }
 
