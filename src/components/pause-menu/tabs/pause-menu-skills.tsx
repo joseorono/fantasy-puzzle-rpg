@@ -28,11 +28,8 @@ import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { SkillSlot } from '~/components/pause-menu/skills/skill-slot';
-import {
-  SkillDetailPanel,
-  getUpgradePreviewRows,
-  type SkillSelection,
-} from '~/components/pause-menu/skills/skill-detail-panel';
+import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/skills/skill-detail-panel';
+import { getUpgradePreviewRows } from '~/components/pause-menu/skills/upgrade-preview';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
 
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
