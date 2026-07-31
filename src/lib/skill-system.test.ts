@@ -6,9 +6,19 @@ import {
   getUnlockedSkills,
   isSkillUnlocked,
   unlockSkill,
+  hasPreviousActiveTier,
   selectSkill,
   getNewlyUnlockableSkills,
   resolveCharacterCooldown,
+  getSkillLevel,
+  resolveActiveSkillStats,
+  resolvePassiveModifiers,
+  getNextActiveUpgrade,
+  getNextPassiveUpgrade,
+  canUpgradeSkill,
+  canUpgradePassive,
+  upgradeSkill,
+  upgradePassive,
   getPassiveById,
   getPassivesForClass,
   getUnlockedPassives,
@@ -51,6 +61,7 @@ function makeCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
     unlockedSkillIds: ['warrior-smash'],
     selectedSkillId: 'warrior-smash',
     unlockedPassiveIds: [],
+    skillLevels: {},
     ...overrides,
   };
 }
@@ -100,6 +111,59 @@ describe('registry shape', () => {
       }
       for (const passive of PASSIVES_BY_CLASS[cls]) {
         expect(totalCost(passive.cost), `${passive.id} should cost resources`).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+describe('registry level tables', () => {
+  const classes: CharacterClass[] = ['warrior', 'rogue', 'mage', 'healer'];
+  const totalCost = (cost: Resources) => Object.values(cost).reduce((sum: number, v: number) => sum + v, 0);
+  const allDefs = [...Object.values(SKILL_REGISTRY), ...Object.values(PASSIVE_REGISTRY)];
+
+  it('gives every skill 4 levels and a full upgrade table', () => {
+    for (const def of allDefs) {
+      expect(def.maxLevel, `${def.id} maxLevel`).toBe(4);
+      expect(def.levelUpgrades.length, `${def.id} table length`).toBe(def.maxLevel - 1);
+    }
+  });
+
+  it('gates each level at a strictly increasing character level above the unlock level', () => {
+    for (const def of allDefs) {
+      let previous = def.unlockLevel;
+      for (const upgrade of def.levelUpgrades) {
+        expect(upgrade.requiredCharacterLevel, `${def.id} gate order`).toBeGreaterThan(previous);
+        previous = upgrade.requiredCharacterLevel;
+      }
+    }
+  });
+
+  it('finishes every skill’s gates before the next tier unlocks', () => {
+    for (const cls of classes) {
+      for (const track of [SKILLS_BY_CLASS[cls], PASSIVES_BY_CLASS[cls]] as const) {
+        for (let i = 0; i < track.length - 1; i++) {
+          const nextUnlock = track[i + 1].unlockLevel;
+          for (const upgrade of track[i].levelUpgrades) {
+            expect(upgrade.requiredCharacterLevel, `${track[i].id} gate vs ${track[i + 1].id}`).toBeLessThan(nextUnlock);
+          }
+        }
+      }
+    }
+  });
+
+  it('prices every upgrade step, tier-0 actives included', () => {
+    for (const def of allDefs) {
+      for (const upgrade of def.levelUpgrades) {
+        expect(totalCost(upgrade.cost), `${def.id} upgrade should cost resources`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('keeps every passive upgrade record on the same key set as its baseline', () => {
+    for (const passive of Object.values(PASSIVE_REGISTRY)) {
+      const baseKeys = Object.keys(passive.modifiers).sort();
+      for (const upgrade of passive.levelUpgrades) {
+        expect(Object.keys(upgrade.modifiers).sort(), `${passive.id} upgrade keys`).toEqual(baseKeys);
       }
     }
   });
@@ -189,6 +253,31 @@ describe('unlockSkill', () => {
     unlockSkill(char, 'warrior-whirlwind');
     expect(char.unlockedSkillIds).toEqual(['warrior-smash']);
   });
+
+  it('refuses a higher tier while a lower one is locked', () => {
+    const char = makeCharacter();
+    expect(unlockSkill(char, 'warrior-sharp-blow')).toBe(char);
+    expect(unlockSkill(char, 'warrior-overwhelm')).toBe(char);
+  });
+
+  it('unlocks the next tier once every lower tier is owned', () => {
+    const char = makeCharacter({ unlockedSkillIds: ['warrior-smash', 'warrior-whirlwind'] });
+    expect(unlockSkill(char, 'warrior-sharp-blow').unlockedSkillIds).toContain('warrior-sharp-blow');
+  });
+});
+
+describe('hasPreviousActiveTier', () => {
+  it('is true for the starter tier', () => {
+    expect(hasPreviousActiveTier(makeCharacter(), SKILL_REGISTRY['warrior-smash'])).toBe(true);
+  });
+
+  it('is true for tier 1 with the starter owned', () => {
+    expect(hasPreviousActiveTier(makeCharacter(), SKILL_REGISTRY['warrior-whirlwind'])).toBe(true);
+  });
+
+  it('is false for tier 2 while tier 1 is locked', () => {
+    expect(hasPreviousActiveTier(makeCharacter(), SKILL_REGISTRY['warrior-sharp-blow'])).toBe(false);
+  });
 });
 
 describe('selectSkill', () => {
@@ -258,6 +347,171 @@ describe('resolveCharacterCooldown', () => {
       unlockedPassiveIds: ['mage-focus-boost', 'mage-mana-burst', 'mage-haste'],
     };
     expect(resolveCharacterCooldown(hasted)).toBeCloseTo(resolveCharacterCooldown(base) * 0.85);
+  });
+
+  it('uses the selected skill’s level-resolved cooldown multiplier', () => {
+    // Overwhelm’s capstone shaves its charge from ×1.6 to ×1.5.
+    const base = makeCharacter({
+      unlockedSkillIds: ['warrior-smash', 'warrior-whirlwind', 'warrior-sharp-blow', 'warrior-overwhelm'],
+      selectedSkillId: 'warrior-overwhelm',
+    });
+    const maxed = { ...base, skillLevels: { 'warrior-overwhelm': 4 } };
+    expect(resolveCharacterCooldown(base)).toBeCloseTo(calculateCharacterCooldown(base) * 1.6);
+    expect(resolveCharacterCooldown(maxed)).toBeCloseTo(calculateCharacterCooldown(maxed) * 1.5);
+  });
+});
+
+describe('getSkillLevel', () => {
+  it('defaults to 1 for an empty map or unknown id', () => {
+    const char = makeCharacter();
+    expect(getSkillLevel(char, 'warrior-smash')).toBe(1);
+    expect(getSkillLevel(char, 'nope')).toBe(1);
+  });
+
+  it('reads the stored level', () => {
+    const char = makeCharacter({ skillLevels: { 'warrior-smash': 3 } });
+    expect(getSkillLevel(char, 'warrior-smash')).toBe(3);
+  });
+});
+
+describe('resolveActiveSkillStats', () => {
+  const smash = SKILL_REGISTRY['warrior-smash'];
+
+  it('returns the baseline fields at level 1', () => {
+    expect(resolveActiveSkillStats(smash, 1)).toEqual({
+      baseDamageMultiplier: smash.baseDamageMultiplier,
+      flatDamageBonus: smash.flatDamageBonus,
+      cooldownMultiplier: smash.cooldownMultiplier,
+    });
+  });
+
+  it('indexes the upgrade table for levels 2..maxLevel', () => {
+    expect(resolveActiveSkillStats(smash, 2)).toMatchObject(
+      // levelUpgrades[0] is level 2 — compare against the table itself.
+      {
+        baseDamageMultiplier: smash.levelUpgrades[0].baseDamageMultiplier,
+        flatDamageBonus: smash.levelUpgrades[0].flatDamageBonus,
+      },
+    );
+    expect(resolveActiveSkillStats(smash, 4).baseDamageMultiplier).toBe(
+      smash.levelUpgrades[2].baseDamageMultiplier,
+    );
+  });
+
+  it('clamps below 1 and above maxLevel', () => {
+    expect(resolveActiveSkillStats(smash, 0)).toEqual(resolveActiveSkillStats(smash, 1));
+    expect(resolveActiveSkillStats(smash, 99)).toEqual(resolveActiveSkillStats(smash, smash.maxLevel));
+  });
+});
+
+describe('resolvePassiveModifiers', () => {
+  const ironSkin = PASSIVE_REGISTRY['warrior-iron-skin'];
+
+  it('returns the baseline record at level 1 and clamps below 1', () => {
+    expect(resolvePassiveModifiers(ironSkin, 1)).toBe(ironSkin.modifiers);
+    expect(resolvePassiveModifiers(ironSkin, 0)).toBe(ironSkin.modifiers);
+  });
+
+  it('indexes the upgrade table for levels 2..maxLevel and clamps above', () => {
+    expect(resolvePassiveModifiers(ironSkin, 2)).toBe(ironSkin.levelUpgrades[0].modifiers);
+    expect(resolvePassiveModifiers(ironSkin, 99)).toBe(ironSkin.levelUpgrades[2].modifiers);
+  });
+});
+
+describe('getNextActiveUpgrade / getNextPassiveUpgrade', () => {
+  it('returns the entry that buys the next level', () => {
+    const smash = SKILL_REGISTRY['warrior-smash'];
+    expect(getNextActiveUpgrade(smash, 1)).toBe(smash.levelUpgrades[0]);
+    expect(getNextActiveUpgrade(smash, 3)).toBe(smash.levelUpgrades[2]);
+    const ironSkin = PASSIVE_REGISTRY['warrior-iron-skin'];
+    expect(getNextPassiveUpgrade(ironSkin, 2)).toBe(ironSkin.levelUpgrades[1]);
+  });
+
+  it('returns undefined at max level', () => {
+    expect(getNextActiveUpgrade(SKILL_REGISTRY['warrior-smash'], 4)).toBeUndefined();
+    expect(getNextPassiveUpgrade(PASSIVE_REGISTRY['warrior-iron-skin'], 4)).toBeUndefined();
+  });
+});
+
+describe('canUpgradeSkill / upgradeSkill', () => {
+  const gate2 = SKILL_REGISTRY['warrior-smash'].levelUpgrades[0].requiredCharacterLevel;
+
+  it('rejects unknown ids, other classes, and locked skills', () => {
+    const char = makeCharacter({ level: 99 });
+    expect(canUpgradeSkill(char, 'nope')).toBe(false);
+    expect(canUpgradeSkill(char, 'mage-fireball')).toBe(false);
+    expect(canUpgradeSkill(char, 'warrior-whirlwind')).toBe(false); // not unlocked
+  });
+
+  it('rejects a character below the level gate', () => {
+    const char = makeCharacter({ level: gate2 - 1 });
+    expect(canUpgradeSkill(char, 'warrior-smash')).toBe(false);
+    expect(upgradeSkill(char, 'warrior-smash')).toBe(char);
+  });
+
+  it('rejects a maxed skill', () => {
+    const char = makeCharacter({ level: 99, skillLevels: { 'warrior-smash': 4 } });
+    expect(canUpgradeSkill(char, 'warrior-smash')).toBe(false);
+    expect(upgradeSkill(char, 'warrior-smash')).toBe(char);
+  });
+
+  it('increments the level immutably when every gate passes', () => {
+    const char = makeCharacter({ level: gate2 });
+    expect(canUpgradeSkill(char, 'warrior-smash')).toBe(true);
+    const updated = upgradeSkill(char, 'warrior-smash');
+    expect(updated.skillLevels['warrior-smash']).toBe(2);
+    expect(char.skillLevels).toEqual({});
+  });
+});
+
+describe('canUpgradePassive / upgradePassive', () => {
+  const gate2 = PASSIVE_REGISTRY['warrior-iron-skin'].levelUpgrades[0].requiredCharacterLevel;
+
+  it('rejects unknown ids, other classes, and locked passives', () => {
+    const char = makeCharacter({ level: 99 });
+    expect(canUpgradePassive(char, 'nope')).toBe(false);
+    expect(canUpgradePassive(char, 'mage-focus-boost')).toBe(false);
+    expect(canUpgradePassive(char, 'warrior-iron-skin')).toBe(false); // not unlocked
+  });
+
+  it('rejects a character below the level gate and a maxed passive', () => {
+    const early = makeCharacter({ level: gate2 - 1, unlockedPassiveIds: ['warrior-iron-skin'] });
+    expect(canUpgradePassive(early, 'warrior-iron-skin')).toBe(false);
+    const maxed = makeCharacter({
+      level: 99,
+      unlockedPassiveIds: ['warrior-iron-skin'],
+      skillLevels: { 'warrior-iron-skin': 4 },
+    });
+    expect(upgradePassive(maxed, 'warrior-iron-skin')).toBe(maxed);
+  });
+
+  it('increments the level immutably when every gate passes', () => {
+    const char = makeCharacter({ level: gate2, unlockedPassiveIds: ['warrior-iron-skin'] });
+    const updated = upgradePassive(char, 'warrior-iron-skin');
+    expect(updated.skillLevels['warrior-iron-skin']).toBe(2);
+    expect(char.skillLevels).toEqual({});
+  });
+});
+
+describe('level-aware passive aggregation', () => {
+  it('reads party-wide modifiers at the stored level', () => {
+    const warrior = makeCharacter({
+      unlockedPassiveIds: ['warrior-iron-skin'],
+      skillLevels: { 'warrior-iron-skin': 4 },
+    });
+    expect(getPartyPassiveModifiers([warrior]).guardDecayResistanceMultiplier).toBeCloseTo(0.74);
+  });
+
+  it('reads character-side modifiers at the stored level', () => {
+    const warrior = makeCharacter({
+      unlockedPassiveIds: ['warrior-iron-skin', 'warrior-blood-roar', 'warrior-indomitable-will', 'warrior-unleash-power'],
+      skillLevels: { 'warrior-unleash-power': 4 },
+    });
+    const mods = getCharacterPassiveModifiers(warrior);
+    expect(mods.skillDamageMultiplier).toBeCloseTo(1.35);
+    expect(mods.skillGuardRestore).toBe(25);
+    // Unleveled passives on the same character stay at their baseline.
+    expect(mods.staggerPushMultiplier).toBeCloseTo(1.5);
   });
 });
 

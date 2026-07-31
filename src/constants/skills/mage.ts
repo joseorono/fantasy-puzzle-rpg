@@ -1,6 +1,13 @@
 import type { SkillDefinition, PassiveSkillDefinition, SkillIconPosition } from '~/types/skills';
 import { packIcon } from './icons';
 import { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+import {
+  DEFAULT_SKILL_MAX_LEVEL,
+  ACTIVE_LEVEL_GATES,
+  PASSIVE_LEVEL_GATES,
+  ACTIVE_UPGRADE_COSTS,
+  PASSIVE_UPGRADE_COSTS,
+} from './levels';
 
 /**
  * 🔮 Mage — one spell per element for maximum visual variety.
@@ -33,6 +40,12 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1,
     unlockLevel: ACTIVE_TIER_LEVELS[0],
     cost: ACTIVE_TIER_COSTS[0],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 5.4, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][0] },
+      { baseDamageMultiplier: 5.7, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][1] },
+      { baseDamageMultiplier: 6.7, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'mage-chain-lightning',
@@ -47,6 +60,12 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.3,
     unlockLevel: ACTIVE_TIER_LEVELS[1],
     cost: ACTIVE_TIER_COSTS[1],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 3.2, flatDamageBonus: 0, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][0] },
+      { baseDamageMultiplier: 3.4, flatDamageBonus: 0, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][1] },
+      { baseDamageMultiplier: 4, flatDamageBonus: 0, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'mage-ice-bolt',
@@ -61,6 +80,12 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 0.7,
     unlockLevel: ACTIVE_TIER_LEVELS[2],
     cost: ACTIVE_TIER_COSTS[2],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 2.7, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][0] },
+      { baseDamageMultiplier: 2.9, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][1] },
+      { baseDamageMultiplier: 3.4, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'mage-meteor',
@@ -75,6 +100,12 @@ export const MAGE_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.6,
     unlockLevel: ACTIVE_TIER_LEVELS[3],
     cost: ACTIVE_TIER_COSTS[3],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 4.3, flatDamageBonus: 0, cooldownMultiplier: 1.6, cost: ACTIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][0] },
+      { baseDamageMultiplier: 4.6, flatDamageBonus: 0, cooldownMultiplier: 1.6, cost: ACTIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][1] },
+      { baseDamageMultiplier: 5.4, flatDamageBonus: 0, cooldownMultiplier: 1.5, cost: ACTIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];
 
@@ -89,6 +120,12 @@ export const MAGE_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[0],
     cost: PASSIVE_TIER_COSTS[0],
     modifiers: { skillDamageMultiplier: 1.15 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillDamageMultiplier: 1.18 }, cost: PASSIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][0] },
+      { modifiers: { skillDamageMultiplier: 1.21 }, cost: PASSIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][1] },
+      { modifiers: { skillDamageMultiplier: 1.3 }, cost: PASSIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'mage-mana-burst',
@@ -100,6 +137,12 @@ export const MAGE_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[1],
     cost: PASSIVE_TIER_COSTS[1],
     modifiers: { matchDamageMultiplier: 1.15 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { matchDamageMultiplier: 1.18 }, cost: PASSIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][0] },
+      { modifiers: { matchDamageMultiplier: 1.21 }, cost: PASSIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][1] },
+      { modifiers: { matchDamageMultiplier: 1.3 }, cost: PASSIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'mage-haste',
@@ -111,6 +154,12 @@ export const MAGE_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[2],
     cost: PASSIVE_TIER_COSTS[2],
     modifiers: { skillCooldownMultiplier: 0.85 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillCooldownMultiplier: 0.83 }, cost: PASSIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][0] },
+      { modifiers: { skillCooldownMultiplier: 0.8 }, cost: PASSIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][1] },
+      { modifiers: { skillCooldownMultiplier: 0.72 }, cost: PASSIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'mage-overload',
@@ -122,5 +171,11 @@ export const MAGE_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[3],
     cost: PASSIVE_TIER_COSTS[3],
     modifiers: { skillDamageMultiplier: 1.25, skillCooldownMultiplier: 1.15 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillDamageMultiplier: 1.3, skillCooldownMultiplier: 1.15 }, cost: PASSIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][0] },
+      { modifiers: { skillDamageMultiplier: 1.35, skillCooldownMultiplier: 1.15 }, cost: PASSIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][1] },
+      { modifiers: { skillDamageMultiplier: 1.45, skillCooldownMultiplier: 1.1 }, cost: PASSIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];

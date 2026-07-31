@@ -11,6 +11,8 @@ import {
   unlockSkill as unlockSkillLib,
   selectSkill as selectSkillLib,
   unlockPassive as unlockPassiveLib,
+  upgradeSkill as upgradeSkillLib,
+  upgradePassive as upgradePassiveLib,
 } from '~/lib/skill-system';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { RarityTier } from '~/constants/rarity';
@@ -145,6 +147,26 @@ export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartyS
           },
           false,
           'party/unlockPassiveForCharacter',
+        ),
+      upgradeSkillForCharacter: (characterId: string, skillId: string) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = upgradeSkillLib(state.party.members[index], skillId);
+          },
+          false,
+          'party/upgradeSkillForCharacter',
+        ),
+      upgradePassiveForCharacter: (characterId: string, passiveId: string) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = upgradePassiveLib(state.party.members[index], passiveId);
+          },
+          false,
+          'party/upgradePassiveForCharacter',
         ),
     },
   },

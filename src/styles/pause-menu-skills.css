@@ -261,6 +261,28 @@
   left: -3px;
 }
 
+/* Skill level counter ("1/4"), seated on the frame's bottom-right corner —
+   top-right belongs to the equipped mark, top-left to the locked pennant. */
+.skill-slot .skill-slot__level-counter {
+  position: absolute;
+  bottom: -4px;
+  right: -5px;
+  padding: 2px 4px;
+  font-size: 0.5rem;
+  line-height: 1;
+  color: #f2d2af;
+  background: #3d2817;
+  border: 1px solid rgba(212, 165, 116, 0.55);
+  border-radius: 3px;
+  text-shadow: none;
+  pointer-events: none;
+}
+
+.skill-slot .skill-slot__level-counter--max {
+  border-color: rgba(212, 165, 116, 0.9);
+  color: #ffe9c9;
+}
+
 /* ── The unlock moment ─────────────────────────────────────────────────────
    Applied for ~900ms after a purchase: the slot flares while the greyed icon
    blooms into colour (the IndigolaySkillIcon disabled→normal crossfade, slowed
@@ -421,6 +443,39 @@
 .skill-detail__stats--stack .skill-detail__stat::before {
   content: '◆ ';
   color: #a06820;
+}
+
+/* ── Next-level upgrade preview: current → next rows, gains in green ─────── */
+
+.skill-detail__upgrade {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.skill-detail__upgrade-title {
+  font-size: 0.6rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: #8a5a10;
+  text-transform: uppercase;
+}
+
+.skill-detail__upgrade-row {
+  font-size: 0.65rem;
+  line-height: 1.35;
+  color: #33200f;
+  white-space: nowrap;
+}
+
+.skill-detail__upgrade-arrow {
+  color: #a06820;
+}
+
+.skill-detail__upgrade-row .skill-detail__upgrade-next {
+  color: #5c7a2e;
+  font-weight: bold;
 }
 
 .skill-detail__actions {
@@ -584,6 +639,12 @@
   font-size: 0.75rem;
   color: #f2d2af;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* "Lv n → n+1" suffix on the upgrade confirm's name line. */
+.skill-unlock-confirm__level {
+  font-size: 0.65rem;
+  color: #d4a574;
 }
 
 .skill-unlock-confirm__cost {

@@ -50,6 +50,7 @@ const partyBase: CharacterData[] = [
     unlockedSkillIds: ['warrior-smash'],
     selectedSkillId: 'warrior-smash',
     unlockedPassiveIds: [],
+    skillLevels: {},
   },
   {
     id: 'rogue',
@@ -77,6 +78,7 @@ const partyBase: CharacterData[] = [
     unlockedSkillIds: ['rogue-aimed-shot'],
     selectedSkillId: 'rogue-aimed-shot',
     unlockedPassiveIds: [],
+    skillLevels: {},
   },
   {
     id: 'mage',
@@ -104,6 +106,7 @@ const partyBase: CharacterData[] = [
     unlockedSkillIds: ['mage-fireball'],
     selectedSkillId: 'mage-fireball',
     unlockedPassiveIds: [],
+    skillLevels: {},
   },
   {
     id: 'healer',
@@ -131,6 +134,7 @@ const partyBase: CharacterData[] = [
     unlockedSkillIds: ['healer-heal'],
     selectedSkillId: 'healer-heal',
     unlockedPassiveIds: [],
+    skillLevels: {},
   },
 ];
 

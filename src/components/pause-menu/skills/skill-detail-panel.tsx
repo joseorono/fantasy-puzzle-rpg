@@ -1,10 +1,23 @@
+import type { ReactNode } from 'react';
 import { cn } from '~/lib/utils';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { SkillDefinition, PassiveSkillDefinition, SkillTarget } from '~/types/skills';
 import type { Resources } from '~/types/resources';
 import { canAfford } from '~/lib/resources';
 import { useResources } from '~/stores/game-store';
-import { isPassiveUnlocked, hasPreviousPassiveTier, isSkillUnlocked } from '~/lib/skill-system';
+import {
+  isPassiveUnlocked,
+  hasPreviousPassiveTier,
+  isSkillUnlocked,
+  hasPreviousActiveTier,
+  getSkillsForClass,
+  getPassivesForClass,
+  getSkillLevel,
+  resolveActiveSkillStats,
+  resolvePassiveModifiers,
+  getNextActiveUpgrade,
+  getNextPassiveUpgrade,
+} from '~/lib/skill-system';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -12,7 +25,7 @@ import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { describePassiveModifiers } from './passive-descriptions';
+import { describePassiveModifiers, describePassiveModifierChange } from './passive-descriptions';
 
 // Short on purpose — the active stat strip must fit one line in Press Start 2P.
 const TARGET_LABELS: Record<SkillTarget, string> = {
@@ -29,6 +42,42 @@ export type SkillSelection =
   | { kind: 'active'; skill: SkillDefinition }
   | { kind: 'passive'; passive: PassiveSkillDefinition };
 
+/** One current → next comparison line of an upgrade preview. */
+export interface UpgradePreviewRow {
+  label: string;
+  from: string;
+  to: string;
+}
+
+/**
+ * Build the current → next comparison rows for upgrading a skill from `level`,
+ * one row per stat that actually changes. Shared by the detail panel's preview
+ * and the upgrade confirm dialog.
+ */
+export function getUpgradePreviewRows(selection: SkillSelection, level: number): UpgradePreviewRow[] {
+  if (selection.kind === 'active') {
+    const current = resolveActiveSkillStats(selection.skill, level);
+    const next = resolveActiveSkillStats(selection.skill, level + 1);
+    const heals = selection.skill.target === 'ally' || selection.skill.target === 'allAlly';
+    const rows: UpgradePreviewRow[] = [];
+    if (next.baseDamageMultiplier !== current.baseDamageMultiplier)
+      rows.push({
+        label: heals ? 'Heal' : 'Dmg',
+        from: `×${current.baseDamageMultiplier}`,
+        to: `×${next.baseDamageMultiplier}`,
+      });
+    if (next.flatDamageBonus !== current.flatDamageBonus)
+      rows.push({ label: 'Flat', from: `+${current.flatDamageBonus}`, to: `+${next.flatDamageBonus}` });
+    if (next.cooldownMultiplier !== current.cooldownMultiplier)
+      rows.push({ label: 'Charge', from: `×${current.cooldownMultiplier}`, to: `×${next.cooldownMultiplier}` });
+    return rows;
+  }
+  return describePassiveModifierChange(
+    resolvePassiveModifiers(selection.passive, level),
+    resolvePassiveModifiers(selection.passive, level + 1),
+  );
+}
+
 interface SkillDetailPanelProps {
   character: CharacterData;
   selection: SkillSelection;
@@ -36,15 +85,18 @@ interface SkillDetailPanelProps {
   isInBattle: boolean;
   onEquip: (skillId: string) => void;
   onRequestUnlock: (selection: SkillSelection) => void;
+  onRequestUpgrade: (selection: SkillSelection) => void;
 }
 
 /**
  * The parchment detail panel under the slot rows: featured icon on the gold
- * deco frame, name, tier/gate line, description, effect list, and the action
- * row. Every locked skill — active or passive — shows its resource price
- * explicitly next to the Unlock button; a blocked unlock names the failing
- * gate in a tooltip over the disabled button. Dark-on-parchment text, no
- * pixel-font shadow (it smears at small sizes).
+ * deco frame, name, tier/gate/level line, description, effect list at the
+ * current level, the next-level preview, and the action row. Every locked
+ * skill — active or passive — shows its resource price explicitly next to the
+ * Unlock button; owned skills below max level show the upgrade price and an
+ * Upgrade button the same way. A blocked action names the failing gate in a
+ * tooltip over the disabled button. Dark-on-parchment text, no pixel-font
+ * shadow (it smears at small sizes).
  */
 export function SkillDetailPanel({
   character,
@@ -52,17 +104,21 @@ export function SkillDetailPanel({
   isInBattle,
   onEquip,
   onRequestUnlock,
+  onRequestUpgrade,
 }: SkillDetailPanelProps) {
   const resources = useResources();
   const isActive = selection.kind === 'active';
   const def = isActive ? selection.skill : selection.passive;
+  const owned = isActive ? isSkillUnlocked(character, def.id) : isPassiveUnlocked(character, def.id);
+  const level = getSkillLevel(character, def.id);
 
-  const heals = isActive && (selection.skill.target === 'ally' || selection.skill.target === 'allAlly');
   const kindLabel = isActive ? 'Ultimate' : 'Passive';
+  const levelSuffix = owned ? ` · Lv ${level}/${def.maxLevel}` : '';
   const tierLabel =
-    isActive && selection.skill.tier === 0
+    (isActive && selection.skill.tier === 0
       ? 'Starting Ultimate — every hero begins with this'
-      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`;
+      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`) +
+    levelSuffix;
 
   return (
     <div className="skill-detail" key={def.id}>
@@ -81,23 +137,16 @@ export function SkillDetailPanel({
       {/* Actives: one horizontal strip with engraved separators. Passives: their
           sentence-length effect lines stack instead. */}
       <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
-        {isActive ? (
-          <>
-            <DetailStat label={TARGET_LABELS[selection.skill.target]} />
-            <DetailStat
-              label={`${heals ? 'Heal' : 'Dmg'} ×${selection.skill.baseDamageMultiplier}${
-                selection.skill.flatDamageBonus > 0 ? ` +${selection.skill.flatDamageBonus}` : ''
-              }`}
-            />
-            <DetailStat
-              label={`Charge ×${selection.skill.cooldownMultiplier}`}
-              highlight={selection.skill.cooldownMultiplier < 1}
-            />
-          </>
+        {selection.kind === 'active' ? (
+          <ActiveStatStrip skill={selection.skill} level={level} />
         ) : (
-          describePassiveModifiers(selection.passive.modifiers).map((line) => <DetailStat key={line} label={line} />)
+          describePassiveModifiers(resolvePassiveModifiers(selection.passive, level)).map((line) => (
+            <DetailStat key={line} label={line} />
+          ))
         )}
       </div>
+
+      {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
 
       <SkillDetailActions
         character={character}
@@ -106,6 +155,7 @@ export function SkillDetailPanel({
         isInBattle={isInBattle}
         onEquip={onEquip}
         onRequestUnlock={onRequestUnlock}
+        onRequestUpgrade={onRequestUpgrade}
       />
 
       {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
@@ -117,6 +167,58 @@ function DetailStat({ label, highlight = false }: { label: string; highlight?: b
   return <span className={cn('skill-detail__stat', highlight && 'skill-detail__stat--highlight')}>{label}</span>;
 }
 
+/** The active skill's one-line stat strip, resolved at its current level. */
+function ActiveStatStrip({ skill, level }: { skill: SkillDefinition; level: number }) {
+  const stats = resolveActiveSkillStats(skill, level);
+  const heals = skill.target === 'ally' || skill.target === 'allAlly';
+  return (
+    <>
+      <DetailStat label={TARGET_LABELS[skill.target]} />
+      <DetailStat
+        label={`${heals ? 'Heal' : 'Dmg'} ×${stats.baseDamageMultiplier}${
+          stats.flatDamageBonus > 0 ? ` +${stats.flatDamageBonus}` : ''
+        }`}
+      />
+      <DetailStat label={`Charge ×${stats.cooldownMultiplier}`} highlight={stats.cooldownMultiplier < 1} />
+    </>
+  );
+}
+
+/** The "what the next level grants" strip: one current → next row per changed stat. */
+function UpgradePreview({ selection, level }: { selection: SkillSelection; level: number }) {
+  const rows = getUpgradePreviewRows(selection, level);
+  if (rows.length === 0) return null;
+  return (
+    <div className="skill-detail__upgrade">
+      <span className="skill-detail__upgrade-title">Next · Lv {level + 1}</span>
+      {rows.map((row) => (
+        <span key={row.label} className="skill-detail__upgrade-row">
+          {row.label} {row.from} <span className="skill-detail__upgrade-arrow">→</span>{' '}
+          <span className="skill-detail__upgrade-next">{row.to}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Wraps a disabled action button so its gate reason shows in a hover tooltip. */
+function GateTooltip({ reason, children }: { reason: string; children: ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        {/* The disabled button swallows pointer events (see the CSS pointer-events
+            override), so the span is the hover surface for the gate tooltip. */}
+        <span className="skill-detail__blocked-trigger">{children}</span>
+      </TooltipTrigger>
+      <TooltipContent side="top">
+        <IndigoLayStyledLists variant="chevron">
+          <IndigolayStyledListItem>{reason}</IndigolayStyledListItem>
+        </IndigoLayStyledLists>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 interface SkillDetailActionsProps {
   character: CharacterData;
   selection: SkillSelection;
@@ -124,6 +226,7 @@ interface SkillDetailActionsProps {
   isInBattle: boolean;
   onEquip: (skillId: string) => void;
   onRequestUnlock: (selection: SkillSelection) => void;
+  onRequestUpgrade: (selection: SkillSelection) => void;
 }
 
 function SkillDetailActions({
@@ -133,33 +236,84 @@ function SkillDetailActions({
   isInBattle,
   onEquip,
   onRequestUnlock,
+  onRequestUpgrade,
 }: SkillDetailActionsProps) {
   const isActive = selection.kind === 'active';
   const def = isActive ? selection.skill : selection.passive;
+  const owned = isActive ? isSkillUnlocked(character, def.id) : isPassiveUnlocked(character, def.id);
 
-  // Owned skills: actives offer Equip; passives are simply always on.
-  if (isActive && isSkillUnlocked(character, selection.skill.id)) {
-    const equipped = character.selectedSkillId === def.id;
+  // Owned skills: actives offer Equip; both kinds offer Upgrade until maxed.
+  if (owned) {
+    const level = getSkillLevel(character, def.id);
+    const nextUpgrade = isActive
+      ? getNextActiveUpgrade(selection.skill, level)
+      : getNextPassiveUpgrade(selection.passive, level);
+    const equipped = isActive && character.selectedSkillId === def.id;
+
+    const equipButton = isActive ? (
+      <ToffecBeigeCornersWrapper>
+        <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
+          {equipped ? 'Equipped' : 'Equip'}
+        </ToffecButton>
+      </ToffecBeigeCornersWrapper>
+    ) : null;
+
+    if (!nextUpgrade) {
+      return (
+        <div className="skill-detail__actions">
+          {equipButton}
+          <div className="skill-detail__gate-note skill-detail__gate-note--owned">
+            {isActive ? 'Max level' : 'Learned — Max level'}
+          </div>
+        </div>
+      );
+    }
+
+    const affordable = canAfford(resources, nextUpgrade.cost);
+    const blockedReason =
+      character.level < nextUpgrade.requiredCharacterLevel
+        ? `Requires Lv ${nextUpgrade.requiredCharacterLevel}`
+        : !affordable
+          ? 'Not enough resources'
+          : null;
+
+    const upgradeButton = (
+      <ToffecBeigeCornersWrapper>
+        <ToffecButton
+          variant="orange"
+          size="xs"
+          disabled={Boolean(blockedReason) || isInBattle}
+          onClick={() => onRequestUpgrade(selection)}
+        >
+          Upgrade
+        </ToffecButton>
+      </ToffecBeigeCornersWrapper>
+    );
+
     return (
-      <div className="skill-detail__actions">
-        <ToffecBeigeCornersWrapper>
-          <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
-            {equipped ? 'Equipped' : 'Equip'}
-          </ToffecButton>
-        </ToffecBeigeCornersWrapper>
+      <div className="skill-detail__actions skill-detail__actions--unlock">
+        {equipButton}
+        <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
+          <CostBadges resources={nextUpgrade.cost} />
+        </div>
+        {blockedReason ? <GateTooltip reason={blockedReason}>{upgradeButton}</GateTooltip> : upgradeButton}
       </div>
     );
   }
-  if (!isActive && isPassiveUnlocked(character, selection.passive.id)) {
-    return <div className="skill-detail__gate-note skill-detail__gate-note--owned">Learned — always active</div>;
-  }
 
   // Locked: show the price explicitly, and say exactly which gate is failing.
+  // A skipped lower tier is named outright — tiers unlock strictly in order.
   const affordable = canAfford(resources, def.cost);
-  const needsPrevious = !isActive && !hasPreviousPassiveTier(character, selection.passive);
+  const previousLocked = isActive
+    ? !hasPreviousActiveTier(character, selection.skill)
+      ? getSkillsForClass(def.class).find((s) => s.tier < selection.skill.tier && !isSkillUnlocked(character, s.id))
+      : undefined
+    : !hasPreviousPassiveTier(character, selection.passive)
+      ? getPassivesForClass(def.class).find((p) => p.tier < selection.passive.tier && !isPassiveUnlocked(character, p.id))
+      : undefined;
   const needsLevel = character.level < def.unlockLevel;
-  const blockedReason = needsPrevious
-    ? `Unlock Tier ${ROMAN_TIERS[selection.kind === 'passive' ? selection.passive.tier - 2 : 0]} first`
+  const blockedReason = previousLocked
+    ? `Unlock ${previousLocked.name} first`
     : needsLevel
       ? `Requires Lv ${def.unlockLevel}`
       : !affordable
@@ -184,22 +338,7 @@ function SkillDetailActions({
       <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
         <CostBadges resources={def.cost} />
       </div>
-      {/* The disabled button swallows pointer events (see the CSS pointer-events
-          override), so the span is the hover surface for the gate tooltip. */}
-      {blockedReason ? (
-        <Tooltip>
-          <TooltipTrigger>
-            <span className="skill-detail__blocked-trigger">{unlockButton}</span>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            <IndigoLayStyledLists variant="chevron">
-              <IndigolayStyledListItem>{blockedReason}</IndigolayStyledListItem>
-            </IndigoLayStyledLists>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        unlockButton
-      )}
+      {blockedReason ? <GateTooltip reason={blockedReason}>{unlockButton}</GateTooltip> : unlockButton}
     </div>
   );
 }

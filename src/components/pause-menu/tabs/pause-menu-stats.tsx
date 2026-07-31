@@ -3,7 +3,7 @@ import NumberFlow from '@number-flow/react';
 import { useParty } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
-import { getSelectedSkill } from '~/lib/skill-system';
+import { getSelectedSkill, getSkillLevel, resolveActiveSkillStats } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
@@ -26,12 +26,13 @@ export function PauseMenuStats() {
   const colors = CHARACTER_COLORS[selected.class];
   const Icon = CHARACTER_ICONS[selected.class];
   const activeSkill = getSelectedSkill(selected);
+  const activeSkillStats = resolveActiveSkillStats(activeSkill, getSkillLevel(selected, activeSkill.id));
 
   const effectiveStats = getEffectiveStats(selected);
   const maxHp = getEffectiveMaxHp(selected);
   const attackDmg = calculateDamage(10, effectiveStats.pow);
   const cooldown =
-    calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd) * activeSkill.cooldownMultiplier;
+    calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd) * activeSkillStats.cooldownMultiplier;
 
   return (
     <>

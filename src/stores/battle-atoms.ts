@@ -17,6 +17,8 @@ import {
 } from '~/lib/rpg-calculations';
 import {
   getSelectedSkill,
+  getSkillLevel,
+  resolveActiveSkillStats,
   resolveCharacterCooldown,
   getCharacterPassiveModifiers,
   getPartyPassiveModifiers,
@@ -516,9 +518,10 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   if (!character || character.currentHp <= 0 || character.skillCooldown > 0) return;
 
   const skill = getSelectedSkill(character);
+  const skillStats = resolveActiveSkillStats(skill, getSkillLevel(character, skill.id));
   const passives = getCharacterPassiveModifiers(character);
   const amount = Math.round(
-    calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus) *
+    calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skillStats.baseDamageMultiplier, skillStats.flatDamageBonus) *
       passives.skillDamageMultiplier,
   );
 

@@ -1,6 +1,13 @@
 import type { SkillDefinition, PassiveSkillDefinition, SkillIconPosition } from '~/types/skills';
 import { packIcon } from './icons';
 import { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+import {
+  DEFAULT_SKILL_MAX_LEVEL,
+  ACTIVE_LEVEL_GATES,
+  PASSIVE_LEVEL_GATES,
+  ACTIVE_UPGRADE_COSTS,
+  PASSIVE_UPGRADE_COSTS,
+} from './levels';
 
 /**
  * 📜 Healer — Paladin-flavoured icons (light, judgment, aura; no herbs or fairies).
@@ -33,6 +40,12 @@ export const HEALER_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1,
     unlockLevel: ACTIVE_TIER_LEVELS[0],
     cost: ACTIVE_TIER_COSTS[0],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 4.3, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][0] },
+      { baseDamageMultiplier: 4.6, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][1] },
+      { baseDamageMultiplier: 5.4, flatDamageBonus: 0, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'healer-salvation',
@@ -47,6 +60,12 @@ export const HEALER_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 0.7,
     unlockLevel: ACTIVE_TIER_LEVELS[1],
     cost: ACTIVE_TIER_COSTS[1],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 6.4, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][0] },
+      { baseDamageMultiplier: 6.8, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][1] },
+      { baseDamageMultiplier: 8, flatDamageBonus: 0, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'healer-light-judgment',
@@ -61,6 +80,12 @@ export const HEALER_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.3,
     unlockLevel: ACTIVE_TIER_LEVELS[2],
     cost: ACTIVE_TIER_COSTS[2],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 2.7, flatDamageBonus: 11, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][0] },
+      { baseDamageMultiplier: 2.9, flatDamageBonus: 12, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][1] },
+      { baseDamageMultiplier: 3.4, flatDamageBonus: 16, cooldownMultiplier: 1.3, cost: ACTIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'healer-resurrection',
@@ -75,6 +100,12 @@ export const HEALER_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.5,
     unlockLevel: ACTIVE_TIER_LEVELS[3],
     cost: ACTIVE_TIER_COSTS[3],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 6.4, flatDamageBonus: 0, cooldownMultiplier: 1.5, cost: ACTIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][0] },
+      { baseDamageMultiplier: 6.8, flatDamageBonus: 0, cooldownMultiplier: 1.5, cost: ACTIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][1] },
+      { baseDamageMultiplier: 8, flatDamageBonus: 0, cooldownMultiplier: 1.4, cost: ACTIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];
 
@@ -89,6 +120,12 @@ export const HEALER_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[0],
     cost: PASSIVE_TIER_COSTS[0],
     modifiers: { itemCooldownSpdBonus: 10 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { itemCooldownSpdBonus: 12 }, cost: PASSIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][0] },
+      { modifiers: { itemCooldownSpdBonus: 14 }, cost: PASSIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][1] },
+      { modifiers: { itemCooldownSpdBonus: 18 }, cost: PASSIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'healer-barrier-of-light',
@@ -100,6 +137,12 @@ export const HEALER_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[1],
     cost: PASSIVE_TIER_COSTS[1],
     modifiers: { skillGuardRestore: 20 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillGuardRestore: 23 }, cost: PASSIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][0] },
+      { modifiers: { skillGuardRestore: 26 }, cost: PASSIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][1] },
+      { modifiers: { skillGuardRestore: 32 }, cost: PASSIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'healer-aura-of-glory',
@@ -111,6 +154,12 @@ export const HEALER_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[2],
     cost: PASSIVE_TIER_COSTS[2],
     modifiers: { guardDecayResistanceMultiplier: 0.9 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { guardDecayResistanceMultiplier: 0.87 }, cost: PASSIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][0] },
+      { modifiers: { guardDecayResistanceMultiplier: 0.84 }, cost: PASSIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][1] },
+      { modifiers: { guardDecayResistanceMultiplier: 0.76 }, cost: PASSIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'healer-beacon-of-light',
@@ -122,5 +171,11 @@ export const HEALER_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[3],
     cost: PASSIVE_TIER_COSTS[3],
     modifiers: { skillCooldownMultiplier: 0.8 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillCooldownMultiplier: 0.78 }, cost: PASSIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][0] },
+      { modifiers: { skillCooldownMultiplier: 0.75 }, cost: PASSIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][1] },
+      { modifiers: { skillCooldownMultiplier: 0.68 }, cost: PASSIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];

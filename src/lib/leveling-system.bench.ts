@@ -20,6 +20,7 @@ const createTestCharacter = (): CharacterData => ({
   unlockedSkillIds: ['warrior-smash'],
   selectedSkillId: 'warrior-smash',
   unlockedPassiveIds: [],
+  skillLevels: {},
 });
 
 const chosenStat: CoreRPGStats = { pow: 1, vit: 1, spd: 0 };

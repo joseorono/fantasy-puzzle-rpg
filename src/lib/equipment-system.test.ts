@@ -35,6 +35,7 @@ function makeCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
     unlockedSkillIds: ['warrior-smash'],
     selectedSkillId: 'warrior-smash',
   unlockedPassiveIds: [],
+    skillLevels: {},
     ...overrides,
   };
 }

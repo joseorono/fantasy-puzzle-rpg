@@ -27,6 +27,7 @@ const mockCharacter: CharacterData = {
   unlockedSkillIds: ['warrior-smash'],
   selectedSkillId: 'warrior-smash',
   unlockedPassiveIds: [],
+  skillLevels: {},
 };
 
 const mockEnemy: EnemyData = {

@@ -33,6 +33,7 @@ const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterD
   unlockedSkillIds: ['warrior-smash'],
   selectedSkillId: 'warrior-smash',
   unlockedPassiveIds: [],
+  skillLevels: {},
   ...overrides,
 });
 

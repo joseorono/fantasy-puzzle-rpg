@@ -10,6 +10,9 @@ import type { CharacterData, CharacterClass } from '~/types/rpg-elements';
 import type {
   SkillDefinition,
   PassiveSkillDefinition,
+  ActiveSkillLevelUpgrade,
+  PassiveSkillLevelUpgrade,
+  PassiveModifiers,
   CharacterPassiveModifiers,
   PartyPassiveModifiers,
 } from '~/types/skills';
@@ -74,8 +77,22 @@ export function isSkillUnlocked(character: CharacterData, skillId: string): bool
 }
 
 /**
+ * Check the tier-order prerequisite: every lower tier of the class's active
+ * track must already be unlocked before this skill can be.
+ * @param character - The character to check
+ * @param skill - The skill being considered
+ * @returns True when all lower-tier actives of the class are unlocked
+ */
+export function hasPreviousActiveTier(character: CharacterData, skill: SkillDefinition): boolean {
+  return getSkillsForClass(skill.class)
+    .filter((s) => s.tier < skill.tier)
+    .every((s) => isSkillUnlocked(character, s.id));
+}
+
+/**
  * Unlock a skill for a character. Pure: returns a new character. Ignores unknown
- * skill ids, skills belonging to another class, and already-unlocked skills.
+ * skill ids, skills belonging to another class, already-unlocked skills, and
+ * skills whose lower tiers are not yet unlocked.
  * @param character - The character to unlock the skill for
  * @param skillId - The skill id to unlock
  * @returns A new character with the skill unlocked, or the original if no change
@@ -84,6 +101,7 @@ export function unlockSkill(character: CharacterData, skillId: string): Characte
   const skill = SKILL_REGISTRY[skillId];
   if (!skill || skill.class !== character.class) return character;
   if (character.unlockedSkillIds.includes(skillId)) return character;
+  if (!hasPreviousActiveTier(character, skill)) return character;
   return {
     ...character,
     unlockedSkillIds: [...character.unlockedSkillIds, skillId],
@@ -119,18 +137,163 @@ export function getNewlyUnlockableSkills(character: CharacterData, level: number
   );
 }
 
+// ─── Skill levels ────────────────────────────────────────────────────
+
+/** The numeric stats of an Active skill at a given level. */
+export interface ActiveSkillStats {
+  baseDamageMultiplier: number;
+  flatDamageBonus: number;
+  cooldownMultiplier: number;
+}
+
+/**
+ * Get the current level of a skill or passive for a character.
+ * @param character - The character to read
+ * @param id - The skill or passive id
+ * @returns The stored level, or 1 when the id has never been leveled
+ */
+export function getSkillLevel(character: CharacterData, id: string): number {
+  return character.skillLevels?.[id] ?? 1;
+}
+
+/**
+ * Resolve an Active skill's stats at a given level (clamped to 1..maxLevel).
+ * Level 1 is the definition's baseline; higher levels read the upgrade table.
+ * @param skill - The skill definition
+ * @param level - The skill level to resolve
+ * @returns The absolute stats at that level
+ */
+export function resolveActiveSkillStats(skill: SkillDefinition, level: number): ActiveSkillStats {
+  const clamped = Math.min(Math.max(level, 1), skill.maxLevel);
+  if (clamped <= 1) {
+    return {
+      baseDamageMultiplier: skill.baseDamageMultiplier,
+      flatDamageBonus: skill.flatDamageBonus,
+      cooldownMultiplier: skill.cooldownMultiplier,
+    };
+  }
+  const upgrade = skill.levelUpgrades[clamped - 2];
+  return {
+    baseDamageMultiplier: upgrade.baseDamageMultiplier,
+    flatDamageBonus: upgrade.flatDamageBonus,
+    cooldownMultiplier: upgrade.cooldownMultiplier,
+  };
+}
+
+/**
+ * Resolve a Passive skill's modifier record at a given level (clamped to
+ * 1..maxLevel). Level 1 is the definition's baseline `modifiers`.
+ * @param passive - The passive definition
+ * @param level - The passive level to resolve
+ * @returns The modifier record at that level
+ */
+export function resolvePassiveModifiers(passive: PassiveSkillDefinition, level: number): PassiveModifiers {
+  const clamped = Math.min(Math.max(level, 1), passive.maxLevel);
+  if (clamped <= 1) return passive.modifiers;
+  return passive.levelUpgrades[clamped - 2].modifiers;
+}
+
+/**
+ * Get the upgrade entry that would take an Active skill from `currentLevel` to
+ * the next level.
+ * @param skill - The skill definition
+ * @param currentLevel - The skill's current level
+ * @returns The next upgrade entry, or undefined when the skill is maxed
+ */
+export function getNextActiveUpgrade(skill: SkillDefinition, currentLevel: number): ActiveSkillLevelUpgrade | undefined {
+  if (currentLevel >= skill.maxLevel) return undefined;
+  return skill.levelUpgrades[currentLevel - 1];
+}
+
+/**
+ * Get the upgrade entry that would take a Passive skill from `currentLevel` to
+ * the next level.
+ * @param passive - The passive definition
+ * @param currentLevel - The passive's current level
+ * @returns The next upgrade entry, or undefined when the passive is maxed
+ */
+export function getNextPassiveUpgrade(
+  passive: PassiveSkillDefinition,
+  currentLevel: number,
+): PassiveSkillLevelUpgrade | undefined {
+  if (currentLevel >= passive.maxLevel) return undefined;
+  return passive.levelUpgrades[currentLevel - 1];
+}
+
+/**
+ * Check whether a character can raise an Active skill's level: known id, class
+ * match, unlocked, not maxed, and the character meets the next entry's level
+ * gate. Resource affordability is the caller's concern (see `useUpgradeSkill`).
+ * @param character - The character to check
+ * @param skillId - The skill id to upgrade
+ * @returns True when the next level can be bought
+ */
+export function canUpgradeSkill(character: CharacterData, skillId: string): boolean {
+  const skill = SKILL_REGISTRY[skillId];
+  if (!skill || skill.class !== character.class) return false;
+  if (!isSkillUnlocked(character, skillId)) return false;
+  const next = getNextActiveUpgrade(skill, getSkillLevel(character, skillId));
+  return next !== undefined && character.level >= next.requiredCharacterLevel;
+}
+
+/**
+ * Check whether a character can raise a Passive skill's level. Mirrors
+ * `canUpgradeSkill`; resource affordability is the caller's concern.
+ * @param character - The character to check
+ * @param passiveId - The passive id to upgrade
+ * @returns True when the next level can be bought
+ */
+export function canUpgradePassive(character: CharacterData, passiveId: string): boolean {
+  const passive = PASSIVE_REGISTRY[passiveId];
+  if (!passive || passive.class !== character.class) return false;
+  if (!isPassiveUnlocked(character, passiveId)) return false;
+  const next = getNextPassiveUpgrade(passive, getSkillLevel(character, passiveId));
+  return next !== undefined && character.level >= next.requiredCharacterLevel;
+}
+
+/**
+ * Raise an Active skill's level by one. Pure: returns a new character, or the
+ * original when `canUpgradeSkill` fails.
+ * @param character - The character to upgrade the skill for
+ * @param skillId - The skill id to upgrade
+ * @returns A new character with the level bumped, or the original if no change
+ */
+export function upgradeSkill(character: CharacterData, skillId: string): CharacterData {
+  if (!canUpgradeSkill(character, skillId)) return character;
+  return {
+    ...character,
+    skillLevels: { ...character.skillLevels, [skillId]: getSkillLevel(character, skillId) + 1 },
+  };
+}
+
+/**
+ * Raise a Passive skill's level by one. Pure: returns a new character, or the
+ * original when `canUpgradePassive` fails.
+ * @param character - The character to upgrade the passive for
+ * @param passiveId - The passive id to upgrade
+ * @returns A new character with the level bumped, or the original if no change
+ */
+export function upgradePassive(character: CharacterData, passiveId: string): CharacterData {
+  if (!canUpgradePassive(character, passiveId)) return character;
+  return {
+    ...character,
+    skillLevels: { ...character.skillLevels, [passiveId]: getSkillLevel(character, passiveId) + 1 },
+  };
+}
+
 /**
  * Calculate a character's effective skill cooldown: the SPD-based cooldown, the
- * active skill's charge-speed multiplier, and any unlocked passive
- * `skillCooldownMultiplier`. Called at battle-state creation and after each
- * activation, so passives bake into the snapshot automatically.
+ * active skill's charge-speed multiplier at its current level, and any unlocked
+ * passive `skillCooldownMultiplier`. Called at battle-state creation and after
+ * each activation, so passives bake into the snapshot automatically.
  * @param character - The character to calculate the cooldown for
  * @returns The effective cooldown in seconds
  */
 export function resolveCharacterCooldown(character: CharacterData): number {
+  const skill = getSelectedSkill(character);
   return (
     calculateCharacterCooldown(character) *
-    getSelectedSkill(character).cooldownMultiplier *
+    resolveActiveSkillStats(skill, getSkillLevel(character, skill.id)).cooldownMultiplier *
     getCharacterPassiveModifiers(character).skillCooldownMultiplier
   );
 }
@@ -236,7 +399,7 @@ export function unlockPassive(character: CharacterData, passiveId: string): Char
 export function getCharacterPassiveModifiers(character: CharacterData): CharacterPassiveModifiers {
   const total = { ...IDENTITY_CHARACTER_PASSIVES };
   for (const passive of getUnlockedPassives(character)) {
-    const m = passive.modifiers;
+    const m = resolvePassiveModifiers(passive, getSkillLevel(character, passive.id));
     total.cascadeBonus += m.cascadeBonus ?? 0;
     total.matchDamageMultiplier *= m.matchDamageMultiplier ?? 1;
     total.skillDamageMultiplier *= m.skillDamageMultiplier ?? 1;
@@ -259,7 +422,7 @@ export function getPartyPassiveModifiers(party: CharacterData[]): PartyPassiveMo
   const total = { ...IDENTITY_PARTY_PASSIVES };
   for (const character of party) {
     for (const passive of getUnlockedPassives(character)) {
-      const m = passive.modifiers;
+      const m = resolvePassiveModifiers(passive, getSkillLevel(character, passive.id));
       total.guardChargeRateBonus += m.guardChargeRateBonus ?? 0;
       total.guardDecayResistanceMultiplier *= m.guardDecayResistanceMultiplier ?? 1;
       total.itemCooldownSpdBonus += m.itemCooldownSpdBonus ?? 0;

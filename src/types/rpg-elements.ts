@@ -51,6 +51,8 @@ export interface CharacterData extends BaseStats {
   selectedSkillId: string;
   /** Ids of Passive skills this character has unlocked. All of them apply at once. */
   unlockedPassiveIds: string[];
+  /** Current level of each unlocked skill/passive, keyed by id. Missing id = level 1. */
+  skillLevels: Record<string, number>;
 }
 
 // Enemy-specific stats

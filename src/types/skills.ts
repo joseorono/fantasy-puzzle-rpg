@@ -26,6 +26,36 @@ export type SkillIconPosition = GridPosition;
 export type SkillTarget = 'enemy' | 'allEnemy' | 'ally' | 'allAlly';
 
 /**
+ * One upgrade step of an Active skill's per-level table: the ABSOLUTE stats the
+ * skill has at that level (not deltas), plus the dual gate to buy it.
+ * `levelUpgrades[0]` = level 2 … `levelUpgrades[maxLevel - 2]` = level `maxLevel`.
+ */
+export interface ActiveSkillLevelUpgrade {
+  /** Multiplier applied to `BASE_SKILL_DAMAGE` before POW scaling, at this level. */
+  baseDamageMultiplier: number;
+  /** Flat amount added after POW scaling, at this level. */
+  flatDamageBonus: number;
+  /** Charge-speed factor at this level: 1 = base, > 1 slower, < 1 faster. */
+  cooldownMultiplier: number;
+  /** Resource price of buying this level at the Skills tab. */
+  cost: Resources;
+  /** Character level required before this skill level can be bought. */
+  requiredCharacterLevel: number;
+}
+
+/**
+ * One upgrade step of a Passive skill's per-level table. `modifiers` fully
+ * REPLACES the lower level's record (same key set, new values).
+ */
+export interface PassiveSkillLevelUpgrade {
+  modifiers: PassiveModifiers;
+  /** Resource price of buying this level at the Skills tab. */
+  cost: Resources;
+  /** Character level required before this passive level can be bought. */
+  requiredCharacterLevel: number;
+}
+
+/**
  * An Active skill ("Ultimate") definition. Skills are stored in a registry keyed
  * by `id` (see `~/constants/skills`) and a character owns a subset of them.
  */
@@ -54,6 +84,10 @@ export interface SkillDefinition {
    * the skill purchasable; unlocking costs this. All-zero = free (tier 0 only).
    */
   cost: Resources;
+  /** Highest skill level. Level 1 = the top-level baseline stats above. */
+  maxLevel: number;
+  /** Absolute stats for levels 2..maxLevel; length === maxLevel - 1. */
+  levelUpgrades: ActiveSkillLevelUpgrade[];
 }
 
 /**
@@ -111,5 +145,10 @@ export interface PassiveSkillDefinition {
   unlockLevel: number;
   /** Resource price at the pause-menu Skills tab. */
   cost: Resources;
+  /** Modifier payload at level 1; higher levels replace it via `levelUpgrades`. */
   modifiers: PassiveModifiers;
+  /** Highest passive level. Level 1 = the baseline `modifiers` above. */
+  maxLevel: number;
+  /** Absolute modifier records for levels 2..maxLevel; length === maxLevel - 1. */
+  levelUpgrades: PassiveSkillLevelUpgrade[];
 }

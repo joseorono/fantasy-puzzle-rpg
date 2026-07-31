@@ -23,6 +23,10 @@ interface SkillSlotProps {
   selected: boolean;
   /** This active skill is the character's equipped Ultimate. */
   equipped?: boolean;
+  /** Current skill level; shown with `maxLevel` as an "n/max" corner counter. */
+  level?: number;
+  /** Highest skill level. The counter hides while locked or when this is 1. */
+  maxLevel?: number;
   /** Plays the unlock flare (ring + brightness + icon colour bloom). */
   flash?: boolean;
   /** Hover tooltip body; locked slots use it to surface name + cost. */
@@ -50,6 +54,8 @@ export function SkillSlot({
   unlockLevel,
   selected,
   equipped = false,
+  level = 1,
+  maxLevel,
   flash = false,
   tooltip,
   size = 80,
@@ -69,7 +75,13 @@ export function SkillSlot({
       onClick={onSelect}
       onKeyDown={onKeyDown}
       aria-pressed={equipped}
-      aria-label={locked ? `${name} (locked, level ${unlockLevel})` : name}
+      aria-label={
+        locked
+          ? `${name} (locked, level ${unlockLevel})`
+          : maxLevel !== undefined && maxLevel > 1
+            ? `${name}, level ${level} of ${maxLevel}`
+            : name
+      }
     >
       <img
         className="skill-slot__frame skill-slot__frame--normal"
@@ -106,6 +118,13 @@ export function SkillSlot({
         />
       )}
       {locked && <LevelTag level={unlockLevel} className="skill-slot__level-tag" />}
+      {!locked && maxLevel !== undefined && maxLevel > 1 && (
+        <span
+          className={cn('skill-slot__level-counter pixel-font', level >= maxLevel && 'skill-slot__level-counter--max')}
+        >
+          {level}/{maxLevel}
+        </span>
+      )}
     </button>
   );
 

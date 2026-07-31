@@ -1,6 +1,13 @@
 import type { SkillDefinition, PassiveSkillDefinition, SkillIconPosition } from '~/types/skills';
 import { packIcon } from './icons';
 import { ACTIVE_TIER_LEVELS, ACTIVE_TIER_COSTS, PASSIVE_TIER_LEVELS, PASSIVE_TIER_COSTS } from './tiers';
+import {
+  DEFAULT_SKILL_MAX_LEVEL,
+  ACTIVE_LEVEL_GATES,
+  PASSIVE_LEVEL_GATES,
+  ACTIVE_UPGRADE_COSTS,
+  PASSIVE_UPGRADE_COSTS,
+} from './levels';
 
 /**
  * 🛡️ Warrior — Berserker-flavoured icons (blood, fire, raw force).
@@ -32,6 +39,12 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1,
     unlockLevel: ACTIVE_TIER_LEVELS[0],
     cost: ACTIVE_TIER_COSTS[0],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 3.2, flatDamageBonus: 12, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][0] },
+      { baseDamageMultiplier: 3.4, flatDamageBonus: 14, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][1] },
+      { baseDamageMultiplier: 4, flatDamageBonus: 20, cooldownMultiplier: 1, cost: ACTIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'warrior-whirlwind',
@@ -46,6 +59,12 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.4,
     unlockLevel: ACTIVE_TIER_LEVELS[1],
     cost: ACTIVE_TIER_COSTS[1],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 2.15, flatDamageBonus: 0, cooldownMultiplier: 1.4, cost: ACTIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][0] },
+      { baseDamageMultiplier: 2.3, flatDamageBonus: 0, cooldownMultiplier: 1.4, cost: ACTIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][1] },
+      { baseDamageMultiplier: 2.7, flatDamageBonus: 0, cooldownMultiplier: 1.4, cost: ACTIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'warrior-sharp-blow',
@@ -60,6 +79,12 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 0.7,
     unlockLevel: ACTIVE_TIER_LEVELS[2],
     cost: ACTIVE_TIER_COSTS[2],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 1.6, flatDamageBonus: 6, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][0] },
+      { baseDamageMultiplier: 1.7, flatDamageBonus: 7, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][1] },
+      { baseDamageMultiplier: 2, flatDamageBonus: 10, cooldownMultiplier: 0.7, cost: ACTIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'warrior-overwhelm',
@@ -74,6 +99,12 @@ export const WARRIOR_ACTIVES: SkillDefinition[] = [
     cooldownMultiplier: 1.6,
     unlockLevel: ACTIVE_TIER_LEVELS[3],
     cost: ACTIVE_TIER_COSTS[3],
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { baseDamageMultiplier: 4.3, flatDamageBonus: 22, cooldownMultiplier: 1.6, cost: ACTIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][0] },
+      { baseDamageMultiplier: 4.6, flatDamageBonus: 25, cooldownMultiplier: 1.6, cost: ACTIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][1] },
+      { baseDamageMultiplier: 5.4, flatDamageBonus: 35, cooldownMultiplier: 1.5, cost: ACTIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: ACTIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];
 
@@ -88,6 +119,12 @@ export const WARRIOR_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[0],
     cost: PASSIVE_TIER_COSTS[0],
     modifiers: { guardDecayResistanceMultiplier: 0.88 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { guardDecayResistanceMultiplier: 0.85 }, cost: PASSIVE_UPGRADE_COSTS[0][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][0] },
+      { modifiers: { guardDecayResistanceMultiplier: 0.82 }, cost: PASSIVE_UPGRADE_COSTS[0][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][1] },
+      { modifiers: { guardDecayResistanceMultiplier: 0.74 }, cost: PASSIVE_UPGRADE_COSTS[0][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[0][2] },
+    ],
   },
   {
     id: 'warrior-blood-roar',
@@ -99,6 +136,12 @@ export const WARRIOR_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[1],
     cost: PASSIVE_TIER_COSTS[1],
     modifiers: { staggerPushMultiplier: 1.5 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { staggerPushMultiplier: 1.6 }, cost: PASSIVE_UPGRADE_COSTS[1][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][0] },
+      { modifiers: { staggerPushMultiplier: 1.7 }, cost: PASSIVE_UPGRADE_COSTS[1][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][1] },
+      { modifiers: { staggerPushMultiplier: 2 }, cost: PASSIVE_UPGRADE_COSTS[1][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[1][2] },
+    ],
   },
   {
     id: 'warrior-indomitable-will',
@@ -110,6 +153,12 @@ export const WARRIOR_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[2],
     cost: PASSIVE_TIER_COSTS[2],
     modifiers: { guardChargeRateBonus: 0.15 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { guardChargeRateBonus: 0.18 }, cost: PASSIVE_UPGRADE_COSTS[2][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][0] },
+      { modifiers: { guardChargeRateBonus: 0.21 }, cost: PASSIVE_UPGRADE_COSTS[2][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][1] },
+      { modifiers: { guardChargeRateBonus: 0.3 }, cost: PASSIVE_UPGRADE_COSTS[2][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[2][2] },
+    ],
   },
   {
     id: 'warrior-unleash-power',
@@ -121,5 +170,11 @@ export const WARRIOR_PASSIVES: PassiveSkillDefinition[] = [
     unlockLevel: PASSIVE_TIER_LEVELS[3],
     cost: PASSIVE_TIER_COSTS[3],
     modifiers: { skillDamageMultiplier: 1.2, skillGuardRestore: 15 },
+    maxLevel: DEFAULT_SKILL_MAX_LEVEL,
+    levelUpgrades: [
+      { modifiers: { skillDamageMultiplier: 1.24, skillGuardRestore: 17 }, cost: PASSIVE_UPGRADE_COSTS[3][0], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][0] },
+      { modifiers: { skillDamageMultiplier: 1.28, skillGuardRestore: 19 }, cost: PASSIVE_UPGRADE_COSTS[3][1], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][1] },
+      { modifiers: { skillDamageMultiplier: 1.35, skillGuardRestore: 25 }, cost: PASSIVE_UPGRADE_COSTS[3][2], requiredCharacterLevel: PASSIVE_LEVEL_GATES[3][2] },
+    ],
   },
 ];

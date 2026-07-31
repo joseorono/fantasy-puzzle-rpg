@@ -1,5 +1,11 @@
 import { useParty, usePartyActions, useResources, useResourcesActions } from '~/stores/game-store';
-import { getSkillsForClass, getPassivesForClass, isSkillUnlocked, isPassiveUnlocked } from '~/lib/skill-system';
+import {
+  getSkillsForClass,
+  getPassivesForClass,
+  isSkillUnlocked,
+  isPassiveUnlocked,
+  getSkillLevel,
+} from '~/lib/skill-system';
 import { DEFAULT_SKILL_BY_CLASS } from '~/constants/skills';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useUnlockPassive } from '~/hooks/use-unlock-passive';
@@ -8,6 +14,28 @@ import { createResources } from '~/lib/resources';
 import type { CharacterData } from '~/types/rpg-elements';
 
 const DEBUG_LEVELS = [1, 4, 10, 17, 24, 30];
+
+/** Paired −/+ buttons for nudging a skill's level directly. */
+function LevelNudgeButtons({ disabled, onNudge }: { disabled: boolean; onNudge: (delta: number) => void }) {
+  return (
+    <>
+      <button
+        onClick={() => onNudge(-1)}
+        disabled={disabled}
+        className="rounded bg-slate-600 px-2 py-1 text-xs font-semibold text-white transition-colors hover:bg-slate-500 disabled:opacity-40"
+      >
+        −
+      </button>
+      <button
+        onClick={() => onNudge(1)}
+        disabled={disabled}
+        className="rounded bg-slate-600 px-2 py-1 text-xs font-semibold text-white transition-colors hover:bg-slate-500 disabled:opacity-40"
+      >
+        +
+      </button>
+    </>
+  );
+}
 
 /**
  * Debug panel for arbitrarily unlocking, selecting, and resetting character skills.
@@ -34,6 +62,16 @@ export default function SkillDebugView() {
       unlockedSkillIds: [defaultId],
       selectedSkillId: defaultId,
       unlockedPassiveIds: [],
+      skillLevels: {},
+    });
+  }
+
+  // Writes a level directly, bypassing the upgrade gates (like "Unlock free").
+  function nudgeSkillLevel(member: CharacterData, id: string, delta: number, maxLevel: number) {
+    const next = Math.min(Math.max(getSkillLevel(member, id) + delta, 1), maxLevel);
+    partyActions.updateCharacter(member.id, {
+      ...member,
+      skillLevels: { ...member.skillLevels, [id]: next },
     });
   }
 
@@ -102,10 +140,15 @@ export default function SkillDebugView() {
                             {selected && <span className="ml-2 text-xs text-amber-300">ACTIVE</span>}
                           </div>
                           <div className="text-xs text-slate-400">
-                            {skill.target} · cd×{skill.cooldownMultiplier} · unlock Lv {skill.unlockLevel}
+                            {skill.target} · cd×{skill.cooldownMultiplier} · unlock Lv {skill.unlockLevel} · Lv{' '}
+                            {getSkillLevel(member, skill.id)}/{skill.maxLevel}
                           </div>
                         </div>
                         <div className="flex shrink-0 gap-2">
+                          <LevelNudgeButtons
+                            disabled={!unlocked}
+                            onNudge={(delta) => nudgeSkillLevel(member, skill.id, delta, skill.maxLevel)}
+                          />
                           <button
                             onClick={() => unlock(member.id, skill.id)}
                             disabled={unlocked}
@@ -146,16 +189,23 @@ export default function SkillDebugView() {
                             {passive.name}
                           </div>
                           <div className="text-xs text-slate-400">
-                            tier {passive.tier} · unlock Lv {passive.unlockLevel}
+                            tier {passive.tier} · unlock Lv {passive.unlockLevel} · Lv {getSkillLevel(member, passive.id)}
+                            /{passive.maxLevel}
                           </div>
                         </div>
-                        <button
-                          onClick={() => unlockPassive(member.id, passive.id)}
-                          disabled={unlocked}
-                          className="rounded bg-purple-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40"
-                        >
-                          {unlocked ? 'Learned' : 'Unlock free'}
-                        </button>
+                        <div className="flex shrink-0 gap-2">
+                          <LevelNudgeButtons
+                            disabled={!unlocked}
+                            onNudge={(delta) => nudgeSkillLevel(member, passive.id, delta, passive.maxLevel)}
+                          />
+                          <button
+                            onClick={() => unlockPassive(member.id, passive.id)}
+                            disabled={unlocked}
+                            className="rounded bg-purple-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40"
+                          >
+                            {unlocked ? 'Learned' : 'Unlock free'}
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

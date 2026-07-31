@@ -26,6 +26,8 @@ export interface PartyActions {
   unlockSkillForCharacter: (characterId: string, skillId: string) => void;
   selectSkillForCharacter: (characterId: string, skillId: string) => void;
   unlockPassiveForCharacter: (characterId: string, passiveId: string) => void;
+  upgradeSkillForCharacter: (characterId: string, skillId: string) => void;
+  upgradePassiveForCharacter: (characterId: string, passiveId: string) => void;
 }
 
 /**

@@ -2,10 +2,19 @@ import { useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useParty, usePartyActions, useResources, useResourcesActions, useCurrentView } from '~/stores/game-store';
 import type { Resources } from '~/types/resources';
-import { getSkillsForClass, getPassivesForClass, isSkillUnlocked, isPassiveUnlocked } from '~/lib/skill-system';
+import {
+  getSkillsForClass,
+  getPassivesForClass,
+  isSkillUnlocked,
+  isPassiveUnlocked,
+  getSkillLevel,
+  getNextActiveUpgrade,
+  getNextPassiveUpgrade,
+} from '~/lib/skill-system';
 import { canAfford } from '~/lib/resources';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useUnlockPassive } from '~/hooks/use-unlock-passive';
+import { useUpgradeSkill } from '~/hooks/use-upgrade-skill';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection } from '~/constants/keyboard';
@@ -19,7 +28,11 @@ import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { SkillSlot } from '~/components/pause-menu/skills/skill-slot';
-import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/skills/skill-detail-panel';
+import {
+  SkillDetailPanel,
+  getUpgradePreviewRows,
+  type SkillSelection,
+} from '~/components/pause-menu/skills/skill-detail-panel';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
 
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
@@ -27,11 +40,17 @@ import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-c
 /** How long the just-unlocked slot flare plays. Matches the CSS animations. */
 const UNLOCK_FLASH_MS = 950;
 
+/** A purchase awaiting confirmation: first unlock, or a level upgrade. */
+interface PendingAction {
+  mode: 'unlock' | 'upgrade';
+  selection: SkillSelection;
+}
+
 /**
  * The Skills tab: pick a hero, browse their Active (Ultimate) track and Passive
  * track as framed Indigolay slots, inspect any slot in the parchment detail
- * panel, and unlock skills with crafting resources — reaching a level only
- * makes a skill purchasable. Tier-0 Ultimates are the free starting kit.
+ * panel, and unlock or level up skills with crafting resources — reaching a
+ * level only makes a skill purchasable. Tier-0 Ultimates are the free starting kit.
  */
 export function PauseMenuSkills() {
   const party = useParty();
@@ -40,11 +59,12 @@ export function PauseMenuSkills() {
   const resourcesActions = useResourcesActions();
   const unlockActive = useUnlockSkill().unlock;
   const unlockPassive = useUnlockPassive().unlock;
+  const { upgradeActive, upgradePassive } = useUpgradeSkill();
   const isInBattle = useCurrentView() === 'battle-demo';
 
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selection, setSelection] = useState<{ row: 'active' | 'passive'; index: number }>({ row: 'active', index: 0 });
-  const [pendingUnlock, setPendingUnlock] = useState<SkillSelection | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [justUnlockedId, setJustUnlockedId] = useState<string | null>(null);
   const slotRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,24 +121,49 @@ export function PauseMenuSkills() {
     flashTimerRef.current = setTimeout(() => setJustUnlockedId(null), UNLOCK_FLASH_MS);
   }
 
-  function handleConfirmUnlock() {
-    const pending = pendingUnlock;
-    setPendingUnlock(null);
+  function handleConfirm() {
+    const pending = pendingAction;
+    setPendingAction(null);
     if (!pending) return;
-    const def = pending.kind === 'active' ? pending.skill : pending.passive;
-    if (!canAfford(resources, def.cost)) return;
+    const { mode, selection: pendingSelection } = pending;
+    const def = pendingSelection.kind === 'active' ? pendingSelection.skill : pendingSelection.passive;
+
+    const cost =
+      mode === 'unlock'
+        ? def.cost
+        : (pendingSelection.kind === 'active'
+            ? getNextActiveUpgrade(pendingSelection.skill, getSkillLevel(selected, def.id))
+            : getNextPassiveUpgrade(pendingSelection.passive, getSkillLevel(selected, def.id))
+          )?.cost;
+    if (!cost || !canAfford(resources, cost)) return;
+
     soundService.playSound(SoundNames.clickCoin);
-    resourcesActions.reduceResources(def.cost);
-    if (pending.kind === 'active') unlockActive(selected.id, def.id);
-    else unlockPassive(selected.id, def.id);
+    resourcesActions.reduceResources(cost);
+    if (mode === 'unlock') {
+      if (pendingSelection.kind === 'active') unlockActive(selected.id, def.id);
+      else unlockPassive(selected.id, def.id);
+    } else {
+      if (pendingSelection.kind === 'active') upgradeActive(selected.id, def.id);
+      else upgradePassive(selected.id, def.id);
+    }
     flashSlot(def.id);
   }
 
-  const pendingDef = pendingUnlock
-    ? pendingUnlock.kind === 'active'
-      ? pendingUnlock.skill
-      : pendingUnlock.passive
+  const pendingDef = pendingAction
+    ? pendingAction.selection.kind === 'active'
+      ? pendingAction.selection.skill
+      : pendingAction.selection.passive
     : null;
+  const pendingLevel = pendingDef ? getSkillLevel(selected, pendingDef.id) : 1;
+  const pendingCost =
+    pendingAction && pendingDef
+      ? pendingAction.mode === 'unlock'
+        ? pendingDef.cost
+        : (pendingAction.selection.kind === 'active'
+            ? getNextActiveUpgrade(pendingAction.selection.skill, pendingLevel)
+            : getNextPassiveUpgrade(pendingAction.selection.passive, pendingLevel)
+          )?.cost
+      : undefined;
 
   return (
     <>
@@ -169,6 +214,8 @@ export function PauseMenuSkills() {
                       unlockLevel={skill.unlockLevel}
                       selected={selection.row === 'active' && selection.index === index}
                       equipped={selected.selectedSkillId === skill.id}
+                      level={getSkillLevel(selected, skill.id)}
+                      maxLevel={skill.maxLevel}
                       flash={justUnlockedId === skill.id}
                       tooltip={locked ? <SlotTooltip name={skill.name} cost={skill.cost} /> : undefined}
                       onSelect={() => selectSlot('active', index)}
@@ -212,6 +259,8 @@ export function PauseMenuSkills() {
                       locked={locked}
                       unlockLevel={passive.unlockLevel}
                       selected={selection.row === 'passive' && selection.index === index}
+                      level={getSkillLevel(selected, passive.id)}
+                      maxLevel={passive.maxLevel}
                       flash={justUnlockedId === passive.id}
                       tooltip={locked ? <SlotTooltip name={passive.name} cost={passive.cost} /> : undefined}
                       onSelect={() => selectSlot('passive', index)}
@@ -231,32 +280,48 @@ export function PauseMenuSkills() {
             selection={detailSelection}
             isInBattle={isInBattle}
             onEquip={handleEquip}
-            onRequestUnlock={setPendingUnlock}
+            onRequestUnlock={(sel) => setPendingAction({ mode: 'unlock', selection: sel })}
+            onRequestUpgrade={(sel) => setPendingAction({ mode: 'upgrade', selection: sel })}
           />
         </div>
       </div>
 
-      {pendingUnlock && pendingDef && (
+      {pendingAction && pendingDef && pendingCost && (
         <ConfirmPanel
-          title={pendingUnlock.kind === 'active' ? 'Learn Skill' : 'Learn Passive'}
-          confirmLabel="Unlock"
+          title={
+            pendingAction.mode === 'upgrade'
+              ? 'Improve Skill'
+              : pendingAction.selection.kind === 'active'
+                ? 'Learn Skill'
+                : 'Learn Passive'
+          }
+          confirmLabel={pendingAction.mode === 'upgrade' ? 'Upgrade' : 'Unlock'}
           cancelLabel="Cancel"
-          onConfirm={handleConfirmUnlock}
-          onCancel={() => setPendingUnlock(null)}
+          onConfirm={handleConfirm}
+          onCancel={() => setPendingAction(null)}
         >
           <div className="skill-unlock-confirm">
             <SkillDecoIcon characterClass={pendingDef.class} position={pendingDef.icon} size={72} />
-            <div className="skill-unlock-confirm__name pixel-font">{pendingDef.name}</div>
+            <div className="skill-unlock-confirm__name pixel-font">
+              {pendingDef.name}
+              {pendingAction.mode === 'upgrade' && (
+                <span className="skill-unlock-confirm__level"> · Lv {pendingLevel} → {pendingLevel + 1}</span>
+              )}
+            </div>
             <IndigoLayStyledLists variant="chevron" compact>
-              {(pendingUnlock.kind === 'active'
-                ? [pendingDef.description]
-                : describePassiveModifiers(pendingUnlock.passive.modifiers)
+              {(pendingAction.mode === 'upgrade'
+                ? getUpgradePreviewRows(pendingAction.selection, pendingLevel).map(
+                    (row) => `${row.label} ${row.from} → ${row.to}`,
+                  )
+                : pendingAction.selection.kind === 'active'
+                  ? [pendingDef.description]
+                  : describePassiveModifiers(pendingAction.selection.passive.modifiers)
               ).map((line) => (
                 <IndigolayStyledListItem key={line}>{line}</IndigolayStyledListItem>
               ))}
             </IndigoLayStyledLists>
             <div className="skill-unlock-confirm__cost">
-              <CostBadges resources={pendingDef.cost} />
+              <CostBadges resources={pendingCost} />
             </div>
           </div>
         </ConfirmPanel>
