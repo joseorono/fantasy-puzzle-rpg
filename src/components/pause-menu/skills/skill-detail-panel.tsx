@@ -27,6 +27,7 @@ import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-c
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { describePassiveModifiers } from './passive-descriptions';
 import { getUpgradePreviewRows } from './upgrade-preview';
+import { SkillMasteryPips } from './skill-mastery-pips';
 
 // Short on purpose — the active stat strip must fit one line in Press Start 2P.
 const TARGET_LABELS: Record<SkillTarget, string> = {
@@ -54,14 +55,14 @@ interface SkillDetailPanelProps {
 }
 
 /**
- * The parchment detail panel under the slot rows: featured icon on the gold
- * deco frame, name, tier/gate/level line, description, effect list at the
- * current level, the next-level preview, and the action row. Every locked
- * skill — active or passive — shows its resource price explicitly next to the
- * Unlock button; owned skills below max level show the upgrade price and an
- * Upgrade button the same way. A blocked action names the failing gate in a
- * tooltip over the disabled button. Dark-on-parchment text, no pixel-font
- * shadow (it smears at small sizes).
+ * The parchment detail panel under the slot rows: featured icon on the gold deco
+ * frame, name, tier/gate line and mastery pips, description, then one gilded
+ * ledger plate carrying the current effects above the next level's gains, and
+ * the action row. Every locked skill — active or passive — shows its resource
+ * price explicitly beside the Unlock button; owned skills below max level show
+ * the upgrade price beside Upgrade the same way. A blocked action names the
+ * failing gate in a tooltip over the disabled button. Dark-on-parchment text, no
+ * pixel-font shadow (it smears at small sizes).
  */
 export function SkillDetailPanel({
   character,
@@ -78,12 +79,11 @@ export function SkillDetailPanel({
   const level = getSkillLevel(character, def.id);
 
   const kindLabel = isActive ? 'Ultimate' : 'Passive';
-  const levelSuffix = owned ? ` · Lv ${level}/${def.maxLevel}` : '';
+  // The level lives in the mastery pips now — keeping it here too wrapped the line.
   const tierLabel =
-    (isActive && selection.skill.tier === 0
+    isActive && selection.skill.tier === 0
       ? 'Starting Ultimate — every hero begins with this'
-      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`) +
-    levelSuffix;
+      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`;
 
   return (
     <div className="skill-detail" key={def.id}>
@@ -95,27 +95,30 @@ export function SkillDetailPanel({
           </div>
           <div className="skill-detail__tier">{tierLabel}</div>
         </div>
+        {owned && def.maxLevel > 1 && <SkillMasteryPips level={level} maxLevel={def.maxLevel} />}
       </div>
 
       <p className="skill-detail__description">{def.description}</p>
 
-      {/* Actives: one horizontal strip with engraved separators. Passives: their
-          sentence-length effect lines stack instead. */}
-      <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
-        {selection.kind === 'active' ? (
-          <ActiveStatStrip skill={selection.skill} level={level} />
-        ) : (
-          describePassiveModifiers(resolvePassiveModifiers(selection.passive, level)).map((line) => (
-            <DetailStat key={line} label={line} />
-          ))
-        )}
+      {/* One gilded plate: current stats on top, the next level's gains below a
+          gold hairline — the comparison reads as a single ledger. */}
+      <div className="skill-detail__ledger">
+        {/* Actives: one horizontal strip with engraved separators. Passives: their
+            sentence-length effect lines stack instead. */}
+        <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
+          {selection.kind === 'active' ? (
+            <ActiveStatStrip skill={selection.skill} level={level} />
+          ) : (
+            describePassiveModifiers(resolvePassiveModifiers(selection.passive, level)).map((line) => (
+              <DetailStat key={line} label={line} />
+            ))
+          )}
+        </div>
+        {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
       </div>
 
       <div className="skill-detail__footer">
-        <div className="skill-detail__footer-info">
-          {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
-          {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
-        </div>
+        {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
         <SkillDetailActions
           character={character}
           selection={selection}
@@ -157,19 +160,26 @@ function ActiveStatStrip({ skill, level }: { skill: SkillDefinition; level: numb
   );
 }
 
-/** The "what the next level grants" strip: one current → next row per changed stat. */
+/**
+ * The ledger's lower band: one current → next row per changed stat, sitting under
+ * the gold hairline on the same plate as the current stats.
+ */
 function UpgradePreview({ selection, level }: { selection: SkillSelection; level: number }) {
   const rows = getUpgradePreviewRows(selection, level);
   if (rows.length === 0) return null;
   return (
     <div className="skill-detail__upgrade">
       <span className="skill-detail__upgrade-title">Next · Lv {level + 1}</span>
-      {rows.map((row) => (
-        <span key={row.label} className="skill-detail__upgrade-row">
-          {row.label} {row.from} <span className="skill-detail__upgrade-arrow">→</span>{' '}
-          <span className="skill-detail__upgrade-next">{row.to}</span>
-        </span>
-      ))}
+      <div className="skill-detail__upgrade-rows">
+        {rows.map((row) => (
+          <span key={row.label} className="skill-detail__upgrade-row">
+            <span className="skill-detail__upgrade-label">{row.label}</span>
+            <span className="skill-detail__upgrade-from">{row.from}</span>
+            <span className="skill-detail__upgrade-arrow">→</span>
+            <span className="skill-detail__upgrade-next">{row.to}</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -235,9 +245,7 @@ function SkillDetailActions({
       return (
         <div className="skill-detail__actions">
           {equipButton}
-          <div className="skill-detail__gate-note skill-detail__gate-note--owned">
-            {isActive ? 'Max level' : 'Learned — Max level'}
-          </div>
+          <div className="skill-detail__mastered">Mastered</div>
         </div>
       );
     }
@@ -263,13 +271,17 @@ function SkillDetailActions({
       </ToffecBeigeCornersWrapper>
     );
 
+    // The price is grouped with the button that spends it, so a wrap keeps them
+    // together instead of stranding Upgrade on its own line under Equip.
     return (
-      <div className="skill-detail__actions skill-detail__actions--unlock">
+      <div className="skill-detail__actions">
         {equipButton}
-        <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
-          <CostBadges resources={nextUpgrade.cost} />
+        <div className="skill-detail__buy">
+          <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
+            <CostBadges resources={nextUpgrade.cost} />
+          </div>
+          {blockedReason ? <GateTooltip reason={blockedReason}>{upgradeButton}</GateTooltip> : upgradeButton}
         </div>
-        {blockedReason ? <GateTooltip reason={blockedReason}>{upgradeButton}</GateTooltip> : upgradeButton}
       </div>
     );
   }
@@ -282,7 +294,9 @@ function SkillDetailActions({
       ? getSkillsForClass(def.class).find((s) => s.tier < selection.skill.tier && !isSkillUnlocked(character, s.id))
       : undefined
     : !hasPreviousPassiveTier(character, selection.passive)
-      ? getPassivesForClass(def.class).find((p) => p.tier < selection.passive.tier && !isPassiveUnlocked(character, p.id))
+      ? getPassivesForClass(def.class).find(
+          (p) => p.tier < selection.passive.tier && !isPassiveUnlocked(character, p.id),
+        )
       : undefined;
   const needsLevel = character.level < def.unlockLevel;
   const blockedReason = previousLocked
@@ -307,11 +321,13 @@ function SkillDetailActions({
   );
 
   return (
-    <div className="skill-detail__actions skill-detail__actions--unlock">
-      <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
-        <CostBadges resources={def.cost} />
+    <div className="skill-detail__actions">
+      <div className="skill-detail__buy">
+        <div className={cn('skill-detail__cost', !affordable && 'skill-detail__cost--short')}>
+          <CostBadges resources={def.cost} />
+        </div>
+        {blockedReason ? <GateTooltip reason={blockedReason}>{unlockButton}</GateTooltip> : unlockButton}
       </div>
-      {blockedReason ? <GateTooltip reason={blockedReason}>{unlockButton}</GateTooltip> : unlockButton}
     </div>
   );
 }

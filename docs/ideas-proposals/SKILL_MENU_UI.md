@@ -32,9 +32,13 @@ Palette (all already in use in `pause-menu.css`):
 | Body text | `#e0e0e0`, names `#FFF8DC` |
 | Selected glow | `box-shadow: 0 0 12px rgba(212, 165, 116, 0.7)` (roster-card active glow) |
 
-**Never `#ffd700`.** The existing `.pause-menu-content h2` rule uses it; that is grandfathered,
-not a precedent — headings here are bitmap-font images anyway (`NarikRedwoodBitFont`), so no gold
-text color is needed at all.
+**`#ffd700` is a metal accent, not a text colour.** It is allowed on the dark gilded plates —
+the stat strip's highlight value, the gilded divider, the ledger hairline, the mastery pips, the
+Mastered seal — where it reads as struck metal against the board texture. It stays banned as body
+or heading text, and banned outright on the parchment itself, which uses the `#d4a574` family.
+The existing `.pause-menu-content h2` rule uses it as text; that is grandfathered, not a precedent
+— headings here are bitmap-font images anyway (`NarikRedwoodBitFont`), so no gold text color is
+needed at all.
 
 ---
 

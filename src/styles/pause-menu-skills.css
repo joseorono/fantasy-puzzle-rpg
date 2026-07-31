@@ -1,8 +1,10 @@
 /* ============================================================================
    Pause menu — Skills tab
    IndigoLay skill-book treatment: framed icon slots over the dark menu board,
-   a parchment detail panel below. Warm parchment palette only (#d4a574 family);
-   never #ffd700. Animations are neutralized globally by reduced-motion.css
+   a parchment detail panel below. Warm parchment palette (#d4a574 family) for
+   anything on the parchment itself; #ffd700 is allowed only as a metal accent on
+   the dark gilded plates — hairlines, mastery pips, highlight values — never as
+   body or heading text. Animations are neutralized globally by reduced-motion.css
    (imported last), so nothing here uses !important.
 
    NOTE: this file must stay imported AFTER the component styles block in
@@ -400,19 +402,51 @@
   color: #33200f;
 }
 
-/* Horizontal stat strip: styled as a single gilded copper resource card container */
-.skill-detail__stats {
-  display: flex;
+/* ── Mastery pips ──────────────────────────────────────────────────────────
+   The skill's level as gold diamonds on the header line. Replaces the "· Lv n/m"
+   text suffix, which pushed the tier line onto a second row. */
+
+.skill-mastery {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-around;
-  white-space: nowrap;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* A rotated square — the same diamond the passive effect lines use as a bullet. */
+.skill-mastery__pip {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  background: rgba(61, 40, 23, 0.3);
+  border: 1px solid rgba(107, 67, 36, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.skill-mastery__pip--filled {
+  background: linear-gradient(135deg, #ffd700 0%, #e0a838 45%, #b87333 100%);
+  border-color: #8b6914;
+  box-shadow:
+    0 0 4px rgba(255, 215, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+/* ── The ledger plate ──────────────────────────────────────────────────────
+   One gilded copper card holding the current effects above the next level's
+   gains, split by a gold hairline. The only dark surface on the parchment. */
+
+.skill-detail__ledger {
+  width: 100%;
+  box-sizing: border-box;
+  /* Clips the upgrade band's hairline to the rounded corners. */
   overflow: hidden;
-  padding: 0.45rem 0.75rem;
   background-image:
-    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)),
-    url('/assets/bg/looping/bg-board.png');
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
-  background-size: auto, 50px 50px;
+  background-size:
+    auto,
+    50px 50px;
   background-position: center, center;
   border: 2px solid #5c3a1e;
   border-radius: 10px;
@@ -420,8 +454,17 @@
     0 2px 6px rgba(0, 0, 0, 0.35),
     inset 0 0 0 1.5px rgba(212, 165, 116, 0.75),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  width: 100%;
-  box-sizing: border-box;
+}
+
+/* Horizontal stat strip — the ledger's upper band. The plate chrome lives on
+   .skill-detail__ledger; this is layout only. */
+.skill-detail__stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.45rem 0.75rem;
 }
 
 .skill-detail__stat {
@@ -482,67 +525,98 @@
   text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
-/* ── Next-level upgrade preview & footer ─────────────────────────────────── */
-
-.skill-detail__footer {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 0.4rem;
-}
-
-.skill-detail__footer-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;
-}
+/* ── Next-level upgrade preview: the ledger's lower band ─────────────────── */
 
 .skill-detail__upgrade {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.35rem 0.75rem;
+  /* Engraved hairline: gold rule with a dark shadow under it, echoing the gilded
+     divider in the band above. */
+  border-top: 1px solid rgba(255, 215, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.55);
 }
 
 .skill-detail__upgrade-title {
-  color: #6b4324;
-  font-size: 0.65rem;
-  text-shadow: none;
+  flex-shrink: 0;
   font-family: monospace;
+  font-size: 0.62rem;
   font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  color: #d4a574;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.skill-detail__upgrade-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.7rem;
+  min-width: 0;
 }
 
 .skill-detail__upgrade-row {
-  position: relative;
-  font-size: 0.72rem;
-  font-weight: 500;
-  line-height: 1.2;
-  text-shadow: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28rem;
   font-family: monospace;
-  color: #33200f;
+  font-size: 0.72rem;
+  font-weight: bold;
+  line-height: 1.25;
   white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.skill-detail__upgrade-label {
+  color: #d4a574;
+}
+
+/* The value being left behind reads muted against the gain. */
+.skill-detail__upgrade-from {
+  color: #b89272;
 }
 
 .skill-detail__upgrade-arrow {
-  color: #8a4a22;
-  margin: 0 0.2rem;
+  color: #d4a574;
 }
 
-.skill-detail__upgrade-row .skill-detail__upgrade-next {
-  color: #2b7a1f;
-  font-weight: bold;
+/* Gains stay green — gold is reserved for the metal accents. Brighter than the
+   parchment green it replaces, which went muddy on the dark plate. */
+.skill-detail__upgrade-next {
+  color: #8ed15a;
+  text-shadow:
+    0 0 4px rgba(142, 209, 90, 0.35),
+    1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* ── Footer action row ───────────────────────────────────────────────────── */
+
+.skill-detail__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
 }
 
 .skill-detail__actions {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+  /* Right-aligns the row when there's no battle-lock note to sit opposite. */
+  margin-left: auto;
+}
+
+/* Price and the button that spends it travel together, so a wrap can never
+   strand Upgrade on its own line or park the cost next to Equip. */
+.skill-detail__buy {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* The toffec pill is visually 4px taller than its layout box (the ledge is a
@@ -583,15 +657,26 @@
     filter 0.18s ease;
 }
 
+/* Chips wear the ledger plate's recipe at chip scale, so the price reads as part
+   of the same set rather than a flat box parked next to it. */
 .skill-detail__cost .cost-badge {
   padding: 3px 7px;
-  background: #3d2817;
-  border: 1px solid rgba(212, 165, 116, 0.55);
-  border-radius: 3px;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 1px solid #5c3a1e;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.4);
   font-size: 0.68rem;
   font-weight: bold;
   color: #f2d2af;
-  text-shadow: none;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
 /* Metal accents stay as muted border tints — text remains parchment-readable. */
@@ -624,16 +709,31 @@
   border-color: rgba(160, 74, 42, 0.8);
 }
 
-.skill-detail__gate-note {
+/* Maxed-out seal, in place of a plain "Max level" line. */
+.skill-detail__mastered {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 10px;
   font-family: monospace;
-  font-size: 0.78rem;
+  font-size: 0.62rem;
   font-weight: bold;
-  letter-spacing: 0.02em;
-  color: #8a4a22;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
-.skill-detail__gate-note--owned {
-  color: #5c7a2e;
+.skill-detail__mastered::before {
+  content: '◆';
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
 .skill-detail__battle-lock {
