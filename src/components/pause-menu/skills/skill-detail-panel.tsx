@@ -111,19 +111,21 @@ export function SkillDetailPanel({
         )}
       </div>
 
-      {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
-
-      <SkillDetailActions
-        character={character}
-        selection={selection}
-        resources={resources}
-        isInBattle={isInBattle}
-        onEquip={onEquip}
-        onRequestUnlock={onRequestUnlock}
-        onRequestUpgrade={onRequestUpgrade}
-      />
-
-      {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
+      <div className="skill-detail__footer">
+        <div className="skill-detail__footer-info">
+          {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
+          {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
+        </div>
+        <SkillDetailActions
+          character={character}
+          selection={selection}
+          resources={resources}
+          isInBattle={isInBattle}
+          onEquip={onEquip}
+          onRequestUnlock={onRequestUnlock}
+          onRequestUpgrade={onRequestUpgrade}
+        />
+      </div>
     </div>
   );
 }

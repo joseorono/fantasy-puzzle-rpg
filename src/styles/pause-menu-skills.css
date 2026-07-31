@@ -482,45 +482,67 @@
   text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
-/* ── Next-level upgrade preview: current → next rows, gains in green ─────── */
+/* ── Next-level upgrade preview & footer ─────────────────────────────────── */
+
+.skill-detail__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+}
+
+.skill-detail__footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
 
 .skill-detail__upgrade {
   display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .skill-detail__upgrade-title {
-  font-size: 0.6rem;
+  color: #6b4324;
+  font-size: 0.65rem;
+  text-shadow: none;
+  font-family: monospace;
   font-weight: bold;
-  letter-spacing: 0.04em;
-  color: #8a5a10;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .skill-detail__upgrade-row {
-  font-size: 0.65rem;
-  line-height: 1.35;
+  position: relative;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-shadow: none;
+  font-family: monospace;
   color: #33200f;
   white-space: nowrap;
 }
 
 .skill-detail__upgrade-arrow {
-  color: #a06820;
+  color: #8a4a22;
+  margin: 0 0.2rem;
 }
 
 .skill-detail__upgrade-row .skill-detail__upgrade-next {
-  color: #5c7a2e;
+  color: #2b7a1f;
   font-weight: bold;
 }
 
 .skill-detail__actions {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin-top: 0.1rem;
+  align-items: flex-end;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* The toffec pill is visually 4px taller than its layout box (the ledge is a
@@ -617,7 +639,7 @@
 .skill-detail__battle-lock {
   font-size: 0.6rem;
   letter-spacing: 0.06em;
-  text-align: center;
+  text-align: left;
   color: #a04a2a;
 }
 
