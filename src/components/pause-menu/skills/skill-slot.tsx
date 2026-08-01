@@ -5,6 +5,7 @@ import type { SkillIconPosition } from '~/types/skills';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { SKILL_SLOT_TOOLTIP_DELAY_MS } from '~/constants/ui';
 import { SkillMasteryPips } from './skill-mastery-pips';
 
 /** Native slot-frame art is 137x147; rendered size keeps that aspect. */
@@ -129,7 +130,7 @@ export function SkillSlot({
 
   if (!tooltip) return button;
   return (
-    <Tooltip>
+    <Tooltip delayDuration={SKILL_SLOT_TOOLTIP_DELAY_MS}>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={6}>
         {tooltip}

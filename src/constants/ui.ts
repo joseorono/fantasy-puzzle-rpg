@@ -81,6 +81,14 @@ export const ORB_TYPE_BAR_VARIANT: Record<OrbType, 'blue' | 'green' | 'purple' |
 export const INFO_ICON_SRC = '/assets/icons/ui/info-badge.svg';
 
 /**
+ * How long the cursor must rest on a skill slot before its hover card opens.
+ * Tooltips are instant everywhere else (`TooltipProvider` defaults to 0), but the
+ * skill slots sit in rows of four — without a pause, sweeping the track flashes a
+ * full card per slot.
+ */
+export const SKILL_SLOT_TOOLTIP_DELAY_MS = 250;
+
+/**
  * Denominator for the level-up stat meters — the notional stat ceiling, used for bar
  * width only. Not a gameplay cap; nothing clamps stats to this value.
  */

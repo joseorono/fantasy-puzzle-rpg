@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useParty, usePartyActions, useResources, useResourcesActions, useCurrentView } from '~/stores/game-store';
-import type { Resources } from '~/types/resources';
 import {
   getSkillsForClass,
   getPassivesForClass,
@@ -29,6 +28,7 @@ import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
 import { SkillSlot } from '~/components/pause-menu/skills/skill-slot';
 import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/skills/skill-detail-panel';
+import { SkillSlotTooltip } from '~/components/pause-menu/skills/skill-slot-tooltip';
 import { getUpgradePreviewRows } from '~/components/pause-menu/skills/upgrade-preview';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
 
@@ -215,16 +215,12 @@ export function PauseMenuSkills() {
                       maxLevel={skill.maxLevel}
                       flash={justUnlockedId === skill.id}
                       tooltip={
-                        locked ? (
-                          <SlotTooltip name={skill.name} cost={skill.cost} />
-                        ) : (
-                          <SlotTooltip
-                            name={skill.name}
-                            level={getSkillLevel(selected, skill.id)}
-                            maxLevel={skill.maxLevel}
-                            equipped={selected.selectedSkillId === skill.id}
-                          />
-                        )
+                        <SkillSlotTooltip
+                          character={selected}
+                          selection={{ kind: 'active', skill }}
+                          resources={resources}
+                          locked={locked}
+                        />
                       }
                       onSelect={() => selectSlot('active', index)}
                       onKeyDown={(e) => handleSlotKeyDown(e, 'active', index)}
@@ -271,15 +267,12 @@ export function PauseMenuSkills() {
                       maxLevel={passive.maxLevel}
                       flash={justUnlockedId === passive.id}
                       tooltip={
-                        locked ? (
-                          <SlotTooltip name={passive.name} cost={passive.cost} />
-                        ) : (
-                          <SlotTooltip
-                            name={passive.name}
-                            level={getSkillLevel(selected, passive.id)}
-                            maxLevel={passive.maxLevel}
-                          />
-                        )
+                        <SkillSlotTooltip
+                          character={selected}
+                          selection={{ kind: 'passive', passive }}
+                          resources={resources}
+                          locked={locked}
+                        />
                       }
                       onSelect={() => selectSlot('passive', index)}
                       onKeyDown={(e) => handleSlotKeyDown(e, 'passive', index)}
@@ -348,39 +341,5 @@ export function PauseMenuSkills() {
         </ConfirmPanel>
       )}
     </>
-  );
-}
-
-interface SlotTooltipProps {
-  name: string;
-  /** Unlock price — shown only while the slot is locked. */
-  cost?: Resources;
-  /** Current level; shown once unlocked, since the corner pips omit the number. */
-  level?: number;
-  maxLevel?: number;
-  equipped?: boolean;
-}
-
-/**
- * Hover card for a slot. Locked slots name their price; unlocked ones name the
- * exact level, which the corner pips deliberately abstract away.
- */
-function SlotTooltip({ name, cost, level, maxLevel, equipped }: SlotTooltipProps) {
-  return (
-    <div className="skill-slot-tooltip">
-      <div className="font-bold">{name}</div>
-      {level !== undefined && maxLevel !== undefined && maxLevel > 1 && (
-        <div className="skill-slot-tooltip__level">
-          Lv {level} / {maxLevel}
-          {level >= maxLevel && ' · Mastered'}
-        </div>
-      )}
-      {equipped && <div className="skill-slot-tooltip__equipped">Equipped Ultimate</div>}
-      {cost && (
-        <div className="skill-slot-tooltip__cost">
-          <CostBadges resources={cost} />
-        </div>
-      )}
-    </div>
   );
 }

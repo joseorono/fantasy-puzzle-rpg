@@ -860,27 +860,73 @@
   z-index: 70;
 }
 
-/* Locked-slot tooltip content. */
+/* ── Slot hover card ───────────────────────────────────────────────────────
+   A compact read of a slot you haven't selected: what it is, what it does, and
+   what it costs. Sized around the list body, which lists.css pins to 0.92rem
+   inside this block — matching every other tooltip in the game. */
+
 .skill-slot-tooltip {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  max-width: 220px;
+  gap: 0.35rem;
+  max-width: 280px;
 }
 
-/* Names the level the corner pips deliberately leave to be counted. */
-.skill-slot-tooltip__level {
-  font-family: monospace;
+.skill-slot-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skill-slot-tooltip__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.skill-slot-tooltip__name {
   font-size: 0.7rem;
+  line-height: 1.2;
+  color: #f2d2af;
+}
+
+/* Keeps the house accent colour, but needs the halo to hold up over the grain. */
+.skill-slot-tooltip__meta {
+  font-family: monospace;
+  font-size: 0.62rem;
   font-weight: bold;
+  letter-spacing: 0.02em;
   color: #d4a574;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
 }
 
-.skill-slot-tooltip__equipped {
-  font-family: monospace;
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #8ed15a;
+/* The slot plinth exists so the pips read over frame art; on the card's board
+   texture they already do, so it only adds clutter. */
+.skill-slot-tooltip .skill-mastery--slot {
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* The tab spaces its dividers with a `my-1` utility; inside the card the parent
+   gap already does that, so pin the margin off in case that class travels here. */
+.skill-slot-tooltip .gradient-divider {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Unbulleted rows. The indent mirrors the list above it — a 16px bullet plus the
+   item's 0.45rem gap — so the price and status line up with the effect text. */
+.skill-slot-tooltip__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding-left: calc(16px + 0.45rem);
 }
 
 .skill-slot-tooltip__cost {
@@ -895,4 +941,30 @@
   padding: 2px 5px;
   color: #f2d2af;
   border-color: rgba(212, 165, 116, 0.55);
+  /* Chips carry their own shadow, tuned for a plate rather than for text. */
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* The card sits on raw bg-board.png — a mid-tone brown, lighter than the panels
+   the #d4a574 family is tuned for — so a mid-orange gate line vanished into it.
+   A light coral clears the wood, and the dark halo lifts small text off the
+   grain (the trick .indigolay-list--send uses). */
+.skill-slot-tooltip__gate {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #ffab96;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}
+
+.skill-slot-tooltip__equipped {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #a8e878;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
 }

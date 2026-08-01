@@ -1,20 +1,14 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { cn } from '~/lib/utils';
 import type { CharacterData } from '~/types/rpg-elements';
-import type { SkillDefinition, PassiveSkillDefinition, SkillTarget } from '~/types/skills';
+import type { SkillDefinition, PassiveSkillDefinition } from '~/types/skills';
 import type { Resources } from '~/types/resources';
 import { canAfford } from '~/lib/resources';
 import { useResources } from '~/stores/game-store';
 import {
   isPassiveUnlocked,
-  hasPreviousPassiveTier,
   isSkillUnlocked,
-  hasPreviousActiveTier,
-  getSkillsForClass,
-  getPassivesForClass,
   getSkillLevel,
-  resolveActiveSkillStats,
-  resolvePassiveModifiers,
   getNextActiveUpgrade,
   getNextPassiveUpgrade,
 } from '~/lib/skill-system';
@@ -25,19 +19,10 @@ import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { describePassiveModifiers } from './passive-descriptions';
 import { getUpgradePreviewRows } from './upgrade-preview';
 import { SkillMasteryPips } from './skill-mastery-pips';
-
-// Short on purpose — the active stat strip must fit one line in Press Start 2P.
-const TARGET_LABELS: Record<SkillTarget, string> = {
-  enemy: 'One enemy',
-  allEnemy: 'All enemies',
-  ally: 'Weakest ally',
-  allAlly: 'Whole party',
-};
-
-const ROMAN_TIERS = ['I', 'II', 'III', 'IV'] as const;
+import { describeSkillEffects, getTierLabel } from './skill-labels';
+import { getUnlockGateReason, getUpgradeGateReason } from './skill-gates';
 
 /** The slot the detail panel is describing. */
 export type SkillSelection =
@@ -78,12 +63,8 @@ export function SkillDetailPanel({
   const owned = isActive ? isSkillUnlocked(character, def.id) : isPassiveUnlocked(character, def.id);
   const level = getSkillLevel(character, def.id);
 
-  const kindLabel = isActive ? 'Ultimate' : 'Passive';
   // The level lives in the mastery pips now — keeping it here too wrapped the line.
-  const tierLabel =
-    isActive && selection.skill.tier === 0
-      ? 'Starting Ultimate — every hero begins with this'
-      : `Tier ${ROMAN_TIERS[(isActive ? selection.skill.tier : selection.passive.tier) - 1]} ${kindLabel} · from Lv ${def.unlockLevel}`;
+  const tierLabel = getTierLabel(selection);
 
   return (
     <div className="skill-detail" key={def.id}>
@@ -110,13 +91,7 @@ export function SkillDetailPanel({
         {/* Actives: one horizontal strip with engraved separators. Passives: their
             sentence-length effect lines stack instead. */}
         <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
-          {selection.kind === 'active' ? (
-            <ActiveStatStrip skill={selection.skill} level={level} />
-          ) : (
-            describePassiveModifiers(resolvePassiveModifiers(selection.passive, level)).map((line) => (
-              <DetailStat key={line} label={line} />
-            ))
-          )}
+          <SkillEffects selection={selection} level={level} />
         </div>
         {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
       </div>
@@ -145,21 +120,22 @@ function StatDivider() {
   return <span className="skill-detail__divider" aria-hidden="true" />;
 }
 
-/** The active skill's one-line stat strip, resolved at its current level. */
-function ActiveStatStrip({ skill, level }: { skill: SkillDefinition; level: number }) {
-  const stats = resolveActiveSkillStats(skill, level);
-  const heals = skill.target === 'ally' || skill.target === 'allAlly';
+/**
+ * The skill's effects at its current level. Actives read as one line joined by
+ * gilded dividers; passives stack, so they get no dividers. Both come from
+ * `describeSkillEffects`, which the slot hover card reads from too.
+ */
+function SkillEffects({ selection, level }: { selection: SkillSelection; level: number }) {
+  const effects = describeSkillEffects(selection, level);
+  const isActive = selection.kind === 'active';
   return (
     <>
-      <DetailStat label={TARGET_LABELS[skill.target]} />
-      <StatDivider />
-      <DetailStat
-        label={`${heals ? 'Heal' : 'Dmg'} ×${stats.baseDamageMultiplier}${
-          stats.flatDamageBonus > 0 ? ` +${stats.flatDamageBonus}` : ''
-        }`}
-      />
-      <StatDivider />
-      <DetailStat label={`Charge ×${stats.cooldownMultiplier}`} highlight={stats.cooldownMultiplier < 1} />
+      {effects.map((effect, index) => (
+        <Fragment key={effect.text}>
+          {isActive && index > 0 && <StatDivider />}
+          <DetailStat label={effect.text} highlight={effect.highlight} />
+        </Fragment>
+      ))}
     </>
   );
 }
@@ -291,13 +267,10 @@ function SkillDetailActions({
       );
     }
 
+    const blockedReason = getUpgradeGateReason(character, nextUpgrade, resources);
+    // Independent of the gate: the price greys out whenever it's out of reach,
+    // even when a level gate is the reason the button is disabled.
     const affordable = canAfford(resources, nextUpgrade.cost);
-    const blockedReason =
-      character.level < nextUpgrade.requiredCharacterLevel
-        ? `Requires Lv ${nextUpgrade.requiredCharacterLevel}`
-        : !affordable
-          ? 'Not enough resources'
-          : null;
 
     const upgradeButton = (
       <ToffecBeigeCornersWrapper>
@@ -329,24 +302,8 @@ function SkillDetailActions({
 
   // Locked: show the price explicitly, and say exactly which gate is failing.
   // A skipped lower tier is named outright — tiers unlock strictly in order.
+  const blockedReason = getUnlockGateReason(character, selection, resources);
   const affordable = canAfford(resources, def.cost);
-  const previousLocked = isActive
-    ? !hasPreviousActiveTier(character, selection.skill)
-      ? getSkillsForClass(def.class).find((s) => s.tier < selection.skill.tier && !isSkillUnlocked(character, s.id))
-      : undefined
-    : !hasPreviousPassiveTier(character, selection.passive)
-      ? getPassivesForClass(def.class).find(
-          (p) => p.tier < selection.passive.tier && !isPassiveUnlocked(character, p.id),
-        )
-      : undefined;
-  const needsLevel = character.level < def.unlockLevel;
-  const blockedReason = previousLocked
-    ? `Unlock ${previousLocked.name} first`
-    : needsLevel
-      ? `Requires Lv ${def.unlockLevel}`
-      : !affordable
-        ? 'Not enough resources'
-        : null;
 
   const unlockButton = (
     <ToffecBeigeCornersWrapper>
