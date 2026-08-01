@@ -322,10 +322,10 @@ export function PauseMenuSkills() {
         <ConfirmPanel
           title={
             pendingAction.mode === 'upgrade'
-              ? 'Upgrade this skill?'
+              ? 'Upgrade this skill'
               : pendingAction.selection.kind === 'active'
-                ? 'Learn this active skill?'
-                : 'Learn this passive skill?'
+                ? 'Learn this active skill'
+                : 'Learn this passive skill'
           }
           confirmLabel={pendingAction.mode === 'upgrade' ? 'Upgrade' : 'Unlock'}
           cancelLabel="Cancel"
