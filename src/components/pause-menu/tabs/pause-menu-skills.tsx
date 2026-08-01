@@ -10,6 +10,8 @@ import {
   getSkillLevel,
   getNextActiveUpgrade,
   getNextPassiveUpgrade,
+  hasPreviousActiveTier,
+  hasPreviousPassiveTier,
 } from '~/lib/skill-system';
 import { canAfford } from '~/lib/resources';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
@@ -201,6 +203,11 @@ export function PauseMenuSkills() {
             <div className="pause-menu-skills-row">
               {actives.map((skill, index) => {
                 const locked = !isSkillUnlocked(selected, skill.id);
+                const previousLocked = !hasPreviousActiveTier(selected, skill);
+                const needsLevel = selected.level < skill.unlockLevel;
+                const affordable = canAfford(resources, skill.cost);
+                const learnable = locked && !previousLocked && !needsLevel && affordable;
+                
                 return (
                   <ToffecBeigeCornersWrapper key={skill.id} className="skill-slot-wrapper">
                     <SkillSlot
@@ -208,6 +215,7 @@ export function PauseMenuSkills() {
                       icon={skill.icon}
                       name={skill.name}
                       locked={locked}
+                      learnable={learnable}
                       unlockLevel={skill.unlockLevel}
                       selected={selection.row === 'active' && selection.index === index}
                       equipped={selected.selectedSkillId === skill.id}
@@ -258,6 +266,11 @@ export function PauseMenuSkills() {
             <div className="pause-menu-skills-row pause-menu-skills-row--passive">
               {passives.map((passive, index) => {
                 const locked = !isPassiveUnlocked(selected, passive.id);
+                const previousLocked = !hasPreviousPassiveTier(selected, passive);
+                const needsLevel = selected.level < passive.unlockLevel;
+                const affordable = canAfford(resources, passive.cost);
+                const learnable = locked && !previousLocked && !needsLevel && affordable;
+                
                 return (
                   <ToffecBeigeCornersWrapper key={passive.id} className="skill-slot-wrapper">
                     <SkillSlot
@@ -265,6 +278,7 @@ export function PauseMenuSkills() {
                       icon={passive.icon}
                       name={passive.name}
                       locked={locked}
+                      learnable={learnable}
                       unlockLevel={passive.unlockLevel}
                       selected={selection.row === 'passive' && selection.index === index}
                       level={getSkillLevel(selected, passive.id)}

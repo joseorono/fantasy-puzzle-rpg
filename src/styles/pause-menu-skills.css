@@ -320,6 +320,34 @@
   }
 }
 
+/* ── Learnable skill highlight ───────────────────────────────────────────── */
+
+.skill-slot.learnable::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  border-radius: 8px;
+  box-shadow: inset 0 0 8px rgba(212, 165, 116, 0.3);
+  animation: skill-learnable-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes skill-learnable-pulse {
+  0%, 100% {
+    border-color: rgba(212, 165, 116, 0.3);
+    box-shadow: inset 0 0 6px rgba(212, 165, 116, 0.2);
+  }
+  50% {
+    border-color: rgba(242, 210, 175, 0.85);
+    box-shadow: inset 0 0 12px rgba(242, 210, 175, 0.6);
+  }
+}
+
+.skill-slot.locked.learnable .skill-slot__icon {
+  filter: brightness(0.95);
+}
+
 /* ── Detail panel ─────────────────────────────────────────────────────────
    Bright parchment art => dark text, no pixel-font offset shadow (it smears
    into a strikethrough at small sizes). The 9-slice keeps the filigree corners

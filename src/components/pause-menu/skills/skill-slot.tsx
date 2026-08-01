@@ -30,6 +30,8 @@ interface SkillSlotProps {
   maxLevel?: number;
   /** Plays the unlock flare (ring + brightness + icon colour bloom). */
   flash?: boolean;
+  /** Pulses a gold highlight indicating this locked skill can be unlocked right now. */
+  learnable?: boolean;
   /** Hover tooltip body; locked slots use it to surface name + cost. */
   tooltip?: ReactNode;
   /** Rendered slot width in px. */
@@ -60,6 +62,7 @@ export function SkillSlot({
   level = 1,
   maxLevel,
   flash = false,
+  learnable = false,
   tooltip,
   size = 80,
   disabled = false,
@@ -73,7 +76,7 @@ export function SkillSlot({
     <button
       ref={buttonRef}
       type="button"
-      className={cn('skill-slot', { locked, equipped, active: selected, disabled, 'just-unlocked': flash })}
+      className={cn('skill-slot', { locked, equipped, active: selected, disabled, 'just-unlocked': flash, learnable })}
       style={{ width: size, height: Math.round(size * SLOT_ASPECT) }}
       onClick={onSelect}
       onKeyDown={onKeyDown}
