@@ -264,26 +264,14 @@
   left: -3px;
 }
 
-/* Skill level counter ("1/4"), seated on the frame's bottom-right corner —
-   top-right belongs to the equipped mark, top-left to the locked pennant. */
-.skill-slot .skill-slot__level-counter {
+/* Mastery pips, hanging off the frame's bottom-right corner — top-right belongs
+   to the equipped mark, top-left to the locked pennant, and bottom-CENTRE to the
+   gold gem the frame art already carries, which the pips must not crowd. */
+.skill-slot .skill-slot__mastery {
   position: absolute;
-  bottom: -4px;
-  right: -5px;
-  padding: 2px 4px;
-  font-size: 0.5rem;
-  line-height: 1;
-  color: #f2d2af;
-  background: #3d2817;
-  border: 1px solid rgba(212, 165, 116, 0.55);
-  border-radius: 3px;
-  text-shadow: none;
+  bottom: -3px;
+  right: -2px;
   pointer-events: none;
-}
-
-.skill-slot .skill-slot__level-counter--max {
-  border-color: rgba(212, 165, 116, 0.9);
-  color: #ffe9c9;
 }
 
 /* ── The unlock moment ─────────────────────────────────────────────────────
@@ -430,6 +418,28 @@
   box-shadow:
     0 0 4px rgba(255, 215, 0, 0.45),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+/* Slot variant: smaller, and on a dark plinth — the pips sit over the frame art
+   rather than flat parchment, so they need their own ground to read against. */
+.skill-mastery--slot {
+  gap: 3px;
+  padding: 2px 4px;
+  background: rgba(24, 14, 8, 0.85);
+  border: 1px solid rgba(212, 165, 116, 0.55);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.skill-mastery--slot .skill-mastery__pip {
+  width: 5px;
+  height: 5px;
+  /* The 1px inset highlight muddies a 5px diamond — drop it at this size. */
+  box-shadow: none;
+}
+
+.skill-mastery--slot .skill-mastery__pip--filled {
+  box-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
 }
 
 /* ── The ledger plate ──────────────────────────────────────────────────────
@@ -592,19 +602,26 @@
 
 /* ── Footer action row ───────────────────────────────────────────────────── */
 
+/* Engraved shelf: a dark rule with a light highlight under it, so the action row
+   is carved into the parchment instead of floating on it. A second dark plate
+   here would outweigh the ledger above. */
 .skill-detail__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   margin-top: auto;
-  padding-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(107, 67, 36, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.5);
 }
 
+/* The gap between Equip and the buy group is deliberately wider than the gap
+   inside it — that spacing is the only thing that makes the grouping legible. */
 .skill-detail__actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.9rem;
   flex-wrap: wrap;
   justify-content: flex-end;
   /* Right-aligns the row when there's no battle-lock note to sit opposite. */
@@ -617,6 +634,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* "Equipped" is three glyphs longer than "Equip"; without a floor the whole row
+   jumps sideways the moment you equip something. */
+.skill-detail__actions .skill-detail__equip {
+  min-width: 7.25rem;
+}
+
+.skill-detail__info-trigger {
+  display: inline-flex;
 }
 
 /* The toffec pill is visually 4px taller than its layout box (the ledge is a
@@ -648,10 +675,14 @@
 
 /* ── Cost chips — restyled for parchment, overriding town.css .cost-badge ── */
 
+/* The toffec pill paints a 4px ledge below its layout box, so its optical centre
+   sits 2px lower than the row's. The margin makes centring resolve against the
+   painted button rather than its box, which is what the eye actually lines up. */
 .skill-detail__cost {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  margin-top: 4px;
   transition:
     opacity 0.18s ease,
     filter 0.18s ease;
@@ -660,7 +691,10 @@
 /* Chips wear the ledger plate's recipe at chip scale, so the price reads as part
    of the same set rather than a flat box parked next to it. */
 .skill-detail__cost .cost-badge {
-  padding: 3px 7px;
+  /* Sized to carry the same visual weight as the xs pill it sits beside — the
+     old 3px chip read as an afterthought next to a 32px button. */
+  min-height: 1.6rem;
+  padding: 3px 8px;
   background-image:
     linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
@@ -832,6 +866,21 @@
   flex-direction: column;
   gap: 0.3rem;
   max-width: 220px;
+}
+
+/* Names the level the corner pips deliberately leave to be counted. */
+.skill-slot-tooltip__level {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #d4a574;
+}
+
+.skill-slot-tooltip__equipped {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #8ed15a;
 }
 
 .skill-slot-tooltip__cost {

@@ -95,7 +95,11 @@ export function SkillDetailPanel({
           </div>
           <div className="skill-detail__tier">{tierLabel}</div>
         </div>
-        {owned && def.maxLevel > 1 && <SkillMasteryPips level={level} maxLevel={def.maxLevel} />}
+        {owned && def.maxLevel > 1 && (
+          <InfoTooltip label={`Level ${level} of ${def.maxLevel}${level >= def.maxLevel ? ' · Mastered' : ''}`}>
+            <SkillMasteryPips level={level} maxLevel={def.maxLevel} />
+          </InfoTooltip>
+        )}
       </div>
 
       <p className="skill-detail__description">{def.description}</p>
@@ -184,6 +188,27 @@ function UpgradePreview({ selection, level }: { selection: SkillSelection; level
   );
 }
 
+/**
+ * Hover label for a non-interactive element — the mastery pips and the Mastered
+ * seal, both of which trade an exact number for a compact glyph. The wrapper span
+ * is the hover surface, since `TooltipTrigger` is `asChild` and these children
+ * don't forward refs.
+ */
+function InfoTooltip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <span className="skill-detail__info-trigger">{children}</span>
+      </TooltipTrigger>
+      <TooltipContent side="top">
+        <IndigoLayStyledLists variant="chevron">
+          <IndigolayStyledListItem>{label}</IndigolayStyledListItem>
+        </IndigoLayStyledLists>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 /** Wraps a disabled action button so its gate reason shows in a hover tooltip. */
 function GateTooltip({ reason, children }: { reason: string; children: ReactNode }) {
   return (
@@ -233,19 +258,35 @@ function SkillDetailActions({
       : getNextPassiveUpgrade(selection.passive, level);
     const equipped = isActive && character.selectedSkillId === def.id;
 
-    const equipButton = isActive ? (
+    // A disabled Equip says why on hover rather than sitting there inert.
+    const equipBlockedReason = isInBattle ? 'Locked during battle' : equipped ? 'Already your equipped Ultimate' : null;
+    const rawEquipButton = isActive ? (
       <ToffecBeigeCornersWrapper>
-        <ToffecButton variant="tan" size="xs" disabled={equipped || isInBattle} onClick={() => onEquip(def.id)}>
+        <ToffecButton
+          variant="tan"
+          size="xs"
+          className="skill-detail__equip"
+          disabled={equipped || isInBattle}
+          onClick={() => onEquip(def.id)}
+        >
           {equipped ? 'Equipped' : 'Equip'}
         </ToffecButton>
       </ToffecBeigeCornersWrapper>
     ) : null;
+    const equipButton =
+      rawEquipButton && equipBlockedReason ? (
+        <GateTooltip reason={equipBlockedReason}>{rawEquipButton}</GateTooltip>
+      ) : (
+        rawEquipButton
+      );
 
     if (!nextUpgrade) {
       return (
         <div className="skill-detail__actions">
           {equipButton}
-          <div className="skill-detail__mastered">Mastered</div>
+          <InfoTooltip label={`${isActive ? 'Ultimate' : 'Passive'} is at its highest level`}>
+            <span className="skill-detail__mastered">Mastered</span>
+          </InfoTooltip>
         </div>
       );
     }

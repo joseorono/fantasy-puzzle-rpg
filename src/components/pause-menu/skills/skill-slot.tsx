@@ -5,6 +5,7 @@ import type { SkillIconPosition } from '~/types/skills';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { SkillMasteryPips } from './skill-mastery-pips';
 
 /** Native slot-frame art is 137x147; rendered size keeps that aspect. */
 const SLOT_ASPECT = 147 / 137;
@@ -44,7 +45,9 @@ interface SkillSlotProps {
  * its interior. Frame states (normal / hover / selected) are stacked layers
  * crossfaded on opacity — the same technique `IndigolaySkillIcon` uses for its
  * disabled twin. Locked slots grey the icon (the sheet's built-in disabled
- * variant) and hang the red `LevelTag` pennant with the required level.
+ * variant) and hang the red `LevelTag` pennant with the required level; unlocked
+ * ones hang their `SkillMasteryPips` off the opposite corner, clear of the gold
+ * gem the frame art carries at bottom-centre.
  */
 export function SkillSlot({
   characterClass,
@@ -119,11 +122,7 @@ export function SkillSlot({
       )}
       {locked && <LevelTag level={unlockLevel} className="skill-slot__level-tag" />}
       {!locked && maxLevel !== undefined && maxLevel > 1 && (
-        <span
-          className={cn('skill-slot__level-counter pixel-font', level >= maxLevel && 'skill-slot__level-counter--max')}
-        >
-          {level}/{maxLevel}
-        </span>
+        <SkillMasteryPips level={level} maxLevel={maxLevel} size="slot" className="skill-slot__mastery" />
       )}
     </button>
   );

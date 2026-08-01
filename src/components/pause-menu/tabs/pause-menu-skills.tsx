@@ -214,7 +214,18 @@ export function PauseMenuSkills() {
                       level={getSkillLevel(selected, skill.id)}
                       maxLevel={skill.maxLevel}
                       flash={justUnlockedId === skill.id}
-                      tooltip={locked ? <SlotTooltip name={skill.name} cost={skill.cost} /> : undefined}
+                      tooltip={
+                        locked ? (
+                          <SlotTooltip name={skill.name} cost={skill.cost} />
+                        ) : (
+                          <SlotTooltip
+                            name={skill.name}
+                            level={getSkillLevel(selected, skill.id)}
+                            maxLevel={skill.maxLevel}
+                            equipped={selected.selectedSkillId === skill.id}
+                          />
+                        )
+                      }
                       onSelect={() => selectSlot('active', index)}
                       onKeyDown={(e) => handleSlotKeyDown(e, 'active', index)}
                       buttonRef={(el) => {
@@ -259,7 +270,17 @@ export function PauseMenuSkills() {
                       level={getSkillLevel(selected, passive.id)}
                       maxLevel={passive.maxLevel}
                       flash={justUnlockedId === passive.id}
-                      tooltip={locked ? <SlotTooltip name={passive.name} cost={passive.cost} /> : undefined}
+                      tooltip={
+                        locked ? (
+                          <SlotTooltip name={passive.name} cost={passive.cost} />
+                        ) : (
+                          <SlotTooltip
+                            name={passive.name}
+                            level={getSkillLevel(selected, passive.id)}
+                            maxLevel={passive.maxLevel}
+                          />
+                        )
+                      }
                       onSelect={() => selectSlot('passive', index)}
                       onKeyDown={(e) => handleSlotKeyDown(e, 'passive', index)}
                       buttonRef={(el) => {
@@ -302,7 +323,10 @@ export function PauseMenuSkills() {
             <div className="skill-unlock-confirm__name pixel-font">
               {pendingDef.name}
               {pendingAction.mode === 'upgrade' && (
-                <span className="skill-unlock-confirm__level"> · Lv {pendingLevel} → {pendingLevel + 1}</span>
+                <span className="skill-unlock-confirm__level">
+                  {' '}
+                  · Lv {pendingLevel} → {pendingLevel + 1}
+                </span>
               )}
             </div>
             <IndigoLayStyledLists variant="chevron" compact>
@@ -327,13 +351,36 @@ export function PauseMenuSkills() {
   );
 }
 
-function SlotTooltip({ name, cost }: { name: string; cost: Resources }) {
+interface SlotTooltipProps {
+  name: string;
+  /** Unlock price — shown only while the slot is locked. */
+  cost?: Resources;
+  /** Current level; shown once unlocked, since the corner pips omit the number. */
+  level?: number;
+  maxLevel?: number;
+  equipped?: boolean;
+}
+
+/**
+ * Hover card for a slot. Locked slots name their price; unlocked ones name the
+ * exact level, which the corner pips deliberately abstract away.
+ */
+function SlotTooltip({ name, cost, level, maxLevel, equipped }: SlotTooltipProps) {
   return (
     <div className="skill-slot-tooltip">
       <div className="font-bold">{name}</div>
-      <div className="skill-slot-tooltip__cost">
-        <CostBadges resources={cost} />
-      </div>
+      {level !== undefined && maxLevel !== undefined && maxLevel > 1 && (
+        <div className="skill-slot-tooltip__level">
+          Lv {level} / {maxLevel}
+          {level >= maxLevel && ' · Mastered'}
+        </div>
+      )}
+      {equipped && <div className="skill-slot-tooltip__equipped">Equipped Ultimate</div>}
+      {cost && (
+        <div className="skill-slot-tooltip__cost">
+          <CostBadges resources={cost} />
+        </div>
+      )}
     </div>
   );
 }
