@@ -193,8 +193,10 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <IndigoLayStyledLists variant="chevron">
-                    <IndigolayStyledListItem>One equipped at a time</IndigolayStyledListItem>
+                  <IndigoLayStyledLists variant="chevron" compact>
+                    <IndigolayStyledListItem>Only 1 skill equipped per hero</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Charges over time & matching orbs</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Tap when ready to activate</IndigolayStyledListItem>
                   </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
@@ -252,8 +254,10 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <IndigoLayStyledLists variant="chevron">
-                    <IndigolayStyledListItem>All learned passives apply</IndigolayStyledListItem>
+                  <IndigoLayStyledLists variant="chevron" compact>
+                    <IndigolayStyledListItem>Always active automatically</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Boosts stats & damage</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Stacks across all unlocked tiers</IndigolayStyledListItem>
                   </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
