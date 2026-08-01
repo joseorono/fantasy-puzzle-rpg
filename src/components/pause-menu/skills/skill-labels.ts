@@ -37,18 +37,29 @@ function getTierNumeral(selection: SkillSelection): string {
   return ROMAN_TIERS[tier - 1];
 }
 
+/** The detail panel's tier line, split so the rank can wear its own badge. */
+export interface SkillTierLabel {
+  /** Rank insignia text — short enough for a capsule. */
+  badge: string;
+  /** The caption beside it: kind and level gate. */
+  meta: string;
+}
+
 /**
- * The detail panel's tier line: `Tier I Ultimate · from Lv 7`, or the fuller
- * sentence for the free tier-0 starter.
+ * The detail panel's tier line, as a rank badge plus a caption.
  * @param selection - The skill being described
- * @returns The tier line, without any level suffix
+ * @returns The badge text and the caption beside it
  */
-export function getTierLabel(selection: SkillSelection): string {
+export function getTierLabel(selection: SkillSelection): SkillTierLabel {
   if (selection.kind === 'active' && selection.skill.tier === 0) {
-    return 'Starting Ultimate — every hero begins with this';
+    // No level gate to name, and the badge already says it's the freebie.
+    return { badge: 'Starter', meta: 'Ultimate' };
   }
   const def = selection.kind === 'active' ? selection.skill : selection.passive;
-  return `Tier ${getTierNumeral(selection)} ${getKindLabel(selection)} · from Lv ${def.unlockLevel}`;
+  return {
+    badge: `Tier ${getTierNumeral(selection)}`,
+    meta: `${getKindLabel(selection)} · from Lv ${def.unlockLevel}`,
+  };
 }
 
 /**

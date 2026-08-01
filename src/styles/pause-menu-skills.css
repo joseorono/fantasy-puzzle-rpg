@@ -334,7 +334,8 @@
 }
 
 @keyframes skill-learnable-pulse {
-  0%, 100% {
+  0%,
+  100% {
     border-color: rgba(212, 165, 116, 0.3);
     box-shadow: inset 0 0 6px rgba(212, 165, 116, 0.2);
   }
@@ -401,11 +402,51 @@
   min-width: 0;
 }
 
+/* ── Tier line ─────────────────────────────────────────────────────────────
+   A rank capsule plus a caption. This line used to inherit Press Start 2P, whose
+   wide blocky glyphs read *larger* than the monospace description below it even
+   at a smaller font-size — exactly backwards for a caption. Both halves are
+   monospace now, and both sit below the description in size. */
+
 .skill-detail__tier {
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
-  color: #6b4324;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+
+/* The rank insignia: a small gilded capsule, the same struck-metal recipe as the
+   Mastered seal and the ledger's hairline, so the panel's gold reads as one set. */
+.skill-detail__tier-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  font-family: monospace;
+  font-size: 0.55rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* Sentence case so the badge keeps the only uppercase on the line — two shouting
+   elements side by side would flatten the hierarchy between them. */
+.skill-detail__tier-meta {
+  font-family: monospace;
+  font-size: 0.68rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  color: #7a5230;
+  min-width: 0;
 }
 
 /* Sentence-length body text reads in monospace (the dialogue/list body style),

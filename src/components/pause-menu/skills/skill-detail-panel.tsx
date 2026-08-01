@@ -74,7 +74,10 @@ export function SkillDetailPanel({
           <div className="skill-detail__name">
             <NarikWoodBitFont text={def.name.toUpperCase()} size={1} />
           </div>
-          <div className="skill-detail__tier">{tierLabel}</div>
+          <div className="skill-detail__tier">
+            <span className="skill-detail__tier-badge">{tierLabel.badge}</span>
+            <span className="skill-detail__tier-meta">{tierLabel.meta}</span>
+          </div>
         </div>
         {owned && def.maxLevel > 1 && (
           <InfoTooltip label={`Level ${level} of ${def.maxLevel}${level >= def.maxLevel ? ' · Mastered' : ''}`}>
