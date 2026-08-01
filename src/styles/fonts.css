@@ -32,7 +32,9 @@
 
 .bf-text {
   display: inline-flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Glyph row: lays out characters with a per-font tracking gap. */

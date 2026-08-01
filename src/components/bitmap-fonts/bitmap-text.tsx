@@ -115,24 +115,26 @@ export function BitmapText({ text, size = 1, config, charMap, sheetRows }: Inter
   return (
     <span className="bf-text" style={containerStyle}>
       <span className="sr-only">{text}</span>
-      <span className="bf-row" aria-hidden="true">
-        {Array.from(displayText).map((char, i) => {
-          const pos = charMap.get(char);
-          if (!pos) {
-            return <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />;
-          }
-          const metric = proportional ? (metrics?.[char] ?? defaultMetric) : undefined;
-          const charStyle: React.CSSProperties = metric
-            ? {
-                width: `${toPx(metric.w)}px`,
-                backgroundPosition: `${-(pos[0] * cw + toPx(metric.l))}px ${-pos[1] * ch}px`,
-              }
-            : {
-                backgroundPosition: `${-pos[0] * cw}px ${-pos[1] * ch}px`,
-              };
-          return <span key={i} className="bf-char" style={charStyle} />;
-        })}
-      </span>
+      {displayText.split('\n').map((line, lineIndex) => (
+        <span key={lineIndex} className="bf-row" aria-hidden="true">
+          {Array.from(line).map((char, i) => {
+            const pos = charMap.get(char);
+            if (!pos) {
+              return <span key={i} className="bf-blank" style={{ width: `${blankWidth}px` }} />;
+            }
+            const metric = proportional ? (metrics?.[char] ?? defaultMetric) : undefined;
+            const charStyle: React.CSSProperties = metric
+              ? {
+                  width: `${toPx(metric.w)}px`,
+                  backgroundPosition: `${-(pos[0] * cw + toPx(metric.l))}px ${-pos[1] * ch}px`,
+                }
+              : {
+                  backgroundPosition: `${-pos[0] * cw}px ${-pos[1] * ch}px`,
+                };
+            return <span key={i} className="bf-char" style={charStyle} />;
+          })}
+        </span>
+      ))}
     </span>
   );
 }
