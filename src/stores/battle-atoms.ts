@@ -15,7 +15,14 @@ import {
   resolveGuardedDamage,
   decayGuard,
 } from '~/lib/rpg-calculations';
-import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
+import {
+  getSelectedSkill,
+  getSkillLevel,
+  resolveActiveSkillStats,
+  resolveCharacterCooldown,
+  getCharacterPassiveModifiers,
+  getPartyPassiveModifiers,
+} from '~/lib/skill-system';
 import {
   getLivingMembers,
   getHealableMembers,
@@ -159,7 +166,8 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
 });
 
 // Atom to damage the selected enemy
-export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
+export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: number; characterId?: string }) => {
+  const { amount: damage, characterId } = typeof hit === 'number' ? { amount: hit, characterId: undefined } : hit;
   const currentState = get(battleStateAtom);
 
   // The fight is already decided and the win is just waiting on the cascade to settle. Any
@@ -199,7 +207,7 @@ export const damageEnemyAtom = atom(null, (get, set, damage: number) => {
     enemies,
     selectedEnemyId: newSelectedId,
     pendingVictory: allDead,
-    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId },
+    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
 });
@@ -475,7 +483,10 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
     guard: decayGuard(
       currentState.guard,
       deltaSeconds,
-      calculateGuardDecayResistance(currentState.party),
+      // Passive resistance stacks multiplicatively with the VIT-derived curve. The
+      // passive set is frozen with the snapshot party, so this stays deterministic.
+      calculateGuardDecayResistance(currentState.party) *
+        getPartyPassiveModifiers(currentState.party).guardDecayResistanceMultiplier,
     ),
   });
 });
@@ -507,7 +518,12 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   if (!character || character.currentHp <= 0 || character.skillCooldown > 0) return;
 
   const skill = getSelectedSkill(character);
-  const amount = calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skill.baseDamageMultiplier, skill.flatDamageBonus);
+  const skillStats = resolveActiveSkillStats(skill, getSkillLevel(character, skill.id));
+  const passives = getCharacterPassiveModifiers(character);
+  const amount = Math.round(
+    calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skillStats.baseDamageMultiplier, skillStats.flatDamageBonus) *
+      passives.skillDamageMultiplier,
+  );
 
   let party = currentState.party;
   let enemies = currentState.enemies;
@@ -577,9 +593,9 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const timestamp = Date.now();
   let lastDamage = currentState.lastDamage;
   if (skill.target === 'enemy') {
-    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, source: 'skill' };
+    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, characterId, source: 'skill' };
   } else if (skill.target === 'allEnemy') {
-    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, source: 'skill' };
+    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, characterId, source: 'skill' };
   }
 
   set(battleStateAtom, {
@@ -588,6 +604,8 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     enemies,
     selectedEnemyId,
     gameStatus,
+    // Passive skillGuardRestore: the Ultimate also pushes the shared Guard meter back up.
+    guard: Math.min(GUARD_MAX, currentState.guard + passives.skillGuardRestore),
     // A skill kill wins immediately: there's no in-flight cascade to preserve and no guaranteed
     // board-settle event to commit a deferred win. Clear any pending flag so it can't go stale.
     pendingVictory: false,

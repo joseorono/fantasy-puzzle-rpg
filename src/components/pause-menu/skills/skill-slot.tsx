@@ -1,0 +1,143 @@
+import type { KeyboardEvent, ReactNode, Ref } from 'react';
+import { cn } from '~/lib/utils';
+import type { CharacterClass } from '~/types/rpg-elements';
+import type { SkillIconPosition } from '~/types/skills';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
+import { LevelTag } from '~/components/ui-custom/level-tag';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { SKILL_SLOT_TOOLTIP_DELAY_MS } from '~/constants/ui';
+import { SkillMasteryPips } from './skill-mastery-pips';
+
+/** Native slot-frame art is 137x147; rendered size keeps that aspect. */
+const SLOT_ASPECT = 147 / 137;
+/** Fraction of the slot width the seated icon occupies (frame interior is ~107/137). */
+const SLOT_ICON_FRACTION = 0.72;
+
+interface SkillSlotProps {
+  characterClass: CharacterClass;
+  icon: SkillIconPosition;
+  name: string;
+  /** Greys the icon and shows the level gate tag. */
+  locked: boolean;
+  /** Level requirement shown on the tag while locked. */
+  unlockLevel: number;
+  /** This slot is the detail panel's current subject. */
+  selected: boolean;
+  /** This active skill is the character's equipped Ultimate. */
+  equipped?: boolean;
+  /** Current skill level; shown with `maxLevel` as an "n/max" corner counter. */
+  level?: number;
+  /** Highest skill level. The counter hides while locked or when this is 1. */
+  maxLevel?: number;
+  /** Plays the unlock flare (ring + brightness + icon colour bloom). */
+  flash?: boolean;
+  /** Pulses a gold highlight indicating this locked skill can be unlocked right now. */
+  learnable?: boolean;
+  /** Hover tooltip body; locked slots use it to surface name + cost. */
+  tooltip?: ReactNode;
+  /** Rendered slot width in px. */
+  size?: number;
+  disabled?: boolean;
+  onSelect: () => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLButtonElement>) => void;
+  buttonRef?: Ref<HTMLButtonElement>;
+}
+
+/**
+ * One framed skill slot: the Indigolay slot art with the skill's icon seated in
+ * its interior. Frame states (normal / hover / selected) are stacked layers
+ * crossfaded on opacity — the same technique `IndigolaySkillIcon` uses for its
+ * disabled twin. Locked slots grey the icon (the sheet's built-in disabled
+ * variant) and hang the red `LevelTag` pennant with the required level; unlocked
+ * ones hang their `SkillMasteryPips` off the opposite corner, clear of the gold
+ * gem the frame art carries at bottom-centre.
+ */
+export function SkillSlot({
+  characterClass,
+  icon,
+  name,
+  locked,
+  unlockLevel,
+  selected,
+  equipped = false,
+  level = 1,
+  maxLevel,
+  flash = false,
+  learnable = false,
+  tooltip,
+  size = 80,
+  disabled = false,
+  onSelect,
+  onKeyDown,
+  buttonRef,
+}: SkillSlotProps) {
+  const iconSize = Math.round(size * SLOT_ICON_FRACTION);
+
+  const button = (
+    <button
+      ref={buttonRef}
+      type="button"
+      className={cn('skill-slot', { locked, equipped, active: selected, disabled, 'just-unlocked': flash, learnable })}
+      style={{ width: size, height: Math.round(size * SLOT_ASPECT) }}
+      onClick={onSelect}
+      onKeyDown={onKeyDown}
+      aria-pressed={equipped}
+      aria-label={
+        locked
+          ? `${name} (locked, level ${unlockLevel})`
+          : maxLevel !== undefined && maxLevel > 1
+            ? `${name}, level ${level} of ${maxLevel}`
+            : name
+      }
+    >
+      <img
+        className="skill-slot__frame skill-slot__frame--normal"
+        src="/assets/skills/ui/indigolay-slot-normal.png"
+        alt=""
+        draggable={false}
+      />
+      <img
+        className="skill-slot__frame skill-slot__frame--hover"
+        src="/assets/skills/ui/indigolay-slot-hover.png"
+        alt=""
+        draggable={false}
+      />
+      <img
+        className="skill-slot__frame skill-slot__frame--selected"
+        src="/assets/skills/ui/indigolay-slot-selected.png"
+        alt=""
+        draggable={false}
+      />
+      <SkillIcon
+        characterClass={characterClass}
+        position={icon}
+        disabled={locked}
+        size={iconSize}
+        sheetSize={64}
+        className="skill-slot__icon"
+      />
+      {equipped && (
+        <img
+          className="skill-slot__equipped-mark"
+          src="/assets/skills/ui/indigolay-icon-equip.png"
+          alt="Equipped"
+          draggable={false}
+        />
+      )}
+      {locked && <LevelTag level={unlockLevel} className="skill-slot__level-tag" />}
+      {!locked && maxLevel !== undefined && maxLevel > 1 && (
+        <SkillMasteryPips level={level} maxLevel={maxLevel} size="slot" className="skill-slot__mastery" />
+      )}
+    </button>
+  );
+
+  if (!tooltip) return button;
+  return (
+    <Tooltip delayDuration={SKILL_SLOT_TOOLTIP_DELAY_MS}>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={6}>
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
+}

@@ -11,6 +11,7 @@ import {
   calculateGuardChargeRate,
   calculateGuardDecayResistance,
 } from '~/lib/rpg-calculations';
+import { getPartyPassiveModifiers } from '~/lib/skill-system';
 import { useParty } from '~/stores/game-store';
 import {
   SNAPPY_SPIN_TIMING,
@@ -33,7 +34,8 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
   const currentFillRate = calculateSkillCooldownFillRate(character.maxCooldown, character.stats.spd);
   const currentCooldown = calculateSkillCooldown(character.maxCooldown, character.stats.spd);
   const currentPower = calculateDamage(50, character.stats.pow); // Base damage of 50 for display
-  const currentItemCooldown = calculateItemCooldownInMs(party);
+  const passiveItemSpd = getPartyPassiveModifiers(party).itemCooldownSpdBonus;
+  const currentItemCooldown = calculateItemCooldownInMs(party, passiveItemSpd);
 
   // Calculate preview derived stats
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
@@ -46,7 +48,7 @@ export function DerivedStatsDisplay({ character, previewStats }: DerivedStatsDis
   const previewParty = party.map((member) =>
     member.id === character.id ? { ...member, stats: previewStats } : member,
   );
-  const previewItemCooldown = calculateItemCooldownInMs(previewParty);
+  const previewItemCooldown = calculateItemCooldownInMs(previewParty, passiveItemSpd);
 
   const currentGuardChargeRate = calculateGuardChargeRate(party);
   const previewGuardChargeRate = calculateGuardChargeRate(previewParty);

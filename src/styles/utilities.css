@@ -23,7 +23,9 @@
 */
 img[src*='/indigolay/'],
 img[src*='indigolay-'],
-.indigolay-art {
+.indigolay-art,
+.indigolay-checkbox__text,
+.indigolay-checkbox__mark {
   image-rendering: auto;
 }
 

@@ -3,6 +3,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import {
   damagePartyAtom,
   enemiesAtom,
+  partyAtom,
   enemyStandbyMsAtom,
   endEnemyStandbyAtom,
   flagMaxFlinchAtom,
@@ -16,6 +17,7 @@ import {
   calculateStaggerPushMs,
   clampStaggerToCycleBudget,
 } from '~/lib/rpg-calculations';
+import { getCharacterPassiveModifiers } from '~/lib/skill-system';
 import { MAX_STAGGER_FRACTION_PER_CYCLE } from '~/constants/battle';
 
 /** Per-enemy attack timing exposed to the UI. */
@@ -68,6 +70,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const enemyStandbyMs = useAtomValue(enemyStandbyMsAtom);
   const standbyEnemyIds = useAtomValue(standbyEnemyIdsAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
+  const party = useAtomValue(partyAtom);
   const damageParty = useSetAtom(damagePartyAtom);
   const endStandby = useSetAtom(endEnemyStandbyAtom);
   const flagMaxFlinch = useSetAtom(flagMaxFlinchAtom);
@@ -78,6 +81,8 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   // Latest values, read inside timer/stagger callbacks without widening effect deps.
   const enemiesRef = useRef(enemies);
   enemiesRef.current = enemies;
+  const partyRef = useRef(party);
+  partyRef.current = party;
   const standbyIdsRef = useRef(standbyEnemyIds);
   standbyIdsRef.current = standbyEnemyIds;
 
@@ -226,7 +231,14 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       if (!enemy || enemy.currentHp <= 0) continue;
 
       const interval = calculateEnemyAttackInterval(enemy);
-      const push = calculateStaggerPushMs(lastDamage.amount, enemy.maxHp, enemy.stats.vit, interval);
+      // Passive staggerPushMultiplier scales the raw push of the attacker's hits; it is
+      // applied BEFORE the per-cycle clamp, so the anti-stunlock cap stays authoritative.
+      const attacker = lastDamage.characterId
+        ? partyRef.current.find((c) => c.id === lastDamage.characterId)
+        : undefined;
+      const staggerMultiplier = attacker ? getCharacterPassiveModifiers(attacker).staggerPushMultiplier : 1;
+      const push =
+        calculateStaggerPushMs(lastDamage.amount, enemy.maxHp, enemy.stats.vit, interval) * staggerMultiplier;
       const used = staggerUsedRef.current.get(id) ?? 0;
       const applied = clampStaggerToCycleBudget(push, interval, used);
       if (applied <= 0) continue;

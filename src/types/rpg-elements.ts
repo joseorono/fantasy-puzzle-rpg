@@ -45,10 +45,14 @@ export interface CharacterData extends BaseStats {
   equippedWeaponRarity?: RarityTier;
   /** Rolled rarity of the equipped armor; mirrors `equippedArmorId`. */
   equippedArmorRarity?: RarityTier;
-  /** Ids of skills this character has unlocked (see `~/constants/skills`). */
+  /** Ids of Active skills this character has unlocked (see `~/constants/skills`). */
   unlockedSkillIds: string[];
   /** Id of the currently active skill; resolved via `getSelectedSkill`. */
   selectedSkillId: string;
+  /** Ids of Passive skills this character has unlocked. All of them apply at once. */
+  unlockedPassiveIds: string[];
+  /** Current level of each unlocked skill/passive, keyed by id. Missing id = level 1. */
+  skillLevels: Record<string, number>;
 }
 
 // Enemy-specific stats

@@ -338,11 +338,11 @@
 
     user-select: none;
 
-    /* ToDo: Change the background to be more like a frame
+    background-color: #0f0a06;
+  }
 
-    like what we showed off in the group chat */
-
-    background-color: brown;
+  .game-view {
+    background-color: #0f0a06;
   }
 
   *,
@@ -472,3 +472,11 @@
 @import './styles/node-interaction-menu.css';
 
 @import './styles/sliders.css';
+
+@import './styles/lists.css';
+
+/* Skills tab — must load after the component styles it overrides (skill icon, lists, town cost chips). */
+@import './styles/pause-menu-skills.css';
+
+/* Last so its overrides win over every animation defined above. */
+@import './styles/reduced-motion.css';

@@ -16,6 +16,7 @@ import {
   STAGGER_REF_FRACTION,
   STAGGER_VIT_DIVISOR,
 } from '~/constants/battle';
+import { ENEMY_EXP_FLAT, ENEMY_EXP_PER_HP } from '~/constants/progression';
 
 /**
  * RPG Calculation Functions
@@ -134,6 +135,29 @@ export function calculateCharacterDamage(character: CharacterData, baseDamage: n
  */
 export function calculateEnemyDamage(enemy: EnemyData): number {
   return calculateDamage(enemy.attackDamage, enemy.stats.pow);
+}
+
+/**
+ * Calculates the EXP an enemy awards, derived from its max HP.
+ *
+ * Durability is the honest proxy for what a fight costs the player: there is no
+ * defense stat, so time-to-kill tracks max HP directly. Tying the reward to it stops
+ * weak-but-numerous enemies from out-earning elites per second, which is what
+ * hand-authored values drift into. The flat term keeps trash worth clearing.
+ *
+ * Formula: `maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT`, tuned alongside
+ * {@link getExpThresholdForLevel} for a ~3 hour, ~level-30 campaign.
+ *
+ * @param maxHp Enemy max HP
+ * @returns EXP reward, rounded to a whole number
+ * @example
+ * ```ts
+ * calculateEnemyExpReward(400); // 62 — a tanky elite
+ * calculateEnemyExpReward(68);  // 21 — a trash mob
+ * ```
+ */
+export function calculateEnemyExpReward(maxHp: number): number {
+  return Math.round(maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT);
 }
 
 /**
@@ -271,12 +295,13 @@ export function calculatePartyCollectiveSpd(party: CharacterData[]): number {
 /**
  * Calculates the shared item cooldown in milliseconds based on the party's collective SPD.
  * Higher collective SPD = shorter cooldown.
- * Formula: (BASE_ITEM_COOLDOWN / (1 + collectiveSPD / 100)) * 1000
+ * Formula: (BASE_ITEM_COOLDOWN / (1 + (collectiveSPD + bonusSpd) / 100)) * 1000
  * @param party Array of character data
+ * @param bonusSpd Flat effective SPD added for this calculation only (passive `itemCooldownSpdBonus`)
  * @returns Item cooldown in milliseconds
  */
-export function calculateItemCooldownInMs(party: CharacterData[]): number {
-  const collectiveSpd = calculatePartyCollectiveSpd(party);
+export function calculateItemCooldownInMs(party: CharacterData[], bonusSpd: number = 0): number {
+  const collectiveSpd = calculatePartyCollectiveSpd(party) + bonusSpd;
   return Math.floor((BASE_ITEM_COOLDOWN / (1 + collectiveSpd / 100)) * 1000);
 }
 
@@ -425,7 +450,7 @@ export type HpThreshold = 'high' | 'medium' | 'low';
  * Returns a threshold tier based on an HP percentage.
  * Used across UI components to determine HP bar colors/classes.
  * @param percentage HP percentage (0-100)
- * @returns 'high' if >50%, 'medium' if >25%, 'low' otherwise
+ * @returns 'high' if >55%, 'medium' if >30%, 'low' otherwise
  */
 export function getHpThreshold(percentage: number): HpThreshold {
   if (percentage > 55) return 'high';

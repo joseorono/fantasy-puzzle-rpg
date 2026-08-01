@@ -32,7 +32,7 @@ import { SalvageConfirmDialog } from './salvage-confirm-dialog';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { CostBadge, CostBadges } from './cost-badge';
+import { CostBadge, CostBadges } from '~/components/ui-custom/cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import {
   MELT_BATCHES,

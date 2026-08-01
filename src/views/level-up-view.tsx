@@ -16,6 +16,7 @@ import { usePressAndHold } from '~/hooks/use-press-and-hold';
 import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
+import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -301,9 +302,13 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        {character.class === 'healer'
-                          ? 'Increases your healing output'
-                          : 'Increases your damage output'}
+                        <IndigoLayStyledLists variant="send">
+                          <IndigolayStyledListItem>
+                            {character.class === 'healer'
+                              ? 'Increases your healing output'
+                              : 'Increases your damage output'}
+                          </IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -378,9 +383,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        -Raises Maximum HP, scaled by this character&apos;s VIT multiplier
-                        <br />
-                        -Slows how fast the party Guard meter decays
+                        <IndigoLayStyledLists variant="chevron">
+                          <IndigolayStyledListItem>
+                            Raises Maximum HP, scaled by this character&apos;s VIT multiplier
+                          </IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Slows how fast the party Guard meter decays</IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -453,11 +461,11 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        -Reduces ultimate skill cooldown
-                        <br />
-                        -Reduces item cooldowns in battle
-                        <br />
-                        -Charges the party Guard meter faster
+                        <IndigoLayStyledLists variant="chevron">
+                          <IndigolayStyledListItem>Reduces ultimate skill cooldown</IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Reduces item cooldowns in battle</IndigolayStyledListItem>
+                          <IndigolayStyledListItem>Charges the party Guard meter faster</IndigolayStyledListItem>
+                        </IndigoLayStyledLists>
                       </TooltipContent>
                     </Tooltip>
                   </div>

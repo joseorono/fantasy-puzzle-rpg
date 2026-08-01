@@ -1,7 +1,14 @@
 import { useAtom } from 'jotai';
-import { isMutedAtom, masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
+import {
+  isMutedAtom,
+  masterVolumeAtom,
+  musicVolumeAtom,
+  reducedMotionAtom,
+  sfxVolumeAtom,
+} from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
+import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 
 export function PauseMenuOptions() {
@@ -9,6 +16,7 @@ export function PauseMenuOptions() {
   const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
   const [sfxVolume, setSfxVolume] = useAtom(sfxVolumeAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
+  const [reducedMotion, setReducedMotion] = useAtom(reducedMotionAtom);
 
   function handleMasterChange(value: number[]) {
     const vol = value[0];
@@ -103,6 +111,21 @@ export function PauseMenuOptions() {
             />
             <span className="pause-menu-option-label">Mute Audio</span>
           </button>
+        </div>
+
+        <div className="pause-menu-option-row pause-menu-option-row--toggle">
+          <IndigolayCheckbox
+            size="sm"
+            checked={reducedMotion}
+            onChange={(event) => setReducedMotion(event.target.checked)}
+            label="Reduced Motion"
+          />
+          <p className="pause-menu-option-description">
+            Calms the screen down: no shakes, freeze-frames, or flashing bursts, and menus snap into place instead of
+            sliding. Easier on the eyes if motion makes you queasy — the trade-off is that combat loses most of its
+            juice.
+          </p>
+          <p className="pause-menu-option-note">Off by default. Flip it any time — your choice is remembered.</p>
         </div>
       </div>
     </>

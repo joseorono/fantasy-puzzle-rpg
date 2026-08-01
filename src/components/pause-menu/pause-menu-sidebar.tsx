@@ -13,6 +13,7 @@ import { LogOut } from 'lucide-react';
 const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
   { id: 'items', label: 'Items', icon: 'smallPotion' },
   { id: 'equip', label: 'Equip', icon: 'steelSword' },
+  { id: 'skills', label: 'Skills', icon: 'openBook' },
   { id: 'stats', label: 'Stats', icon: 'silverArmor' },
   { id: 'options', label: 'Options', icon: 'conch' },
   { id: 'save', label: 'Save', icon: 'blueBook' },

@@ -1,6 +1,7 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
 import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { EXP_BASE, EXP_CURVE_POWER } from '~/constants/progression';
 /**
  * Leveling System
  *
@@ -21,11 +22,42 @@ import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from
  * decide level-ups (see `calculateLevelUpsForParty` in `battle-rewards.ts`). Shared by
  * the level-up logic and the rewards-screen bar animation so the two can't drift.
  *
+ * Polynomial, not exponential: tuned with {@link calculateEnemyExpReward} for a ~3 hour
+ * run ending around level 30. Constants live in `~/constants/progression`.
+ *
  * @param level - The character's current level
  * @returns EXP needed to advance out of that level
+ * @example
+ * ```ts
+ * getExpThresholdForLevel(1);  // 12
+ * getExpThresholdForLevel(10); // 379
+ * getExpThresholdForLevel(30); // 1971
+ * ```
  */
 export function getExpThresholdForLevel(level: number): number {
-  return Math.floor(Math.exp(level));
+  return Math.floor(EXP_BASE * level ** EXP_CURVE_POWER);
+}
+
+/**
+ * Total EXP a level-1 character must bank to reach `targetLevel` — every threshold
+ * along the way, summed. Derived from {@link getExpThresholdForLevel} rather than
+ * written down, so it follows any retune of `~/constants/progression`.
+ *
+ * @param targetLevel - Level to reach; clamped to `MAX_LEVEL`, and anything at or below 1 costs nothing
+ * @returns Total EXP required
+ * @example
+ * ```ts
+ * getTotalExpToReachLevel(2);  // 12
+ * getTotalExpToReachLevel(16); // 4531
+ * ```
+ */
+export function getTotalExpToReachLevel(targetLevel: number): number {
+  const ceiling = Math.min(Math.floor(targetLevel), MAX_LEVEL);
+  let total = 0;
+  for (let level = 1; level < ceiling; level += 1) {
+    total += getExpThresholdForLevel(level);
+  }
+  return total;
 }
 
 /** One step of the rewards-screen EXP bar animation (a single level the bar passes through). */

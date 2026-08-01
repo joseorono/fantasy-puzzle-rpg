@@ -15,6 +15,7 @@ import {
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
+import { getPartyPassiveModifiers } from '~/lib/skill-system';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
@@ -35,7 +36,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
   const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party);
+  const cooldownDuration = calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
 
   const [cooldownProgress, setCooldownProgress] = useState(1); // 1 = ready, 0 = just started
   const cooldownEndRef = useRef<number>(0);
@@ -129,14 +130,19 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                 <NarikWoodBitFont text={String(quantity)} size={1} />
               </div>
 
-              {/* Cooldown pie overlay */}
+              {/* Cooldown pie overlay & countdown text */}
               {isOnCooldown && !isEmpty && (
-                <div
-                  className="pointer-events-none absolute inset-0 rounded"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                  }}
-                />
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded"
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                    {Math.max(1, Math.ceil((cooldownEndRef.current - Date.now()) / 1000))}s
+                  </div>
+                </>
               )}
             </button>
               </TooltipTrigger>

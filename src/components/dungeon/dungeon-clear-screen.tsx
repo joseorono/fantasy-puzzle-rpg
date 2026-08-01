@@ -20,6 +20,7 @@ import {
 } from '~/constants/number-flow';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import { cn } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -40,13 +41,6 @@ interface DungeonClearScreenProps {
   onContinue: () => void;
   /** Label for the terminal button. Defaults to "Continue". */
   continueLabel?: string;
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-  );
 }
 
 /** A single floor line: name on the left, a compact star row on the right. */
@@ -81,7 +75,7 @@ export function DungeonClearScreen({
   onContinue,
   continueLabel = 'Continue',
 }: DungeonClearScreenProps) {
-  const reduced = prefersReducedMotion();
+  const reduced = isReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? floors.length : 0);
   const [filledStars, setFilledStars] = useState(reduced ? summary.averageStars : 0);
   const [showTotal, setShowTotal] = useState(reduced);

@@ -19,8 +19,6 @@ import {
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
 import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
-import { getNewlyUnlockableSkills } from '~/lib/skill-system';
-import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
@@ -32,7 +30,7 @@ import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
 import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
-import { prefersReducedMotion } from '~/lib/utils';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -61,7 +59,6 @@ export function BattleRewardsScreen() {
   const [step, setStep] = useState(1);
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
-  const { unlock } = useUnlockSkill();
   const routerActions = useRouterActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
@@ -168,20 +165,14 @@ export function BattleRewardsScreen() {
             currentLevelExp: currentPending.remainingExp,
           };
 
-          // Auto-unlock any skills the character now qualifies for by level.
-          function unlockLevelSkills(leveledCharacter: CharacterData) {
-            for (const skill of getNewlyUnlockableSkills(leveledCharacter, leveledCharacter.level)) {
-              unlock(leveledCharacter.id, skill.id);
-            }
-          }
-
+          // Skills are no longer granted free on level-up — reaching a level only makes
+          // them purchasable at the pause-menu Skills tab.
           function handleConfirm(allocatedStats: CoreRPGStats) {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
             updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
-            unlockLevelSkills(updatedCharacter);
             // Move to next character
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
@@ -193,7 +184,6 @@ export function BattleRewardsScreen() {
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
             updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
-            unlockLevelSkills(updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
           }
@@ -245,7 +235,7 @@ interface RewardsResourcesPanelProps {
 
 function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
   const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
-  const reduced = prefersReducedMotion();
+  const reduced = isReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? activeResources.length : 0);
 
   // NumberFlow renders its first value statically and only rolls on a change, so each

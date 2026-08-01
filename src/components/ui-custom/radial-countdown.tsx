@@ -65,7 +65,9 @@ export function RadialCountdown({
     <div className={cn(radialCountdownVariants({ size, tone, className }))}>
       <span
         key={cycleKey}
-        className="radial-countdown__fill"
+        // Exempt from reduced motion: the sweep is the countdown readout, not decoration, and it
+        // runs entirely in CSS — collapsing it would show an empty ring for the whole cycle.
+        className="radial-countdown__fill motion-exempt"
         style={
           {
             animationDuration: `${durationMs}ms`,

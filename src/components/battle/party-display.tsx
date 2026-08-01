@@ -23,6 +23,7 @@ import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { PARTY_BAR_SEGMENTS } from '~/constants/battle';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { triggerHitstop } from '~/lib/animation-strategies';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
@@ -126,13 +127,14 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
             )}
           </div>
 
-          {/* Pixel border effect */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-lg"
-            style={{
-              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.2)',
-            }}
-          />
+          {/* Ready Skill Badge seated on top-right corner of the character frame */}
+          {!isDead && isSkillReady && (
+            <div className="pointer-events-none absolute -top-3 -right-3 z-20 flex items-center justify-center">
+              <div className="relative flex items-center justify-center rounded border-2 border-[#d4a574] p-0 overflow-hidden shadow-md">
+                <SkillIcon characterClass={character.class} position={skill.icon} size={28} sheetSize={32} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Damage number animation with 8bitcn styling */}
@@ -154,38 +156,45 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
       {/* Character name */}
       <div
         className={cn(
-          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          'pixel-font flex h-3.5 items-center justify-center text-[8px] font-bold uppercase sm:text-[10px]',
           isDead ? 'text-gray-500 line-through' : colors.text,
         )}
       >
-        {character.name}
+        <span className="truncate">{character.name}</span>
         {isDead && <span className="ml-0.5 text-red-500">✝</span>}
       </div>
 
       {/* Skill cooldown bar */}
-      <div className="w-full max-w-[70px] sm:max-w-[80px]">
-        <div className="pixel-font mb-0.5 text-center text-[8px] text-gray-400 sm:text-[9px]">
+      <div className="w-full max-w-[75px] sm:max-w-[85px]">
+        <div className="pixel-font mb-0.5 flex h-4 items-center justify-center overflow-hidden text-center">
           {isSkillReady ? (
-            <span className="inline-flex items-center gap-1 text-amber-300">
-              <Icon className="h-3 w-3" /> {skill.name}
+            <span
+              className={cn(
+                'pixel-font text-[9px] font-extrabold uppercase tracking-wider drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] truncate max-w-[75px] sm:max-w-[85px] sm:text-[10px]',
+                colors.text,
+              )}
+            >
+              {skill.name}
             </span>
           ) : (
-            `CD: ${Math.ceil(character.skillCooldown)}s`
+            <span className="pixel-font text-[9px] font-medium text-[#b0a8a0] tracking-wider drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
+              CD: <span className="font-bold text-[#f2d2af]">{Math.ceil(character.skillCooldown)}s</span>
+            </span>
           )}
         </div>
-        <div className="relative h-2 rounded-none border border-gray-700 bg-gray-800 sm:h-2.5">
+        <div className="relative h-2 rounded-sm border border-[#5c3e23] bg-[#120a05] sm:h-2.5">
           <div
             className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
           </div>
           {/* Pixel border effect */}
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 rounded-sm"
             style={{
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.6)',
             }}
           />
         </div>

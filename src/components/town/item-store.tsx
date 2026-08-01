@@ -18,7 +18,7 @@ import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { CostBadge } from './cost-badge';
+import { CostBadge } from '~/components/ui-custom/cost-badge';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,

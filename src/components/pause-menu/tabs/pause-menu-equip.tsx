@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
-import { useParty, usePartyActions, useInventory, useCurrentView } from '~/stores/game-store';
-import { SkillSelector } from '~/components/pause-menu/skill-selector';
+import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
@@ -44,7 +43,6 @@ export function PauseMenuEquip() {
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
 
-  const isInBattle = useCurrentView() === 'battle-demo';
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
@@ -158,8 +156,6 @@ export function PauseMenuEquip() {
                 )}
               </div>
             )}
-
-            <SkillSelector character={selected} disabled={isInBattle} />
 
             <EquipStatPreview bonuses={bonuses} effective={effective} />
           </div>

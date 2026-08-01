@@ -4,7 +4,6 @@ import type { townLocations } from '~/types/map-node';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';
-import SkillStore from './skill-store';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_HUB_BG_SOUNDS } from '~/constants/audio';
@@ -45,6 +44,17 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     }
   }, [currentLocation]);
 
+  // Pre-decode sub-location background images so section switching is instantaneous
+  useEffect(() => {
+    Object.values(subLocationBackgrounds).forEach((bgUrl) => {
+      const img = new Image();
+      img.src = bgUrl;
+      if ('decode' in img) {
+        img.decode().catch(() => {});
+      }
+    });
+  }, [subLocationBackgrounds]);
+
   const handleGoToPlace = (place: Exclude<townLocations, 'town-hub'>) => {
     soundService.playSound(SoundNames.mechanicalClick, 0.4, 0.1);
     setCurrentLocation(place);
@@ -80,8 +90,6 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
           onLeaveCallback={handleReturnToHub}
         />
       );
-    case 'skill-trainer':
-      return <SkillStore backgroundImage={subLocationBackgrounds['skill-trainer']} onLeaveCallback={handleReturnToHub} />;
   }
 
   return (
@@ -108,9 +116,6 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
             </div>
             <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
               <NarikWoodBitFont text="ITEM SHOP" size={1} />
-            </div>
-            <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('skill-trainer')}>
-              <NarikWoodBitFont text="SKILLS" size={1} />
             </div>
           </div>
         </div>

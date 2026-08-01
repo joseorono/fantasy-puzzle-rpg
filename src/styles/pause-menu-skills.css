@@ -1,0 +1,1039 @@
+/* ============================================================================
+   Pause menu — Skills tab
+   IndigoLay skill-book treatment: framed icon slots over the dark menu board,
+   a parchment detail panel below. Warm parchment palette (#d4a574 family) for
+   anything on the parchment itself; #ffd700 is allowed only as a metal accent on
+   the dark gilded plates — hairlines, mastery pips, highlight values — never as
+   body or heading text. Animations are neutralized globally by reduced-motion.css
+   (imported last), so nothing here uses !important.
+
+   NOTE: this file must stay imported AFTER the component styles block in
+   index.css — several rules here deliberately override same-specificity rules
+   from indigolay-skill-icon.css, lists.css, and town.css. The load-bearing ones
+   are also written at two-class specificity as a second line of defense.
+   ========================================================================== */
+
+.pause-menu-content--skills {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pause-menu-skills-layout {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.pause-menu-skills-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  padding: 2px 8px 8px 2px;
+}
+
+/* ── Section headers ──────────────────────────────────────────────────────── */
+
+.pause-menu-skills-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pause-menu-skills-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+.pause-menu-skills-section-label .info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  cursor: help;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.pause-menu-skills-section-label .info-icon:hover {
+  opacity: 1;
+}
+
+.pause-menu-skills-section-label .info-icon__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Slot rows ─────────────────────────────────────────────────────────────
+   Slots read left→right in tier order, joined by engraved connector notches
+   (the quiet tier treatment — position is the tier, no badge art). */
+
+.pause-menu-skills-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 4px 2px 2px 4px;
+}
+
+.skill-slot-wrapper {
+  position: relative;
+  /* Staggered pop-in; wrappers remount when the roster selection changes
+     (slots are keyed by skill id), replaying the cascade. */
+  animation: skill-slot-pop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+}
+
+.pause-menu-skills-row .skill-slot-wrapper:nth-child(2) {
+  animation-delay: 50ms;
+}
+.pause-menu-skills-row .skill-slot-wrapper:nth-child(3) {
+  animation-delay: 100ms;
+}
+.pause-menu-skills-row .skill-slot-wrapper:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+/* The passive row's cascade starts after the active row's. */
+.pause-menu-skills-row--passive .skill-slot-wrapper {
+  animation-delay: 90ms;
+}
+.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(2) {
+  animation-delay: 140ms;
+}
+.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(3) {
+  animation-delay: 190ms;
+}
+.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+@keyframes skill-slot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Engraved connector notch between consecutive slots: a light rule with a dark
+   underline, carved-into-the-board look in the house border tones. */
+.pause-menu-skills-row .skill-slot-wrapper + .skill-slot-wrapper::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  transform: translateY(-1px);
+  background: color(srgb 0.83 0.65 0.46 / 0.45);
+  box-shadow: 0 2px 0 rgba(10, 6, 4, 0.7);
+  pointer-events: none;
+}
+
+/* ── The slot itself ──────────────────────────────────────────────────────── */
+
+.skill-slot {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform 0.13s ease,
+    filter 0.18s ease;
+}
+
+.skill-slot:hover:not(.disabled),
+.skill-slot:focus-visible {
+  transform: translateY(-2px);
+}
+
+.skill-slot:active:not(.disabled) {
+  transform: translateY(1px);
+  transition-duration: 0.06s;
+}
+
+.skill-slot.active {
+  /* Roster-card active glow, following the frame's alpha instead of a box. */
+  filter: drop-shadow(0 0 7px rgba(212, 165, 116, 0.65));
+  animation: skill-slot-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes skill-slot-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px rgba(212, 165, 116, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px rgba(212, 165, 116, 0.8));
+  }
+}
+
+/* Equipped Ultimate: a constant, subtler warmth so "equipped" reads distinctly
+   from the pulsing "selected" glow. */
+.skill-slot.equipped:not(.active) {
+  filter: drop-shadow(0 0 4px rgba(242, 210, 175, 0.45));
+}
+
+/* Frame states as stacked layers crossfaded on opacity. */
+.skill-slot .skill-slot__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+
+.skill-slot .skill-slot__frame--normal {
+  opacity: 1;
+}
+
+.skill-slot:hover:not(.disabled) .skill-slot__frame--hover,
+.skill-slot:focus-visible .skill-slot__frame--hover {
+  opacity: 1;
+}
+
+.skill-slot.active .skill-slot__frame--selected {
+  opacity: 1;
+}
+
+/* The seated icon, centered in the frame interior. Two-class specificity on
+   purpose: .indigolay-skill-icon sets position: relative at (0,1,0) and import
+   order alone once let it win — never again. */
+.skill-slot .skill-slot__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: filter 0.18s ease;
+}
+
+.skill-slot.locked .skill-slot__icon {
+  filter: brightness(0.82);
+}
+
+/* Equipped Ultimate marker, seated on the frame's top-right corner. */
+.skill-slot .skill-slot__equipped-mark {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  width: 30%;
+  image-rendering: auto;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+  animation: skill-equipped-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  animation-delay: 120ms;
+  pointer-events: none;
+}
+
+@keyframes skill-equipped-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Locked slots hang the red level pennant off the top-left frame corner. */
+.skill-slot .skill-slot__level-tag {
+  top: -3px;
+  left: -3px;
+}
+
+/* Mastery pips, hanging off the frame's bottom-right corner — top-right belongs
+   to the equipped mark, top-left to the locked pennant, and bottom-CENTRE to the
+   gold gem the frame art already carries, which the pips must not crowd. */
+.skill-slot .skill-slot__mastery {
+  position: absolute;
+  bottom: -3px;
+  right: -2px;
+  pointer-events: none;
+}
+
+/* ── The unlock moment ─────────────────────────────────────────────────────
+   Applied for ~900ms after a purchase: the slot flares while the greyed icon
+   blooms into colour (the IndigolaySkillIcon disabled→normal crossfade, slowed
+   via its --isi-fade var), and an expanding gold ring washes outward. */
+
+.skill-slot.just-unlocked {
+  --isi-fade: 650ms;
+  animation: skill-unlock-flare 0.75s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+
+@keyframes skill-unlock-flare {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.12);
+    filter: brightness(1.9) drop-shadow(0 0 14px rgba(242, 210, 175, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.skill-slot.just-unlocked::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 2px solid rgba(242, 210, 175, 0.9);
+  border-radius: 6px;
+  animation: skill-unlock-ring 0.7s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes skill-unlock-ring {
+  from {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+/* ── Learnable skill highlight ───────────────────────────────────────────── */
+
+.skill-slot.learnable::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  border-radius: 8px;
+  box-shadow: inset 0 0 8px rgba(212, 165, 116, 0.3);
+  animation: skill-learnable-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes skill-learnable-pulse {
+  0%,
+  100% {
+    border-color: rgba(212, 165, 116, 0.3);
+    box-shadow: inset 0 0 6px rgba(212, 165, 116, 0.2);
+  }
+  50% {
+    border-color: rgba(242, 210, 175, 0.85);
+    box-shadow: inset 0 0 12px rgba(242, 210, 175, 0.6);
+  }
+}
+
+.skill-slot.locked.learnable .skill-slot__icon {
+  filter: brightness(0.95);
+}
+
+/* ── Detail panel ─────────────────────────────────────────────────────────
+   Bright parchment art => dark text, no pixel-font offset shadow (it smears
+   into a strikethrough at small sizes). The 9-slice keeps the filigree corners
+   crisp at any panel size. */
+
+.skill-detail {
+  position: relative;
+  margin-top: 0.15rem;
+  min-height: 186px;
+  /* Never let the scroll column squeeze the panel below its content — squeezed
+     content paints over the parchment art's engraved inner border. */
+  flex-shrink: 0;
+  padding: 0.7rem 0.9rem 0.8rem;
+  border: 20px solid transparent;
+  border-image: url('/assets/skills/ui/indigolay-skill-panel-text-area.png') 30 fill / 20px stretch;
+  image-rendering: auto;
+  color: #33200f;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  animation: skill-detail-in 0.18s ease-out backwards;
+}
+
+@keyframes skill-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Kill the global .pixel-font 2px offset shadow on parchment — at these sizes
+   it reads as a strikethrough. */
+.skill-detail .pixel-font {
+  text-shadow: none;
+}
+
+.skill-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.skill-detail__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* ── Tier line ─────────────────────────────────────────────────────────────
+   A rank capsule plus a caption. This line used to inherit Press Start 2P, whose
+   wide blocky glyphs read *larger* than the monospace description below it even
+   at a smaller font-size — exactly backwards for a caption. Both halves are
+   monospace now, and both sit below the description in size. */
+
+.skill-detail__tier {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+
+/* The rank insignia: a small gilded capsule, the same struck-metal recipe as the
+   Mastered seal and the ledger's hairline, so the panel's gold reads as one set. */
+.skill-detail__tier-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  font-family: monospace;
+  font-size: 0.55rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* Sentence case so the badge keeps the only uppercase on the line — two shouting
+   elements side by side would flatten the hierarchy between them. */
+.skill-detail__tier-meta {
+  font-family: monospace;
+  font-size: 0.68rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  color: #7a5230;
+  min-width: 0;
+}
+
+/* Sentence-length body text reads in monospace (the dialogue/list body style),
+   not Press Start 2P — the pixel font is for labels, not paragraphs. */
+.skill-detail__description {
+  font-family: monospace;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #33200f;
+}
+
+/* ── Mastery pips ──────────────────────────────────────────────────────────
+   The skill's level as gold diamonds on the header line. Replaces the "· Lv n/m"
+   text suffix, which pushed the tier line onto a second row. */
+
+.skill-mastery {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* A rotated square — the same diamond the passive effect lines use as a bullet. */
+.skill-mastery__pip {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  background: rgba(61, 40, 23, 0.3);
+  border: 1px solid rgba(107, 67, 36, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.skill-mastery__pip--filled {
+  background: linear-gradient(135deg, #ffd700 0%, #e0a838 45%, #b87333 100%);
+  border-color: #8b6914;
+  box-shadow:
+    0 0 4px rgba(255, 215, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+/* Slot variant: smaller, and on a dark plinth — the pips sit over the frame art
+   rather than flat parchment, so they need their own ground to read against. */
+.skill-mastery--slot {
+  gap: 3px;
+  padding: 2px 4px;
+  background: rgba(24, 14, 8, 0.85);
+  border: 1px solid rgba(212, 165, 116, 0.55);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.skill-mastery--slot .skill-mastery__pip {
+  width: 5px;
+  height: 5px;
+  /* The 1px inset highlight muddies a 5px diamond — drop it at this size. */
+  box-shadow: none;
+}
+
+.skill-mastery--slot .skill-mastery__pip--filled {
+  box-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
+}
+
+/* ── The ledger plate ──────────────────────────────────────────────────────
+   One gilded copper card holding the current effects above the next level's
+   gains, split by a gold hairline. The only dark surface on the parchment. */
+
+.skill-detail__ledger {
+  width: 100%;
+  box-sizing: border-box;
+  /* Clips the upgrade band's hairline to the rounded corners. */
+  overflow: hidden;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1.5px rgba(212, 165, 116, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Horizontal stat strip — the ledger's upper band. The plate chrome lives on
+   .skill-detail__ledger; this is layout only. */
+.skill-detail__stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0.45rem 0.75rem;
+}
+
+.skill-detail__stat {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: 1.35;
+  color: #f2d2af;
+  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+}
+
+.skill-detail__stat--highlight {
+  color: #ffd700;
+  font-weight: bold;
+  text-shadow:
+    0 0 4px rgba(255, 215, 0, 0.4),
+    1px 1.5px 2px rgba(0, 0, 0, 0.95);
+}
+
+/* Gilded vertical divider element (flex child centered via justify-content: space-around) */
+.skill-detail__divider {
+  display: inline-block;
+  width: 2px;
+  height: 1.1rem;
+  flex-shrink: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(212, 165, 116, 0.1) 0%,
+    #ffd700 25%,
+    #b87333 50%,
+    #ffd700 75%,
+    rgba(212, 165, 116, 0.1) 100%
+  );
+  box-shadow:
+    0 0 3px rgba(255, 215, 0, 0.5),
+    -1px 0 2px rgba(0, 0, 0, 0.8);
+  border-radius: 1px;
+}
+
+/* Passive effect lines stack inside card */
+.skill-detail__stats--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  white-space: normal;
+}
+
+.skill-detail__stats--stack .skill-detail__stat {
+  white-space: normal;
+  font-size: 0.78rem;
+  color: #f2d2af;
+}
+
+.skill-detail__stats--stack .skill-detail__stat::before {
+  content: '◆ ';
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+/* ── Next-level upgrade preview: the ledger's lower band ─────────────────── */
+
+.skill-detail__upgrade {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.35rem 0.75rem;
+  /* Engraved hairline: gold rule with a dark shadow under it, echoing the gilded
+     divider in the band above. */
+  border-top: 1px solid rgba(255, 215, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.skill-detail__upgrade-title {
+  flex-shrink: 0;
+  font-family: monospace;
+  font-size: 0.62rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #d4a574;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.skill-detail__upgrade-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.7rem;
+  min-width: 0;
+}
+
+.skill-detail__upgrade-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: bold;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.skill-detail__upgrade-label {
+  color: #d4a574;
+}
+
+/* The value being left behind reads muted against the gain. */
+.skill-detail__upgrade-from {
+  color: #b89272;
+}
+
+.skill-detail__upgrade-arrow {
+  color: #d4a574;
+}
+
+/* Gains stay green — gold is reserved for the metal accents. Brighter than the
+   parchment green it replaces, which went muddy on the dark plate. */
+.skill-detail__upgrade-next {
+  color: #8ed15a;
+  text-shadow:
+    0 0 4px rgba(142, 209, 90, 0.35),
+    1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* ── Footer action row ───────────────────────────────────────────────────── */
+
+/* Engraved shelf: a dark rule with a light highlight under it, so the action row
+   is carved into the parchment instead of floating on it. A second dark plate
+   here would outweigh the ledger above. */
+.skill-detail__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(107, 67, 36, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.5);
+}
+
+/* The gap between Equip and the buy group is deliberately wider than the gap
+   inside it — that spacing is the only thing that makes the grouping legible. */
+.skill-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  /* Right-aligns the row when there's no battle-lock note to sit opposite. */
+  margin-left: auto;
+}
+
+/* Price and the button that spends it travel together, so a wrap can never
+   strand Upgrade on its own line or park the cost next to Equip. */
+.skill-detail__buy {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* "Equipped" is three glyphs longer than "Equip"; without a floor the whole row
+   jumps sideways the moment you equip something. */
+.skill-detail__actions .skill-detail__equip {
+  min-width: 7.25rem;
+}
+
+.skill-detail__info-trigger {
+  display: inline-flex;
+}
+
+/* The toffec pill is visually 4px taller than its layout box (the ledge is a
+   box-shadow) and sinks 2px on hover — give the brackets extra room, and drop
+   the bottom pair past the ledge so nothing overlaps the button art. */
+.skill-detail__actions .cursor-corners {
+  --cursor-corner-inset: -3px;
+}
+
+.skill-detail__actions .cursor-corners .cursor-corner--bl,
+.skill-detail__actions .cursor-corners .cursor-corner--br {
+  bottom: calc(var(--cursor-corner-inset) - 3px);
+}
+
+/* A disabled action button must not swallow pointer events — hover has to
+   reach the tooltip trigger span that explains the failing gate. */
+.skill-detail__actions .toffec-button:disabled {
+  pointer-events: none;
+}
+
+/* And the bracket cursor stays hidden on it — corners read as "clickable". */
+.skill-detail__actions .cursor-corners:has(.toffec-button:disabled) .cursor-corner {
+  opacity: 0;
+}
+
+.skill-detail__blocked-trigger {
+  display: inline-flex;
+}
+
+/* ── Cost chips — restyled for parchment, overriding town.css .cost-badge ── */
+
+/* The toffec pill paints a 4px ledge below its layout box, so its optical centre
+   sits 2px lower than the row's. The margin makes centring resolve against the
+   painted button rather than its box, which is what the eye actually lines up. */
+.skill-detail__cost {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 4px;
+  transition:
+    opacity 0.18s ease,
+    filter 0.18s ease;
+}
+
+/* Chips wear the ledger plate's recipe at chip scale, so the price reads as part
+   of the same set rather than a flat box parked next to it. */
+.skill-detail__cost .cost-badge {
+  /* Sized to carry the same visual weight as the xs pill it sits beside — the
+     old 3px chip read as an afterthought next to a 32px button. */
+  min-height: 1.6rem;
+  padding: 3px 8px;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 1px solid #5c3a1e;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  font-size: 0.68rem;
+  font-weight: bold;
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* Metal accents stay as muted border tints — text remains parchment-readable. */
+.skill-detail__cost .cost-badge.gold {
+  border-color: rgba(212, 165, 116, 0.85);
+  color: #f2d2af;
+}
+
+.skill-detail__cost .cost-badge.silver {
+  border-color: rgba(192, 192, 192, 0.7);
+  color: #e8e4da;
+}
+
+.skill-detail__cost .cost-badge.iron {
+  border-color: rgba(140, 145, 150, 0.7);
+  color: #d5d8da;
+}
+
+.skill-detail__cost .cost-badge.copper {
+  border-color: rgba(184, 115, 51, 0.7);
+  color: #e9b98a;
+}
+
+.skill-detail__cost--short {
+  opacity: 0.85;
+  filter: saturate(0.6);
+}
+
+.skill-detail__cost--short .cost-badge {
+  border-color: rgba(160, 74, 42, 0.8);
+}
+
+/* Maxed-out seal, in place of a plain "Max level" line. */
+.skill-detail__mastered {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 10px;
+  font-family: monospace;
+  font-size: 0.62rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.skill-detail__mastered::before {
+  content: '◆';
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+.skill-detail__battle-lock {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-align: left;
+  color: #a04a2a;
+}
+
+/* ── Deco-framed featured icon (detail panel, unlock confirm, celebrations) ── */
+
+.skill-deco-icon {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.skill-deco-icon .skill-deco-icon__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+  pointer-events: none;
+}
+
+/* Two-class specificity on purpose — see .skill-slot__icon note above. */
+.skill-deco-icon .skill-deco-icon__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Celebration overlays give the deco a slow ceremonial spin-up. */
+.skill-deco-icon--celebrate {
+  animation: skill-deco-celebrate 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) backwards;
+}
+
+@keyframes skill-deco-celebrate {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-100deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ── Unlock confirm body (inside ConfirmPanel) ────────────────────────────── */
+
+.skill-unlock-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+}
+
+.skill-unlock-confirm__name {
+  font-size: 0.75rem;
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* "Lv n → n+1" suffix on the upgrade confirm's name line. */
+.skill-unlock-confirm__level {
+  font-size: 0.65rem;
+  color: #d4a574;
+}
+
+.skill-unlock-confirm__cost {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.15rem;
+}
+
+/* The confirm dialog sits on the dark board — the default town.css chips are
+   fine there, just resized for consistency. */
+.skill-unlock-confirm__cost .cost-badge {
+  font-size: 0.68rem;
+  padding: 3px 7px;
+}
+
+/* Skill celebrations fire from inside the pause menu (z-index 60) — lift their
+   backdrop above it so the "SKILL UNLOCKED" modal isn't buried under the menu. */
+.gom-backdrop.skill-celebration-backdrop {
+  z-index: 70;
+}
+
+/* ── Slot hover card ───────────────────────────────────────────────────────
+   A compact read of a slot you haven't selected: what it is, what it does, and
+   what it costs. Sized around the list body, which lists.css pins to 0.92rem
+   inside this block — matching every other tooltip in the game. */
+
+.skill-slot-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 280px;
+}
+
+.skill-slot-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skill-slot-tooltip__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.skill-slot-tooltip__name {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: #f2d2af;
+}
+
+/* Keeps the house accent colour, but needs the halo to hold up over the grain. */
+.skill-slot-tooltip__meta {
+  font-family: monospace;
+  font-size: 0.62rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  color: #d4a574;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}
+
+/* The slot plinth exists so the pips read over frame art; on the card's board
+   texture they already do, so it only adds clutter. */
+.skill-slot-tooltip .skill-mastery--slot {
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* The tab spaces its dividers with a `my-1` utility; inside the card the parent
+   gap already does that, so pin the margin off in case that class travels here. */
+.skill-slot-tooltip .gradient-divider {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Unbulleted rows. The indent mirrors the list above it — a 16px bullet plus the
+   item's 0.45rem gap — so the price and status line up with the effect text. */
+.skill-slot-tooltip__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding-left: calc(16px + 0.45rem);
+}
+
+.skill-slot-tooltip__cost {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.skill-slot-tooltip__cost .cost-badge {
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  color: #f2d2af;
+  border-color: rgba(212, 165, 116, 0.55);
+  /* Chips carry their own shadow, tuned for a plate rather than for text. */
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* The card sits on raw bg-board.png — a mid-tone brown, lighter than the panels
+   the #d4a574 family is tuned for — so a mid-orange gate line vanished into it.
+   A light coral clears the wood, and the dark halo lifts small text off the
+   grain (the trick .indigolay-list--send uses). */
+.skill-slot-tooltip__gate {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #ffab96;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}
+
+.skill-slot-tooltip__equipped {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #a8e878;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}

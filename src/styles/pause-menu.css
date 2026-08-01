@@ -1357,6 +1357,30 @@ box-shadow:
   cursor: pointer;
 }
 
+/* Checkbox + explanatory copy (e.g. Reduced Motion), separated from the audio controls above. */
+.pause-menu-option-row--toggle {
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.22);
+}
+
+.pause-menu-option-description {
+  margin: 0;
+  padding: 0 0.25rem;
+  max-width: 48ch;
+  font-size: 0.6rem;
+  line-height: 1.8;
+  color: #b38a63;
+}
+
+.pause-menu-option-note {
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.55rem;
+  line-height: 1.7;
+  color: #8f6f4f;
+}
+
 .pause-menu-mute-toggle__icon {
   width: 2rem;
   height: 2rem;

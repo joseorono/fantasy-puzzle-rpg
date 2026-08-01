@@ -18,6 +18,7 @@ export interface OverlayOptions {
 export type OverlayRequest = OverlayOptions &
   (
     | { kind: 'skill-unlock'; characterId: string; skillId: string }
+    | { kind: 'passive-unlock'; characterId: string; passiveId: string }
     | { kind: 'crafting-success'; itemId: string; rarity: RarityTier }
   );
 
