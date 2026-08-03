@@ -12,6 +12,8 @@ interface PartyMemberCardProps {
   isActive?: boolean;
   onClick?: () => void;
   variant?: 'bar' | 'roster';
+  /** Show the keyboard cursor ring (roster keyboard navigation rests on this card). */
+  isKeyboardCursor?: boolean;
 }
 
 export function PartyMemberCard({
@@ -19,6 +21,7 @@ export function PartyMemberCard({
   isActive,
   onClick,
   variant = 'bar',
+  isKeyboardCursor = false,
 }: PartyMemberCardProps) {
   const colors = CHARACTER_COLORS[member.class];
   const Icon = CHARACTER_ICONS[member.class];
@@ -34,6 +37,7 @@ export function PartyMemberCard({
         isRoster ? 'party-member-card--roster' : 'party-member-card--bar',
         isActive && 'active',
         isDead && 'dead',
+        isKeyboardCursor && 'kb-cursor',
       )}
       onClick={onClick}
     >
@@ -47,12 +51,7 @@ export function PartyMemberCard({
           size="xs"
           percentage={hpPct}
         />
-        <IndigolayBar
-          className="party-member-card__exp-bar"
-          variant="yellow"
-          size="xs"
-          percentage={expPct}
-        />
+        <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="xs" percentage={expPct} />
         <div className="party-member-card__info-bar">
           <div className="party-member-card__name">{member.name}</div>
           <div className="party-member-card__detail">

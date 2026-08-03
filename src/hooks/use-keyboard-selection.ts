@@ -125,5 +125,16 @@ export function useKeyboardSelection(
     return selectedId === id;
   }
 
-  return { selectedId, isSelected, move };
+  /** Commit a selection by id (no-op when the id isn't in the grid) — e.g. a zone-entry default. */
+  function select(id: string) {
+    const target = findPosition(rows, id);
+    if (target) commit(target.rowIndex, target.colIndex);
+  }
+
+  /** Drop the selection entirely — e.g. when the keyboard leaves this grid for another zone. */
+  function clear() {
+    setStoredId(null);
+  }
+
+  return { selectedId, isSelected, move, select, clear, position };
 }

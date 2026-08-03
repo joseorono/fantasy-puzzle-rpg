@@ -1,5 +1,5 @@
-import { useAtom, useAtomValue } from 'jotai';
-import { isPauseMenuOpenAtom, activeMenuTabAtom } from '~/stores/pause-menu-atoms';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { isPauseMenuOpenAtom, activeMenuTabAtom, pauseMenuZoneAtom } from '~/stores/pause-menu-atoms';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
 import { useCurrentView } from '~/stores/game-store';
@@ -15,6 +15,7 @@ const DISABLED_VIEWS: ViewType[] = ['battle-demo', 'battle-rewards', 'town-hub']
 export function usePauseMenu() {
   const [isOpen, setIsOpen] = useAtom(isPauseMenuOpenAtom);
   const [activeTab, setActiveTab] = useAtom(activeMenuTabAtom);
+  const setZone = useSetAtom(pauseMenuZoneAtom);
   const currentView = useCurrentView();
   const isDialogueActive = useAtomValue(isDialogueActiveAtom);
 
@@ -27,6 +28,7 @@ export function usePauseMenu() {
     // so a later Enter can't re-activate a control now hidden behind the overlay.
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     setActiveTab('items');
+    setZone('sidebar');
     setIsOpen(true);
   }
 
@@ -44,6 +46,9 @@ export function usePauseMenu() {
 
   function selectTab(tab: PauseMenuTab) {
     setActiveTab(tab);
+    // A tab change always lands you back on the sidebar, whether it came from a
+    // mouse click or from the sidebar's ↑↓ cycling.
+    setZone('sidebar');
   }
 
   return { isOpen, isDisabled, activeTab, open, close, toggle, selectTab };

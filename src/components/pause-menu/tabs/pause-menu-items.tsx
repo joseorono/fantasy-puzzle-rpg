@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useInventory, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
 import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
@@ -7,6 +7,10 @@ import { getHealableMembers, getDeadMembers, healPartyMember } from '~/lib/party
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import type { BaseItemData } from '~/types/inventory';
 import type { RarityTier } from '~/constants/rarity';
 import { getScaledEquipmentStats } from '~/lib/equipment-system';
@@ -41,13 +45,21 @@ function stackKey(itemId: string, rarity?: RarityTier): string {
   return `${itemId}::${rarity ?? ''}`;
 }
 
-export function PauseMenuItems() {
+interface PauseMenuItemsProps {
+  /** The content zone owns the keyboard — arrows/Enter act on this pane. */
+  keyboardActive?: boolean;
+  /** Fired when ← at the left edge hands the keyboard back to the sidebar. */
+  onExitToSidebar?: () => void;
+}
+
+export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: PauseMenuItemsProps) {
   const inventory = useInventory();
   const party = useParty();
   const inventoryActions = useInventoryActions();
   const partyActions = usePartyActions();
   const [category, setCategory] = useState<ItemCategory>('consumable');
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
 
   const filteredInventory = filterInventoryByType(inventory, ALL_ITEMS, category);
 
@@ -107,6 +119,76 @@ export function PauseMenuItems() {
     }
   }
 
+  // ─── Keyboard grid: [category tabs] / one row per stack / [Use] ──────
+  const usableItem = selectedItem && isUsableConsumable(selectedItem) ? selectedItem : null;
+  const gridRows: KeyboardSelectableItem[][] = [
+    CATEGORIES.map((cat) => ({ id: `cat:${cat.id}` })),
+    ...filteredInventory.map((inv) => [{ id: stackKey(inv.itemId, inv.rarity) }]),
+    ...(usableItem ? [[{ id: 'use', disabled: !canUseItem(usableItem) }]] : []),
+  ];
+
+  const selection = useKeyboardSelection(gridRows, {
+    // The cursor drives the same selection the mouse uses, so the detail panel
+    // and the row's `.selected` styling follow it for free.
+    onMove: (id) => {
+      soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+      if (!id.startsWith('cat:') && id !== 'use') setSelectedKey(id);
+    },
+  });
+
+  // Entering the pane reveals a selection right away: first stack, else the active category.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  useEffect(() => {
+    if (!keyboardActive || selectionRef.current.selectedId !== null) return;
+    const first = filteredInventory[0];
+    selectionRef.current.select(first ? stackKey(first.itemId, first.rarity) : `cat:${category}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyboardActive]);
+
+  // Keep the keyboard-selected stack visible in the scrolling list.
+  useEffect(() => {
+    if (!selection.selectedId) return;
+    rowRefs.current.get(selection.selectedId)?.scrollIntoView({ block: 'nearest' });
+  }, [selection.selectedId]);
+
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction) {
+      event.preventDefault();
+      // ← at the left edge (or with nothing selected) backs out to the sidebar;
+      // within the category row it moves normally.
+      if (direction === 'left' && (selection.position === null || selection.position.colIndex === 0)) {
+        selection.clear();
+        onExitToSidebar?.();
+        return;
+      }
+      selection.move(direction);
+      return;
+    }
+
+    if (isConfirmKey(event.key)) {
+      event.preventDefault();
+      if (event.repeat) return;
+      const entry = gridRows.flat().find((item) => item.id === selection.selectedId);
+      if (!entry || entry.disabled) return;
+      if (entry.id.startsWith('cat:')) {
+        soundService.playSound(SoundNames.mechanicalClick, 0.5);
+        setCategory(entry.id.slice('cat:'.length) as ItemCategory);
+        setSelectedKey(null);
+        return;
+      }
+      if (entry.id === 'use') {
+        if (usableItem) handleUseItem(usableItem);
+        return;
+      }
+      // A stack row: Enter steps down to Use when it exists.
+      if (usableItem) selection.select('use');
+    }
+  }, keyboardActive);
+
   return (
     <>
       <h2>
@@ -114,19 +196,20 @@ export function PauseMenuItems() {
       </h2>
       <div className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
-          <IndigolayTab
-            key={cat.id}
-            size="sm"
-            glow={false}
-            isActive={category === cat.id}
-            className="pause-menu-item-category-tab"
-            onClick={() => {
-              setCategory(cat.id);
-              setSelectedKey(null);
-            }}
-          >
-            {cat.label}
-          </IndigolayTab>
+          <ToffecBeigeCornersWrapper key={cat.id} forceDisplay={selection.isSelected(`cat:${cat.id}`)}>
+            <IndigolayTab
+              size="sm"
+              glow={false}
+              isActive={category === cat.id}
+              className="pause-menu-item-category-tab"
+              onClick={() => {
+                setCategory(cat.id);
+                setSelectedKey(null);
+              }}
+            >
+              {cat.label}
+            </IndigolayTab>
+          </ToffecBeigeCornersWrapper>
         ))}
       </div>
       <div className="pause-menu-items-layout">
@@ -140,6 +223,10 @@ export function PauseMenuItems() {
             return (
               <div
                 key={key}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(key, el);
+                  else rowRefs.current.delete(key);
+                }}
                 className={cn('pause-menu-item-row', selectedKey === key && 'selected')}
                 onClick={() => setSelectedKey(key)}
               >
@@ -223,13 +310,15 @@ export function PauseMenuItems() {
                 />
               </div>
               {isUsableConsumable(selectedItem) && (
-                <button
-                  className="pause-menu-use-btn"
-                  disabled={!canUseItem(selectedItem)}
-                  onClick={() => handleUseItem(selectedItem)}
-                >
-                  Use
-                </button>
+                <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('use')}>
+                  <button
+                    className="pause-menu-use-btn"
+                    disabled={!canUseItem(selectedItem)}
+                    onClick={() => handleUseItem(selectedItem)}
+                  >
+                    Use
+                  </button>
+                </ToffecBeigeCornersWrapper>
               )}
             </>
           ) : (

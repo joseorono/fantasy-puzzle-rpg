@@ -20,6 +20,15 @@ export type PauseMenuTab = (typeof PAUSE_MENU_TABS)[number];
 export const isPauseMenuOpenAtom = atom(false);
 export const activeMenuTabAtom = atom<PauseMenuTab>(PAUSE_MENU_TABS[0]);
 
+/**
+ * Which half of the pause menu owns the keyboard: the sidebar (↑↓ cycles tabs)
+ * or the active tab's content pane (arrows navigate its grid). Reset to
+ * 'sidebar' on open and on tab change; → / Enter in the sidebar enters content,
+ * ← at a content grid's left edge returns.
+ */
+export type PauseMenuZone = 'sidebar' | 'content';
+export const pauseMenuZoneAtom = atom<PauseMenuZone>('sidebar');
+
 // Volume settings persisted to localStorage
 export const masterVolumeAtom = atomWithStorage<VolumePercent>(
   AUDIO_STORAGE_KEYS.masterVolume,
