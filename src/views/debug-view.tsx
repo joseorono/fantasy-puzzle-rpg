@@ -13,6 +13,7 @@ import SkillDebugView from '~/views/skill-debug';
 import DungeonDebugView from '~/views/dungeon-debug';
 import CreditsDebugView from '~/views/credits-debug';
 import ListStylesTestView from '~/views/list-styles-test';
+import WoodDiscButtonTestView from '~/views/wood-disc-button-test';
 
 interface DebugSection {
   id: string;
@@ -25,6 +26,7 @@ interface DebugSection {
 const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'router', label: 'Router', Component: RouterTestView },
   { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
+  { id: 'wood-disc-button', label: 'Wood Disc Button', Component: WoodDiscButtonTestView },
   { id: 'dungeon', label: 'Dungeon', Component: DungeonDebugView },
   { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },
   { id: 'list-styles', label: 'List Styles', Component: ListStylesTestView },
