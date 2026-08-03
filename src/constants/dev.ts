@@ -9,5 +9,12 @@
  */
 export const SKIP_TO_DEBUG_VIEW = false;
 
+/**
+ * When true, browser affordances the game normally suppresses stay available — currently
+ * the right-click context menu, so "Inspect element" keeps working. Keep `false` for
+ * normal play.
+ */
+export const DEBUG_MODE = true;
+
 
 
