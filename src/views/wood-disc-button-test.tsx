@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { WoodDiscButton, type WoodDiscGlyph } from '~/components/ui-custom/wood-disc-button';
 
 const GLYPHS: WoodDiscGlyph[] = ['back', 'help', 'close', 'settings'];
-const TONES = ['walnut', 'oak'] as const;
+const WOODS = ['oak', 'walnut', 'redwood', 'ash'] as const;
 const SIZES = ['sm', 'default', 'lg'] as const;
 
 /**
@@ -22,16 +22,16 @@ export default function WoodDiscButtonTestView() {
       {/* Dark wooden backdrop rather than the debug slate, so the discs are judged against
           something close to the town they live in. */}
       <div className="flex flex-col gap-6 rounded-lg bg-[#2a1810] p-6">
-        {TONES.map((tone) => (
-          <div key={tone} className="flex flex-wrap items-end gap-6">
-            <span className="w-16 text-xs text-[#d4a574]">{tone}</span>
+        {WOODS.map((wood) => (
+          <div key={wood} className="flex flex-wrap items-end gap-6">
+            <span className="w-16 text-xs text-[#d4a574]">{wood}</span>
             {GLYPHS.map((glyph) => (
               <div key={glyph} className="flex flex-col items-center gap-2">
                 <WoodDiscButton
                   glyph={glyph}
-                  tone={tone}
+                  variant={wood}
                   size="lg"
-                  onClick={() => setLastPressed(`${tone} / ${glyph}`)}
+                  onClick={() => setLastPressed(`${wood} / ${glyph}`)}
                 />
                 <span className="text-xs text-[#d4a574]">{glyph}</span>
               </div>

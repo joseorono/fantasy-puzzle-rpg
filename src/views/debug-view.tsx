@@ -26,7 +26,6 @@ interface DebugSection {
 const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'router', label: 'Router', Component: RouterTestView },
   { id: 'table-of-contents', label: 'Contents', Component: TableOfContents, hideFromToc: true },
-  { id: 'wood-disc-button', label: 'Wood Disc Button', Component: WoodDiscButtonTestView },
   { id: 'dungeon', label: 'Dungeon', Component: DungeonDebugView },
   { id: 'skill-system', label: 'Skill System', Component: SkillDebugView },
   { id: 'list-styles', label: 'List Styles', Component: ListStylesTestView },
@@ -40,6 +39,7 @@ const DEBUG_SECTIONS: DebugSection[] = [
   { id: 'global-animation', label: 'Global Animation', Component: GlobalAnimationTest },
   { id: 'title-sign', label: 'Title Sign', Component: TitleSignTestView },
   { id: 'radial-countdown', label: 'Radial Countdown', Component: RadialCountdownTestView },
+  { id: 'wood-disc-button', label: 'Wood Disc Button', Component: WoodDiscButtonTestView },
 ];
 
 function scrollToSection(id: string) {

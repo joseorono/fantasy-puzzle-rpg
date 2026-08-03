@@ -18,7 +18,7 @@ import { getNavDirection, isCancelKey, isConfirmKey } from '~/constants/keyboard
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { WoodDiscButton } from '~/components/ui-custom/wood-disc-button';
 import { TownHelpPanel } from './town-help-panel';
 
 /** The signpost planks, top to bottom — the keyboard ring and the click handlers share these ids. */
@@ -168,9 +168,12 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
               <button className="leave-btn" onClick={onLeaveCallback} aria-label="Leave town" />
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'side' && sideSelection.isSelected('help')}>
-              <button className="help-btn" onClick={() => setIsHelpOpen(true)} aria-label="About the town">
-                <FrostyRpgIcon name="openBook" size={32} />
-              </button>
+              <WoodDiscButton
+                glyph="help"
+                size="lg"
+                onClick={() => setIsHelpOpen(true)}
+                aria-label="About the town"
+              />
             </ToffecBeigeCornersWrapper>
           </div>
           <div className="relative mx-[200px] flex flex-col items-end gap-4">

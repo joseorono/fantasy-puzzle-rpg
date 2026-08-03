@@ -26,9 +26,11 @@ const DEFAULT_ARIA_LABEL: Record<WoodDiscGlyph, string> = {
 const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justify-center select-none', {
   variants: {
     /** Which wood the disc is cut from. Colour only — geometry is identical. */
-    tone: {
+    variant: {
       oak: 'wood-disc-btn--oak',
       walnut: 'wood-disc-btn--walnut',
+      redwood: 'wood-disc-btn--redwood',
+      ash: 'wood-disc-btn--ash',
     },
     size: {
       sm: '[--wd-size:48px] [--wd-lip:3px]',
@@ -36,7 +38,7 @@ const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justi
       lg: '[--wd-size:80px] [--wd-lip:4px]',
     },
   },
-  defaultVariants: { tone: 'walnut', size: 'default' },
+  defaultVariants: { variant: 'walnut', size: 'default' },
 });
 
 interface WoodDiscButtonProps
@@ -53,14 +55,14 @@ interface WoodDiscButtonProps
  * zoom, unlike the raster button art it is meant to replace. `size="lg"` is deliberately
  * `back-button.png`'s 80px footprint so `.leave-btn` can adopt this with no layout shift.
  *
- * Two woods ship: `walnut` (dark, pitched to the back button's brick interior) and `oak` (the
- * lighter signpost-plank honey). All colours are `--wd-*` custom properties set by the tone
- * class, following the `--cb-*` convention in {@link ToffecSquareButton}, so a future stone or
- * iron disc is a new block of properties and nothing else.
+ * Four woods ship — `walnut` (dark, pitched to the back button's brick interior), `oak` (lighter
+ * signpost honey), `redwood` (warm red) and `ash` (pale and cool). Each variant class declares
+ * the entire `--wd-*` block, following the `--cb-*` convention in {@link ToffecSquareButton}, so
+ * a future stone or iron disc is a new block of properties and nothing else.
  */
 export function WoodDiscButton({
   className,
-  tone,
+  variant,
   size,
   glyph,
   'aria-label': ariaLabel,
@@ -70,7 +72,7 @@ export function WoodDiscButton({
     <button
       type="button"
       aria-label={ariaLabel ?? DEFAULT_ARIA_LABEL[glyph]}
-      className={cn(woodDiscButtonVariants({ tone, size, className }))}
+      className={cn(woodDiscButtonVariants({ variant, size, className }))}
       {...props}
     >
       <svg

@@ -1,43 +1,82 @@
 /* WoodDiscButton — a carved wooden disc with an inline-SVG glyph cut into its face.
 
    Drawn entirely in CSS geometry so it stays crisp at any zoom. Follows the house ingredients:
-   an upper-left light source (`circle at 40% 35%`), zero-blur shadows only, the toffec
-   extrusion signature (`0 4px 0 <darker>` collapsing on press), and the `--xx-*` token pattern
-   from ToffecSquareButton — every colour is a token set by the tone class, so adding a stone or
-   iron disc later is a new block of custom properties and nothing else. */
+   an upper-left light source, zero-blur shadows only, and the toffec extrusion signature
+   (`0 4px 0 <darker>` collapsing on press).
 
-/* ── Tones ──────────────────────────────────────────────────────────────────
-   `--wd-carve` sits well below the darkest face band in both woods; a mid-brown cut would
-   vanish on walnut. The lit lower edge is what actually reads as depth, so it is pitched
-   against each wood rather than shared. */
+   Structured like ToffecSquareButton's `--cb-*` set: every colour is a token, each variant class
+   declares the WHOLE block, and the base rule below holds nothing but geometry. Leaving even one
+   colour in the base rule (the ring and grain used to live there) quietly averages the variants
+   back toward each other. */
+
+/* ── Woods ──────────────────────────────────────────────────────────────────
+   `--wd-carve-lit` is pitched per wood rather than shared: the lit row under the glyph is what
+   actually reads as carved depth, and a value that works on oak is invisible on walnut.
+   `--wd-ring` deliberately inverts across the set — lighter than the face on oak, darker on
+   walnut — which is most of what separates them at a glance. */
 
 /* Honey oak — the lighter signpost-plank wood. */
 .wood-disc-btn--oak {
-  --wd-face-light: #c68a4e;
-  --wd-face-mid: #a86a34;
-  --wd-face-dark: #7d4a22;
-  --wd-outline: #4a2a12;
-  --wd-under: #5a3418;
-  --wd-carve: #40220c;
-  --wd-carve-lit: rgba(255, 226, 176, 0.5);
+  --wd-face-light: #dda661;
+  --wd-face-mid: #c08340;
+  --wd-face-dark: #99602a;
+  --wd-outline: #5c3617;
+  --wd-under: #6d4420;
+  --wd-ring: #c8a05c;
+  --wd-grain: rgba(92, 54, 23, 0.14);
+  --wd-shade: rgba(92, 54, 23, 0.34);
+  --wd-carve: #4a2810;
+  --wd-carve-lit: rgba(255, 236, 196, 0.6);
 }
 
 /* Dark walnut — pitched to the brick interior of the back button it sits beside. */
 .wood-disc-btn--walnut {
-  --wd-face-light: #a86e38;
-  --wd-face-mid: #8a5527;
-  --wd-face-dark: #63391a;
-  --wd-outline: #3d2110;
-  --wd-under: #46280f;
-  --wd-carve: #35190a;
-  --wd-carve-lit: rgba(216, 168, 112, 0.55);
+  --wd-face-light: #7f5029;
+  --wd-face-mid: #5f3a1c;
+  --wd-face-dark: #452812;
+  --wd-outline: #241306;
+  --wd-under: #2f1a09;
+  --wd-ring: #7a5c18;
+  --wd-grain: rgba(20, 10, 4, 0.18);
+  --wd-shade: rgba(20, 10, 4, 0.42);
+  --wd-carve: #190c03;
+  --wd-carve-lit: rgba(206, 158, 102, 0.7);
 }
 
+/* Redwood — the warm red-orange end of the town's palette. */
+.wood-disc-btn--redwood {
+  --wd-face-light: #c9713a;
+  --wd-face-mid: #a8552a;
+  --wd-face-dark: #82401f;
+  --wd-outline: #4a1e0c;
+  --wd-under: #5c2a12;
+  --wd-ring: #9c6b1e;
+  --wd-grain: rgba(74, 26, 10, 0.16);
+  --wd-shade: rgba(74, 26, 10, 0.36);
+  --wd-carve: #3a1608;
+  --wd-carve-lit: rgba(255, 206, 158, 0.55);
+}
+
+/* Ash — pale and cool, for surfaces that shouldn't read as warm wood. */
+.wood-disc-btn--ash {
+  --wd-face-light: #c2ab8c;
+  --wd-face-mid: #a08a6d;
+  --wd-face-dark: #7d6a52;
+  --wd-outline: #4a4034;
+  --wd-under: #5a4e40;
+  --wd-ring: #8b7a4a;
+  --wd-grain: rgba(60, 52, 40, 0.14);
+  --wd-shade: rgba(60, 52, 40, 0.32);
+  --wd-carve: #3a3026;
+  --wd-carve-lit: rgba(245, 238, 220, 0.55);
+}
+
+/* ── Geometry ─────────────────────────────────────────────────────────────── */
+
 .wood-disc-btn {
-  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]; colours from the tone class. */
+  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]; colours from the wood class. */
   --wd-size: 64px;
   --wd-lip: 4px;
-  --wd-ring: #8b6914; /* the house antique-brass frame tone, shared by both woods */
 
   position: relative;
   width: var(--wd-size);
@@ -49,7 +88,7 @@
   border-radius: 50%;
   background:
     /* Grain first so it sits over the face, matching the planks' horizontal banding. */
-    repeating-linear-gradient(180deg, transparent 0 4px, rgba(74, 42, 18, 0.13) 4px 5px),
+    repeating-linear-gradient(180deg, transparent 0 4px, var(--wd-grain) 4px 5px),
     /* Hard stops, not a smooth blend: three flat bands posterize the shading the way pixel art
        does. A continuous radial makes the disc read as glossy plastic. Light stays upper-left. */
       radial-gradient(
@@ -61,7 +100,7 @@
   box-shadow:
     inset 0 0 0 3px var(--wd-ring),
     inset 0 3px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -5px 0 rgba(74, 42, 18, 0.34),
+    inset 0 -5px 0 var(--wd-shade),
     0 var(--wd-lip) 0 var(--wd-under);
   /* steps() rather than easing — continuous interpolation reads wrong on a pixel-art surface. */
   transition:
@@ -81,7 +120,7 @@
   box-shadow:
     inset 0 0 0 3px var(--wd-ring),
     inset 0 3px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -5px 0 rgba(74, 42, 18, 0.4),
+    inset 0 -5px 0 var(--wd-shade),
     0 0 0 var(--wd-under);
 }
 
