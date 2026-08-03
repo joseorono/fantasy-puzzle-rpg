@@ -5,7 +5,7 @@ import { useResources, useResourcesActions } from '~/stores/game-store';
 import { createResources } from '~/lib/resources';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
@@ -64,14 +64,14 @@ export default function Inn({
   const handleHealMember = (member: CharacterData) => {
     const cost = getHealCost(member);
     if (cost <= 0 || resources.coins < cost) return;
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     partyActions.fullyHealMember(member.id);
     resourcesActions.reduceResources(createResources({ coins: cost }));
   };
 
   const handleHealAll = () => {
     if (healPlan.entries.length === 0) return;
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     healPlan.entries.forEach((entry) => partyActions.fullyHealMember(entry.member.id));
     resourcesActions.reduceResources(createResources({ coins: healPlan.cost }));
   };

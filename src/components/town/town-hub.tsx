@@ -6,7 +6,7 @@ import Inn from './inn';
 import ItemStore from './item-store';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
-import { SoundNames, TOWN_HUB_BG_SOUNDS } from '~/constants/audio';
+import { SoundNames, TOWN_HUB_BG_SOUNDS, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { getRandomElement } from '~/lib/utils';
 import { pickAllSubLocationBackgrounds, pickTownHubBackground } from '~/constants/town-backgrounds';
 import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
@@ -40,7 +40,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   useEffect(() => {
     if (currentLocation === 'town-hub') {
       const randomSound = getRandomElement(TOWN_HUB_BG_SOUNDS);
-      soundService.playSound(randomSound, 0.2, 0.1);
+      soundService.playSound(randomSound, TOWN_SFX_VOLUME.hubAmbience, 0.1);
     }
   }, [currentLocation]);
 
@@ -56,7 +56,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   }, [subLocationBackgrounds]);
 
   const handleGoToPlace = (place: Exclude<townLocations, 'town-hub'>) => {
-    soundService.playSound(SoundNames.mechanicalClick, 0.4, 0.1);
+    soundService.playSound(SoundNames.mechanicalClick, TOWN_SFX_VOLUME.locationSelect, 0.1);
     setCurrentLocation(place);
   };
 
@@ -131,3 +131,5 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     </div>
   );
 }
+
+

@@ -22,7 +22,7 @@ import {
 import { CRAFTING_RARITY_BIAS, PITY_BIAS_STEP, PITY_MAX } from '~/constants/rarity';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import type { EquipmentItemData } from '~/types';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { BLACKSMITH_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
@@ -104,7 +104,7 @@ export default function Blacksmith({
 
   const handleCraftItem = (item: EquipmentItemData) => {
     if (canAfford(resources, item.cost)) {
-      soundService.playSound(SoundNames.clickCoin);
+      soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
       resourcesActions.reduceResources(item.cost);
       // Roll the crafted item's rarity once (pity-adjusted) and store it on the stack.
       const rarity = rollRarity(craftBias);
@@ -127,7 +127,7 @@ export default function Blacksmith({
   function handleUpgrade(instance: OwnedEquipmentInstance) {
     const cost = getUpgradeCost(instance.rarity);
     if (!canUpgradeRarity(instance.rarity) || !canAfford(resources, cost)) return;
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     resourcesActions.reduceResources(cost);
     const next = upgradeRarity(instance.rarity);
     inventoryActions.removeItem(instance.item.id, 1, instance.rarity);
@@ -142,7 +142,7 @@ export default function Blacksmith({
   }
 
   function handleSalvage(instance: OwnedEquipmentInstance) {
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     inventoryActions.removeItem(instance.item.id, 1, instance.rarity);
     resourcesActions.addResources(getSalvageReturn(instance.item));
     setSelectedModifyKey(null);
@@ -157,7 +157,7 @@ export default function Blacksmith({
   ) => {
     const cost = createResources({ [fromResource]: fromAmount });
     if (canAfford(resources, cost)) {
-      soundService.playSound(SoundNames.clickCoin);
+      soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
       resourcesActions.reduceResources(cost);
       resourcesActions.addResources(createResources({ [toResource]: toAmount }));
     }
@@ -166,7 +166,7 @@ export default function Blacksmith({
   const handleMeltCoinsToGold = (coinAmount: number) => {
     const cost = createResources({ coins: coinAmount });
     if (canAfford(resources, cost)) {
-      soundService.playSound(SoundNames.clickCoin);
+      soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
       const goldGain = Math.floor(coinAmount / MELT_COINS_PER_GOLD);
       resourcesActions.reduceResources(cost);
       resourcesActions.addResources(createResources({ gold: goldGain }));

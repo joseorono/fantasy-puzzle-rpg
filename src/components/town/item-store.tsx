@@ -11,7 +11,7 @@ import { getSellPrice } from '~/lib/crafting';
 import { cn } from '~/lib/utils';
 import { getItemQuantity, filterInventoryByType } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
@@ -50,14 +50,14 @@ export default function ItemStore({
 
   const handleBuyItem = (item: ConsumableItemData) => {
     if (canAfford(resources, item.cost)) {
-      soundService.playSound(SoundNames.clickCoin);
+      soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
     }
   };
 
   const handleSellItem = (item: ConsumableItemData) => {
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     inventoryActions.removeItem(item.id, 1);
     resourcesActions.addResources(createResources({ coins: getSellPrice(item) }));
   };

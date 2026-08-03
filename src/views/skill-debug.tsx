@@ -15,6 +15,9 @@ import type { CharacterData } from '~/types/rpg-elements';
 
 const DEBUG_LEVELS = [1, 4, 10, 17, 24, 30];
 
+/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
+const SKILL_ICON_SIZE = 32;
+
 /** Paired −/+ buttons for nudging a skill's level directly. */
 function LevelNudgeButtons({ disabled, onNudge }: { disabled: boolean; onNudge: (delta: number) => void }) {
   return (
@@ -131,7 +134,12 @@ export default function SkillDebugView() {
                       <div key={skill.id} className="flex items-center justify-between rounded bg-slate-700 px-3 py-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
-                            <SkillIcon characterClass={skill.class} position={skill.icon} size={16} sheetSize={32} />{' '}
+                            <SkillIcon
+                              characterClass={skill.class}
+                              position={skill.icon}
+                              size={SKILL_ICON_SIZE}
+                              sheetSize={32}
+                            />{' '}
                             {skill.name}
                             {selected && <span className="ml-2 text-xs text-amber-300">ACTIVE</span>}
                           </div>
@@ -179,7 +187,7 @@ export default function SkillDebugView() {
                             <SkillIcon
                               characterClass={passive.class}
                               position={passive.icon}
-                              size={16}
+                              size={SKILL_ICON_SIZE}
                               sheetSize={32}
                             />{' '}
                             {passive.name}
