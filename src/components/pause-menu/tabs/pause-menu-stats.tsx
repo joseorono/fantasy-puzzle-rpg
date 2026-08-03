@@ -16,6 +16,9 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
+/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
+const STATS_SKILL_ICON_SIZE = 32;
+
 export function PauseMenuStats() {
   const party = useParty();
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
@@ -154,7 +157,12 @@ export function PauseMenuStats() {
 
           <div className="pause-menu-stats-skill">
             <div className="pause-menu-stats-skill-name">
-              <SkillIcon characterClass={selected.class} position={activeSkill.icon} size={18} sheetSize={32} />{' '}
+              <SkillIcon
+                characterClass={selected.class}
+                position={activeSkill.icon}
+                size={STATS_SKILL_ICON_SIZE}
+                sheetSize={32}
+              />{' '}
               {activeSkill.name}
             </div>
             <div className="pause-menu-stats-skill-desc">{activeSkill.description}</div>
