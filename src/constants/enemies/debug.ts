@@ -1,5 +1,7 @@
 import type { EnemyData } from '~/types/rpg-elements';
+import { createEmptyLootTable, createLootTable } from '~/types/loot';
 import { getTotalExpToReachLevel } from '~/lib/leveling-system';
+import { DEBUG_RESOURCE_PAYLOAD } from '~/constants/dev';
 import { SWAMP_FROG } from './world-00';
 
 /**
@@ -22,11 +24,18 @@ const EXP_PINATA_SHARE = Math.floor(EXP_PINATA_TOTAL_EXP / EXP_PINATA_FROG_COUNT
 const EXP_PINATA_MAX_HP = 1;
 
 /**
+ * The whole payload rides on one frog, since `combineLootFromEnemies` sums resources across every
+ * enemy. Also displaces the Swamp Frog coins the spread below would otherwise inherit.
+ */
+const EXP_PINATA_LOOT = createLootTable([], [], { item: DEBUG_RESOURCE_PAYLOAD });
+
+/**
  * Gilded Frogs — a Swamp Frog with the danger stripped out and the EXP cranked up, for
  * testing level-gated content (skill tiers, stat allocation) without grinding to it.
  *
  * Clearing all three awards exactly {@link EXP_PINATA_TOTAL_EXP}, which takes a level-1
- * party to {@link EXP_PINATA_TARGET_LEVEL}. They cannot realistically fight back: 1 damage
+ * party to {@link EXP_PINATA_TARGET_LEVEL}, plus one {@link DEBUG_RESOURCE_PAYLOAD} — the same
+ * top-up the Skill Debug grant button hands out. They cannot realistically fight back: 1 damage
  * on a 60s interval they never live long enough to reach.
  */
 export const EXP_PINATA_FROGS: EnemyData[] = Array.from({ length: EXP_PINATA_FROG_COUNT }, (_, index) => ({
@@ -42,4 +51,5 @@ export const EXP_PINATA_FROGS: EnemyData[] = Array.from({ length: EXP_PINATA_FRO
   guardBreak: 0,
   // The first frog absorbs the rounding remainder so the three sum to the exact total.
   expReward: index === 0 ? EXP_PINATA_TOTAL_EXP - EXP_PINATA_SHARE * (EXP_PINATA_FROG_COUNT - 1) : EXP_PINATA_SHARE,
+  lootTable: index === 0 ? EXP_PINATA_LOOT : createEmptyLootTable(),
 }));

@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
@@ -31,6 +31,8 @@ import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/
 import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
 import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
 import { isReducedMotion } from '~/lib/reduced-motion';
+import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -190,6 +192,9 @@ export function BattleRewardsScreen() {
 
           return (
             <LevelUpView
+              // Remount per character so pending allocations and the keyboard selection reset
+              // structurally instead of relying on the confirm handler to clear them.
+              key={currentPending.charId}
               character={displayCharacter}
               availablePoints={totalPoints}
               potentialStatPoints={randomPotentialStats || { pow: 0, vit: 0, spd: 0 }}
@@ -231,12 +236,26 @@ const RESOURCE_CONFIG = RESOURCE_DISPLAY_ORDER.map((key) => ({
 interface RewardsResourcesPanelProps {
   earnedResources: Resources;
   currentResources?: Resources;
+  /** Fast-forwards the stagger to its finished state. */
+  skip?: boolean;
+  /** Fired once every card has been revealed (immediately when there is nothing to stagger). */
+  onRevealComplete?: () => void;
 }
 
-function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
+function RewardsResourcesPanel({
+  earnedResources,
+  currentResources,
+  skip = false,
+  onRevealComplete,
+}: RewardsResourcesPanelProps) {
   const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
   const reduced = isReducedMotion();
   const [revealedCount, setRevealedCount] = useState(reduced ? activeResources.length : 0);
+  // Held in a ref so the skip path can cancel pending timers. Without that, a timer scheduled
+  // before the skip would later fire setRevealedCount(i + 1) and *regress* the finished reveal.
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const onRevealCompleteRef = useRef(onRevealComplete);
+  onRevealCompleteRef.current = onRevealComplete;
 
   // NumberFlow renders its first value statically and only rolls on a change, so each
   // card mounts at zero (and at the pre-reward balance) and flips to its real figure a
@@ -244,15 +263,32 @@ function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsRes
   // render, which would re-arm every timer and the reveal would never land.
   useEffect(() => {
     if (reduced) return;
-    const timers = activeResources.map((_, i) =>
-      setTimeout(
-        () => setRevealedCount(i + 1),
-        REWARDS_RESOURCE_REVEAL.startDelayMs + i * REWARDS_RESOURCE_REVEAL.staggerMs,
-      ),
-    );
-    return () => timers.forEach(clearTimeout);
+    const timers = timersRef.current;
+    activeResources.forEach((_, i) => {
+      timers.push(
+        setTimeout(
+          () => setRevealedCount(i + 1),
+          REWARDS_RESOURCE_REVEAL.startDelayMs + i * REWARDS_RESOURCE_REVEAL.staggerMs,
+        ),
+      );
+    });
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced, activeResources.length]);
+
+  useEffect(() => {
+    if (!skip) return;
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.length = 0;
+    setRevealedCount(activeResources.length);
+  }, [skip, activeResources.length]);
+
+  useEffect(() => {
+    if (revealedCount >= activeResources.length) onRevealCompleteRef.current?.();
+  }, [revealedCount, activeResources.length]);
 
   if (activeResources.length === 0) return null;
 
@@ -294,7 +330,16 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
     copper: lootTable.resources?.item?.copper || 0,
   };
 
+  // The item list is static, so the only thing to wait on is the resource panel's stagger.
+  const [skipRequested, setSkipRequested] = useState(false);
+  const [isRevealComplete, setIsRevealComplete] = useState(false);
+  // handleContinue credits resources and items, so held-Enter auto-repeat must not run it twice.
+  const hasFinishedRef = useRef(false);
+
   function handleContinue() {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+
     // Add resources to store
     if (Object.values(earnedResources).some((v) => v > 0)) {
       resourcesActions.addResources(earnedResources);
@@ -313,6 +358,17 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
     onFinish();
   }
 
+  // Two-stage confirm key: fast-forward the reveal first, advance on the next press.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (!isRevealComplete) {
+      setSkipRequested(true);
+      return;
+    }
+    handleContinue();
+  });
+
   return (
     <div className="victory-container">
       <header className="victory-header">
@@ -328,7 +384,12 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
         )}
       </header>
 
-      <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
+      <RewardsResourcesPanel
+        earnedResources={earnedResources}
+        currentResources={resources}
+        skip={skipRequested}
+        onRevealComplete={() => setIsRevealComplete(true)}
+      />
 
       <div className="items-found-container">
         <h2 className="items-found-header rewards-section-subtitle">
@@ -365,9 +426,12 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
         </ul>
       </div>
 
-      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
-        Continue
-      </ToffecButton>
+      <div className="rewards-actions">
+        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to continue' : 'Enter to skip'}</span>
+        <ToffecButton variant="cream" onClick={handleContinue}>
+          Continue
+        </ToffecButton>
+      </div>
     </div>
   );
 }
@@ -385,7 +449,18 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
   const partyMembers = useParty();
   const partyActions = usePartyActions();
 
+  const members = partyMembers.slice(0, 4);
+  const [skipRequested, setSkipRequested] = useState(false);
+  // Tracked by id rather than a counter so a repeated callback can't over-count the party.
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const isRevealComplete = completedIds.size >= members.length;
+  // handleContinue grants EXP, so held-Enter auto-repeat must not run it twice.
+  const hasFinishedRef = useRef(false);
+
   function handleContinue() {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+
     // Apply exp to all party members and compute the updated party snapshot
     const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
       const updatedMember: CharacterData = {
@@ -398,6 +473,17 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 
     onFinish(updatedPartyMembers);
   }
+
+  // Two-stage confirm key: fast-forward every bar first, advance on the next press.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (!isRevealComplete) {
+      setSkipRequested(true);
+      return;
+    }
+    handleContinue();
+  });
 
   return (
     <div className="exp-gained-container">
@@ -428,18 +514,29 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
       </header>
 
       <div className="character-cards-grid">
-        {partyMembers.slice(0, 4).map((member) => (
-          <CharacterExpCard key={member.id} member={member} expReward={expReward} />
+        {members.map((member) => (
+          <CharacterExpCard
+            key={member.id}
+            member={member}
+            expReward={expReward}
+            skip={skipRequested}
+            onComplete={(id) => setCompletedIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))}
+          />
         ))}
       </div>
 
       <IndigolayDivider variant="gold" className="rewards-divider" />
 
-      <RewardsResourcesPanel earnedResources={earnedResources} />
+      {/* Deliberately not part of isRevealComplete — these resources are a recap of what step 1
+          already credited, so Finish need not wait on their stagger. */}
+      <RewardsResourcesPanel earnedResources={earnedResources} skip={skipRequested} />
 
-      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
-        Finish
-      </ToffecButton>
+      <div className="rewards-actions">
+        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to finish' : 'Enter to skip'}</span>
+        <ToffecButton variant="cream" onClick={handleContinue}>
+          Finish
+        </ToffecButton>
+      </div>
     </div>
   );
 }
@@ -451,14 +548,25 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
 interface CharacterExpCardProps {
   member: CharacterData;
   expReward: number;
+  /** Fast-forwards this card's bar to its finished state. */
+  skip: boolean;
+  /** Reports this card's id once its bar has landed, so the parent can gate Finish. */
+  onComplete: (id: string) => void;
 }
 
-function CharacterExpCard({ member, expReward }: CharacterExpCardProps) {
+function CharacterExpCard({ member, expReward, skip, onComplete }: CharacterExpCardProps) {
   // Build the timeline once so the rAF animation has a stable input.
   const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
-  const { percentage, level, badgeKey, hasLeveledUp } = useExpGainAnimation(timeline, {
+  const { percentage, level, badgeKey, hasLeveledUp, isComplete } = useExpGainAnimation(timeline, {
     onLevelUp: playLevelUpSound,
+    skip,
   });
+
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  useEffect(() => {
+    if (isComplete) onCompleteRef.current(member.id);
+  }, [isComplete, member.id]);
 
   // Derived straight from `percentage` (the same value driving the bar's width), so these
   // numbers are mathematically locked to the bar's fill — same easing, same duration, every frame.

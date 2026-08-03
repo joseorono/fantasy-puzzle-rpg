@@ -22,6 +22,8 @@ import {
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { isReducedMotion } from '~/lib/reduced-motion';
+import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { cn } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -108,6 +110,18 @@ export function BattleRatingScreen({ result, onContinue }: BattleRatingScreenPro
     setCanContinue(true);
     soundService.playSound(SoundNames.clickCoin, 0.6);
   }
+
+  // Two-stage confirm key: the first press fast-forwards the reveal (same as tapping the
+  // backdrop), the next one continues. Escape is left alone — battle-screen owns it for the pause.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (!canContinue) {
+      handleSkip();
+      return;
+    }
+    onContinue();
+  });
 
   // Running points total across the revealed rows (clamped at 0, like the final score).
   const revealedTotal = Math.max(

@@ -14,7 +14,7 @@ export default function MouseTracker() {
 
     let frame = 0;
 
-    function handleTrackMouse(e: MouseEvent) {
+    const handleTrackMouse = (e: MouseEvent) => {
       // Coalesce to one write per frame; transform keeps it off the layout path.
       if (frame) return;
       const x = e.clientX - TRACKER_OFFSET_PX;
@@ -23,9 +23,9 @@ export default function MouseTracker() {
         frame = 0;
         tracker.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       });
-    }
+    };
 
-    function playAnimOnClick() {
+    const playAnimOnClick = () => {
       // The ripple is decoration, and its softness comes from a 200ms fill ease that
       // reduced-motion.css collapses to 1ms — leaving a hard black disc. Skip it outright.
       if (isReducedMotion()) return;
@@ -34,11 +34,11 @@ export default function MouseTracker() {
       tracker.classList.remove('clickAnim');
       tracker.getBoundingClientRect();
       tracker.classList.add('clickAnim');
-    }
+    };
 
-    function handleAnimEnd() {
+    const handleAnimEnd = () => {
       tracker.classList.remove('clickAnim');
-    }
+    };
 
     window.addEventListener('mousemove', handleTrackMouse);
     window.addEventListener('click', playAnimOnClick);

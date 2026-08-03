@@ -1,5 +1,24 @@
 /* Battle Rewards Screen Styles */
 
+/* Bottom-right action row on both rewards screens. Takes over the `self-end` the Continue /
+   Finish buttons used to carry, so the keyboard hint sits beside its button. */
+.rewards-actions {
+  display: flex;
+  align-items: center;
+  align-self: flex-end;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* Quiet parchment tone — same family as .stat-current, deliberately not the eyebrow gold,
+   so the hint never competes with the button it sits beside. */
+.rewards-key-hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
 /* First Step - EXP GAINED Screen */
 .exp-gained-container {
   display: flex;

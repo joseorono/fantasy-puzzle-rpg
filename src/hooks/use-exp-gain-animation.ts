@@ -22,6 +22,11 @@ export interface ExpGainAnimationOptions {
    * @param newLevel - The level just reached.
    */
   onLevelUp?: (newLevel: number) => void;
+  /**
+   * Fast-forwards to the finished state. Flipping this true mid-flight cancels the running
+   * animation and jumps to the same end state Reduced Motion produces.
+   */
+  skip?: boolean;
 }
 
 export interface ExpGainAnimationState {
@@ -38,11 +43,31 @@ export interface ExpGainAnimationState {
 }
 
 /**
+ * The state the bar settles on once the whole timeline has played: the last segment's fill,
+ * the fully-gained level, and the badge popped once per level. Shared by the Reduced Motion
+ * and skip paths so both land on exactly the same frame.
+ *
+ * @param timeline - The character's animation timeline (must have at least one segment)
+ * @returns The finished animation state
+ */
+function getFinalAnimationState(timeline: ExpGainTimeline): ExpGainAnimationState {
+  const last = timeline.segments[timeline.segments.length - 1];
+  return {
+    percentage: last.toPercent,
+    level: timeline.startLevel + timeline.totalLevelUps,
+    badgeKey: timeline.totalLevelUps,
+    hasLeveledUp: timeline.totalLevelUps > 0,
+    isComplete: true,
+  };
+}
+
+/**
  * Drives a single character's EXP-bar animation from a pre-computed {@link ExpGainTimeline}.
  * Fills the bar to its real position; on each level crossing it fills to 100%, pops the
  * badge, holds briefly, resets to 0%, and refills — once per level gained.
  *
- * Honours the Reduced Motion setting by jumping straight to the final state.
+ * Honours the Reduced Motion setting — and {@link ExpGainAnimationOptions.skip} — by jumping
+ * straight to the final state.
  *
  * @param timeline - The pure animation timeline for this character (stable identity expected)
  * @param options - Optional callbacks (e.g. {@link ExpGainAnimationOptions.onLevelUp} for SFX)
@@ -55,6 +80,7 @@ export function useExpGainAnimation(
   // Held in a ref so a changing callback identity never re-runs the rAF effect below.
   const onLevelUpRef = useRef(options?.onLevelUp);
   onLevelUpRef.current = options?.onLevelUp;
+  const skip = options?.skip ?? false;
 
   const [state, setState] = useState<ExpGainAnimationState>(() => ({
     percentage: timeline.segments[0]?.fromPercent ?? 0,
@@ -68,17 +94,11 @@ export function useExpGainAnimation(
     const segments = timeline.segments;
     if (segments.length === 0) return;
 
-    if (isReducedMotion()) {
-      const last = segments[segments.length - 1];
-      const finalLevel = timeline.startLevel + timeline.totalLevelUps;
-      setState({
-        percentage: last.toPercent,
-        level: finalLevel,
-        badgeKey: timeline.totalLevelUps,
-        hasLeveledUp: timeline.totalLevelUps > 0,
-        isComplete: true,
-      });
-      if (timeline.totalLevelUps > 0) onLevelUpRef.current?.(finalLevel);
+    // Skipping mid-flight re-runs this effect; the cleanup below has already cancelled the rAF.
+    if (skip || isReducedMotion()) {
+      const finalState = getFinalAnimationState(timeline);
+      setState(finalState);
+      if (timeline.totalLevelUps > 0) onLevelUpRef.current?.(finalState.level);
       return;
     }
 
@@ -151,7 +171,7 @@ export function useExpGainAnimation(
       cancelled = true;
       cancelAnimationFrame(rafId);
     };
-  }, [timeline]);
+  }, [timeline, skip]);
 
   return state;
 }
