@@ -1,0 +1,87 @@
+/* WoodDiscButton — a carved wooden disc with an inline-SVG glyph cut into its face.
+
+   Drawn entirely in CSS geometry so it stays crisp at any zoom. Follows the house ingredients:
+   an upper-left light source (`circle at 40% 35%`), zero-blur shadows only, the toffec
+   extrusion signature (`0 4px 0 <darker>` collapsing on press), and the `--xx-*` token pattern
+   from ToffecSquareButton so a stone or iron variant is a property swap. */
+
+.wood-disc-btn {
+  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]. */
+  --wd-size: 64px;
+  --wd-lip: 4px;
+
+  /* Honey wood, sampled from the signpost planks it sits beside. */
+  --wd-face-light: #c68a4e;
+  --wd-face-mid: #a86a34;
+  --wd-face-dark: #7d4a22;
+  --wd-outline: #4a2a12;
+  --wd-ring: #8b6914; /* the house antique-brass frame tone */
+  --wd-under: #5a3418; /* extrusion under-edge */
+  --wd-carve: #4f2d12;
+  --wd-carve-lit: rgba(255, 226, 176, 0.5);
+
+  position: relative;
+  width: var(--wd-size);
+  height: var(--wd-size);
+  flex-shrink: 0;
+  padding: 0;
+  cursor: pointer;
+  border: 3px solid var(--wd-outline);
+  border-radius: 50%;
+  background:
+    /* Grain first so it sits over the face, matching the planks' horizontal banding. */
+    repeating-linear-gradient(180deg, transparent 0 4px, rgba(74, 42, 18, 0.13) 4px 5px),
+    /* Hard stops, not a smooth blend: three flat bands posterize the shading the way pixel art
+       does. A continuous radial makes the disc read as glossy plastic. Light stays upper-left. */
+      radial-gradient(
+        circle at 38% 32%,
+        var(--wd-face-light) 0 34%,
+        var(--wd-face-mid) 34% 68%,
+        var(--wd-face-dark) 68%
+      );
+  box-shadow:
+    inset 0 0 0 3px var(--wd-ring),
+    inset 0 3px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -5px 0 rgba(74, 42, 18, 0.34),
+    0 var(--wd-lip) 0 var(--wd-under);
+  /* steps() rather than easing — continuous interpolation reads wrong on a pixel-art surface. */
+  transition:
+    transform 60ms steps(1),
+    box-shadow 60ms steps(1),
+    filter 120ms steps(2);
+}
+
+/* The same wood, better lit — no hue jump, and deliberately not the yellow of the old coin art. */
+.wood-disc-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Bottoms out into its own lip, like a button pressed into the post. */
+.wood-disc-btn:active:not(:disabled) {
+  transform: translateY(var(--wd-lip));
+  box-shadow:
+    inset 0 0 0 3px var(--wd-ring),
+    inset 0 3px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -5px 0 rgba(74, 42, 18, 0.4),
+    0 0 0 var(--wd-under);
+}
+
+.wood-disc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wood-disc-btn:focus-visible {
+  outline: 2px solid #d4a574;
+  outline-offset: 3px;
+}
+
+/* Carved, not painted: a dark cut with a single lit row along its lower edge, which is how a
+   chisel mark catches light. The 1px offset is what sells the depth — do not blur it. */
+.wood-disc-btn__glyph {
+  position: relative;
+  width: 46%;
+  height: 46%;
+  fill: var(--wd-carve);
+  filter: drop-shadow(0 1px 0 var(--wd-carve-lit));
+}
