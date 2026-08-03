@@ -1,9 +1,15 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
+import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
 import type { ConfirmDialogVariant } from '~/stores/confirm-dialog-atoms';
 
@@ -30,6 +36,10 @@ interface ConfirmPanelProps {
  * medallion, a gradient divider, a flexible body, and Cancel / Confirm actions.
  * Backdrop and the corner close button both cancel. Compose it for plain text
  * confirms (`ConfirmDialog`) and richer ones (e.g. `SalvageConfirmDialog`).
+ *
+ * Keyboard: ←/→ (or A/D) pick an action, Enter/Space activates it, Escape cancels.
+ * Enter never activates anything until an arrow reveals a selection — a destructive
+ * confirm must not be one blind keystroke away.
  */
 export function ConfirmPanel({
   title,
@@ -44,6 +54,43 @@ export function ConfirmPanel({
 }: ConfirmPanelProps) {
   const isDanger = variant === 'danger';
   const body = children ?? (message ? <p className="confirm-panel__message pixel-font">{message}</p> : null);
+
+  // The danger variant renders its actions row-reversed, so the keyboard row is built in
+  // the order the player SEES — ←/→ must stay spatially truthful, not DOM-truthful.
+  const visualOrder = isDanger ? (['confirm', 'cancel'] as const) : (['cancel', 'confirm'] as const);
+  const selection = useKeyboardSelection([visualOrder.map((id) => ({ id }))], {
+    onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
+  });
+
+  // Registered in the capture phase with stopImmediatePropagation, so an open confirm
+  // claims these keys outright from every bubble-phase listener beneath it (the pause
+  // menu's Escape toggle, view-level arrow/Enter handlers) without editing any of them.
+  // Unclaimed keys return early and still reach everyone else.
+  useWindowKeyDown(
+    (event) => {
+      const direction = getNavDirection(event.key);
+      const isClaimed = direction !== null || isConfirmKey(event.key) || event.key === KeyboardKeys.Escape;
+      if (!isClaimed) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (direction === 'left' || direction === 'right') {
+        selection.move(direction);
+        return;
+      }
+      if (direction) return; // ↑/↓ claimed but inert (keeps the pause-menu sidebar out)
+      if (event.repeat) return; // Enter/Space/Escape act once per press
+      if (event.key === KeyboardKeys.Escape) {
+        onCancel();
+        return;
+      }
+      if (selection.isSelected('confirm')) onConfirm();
+      else if (selection.isSelected('cancel')) onCancel();
+      // Nothing selected: swallowed — Enter never confirms blind.
+    },
+    true,
+    { capture: true },
+  );
 
   return (
     <div className="confirm-panel-backdrop" onClick={onCancel}>
@@ -77,13 +124,19 @@ export function ConfirmPanel({
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 
         <div className="confirm-panel__actions">
-          <ToffecButton variant="cream" size="xs" onClick={onCancel}>
-            {cancelLabel}
-          </ToffecButton>
-          <ToffecButton variant={isDanger ? 'indigolay-red' : 'tan'} size="xs" onClick={onConfirm}>
-            {confirmLabel}
-          </ToffecButton>
+          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('cancel')}>
+            <ToffecButton variant="cream" size="xs" onClick={onCancel}>
+              {cancelLabel}
+            </ToffecButton>
+          </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('confirm')}>
+            <ToffecButton variant={isDanger ? 'indigolay-red' : 'tan'} size="xs" onClick={onConfirm}>
+              {confirmLabel}
+            </ToffecButton>
+          </ToffecBeigeCornersWrapper>
         </div>
+
+        <p className="confirm-panel__key-hint pixel-font">← → to choose · Enter to confirm · Esc to cancel</p>
       </div>
     </div>
   );

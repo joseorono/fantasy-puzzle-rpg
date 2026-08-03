@@ -216,6 +216,17 @@
   min-width: 120px;
 }
 
+/* Same quiet parchment tone as the other key hints; sits under the action row. */
+.confirm-panel__key-hint {
+  margin: -0.35rem 0 0;
+  padding: 0 1.25rem 1rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
 @media (max-width: 480px) {
   .confirm-panel {
     max-width: 340px;

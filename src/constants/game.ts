@@ -31,6 +31,12 @@ export const MIN_LOAD_TIME_MS = 800;
 /** Duration (ms) before the loot notification auto-dismisses with a fade-out. */
 export const LOOT_NOTIFICATION_DISMISS_MS = 3000;
 
+/** Loot notification fade-out length (ms). Must match its `transition-duration` in the markup. */
+export const LOOT_NOTIFICATION_FADE_MS = 500;
+
+/** Delay (ms) before the loot notification fades in, so its slide-in transition has a frame to run. */
+export const LOOT_NOTIFICATION_FADE_IN_DELAY_MS = 50;
+
 /** Duration (ms) before the floor loot notification auto-dismisses with a fade-out. */
 export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 1500;
 

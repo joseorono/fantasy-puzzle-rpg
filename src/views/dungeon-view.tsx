@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import {
   activeDungeonIdAtom,
@@ -54,8 +54,13 @@ import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
+import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
+import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { confirmDialogRequestAtom } from '~/stores/confirm-dialog-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { Star } from 'lucide-react';
@@ -69,6 +74,19 @@ import {
   DUNGEON_CONTINUE_FLAVOR,
   DUNGEON_CLEARED_FLAVOR,
 } from '~/constants/flavor-text/dungeon-flavor';
+
+type DungeonActionId = 'engage' | 'finish' | 'manage-party' | 'rest' | 'leave';
+
+/**
+ * One keyboard-reachable action. The buttons and the keyboard grid are built from the
+ * same entries, so a shortcut can never fire an action its button has disabled.
+ */
+interface DungeonAction {
+  id: DungeonActionId;
+  label: string;
+  disabled: boolean;
+  run: () => void;
+}
 
 /** Label for the floor's contextual action button, by the current event type. */
 function getActionLabel(event: DungeonEvent | undefined, isBoss: boolean): string {
@@ -166,12 +184,17 @@ export default function DungeonView() {
 
   const pauseMenu = usePauseMenu();
   const confirm = useConfirm();
+  const confirmRequest = useAtomValue(confirmDialogRequestAtom);
 
   // ─── Local UI state ──────────────────────────────────────────────────
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [showClearOverlay, setShowClearOverlay] = useState(false);
   const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
+  // One-shot latches: these actions navigate away (or await a dialog), so a second
+  // activation before the unmount must not run them twice.
+  const isLeavingRef = useRef(false);
+  const hasFinishedRef = useRef(false);
 
   // The dungeon definition is passed by reference through the router (authored or generated).
   const dungeon = viewData?.dungeon;
@@ -232,8 +255,75 @@ export default function DungeonView() {
     const floor = getFloor(dungeon, floorIndex);
     const event = floor ? getEvent(floor, eventIndex) : undefined;
     setFlavorLine(pickEventFlavor(event, floor?.isBoss ?? false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dungeon, floorIndex, eventIndex, phase]);
+
+  // ─── Derived gates (before the not-found return: the hooks below need them) ──
+  const currentFloor = dungeon ? getFloor(dungeon, floorIndex) : undefined;
+  const currentEvent = currentFloor ? getEvent(currentFloor, eventIndex) : undefined;
+  const isBoss = currentFloor?.isBoss ?? false;
+
+  const isComplete = phase === 'complete';
+  const isBrowsing = phase === 'browsing' && !activeDialogue;
+  const canEngage = isBrowsing && currentEvent !== undefined;
+
+  // Footer controls available only between events (not mid-combat / mid-dialogue).
+  const controlsEnabled = isBrowsing && !isComplete;
+  const partyFull = isPartyFullyHealed(party);
+  const restsLeft = (dungeon ? getDungeonRestPool(dungeon) : 0) - restsUsed;
+  // No resting on the entrance floor: otherwise players could walk in, rest, and leave,
+  // treating the dungeon as a free (albeit slower) inn. You must progress past it first.
+  const canRestOnThisFloor = floorIndex > 0;
+  const isRestDisabled = !controlsEnabled || hasRested || partyFull || restsLeft <= 0 || !canRestOnThisFloor;
+
+  // ─── Keyboard ────────────────────────────────────────────────────────
+  // The buttons and the keyboard grid share these entries, so a shortcut can never
+  // fire an action its button has disabled.
+  const primaryAction: DungeonAction = isComplete
+    ? { id: 'finish', label: 'Finish', disabled: false, run: handleFinishPressed }
+    : { id: 'engage', label: getActionLabel(currentEvent, isBoss), disabled: !canEngage, run: handleEngage };
+  const footerActions: DungeonAction[] = [
+    { id: 'manage-party', label: 'Manage Party', disabled: !controlsEnabled, run: pauseMenu.open },
+    { id: 'rest', label: hasRested ? 'Rested' : `Rest (${restsLeft} left)`, disabled: isRestDisabled, run: handleRest },
+    { id: 'leave', label: 'Leave Dungeon', disabled: !controlsEnabled, run: () => void handleLeave() },
+  ];
+  const [manageAction, restAction, leaveAction] = footerActions;
+  const actionRows = [[primaryAction], footerActions];
+
+  const selection = useKeyboardSelection(actionRows, {
+    onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
+  });
+
+  // The dungeon owns the keyboard only while browsing with nothing on top. useWindowKeyDown
+  // has no arbitration — every mounted subscriber fires on every keydown — so each surface
+  // that takes over (dialogue, pause menu, confirm dialog, clear overlay) is gated out here.
+  const keyboardEnabled =
+    !pauseMenu.isOpen && !activeDialogue && confirmRequest === null && !showClearOverlay && phase !== 'awaiting-battle';
+
+  // Escape is deliberately NOT handled here: usePauseMenu owns it globally, and "Leave
+  // Dungeon" forfeits the run — it must never be one keystroke away. Leave stays a
+  // select-then-confirm action like everything else in the ring.
+  useWindowKeyDown((event) => {
+    if (!keyboardEnabled) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction) {
+      event.preventDefault();
+      selection.move(direction);
+      return;
+    }
+
+    if (isConfirmKey(event.key)) {
+      // Claimed even with nothing selected, so Space can never scroll the view and a
+      // click-focused button can't be re-activated by the browser's default behavior.
+      event.preventDefault();
+      // Ignore OS auto-repeat — including an Enter still held from the battle-rewards
+      // screens, which would otherwise land here on mount and start the next battle.
+      if (event.repeat) return;
+      const action = actionRows.flat().find((entry) => entry.id === selection.selectedId);
+      if (!action || action.disabled) return;
+      action.run();
+    }
+  }, keyboardEnabled);
 
   if (!viewData || !dungeon) {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
@@ -241,11 +331,8 @@ export default function DungeonView() {
 
   const returnView = viewData.returnView ?? DEFAULT_VIEW;
 
-  const currentFloor = getFloor(dungeon, floorIndex);
-  const currentEvent = currentFloor ? getEvent(currentFloor, eventIndex) : undefined;
   const floorBg = currentFloor ? getFloorBackground(dungeon, currentFloor) : dungeon.backgroundImage;
 
-  const isComplete = phase === 'complete';
   const ratingSummary = summarizeFloorRatings(floorRatings);
   // Rated floors only (dialogue/chest-only floors are absent), in descent order, for the overlay.
   const ratedFloorRows = dungeon.floors
@@ -254,16 +341,6 @@ export default function DungeonView() {
       return rating ? { name: formatFloorTitle(idx, floor.name), stars: rating.stars } : null;
     })
     .filter((row): row is { name: string; stars: number } => row !== null);
-  const isBrowsing = phase === 'browsing' && !activeDialogue;
-  const canEngage = isBrowsing && currentEvent !== undefined;
-
-  // Footer controls available only between events (not mid-combat / mid-dialogue).
-  const controlsEnabled = isBrowsing && !isComplete;
-  const partyFull = isPartyFullyHealed(party);
-  const restsLeft = getDungeonRestPool(dungeon) - restsUsed;
-  // No resting on the entrance floor: otherwise players could walk in, rest, and leave,
-  // treating the dungeon as a free (albeit slower) inn. You must progress past it first.
-  const canRestOnThisFloor = floorIndex > 0;
 
   const totalCurrentHp = party.reduce((sum, m) => sum + Math.max(0, m.currentHp), 0);
   const totalMaxHp = party.reduce((sum, m) => sum + m.maxHp, 0);
@@ -303,27 +380,38 @@ export default function DungeonView() {
   }
 
   async function handleLeave() {
-    const ok = await confirm({
-      title: 'Leave Dungeon?',
-      message: 'You will lose all progress in this run.',
-      confirmLabel: 'Leave',
-      cancelLabel: 'Stay',
-      variant: 'danger',
-    });
-    if (!ok) return;
-    resetRun();
-    goBackTo(returnView);
+    if (isLeavingRef.current) return;
+    isLeavingRef.current = true;
+    try {
+      const ok = await confirm({
+        title: 'Leave Dungeon?',
+        message: 'You will lose all progress in this run.',
+        confirmLabel: 'Leave',
+        cancelLabel: 'Stay',
+        variant: 'danger',
+      });
+      if (!ok) return;
+      resetRun();
+      goBackTo(returnView);
+    } finally {
+      isLeavingRef.current = false;
+    }
   }
 
   function handleFinish() {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
     resetRun();
     goBackTo(returnView);
   }
 
-  const isBoss = currentFloor?.isBoss ?? false;
+  /** Finish, shared by the button and the keyboard: rated runs detour through the overlay. */
+  function handleFinishPressed() {
+    if (ratingSummary.ratedFloors > 0) setShowClearOverlay(true);
+    else handleFinish();
+  }
 
   const restHealPercent = Math.round(DUNGEON_REST_HEAL_PERCENT * 100);
-  const isRestDisabled = !controlsEnabled || hasRested || partyFull || restsLeft <= 0 || !canRestOnThisFloor;
 
   return (
     <div className="game-view dungeon flex h-full min-h-0 flex-col overflow-hidden">
@@ -394,13 +482,11 @@ export default function DungeonView() {
                 <p className="dungeon-card__desc">{flavorLine}</p>
               </div>
               <div className="dungeon-card__action">
-                <ToffecButton
-                  variant="cream"
-                  size="sm"
-                  onClick={() => (ratingSummary.ratedFloors > 0 ? setShowClearOverlay(true) : handleFinish())}
-                >
-                  Finish
-                </ToffecButton>
+                <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('finish')}>
+                  <ToffecButton variant="cream" size="sm" onClick={handleFinishPressed}>
+                    {primaryAction.label}
+                  </ToffecButton>
+                </ToffecBeigeCornersWrapper>
               </div>
             </div>
           ) : (
@@ -426,14 +512,16 @@ export default function DungeonView() {
               </div>
               <div className="dungeon-card__action">
                 {phase !== 'awaiting-battle' && (
-                  <ToffecButton
-                    variant={isBoss && currentEvent?.type === 'combat' ? 'orange' : 'tan'}
-                    size="sm"
-                    onClick={handleEngage}
-                    disabled={!canEngage}
-                  >
-                    {getActionLabel(currentEvent, isBoss)}
-                  </ToffecButton>
+                  <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('engage')}>
+                    <ToffecButton
+                      variant={isBoss && currentEvent?.type === 'combat' ? 'orange' : 'tan'}
+                      size="sm"
+                      onClick={handleEngage}
+                      disabled={primaryAction.disabled}
+                    >
+                      {primaryAction.label}
+                    </ToffecButton>
+                  </ToffecBeigeCornersWrapper>
                 )}
               </div>
             </div>
@@ -450,10 +538,17 @@ export default function DungeonView() {
       <div className="dungeon-footer">
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
-              <ToffecButton variant="cream" size="sm" onClick={pauseMenu.open} disabled={!controlsEnabled}>
-                Manage Party
-              </ToffecButton>
+            <div
+              className={cn(
+                'dungeon-footer__slot',
+                selection.isSelected('manage-party') && 'dungeon-footer__slot--selected',
+              )}
+            >
+              <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('manage-party')}>
+                <ToffecButton variant="cream" size="sm" onClick={manageAction.run} disabled={manageAction.disabled}>
+                  {manageAction.label}
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </TooltipTrigger>
           <TooltipContent side="top">
@@ -463,10 +558,14 @@ export default function DungeonView() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
-              <ToffecButton variant="tan" size="sm" onClick={handleRest} disabled={isRestDisabled}>
-                {hasRested ? 'Rested' : `Rest (${restsLeft} left)`}
-              </ToffecButton>
+            <div
+              className={cn('dungeon-footer__slot', selection.isSelected('rest') && 'dungeon-footer__slot--selected')}
+            >
+              <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('rest')}>
+                <ToffecButton variant="tan" size="sm" onClick={restAction.run} disabled={restAction.disabled}>
+                  {restAction.label}
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </TooltipTrigger>
           <TooltipContent side="top">
@@ -477,16 +576,29 @@ export default function DungeonView() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
-              <ToffecButton variant="indigolay-red" size="sm" onClick={handleLeave} disabled={!controlsEnabled}>
-                Leave Dungeon
-              </ToffecButton>
+            <div
+              className={cn('dungeon-footer__slot', selection.isSelected('leave') && 'dungeon-footer__slot--selected')}
+            >
+              <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('leave')}>
+                <ToffecButton
+                  variant="indigolay-red"
+                  size="sm"
+                  onClick={leaveAction.run}
+                  disabled={leaveAction.disabled}
+                >
+                  {leaveAction.label}
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </TooltipTrigger>
           <TooltipContent side="top">
             Abandon the run and return. You'll lose all progress in this dungeon.
           </TooltipContent>
         </Tooltip>
+
+        <span className="dungeon-key-hint pixel-font">
+          Arrow Keys / WASD to select · Enter to act · Esc for the menu
+        </span>
       </div>
 
       {/* Inline overlays */}

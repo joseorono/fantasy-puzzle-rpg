@@ -7,6 +7,9 @@ export const KeyboardKeys = {
   Escape: 'Escape',
   Space: ' ',
   Control: 'Control',
+  /** Dismisses transient, non-blocking surfaces. Claimed by nothing else, so it never
+   *  competes with the confirm key a view is already using. */
+  Backspace: 'Backspace',
   ArrowUp: 'ArrowUp',
   ArrowDown: 'ArrowDown',
   ArrowLeft: 'ArrowLeft',
