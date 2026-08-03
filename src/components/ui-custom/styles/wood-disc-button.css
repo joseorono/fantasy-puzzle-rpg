@@ -3,22 +3,41 @@
    Drawn entirely in CSS geometry so it stays crisp at any zoom. Follows the house ingredients:
    an upper-left light source (`circle at 40% 35%`), zero-blur shadows only, the toffec
    extrusion signature (`0 4px 0 <darker>` collapsing on press), and the `--xx-*` token pattern
-   from ToffecSquareButton so a stone or iron variant is a property swap. */
+   from ToffecSquareButton — every colour is a token set by the tone class, so adding a stone or
+   iron disc later is a new block of custom properties and nothing else. */
 
-.wood-disc-btn {
-  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]. */
-  --wd-size: 64px;
-  --wd-lip: 4px;
+/* ── Tones ──────────────────────────────────────────────────────────────────
+   `--wd-carve` sits well below the darkest face band in both woods; a mid-brown cut would
+   vanish on walnut. The lit lower edge is what actually reads as depth, so it is pitched
+   against each wood rather than shared. */
 
-  /* Honey wood, sampled from the signpost planks it sits beside. */
+/* Honey oak — the lighter signpost-plank wood. */
+.wood-disc-btn--oak {
   --wd-face-light: #c68a4e;
   --wd-face-mid: #a86a34;
   --wd-face-dark: #7d4a22;
   --wd-outline: #4a2a12;
-  --wd-ring: #8b6914; /* the house antique-brass frame tone */
-  --wd-under: #5a3418; /* extrusion under-edge */
-  --wd-carve: #4f2d12;
+  --wd-under: #5a3418;
+  --wd-carve: #40220c;
   --wd-carve-lit: rgba(255, 226, 176, 0.5);
+}
+
+/* Dark walnut — pitched to the brick interior of the back button it sits beside. */
+.wood-disc-btn--walnut {
+  --wd-face-light: #a86e38;
+  --wd-face-mid: #8a5527;
+  --wd-face-dark: #63391a;
+  --wd-outline: #3d2110;
+  --wd-under: #46280f;
+  --wd-carve: #35190a;
+  --wd-carve-lit: rgba(216, 168, 112, 0.55);
+}
+
+.wood-disc-btn {
+  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]; colours from the tone class. */
+  --wd-size: 64px;
+  --wd-lip: 4px;
+  --wd-ring: #8b6914; /* the house antique-brass frame tone, shared by both woods */
 
   position: relative;
   width: var(--wd-size);

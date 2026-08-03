@@ -25,13 +25,18 @@ const DEFAULT_ARIA_LABEL: Record<WoodDiscGlyph, string> = {
 
 const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justify-center select-none', {
   variants: {
+    /** Which wood the disc is cut from. Colour only — geometry is identical. */
+    tone: {
+      oak: 'wood-disc-btn--oak',
+      walnut: 'wood-disc-btn--walnut',
+    },
     size: {
       sm: '[--wd-size:48px] [--wd-lip:3px]',
       default: '[--wd-size:64px] [--wd-lip:4px]',
       lg: '[--wd-size:80px] [--wd-lip:4px]',
     },
   },
-  defaultVariants: { size: 'default' },
+  defaultVariants: { tone: 'walnut', size: 'default' },
 });
 
 interface WoodDiscButtonProps
@@ -48,11 +53,14 @@ interface WoodDiscButtonProps
  * zoom, unlike the raster button art it is meant to replace. `size="lg"` is deliberately
  * `back-button.png`'s 80px footprint so `.leave-btn` can adopt this with no layout shift.
  *
- * All colours are `--wd-*` custom properties on the root, following the `--cb-*` convention in
- * {@link ToffecSquareButton}, so a future stone or iron variant is a property swap.
+ * Two woods ship: `walnut` (dark, pitched to the back button's brick interior) and `oak` (the
+ * lighter signpost-plank honey). All colours are `--wd-*` custom properties set by the tone
+ * class, following the `--cb-*` convention in {@link ToffecSquareButton}, so a future stone or
+ * iron disc is a new block of properties and nothing else.
  */
 export function WoodDiscButton({
   className,
+  tone,
   size,
   glyph,
   'aria-label': ariaLabel,
@@ -62,7 +70,7 @@ export function WoodDiscButton({
     <button
       type="button"
       aria-label={ariaLabel ?? DEFAULT_ARIA_LABEL[glyph]}
-      className={cn(woodDiscButtonVariants({ size, className }))}
+      className={cn(woodDiscButtonVariants({ tone, size, className }))}
       {...props}
     >
       <svg
