@@ -1,5 +1,6 @@
 // https://codepen.io/daiyalkhan/pen/KKgvvgM
 import { useEffect, useRef } from 'react';
+import { isReducedMotion } from '~/lib/reduced-motion';
 
 /** Half the tracker's 80px box, so the circle centres on the pointer. */
 const TRACKER_OFFSET_PX = 40;
@@ -25,6 +26,9 @@ export default function MouseTracker() {
     }
 
     function playAnimOnClick() {
+      // The ripple is decoration, and its softness comes from a 200ms fill ease that
+      // reduced-motion.css collapses to 1ms — leaving a hard black disc. Skip it outright.
+      if (isReducedMotion()) return;
       // Re-adding an already-present class won't replay the animation, so drop it and
       // force a reflow to restart cleanly on every click.
       tracker.classList.remove('clickAnim');

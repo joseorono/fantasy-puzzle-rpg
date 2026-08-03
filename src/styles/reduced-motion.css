@@ -1,6 +1,7 @@
 /* reduced-motion.css
    Drives the in-game "Reduced Motion" option (pause menu → Options). The attribute is set on
-   <html> by ~/lib/reduced-motion, and starts on when the OS asks for `prefers-reduced-motion`.
+   <html> by ~/lib/reduced-motion. Strictly opt-in and off by default — this is a game, so the OS
+   `prefers-reduced-motion` setting is deliberately not consulted anywhere.
    Animations still run for ~1ms so `animationend`/`transitionend` listeners keep firing and the
    screens that wait on them still advance. */
 
