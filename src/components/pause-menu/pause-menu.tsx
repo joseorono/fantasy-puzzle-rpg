@@ -15,9 +15,7 @@ export function PauseMenu() {
         <PauseMenuContent />
       </div>
       <span className="pause-menu-key-hint pixel-font">
-        {zone === 'sidebar'
-          ? '↑ ↓ select · Enter open · Esc close'
-          : 'Arrows navigate · Enter confirm · ← back · Esc close'}
+        {zone === 'sidebar' ? '↑ ↓ select · Enter open · Esc close' : 'Arrows navigate · Enter confirm · ← / Esc back'}
       </span>
     </div>
   );

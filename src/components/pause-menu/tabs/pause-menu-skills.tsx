@@ -134,9 +134,14 @@ export function PauseMenuSkills({ keyboardActive = false, onExitToSidebar }: Pau
     },
   });
 
-  // Leaving the pane (zone back to sidebar / tab change) re-arms the roster column.
+  // Leaving the pane (← or Escape back to the sidebar) re-arms the roster column and
+  // drops the cursor, so a later return can't show a stale one.
+  const gridSelectionRef = useRef(gridSelection);
+  gridSelectionRef.current = gridSelection;
   useEffect(() => {
-    if (!keyboardActive) setColumn('roster');
+    if (keyboardActive) return;
+    setColumn('roster');
+    gridSelectionRef.current.clear();
   }, [keyboardActive]);
 
   // The keyboard cursor sits on an action button only while the hook says so; the

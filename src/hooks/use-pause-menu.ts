@@ -33,6 +33,9 @@ export function usePauseMenu() {
   }
 
   function close() {
+    // Re-arm the zone so a close from inside a tab (backdrop click, Exit button) can't
+    // leave 'content' behind for the next open.
+    setZone('sidebar');
     setIsOpen(false);
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
 import {
   isMutedAtom,
@@ -9,7 +9,7 @@ import {
 } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
@@ -43,6 +43,12 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
     OPTION_ROWS.map((id) => [{ id }]),
     { onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05) },
   );
+
+  // A slider row only consumes ←→ for its value once the player opts in, so ← keeps
+  // its one meaning — back — everywhere else. Derived rather than reconciled: if the
+  // cursor moves or clears (pointer move, leaving the pane), edit mode ends with it.
+  const [editingRowId, setEditingRowId] = useState<OptionRowId | null>(null);
+  const isEditing = editingRowId !== null && selection.selectedId === editingRowId;
 
   // Entering the pane reveals the first row right away (not on the next keypress).
   const selectionRef = useRef(selection);
@@ -82,15 +88,43 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
     else if (id === 'sfx') handleSfxChange([clamp(sfxVolume + delta)]);
   }
 
-  // ↑↓ moves the row cursor; ←→ on a slider row nudges the value directly (the Radix
-  // thumb is never focused for this); Enter toggles the toggle rows; ← elsewhere hands
-  // the keyboard back to the host. A Tab-focused thumb preventDefaults its own arrows,
-  // so the defaultPrevented guard keeps the two from double-handling.
+  function exitToSidebar() {
+    // The start-menu host has no sidebar to return to, so it keeps its cursor.
+    if (!onExitToSidebar) return;
+    selection.clear();
+    onExitToSidebar();
+  }
+
+  // Browsing: ↑↓ move the cursor, ← hands the keyboard back to the host from ANY row,
+  // Enter/→ opens a slider for adjusting, Enter toggles the toggle rows. Editing: ←→
+  // own the value and ↑↓ go inert, so the mode can't be left by accident. A Tab-focused
+  // Radix thumb preventDefaults its own arrows, so the guard stops double-handling.
   useWindowKeyDown((event) => {
     if (event.defaultPrevented) return;
 
     const direction = getNavDirection(event.key);
     const selectedId = selection.selectedId as OptionRowId | null;
+    const isSliderRow = selectedId !== null && SLIDER_ROWS.includes(selectedId);
+
+    if (isEditing) {
+      if (direction === 'left' || direction === 'right') {
+        event.preventDefault();
+        // Repeat allowed: holding an arrow sweeps the volume.
+        nudgeVolume(selectedId!, direction === 'right' ? VOLUME_KEY_STEP : -VOLUME_KEY_STEP);
+        return;
+      }
+      if (direction) {
+        event.preventDefault(); // ↑↓ inert while editing
+        return;
+      }
+      if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (event.repeat) return;
+        soundService.playSound(SoundNames.mechanicalClick, 0.5);
+        setEditingRowId(null);
+      }
+      return;
+    }
 
     if (direction === 'up' || direction === 'down') {
       event.preventDefault();
@@ -98,31 +132,62 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
       return;
     }
 
-    if (direction === 'left' || direction === 'right') {
+    if (direction === 'left') {
       event.preventDefault();
-      if (selectedId !== null && SLIDER_ROWS.includes(selectedId)) {
-        // Slider rows consume ←→ for the value and never exit — even at 0, so
-        // hammering the volume down can't accidentally leave the pane.
-        nudgeVolume(selectedId, direction === 'right' ? VOLUME_KEY_STEP : -VOLUME_KEY_STEP);
-        return;
-      }
-      if (direction === 'left') {
-        selection.clear();
-        onExitToSidebar?.();
-      }
+      exitToSidebar();
+      return;
+    }
+
+    if (direction === 'right') {
+      event.preventDefault();
+      // → means "go deeper" here exactly as it does in the sidebar.
+      if (isSliderRow) setEditingRowId(selectedId);
       return;
     }
 
     if (isConfirmKey(event.key)) {
       event.preventDefault();
       if (event.repeat) return;
-      if (selectedId === 'mute') handleMuteToggle();
+      if (isSliderRow) {
+        soundService.playSound(SoundNames.mechanicalClick, 0.5);
+        setEditingRowId(selectedId);
+      } else if (selectedId === 'mute') handleMuteToggle();
       else if (selectedId === 'reduced-motion') setReducedMotion(!reducedMotion);
     }
   }, keyboardActive);
 
+  // Escape leaves edit mode rather than backing out of the pane. Claimed in the capture
+  // phase so the pause overlay's own Escape (back to sidebar / close) never also fires —
+  // and, in the start-menu host, so it doesn't close the tab modal mid-adjust.
+  useWindowKeyDown(
+    (event) => {
+      if (event.key !== KeyboardKeys.Escape) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (event.repeat) return;
+      setEditingRowId(null);
+    },
+    keyboardActive && isEditing,
+    { capture: true },
+  );
+
   function rowClass(id: OptionRowId, ...extra: string[]) {
-    return cn('pause-menu-option-row', ...extra, selection.isSelected(id) && 'pause-menu-option-row--kb-selected');
+    return cn(
+      'pause-menu-option-row',
+      ...extra,
+      selection.isSelected(id) && 'pause-menu-option-row--kb-selected',
+      isEditing && editingRowId === id && 'pause-menu-option-row--editing',
+    );
+  }
+
+  /** Contextual key hint for the cursor's slider row — nothing for unselected rows. */
+  function sliderHint(id: OptionRowId) {
+    if (!keyboardActive || !selection.isSelected(id)) return null;
+    return (
+      <span className="pause-menu-option-row__hint pixel-font">
+        {isEditing && editingRowId === id ? '← → adjust · Enter done' : 'Enter to adjust'}
+      </span>
+    );
   }
 
   return (
@@ -134,6 +199,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
         <div className={rowClass('master')}>
           <div className="pause-menu-option-header">
             <span className="pause-menu-option-label">Master Volume</span>
+            {sliderHint('master')}
             <span className="pause-menu-option-value">{masterVolume}%</span>
           </div>
           <FranukaSlider
@@ -151,6 +217,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
         <div className={rowClass('music')}>
           <div className="pause-menu-option-header">
             <span className="pause-menu-option-label">Music Volume</span>
+            {sliderHint('music')}
             <span className="pause-menu-option-value">{musicVolume}%</span>
           </div>
           <FranukaSlider
@@ -168,6 +235,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
         <div className={rowClass('sfx')}>
           <div className="pause-menu-option-header">
             <span className="pause-menu-option-label">SFX Volume</span>
+            {sliderHint('sfx')}
             <span className="pause-menu-option-value">{sfxVolume}%</span>
           </div>
           <FranukaSlider

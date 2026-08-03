@@ -106,9 +106,14 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
     onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
   });
 
-  // Leaving the pane (zone back to sidebar / tab change) re-arms the roster column.
+  // Leaving the pane (← or Escape back to the sidebar) re-arms the roster column and
+  // drops the cursor, so a later return can't show a stale one.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
   useEffect(() => {
-    if (!keyboardActive) setColumn('roster');
+    if (keyboardActive) return;
+    setColumn('roster');
+    selectionRef.current.clear();
   }, [keyboardActive]);
 
   // Keep the keyboard-selected available item visible in its scrolling list.

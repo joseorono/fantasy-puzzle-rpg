@@ -1413,6 +1413,23 @@
   background: rgba(212, 165, 116, 0.06);
 }
 
+/* A slider open for adjusting — the same gold, turned up, so edit mode is unmistakable
+   without introducing a second colour. */
+.pause-menu-option-row--editing {
+  background: rgba(212, 165, 116, 0.13);
+  box-shadow:
+    0 0 0 2px rgba(212, 165, 116, 0.85),
+    0 0 14px rgba(212, 165, 116, 0.35);
+}
+
+/* Contextual key hint inside a slider row's header, between the label and the value. */
+.pause-menu-option-row__hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
 /* Zone-aware key hint pinned under the menu body — same quiet parchment tone as
    the rewards/dungeon hints. */
 .pause-menu-key-hint {
