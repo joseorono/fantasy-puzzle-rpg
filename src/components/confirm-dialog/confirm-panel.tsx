@@ -7,7 +7,7 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
+import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { cn } from '~/lib/utils';
@@ -69,7 +69,7 @@ export function ConfirmPanel({
   useWindowKeyDown(
     (event) => {
       const direction = getNavDirection(event.key);
-      const isClaimed = direction !== null || isConfirmKey(event.key) || event.key === KeyboardKeys.Escape;
+      const isClaimed = direction !== null || isConfirmKey(event.key) || isCancelKey(event.key);
       if (!isClaimed) return;
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -79,8 +79,8 @@ export function ConfirmPanel({
         return;
       }
       if (direction) return; // ↑/↓ claimed but inert (keeps the pause-menu sidebar out)
-      if (event.repeat) return; // Enter/Space/Escape act once per press
-      if (event.key === KeyboardKeys.Escape) {
+      if (event.repeat) return; // Enter/Space/Escape/Backspace act once per press
+      if (isCancelKey(event.key)) {
         onCancel();
         return;
       }

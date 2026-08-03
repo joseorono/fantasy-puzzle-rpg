@@ -4,7 +4,7 @@ import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
 import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
+import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { Play, FolderOpen, ScrollText } from 'lucide-react';
@@ -161,10 +161,10 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     }
   });
 
-  // Escape backs out of an open tab modal (Options/Load/Save/Settings). Credits
-  // can only open from the main view, so its own Escape handler never overlaps.
+  // Escape/Backspace back out of an open tab modal (Options/Load/Save/Settings).
+  // Credits can only open from the main view, so its own Escape handler never overlaps.
   useWindowKeyDown((event) => {
-    if (event.key !== KeyboardKeys.Escape) return;
+    if (!isCancelKey(event.key)) return;
     if (activeTab === 'main') return;
     event.preventDefault();
     if (event.repeat) return;

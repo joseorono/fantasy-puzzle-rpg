@@ -13,6 +13,8 @@ import {
 } from '~/constants/game';
 import { KeyboardKeys } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useAtomValue } from 'jotai';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 
 interface LootNotificationProps {
   loot: LootTable;
@@ -26,6 +28,7 @@ interface LootNotificationProps {
  */
 export function LootNotification({ loot, onClose }: LootNotificationProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
 
   // Held in a ref so the timers below can be armed once on mount. Both call sites pass a fresh
   // inline arrow for onClose, and a `[onClose]` dependency would re-arm the auto-dismiss on every
@@ -55,12 +58,13 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
 
   // Backspace rather than the confirm key: this toast is non-blocking and already auto-dismisses,
   // so it must not swallow the Enter the map and dungeon bind for themselves, nor be wiped out by
-  // an Enter meant for them. Backspace is claimed nowhere else, so it needs no priority handling.
+  // an Enter meant for them. The pause menu also treats Backspace as "back", so the toast stands
+  // down while it's open rather than letting one press do both.
   useWindowKeyDown((event) => {
     if (event.key !== KeyboardKeys.Backspace) return;
     event.preventDefault();
     startFadeOut();
-  }, isVisible);
+  }, isVisible && !isPauseMenuOpen);
 
   const hasEquipment = loot.equipableItems.length > 0;
   const hasConsumables = loot.consumableItems.length > 0;

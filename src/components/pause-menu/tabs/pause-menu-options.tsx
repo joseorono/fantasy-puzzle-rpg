@@ -9,7 +9,7 @@ import {
 } from '~/stores/pause-menu-atoms';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
+import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
@@ -156,12 +156,12 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
     }
   }, keyboardActive);
 
-  // Escape leaves edit mode rather than backing out of the pane. Claimed in the capture
-  // phase so the pause overlay's own Escape (back to sidebar / close) never also fires —
-  // and, in the start-menu host, so it doesn't close the tab modal mid-adjust.
+  // Escape/Backspace leave edit mode rather than backing out of the pane. Claimed in the
+  // capture phase so the pause overlay's own cancel (back to sidebar / close) never also
+  // fires — and, in the start-menu host, so it doesn't close the tab modal mid-adjust.
   useWindowKeyDown(
     (event) => {
-      if (event.key !== KeyboardKeys.Escape) return;
+      if (!isCancelKey(event.key)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       if (event.repeat) return;
@@ -184,7 +184,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
   function sliderHint(id: OptionRowId) {
     if (!keyboardActive || !selection.isSelected(id)) return null;
     return (
-      <span className="pause-menu-option-row__hint pixel-font">
+      <span className="pause-menu-inline-hint pixel-font">
         {isEditing && editingRowId === id ? '← → adjust · Enter done' : 'Enter to adjust'}
       </span>
     );

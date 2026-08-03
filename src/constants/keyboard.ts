@@ -53,6 +53,16 @@ export function isConfirmKey(key: string): boolean {
 }
 
 /**
+ * Whether a key backs out of the current surface (Escape or Backspace). Both are
+ * offered everywhere "back" is meant, so players reaching for either one get it.
+ * Callers that also treat Escape as "open" must check for Escape explicitly —
+ * Backspace only ever unwinds.
+ */
+export function isCancelKey(key: string): boolean {
+  return key === KeyboardKeys.Escape || key === KeyboardKeys.Backspace;
+}
+
+/**
  * Detects whether the running modifier (Shift) is held during a keyboard event.
  * Used by character movement to toggle walk ↔ run speed.
  */

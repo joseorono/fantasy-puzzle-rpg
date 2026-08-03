@@ -46,13 +46,15 @@ function stackKey(itemId: string, rarity?: RarityTier): string {
 }
 
 interface PauseMenuItemsProps {
-  /** The content zone owns the keyboard — arrows/Enter act on this pane. */
+  /**
+   * The content zone owns the keyboard — arrows/Enter act on this pane. Note there is
+   * no `onExitToSidebar` here: ←→ are spent cycling categories, so backing out of this
+   * tab is Escape/Backspace only (handled by the pause overlay).
+   */
   keyboardActive?: boolean;
-  /** Fired when ← at the left edge hands the keyboard back to the sidebar. */
-  onExitToSidebar?: () => void;
 }
 
-export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: PauseMenuItemsProps) {
+export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) {
   const inventory = useInventory();
   const party = useParty();
   const inventoryActions = useInventoryActions();
@@ -119,10 +121,11 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
     }
   }
 
-  // ─── Keyboard grid: [category tabs] / one row per stack / [Use] ──────
+  // ─── Keyboard grid: one row per stack, then [Use] ────────────────────
+  // The category tabs are deliberately absent: ←→ cycle them from anywhere in the
+  // pane, so they're driven by the keys rather than walked to by the cursor.
   const usableItem = selectedItem && isUsableConsumable(selectedItem) ? selectedItem : null;
   const gridRows: KeyboardSelectableItem[][] = [
-    CATEGORIES.map((cat) => ({ id: `cat:${cat.id}` })),
     ...filteredInventory.map((inv) => [{ id: stackKey(inv.itemId, inv.rarity) }]),
     ...(usableItem ? [[{ id: 'use', disabled: !canUseItem(usableItem) }]] : []),
   ];
@@ -132,13 +135,12 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
     // and the row's `.selected` styling follow it for free.
     onMove: (id) => {
       soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
-      if (!id.startsWith('cat:') && id !== 'use') setSelectedKey(id);
+      if (id !== 'use') setSelectedKey(id);
     },
   });
 
-  // Entering the pane reveals a selection right away: first stack, else the active
-  // category. Leaving it (← or Escape back to the sidebar) drops the cursor, so a
-  // later return can't show a stale one.
+  // Entering the pane reveals the first stack right away. Leaving it (Escape/Backspace
+  // back to the sidebar) drops the cursor, so a later return can't show a stale one.
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   useEffect(() => {
@@ -148,9 +150,34 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
     }
     if (selectionRef.current.selectedId !== null) return;
     const first = filteredInventory[0];
-    selectionRef.current.select(first ? stackKey(first.itemId, first.rarity) : `cat:${category}`);
+    if (first) selectionRef.current.select(stackKey(first.itemId, first.rarity));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardActive]);
+
+  // A keyboard category switch wants the cursor on the new list's first stack, but that
+  // row doesn't exist until the next render — so the intent is parked here and applied
+  // in the effect below. A ref (not just `keyboardActive`) keeps mouse clicks on the
+  // category tabs from planting a keyboard cursor.
+  const pendingCategoryRevealRef = useRef(false);
+
+  /** Cycle the category tabs with ←→, revealing the new list's first item. */
+  function cycleCategory(step: 1 | -1) {
+    const currentIndex = CATEGORIES.findIndex((cat) => cat.id === category);
+    const next = CATEGORIES[(currentIndex + step + CATEGORIES.length) % CATEGORIES.length];
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    setCategory(next.id);
+    setSelectedKey(null);
+    selection.clear();
+    pendingCategoryRevealRef.current = true;
+  }
+
+  useEffect(() => {
+    if (!pendingCategoryRevealRef.current) return;
+    pendingCategoryRevealRef.current = false;
+    const first = filteredInventory[0];
+    if (first) selectionRef.current.select(stackKey(first.itemId, first.rarity));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   // Keep the keyboard-selected stack visible in the scrolling list.
   useEffect(() => {
@@ -164,11 +191,10 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
     const direction = getNavDirection(event.key);
     if (direction) {
       event.preventDefault();
-      // ← at the left edge (or with nothing selected) backs out to the sidebar;
-      // within the category row it moves normally.
-      if (direction === 'left' && (selection.position === null || selection.position.colIndex === 0)) {
-        selection.clear();
-        onExitToSidebar?.();
+      // ←→ belong to the category tabs here, so they never back out of the pane —
+      // Escape/Backspace do that (see PauseMenuOverlay). ↑↓ walk the list.
+      if (direction === 'left' || direction === 'right') {
+        cycleCategory(direction === 'right' ? 1 : -1);
         return;
       }
       selection.move(direction);
@@ -180,12 +206,6 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
       if (event.repeat) return;
       const entry = gridRows.flat().find((item) => item.id === selection.selectedId);
       if (!entry || entry.disabled) return;
-      if (entry.id.startsWith('cat:')) {
-        soundService.playSound(SoundNames.mechanicalClick, 0.5);
-        setCategory(entry.id.slice('cat:'.length) as ItemCategory);
-        setSelectedKey(null);
-        return;
-      }
       if (entry.id === 'use') {
         if (usableItem) handleUseItem(usableItem);
         return;
@@ -202,21 +222,21 @@ export function PauseMenuItems({ keyboardActive = false, onExitToSidebar }: Paus
       </h2>
       <div className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
-          <ToffecBeigeCornersWrapper key={cat.id} forceDisplay={selection.isSelected(`cat:${cat.id}`)}>
-            <IndigolayTab
-              size="sm"
-              glow={false}
-              isActive={category === cat.id}
-              className="pause-menu-item-category-tab"
-              onClick={() => {
-                setCategory(cat.id);
-                setSelectedKey(null);
-              }}
-            >
-              {cat.label}
-            </IndigolayTab>
-          </ToffecBeigeCornersWrapper>
+          <IndigolayTab
+            key={cat.id}
+            size="sm"
+            glow={false}
+            isActive={category === cat.id}
+            className="pause-menu-item-category-tab"
+            onClick={() => {
+              setCategory(cat.id);
+              setSelectedKey(null);
+            }}
+          >
+            {cat.label}
+          </IndigolayTab>
         ))}
+        {keyboardActive && <span className="pause-menu-inline-hint pixel-font">← → switch</span>}
       </div>
       <div className="pause-menu-items-layout">
         <div className="pause-menu-item-list">

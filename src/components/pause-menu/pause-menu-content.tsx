@@ -28,7 +28,8 @@ export function PauseMenuContent() {
     // Clicking anywhere in the content pane is explicit engagement — subsequent
     // arrow keys act on the content, not the sidebar.
     <div className={contentClassName} onPointerDownCapture={() => setZone('content')}>
-      {activeTab === 'items' && <PauseMenuItems keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
+      {/* Items takes no exit callback: ←→ cycle its categories, so Escape/Backspace are its way out. */}
+      {activeTab === 'items' && <PauseMenuItems keyboardActive={keyboardActive} />}
       {activeTab === 'equip' && <PauseMenuEquip keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'skills' && <PauseMenuSkills keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'stats' && <PauseMenuStats keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}

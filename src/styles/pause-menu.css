@@ -1422,12 +1422,20 @@
     0 0 14px rgba(212, 165, 116, 0.35);
 }
 
-/* Contextual key hint inside a slider row's header, between the label and the value. */
-.pause-menu-option-row__hint {
+/* Contextual key hint sitting inline with a control — a slider row's header, the item
+   category tabs. Same quiet parchment tone as the shell hint, so it never competes. */
+.pause-menu-inline-hint {
   font-size: 0.5rem;
   letter-spacing: 0.04em;
+  white-space: nowrap;
   color: rgba(196, 178, 149, 0.75);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* The category row is a flex row of tabs; the hint trails it without stretching. */
+.pause-menu-item-categories .pause-menu-inline-hint {
+  align-self: center;
+  margin-left: auto;
 }
 
 /* Zone-aware key hint pinned under the menu body — same quiet parchment tone as
