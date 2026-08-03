@@ -72,6 +72,8 @@ export const TOWN_SFX_VOLUME = {
   hubAmbience: 0.15,
   /** Buying, crafting, upgrading, salvaging and resting inside a sub-location. */
   transaction: 0.4,
+  /** Tick as the keyboard cursor moves between planks, heroes or shop rows. */
+  navTick: 0.35,
 } as const;
 
 // Volume range for match-3 sounds (scaled by match size)

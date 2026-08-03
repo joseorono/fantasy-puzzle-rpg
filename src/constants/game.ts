@@ -40,6 +40,10 @@ export const LOOT_NOTIFICATION_FADE_IN_DELAY_MS = 50;
 /** Duration (ms) before the floor loot notification auto-dismisses with a fade-out. */
 export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 1500;
 
+/** Columns in the Inn's hero grid. Must match `.inn-party-members-grid`'s CSS `repeat(N, …)`,
+ *  since the keyboard cursor chunks the party by it to keep ←/→ spatially truthful. */
+export const INN_HERO_COLUMNS = 4;
+
 /**
  * Store configuration
  */

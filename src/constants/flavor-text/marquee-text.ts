@@ -14,12 +14,14 @@ export const MARQUEE_HELP_TEXT: Readonly<{ [K in MarqueeTextTypes]: readonly str
     'Pay coins to fully heal your party.',
     'The Inn in later stages may increase in price.',
     "You may not need to heal if you're near full HP.",
+    'Use Arrow Keys or WASD to pick a hero, Enter to heal, Esc to leave.',
     clickLeaveToTownHub,
   ],
   'item-shop': [
     'Buy items using coins.',
     'Click Buy to add the item to your inventory.',
     "Check each item's description and cost.",
+    'Left/Right switch tabs, Up/Down pick an item, Enter to trade, Esc to leave.',
     clickLeaveToTownHub,
   ],
   'level-up': [

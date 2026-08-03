@@ -52,6 +52,48 @@
   background-image: url('/assets/menu/back-button-hover.png');
 }
 
+/* Hub side column: Back over Help. The column takes over .leave-btn's absolute origin so the
+   back button keeps its exact place, and its children go static so they stack instead of
+   overlapping. Scoped to the hub — the sub-locations still render .leave-btn on its own. */
+.town-side-buttons {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.town-side-buttons .leave-btn {
+  position: static;
+}
+
+/* Sized to the back button's footprint so the column reads as one stack. Wood-panel treatment
+   in the same parchment tones as the rest of the town rather than a new hue. */
+.help-btn {
+  width: 80px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 2px solid rgba(212, 165, 116, 0.45);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(212, 165, 116, 0.12),
+    0 3px 6px rgba(0, 0, 0, 0.45);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.help-btn:hover {
+  background: linear-gradient(135deg, #4a3120 0%, #33200f 100%);
+  border-color: rgba(212, 165, 116, 0.8);
+}
+
 .plank-option {
   width: 260px;
   height: 118px;
@@ -1250,4 +1292,90 @@
     margin: 0.5rem;
     order: 1;
   }
+}
+
+/* ── Keyboard support ──────────────────────────────────────────── */
+
+/* Contextual key hint, same quiet parchment tone as .rewards-key-hint on the reward screens
+   so hints read the same everywhere and never compete with the control beside them. */
+.town-key-hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.inn-actions .town-key-hint,
+.blacksmith-tabs .town-key-hint {
+  margin-left: auto;
+  align-self: center;
+}
+
+/* The cursor-corner wrapper defaults to `width: fit-content` (cursor.css); the signpost planks
+   are fixed-size so that already fits, but the wrapper must not become a flex item that stretches. */
+.town-content .cursor-corners {
+  display: block;
+  width: fit-content;
+}
+
+/* ── Help panel ────────────────────────────────────────────────── */
+
+.town-help-panel {
+  width: min(560px, 90vw);
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border: 2px solid rgba(212, 165, 116, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+}
+
+.town-help-panel__title {
+  margin: 0 0 0.9rem;
+  text-align: center;
+}
+
+.town-help-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.town-help-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.town-help-entry__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.town-help-entry__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.town-help-entry__title {
+  font-size: 0.7rem;
+  color: #e0c9a6;
+  letter-spacing: 0.06em;
+}
+
+.town-help-entry__description {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.town-help-panel__dismiss {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
 }
