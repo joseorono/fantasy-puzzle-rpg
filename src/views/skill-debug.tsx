@@ -10,7 +10,7 @@ import { DEFAULT_SKILL_BY_CLASS } from '~/constants/skills';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useUnlockPassive } from '~/hooks/use-unlock-passive';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
-import { createResources } from '~/lib/resources';
+import { DEBUG_RESOURCE_PAYLOAD } from '~/constants/dev';
 import type { CharacterData } from '~/types/rpg-elements';
 
 const DEBUG_LEVELS = [1, 4, 10, 17, 24, 30];
@@ -83,11 +83,7 @@ export default function SkillDebugView() {
 
         <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-3">
           <button
-            onClick={() =>
-              resourcesActions.addResources(
-                createResources({ coins: 1000, iron: 50, silver: 25, gold: 25, copper: 25 }),
-              )
-            }
+            onClick={() => resourcesActions.addResources(DEBUG_RESOURCE_PAYLOAD)}
             className="rounded bg-amber-600 px-3 py-1 text-sm font-semibold text-white transition-colors hover:bg-amber-500"
           >
             +1000c / +50 iron / +25 silver / +25 gold

@@ -26,6 +26,7 @@ export const MARQUEE_HELP_TEXT: Readonly<{ [K in MarqueeTextTypes]: readonly str
     'Allocate Points to increase stats.',
     "Preview your character's stats on the right before applying changes.",
     'Use Confirm to apply changes or Reset to undo.',
+    'Use Arrow Keys/WASD to pick and allocate stats. Press Enter to confirm, Esc to reset.',
   ],
   'world-map': ['Use Arrow Keys or WASD to move the character.', "You can't walk past Battles you haven't beaten."],
   general: ['You can see past messages by scrolling up.'],
