@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import * as Keyboard from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import {
   useResources,
@@ -46,6 +47,7 @@ import {
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
 type BlacksmithTab = 'craft' | 'modify' | 'exchange' | 'melt';
+type BlacksmithZone = 'tabs' | 'content';
 
 const BLACKSMITH_TABS: readonly BlacksmithTab[] = ['craft', 'modify', 'exchange', 'melt'];
 
@@ -77,6 +79,7 @@ export default function Blacksmith({
   onLeaveCallback: () => void;
 }) {
   const [selectedTab, setSelectedTab] = useState<BlacksmithTab>('craft');
+  const [zone, setZone] = useState<BlacksmithZone>('tabs');
   const [isTabKeyboardActive, setIsTabKeyboardActive] = useState(false);
   const tabButtonRefs = useRef<Partial<Record<BlacksmithTab, HTMLButtonElement>>>({});
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
@@ -180,25 +183,167 @@ export default function Blacksmith({
     }
   };
 
+  const craftRows: KeyboardSelectableItem[][] = [
+    (Object.keys(EQUIPMENT_TYPE_FILTERS) as EquipmentType[]).map((type) => ({ id: `filter:${type}` })),
+    ...filteredEquipment.map((item) => [{ id: `item:${item.id}` }]),
+    ...(selectedItem
+      ? [[{ id: 'action:craft', disabled: !canAfford(resources, selectedItem.cost) }]]
+      : []),
+  ];
+
+  const modifyRows: KeyboardSelectableItem[][] = [
+    ...modifiableInstances.map((instance) => [{ id: `modify:${instanceKey(instance)}` }]),
+    ...(selectedModify
+      ? [
+          [
+            { id: 'action:upgrade', disabled: !canUpgradeRarity(selectedModify.rarity) || !canAfford(resources, getUpgradeCost(selectedModify.rarity)) },
+            { id: 'action:salvage' },
+          ],
+        ]
+      : []),
+  ];
+
+  const exchangeRows: KeyboardSelectableItem[][] = EXCHANGE_CONFIGS[0].tiers.map((tier) =>
+    EXCHANGE_CONFIGS.map((config) => ({
+      id: `exchange:${config.fromResource}:${tier.from}`,
+      disabled: resources[config.fromResource] < tier.from,
+    })),
+  );
+
+  const meltRows: KeyboardSelectableItem[][] = MELT_BATCHES[0].tiers.map((_, tierIndex) =>
+    MELT_BATCHES.map((batch) => {
+      const tier = batch.tiers[tierIndex];
+      return {
+        id: `melt:${batch.label}:${tier.coins}`,
+        disabled: resources.coins < tier.coins,
+      };
+    }),
+  );
+
+  const contentRows = selectedTab === 'craft' ? craftRows : selectedTab === 'modify' ? modifyRows : selectedTab === 'exchange' ? exchangeRows : meltRows;
+
+  const contentSelection = useKeyboardSelection(contentRows, {
+    onMove: (id) => {
+      soundService.playSound(SoundNames.clickChangeTab, TOWN_SFX_VOLUME.navTick, 0.1, 0.05);
+      if (id.startsWith('filter:')) {
+        setSelectedEquipmentType(id.slice('filter:'.length) as EquipmentType);
+        setSelectedItem(null);
+      } else if (id.startsWith('item:')) {
+        const item = filteredEquipment.find((candidate) => `item:${candidate.id}` === id);
+        if (item) setSelectedItem(item);
+      } else if (id.startsWith('modify:')) {
+        handleSelectModify(id.slice('modify:'.length));
+      }
+    },
+  });
+
+  function switchTab(next: BlacksmithTab, isKeyboard = false) {
+    if (next === selectedTab) {
+      if (!isKeyboard) {
+        setIsTabKeyboardActive(false);
+        setZone('content');
+        contentSelection.clear();
+      }
+      return;
+    }
+    if (isKeyboard) {
+      setIsTabKeyboardActive(true);
+    } else {
+      setIsTabKeyboardActive(false);
+      setZone('content');
+    }
+    setSelectedTab(next);
+    contentSelection.clear();
+  }
+
+  function enterContent() {
+    setZone('content');
+    setIsTabKeyboardActive(false);
+    contentSelection.move('down');
+  }
+
+  function returnToTabs() {
+    contentSelection.clear();
+    setZone('tabs');
+    setIsTabKeyboardActive(true);
+    tabButtonRefs.current[selectedTab]?.focus();
+  }
+
   useWindowKeyDown((event) => {
     if (event.defaultPrevented) return;
 
     const direction = Keyboard.getNavDirection(event.key);
-    if (direction === 'left' || direction === 'right') {
+    if (zone === 'tabs' && (direction === 'left' || direction === 'right')) {
       event.preventDefault();
       const currentIndex = BLACKSMITH_TABS.indexOf(selectedTab);
       const step = direction === 'right' ? 1 : -1;
       const nextIndex = (currentIndex + step + BLACKSMITH_TABS.length) % BLACKSMITH_TABS.length;
-      const nextTab = BLACKSMITH_TABS[nextIndex];
-      setIsTabKeyboardActive(true);
-      setSelectedTab(nextTab);
-      tabButtonRefs.current[nextTab]?.focus();
+      switchTab(BLACKSMITH_TABS[nextIndex], true);
+      if (zone === 'tabs') tabButtonRefs.current[BLACKSMITH_TABS[nextIndex]]?.focus();
+      return;
+    }
+
+    if (zone === 'tabs') {
+      if (direction === 'down') {
+        event.preventDefault();
+        enterContent();
+      }
+      return;
+    }
+
+    if (direction) {
+      event.preventDefault();
+      if (direction === 'up' && (contentSelection.position === null || contentSelection.position.rowIndex === 0)) {
+        returnToTabs();
+      } else {
+        contentSelection.move(direction);
+      }
+      return;
+    }
+
+    if (!Keyboard.isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (event.repeat) return;
+
+    const selectedId = contentSelection.selectedId;
+    if (selectedId === null) return;
+    const selectedEntry = contentRows.flat().find((entry) => entry.id === selectedId);
+    if (!selectedEntry || selectedEntry.disabled) return;
+
+    if (selectedId.startsWith('item:')) {
+      if (selectedItem) contentSelection.select('action:craft');
+      return;
+    }
+    if (selectedId.startsWith('modify:')) {
+      const firstAction = modifyRows[modifyRows.length - 1]?.find((entry) => !entry.disabled);
+      if (firstAction) contentSelection.select(firstAction.id);
+      return;
+    }
+    if (selectedId === 'action:craft' && selectedItem) {
+      handleCraftItem(selectedItem);
+      return;
+    }
+    if (selectedId === 'action:upgrade' && selectedModify) {
+      handleUpgrade(selectedModify);
+      return;
+    }
+    if (selectedId === 'action:salvage' && selectedModify) {
+      handleOpenSalvageDialog();
+      return;
+    }
+
+    const [action, resource, amount] = selectedId.split(':');
+    if (action === 'exchange') {
+      const config = EXCHANGE_CONFIGS.find((candidate) => candidate.fromResource === resource);
+      const tier = config?.tiers.find((candidate) => candidate.from === Number(amount));
+      if (config && tier) handleExchangeResources(config.fromResource, config.toResource, tier.from, tier.to);
+    } else if (action === 'melt') {
+      handleMeltCoinsToGold(Number(amount));
     }
   });
 
   function handleTabClick(tab: BlacksmithTab) {
-    setIsTabKeyboardActive(false);
-    setSelectedTab(tab);
+    switchTab(tab);
   }
 
   return (
@@ -213,7 +358,7 @@ export default function Blacksmith({
     >
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
-        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'craft'}>
+        <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'craft'}>
           <IndigolayTab
             ref={(button) => {
               tabButtonRefs.current.craft = button ?? undefined;
@@ -225,7 +370,7 @@ export default function Blacksmith({
             Craft
           </IndigolayTab>
         </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'modify'}>
+        <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'modify'}>
           <IndigolayTab
             ref={(button) => {
               tabButtonRefs.current.modify = button ?? undefined;
@@ -237,7 +382,7 @@ export default function Blacksmith({
             Modify
           </IndigolayTab>
         </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'exchange'}>
+        <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'exchange'}>
           <IndigolayTab
             ref={(button) => {
               tabButtonRefs.current.exchange = button ?? undefined;
@@ -249,7 +394,7 @@ export default function Blacksmith({
             Exchange
           </IndigolayTab>
         </ToffecBeigeCornersWrapper>
-        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'melt'}>
+        <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'melt'}>
           <IndigolayTab
             ref={(button) => {
               tabButtonRefs.current.melt = button ?? undefined;
@@ -290,18 +435,22 @@ export default function Blacksmith({
           {/* Equipment Type Filters */}
           <div className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
-              <IndigolayTab
-                glow={false}
-                size="sm"
+              <ToffecBeigeCornersWrapper
                 key={type}
-                onClick={() => {
-                  setSelectedEquipmentType(type);
-                  setSelectedItem(null);
-                }}
-                isActive={selectedEquipmentType === type}
+                forceDisplay={zone === 'content' && contentSelection.isSelected(`filter:${type}`)}
               >
-                {label}
-              </IndigolayTab>
+                <IndigolayTab
+                  glow={false}
+                  size="sm"
+                  onClick={() => {
+                    setSelectedEquipmentType(type);
+                    setSelectedItem(null);
+                  }}
+                  isActive={selectedEquipmentType === type}
+                >
+                  {label}
+                </IndigolayTab>
+              </ToffecBeigeCornersWrapper>
             ))}
           </div>
 
@@ -310,13 +459,16 @@ export default function Blacksmith({
             {/* Equipment List */}
             <div className="equipment-list">
               {filteredEquipment.map((item) => (
-                <div
+                <ToffecBeigeCornersWrapper
                   key={item.id}
-                  className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''} ${
-                    canAfford(resources, item.cost) ? '' : 'cannot-afford'
-                  }`}
-                  onClick={() => setSelectedItem(item)}
+                  forceDisplay={zone === 'content' && contentSelection.isSelected(`item:${item.id}`)}
                 >
+                  <div
+                    className={`equipment-list-item ${selectedItem?.id === item.id ? 'selected' : ''} ${
+                      canAfford(resources, item.cost) ? '' : 'cannot-afford'
+                    }`}
+                    onClick={() => setSelectedItem(item)}
+                  >
                   <div className="equipment-item-icon">
                     {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
                   </div>
@@ -337,7 +489,8 @@ export default function Blacksmith({
                       {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
                     </div>
                   </div>
-                </div>
+                  </div>
+                </ToffecBeigeCornersWrapper>
               ))}
             </div>
 
@@ -366,7 +519,7 @@ export default function Blacksmith({
                   </div>
 
                   <div className="craft-detail-actions">
-                    <ToffecBeigeCornersWrapper>
+                    <ToffecBeigeCornersWrapper forceDisplay={zone === 'content' && contentSelection.isSelected('action:craft')}>
                       <ToffecButton
                         className="craft-detail-buy-button"
                         variant="orange"
@@ -411,11 +564,14 @@ export default function Blacksmith({
                 modifiableInstances.map((inst) => {
                   const key = instanceKey(inst);
                   return (
-                    <div
+                    <ToffecBeigeCornersWrapper
                       key={key}
-                      className={cn('equipment-list-item', selectedModifyKey === key && 'selected')}
-                      onClick={() => handleSelectModify(key)}
+                      forceDisplay={zone === 'content' && contentSelection.isSelected(`modify:${key}`)}
                     >
+                      <div
+                        className={cn('equipment-list-item', selectedModifyKey === key && 'selected')}
+                        onClick={() => handleSelectModify(key)}
+                      >
                       <div className="equipment-item-icon">
                         {inst.item.iconName ? <FrostyRpgIcon name={inst.item.iconName} size={24} /> : null}
                       </div>
@@ -430,7 +586,8 @@ export default function Blacksmith({
                           <div className="equipment-item-cost">x{inst.available}</div>
                         </div>
                       </div>
-                    </div>
+                      </div>
+                    </ToffecBeigeCornersWrapper>
                   );
                 })
               )}
@@ -442,6 +599,7 @@ export default function Blacksmith({
                   instance={selectedModify}
                   onUpgrade={() => handleUpgrade(selectedModify)}
                   onSalvage={() => handleOpenSalvageDialog()}
+                  selectedActionId={contentSelection.selectedId}
                 />
               ) : (
                 <div className="craft-detail-empty">
@@ -484,6 +642,7 @@ export default function Blacksmith({
                       key={tier.from}
                       // Third tier only appears where there's vertical headroom.
                       className={cn('exchange-button', tierIndex === 2 && 'exchange-button--tall-only')}
+                      forceDisplay={zone === 'content' && contentSelection.isSelected(`exchange:${config.fromResource}:${tier.from}`)}
                     >
                       <ToffecButton
                         variant="orange"
@@ -533,7 +692,11 @@ export default function Blacksmith({
                 </h3>
                 <div className="melt-buttons">
                   {batch.tiers.map((tier) => (
-                    <ToffecBeigeCornersWrapper key={tier.coins} className="melt-button">
+                    <ToffecBeigeCornersWrapper
+                      key={tier.coins}
+                      className="melt-button"
+                      forceDisplay={zone === 'content' && contentSelection.isSelected(`melt:${batch.label}:${tier.coins}`)}
+                    >
                       <ToffecButton
                         variant="orange"
                         size="xs"
@@ -562,10 +725,11 @@ interface ModifyDetailProps {
   instance: OwnedEquipmentInstance;
   onUpgrade: () => void;
   onSalvage: () => void;
+  selectedActionId: string | null;
 }
 
 /** Detail panel for the Modify tab: rarity-scaled stats plus Upgrade and Salvage actions. */
-function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
+function ModifyDetail({ instance, onUpgrade, onSalvage, selectedActionId }: ModifyDetailProps) {
   const resources = useResources();
   const stats = getScaledEquipmentStats(instance.item, instance.rarity);
   const upgradable = canUpgradeRarity(instance.rarity);
@@ -605,7 +769,7 @@ function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
               </span>
               <CostBadges resources={upgradeCost} compact />
             </div>
-            <ToffecBeigeCornersWrapper>
+            <ToffecBeigeCornersWrapper forceDisplay={selectedActionId === 'action:upgrade'}>
               <ToffecButton variant="orange" size="xs" onClick={onUpgrade} disabled={!canAffordUpgrade}>
                 {canAffordUpgrade ? 'Upgrade' : 'Cannot Afford'}
               </ToffecButton>
@@ -623,7 +787,7 @@ function ModifyDetail({ instance, onUpgrade, onSalvage }: ModifyDetailProps) {
             <span className="craft-detail-salvage-label">Salvage for</span>
             <CostBadges resources={salvageReturn} compact />
           </div>
-          <ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selectedActionId === 'action:salvage'}>
             <ToffecButton variant="cream" size="xs" onClick={onSalvage}>
               Salvage
             </ToffecButton>
