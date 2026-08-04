@@ -29,6 +29,9 @@ import {
 
 /** The three stat rows in the order they appear in the allocation panel. */
 const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
+const ALLOCATION_ACTIONS = ['confirm', 'reset'] as const;
+type AllocationAction = (typeof ALLOCATION_ACTIONS)[number];
+type AllocationZone = 'stats' | 'actions';
 
 interface LevelUpViewProps {
   character: CharacterData;
@@ -105,6 +108,8 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
 
   function handleReset() {
     setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
+    setSelectedAction(null);
+    setAllocationZone('stats');
   }
 
   // Gated on allPointsAllocated to match the Confirm button's own `disabled`, so the keyboard
@@ -118,49 +123,99 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
 
   // Null until the keyboard is actually used, so the highlight never appears for mouse players.
   const [selectedStatIndex, setSelectedStatIndex] = useState<number | null>(null);
+  const [allocationZone, setAllocationZone] = useState<AllocationZone>('stats');
+  const [selectedAction, setSelectedAction] = useState<AllocationAction | null>(null);
 
   // Returning to the mouse drops the keyboard highlight, so hover and selection can't both show.
   useEffect(() => {
     function handlePointerMove() {
       setSelectedStatIndex(null);
+      setSelectedAction(null);
+      setAllocationZone('stats');
     }
     window.addEventListener('pointermove', handlePointerMove);
     return () => window.removeEventListener('pointermove', handlePointerMove);
   }, []);
 
-  // Arrows/WASD pick a row and spend points on it; Enter confirms, Escape resets. Allocation
-  // reuses the click handlers, which already stop at their own bounds — native key auto-repeat
-  // then gives held-arrow allocation for free.
+  function getEnabledActions(): AllocationAction[] {
+    return ALLOCATION_ACTIONS.filter((action) => {
+      if (action === 'confirm') return allPointsAllocated;
+      return hasPendingChanges;
+    });
+  }
+
+  // Arrows/WASD pick a stat row and spend points on it. Once the stat rows are exhausted, the
+  // same vertical navigation enters the Confirm/Reset action row without changing allocation.
   useWindowKeyDown((event) => {
     const direction = getNavDirection(event.key);
 
-    if (direction === 'up' || direction === 'down') {
-      event.preventDefault();
-      const step = direction === 'down' ? 1 : -1;
-      setSelectedStatIndex((prev) => {
-        if (prev === null) return direction === 'down' ? 0 : STAT_ORDER.length - 1;
-        return (prev + step + STAT_ORDER.length) % STAT_ORDER.length;
-      });
-      return;
-    }
-
-    if (direction === 'left' || direction === 'right') {
-      event.preventDefault();
-      // First press only reveals the selection — it never spends a point blind.
-      if (selectedStatIndex === null) {
-        setSelectedStatIndex(0);
+    if (allocationZone === 'stats') {
+      if (direction === 'down' && selectedStatIndex === STAT_ORDER.length - 1) {
+        event.preventDefault();
+        setAllocationZone('actions');
+        setSelectedAction(getEnabledActions()[0] ?? null);
         return;
       }
-      const stat = STAT_ORDER[selectedStatIndex];
-      if (direction === 'right') handleIncreaseStat(stat);
-      else handleDecreaseStat(stat);
-      return;
-    }
 
-    if (isConfirmKey(event.key)) {
-      event.preventDefault();
-      handleConfirm();
-      return;
+      if (direction === 'up' || direction === 'down') {
+        event.preventDefault();
+        const step = direction === 'down' ? 1 : -1;
+        setSelectedStatIndex((prev) => {
+          if (prev === null) return direction === 'down' ? 0 : STAT_ORDER.length - 1;
+          return (prev + step + STAT_ORDER.length) % STAT_ORDER.length;
+        });
+        return;
+      }
+
+      if (direction === 'left' || direction === 'right') {
+        event.preventDefault();
+        const statIndex = selectedStatIndex ?? 0;
+        if (selectedStatIndex === null) setSelectedStatIndex(statIndex);
+        const stat = STAT_ORDER[statIndex];
+        if (direction === 'right') handleIncreaseStat(stat);
+        else handleDecreaseStat(stat);
+        return;
+      }
+
+      if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        handleConfirm();
+        return;
+      }
+    } else {
+      if (direction === 'up') {
+        event.preventDefault();
+        setAllocationZone('stats');
+        setSelectedStatIndex(STAT_ORDER.length - 1);
+        setSelectedAction(null);
+        return;
+      }
+
+      if (direction === 'down') {
+        event.preventDefault();
+        return;
+      }
+
+      if (direction === 'left' || direction === 'right') {
+        event.preventDefault();
+        const enabledActions = getEnabledActions();
+        if (enabledActions.length === 0) {
+          setSelectedAction(null);
+          return;
+        }
+        const currentIndex = selectedAction ? enabledActions.indexOf(selectedAction) : -1;
+        const step = direction === 'right' ? 1 : -1;
+        setSelectedAction(enabledActions[(currentIndex + step + enabledActions.length) % enabledActions.length]);
+        return;
+      }
+
+      if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (event.repeat || selectedAction === null) return;
+        if (selectedAction === 'confirm') handleConfirm();
+        else handleReset();
+        return;
+      }
     }
 
     if (event.key === KeyboardKeys.Escape && hasPendingChanges) {
@@ -596,16 +651,20 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
-                      Confirm
-                    </ToffecButton>
+                    <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'confirm'}>
+                      <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
+                        Confirm
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
-                Reset
-              </ToffecButton>
+              <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'reset'}>
+                <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
+                  Reset
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </div>
         </div>
