@@ -10,6 +10,7 @@ export const KeyboardKeys = {
   /** Dismisses transient, non-blocking surfaces. Claimed by nothing else, so it never
    *  competes with the confirm key a view is already using. */
   Backspace: 'Backspace',
+  Help: 'h',
   ArrowUp: 'ArrowUp',
   ArrowDown: 'ArrowDown',
   ArrowLeft: 'ArrowLeft',
@@ -45,6 +46,11 @@ const NAV_KEY_TO_DIRECTION: Record<string, NavDirection> = {
 export function getNavDirection(key: string): NavDirection | null {
   const normalized = key.length === 1 ? key.toLowerCase() : key;
   return NAV_KEY_TO_DIRECTION[normalized] ?? null;
+}
+
+/** Whether a key opens the town help panel. Shift+H is accepted as well. */
+export function isHelpKey(key: string): boolean {
+  return key.length === 1 && key.toLowerCase() === KeyboardKeys.Help;
 }
 
 /** Whether a key confirms/activates the current selection (Enter or Space). */

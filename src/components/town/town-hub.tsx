@@ -14,7 +14,7 @@ import { TopBarResources } from './top-bar-resources';
 import { useResources } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
-import { getNavDirection, isCancelKey, isConfirmKey } from '~/constants/keyboard';
+import { getNavDirection, isCancelKey, isConfirmKey, isHelpKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -99,6 +99,13 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
 
   useWindowKeyDown((event) => {
     if (event.defaultPrevented) return;
+    if (isHelpKey(event.key)) {
+      event.preventDefault();
+      if (event.repeat) return;
+      setIsHelpOpen(true);
+      return;
+    }
+
     const selection = zone === 'side' ? sideSelection : plankSelection;
 
     const direction = getNavDirection(event.key);
