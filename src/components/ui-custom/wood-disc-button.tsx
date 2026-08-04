@@ -2,19 +2,131 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
 /**
- * Glyphs are drawn on a 16×16 grid with integer coordinates only, so `shape-rendering: crispEdges`
- * lands every edge on a pixel boundary at all three sizes — that is what keeps them reading as
- * pixel art instead of smooth vector icons. Diagonals are exact 45°, so they stair-step cleanly.
+ * Glyphs are 20×20 three-tone pixel bitmaps — mid-gray outline, white fill, `#e6e6e6` lower
+ * half — matching the chunky gray arrow of `back-button.png`, the art this button replaces.
+ * Rows are one char per pixel, so tuning a glyph is a single-character edit.
  */
-const GLYPH_PATHS = {
-  back: 'M7 3 L7 6 L13 6 L13 10 L7 10 L7 13 L2 8 Z',
-  help: 'M5 1 H11 V3 H5 Z M3 3 H5 V5 H3 Z M11 3 H13 V7 H11 Z M7 7 H13 V9 H7 Z M7 9 H9 V11 H7 Z M7 13 H9 V15 H7 Z',
-  close: 'M3 5 L5 3 L8 6 L11 3 L13 5 L10 8 L13 11 L11 13 L8 10 L5 13 L3 11 L6 8 Z',
-  settings:
-    'M6 1 H10 V3 H6 Z M6 13 H10 V15 H6 Z M1 6 H3 V10 H1 Z M13 6 H15 V10 H13 Z M3 3 H13 V13 H3 Z M6 6 H10 V10 H6 Z',
+type Tone = 'o' | 'f' | 'd';
+
+const TONE_FILLS: Record<Tone, string> = {
+  o: '#808080',
+  f: '#ffffff',
+  d: '#e6e6e6',
+};
+
+const GLYPH_BITMAPS = {
+  back: [
+    '....................',
+    '....................',
+    '....................',
+    '........oo..........',
+    '.......ofo..........',
+    '......offo..........',
+    '.....offfo..........',
+    '....offfffoooooooo..',
+    '...offffffffffffffo.',
+    '..offfffffffffffffo.',
+    '..offfffffffffffffo.',
+    '..odddddddddddddddo.',
+    '...oddddddddddddddo.',
+    '....odddddoooooooo..',
+    '.....odddo..........',
+    '......oddo..........',
+    '.......odo..........',
+    '........oo..........',
+    '....................',
+    '....................',
+  ],
+  help: [
+    '....................',
+    '......oooooooo......',
+    '....ooffffffffoo....',
+    '...offffffffffffo...',
+    '...offfoooooofffo...',
+    '...offo......offo...',
+    '...oooo......offo...',
+    '.............offo...',
+    '............offfo...',
+    '...........offfo....',
+    '.........ooddoo.....',
+    '........odddo.......',
+    '........ooooo.......',
+    '....................',
+    '........ooooo.......',
+    '........odddo.......',
+    '........odddo.......',
+    '........odddo.......',
+    '........ooooo.......',
+    '....................',
+  ],
+  close: [
+    '....................',
+    '....................',
+    '...oo..........oo...',
+    '..offo........offo..',
+    '..offfo......offfo..',
+    '...offfo....offfo...',
+    '....offfo..offfo....',
+    '.....offfoofffo.....',
+    '......offffffo......',
+    '.......offffo.......',
+    '.......offffo.......',
+    '......oddddddo......',
+    '.....odddoodddo.....',
+    '....odddo..odddo....',
+    '...odddo....odddo...',
+    '..odddo......odddo..',
+    '..oddo........oddo..',
+    '...oo..........oo...',
+    '....................',
+    '....................',
+  ],
+  settings: [
+    '....................',
+    '....................',
+    '........oooo........',
+    '........offo........',
+    '....ooo.offo.ooo....',
+    '...offfoffffofffo...',
+    '...offffffffffffo...',
+    '...offffffffffffo...',
+    '....offfoooofffo....',
+    '.ooofffo....offfooo.',
+    '.offfffo....offfffo.',
+    '.odddddo....odddddo.',
+    '.ooodddo....odddooo.',
+    '....odddoooodddo....',
+    '...oddddddddddddo...',
+    '...oddddddddddddo...',
+    '...odddoddddodddo...',
+    '....ooo.oddo.ooo....',
+    '........oddo........',
+    '........oooo........',
+    '....................',
+  ],
 } as const;
 
-export type WoodDiscGlyph = keyof typeof GLYPH_PATHS;
+export type WoodDiscGlyph = keyof typeof GLYPH_BITMAPS;
+
+/** One path per tone, built from 1px-row runs. Horizontal merging only — `crispEdges`
+    disables antialiasing, so vertically adjacent same-tone rects cannot seam. */
+function bitmapToLayers(rows: readonly string[]): Record<Tone, string> {
+  const runs: Record<Tone, string[]> = { o: [], f: [], d: [] };
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; ) {
+      const tone = row[x] as Tone | '.';
+      let end = x + 1;
+      while (end < row.length && row[end] === tone) end += 1;
+      if (tone !== '.') runs[tone].push(`M${x} ${y}h${end - x}v1h${x - end}z`);
+      x = end;
+    }
+  });
+  return { o: runs.o.join(''), f: runs.f.join(''), d: runs.d.join('') };
+}
+
+const GLYPH_LAYERS = Object.fromEntries(
+  (Object.keys(GLYPH_BITMAPS) as WoodDiscGlyph[]).map((glyph) => [glyph, bitmapToLayers(GLYPH_BITMAPS[glyph])]),
+) as Record<WoodDiscGlyph, Record<Tone, string>>;
 
 const DEFAULT_ARIA_LABEL: Record<WoodDiscGlyph, string> = {
   back: 'Back',
@@ -44,12 +156,12 @@ const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justi
 interface WoodDiscButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof woodDiscButtonVariants> {
-  /** Which glyph is carved into the disc. */
+  /** Which glyph sits on the disc. */
   glyph: WoodDiscGlyph;
 }
 
 /**
- * A carved wooden disc with a glyph cut into its face — the town's circular icon button.
+ * A wooden disc with a chunky gray glyph on its face — the town's circular icon button.
  *
  * The face is a real pixel wood tile (`tc-bg-wood-*.png` at a fixed 2× texel scale) clipped to
  * the circle; ring, lip and glyph stay CSS + inline SVG. Sizes are 64/80/96px, and the default
@@ -78,13 +190,14 @@ export function WoodDiscButton({
     >
       <svg
         className="wood-disc-btn__glyph"
-        viewBox="0 0 16 16"
+        viewBox="0 0 20 20"
         aria-hidden="true"
         focusable="false"
         shapeRendering="crispEdges"
       >
-        {/* evenodd so the gear's centre subpath punches a hole instead of filling it. */}
-        <path d={GLYPH_PATHS[glyph]} fillRule="evenodd" />
+        {(['o', 'd', 'f'] as const).map((tone) => (
+          <path key={tone} d={GLYPH_LAYERS[glyph][tone]} fill={TONE_FILLS[tone]} />
+        ))}
       </svg>
     </button>
   );

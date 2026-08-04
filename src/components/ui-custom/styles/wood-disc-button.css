@@ -1,4 +1,4 @@
-/* WoodDiscButton — a carved wooden disc with an inline-SVG glyph cut into its face.
+/* WoodDiscButton — a wooden disc with a chunky gray inline-SVG glyph on its face.
 
    The face is a real pixel-art tile (`tc-bg-wood-*.png`, seamless 32×32) at a fixed 2× texel
    scale, tinted per wood, with a posterized radial band pair over it. Ring, outline, and the
@@ -11,10 +11,9 @@
 
 /* ── Woods ──────────────────────────────────────────────────────────────────
    `--wd-tint` pitches the shared tiles toward each wood's palette; `--wd-lit`/`--wd-edge` are
-   the posterized light/shade bands. `--wd-carve-lit` is pitched per wood rather than shared:
-   the lit row under the glyph is what actually reads as carved depth, and a value that works
-   on oak is invisible on walnut. `--wd-ring` deliberately inverts across the set — lighter
-   than the face on oak, darker on walnut — which is most of what separates them at a glance. */
+   the posterized light/shade bands. The glyph is wood-independent gray, so no icon tokens
+   live here. `--wd-ring` deliberately inverts across the set — lighter than the face on oak,
+   darker on walnut — which is most of what separates them at a glance. */
 
 /* Honey oak — the lighter signpost-plank wood; tile 3 is already honey, so no tint. */
 .wood-disc-btn--oak {
@@ -26,8 +25,6 @@
   --wd-under: #6d4420;
   --wd-ring: #c8a05c;
   --wd-shade: rgba(92, 54, 23, 0.34);
-  --wd-carve: #4a2810;
-  --wd-carve-lit: rgba(255, 236, 196, 0.6);
 }
 
 /* Dark walnut — tile 1 darkened toward the brick interior of the back button it sits beside. */
@@ -40,8 +37,6 @@
   --wd-under: #2f1a09;
   --wd-ring: #7a5c18;
   --wd-shade: rgba(20, 10, 4, 0.42);
-  --wd-carve: #190c03;
-  --wd-carve-lit: rgba(206, 158, 102, 0.7);
 }
 
 /* Redwood — the streaky tile 2 pushed a step redder, toward the town's warm end. */
@@ -54,8 +49,6 @@
   --wd-under: #5c2a12;
   --wd-ring: #9c6b1e;
   --wd-shade: rgba(74, 26, 10, 0.36);
-  --wd-carve: #3a1608;
-  --wd-carve-lit: rgba(255, 206, 158, 0.55);
 }
 
 /* Ash — the cream tile 4 muted toward cool gray-tan, for surfaces that shouldn't read warm. */
@@ -68,8 +61,6 @@
   --wd-under: #5a4e40;
   --wd-ring: #8b7a4a;
   --wd-shade: rgba(60, 52, 40, 0.32);
-  --wd-carve: #3a3026;
-  --wd-carve-lit: rgba(245, 238, 220, 0.55);
 }
 
 /* ── Geometry ─────────────────────────────────────────────────────────────── */
@@ -88,8 +79,7 @@
        transparent middle so the real grain shows through. A continuous radial makes the disc
        read as glossy plastic. */
     radial-gradient(circle at 38% 32%, var(--wd-lit) 0 34%, transparent 34% 68%, var(--wd-edge) 68%),
-    linear-gradient(var(--wd-tint), var(--wd-tint)),
-    var(--wd-tile);
+    linear-gradient(var(--wd-tint), var(--wd-tint)), var(--wd-tile);
   /* 2× the 32px source — integer texels stay crisp at every disc size, and the grain density
      is constant across sizes, so the set reads as cut from the same plank. */
   background-size:
@@ -134,12 +124,11 @@
   outline-offset: 3px;
 }
 
-/* Carved, not painted: a dark cut with a single lit row along its lower edge, which is how a
-   chisel mark catches light. The 1px offset is what sells the depth — do not blur it. */
+/* The glyph brings its own three gray tones (see GLYPH_BITMAPS); the hard 1px dark offset is
+   what seats it on the wood — do not blur it. */
 .wood-disc-btn__glyph {
   position: relative;
-  width: 46%;
-  height: 46%;
-  fill: var(--wd-carve);
-  filter: drop-shadow(0 1px 0 var(--wd-carve-lit));
+  width: 58%;
+  height: 58%;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
 }
