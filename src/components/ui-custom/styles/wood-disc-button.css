@@ -1,71 +1,72 @@
 /* WoodDiscButton — a carved wooden disc with an inline-SVG glyph cut into its face.
 
-   Drawn entirely in CSS geometry so it stays crisp at any zoom. Follows the house ingredients:
-   an upper-left light source, zero-blur shadows only, and the toffec extrusion signature
-   (`0 4px 0 <darker>` collapsing on press).
+   The face is a real pixel-art tile (`tc-bg-wood-*.png`, seamless 32×32) at a fixed 2× texel
+   scale, tinted per wood, with a posterized radial band pair over it. Ring, outline, and the
+   toffec extrusion signature (`0 4px 0 <darker>` collapsing on press) stay CSS geometry.
 
-   Structured like ToffecSquareButton's `--cb-*` set: every colour is a token, each variant class
-   declares the WHOLE block, and the base rule below holds nothing but geometry. Leaving even one
-   colour in the base rule (the ring and grain used to live there) quietly averages the variants
-   back toward each other. */
+   Structured like ToffecSquareButton's `--cb-*` set: every colour is a token and each variant
+   class declares the WHOLE block. The base rule must never declare a `--wd-*` property: this
+   stylesheet is unlayered, so any declaration here beats the cva `[--wd-size:…]` utilities in
+   Tailwind's `@layer utilities` — sizes come in via `var(--wd-size, 80px)` fallbacks instead. */
 
 /* ── Woods ──────────────────────────────────────────────────────────────────
-   `--wd-carve-lit` is pitched per wood rather than shared: the lit row under the glyph is what
-   actually reads as carved depth, and a value that works on oak is invisible on walnut.
-   `--wd-ring` deliberately inverts across the set — lighter than the face on oak, darker on
-   walnut — which is most of what separates them at a glance. */
+   `--wd-tint` pitches the shared tiles toward each wood's palette; `--wd-lit`/`--wd-edge` are
+   the posterized light/shade bands. `--wd-carve-lit` is pitched per wood rather than shared:
+   the lit row under the glyph is what actually reads as carved depth, and a value that works
+   on oak is invisible on walnut. `--wd-ring` deliberately inverts across the set — lighter
+   than the face on oak, darker on walnut — which is most of what separates them at a glance. */
 
-/* Honey oak — the lighter signpost-plank wood. */
+/* Honey oak — the lighter signpost-plank wood; tile 3 is already honey, so no tint. */
 .wood-disc-btn--oak {
-  --wd-face-light: #dda661;
-  --wd-face-mid: #c08340;
-  --wd-face-dark: #99602a;
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-3.png');
+  --wd-tint: rgba(0, 0, 0, 0);
+  --wd-lit: rgba(255, 236, 196, 0.28);
+  --wd-edge: rgba(92, 54, 23, 0.38);
   --wd-outline: #5c3617;
   --wd-under: #6d4420;
   --wd-ring: #c8a05c;
-  --wd-grain: rgba(92, 54, 23, 0.14);
   --wd-shade: rgba(92, 54, 23, 0.34);
   --wd-carve: #4a2810;
   --wd-carve-lit: rgba(255, 236, 196, 0.6);
 }
 
-/* Dark walnut — pitched to the brick interior of the back button it sits beside. */
+/* Dark walnut — tile 1 darkened toward the brick interior of the back button it sits beside. */
 .wood-disc-btn--walnut {
-  --wd-face-light: #7f5029;
-  --wd-face-mid: #5f3a1c;
-  --wd-face-dark: #452812;
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-1.png');
+  --wd-tint: rgba(25, 12, 3, 0.45);
+  --wd-lit: rgba(206, 158, 102, 0.3);
+  --wd-edge: rgba(20, 10, 4, 0.45);
   --wd-outline: #241306;
   --wd-under: #2f1a09;
   --wd-ring: #7a5c18;
-  --wd-grain: rgba(20, 10, 4, 0.18);
   --wd-shade: rgba(20, 10, 4, 0.42);
   --wd-carve: #190c03;
   --wd-carve-lit: rgba(206, 158, 102, 0.7);
 }
 
-/* Redwood — the warm red-orange end of the town's palette. */
+/* Redwood — the streaky tile 2 pushed a step redder, toward the town's warm end. */
 .wood-disc-btn--redwood {
-  --wd-face-light: #c9713a;
-  --wd-face-mid: #a8552a;
-  --wd-face-dark: #82401f;
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-2.png');
+  --wd-tint: rgba(130, 40, 10, 0.2);
+  --wd-lit: rgba(255, 206, 158, 0.28);
+  --wd-edge: rgba(74, 26, 10, 0.4);
   --wd-outline: #4a1e0c;
   --wd-under: #5c2a12;
   --wd-ring: #9c6b1e;
-  --wd-grain: rgba(74, 26, 10, 0.16);
   --wd-shade: rgba(74, 26, 10, 0.36);
   --wd-carve: #3a1608;
   --wd-carve-lit: rgba(255, 206, 158, 0.55);
 }
 
-/* Ash — pale and cool, for surfaces that shouldn't read as warm wood. */
+/* Ash — the cream tile 4 muted toward cool gray-tan, for surfaces that shouldn't read warm. */
 .wood-disc-btn--ash {
-  --wd-face-light: #c2ab8c;
-  --wd-face-mid: #a08a6d;
-  --wd-face-dark: #7d6a52;
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-4.png');
+  --wd-tint: rgba(90, 78, 64, 0.28);
+  --wd-lit: rgba(245, 238, 220, 0.32);
+  --wd-edge: rgba(60, 52, 40, 0.36);
   --wd-outline: #4a4034;
   --wd-under: #5a4e40;
   --wd-ring: #8b7a4a;
-  --wd-grain: rgba(60, 52, 40, 0.14);
   --wd-shade: rgba(60, 52, 40, 0.32);
   --wd-carve: #3a3026;
   --wd-carve-lit: rgba(245, 238, 220, 0.55);
@@ -74,34 +75,33 @@
 /* ── Geometry ─────────────────────────────────────────────────────────────── */
 
 .wood-disc-btn {
-  /* Sizes come from the cva variant as [--wd-size] / [--wd-lip]; colours from the wood class. */
-  --wd-size: 64px;
-  --wd-lip: 4px;
-
   position: relative;
-  width: var(--wd-size);
-  height: var(--wd-size);
+  width: var(--wd-size, 80px);
+  height: var(--wd-size, 80px);
   flex-shrink: 0;
   padding: 0;
   cursor: pointer;
   border: 3px solid var(--wd-outline);
   border-radius: 50%;
-  background:
-    /* Grain first so it sits over the face, matching the planks' horizontal banding. */
-    repeating-linear-gradient(180deg, transparent 0 4px, var(--wd-grain) 4px 5px),
-    /* Hard stops, not a smooth blend: three flat bands posterize the shading the way pixel art
-       does. A continuous radial makes the disc read as glossy plastic. Light stays upper-left. */
-      radial-gradient(
-        circle at 38% 32%,
-        var(--wd-face-light) 0 34%,
-        var(--wd-face-mid) 34% 68%,
-        var(--wd-face-dark) 68%
-      );
+  background-image:
+    /* Hard stops, not a smooth blend: light band upper-left, shade band at the rim, and a
+       transparent middle so the real grain shows through. A continuous radial makes the disc
+       read as glossy plastic. */
+    radial-gradient(circle at 38% 32%, var(--wd-lit) 0 34%, transparent 34% 68%, var(--wd-edge) 68%),
+    linear-gradient(var(--wd-tint), var(--wd-tint)),
+    var(--wd-tile);
+  /* 2× the 32px source — integer texels stay crisp at every disc size, and the grain density
+     is constant across sizes, so the set reads as cut from the same plank. */
+  background-size:
+    auto,
+    auto,
+    64px 64px;
+  background-repeat: no-repeat, no-repeat, repeat;
   box-shadow:
     inset 0 0 0 3px var(--wd-ring),
     inset 0 3px 0 rgba(255, 255, 255, 0.16),
     inset 0 -5px 0 var(--wd-shade),
-    0 var(--wd-lip) 0 var(--wd-under);
+    0 var(--wd-lip, 4px) 0 var(--wd-under);
   /* steps() rather than easing — continuous interpolation reads wrong on a pixel-art surface. */
   transition:
     transform 60ms steps(1),
@@ -116,7 +116,7 @@
 
 /* Bottoms out into its own lip, like a button pressed into the post. */
 .wood-disc-btn:active:not(:disabled) {
-  transform: translateY(var(--wd-lip));
+  transform: translateY(var(--wd-lip, 4px));
   box-shadow:
     inset 0 0 0 3px var(--wd-ring),
     inset 0 3px 0 rgba(255, 255, 255, 0.1),

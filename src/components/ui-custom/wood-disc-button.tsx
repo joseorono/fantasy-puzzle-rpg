@@ -8,7 +8,7 @@ import { cn } from '~/lib/utils';
  */
 const GLYPH_PATHS = {
   back: 'M7 3 L7 6 L13 6 L13 10 L7 10 L7 13 L2 8 Z',
-  help: 'M3 1 H13 V3 H3 Z M3 3 H5 V5 H3 Z M11 3 H13 V7 H11 Z M7 7 H13 V9 H7 Z M7 9 H9 V12 H7 Z M7 14 H9 V16 H7 Z',
+  help: 'M5 1 H11 V3 H5 Z M3 3 H5 V5 H3 Z M11 3 H13 V7 H11 Z M7 7 H13 V9 H7 Z M7 9 H9 V11 H7 Z M7 13 H9 V15 H7 Z',
   close: 'M3 5 L5 3 L8 6 L11 3 L13 5 L10 8 L13 11 L11 13 L8 10 L5 13 L3 11 L6 8 Z',
   settings:
     'M6 1 H10 V3 H6 Z M6 13 H10 V15 H6 Z M1 6 H3 V10 H1 Z M13 6 H15 V10 H13 Z M3 3 H13 V13 H3 Z M6 6 H10 V10 H6 Z',
@@ -33,9 +33,9 @@ const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justi
       ash: 'wood-disc-btn--ash',
     },
     size: {
-      sm: '[--wd-size:48px] [--wd-lip:3px]',
-      default: '[--wd-size:64px] [--wd-lip:4px]',
-      lg: '[--wd-size:80px] [--wd-lip:4px]',
+      sm: '[--wd-size:64px] [--wd-lip:4px]',
+      default: '[--wd-size:80px] [--wd-lip:4px]',
+      lg: '[--wd-size:96px] [--wd-lip:5px]',
     },
   },
   defaultVariants: { variant: 'walnut', size: 'default' },
@@ -51,9 +51,10 @@ interface WoodDiscButtonProps
 /**
  * A carved wooden disc with a glyph cut into its face — the town's circular icon button.
  *
- * Built entirely from CSS geometry and one inline SVG, so it stays crisp at any size and any
- * zoom, unlike the raster button art it is meant to replace. `size="lg"` is deliberately
- * `back-button.png`'s 80px footprint so `.leave-btn` can adopt this with no layout shift.
+ * The face is a real pixel wood tile (`tc-bg-wood-*.png` at a fixed 2× texel scale) clipped to
+ * the circle; ring, lip and glyph stay CSS + inline SVG. Sizes are 64/80/96px, and the default
+ * is deliberately `back-button.png`'s 80px footprint so `.leave-btn` can adopt this with no
+ * layout shift.
  *
  * Four woods ship — `walnut` (dark, pitched to the back button's brick interior), `oak` (lighter
  * signpost honey), `redwood` (warm red) and `ash` (pale and cool). Each variant class declares

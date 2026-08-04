@@ -4,6 +4,7 @@ import { WoodDiscButton, type WoodDiscGlyph } from '~/components/ui-custom/wood-
 const GLYPHS: WoodDiscGlyph[] = ['back', 'help', 'close', 'settings'];
 const WOODS = ['oak', 'walnut', 'redwood', 'ash'] as const;
 const SIZES = ['sm', 'default', 'lg'] as const;
+const SIZE_PX: Record<(typeof SIZES)[number], number> = { sm: 64, default: 80, lg: 96 };
 
 /**
  * Debug harness for {@link WoodDiscButton} — every tone × glyph, all three sizes, and the real
@@ -30,7 +31,6 @@ export default function WoodDiscButtonTestView() {
                 <WoodDiscButton
                   glyph={glyph}
                   variant={wood}
-                  size="lg"
                   onClick={() => setLastPressed(`${wood} / ${glyph}`)}
                 />
                 <span className="text-xs text-[#d4a574]">{glyph}</span>
@@ -44,7 +44,7 @@ export default function WoodDiscButtonTestView() {
           {SIZES.map((size) => (
             <div key={size} className="flex flex-col items-center gap-2">
               <WoodDiscButton glyph="back" size={size} onClick={() => setLastPressed(`back / ${size}`)} />
-              <span className="text-xs text-[#d4a574]">{size}</span>
+              <span className="text-xs text-[#d4a574]">{`${size} (${SIZE_PX[size]}px)`}</span>
             </div>
           ))}
 
@@ -54,7 +54,7 @@ export default function WoodDiscButtonTestView() {
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <WoodDiscButton glyph="back" size="lg" disabled />
+            <WoodDiscButton glyph="back" disabled />
             <span className="text-xs text-[#d4a574]">disabled</span>
           </div>
         </div>

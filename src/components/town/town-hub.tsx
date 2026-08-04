@@ -175,12 +175,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
               <button className="leave-btn" onClick={onLeaveCallback} aria-label="Leave town" />
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'side' && sideSelection.isSelected('help')}>
-              <WoodDiscButton
-                glyph="help"
-                size="lg"
-                onClick={() => setIsHelpOpen(true)}
-                aria-label="About the town"
-              />
+              <WoodDiscButton glyph="help" onClick={() => setIsHelpOpen(true)} aria-label="About the town" />
             </ToffecBeigeCornersWrapper>
           </div>
           <div className="relative mx-[200px] flex flex-col items-end gap-4">
