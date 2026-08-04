@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import * as Keyboard from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import {
   useResources,
@@ -43,6 +45,9 @@ import {
 } from '~/constants/blacksmith';
 
 type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
+type BlacksmithTab = 'craft' | 'modify' | 'exchange' | 'melt';
+
+const BLACKSMITH_TABS: readonly BlacksmithTab[] = ['craft', 'modify', 'exchange', 'melt'];
 
 const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   sword: 'Swords',
@@ -71,7 +76,9 @@ export default function Blacksmith({
   backgroundImage: string;
   onLeaveCallback: () => void;
 }) {
-  const [selectedTab, setSelectedTab] = useState<'craft' | 'modify' | 'exchange' | 'melt'>('craft');
+  const [selectedTab, setSelectedTab] = useState<BlacksmithTab>('craft');
+  const [isTabKeyboardActive, setIsTabKeyboardActive] = useState(false);
+  const tabButtonRefs = useRef<Partial<Record<BlacksmithTab, HTMLButtonElement>>>({});
   const [selectedEquipmentType, setSelectedEquipmentType] = useState<EquipmentType>('sword');
   const [selectedItem, setSelectedItem] = useState<EquipmentItemData | null>(null);
   // The first craft of each distinct item this visit shows the success overlay.
@@ -173,6 +180,27 @@ export default function Blacksmith({
     }
   };
 
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+
+    const direction = Keyboard.getNavDirection(event.key);
+    if (direction === 'left' || direction === 'right') {
+      event.preventDefault();
+      const currentIndex = BLACKSMITH_TABS.indexOf(selectedTab);
+      const step = direction === 'right' ? 1 : -1;
+      const nextIndex = (currentIndex + step + BLACKSMITH_TABS.length) % BLACKSMITH_TABS.length;
+      const nextTab = BLACKSMITH_TABS[nextIndex];
+      setIsTabKeyboardActive(true);
+      setSelectedTab(nextTab);
+      tabButtonRefs.current[nextTab]?.focus();
+    }
+  });
+
+  function handleTabClick(tab: BlacksmithTab) {
+    setIsTabKeyboardActive(false);
+    setSelectedTab(tab);
+  }
+
   return (
     <TownLocationLayout
       locationClass="blacksmith"
@@ -185,18 +213,54 @@ export default function Blacksmith({
     >
       {/* Tab Navigation */}
       <div className="blacksmith-tabs">
-        <IndigolayTab size="default" isActive={selectedTab === 'craft'} onClick={() => setSelectedTab('craft')}>
-          Craft
-        </IndigolayTab>
-        <IndigolayTab size="default" isActive={selectedTab === 'modify'} onClick={() => setSelectedTab('modify')}>
-          Modify
-        </IndigolayTab>
-        <IndigolayTab size="default" isActive={selectedTab === 'exchange'} onClick={() => setSelectedTab('exchange')}>
-          Exchange
-        </IndigolayTab>
-        <IndigolayTab size="default" isActive={selectedTab === 'melt'} onClick={() => setSelectedTab('melt')}>
-          Melt
-        </IndigolayTab>
+        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'craft'}>
+          <IndigolayTab
+            ref={(button) => {
+              tabButtonRefs.current.craft = button ?? undefined;
+            }}
+            size="default"
+            isActive={selectedTab === 'craft'}
+            onClick={() => handleTabClick('craft')}
+          >
+            Craft
+          </IndigolayTab>
+        </ToffecBeigeCornersWrapper>
+        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'modify'}>
+          <IndigolayTab
+            ref={(button) => {
+              tabButtonRefs.current.modify = button ?? undefined;
+            }}
+            size="default"
+            isActive={selectedTab === 'modify'}
+            onClick={() => handleTabClick('modify')}
+          >
+            Modify
+          </IndigolayTab>
+        </ToffecBeigeCornersWrapper>
+        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'exchange'}>
+          <IndigolayTab
+            ref={(button) => {
+              tabButtonRefs.current.exchange = button ?? undefined;
+            }}
+            size="default"
+            isActive={selectedTab === 'exchange'}
+            onClick={() => handleTabClick('exchange')}
+          >
+            Exchange
+          </IndigolayTab>
+        </ToffecBeigeCornersWrapper>
+        <ToffecBeigeCornersWrapper forceDisplay={isTabKeyboardActive && selectedTab === 'melt'}>
+          <IndigolayTab
+            ref={(button) => {
+              tabButtonRefs.current.melt = button ?? undefined;
+            }}
+            size="default"
+            isActive={selectedTab === 'melt'}
+            onClick={() => handleTabClick('melt')}
+          >
+            Melt
+          </IndigolayTab>
+        </ToffecBeigeCornersWrapper>
       </div>
 
       {/* Craft Tab */}

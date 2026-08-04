@@ -29,12 +29,20 @@ const indigolayTabVariants = cva(
 
 interface IndigolayTabProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof indigolayTabVariants> {
   isActive?: boolean;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-export function IndigolayTab({ className, glow, isActive, size, state, type = 'button', ...props }: IndigolayTabProps) {
+export function IndigolayTab({ className, glow, isActive, ref, size, state, type = 'button', ...props }: IndigolayTabProps) {
   const resolvedState = isActive === true ? 'active' : isActive === false ? 'inactive' : state;
 
-  return <button type={type} className={cn(indigolayTabVariants({ glow, size, state: resolvedState, className }))} {...props} />;
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={cn(indigolayTabVariants({ glow, size, state: resolvedState, className }))}
+      {...props}
+    />
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
