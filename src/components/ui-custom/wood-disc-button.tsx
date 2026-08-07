@@ -143,6 +143,8 @@ const woodDiscButtonVariants = cva('wood-disc-btn inline-flex items-center justi
       walnut: 'wood-disc-btn--walnut',
       redwood: 'wood-disc-btn--redwood',
       ash: 'wood-disc-btn--ash',
+      beige: 'wood-disc-btn--beige',
+      moreash: 'wood-disc-btn--moreash',
     },
     size: {
       sm: '[--wd-size:64px] [--wd-lip:4px]',

@@ -17,7 +17,7 @@
 
 /* Honey oak — the lighter signpost-plank wood; tile 3 is already honey, so no tint. */
 .wood-disc-btn--oak {
-  --wd-tile: url('/assets/bg/looping/tc-bg-wood-3.png');
+  --wd-image: url('/assets/ui-system/wood-disc-btn/oak.png');
   --wd-tint: rgba(0, 0, 0, 0);
   --wd-lit: rgba(255, 236, 196, 0.28);
   --wd-edge: rgba(92, 54, 23, 0.38);
@@ -29,7 +29,7 @@
 
 /* Dark walnut — tile 1 darkened toward the brick interior of the back button it sits beside. */
 .wood-disc-btn--walnut {
-  --wd-tile: url('/assets/bg/looping/tc-bg-wood-1.png');
+  --wd-image: url('/assets/ui-system/wood-disc-btn/walnut.png');
   --wd-tint: rgba(25, 12, 3, 0.45);
   --wd-lit: rgba(206, 158, 102, 0.3);
   --wd-edge: rgba(20, 10, 4, 0.45);
@@ -41,7 +41,7 @@
 
 /* Redwood — the streaky tile 2 pushed a step redder, toward the town's warm end. */
 .wood-disc-btn--redwood {
-  --wd-tile: url('/assets/bg/looping/tc-bg-wood-2.png');
+  --wd-image: url('/assets/ui-system/wood-disc-btn/redwood.png');
   --wd-tint: rgba(130, 40, 10, 0.2);
   --wd-lit: rgba(255, 206, 158, 0.28);
   --wd-edge: rgba(74, 26, 10, 0.4);
@@ -53,7 +53,7 @@
 
 /* Ash — the cream tile 4 muted toward cool gray-tan, for surfaces that shouldn't read warm. */
 .wood-disc-btn--ash {
-  --wd-tile: url('/assets/bg/looping/tc-bg-wood-4.png');
+  --wd-image: url('/assets/ui-system/wood-disc-btn/ash.png');
   --wd-tint: rgba(90, 78, 64, 0.28);
   --wd-lit: rgba(245, 238, 220, 0.32);
   --wd-edge: rgba(60, 52, 40, 0.36);
@@ -61,6 +61,28 @@
   --wd-under: #5a4e40;
   --wd-ring: #8b7a4a;
   --wd-shade: rgba(60, 52, 40, 0.32);
+}
+
+.wood-disc-btn--beige {
+  --wd-image: url('/assets/ui-system/wood-disc-btn/beige.png');
+  --wd-tint: rgba(0, 0, 0, 0);
+  --wd-lit: rgba(255, 246, 218, 0.2);
+  --wd-edge: rgba(92, 64, 30, 0.3);
+  --wd-outline: #624a1e;
+  --wd-under: #76502a;
+  --wd-ring: #b58a2f;
+  --wd-shade: rgba(92, 64, 30, 0.3);
+}
+
+.wood-disc-btn--moreash {
+  --wd-image: url('/assets/ui-system/wood-disc-btn/moreash.png');
+  --wd-tint: rgba(0, 0, 0, 0);
+  --wd-lit: rgba(245, 240, 224, 0.2);
+  --wd-edge: rgba(67, 61, 51, 0.3);
+  --wd-outline: #514936;
+  --wd-under: #625846;
+  --wd-ring: #928665;
+  --wd-shade: rgba(67, 61, 51, 0.3);
 }
 
 /* ── Geometry ─────────────────────────────────────────────────────────────── */
@@ -72,26 +94,11 @@
   flex-shrink: 0;
   padding: 0;
   cursor: pointer;
-  border: 3px solid var(--wd-outline);
   border-radius: 50%;
-  background-image:
-    /* Hard stops, not a smooth blend: light band upper-left, shade band at the rim, and a
-       transparent middle so the real grain shows through. A continuous radial makes the disc
-       read as glossy plastic. */
-    radial-gradient(circle at 38% 32%, var(--wd-lit) 0 34%, transparent 34% 68%, var(--wd-edge) 68%),
-    linear-gradient(var(--wd-tint), var(--wd-tint)), var(--wd-tile);
-  /* 2× the 32px source — integer texels stay crisp at every disc size, and the grain density
-     is constant across sizes, so the set reads as cut from the same plank. */
-  background-size:
-    auto,
-    auto,
-    64px 64px;
-  background-repeat: no-repeat, no-repeat, repeat;
-  box-shadow:
-    inset 0 0 0 3px var(--wd-ring),
-    inset 0 3px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -5px 0 var(--wd-shade),
-    0 var(--wd-lip, 4px) 0 var(--wd-under);
+  background-image: var(--wd-image);
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   /* steps() rather than easing — continuous interpolation reads wrong on a pixel-art surface. */
   transition:
     transform 60ms steps(1),
@@ -128,7 +135,8 @@
    what seats it on the wood — do not blur it. */
 .wood-disc-btn__glyph {
   position: relative;
-  width: 58%;
-  height: 58%;
+  width: 50%;
+  height: 50%;
+  transform: translate(-1px, -4px);
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
 }
