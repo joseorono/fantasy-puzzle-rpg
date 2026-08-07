@@ -668,6 +668,11 @@
   max-height: none;
 }
 
+.blacksmith .equipment-list > .cursor-corners {
+  display: block;
+  width: 100%;
+}
+
 .item-store .equipment-list {
   flex: 1;
   min-height: 0;
