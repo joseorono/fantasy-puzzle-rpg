@@ -52,11 +52,11 @@ const GLYPH_BITMAPS = {
     '........odddo.......',
     '........ooooo.......',
     '....................',
-    '........ooooo.......',
-    '........odddo.......',
-    '........odddo.......',
-    '........odddo.......',
-    '........ooooo.......',
+    '........oooo........',
+    '........oddo........',
+    '........oddo........',
+    '........oddo........',
+    '........oooo........',
     '....................',
   ],
   close: [
@@ -86,22 +86,21 @@ const GLYPH_BITMAPS = {
     '....................',
     '........oooo........',
     '........offo........',
-    '....ooo.offo.ooo....',
-    '...offfoffffofffo...',
-    '...offffffffffffo...',
-    '...offffffffffffo...',
+    '......ooffffoo......',
+    '.....offffffffo.....',
+    '....offffffffffo....',
     '....offfoooofffo....',
-    '.ooofffo....offfooo.',
-    '.offfffo....offfffo.',
-    '.odddddo....odddddo.',
-    '.ooodddo....odddooo.',
+    '..oofffo....offfoo..',
+    '..offffo....offffo..',
+    '..offffo....offffo..',
+    '..oodddo....odddoo..',
     '....odddoooodddo....',
-    '...oddddddddddddo...',
-    '...oddddddddddddo...',
-    '...odddoddddodddo...',
-    '....ooo.oddo.ooo....',
+    '....oddddddddddo....',
+    '.....oddddddddo.....',
+    '......ooddddoo......',
     '........oddo........',
     '........oooo........',
+    '....................',
     '....................',
   ],
 } as const;
@@ -205,3 +204,8 @@ export function WoodDiscButton({
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { woodDiscButtonVariants };
+
+
+
+
+
