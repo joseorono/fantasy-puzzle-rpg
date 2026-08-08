@@ -16,8 +16,9 @@ import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
 import MapCharacterSprite from './map-character-sprite';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 import {
   useMapProgressActions,
   useGameStore,
@@ -148,6 +149,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
 
   // Pulse animation for markers
   useEffect(() => {
@@ -256,7 +258,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
       if (floorLoot) {
         // Check if already collected
-        const isCollected = floorLootProgressActions.isFloorLootCollected(map.id,floorLoot.id);
+        const isCollected = floorLootProgressActions.isFloorLootCollected(map.id, floorLoot.id);
 
         if (!isCollected) {
           console.log('Floor loot found:', floorLoot);
@@ -304,7 +306,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     canMoveTo: (row, col) => isRoadTile(row, col),
     // An event prompt is a decision, not scenery — walking away from one is how you miss it.
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
-    isPaused: showTriggerModal || activeDialogue !== null,
+    // The pause menu owns the keyboard while open — WASD must not walk the character under it.
+    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen,
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);

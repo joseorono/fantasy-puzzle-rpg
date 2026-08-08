@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
@@ -13,6 +13,9 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import { usePressAndHold } from '~/hooks/use-press-and-hold';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
+import { cn } from '~/lib/utils';
 import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
@@ -24,15 +27,22 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
+/** The three stat rows in the order they appear in the allocation panel. */
+const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
+const ALLOCATION_ACTIONS = ['confirm', 'reset'] as const;
+type AllocationAction = (typeof ALLOCATION_ACTIONS)[number];
+type AllocationZone = 'stats' | 'actions';
+
 interface LevelUpViewProps {
   character: CharacterData;
   availablePoints: number;
   potentialStatPoints: CoreRPGStats;
   onConfirm: (allocatedStats: CoreRPGStats) => void;
+  /** Applies the level-up with random stats only and advances. No control is bound to it yet. */
   onBack: () => void;
 }
 
-export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm, onBack }: LevelUpViewProps) {
+export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm }: LevelUpViewProps) {
   const [pendingAllocations, setPendingAllocations] = useState<CoreRPGStats>({
     pow: 0,
     vit: 0,
@@ -98,14 +108,121 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
 
   function handleReset() {
     setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
+    setSelectedAction(null);
+    setAllocationZone('stats');
   }
 
+  // Gated on allPointsAllocated to match the Confirm button's own `disabled`, so the keyboard
+  // shortcut can't confirm with points still unspent. Deliberately does NOT call onBack(): the
+  // parent's onConfirm already applies the level-up and advances to the next character.
   function handleConfirm() {
-    if (!hasPendingChanges) return;
+    if (!allPointsAllocated) return;
     onConfirm(pendingAllocations);
     setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
-    onBack();
   }
+
+  // Null until the keyboard is actually used, so the highlight never appears for mouse players.
+  const [selectedStatIndex, setSelectedStatIndex] = useState<number | null>(null);
+  const [allocationZone, setAllocationZone] = useState<AllocationZone>('stats');
+  const [selectedAction, setSelectedAction] = useState<AllocationAction | null>(null);
+
+  // Returning to the mouse drops the keyboard highlight, so hover and selection can't both show.
+  useEffect(() => {
+    function handlePointerMove() {
+      setSelectedStatIndex(null);
+      setSelectedAction(null);
+      setAllocationZone('stats');
+    }
+    window.addEventListener('pointermove', handlePointerMove);
+    return () => window.removeEventListener('pointermove', handlePointerMove);
+  }, []);
+
+  function getEnabledActions(): AllocationAction[] {
+    return ALLOCATION_ACTIONS.filter((action) => {
+      if (action === 'confirm') return allPointsAllocated;
+      return hasPendingChanges;
+    });
+  }
+
+  // Arrows/WASD pick a stat row and spend points on it. Once the stat rows are exhausted, the
+  // same vertical navigation enters the Confirm/Reset action row without changing allocation.
+  useWindowKeyDown((event) => {
+    const direction = getNavDirection(event.key);
+
+    if (allocationZone === 'stats') {
+      if (direction === 'down' && selectedStatIndex === STAT_ORDER.length - 1) {
+        event.preventDefault();
+        setAllocationZone('actions');
+        setSelectedAction(getEnabledActions()[0] ?? null);
+        return;
+      }
+
+      if (direction === 'up' || direction === 'down') {
+        event.preventDefault();
+        const step = direction === 'down' ? 1 : -1;
+        setSelectedStatIndex((prev) => {
+          if (prev === null) return direction === 'down' ? 0 : STAT_ORDER.length - 1;
+          return (prev + step + STAT_ORDER.length) % STAT_ORDER.length;
+        });
+        return;
+      }
+
+      if (direction === 'left' || direction === 'right') {
+        event.preventDefault();
+        const statIndex = selectedStatIndex ?? 0;
+        if (selectedStatIndex === null) setSelectedStatIndex(statIndex);
+        const stat = STAT_ORDER[statIndex];
+        if (direction === 'right') handleIncreaseStat(stat);
+        else handleDecreaseStat(stat);
+        return;
+      }
+
+      if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        handleConfirm();
+        return;
+      }
+    } else {
+      if (direction === 'up') {
+        event.preventDefault();
+        setAllocationZone('stats');
+        setSelectedStatIndex(STAT_ORDER.length - 1);
+        setSelectedAction(null);
+        return;
+      }
+
+      if (direction === 'down') {
+        event.preventDefault();
+        return;
+      }
+
+      if (direction === 'left' || direction === 'right') {
+        event.preventDefault();
+        const enabledActions = getEnabledActions();
+        if (enabledActions.length === 0) {
+          setSelectedAction(null);
+          return;
+        }
+        const currentIndex = selectedAction ? enabledActions.indexOf(selectedAction) : -1;
+        const step = direction === 'right' ? 1 : -1;
+        setSelectedAction(enabledActions[(currentIndex + step + enabledActions.length) % enabledActions.length]);
+        return;
+      }
+
+      if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (event.repeat || selectedAction === null) return;
+        if (selectedAction === 'confirm') handleConfirm();
+        else handleReset();
+        return;
+      }
+    }
+
+    if (event.key === KeyboardKeys.Escape && hasPendingChanges) {
+      event.preventDefault();
+      handleReset();
+    }
+  });
 
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
@@ -291,7 +408,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             {/* Stat cards share the panel's free height so the actions sit on the bottom padding line. */}
             <div className="stat-allocation-list">
               {/* Power Stat */}
-              <div className="stat-allocation-row pow">
+              <div className={cn('stat-allocation-row pow', selectedStatIndex === 0 && 'stat-allocation-row--selected')}>
                 <div className="stat-header">
                   <div className="stat-name-group">
                     <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
@@ -341,7 +458,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}
                 </p>
                 <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 0}>
                     <ToffecSquareButton
                       icon="minus"
                       variant="fairy3"
@@ -352,7 +469,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       aria-label="Decrease Power"
                     />
                   </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 0}>
                     <ToffecSquareButton
                       icon="plus"
                       variant="fairy3"
@@ -372,7 +489,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
 
               {/* Vitality Stat */}
-              <div className="stat-allocation-row vit">
+              <div className={cn('stat-allocation-row vit', selectedStatIndex === 1 && 'stat-allocation-row--selected')}>
                 <div className="stat-header">
                   <div className="stat-name-group">
                     <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
@@ -419,7 +536,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 </div>
                 <p className="stat-hint pixel-font text-xs">Increases your Maximum HP, makes Guard last longer.</p>
                 <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 1}>
                     <ToffecSquareButton
                       icon="minus"
                       variant="fairy3"
@@ -430,7 +547,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       aria-label="Decrease Vitality"
                     />
                   </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 1}>
                     <ToffecSquareButton
                       icon="plus"
                       variant="fairy3"
@@ -450,7 +567,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               </div>
 
               {/* Speed Stat */}
-              <div className="stat-allocation-row spd">
+              <div className={cn('stat-allocation-row spd', selectedStatIndex === 2 && 'stat-allocation-row--selected')}>
                 <div className="stat-header">
                   <div className="stat-name-group">
                     <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
@@ -498,7 +615,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                   Reduces skill &amp; item cooldowns, charges Guard faster.
                 </p>
                 <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 2}>
                     <ToffecSquareButton
                       icon="minus"
                       variant="fairy3"
@@ -509,7 +626,7 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                       aria-label="Decrease Speed"
                     />
                   </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper>
+                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 2}>
                     <ToffecSquareButton
                       icon="plus"
                       variant="fairy3"
@@ -534,16 +651,20 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
-                      Confirm
-                    </ToffecButton>
+                    <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'confirm'}>
+                      <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
+                        Confirm
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
-                Reset
-              </ToffecButton>
+              <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'reset'}>
+                <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
+                  Reset
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </div>
         </div>

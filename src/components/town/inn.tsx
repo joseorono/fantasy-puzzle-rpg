@@ -5,7 +5,7 @@ import { useResources, useResourcesActions } from '~/stores/game-store';
 import { createResources } from '~/lib/resources';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
@@ -14,6 +14,19 @@ import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
+import { INN_HERO_COLUMNS } from '~/constants/game';
+
+/** Splits the party into the rows the hero grid actually renders, so ←/→ stay spatially truthful. */
+function chunk<T>(items: readonly T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size));
+  return rows;
+}
+
+const HEAL_ALL_ID = 'heal-all';
 
 /** A single member to heal plus the coin cost to fully restore them. */
 interface HealEntry {
@@ -64,17 +77,60 @@ export default function Inn({
   const handleHealMember = (member: CharacterData) => {
     const cost = getHealCost(member);
     if (cost <= 0 || resources.coins < cost) return;
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     partyActions.fullyHealMember(member.id);
     resourcesActions.reduceResources(createResources({ coins: cost }));
   };
 
   const handleHealAll = () => {
     if (healPlan.entries.length === 0) return;
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     healPlan.entries.forEach((entry) => partyActions.fullyHealMember(entry.member.id));
     resourcesActions.reduceResources(createResources({ coins: healPlan.cost }));
   };
+
+  // A hero is unselectable when either of the component's two "can't" paths applies: the card
+  // drops its onClick once full, and handleHealMember early-returns when the coins fall short.
+  const isHealDisabled = (member: CharacterData) =>
+    member.currentHp >= member.maxHp || resources.coins < getHealCost(member);
+  const isHealAllDisabled = isPartyFullyHealed || healPlan.entries.length === 0;
+
+  const rows: KeyboardSelectableItem[][] = [
+    ...chunk(party, INN_HERO_COLUMNS).map((row) => row.map((m) => ({ id: m.id, disabled: isHealDisabled(m) }))),
+    [{ id: HEAL_ALL_ID, disabled: isHealAllDisabled }],
+  ];
+
+  const selection = useKeyboardSelection(rows, {
+    onMove: () => soundService.playSound(SoundNames.clickChangeTab, TOWN_SFX_VOLUME.navTick, 0.1, 0.05),
+  });
+
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction) {
+      event.preventDefault();
+      selection.move(direction);
+      return;
+    }
+
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (event.repeat) return;
+    const selectedId = selection.selectedId;
+    if (selectedId === null) return;
+
+    if (selectedId === HEAL_ALL_ID) {
+      if (!isHealAllDisabled) handleHealAll();
+      return;
+    }
+    const member = party.find((m) => m.id === selectedId);
+    if (!member || isHealDisabled(member)) return;
+    handleHealMember(member);
+    // The healed hero is disabled now, so hop the cursor onward instead of stranding it
+    // (a no-op when nothing else in the row is healable).
+    selection.move('right');
+  });
 
   const healAllLabel = isPartyFullyHealed
     ? 'Fully Healed'
@@ -112,7 +168,9 @@ export default function Inn({
               </span>
             </div>
           </div>
-          <p className="town-section-subtitle">Click a wounded hero to heal them, or heal everyone at once below</p>
+          <p className="town-section-subtitle">
+            Click a wounded hero to heal them, or heal everyone at once below
+          </p>
           <div className="party-members-list">
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => {
@@ -127,6 +185,7 @@ export default function Inn({
                   <div key={member.id} className="inn-hero-cell">
                     <ToffecBeigeCornersWrapper
                       className={cn(isFull && 'inn-hero-card--healed', !isFull && !canAffordHeal && 'cannot-afford')}
+                      forceDisplay={selection.isSelected(member.id)}
                     >
                       <PartyMemberCard
                         member={member}
@@ -151,12 +210,13 @@ export default function Inn({
 
         {/* Heal everyone affordable in one tap */}
         <div className="inn-actions">
-          <ToffecBeigeCornersWrapper>
+          <span className="town-key-hint pixel-font">← → pick a hero · ↑ ↓ reach Heal All · Enter to heal</span>
+          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(HEAL_ALL_ID)}>
             <ToffecButton
               variant="cream"
               size="xs"
               onClick={handleHealAll}
-              disabled={isPartyFullyHealed || healPlan.entries.length === 0}
+              disabled={isHealAllDisabled}
               className="heal-button"
             >
               {healAllLabel}

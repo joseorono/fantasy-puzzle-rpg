@@ -962,11 +962,15 @@
 
 /* Keeps the house accent colour, but needs the halo to hold up over the grain. */
 .skill-slot-tooltip__meta {
+  display: inline-block;
   font-family: monospace;
   font-size: 0.62rem;
   font-weight: bold;
   letter-spacing: 0.02em;
-  color: #d4a574;
+  color: #d9c7ac;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
   text-shadow:
     1px 1px 0 rgba(0, 0, 0, 0.9),
     0 0 4px rgba(0, 0, 0, 0.7);
@@ -975,9 +979,10 @@
 /* The slot plinth exists so the pips read over frame art; on the card's board
    texture they already do, so it only adds clutter. */
 .skill-slot-tooltip .skill-mastery--slot {
-  padding: 0;
-  background: none;
+  padding: 2px 5px;
+  background: rgba(0, 0, 0, 0.45);
   border: none;
+  border-radius: 4px;
   box-shadow: none;
 }
 

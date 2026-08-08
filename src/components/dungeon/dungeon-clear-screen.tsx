@@ -21,6 +21,8 @@ import {
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { isReducedMotion } from '~/lib/reduced-motion';
+import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { cn } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -91,15 +93,17 @@ export function DungeonClearScreen({
     if (reduced) return;
 
     const timers = timersRef.current;
-    const { startDelayMs, rowStaggerMs, starStaggerMs, lootRevealDelayMs, continueDelayMs } =
-      RATING_REVEAL;
+    const { startDelayMs, rowStaggerMs, starStaggerMs, lootRevealDelayMs, continueDelayMs } = RATING_REVEAL;
 
     floors.forEach((_, i) => {
       timers.push(
-        setTimeout(() => {
-          setRevealedCount(i + 1);
-          soundService.playSound(SoundNames.clickChangeTab, 0.5, 0.1, 0.05);
-        }, startDelayMs + i * rowStaggerMs),
+        setTimeout(
+          () => {
+            setRevealedCount(i + 1);
+            soundService.playSound(SoundNames.clickChangeTab, 0.5, 0.1, 0.05);
+          },
+          startDelayMs + i * rowStaggerMs,
+        ),
       );
     });
 
@@ -107,10 +111,13 @@ export function DungeonClearScreen({
     const starsStart = startDelayMs + floors.length * rowStaggerMs + 250;
     for (let s = 0; s < summary.averageStars; s++) {
       timers.push(
-        setTimeout(() => {
-          setFilledStars(s + 1);
-          soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
-        }, starsStart + s * starStaggerMs),
+        setTimeout(
+          () => {
+            setFilledStars(s + 1);
+            soundService.playSound(SoundNames.clickCoin, 0.6, 0.1, 0.05);
+          },
+          starsStart + s * starStaggerMs,
+        ),
       );
     }
 
@@ -142,6 +149,21 @@ export function DungeonClearScreen({
     soundService.playSound(SoundNames.clickCoin, 0.6);
   }
 
+  // Two-stage confirm key: the first press fast-forwards the reveal (same as tapping the
+  // backdrop), the next one continues. Escape is left alone — usePauseMenu owns it. No
+  // enabled gate needed: this overlay only mounts while the dungeon's own handler is off.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    // One action per press — a held Enter must not skip the reveal AND leave in one go.
+    if (event.repeat) return;
+    if (!canContinue) {
+      handleSkip();
+      return;
+    }
+    onContinue();
+  });
+
   const rankLabel = STAR_RANK_LABELS[summary.averageStars] ?? '';
   const tagline = STAR_RANK_TAGLINES[summary.averageStars] ?? '';
   const isCloseCall = summary.averageStars <= CLOSE_CALL_MAX_STARS;
@@ -162,11 +184,7 @@ export function DungeonClearScreen({
 
           <div className="dcs-divider" />
 
-          <div
-            className="dcs-stars"
-            role="img"
-            aria-label={`${summary.averageStars} of ${MAX_STARS} stars`}
-          >
+          <div className="dcs-stars" role="img" aria-label={`${summary.averageStars} of ${MAX_STARS} stars`}>
             {Array.from({ length: MAX_STARS }, (_, i) => {
               const isFilled = i < filledStars;
               return (
@@ -189,9 +207,7 @@ export function DungeonClearScreen({
                 </div>
               )}
               {tagline && (
-                <p className={cn('dcs-tagline pixel-font', isCloseCall && 'dcs-tagline--close')}>
-                  {tagline}
-                </p>
+                <p className={cn('dcs-tagline pixel-font', isCloseCall && 'dcs-tagline--close')}>{tagline}</p>
               )}
               <div className={cn('dcs-total', showTotal && 'dcs-total--shown')}>
                 <span className="dcs-total-label pixel-font">STARS</span>
@@ -217,6 +233,10 @@ export function DungeonClearScreen({
           >
             {continueLabel}
           </ToffecButton>
+
+          <span className="dcs-key-hint pixel-font">
+            {canContinue ? `Enter to ${continueLabel.toLowerCase()}` : 'Enter to skip'}
+          </span>
         </div>
       </IndigolayCornersWrapper>
     </div>

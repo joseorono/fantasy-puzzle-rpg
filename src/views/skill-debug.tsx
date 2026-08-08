@@ -10,10 +10,13 @@ import { DEFAULT_SKILL_BY_CLASS } from '~/constants/skills';
 import { useUnlockSkill } from '~/hooks/use-unlock-skill';
 import { useUnlockPassive } from '~/hooks/use-unlock-passive';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
-import { createResources } from '~/lib/resources';
+import { DEBUG_RESOURCE_PAYLOAD } from '~/constants/dev';
 import type { CharacterData } from '~/types/rpg-elements';
 
 const DEBUG_LEVELS = [1, 4, 10, 17, 24, 30];
+
+/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
+const SKILL_ICON_SIZE = 32;
 
 /** Paired −/+ buttons for nudging a skill's level directly. */
 function LevelNudgeButtons({ disabled, onNudge }: { disabled: boolean; onNudge: (delta: number) => void }) {
@@ -83,11 +86,7 @@ export default function SkillDebugView() {
 
         <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-3">
           <button
-            onClick={() =>
-              resourcesActions.addResources(
-                createResources({ coins: 1000, iron: 50, silver: 25, gold: 25, copper: 25 }),
-              )
-            }
+            onClick={() => resourcesActions.addResources(DEBUG_RESOURCE_PAYLOAD)}
             className="rounded bg-amber-600 px-3 py-1 text-sm font-semibold text-white transition-colors hover:bg-amber-500"
           >
             +1000c / +50 iron / +25 silver / +25 gold
@@ -135,7 +134,12 @@ export default function SkillDebugView() {
                       <div key={skill.id} className="flex items-center justify-between rounded bg-slate-700 px-3 py-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1 truncate text-sm font-semibold text-white">
-                            <SkillIcon characterClass={skill.class} position={skill.icon} size={16} sheetSize={32} />{' '}
+                            <SkillIcon
+                              characterClass={skill.class}
+                              position={skill.icon}
+                              size={SKILL_ICON_SIZE}
+                              sheetSize={32}
+                            />{' '}
                             {skill.name}
                             {selected && <span className="ml-2 text-xs text-amber-300">ACTIVE</span>}
                           </div>
@@ -183,7 +187,7 @@ export default function SkillDebugView() {
                             <SkillIcon
                               characterClass={passive.class}
                               position={passive.icon}
-                              size={16}
+                              size={SKILL_ICON_SIZE}
                               sheetSize={32}
                             />{' '}
                             {passive.name}

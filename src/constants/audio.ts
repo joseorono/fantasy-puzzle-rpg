@@ -57,6 +57,25 @@ export const soundFiles = {
 // Background sounds for the town hub (randomly selected on entry)
 export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
+/**
+ * SFX gains for the town hub and its sub-locations.
+ *
+ * `mechanical-click.wav` is mastered at -0.4 dBFS peak — roughly 20 dB hotter than the rest of
+ * the UI set — so it needs a far lower gain than its nominal peers to sit at the same perceived
+ * level. `transaction` replaces the `playSound` default of 1.0 that the sub-locations were
+ * relying on implicitly.
+ */
+export const TOWN_SFX_VOLUME = {
+  /** Clicking a plank on the hub signpost. */
+  locationSelect: 0.1,
+  /** Ambient one-shot when the hub is entered or returned to. */
+  hubAmbience: 0.15,
+  /** Buying, crafting, upgrading, salvaging and resting inside a sub-location. */
+  transaction: 0.4,
+  /** Tick as the keyboard cursor moves between planks, heroes or shop rows. */
+  navTick: 0.35,
+} as const;
+
 // Volume range for match-3 sounds (scaled by match size)
 export const MIN_MATCH_SOUND_VOLUME = 0.6;
 export const MAX_MATCH_SOUND_VOLUME = 1;

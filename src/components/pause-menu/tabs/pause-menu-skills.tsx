@@ -1,5 +1,4 @@
-import { useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParty, usePartyActions, useResources, useResourcesActions, useCurrentView } from '~/stores/game-store';
 import {
   getSkillsForClass,
@@ -18,7 +17,9 @@ import { useUnlockPassive } from '~/hooks/use-unlock-passive';
 import { useUpgradeSkill } from '~/hooks/use-upgrade-skill';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { getNavDirection } from '~/constants/keyboard';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { INFO_ICON_SRC } from '~/constants/ui';
@@ -33,6 +34,7 @@ import { SkillDetailPanel, type SkillSelection } from '~/components/pause-menu/s
 import { SkillSlotTooltip } from '~/components/pause-menu/skills/skill-slot-tooltip';
 import { getUpgradePreviewRows } from '~/components/pause-menu/skills/upgrade-preview';
 import { describePassiveModifiers } from '~/components/pause-menu/skills/passive-descriptions';
+import { getDetailActions } from '~/components/pause-menu/skills/skill-gates';
 
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 
@@ -45,13 +47,20 @@ interface PendingAction {
   selection: SkillSelection;
 }
 
+interface PauseMenuSkillsProps {
+  /** The content zone owns the keyboard — arrows/Enter act on this pane. */
+  keyboardActive?: boolean;
+  /** Fired when ← from the roster hands the keyboard back to the sidebar. */
+  onExitToSidebar?: () => void;
+}
+
 /**
  * The Skills tab: pick a hero, browse their Active (Ultimate) track and Passive
  * track as framed Indigolay slots, inspect any slot in the parchment detail
  * panel, and unlock or level up skills with crafting resources — reaching a
  * level only makes a skill purchasable. Tier-0 Ultimates are the free starting kit.
  */
-export function PauseMenuSkills() {
+export function PauseMenuSkills({ keyboardActive = false, onExitToSidebar }: PauseMenuSkillsProps) {
   const party = useParty();
   const partyActions = usePartyActions();
   const resources = useResources();
@@ -65,14 +74,14 @@ export function PauseMenuSkills() {
   const [selection, setSelection] = useState<{ row: 'active' | 'passive'; index: number }>({ row: 'active', index: 0 });
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [justUnlockedId, setJustUnlockedId] = useState<string | null>(null);
-  const slotRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  // Which column the keyboard cursor lives in: the party roster or the slots/actions pane.
+  const [column, setColumn] = useState<'roster' | 'main'>('roster');
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
-  if (!selected) return null;
 
-  const actives = getSkillsForClass(selected.class);
-  const passives = getPassivesForClass(selected.class);
+  const actives = selected ? getSkillsForClass(selected.class) : [];
+  const passives = selected ? getPassivesForClass(selected.class) : [];
 
   const detailSelection: SkillSelection =
     selection.row === 'active'
@@ -89,30 +98,123 @@ export function PauseMenuSkills() {
   function selectSlot(row: 'active' | 'passive', index: number) {
     soundService.playSound(SoundNames.clickChangeTab, 0.5);
     setSelection({ row, index });
-    slotRefs.current[`${row}-${index}`]?.focus();
-  }
-
-  // Arrow navigation across the two slot rows. stopPropagation keeps the
-  // sidebar (which listens for arrows on window to switch tabs) out of it.
-  function handleSlotKeyDown(e: KeyboardEvent<HTMLButtonElement>, row: 'active' | 'passive', index: number) {
-    const navDirection = getNavDirection(e.key);
-    if (!navDirection) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const rowLength = row === 'active' ? actives.length : passives.length;
-    if (navDirection === 'left') selectSlot(row, (index - 1 + rowLength) % rowLength);
-    else if (navDirection === 'right') selectSlot(row, (index + 1) % rowLength);
-    else {
-      const otherRow = row === 'active' ? 'passive' : 'active';
-      const otherLength = otherRow === 'active' ? actives.length : passives.length;
-      selectSlot(otherRow, Math.min(index, otherLength - 1));
-    }
   }
 
   function handleEquip(skillId: string) {
+    if (!selected) return;
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
     partyActions.selectSkillForCharacter(selected.id, skillId);
   }
+
+  // ─── Keyboard: main-column grid [active slots] / [passive slots] / [detail actions] ──
+  const detailActions = selected ? getDetailActions(selected, detailSelection, resources, isInBattle) : [];
+  const gridRows: KeyboardSelectableItem[][] = [
+    actives.map((skill) => ({ id: `active:${skill.id}` })),
+    passives.map((passive) => ({ id: `passive:${passive.id}` })),
+    ...(detailActions.length > 0
+      ? [detailActions.map((action) => ({ id: `action:${action.id}`, disabled: action.disabled }))]
+      : []),
+  ];
+
+  const gridSelection = useKeyboardSelection(gridRows, {
+    // Landing on a slot re-points the detail panel (selectSlot brings its own sound);
+    // landing on an action button only ticks.
+    onMove: (id) => {
+      if (id.startsWith('active:')) {
+        const index = actives.findIndex((skill) => `active:${skill.id}` === id);
+        if (index !== -1) selectSlot('active', index);
+        return;
+      }
+      if (id.startsWith('passive:')) {
+        const index = passives.findIndex((passive) => `passive:${passive.id}` === id);
+        if (index !== -1) selectSlot('passive', index);
+        return;
+      }
+      soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+    },
+  });
+
+  // Leaving the pane (← or Escape back to the sidebar) re-arms the roster column and
+  // drops the cursor, so a later return can't show a stale one.
+  const gridSelectionRef = useRef(gridSelection);
+  gridSelectionRef.current = gridSelection;
+  useEffect(() => {
+    if (keyboardActive) return;
+    setColumn('roster');
+    gridSelectionRef.current.clear();
+  }, [keyboardActive]);
+
+  // The keyboard cursor sits on an action button only while the hook says so; the
+  // detail panel shows the corners on that button.
+  const keyboardSelectedActionId = gridSelection.selectedId?.startsWith('action:')
+    ? gridSelection.selectedId.slice('action:'.length)
+    : null;
+
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+    const direction = getNavDirection(event.key);
+
+    if (column === 'roster') {
+      if (direction === 'up' || direction === 'down') {
+        event.preventDefault();
+        const currentIndex = party.findIndex((m) => m.id === selectedId);
+        const step = direction === 'down' ? 1 : -1;
+        const next = party[(currentIndex + step + party.length) % party.length];
+        if (next) selectCharacter(next.id);
+        return;
+      }
+      if (direction === 'left') {
+        event.preventDefault();
+        onExitToSidebar?.();
+        return;
+      }
+      if (direction === 'right' || isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (isConfirmKey(event.key) && event.repeat) return;
+        setColumn('main');
+        const def = detailSelection.kind === 'active' ? detailSelection.skill : detailSelection.passive;
+        gridSelection.select(`${selection.row}:${def.id}`);
+      }
+      return;
+    }
+
+    // Main column
+    if (direction) {
+      event.preventDefault();
+      if (direction === 'left' && (gridSelection.position === null || gridSelection.position.colIndex === 0)) {
+        gridSelection.clear();
+        setColumn('roster');
+        return;
+      }
+      gridSelection.move(direction);
+      return;
+    }
+
+    if (isConfirmKey(event.key)) {
+      event.preventDefault();
+      if (event.repeat) return;
+      const entry = gridRows.flat().find((item) => item.id === gridSelection.selectedId);
+      if (!entry || entry.disabled) return;
+      if (entry.id.startsWith('active:') || entry.id.startsWith('passive:')) {
+        // Enter on a slot means "go do something with this skill": jump the cursor
+        // to the first enabled detail action, if it has one.
+        const firstEnabled = detailActions.find((action) => !action.disabled);
+        if (firstEnabled) gridSelection.select(`action:${firstEnabled.id}`);
+        return;
+      }
+      const actionId = entry.id.slice('action:'.length);
+      if (actionId === 'equip') {
+        const def = detailSelection.kind === 'active' ? detailSelection.skill : detailSelection.passive;
+        handleEquip(def.id);
+      } else if (actionId === 'unlock') {
+        setPendingAction({ mode: 'unlock', selection: detailSelection });
+      } else if (actionId === 'upgrade') {
+        setPendingAction({ mode: 'upgrade', selection: detailSelection });
+      }
+    }
+  }, keyboardActive);
+
+  if (!selected) return null;
 
   function flashSlot(id: string) {
     if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
@@ -177,6 +279,7 @@ export function PauseMenuSkills() {
               member={member}
               variant="roster"
               isActive={member.id === selectedId}
+              isKeyboardCursor={keyboardActive && column === 'roster' && member.id === selectedId}
               onClick={() => selectCharacter(member.id)}
             />
           ))}
@@ -193,8 +296,10 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <IndigoLayStyledLists variant="chevron">
-                    <IndigolayStyledListItem>One equipped at a time</IndigolayStyledListItem>
+                  <IndigoLayStyledLists variant="chevron" compact>
+                    <IndigolayStyledListItem>Only 1 skill equipped per hero</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Charges over time & matching orbs</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Tap when ready to activate</IndigolayStyledListItem>
                   </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
@@ -207,9 +312,13 @@ export function PauseMenuSkills() {
                 const needsLevel = selected.level < skill.unlockLevel;
                 const affordable = canAfford(resources, skill.cost);
                 const learnable = locked && !previousLocked && !needsLevel && affordable;
-                
+
                 return (
-                  <ToffecBeigeCornersWrapper key={skill.id} className="skill-slot-wrapper">
+                  <ToffecBeigeCornersWrapper
+                    key={skill.id}
+                    className="skill-slot-wrapper"
+                    forceDisplay={gridSelection.isSelected(`active:${skill.id}`)}
+                  >
                     <SkillSlot
                       characterClass={selected.class}
                       icon={skill.icon}
@@ -231,10 +340,6 @@ export function PauseMenuSkills() {
                         />
                       }
                       onSelect={() => selectSlot('active', index)}
-                      onKeyDown={(e) => handleSlotKeyDown(e, 'active', index)}
-                      buttonRef={(el) => {
-                        slotRefs.current[`active-${index}`] = el;
-                      }}
                     />
                   </ToffecBeigeCornersWrapper>
                 );
@@ -252,8 +357,10 @@ export function PauseMenuSkills() {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <IndigoLayStyledLists variant="chevron">
-                    <IndigolayStyledListItem>All learned passives apply</IndigolayStyledListItem>
+                  <IndigoLayStyledLists variant="chevron" compact>
+                    <IndigolayStyledListItem>Always active automatically</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Boosts stats & damage</IndigolayStyledListItem>
+                    <IndigolayStyledListItem>Stacks across all unlocked tiers</IndigolayStyledListItem>
                   </IndigoLayStyledLists>
                 </TooltipContent>
               </Tooltip>
@@ -266,9 +373,13 @@ export function PauseMenuSkills() {
                 const needsLevel = selected.level < passive.unlockLevel;
                 const affordable = canAfford(resources, passive.cost);
                 const learnable = locked && !previousLocked && !needsLevel && affordable;
-                
+
                 return (
-                  <ToffecBeigeCornersWrapper key={passive.id} className="skill-slot-wrapper">
+                  <ToffecBeigeCornersWrapper
+                    key={passive.id}
+                    className="skill-slot-wrapper"
+                    forceDisplay={gridSelection.isSelected(`passive:${passive.id}`)}
+                  >
                     <SkillSlot
                       characterClass={selected.class}
                       icon={passive.icon}
@@ -289,10 +400,6 @@ export function PauseMenuSkills() {
                         />
                       }
                       onSelect={() => selectSlot('passive', index)}
-                      onKeyDown={(e) => handleSlotKeyDown(e, 'passive', index)}
-                      buttonRef={(el) => {
-                        slotRefs.current[`passive-${index}`] = el;
-                      }}
                     />
                   </ToffecBeigeCornersWrapper>
                 );
@@ -304,6 +411,7 @@ export function PauseMenuSkills() {
             character={selected}
             selection={detailSelection}
             isInBattle={isInBattle}
+            keyboardSelectedActionId={keyboardSelectedActionId}
             onEquip={handleEquip}
             onRequestUnlock={(sel) => setPendingAction({ mode: 'unlock', selection: sel })}
             onRequestUpgrade={(sel) => setPendingAction({ mode: 'upgrade', selection: sel })}
@@ -314,9 +422,7 @@ export function PauseMenuSkills() {
       {pendingAction && pendingDef && pendingCost && (
         <ConfirmPanel
           title={
-            pendingAction.mode === 'upgrade'
-              ? 'Do you want to\nupgrade this skill'
-              : 'Do you want to\nlearn this skill'
+            pendingAction.mode === 'upgrade' ? 'Do you want to\nupgrade this skill' : 'Do you want to\nlearn this skill'
           }
           confirmLabel={pendingAction.mode === 'upgrade' ? 'Upgrade' : 'Unlock'}
           cancelLabel="Cancel"

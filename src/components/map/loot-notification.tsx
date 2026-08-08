@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -6,7 +6,15 @@ import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { ResourceChip } from '~/components/ui-custom/resource-chip';
 import { RESOURCE_DISPLAY_ORDER } from '~/constants/resources';
-import { LOOT_NOTIFICATION_DISMISS_MS } from '~/constants/game';
+import {
+  LOOT_NOTIFICATION_DISMISS_MS,
+  LOOT_NOTIFICATION_FADE_MS,
+  LOOT_NOTIFICATION_FADE_IN_DELAY_MS,
+} from '~/constants/game';
+import { KeyboardKeys } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useAtomValue } from 'jotai';
+import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
 
 interface LootNotificationProps {
   loot: LootTable;
@@ -15,28 +23,48 @@ interface LootNotificationProps {
 
 /**
  * Non-blocking floating notification showing loot rewards.
- * Appears at the top-right of the screen and auto-dismisses after LOOT_NOTIFICATION_DISMISS_MS.
+ * Appears at the top-right of the screen and auto-dismisses after LOOT_NOTIFICATION_DISMISS_MS,
+ * or early on Backspace / a click on its dismiss line.
  */
 export function LootNotification({ loot, onClose }: LootNotificationProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
+
+  // Held in a ref so the timers below can be armed once on mount. Both call sites pass a fresh
+  // inline arrow for onClose, and a `[onClose]` dependency would re-arm the auto-dismiss on every
+  // parent render — which, on the map, is every tile the player walks.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const hasDismissedRef = useRef(false);
+
+  function startFadeOut() {
+    if (hasDismissedRef.current) return;
+    hasDismissedRef.current = true;
+    setIsVisible(false);
+    timersRef.current.push(setTimeout(() => onCloseRef.current(), LOOT_NOTIFICATION_FADE_MS));
+  }
 
   useEffect(() => {
-    // Fade in
-    setTimeout(() => setIsVisible(true), 50);
+    const timers = timersRef.current;
+    timers.push(setTimeout(() => setIsVisible(true), LOOT_NOTIFICATION_FADE_IN_DELAY_MS));
+    timers.push(setTimeout(startFadeOut, LOOT_NOTIFICATION_DISMISS_MS));
+    // Every timer is tracked, so an early unmount can't leave one to call onClose afterwards.
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
+  }, []);
 
-    // Auto-dismiss after configured duration
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onClose, 500);
-    }, LOOT_NOTIFICATION_DISMISS_MS);
-
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  function handleDismiss() {
-    setIsVisible(false);
-    setTimeout(onClose, 500);
-  }
+  // Backspace rather than the confirm key: this toast is non-blocking and already auto-dismisses,
+  // so it must not swallow the Enter the map and dungeon bind for themselves, nor be wiped out by
+  // an Enter meant for them. The pause menu also treats Backspace as "back", so the toast stands
+  // down while it's open rather than letting one press do both.
+  useWindowKeyDown((event) => {
+    if (event.key !== KeyboardKeys.Backspace) return;
+    event.preventDefault();
+    startFadeOut();
+  }, isVisible && !isPauseMenuOpen);
 
   const hasEquipment = loot.equipableItems.length > 0;
   const hasConsumables = loot.consumableItems.length > 0;
@@ -105,8 +133,8 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
 
       {/* Dismiss */}
       <hr className="loot-notification__divider" />
-      <button onClick={handleDismiss} className="loot-notification__dismiss">
-        [ Click to dismiss ]
+      <button onClick={startFadeOut} className="loot-notification__dismiss">
+        [ Backspace or click to dismiss ]
       </button>
     </div>
   );

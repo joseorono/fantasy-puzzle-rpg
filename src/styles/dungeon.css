@@ -533,6 +533,33 @@
   background: linear-gradient(0deg, rgba(42, 24, 16, 0.9), rgba(42, 24, 16, 0.35));
 }
 
+/* Each footer button sits in a slot div (the tooltip trigger); the slot carries the
+   keyboard-selection ring so the cursor corners inside stay the button's own size. */
+.dungeon-footer__slot {
+  display: inline-flex;
+  border-radius: 999px;
+}
+
+/* Keyboard-selected footer action — the parchment gold the footer border and the
+   current-floor rail already use, lifted into a soft ring. No new hue. */
+.dungeon-footer__slot--selected {
+  box-shadow:
+    0 0 0 1px rgba(212, 165, 116, 0.45),
+    0 0 10px rgba(212, 165, 116, 0.25);
+}
+
+/* flex-basis 100% drops the hint onto its own line under the button row. Same quiet
+   parchment tone as .rewards-key-hint, so it never competes with the buttons. */
+.dungeon-key-hint {
+  flex-basis: 100%;
+  margin-top: 0.15rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
 .dungeon--error {
   display: flex;
   align-items: center;

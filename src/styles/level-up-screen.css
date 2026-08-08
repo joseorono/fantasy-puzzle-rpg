@@ -540,6 +540,29 @@
   border-left-color: rgba(143, 180, 212, 0.7);
 }
 
+/* Keyboard-selected stat card — brightens the existing gold hairline and the card's own accent
+   rail rather than adding a new colour, so the selection reads as the same card lit up. The
+   three sides are set individually to leave the stat-identity rail below in charge of the left. */
+.stat-allocation-row--selected {
+  background: rgba(212, 165, 116, 0.1);
+  border-top-color: rgba(212, 165, 116, 0.55);
+  border-right-color: rgba(212, 165, 116, 0.55);
+  border-bottom-color: rgba(212, 165, 116, 0.55);
+  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.14);
+}
+
+.stat-allocation-row--selected.pow {
+  border-left-color: rgb(224, 154, 99);
+}
+
+.stat-allocation-row--selected.vit {
+  border-left-color: rgb(169, 194, 129);
+}
+
+.stat-allocation-row--selected.spd {
+  border-left-color: rgb(143, 180, 212);
+}
+
 .stat-header {
   display: flex;
   justify-content: space-between;

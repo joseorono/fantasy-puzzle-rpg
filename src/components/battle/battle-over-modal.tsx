@@ -18,6 +18,8 @@ import { VICTORY_FLAVOR_BY_STARS } from '~/constants/battle-rating';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { useRouterActions, usePartyActions } from '~/stores/game-store';
 import { isGameStartedAtom } from '~/stores/app-atoms';
+import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { cn } from '~/lib/utils';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { combineLootFromEnemies } from '~/lib/loot';
@@ -47,6 +49,17 @@ export function BattleOverModal() {
   const [victoryPhase, setVictoryPhase] = useState<'rating' | 'summary'>('rating');
   // Snapshot the rating once, at the win moment — shared by the rating screen and the send-off line.
   const ratingRef = useRef<BattleRatingResult | null>(null);
+  // handleContinue grants loot and navigates, so held-Enter auto-repeat must not run it twice.
+  const hasContinuedRef = useRef(false);
+
+  // Enter/Space on the VICTORY card only. The rating phase binds its own handler, and defeat stays
+  // mouse-only — its Continue wipes the run back to the start menu.
+  useWindowKeyDown((event) => {
+    if (gameStatus !== 'won' || victoryPhase !== 'summary') return;
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    handleContinue();
+  });
 
   if (gameStatus === 'playing') return null;
 
@@ -79,6 +92,8 @@ export function BattleOverModal() {
     'You live to fight another day!';
 
   function handleContinue() {
+    if (hasContinuedRef.current) return;
+    hasContinuedRef.current = true;
     if (isVictory) {
       // Carry post-battle HP back to the persistent party before showing rewards.
       syncBattleHp(battleParty);

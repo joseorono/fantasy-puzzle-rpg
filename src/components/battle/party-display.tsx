@@ -31,6 +31,9 @@ import { SoundNames } from '~/constants/audio';
 import NumberFlow from '@number-flow/react';
 import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING } from '~/constants/number-flow';
 
+/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
+const READY_SKILL_ICON_SIZE = 32;
+
 function getPartyStatsIconOpacity(fillPercentage: number) {
   const normalizedPercentage = Math.max(0, Math.min(100, fillPercentage));
 
@@ -131,7 +134,12 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
           {!isDead && isSkillReady && (
             <div className="pointer-events-none absolute -top-3 -right-3 z-20 flex items-center justify-center">
               <div className="relative flex items-center justify-center rounded border-2 border-[#d4a574] p-0 overflow-hidden shadow-md">
-                <SkillIcon characterClass={character.class} position={skill.icon} size={28} sheetSize={32} />
+                <SkillIcon
+                  characterClass={character.class}
+                  position={skill.icon}
+                  size={READY_SKILL_ICON_SIZE}
+                  sheetSize={32}
+                />
               </div>
             </div>
           )}

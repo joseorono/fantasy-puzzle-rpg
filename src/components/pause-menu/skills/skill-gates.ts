@@ -8,6 +8,9 @@ import {
   hasPreviousPassiveTier,
   getSkillsForClass,
   getPassivesForClass,
+  getSkillLevel,
+  getNextActiveUpgrade,
+  getNextPassiveUpgrade,
 } from '~/lib/skill-system';
 import type { SkillSelection } from './skill-detail-panel';
 
@@ -72,4 +75,49 @@ export function getUpgradeGateReason(
   if (character.level < nextUpgrade.requiredCharacterLevel) return `Requires Lv ${nextUpgrade.requiredCharacterLevel}`;
   if (!canAfford(resources, nextUpgrade.cost)) return 'Not enough resources';
   return null;
+}
+
+/** One action the detail panel offers for the current selection, in display order. */
+export interface SkillDetailAction {
+  id: 'equip' | 'unlock' | 'upgrade';
+  disabled: boolean;
+}
+
+/**
+ * The action buttons the detail panel renders for a selection, with their disabled
+ * state — mirroring `SkillDetailActions`' branches exactly, so the keyboard action
+ * row and the rendered buttons can never disagree. Locked → Unlock; owned actives →
+ * Equip (disabled when already equipped); owned below max level → Upgrade; a
+ * mastered passive offers nothing.
+ */
+export function getDetailActions(
+  character: CharacterData,
+  selection: SkillSelection,
+  resources: Resources,
+  isInBattle: boolean,
+): SkillDetailAction[] {
+  const isActive = selection.kind === 'active';
+  const def = isActive ? selection.skill : selection.passive;
+  const owned = isActive ? isSkillUnlocked(character, def.id) : isPassiveUnlocked(character, def.id);
+
+  if (!owned) {
+    return [{ id: 'unlock', disabled: Boolean(getUnlockGateReason(character, selection, resources)) || isInBattle }];
+  }
+
+  const actions: SkillDetailAction[] = [];
+  if (isActive) {
+    const equipped = character.selectedSkillId === def.id;
+    actions.push({ id: 'equip', disabled: equipped || isInBattle });
+  }
+  const level = getSkillLevel(character, def.id);
+  const nextUpgrade = isActive
+    ? getNextActiveUpgrade(selection.skill, level)
+    : getNextPassiveUpgrade(selection.passive, level);
+  if (nextUpgrade) {
+    actions.push({
+      id: 'upgrade',
+      disabled: Boolean(getUpgradeGateReason(character, nextUpgrade, resources)) || isInBattle,
+    });
+  }
+  return actions;
 }

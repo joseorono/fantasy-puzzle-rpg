@@ -59,7 +59,8 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
   border-bottom: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
   overflow-x: auto;
 }
@@ -121,9 +122,9 @@
   border-radius: 4px;
   margin-right: -2px;
   flex-shrink: 0;
-  background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #6b5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
-  border: 3px solid #A98559;
+  border: 3px solid #a98559;
   height: 86px; /* Taller than the bar stack; the column has slack below. */
   width: 64px;
   z-index: 4;
@@ -149,9 +150,9 @@
 }
 
 .party-member-card__info-bar {
-  background: #844E27 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #844e27 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
-  border: 2px solid #A98559;
+  border: 2px solid #a98559;
   margin-top: -3px;
   position: relative;
   z-index: 1;
@@ -178,7 +179,7 @@
 .party-member-card__name {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #FFF8DC;
+  color: #fff8dc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -188,7 +189,7 @@
 
 .party-member-card__detail {
   font-size: 0.5rem;
-  color: #E8DCC8;
+  color: #e8dcc8;
   white-space: nowrap;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
   letter-spacing: -0.8px;
@@ -208,14 +209,14 @@
 
 /* Dead state styling */
 .party-member-card.dead .party-member-card__icon {
-  background: #4A4037;
-  border-color: #8B8680;
+  background: #4a4037;
+  border-color: #8b8680;
   opacity: 0.7;
 }
 
 .party-member-card.dead .party-member-card__info-bar {
-  background: #5A4A3A;
-  border-color: #8B8680;
+  background: #5a4a3a;
+  border-color: #8b8680;
 }
 
 /* Grey the bars out with a filter rather than a background colour: the fill is a
@@ -229,11 +230,11 @@
 }
 
 .party-member-card.dead .party-member-card__name {
-  color: #9D9691;
+  color: #9d9691;
 }
 
 .party-member-card.dead .party-member-card__detail {
-  color: #7A7570;
+  color: #7a7570;
 }
 
 /* ─── Body (sidebar + content) ───────────────────────────────────────── */
@@ -242,7 +243,8 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────── */
@@ -267,11 +269,11 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.8rem 1.25rem;
-  background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #6b5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: none;
   border-radius: 0;
-  color: #FFF8DC;
+  color: #fff8dc;
   font-weight: 700;
   font-size: 0.75rem;
   cursor: pointer;
@@ -283,20 +285,12 @@
   margin-bottom: 8px;
 
   /* Jagged wood carved edges - refined with appropriate notch volume */
-  clip-path: polygon(
-    3px 0%,
-      96% 1px,
-      100% 6px,
-      98% 48%,
-      100% 92%,
-      95% 100%,
-      4px 98%,
-    0% 85%, 3% 52%, 0% 12%
-  );
+  clip-path: polygon(3px 0%, 96% 1px, 100% 6px, 98% 48%, 100% 92%, 95% 100%, 4px 98%, 0% 85%, 3% 52%, 0% 12%);
 
   /* Filter to create the border effect on the clipped shape */
-  filter: drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817) drop-shadow(-1px 0 0 #3d2817);
-box-shadow:
+  filter: drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
+  box-shadow:
     inset 0 -2px 0 rgba(0, 0, 0, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.1);
 }
@@ -313,19 +307,20 @@ box-shadow:
 }
 
 .pause-menu-nav-btn:hover {
-  background-color: #7B6354;
+  background-color: #7b6354;
   color: #fff;
   transform: scale(1.02);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817) drop-shadow(-1px 0 0 #3d2817);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
 }
 
 .pause-menu-nav-btn.active {
-  background-color: #A07151; /* Lighter wood for active */
+  background-color: #a07151; /* Lighter wood for active */
   color: #fff;
   transform: translateX(4px);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574) drop-shadow(-1px 0 0 #d4a574);
-  box-shadow:
-    0 0 15px rgba(212, 165, 116, 0.3);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
+  box-shadow: 0 0 15px rgba(212, 165, 116, 0.3);
 }
 
 /* Arrow indicator for active button */
@@ -396,7 +391,7 @@ box-shadow:
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 0.9rem;
-  background: #8B3434 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #8b3434 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: 3px solid #5a1f1f;
   border-radius: 0;
@@ -415,26 +410,19 @@ box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.5);
 
   /* Jagged wood carved edges - same as nav buttons */
-  clip-path: polygon(
-    3px 0%,
-      96% 1px,
-      100% 6px,
-      98% 48%,
-      100% 92%,
-      95% 100%,
-      4px 98%,
-    0% 85%, 3% 52%, 0% 12%
-  );
+  clip-path: polygon(3px 0%, 96% 1px, 100% 6px, 98% 48%, 100% 92%, 95% 100%, 4px 98%, 0% 85%, 3% 52%, 0% 12%);
 
   /* Filter to create the border effect on the clipped shape */
-  filter: drop-shadow(0 2px 0 #5a1f1f) drop-shadow(0 -1px 0 #5a1f1f) drop-shadow(1px 0 0 #5a1f1f) drop-shadow(-1px 0 0 #5a1f1f);
+  filter: drop-shadow(0 2px 0 #5a1f1f) drop-shadow(0 -1px 0 #5a1f1f) drop-shadow(1px 0 0 #5a1f1f)
+    drop-shadow(-1px 0 0 #5a1f1f);
 }
 
 .pause-menu-exit-btn:hover {
   background-color: #a54040;
   color: #fff;
   transform: scale(1.02);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574) drop-shadow(-1px 0 0 #d4a574);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
 }
 
 .pause-menu-exit-btn:active {
@@ -583,7 +571,7 @@ box-shadow:
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  background: url("/assets/bg/tc-bg-item-darker.png") no-repeat center;
+  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
   background-size: contain;
   image-rendering: pixelated;
   border: none;
@@ -854,7 +842,6 @@ box-shadow:
   gap: 0.75rem;
 }
 
-
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 
 .pause-menu-equip-layout {
@@ -990,7 +977,7 @@ box-shadow:
   display: flex;
   align-items: center;
   gap: 0.5rem;
-    min-width: 0;
+  min-width: 0;
 }
 
 .pause-menu-equip-preview-title {
@@ -1000,33 +987,33 @@ box-shadow:
   letter-spacing: 0.08em;
   flex-shrink: 0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
+}
 
-  .pause-menu-equip-preview-grid {
-    flex: 1;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.35rem;
+.pause-menu-equip-preview-grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
 }
 
 .pause-menu-equip-preview-stat-group {
   display: flex;
   align-items: center;
   justify-content: center;
-    gap: 0.3rem;
-    min-width: 0;
-    padding: 0.2rem 0.3rem;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(212, 165, 116, 0.25);
-    border-radius: 6px;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.2rem 0.3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-radius: 6px;
 }
 
 .pause-menu-equip-preview-label {
   font-size: 0.55rem;
   font-weight: 700;
   text-transform: uppercase;
-    letter-spacing: 0.05em;
+  letter-spacing: 0.05em;
 }
 
 .pause-menu-equip-stat-diff {
@@ -1044,7 +1031,7 @@ box-shadow:
 
 .pause-menu-equip-preview-total {
   font-size: 0.8rem;
-    color: #f0dfc9;
+  color: #f0dfc9;
   font-weight: 700;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
@@ -1060,7 +1047,7 @@ box-shadow:
 }
 
 .pause-menu-equip-available::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -2px;
   left: -2px;
@@ -1262,8 +1249,6 @@ box-shadow:
   }
 }
 
-
-
 /* ─── Placeholder Styling ────────────────────────────────────────────────── */
 
 .pause-menu-placeholder {
@@ -1387,4 +1372,80 @@ box-shadow:
   object-fit: contain;
   image-rendering: auto;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* ─── Keyboard navigation ────────────────────────────────────────────── */
+
+/* Keyboard focus mirrors hover on the sidebar buttons (their outline is suppressed). */
+.pause-menu-nav-btn:focus-visible {
+  outline: none;
+  background-color: #7b6354;
+  color: #fff;
+  transform: scale(1.02);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
+}
+
+.pause-menu-exit-btn:focus-visible {
+  outline: none;
+  background-color: #a54040;
+  color: #fff;
+  transform: scale(1.02);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
+}
+
+/* Shared keyboard-cursor ring, in the parchment gold the pause menu already speaks.
+   Applied via `kb-cursor` (roster cards, equip slot rows, small buttons) and the
+   Options tab's row modifier. */
+.pause-menu .kb-cursor,
+.pause-menu-option-row--kb-selected {
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(212, 165, 116, 0.5),
+    0 0 10px rgba(212, 165, 116, 0.25);
+}
+
+/* Option rows are edge-to-edge, so the ring gets a hair of breathing room and a faint tint. */
+.pause-menu-option-row--kb-selected {
+  padding: 0.35rem 0.4rem;
+  margin: -0.35rem -0.4rem;
+  background: rgba(212, 165, 116, 0.06);
+}
+
+/* A slider open for adjusting — the same gold, turned up, so edit mode is unmistakable
+   without introducing a second colour. */
+.pause-menu-option-row--editing {
+  background: rgba(212, 165, 116, 0.13);
+  box-shadow:
+    0 0 0 2px rgba(212, 165, 116, 0.85),
+    0 0 14px rgba(212, 165, 116, 0.35);
+}
+
+/* Contextual key hint sitting inline with a control — a slider row's header, the item
+   category tabs. Same quiet parchment tone as the shell hint, so it never competes. */
+.pause-menu-inline-hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* The category row is a flex row of tabs; the hint trails it without stretching. */
+.pause-menu-item-categories .pause-menu-inline-hint {
+  align-self: center;
+  margin-left: auto;
+}
+
+/* Zone-aware key hint pinned under the menu body — same quiet parchment tone as
+   the rewards/dungeon hints. */
+.pause-menu-key-hint {
+  align-self: center;
+  padding: 0.35rem 0 0.15rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }

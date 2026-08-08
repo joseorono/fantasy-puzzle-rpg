@@ -34,6 +34,8 @@ interface SkillDetailPanelProps {
   selection: SkillSelection;
   /** True while a battle is in progress — every action locks. */
   isInBattle: boolean;
+  /** Which action button ('equip' | 'unlock' | 'upgrade') the keyboard cursor rests on, if any. */
+  keyboardSelectedActionId?: string | null;
   onEquip: (skillId: string) => void;
   onRequestUnlock: (selection: SkillSelection) => void;
   onRequestUpgrade: (selection: SkillSelection) => void;
@@ -53,6 +55,7 @@ export function SkillDetailPanel({
   character,
   selection,
   isInBattle,
+  keyboardSelectedActionId = null,
   onEquip,
   onRequestUnlock,
   onRequestUpgrade,
@@ -106,6 +109,7 @@ export function SkillDetailPanel({
           selection={selection}
           resources={resources}
           isInBattle={isInBattle}
+          keyboardSelectedActionId={keyboardSelectedActionId}
           onEquip={onEquip}
           onRequestUnlock={onRequestUnlock}
           onRequestUpgrade={onRequestUpgrade}
@@ -211,6 +215,7 @@ interface SkillDetailActionsProps {
   selection: SkillSelection;
   resources: Resources;
   isInBattle: boolean;
+  keyboardSelectedActionId: string | null;
   onEquip: (skillId: string) => void;
   onRequestUnlock: (selection: SkillSelection) => void;
   onRequestUpgrade: (selection: SkillSelection) => void;
@@ -221,6 +226,7 @@ function SkillDetailActions({
   selection,
   resources,
   isInBattle,
+  keyboardSelectedActionId,
   onEquip,
   onRequestUnlock,
   onRequestUpgrade,
@@ -240,7 +246,7 @@ function SkillDetailActions({
     // A disabled Equip says why on hover rather than sitting there inert.
     const equipBlockedReason = isInBattle ? 'Locked during battle' : equipped ? 'Already your equipped Ultimate' : null;
     const rawEquipButton = isActive ? (
-      <ToffecBeigeCornersWrapper>
+      <ToffecBeigeCornersWrapper forceDisplay={keyboardSelectedActionId === 'equip'}>
         <ToffecButton
           variant="tan"
           size="xs"
@@ -276,7 +282,7 @@ function SkillDetailActions({
     const affordable = canAfford(resources, nextUpgrade.cost);
 
     const upgradeButton = (
-      <ToffecBeigeCornersWrapper>
+      <ToffecBeigeCornersWrapper forceDisplay={keyboardSelectedActionId === 'upgrade'}>
         <ToffecButton
           variant="orange"
           size="xs"
@@ -309,7 +315,7 @@ function SkillDetailActions({
   const affordable = canAfford(resources, def.cost);
 
   const unlockButton = (
-    <ToffecBeigeCornersWrapper>
+    <ToffecBeigeCornersWrapper forceDisplay={keyboardSelectedActionId === 'unlock'}>
       <ToffecButton
         variant="orange"
         size="xs"

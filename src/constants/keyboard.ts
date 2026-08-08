@@ -7,6 +7,10 @@ export const KeyboardKeys = {
   Escape: 'Escape',
   Space: ' ',
   Control: 'Control',
+  /** Dismisses transient, non-blocking surfaces. Claimed by nothing else, so it never
+   *  competes with the confirm key a view is already using. */
+  Backspace: 'Backspace',
+  Help: 'h',
   ArrowUp: 'ArrowUp',
   ArrowDown: 'ArrowDown',
   ArrowLeft: 'ArrowLeft',
@@ -44,9 +48,24 @@ export function getNavDirection(key: string): NavDirection | null {
   return NAV_KEY_TO_DIRECTION[normalized] ?? null;
 }
 
+/** Whether a key opens the town help panel. Shift+H is accepted as well. */
+export function isHelpKey(key: string): boolean {
+  return key.length === 1 && key.toLowerCase() === KeyboardKeys.Help;
+}
+
 /** Whether a key confirms/activates the current selection (Enter or Space). */
 export function isConfirmKey(key: string): boolean {
   return key === KeyboardKeys.Enter || key === KeyboardKeys.Space;
+}
+
+/**
+ * Whether a key backs out of the current surface (Escape or Backspace). Both are
+ * offered everywhere "back" is meant, so players reaching for either one get it.
+ * Callers that also treat Escape as "open" must check for Escape explicitly —
+ * Backspace only ever unwinds.
+ */
+export function isCancelKey(key: string): boolean {
+  return key === KeyboardKeys.Escape || key === KeyboardKeys.Backspace;
 }
 
 /**

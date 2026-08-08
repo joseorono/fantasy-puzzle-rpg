@@ -121,10 +121,8 @@
   --rc-fill: #d4a574;
 }
 
-/* Respect reduced-motion: show a full, static ring instead of animating. */
-@media (prefers-reduced-motion: reduce) {
-  .radial-countdown__fill {
-    animation: none;
-    --rc-angle: 360deg;
-  }
+/* Reduced motion drops the urgency glow; the depletion stays — it is the readout, not decoration.
+   Keyed off our own setting, never the OS, so a player's browser can't change in-game behavior. */
+html[data-reduced-motion] .radial-countdown__fill {
+  animation: rc-deplete linear forwards;
 }

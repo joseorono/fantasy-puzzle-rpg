@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useInventory, useInventoryActions, useResources, useResourcesActions } from '~/stores/game-store';
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
@@ -11,7 +11,7 @@ import { getSellPrice } from '~/lib/crafting';
 import { cn } from '~/lib/utils';
 import { getItemQuantity, filterInventoryByType } from '~/lib/inventory';
 import { soundService } from '~/services/sound-service';
-import { SoundNames } from '~/constants/audio';
+import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
@@ -19,6 +19,9 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from '~/components/ui-custom/cost-badge';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -50,14 +53,14 @@ export default function ItemStore({
 
   const handleBuyItem = (item: ConsumableItemData) => {
     if (canAfford(resources, item.cost)) {
-      soundService.playSound(SoundNames.clickCoin);
+      soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
       resourcesActions.reduceResources(item.cost);
       inventoryActions.addItem(item.id);
     }
   };
 
   const handleSellItem = (item: ConsumableItemData) => {
-    soundService.playSound(SoundNames.clickCoin);
+    soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
     inventoryActions.removeItem(item.id, 1);
     resourcesActions.addResources(createResources({ coins: getSellPrice(item) }));
   };
@@ -65,6 +68,67 @@ export default function ItemStore({
   const getItemCount = (itemId: string): number => {
     return getItemQuantity(inventory, itemId);
   };
+
+  // Rows come from the ACTIVE tab, never DOM order — the Sell block precedes the Buy block in the
+  // JSX even though the tabs read Buy-then-Sell, and only one list is mounted at a time.
+  const visibleEntries =
+    selectedTab === 'buy'
+      ? itemsData.map((item) => ({ item, disabled: !canAfford(resources, item.cost) }))
+      : sellableItems.map(({ item }) => ({ item, disabled: false }));
+  const rows = visibleEntries.map((entry) => [{ id: entry.item.id, disabled: entry.disabled }]);
+
+  const selection = useKeyboardSelection(rows, {
+    onMove: () => soundService.playSound(SoundNames.clickChangeTab, TOWN_SFX_VOLUME.navTick, 0.1, 0.05),
+  });
+
+  // Keep the keyboard-selected row visible in the scrolling list.
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
+  useEffect(() => {
+    if (!selection.selectedId) return;
+    rowRefs.current.get(selection.selectedId)?.scrollIntoView({ block: 'nearest' });
+  }, [selection.selectedId]);
+
+  // Revealing the new tab's first row has to wait for the re-render that swaps the list out.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  const pendingTabRevealRef = useRef(false);
+  useEffect(() => {
+    if (!pendingTabRevealRef.current) return;
+    pendingTabRevealRef.current = false;
+    const first = selectedTab === 'buy' ? itemsData[0] : sellableItems[0]?.item;
+    if (first) selectionRef.current.select(first.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab]);
+
+  function switchTab(next: 'buy' | 'sell') {
+    if (next === selectedTab) return;
+    soundService.playSound(SoundNames.clickChangeTab, TOWN_SFX_VOLUME.navTick, 0.1, 0.05);
+    setSelectedTab(next);
+    selection.clear();
+    pendingTabRevealRef.current = true;
+  }
+
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction) {
+      event.preventDefault();
+      // ←→ belong to the tabs here, so the single-column list only walks with ↑↓.
+      if (direction === 'left') switchTab('buy');
+      else if (direction === 'right') switchTab('sell');
+      else selection.move(direction);
+      return;
+    }
+
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (event.repeat) return;
+    const entry = visibleEntries.find((candidate) => candidate.item.id === selection.selectedId);
+    if (!entry || entry.disabled) return;
+    if (selectedTab === 'buy') handleBuyItem(entry.item);
+    else handleSellItem(entry.item);
+  });
 
   return (
     <TownLocationLayout
@@ -79,12 +143,15 @@ export default function ItemStore({
       <div className="shop-content">
         {/* Buy / Sell tabs */}
         <div className="blacksmith-tabs">
-          <IndigolayTab size="default" isActive={selectedTab === 'buy'} onClick={() => setSelectedTab('buy')}>
+          <IndigolayTab size="default" isActive={selectedTab === 'buy'} onClick={() => switchTab('buy')}>
             Buy
           </IndigolayTab>
-          <IndigolayTab size="default" isActive={selectedTab === 'sell'} onClick={() => setSelectedTab('sell')}>
+          <IndigolayTab size="default" isActive={selectedTab === 'sell'} onClick={() => switchTab('sell')}>
             Sell
           </IndigolayTab>
+          <span className="town-key-hint pixel-font">
+            ← → switch tab · ↑ ↓ pick an item · Enter to {selectedTab === 'buy' ? 'buy' : 'sell'}
+          </span>
         </div>
 
         <div className="store-info">
@@ -105,7 +172,14 @@ export default function ItemStore({
               <p className="town-section-subtitle">You have no items to sell.</p>
             ) : (
               sellableItems.map(({ item, quantity }) => (
-                <div key={item.id} className="equipment-list-item">
+                <div
+                  key={item.id}
+                  ref={(node) => {
+                    if (node) rowRefs.current.set(item.id, node);
+                    else rowRefs.current.delete(item.id);
+                  }}
+                  className={cn('equipment-list-item', selection.isSelected(item.id) && 'selected')}
+                >
                   <div className="equipment-item-icon">
                     {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
                   </div>
@@ -122,7 +196,7 @@ export default function ItemStore({
                     <div className="item-store-item-summary">
                       <div className="equipment-item-description">{item.description}</div>
                       <div className="item-actions">
-                        <ToffecBeigeCornersWrapper>
+                        <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(item.id)}>
                           <ToffecButton
                             variant="cream"
                             size="xs"
@@ -153,7 +227,18 @@ export default function ItemStore({
             const canAffordItem = canAfford(resources, item.cost);
 
             return (
-              <div key={item.id} className={cn('equipment-list-item', !canAffordItem && 'cannot-afford')}>
+              <div
+                key={item.id}
+                ref={(node) => {
+                  if (node) rowRefs.current.set(item.id, node);
+                  else rowRefs.current.delete(item.id);
+                }}
+                className={cn(
+                  'equipment-list-item',
+                  !canAffordItem && 'cannot-afford',
+                  selection.isSelected(item.id) && 'selected',
+                )}
+              >
                 <div className="equipment-item-icon">
                   {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
                 </div>
@@ -186,7 +271,7 @@ export default function ItemStore({
                   <div className="item-store-item-summary">
                     <div className="equipment-item-description">{item.description}</div>
                     <div className="item-actions">
-                      <ToffecBeigeCornersWrapper>
+                      <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(item.id)}>
                         <ToffecButton
                           variant="orange"
                           size="xs"

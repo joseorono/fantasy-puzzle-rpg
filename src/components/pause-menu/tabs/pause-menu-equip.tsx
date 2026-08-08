@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
@@ -36,28 +41,38 @@ const STAT_COLORS = {
   spd: '#d4a574',
 } as const;
 
-export function PauseMenuEquip() {
+/** Stable keyboard id for an available-equipment instance. */
+function availId(instance: EquipmentInstance): string {
+  return `avail:${instance.item.id}::${instance.rarity}`;
+}
+
+interface PauseMenuEquipProps {
+  /** The content zone owns the keyboard — arrows/Enter act on this pane. */
+  keyboardActive?: boolean;
+  /** Fired when ← from the roster hands the keyboard back to the sidebar. */
+  onExitToSidebar?: () => void;
+}
+
+export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: PauseMenuEquipProps) {
   const party = useParty();
   const partyActions = usePartyActions();
   const inventory = useInventory();
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
-
+  // Which column the keyboard cursor lives in: the party roster or the slots/list pane.
+  const [column, setColumn] = useState<'roster' | 'main'>('roster');
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
-  if (!selected) return null;
 
-  const colors = CHARACTER_COLORS[selected.class];
-  const Icon = CHARACTER_ICONS[selected.class];
-  const bonuses = getEquipmentBonuses(selected);
-  const effective = getEffectiveStats(selected);
+  const equippedWeapon = selected?.equippedWeaponId ? findEquipmentItem(selected.equippedWeaponId) : undefined;
+  const equippedArmor = selected?.equippedArmorId ? findEquipmentItem(selected.equippedArmorId) : undefined;
 
-  const equippedWeapon = selected.equippedWeaponId ? findEquipmentItem(selected.equippedWeaponId) : undefined;
-  const equippedArmor = selected.equippedArmorId ? findEquipmentItem(selected.equippedArmorId) : undefined;
-
-  const availableItems = selectedSlot ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory) : [];
-  const equippedIdForSlot = selectedSlot === 'weapon' ? selected.equippedWeaponId : selected.equippedArmorId;
-  const equippedRarityForSlot = selectedSlot === 'weapon' ? selected.equippedWeaponRarity : selected.equippedArmorRarity;
+  const availableItems =
+    selectedSlot && selected ? getAvailableEquipmentForSlot(selectedSlot, selected, party, inventory) : [];
+  const equippedIdForSlot = selectedSlot === 'weapon' ? selected?.equippedWeaponId : selected?.equippedArmorId;
+  const equippedRarityForSlot =
+    selectedSlot === 'weapon' ? selected?.equippedWeaponRarity : selected?.equippedArmorRarity;
 
   function handleSelectCharacter(id: string) {
     setSelectedId(id);
@@ -69,15 +84,117 @@ export function PauseMenuEquip() {
   }
 
   function handleEquip(itemId: string, rarity: RarityTier) {
-    if (!selectedSlot) return;
+    if (!selectedSlot || !selected) return;
     partyActions.equipItem(selected.id, itemId, selectedSlot, rarity);
     setSelectedSlot(null);
   }
 
   function handleUnequip(slot: EquipmentSlot) {
+    if (!selected) return;
     partyActions.unequipItem(selected.id, slot);
     if (selectedSlot === slot) setSelectedSlot(null);
   }
+
+  // ─── Keyboard: main-column grid (slot rows + conditional available list) ──
+  const gridRows: KeyboardSelectableItem[][] = [
+    [{ id: 'slot:weapon' }, { id: 'unequip:weapon', disabled: !equippedWeapon }],
+    [{ id: 'slot:armor' }, { id: 'unequip:armor', disabled: !equippedArmor }],
+    ...availableItems.map((instance) => [{ id: availId(instance) }]),
+  ];
+
+  const selection = useKeyboardSelection(gridRows, {
+    onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
+  });
+
+  // Leaving the pane (← or Escape back to the sidebar) re-arms the roster column and
+  // drops the cursor, so a later return can't show a stale one.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  useEffect(() => {
+    if (keyboardActive) return;
+    setColumn('roster');
+    selectionRef.current.clear();
+  }, [keyboardActive]);
+
+  // Keep the keyboard-selected available item visible in its scrolling list.
+  useEffect(() => {
+    if (!selection.selectedId) return;
+    rowRefs.current.get(selection.selectedId)?.scrollIntoView({ block: 'nearest' });
+  }, [selection.selectedId]);
+
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+    const direction = getNavDirection(event.key);
+
+    if (column === 'roster') {
+      if (direction === 'up' || direction === 'down') {
+        event.preventDefault();
+        const currentIndex = party.findIndex((m) => m.id === selectedId);
+        const step = direction === 'down' ? 1 : -1;
+        const next = party[(currentIndex + step + party.length) % party.length];
+        if (next && next.id !== selectedId) {
+          soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+          handleSelectCharacter(next.id);
+        }
+        return;
+      }
+      if (direction === 'left') {
+        event.preventDefault();
+        onExitToSidebar?.();
+        return;
+      }
+      if (direction === 'right' || isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (isConfirmKey(event.key) && event.repeat) return;
+        setColumn('main');
+        selection.select('slot:weapon');
+      }
+      return;
+    }
+
+    // Main column
+    if (direction) {
+      event.preventDefault();
+      // ← at the left edge steps back to the roster (available rows and slot rows both sit at col 0).
+      if (direction === 'left' && (selection.position === null || selection.position.colIndex === 0)) {
+        selection.clear();
+        setColumn('roster');
+        return;
+      }
+      selection.move(direction);
+      return;
+    }
+
+    if (isConfirmKey(event.key)) {
+      event.preventDefault();
+      if (event.repeat) return;
+      const entry = gridRows.flat().find((item) => item.id === selection.selectedId);
+      if (!entry || entry.disabled) return;
+      if (entry.id === 'slot:weapon' || entry.id === 'slot:armor') {
+        soundService.playSound(SoundNames.mechanicalClick, 0.5);
+        handleToggleSlot(entry.id === 'slot:weapon' ? 'weapon' : 'armor');
+        return;
+      }
+      if (entry.id.startsWith('unequip:')) {
+        handleUnequip(entry.id.slice('unequip:'.length) as EquipmentSlot);
+        return;
+      }
+      const instance = availableItems.find((candidate) => availId(candidate) === entry.id);
+      if (instance && selectedSlot) {
+        const slot = selectedSlot;
+        handleEquip(instance.item.id, instance.rarity);
+        // The list closes on equip; put the cursor back on the slot it belonged to.
+        selection.select(`slot:${slot}`);
+      }
+    }
+  }, keyboardActive);
+
+  if (!selected) return null;
+
+  const colors = CHARACTER_COLORS[selected.class];
+  const Icon = CHARACTER_ICONS[selected.class];
+  const bonuses = getEquipmentBonuses(selected);
+  const effective = getEffectiveStats(selected);
 
   return (
     <div className="pause-menu-equip-tab">
@@ -94,6 +211,7 @@ export function PauseMenuEquip() {
                   member={member}
                   variant="roster"
                   isActive={member.id === selectedId}
+                  isKeyboardCursor={keyboardActive && column === 'roster' && member.id === selectedId}
                   onClick={() => handleSelectCharacter(member.id)}
                 />
               ))}
@@ -115,6 +233,8 @@ export function PauseMenuEquip() {
                 item={equippedWeapon}
                 rarity={selected.equippedWeaponRarity}
                 isActive={selectedSlot === 'weapon'}
+                isKeyboardSelected={selection.isSelected('slot:weapon')}
+                isUnequipKeyboardSelected={selection.isSelected('unequip:weapon')}
                 onToggle={() => handleToggleSlot('weapon')}
                 onUnequip={() => handleUnequip('weapon')}
               />
@@ -123,6 +243,8 @@ export function PauseMenuEquip() {
                 item={equippedArmor}
                 rarity={selected.equippedArmorRarity}
                 isActive={selectedSlot === 'armor'}
+                isKeyboardSelected={selection.isSelected('slot:armor')}
+                isUnequipKeyboardSelected={selection.isSelected('unequip:armor')}
                 onToggle={() => handleToggleSlot('armor')}
                 onUnequip={() => handleUnequip('armor')}
               />
@@ -147,10 +269,15 @@ export function PauseMenuEquip() {
                 ) : (
                   availableItems.map((instance) => (
                     <EquipAvailableItem
-                      key={`${instance.item.id}::${instance.rarity}`}
+                      key={availId(instance)}
                       instance={instance}
                       isEquipped={instance.item.id === equippedIdForSlot && instance.rarity === equippedRarityForSlot}
+                      isKeyboardSelected={selection.isSelected(availId(instance))}
                       onEquip={() => handleEquip(instance.item.id, instance.rarity)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(availId(instance), el);
+                        else rowRefs.current.delete(availId(instance));
+                      }}
                     />
                   ))
                 )}
@@ -170,13 +297,29 @@ interface EquipSlotRowProps {
   item: EquipmentItemData | undefined;
   rarity: RarityTier | undefined;
   isActive: boolean;
+  /** Keyboard cursor rests on the row itself. */
+  isKeyboardSelected: boolean;
+  /** Keyboard cursor rests on the row's Unequip button. */
+  isUnequipKeyboardSelected: boolean;
   onToggle: () => void;
   onUnequip: () => void;
 }
 
-function EquipSlotRow({ label, item, rarity, isActive, onToggle, onUnequip }: EquipSlotRowProps) {
+function EquipSlotRow({
+  label,
+  item,
+  rarity,
+  isActive,
+  isKeyboardSelected,
+  isUnequipKeyboardSelected,
+  onToggle,
+  onUnequip,
+}: EquipSlotRowProps) {
   return (
-    <div className={cn('pause-menu-equip-slot-row', isActive && 'active')} onClick={onToggle}>
+    <div
+      className={cn('pause-menu-equip-slot-row', isActive && 'active', isKeyboardSelected && 'kb-cursor')}
+      onClick={onToggle}
+    >
       <span className="slot-label">{label}</span>
       <span className="pause-menu-item-icon-slot">
         {item?.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
@@ -186,7 +329,9 @@ function EquipSlotRow({ label, item, rarity, isActive, onToggle, onUnequip }: Eq
         style={item ? { color: getRarityColor(rarity) } : undefined}
       >
         {item ? item.name : '— Empty —'}
-        {item && <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>}
+        {item && (
+          <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>
+        )}
       </span>
       {item && (
         <Tooltip>
@@ -196,6 +341,7 @@ function EquipSlotRow({ label, item, rarity, isActive, onToggle, onUnequip }: Eq
               size="sm"
               hasBg={true}
               aria-label="Unequip"
+              className={cn(isUnequipKeyboardSelected && 'kb-cursor')}
               onClick={(e) => {
                 e.stopPropagation();
                 onUnequip();
@@ -239,10 +385,7 @@ function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
               </span>
               {diff !== 0 && (
                 <span
-                  className={cn(
-                    'pause-menu-equip-stat-diff number-flow-container',
-                    diff > 0 ? 'positive' : 'negative',
-                  )}
+                  className={cn('pause-menu-equip-stat-diff number-flow-container', diff > 0 ? 'positive' : 'negative')}
                 >
                   <NumberFlow
                     value={diff}
@@ -265,15 +408,22 @@ function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
 interface EquipAvailableItemProps {
   instance: EquipmentInstance;
   isEquipped: boolean;
+  /** Keyboard cursor rests on this item. */
+  isKeyboardSelected: boolean;
   onEquip: () => void;
+  /** Registers the clickable row for scroll-into-view. */
+  rowRef: (el: HTMLDivElement | null) => void;
 }
 
-function EquipAvailableItem({ instance, isEquipped, onEquip }: EquipAvailableItemProps) {
+function EquipAvailableItem({ instance, isEquipped, isKeyboardSelected, onEquip, rowRef }: EquipAvailableItemProps) {
   const { item, rarity } = instance;
   const stats = getScaledEquipmentStats(item, rarity);
   return (
-    <ToffecBeigeCornersWrapper className={cn('pause-menu-equip-available-item', isEquipped && 'is-equipped')}>
-      <div className="pause-menu-equip-available-clickable" onClick={onEquip}>
+    <ToffecBeigeCornersWrapper
+      forceDisplay={isKeyboardSelected}
+      className={cn('pause-menu-equip-available-item', isEquipped && 'is-equipped')}
+    >
+      <div className="pause-menu-equip-available-clickable" onClick={onEquip} ref={rowRef}>
         <span className="pause-menu-item-icon-slot">
           {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
         </span>
