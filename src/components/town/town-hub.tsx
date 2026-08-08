@@ -17,6 +17,7 @@ import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 import { getNavDirection, isCancelKey, isConfirmKey, isHelpKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
+import { useSaveGame } from '~/hooks/use-save-game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { WoodDiscButton } from '~/components/ui-custom/wood-disc-button';
 import { TownHelpPanel } from './town-help-panel';
@@ -43,6 +44,16 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   const dialogueText = useState(() => getRandomElement(TOWN_WELCOME_TEXT))[0];
   const isTyping = useState(false)[0];
   const resources = useResources();
+  const { autosave } = useSaveGame();
+
+  /**
+   * Every way out of town, so shop purchases, inn heals and blacksmith crafts are
+   * banked before the player walks back onto the map.
+   */
+  function handleLeaveTown() {
+    autosave();
+    onLeaveCallback();
+  }
 
   // Play random background noise when entering town hub
   useEffect(() => {
@@ -123,7 +134,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
       if (event.repeat) return;
       const selectedId = selection.selectedId;
       if (selectedId === null) return;
-      if (selectedId === 'back') onLeaveCallback();
+      if (selectedId === 'back') handleLeaveTown();
       else if (selectedId === 'help') setIsHelpOpen(true);
       else handleGoToPlace(selectedId as Exclude<townLocations, 'town-hub'>);
     }
@@ -136,7 +147,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     e.preventDefault();
     if (e.repeat) return;
     if (currentLocation === 'town-hub') {
-      onLeaveCallback();
+      handleLeaveTown();
     } else {
       handleReturnToHub();
     }
@@ -172,7 +183,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
         <div className="flex gap-4">
           <div className="town-side-buttons">
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'side' && sideSelection.isSelected('back')}>
-              <button className="leave-btn" onClick={onLeaveCallback} aria-label="Leave town" />
+              <button className="leave-btn" onClick={handleLeaveTown} aria-label="Leave town" />
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'side' && sideSelection.isSelected('help')}>
               <WoodDiscButton glyph="help" onClick={() => setIsHelpOpen(true)} aria-label="About the town" />

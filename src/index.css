@@ -445,6 +445,8 @@
 
 @import './styles/pause-menu.css';
 
+@import './styles/save-load.css';
+
 @import './styles/icons.css';
 
 @import './styles/number-flow.css';

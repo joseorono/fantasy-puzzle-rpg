@@ -11,6 +11,7 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { findNodeAt, findFloorLootAt, findDialogueTriggerAt } from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useSaveGame } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
@@ -150,6 +151,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
   const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
+  const { autosave } = useSaveGame();
 
   // Pulse animation for markers
   useEffect(() => {
@@ -199,6 +201,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     },
     [walkableMask, isNodeCompleted, completedDungeons, map.nodes],
   );
+
+  // Mirror the live position into the store as it changes, so a save taken while the
+  // map is still mounted records where the player actually stands. One write per tile
+  // step is cheap: both readers use `getState()`, so nothing re-renders on it.
+  useEffect(() => {
+    mapProgressActions.setCharacterPosition(map.id, charPosition);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [charPosition, map.id]);
 
   // Persist character position to store on unmount so it survives view transitions
   const charPositionRef = useRef(charPosition);
@@ -445,6 +455,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
     if (enteredNode.type === 'Town') {
       mapProgressActions.completeNode(enteredNode.type, enteredNode.id);
+      // Reaching a town is a checkpoint — snapshot before the player starts spending.
+      autosave();
       routerActions.goToTownHub({
         ...DEFAULT_TOWN_HUB_DATA,
         townName: enteredNode.name,

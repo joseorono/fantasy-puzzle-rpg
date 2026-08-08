@@ -6,7 +6,7 @@ import type { SliceSet, SliceGet } from '~/types/store';
  * constant) so init and reset each get their own object and completion flags can
  * never leak across a reset.
  */
-const createInitialDungeonProgressState = (): DungeonProgressState => ({
+export const createInitialDungeonProgressState = (): DungeonProgressState => ({
   completedDungeons: {},
 });
 
@@ -40,13 +40,4 @@ export const createDungeonProgressSlice = (
       },
     },
   },
-
-  reset: () =>
-    set(
-      (state: DungeonProgressSlice) => {
-        state.dungeonProgress = createInitialDungeonProgressState();
-      },
-      false,
-      'dungeonProgress/reset',
-    ),
 });

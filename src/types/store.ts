@@ -3,9 +3,13 @@
 
 /**
  * Base interface for all store slices.
+ *
+ * Slices deliberately do NOT define their own top-level `reset`: every slice is
+ * spread into one store object, so same-named keys collide and only the last one
+ * survives. Whole-game resets go through `resetGameState` in the game store.
  */
 export interface BaseSlice {
-  reset?: () => void;
+  reset?: never;
 }
 
 /**

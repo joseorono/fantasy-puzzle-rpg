@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { PauseMenuOptions } from './pause-menu/tabs/pause-menu-options';
-import { PauseMenuLoad } from './pause-menu/tabs/pause-menu-load';
-import { PauseMenuSave } from './pause-menu/tabs/pause-menu-save';
+import { SaveLoadMenu } from './save-load/save-load-menu';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
-import { Play, FolderOpen, ScrollText } from 'lucide-react';
+import { useSaveGame } from '~/hooks/use-save-game';
+import { Play, FolderOpen, RotateCcw, ScrollText } from 'lucide-react';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -16,32 +16,36 @@ import { CreditsModal } from '~/components/credits-modal';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
-  /** Forwarded for upcoming Load Game wiring; load is currently handled by the internal Load tab. */
-  onLoadGame?: () => void;
-  /** Forwarded for upcoming Credits wiring (not yet implemented). */
-  onCredits?: () => void;
 }
 
-type ModalTab = 'main' | 'options' | 'load' | 'save' | 'settings';
+type ModalTab = 'main' | 'options' | 'load' | 'settings';
 
 const TAB_TITLES: Record<Exclude<ModalTab, 'main'>, string> = {
   options: 'Options',
   load: 'Load Game',
-  save: 'Save Game',
   settings: 'Settings',
 };
 
-/** Main-menu entries in visual order — the keyboard ring and the click handlers share these ids. */
-const MENU_ITEM_IDS = ['start-game', 'load-game', 'credits', 'share', 'settings'] as const;
+/**
+ * Main-menu entries in visual order — the keyboard ring and the click handlers share
+ * these ids. `continue` only joins the ring when there's actually something to continue.
+ */
+const ALL_MENU_ITEM_IDS = ['continue', 'start-game', 'load-game', 'credits', 'share', 'settings'] as const;
+type MenuItemId = (typeof ALL_MENU_ITEM_IDS)[number];
 
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const { loadSlot, newGame, mostRecentSlotId } = useSaveGame();
+
+  const menuItemIds = mostRecentSlotId
+    ? ALL_MENU_ITEM_IDS
+    : ALL_MENU_ITEM_IDS.filter((id): id is MenuItemId => id !== 'continue');
 
   // null until the keyboard is used, so the toffec corners only appear once the
   // player actually navigates; pointer movement clears it again (hook default).
   const selection = useKeyboardSelection(
-    MENU_ITEM_IDS.map((id) => [{ id }]),
+    menuItemIds.map((id) => [{ id }]),
     { onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05) },
   );
 
@@ -66,7 +70,17 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
 
   const handleStartGame = () => {
     soundService.stopMusic(SoundNames.startMenuMusic);
+    // A fresh start really is fresh: the defeat path returns here with progress still
+    // in memory, so without this the "new" game would silently continue the old one.
+    newGame();
     handleMenuClick(onStartGame, SoundNames.shimmeringSuccessShort);
+  };
+
+  const handleContinue = () => {
+    if (!mostRecentSlotId) return;
+    soundService.stopMusic(SoundNames.startMenuMusic);
+    soundService.playSound(SoundNames.shimmeringSuccessShort, 0.4, 0.1);
+    loadSlot(mostRecentSlotId);
   };
 
   const handleOpenLoad = () => {
@@ -131,7 +145,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
     window.alert(`Press ${shortcut} to bookmark this page.`);
   };
 
-  const menuActions: Record<(typeof MENU_ITEM_IDS)[number], () => void> = {
+  const menuActions: Record<MenuItemId, () => void> = {
+    continue: handleContinue,
     'start-game': handleStartGame,
     'load-game': handleOpenLoad,
     credits: handleOpenCredits,
@@ -155,7 +170,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
       // nothing is selected yet.
       event.preventDefault();
       if (event.repeat) return;
-      const selectedId = selection.selectedId as (typeof MENU_ITEM_IDS)[number] | null;
+      const selectedId = selection.selectedId as MenuItemId | null;
       if (selectedId === null) return;
       menuActions[selectedId]();
     }
@@ -184,6 +199,14 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
         </div>
 
         <div className="main-menu__buttons">
+          {mostRecentSlotId && (
+            <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('continue')}>
+              <button className="main-menu__button" onClick={handleContinue}>
+                <RotateCcw size={20} />
+                Continue
+              </button>
+            </ToffecBeigeCornersWrapper>
+          )}
           <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('start-game')}>
             <button className="main-menu__button" onClick={handleStartGame}>
               <Play size={20} />
@@ -243,8 +266,10 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
             {/* Content */}
             <div className="start-menu-modal-body">
               {activeTab === 'options' && <PauseMenuOptions keyboardActive />}
-              {activeTab === 'load' && <PauseMenuLoad />}
-              {activeTab === 'save' && <PauseMenuSave />}
+              {/* No load confirmation here — there's no in-progress run to lose from the title. */}
+              {activeTab === 'load' && (
+                <SaveLoadMenu mode="load" keyboardActive onLoaded={() => soundService.stopMusic(SoundNames.startMenuMusic)} />
+              )}
               {activeTab === 'settings' && <PauseMenuOptions keyboardActive />}
             </div>
           </div>
