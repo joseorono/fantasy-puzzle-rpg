@@ -5,7 +5,7 @@ The game store is built with Zustand and uses a slice-based architecture for mod
 ## Features
 
 - **DevTools Integration**: Redux DevTools support for debugging (dev mode only)
-- **Persistence**: Automatic state persistence to localStorage with versioning
+- **Persistence**: Explicit save slots, not middleware — see `docs/SAVE_LOAD_SYSTEM.md`
 - **Immer Middleware**: Simplified state updates with draft mutations
 - **Type-Safe**: Full TypeScript support with proper interfaces
 - **Performance**: No barrel exports - direct imports for optimal TypeScript performance
@@ -138,13 +138,11 @@ export type GameStore = MoneySlice & YourSlice;
 
 export const useGameStore = create<GameStore>()(
   devtools(
-    persist(
-      immer((set) => ({
-        ...createMoneySlice(set),
-        ...createYourSlice(set),
-      })),
-      // ... config
-    )
+    immer((set) => ({
+      ...createMoneySlice(set),
+      ...createYourSlice(set),
+    })),
+    // ... config
   )
 );
 ```
@@ -156,12 +154,11 @@ export const useGameStore = create<GameStore>()(
 - Enabled only in development mode
 - Each action includes a descriptive name for debugging (e.g., `'money/addGold'`)
 
-### Persist
+### Persistence
 
-- **Version**: 1 (increment when making breaking changes to state structure)
-- **Storage**: localStorage
-- **Key**: `fantasy-puzzle-rpg-store`
-- State is automatically rehydrated on app load
+There is no `persist` middleware. Progress is written explicitly to save slots — see
+`docs/SAVE_LOAD_SYSTEM.md`. A new slice that holds progress must be added to the save
+envelope in `src/types/save-game.ts` and to `hydrateGameFromSave` / `resetGameState`.
 
 ### Immer
 
@@ -175,4 +172,6 @@ export const useGameStore = create<GameStore>()(
 2. **Keep Logic Pure**: Business logic should be in `/lib` as pure functions
 3. **Action Naming**: Use descriptive action names with slice prefix (e.g., `'money/addGold'`)
 4. **Validation**: Always validate inputs in actions (e.g., `validateGoldAmount`)
-5. **Reset Methods**: Include `reset()` in slices for cleanup/testing
+5. **No Per-Slice Reset**: Slices are spread into one store object, so a top-level `reset()`
+   in each would collide and only the last would survive. Whole-game resets go through
+   `resetGameState()` in `game-store.ts`.
