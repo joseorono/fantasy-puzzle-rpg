@@ -11,4 +11,3 @@ export function MainMenu({ onNewGame }: MainMenuProps) {
     </div>
   );
 }
-

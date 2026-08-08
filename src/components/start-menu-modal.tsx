@@ -6,7 +6,7 @@ import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
-import { useSaveGame } from '~/hooks/use-save-game';
+import { useSaveGameActions, useSaveSlots } from '~/hooks/use-save-game';
 import { Play, FolderOpen, RotateCcw, ScrollText } from 'lucide-react';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -36,7 +36,8 @@ type MenuItemId = (typeof ALL_MENU_ITEM_IDS)[number];
 export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('main');
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
-  const { loadSlot, newGame, mostRecentSlotId } = useSaveGame();
+  const { loadSlot, newGame } = useSaveGameActions();
+  const { mostRecentSlotId } = useSaveSlots();
 
   const menuItemIds = mostRecentSlotId
     ? ALL_MENU_ITEM_IDS
@@ -268,7 +269,11 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
               {activeTab === 'options' && <PauseMenuOptions keyboardActive />}
               {/* No load confirmation here — there's no in-progress run to lose from the title. */}
               {activeTab === 'load' && (
-                <SaveLoadMenu mode="load" keyboardActive onLoaded={() => soundService.stopMusic(SoundNames.startMenuMusic)} />
+                <SaveLoadMenu
+                  mode="load"
+                  keyboardActive
+                  onLoaded={() => soundService.stopMusic(SoundNames.startMenuMusic)}
+                />
               )}
               {activeTab === 'settings' && <PauseMenuOptions keyboardActive />}
             </div>

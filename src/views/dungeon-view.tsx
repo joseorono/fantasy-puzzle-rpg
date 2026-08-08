@@ -57,7 +57,7 @@ import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
-import { useSaveGame } from '~/hooks/use-save-game';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
@@ -182,7 +182,7 @@ export default function DungeonView() {
   // goBack(): the battle round-trip leaves the router's previousView null.
   const { goToBattleDemo, goBackTo } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
-  const { autosave } = useSaveGame();
+  const { autosave } = useSaveGameActions();
 
   const pauseMenu = usePauseMenu();
   const confirm = useConfirm();

@@ -8,6 +8,14 @@ export type SaveSlotId = (typeof SAVE_SLOT_IDS)[number];
 /** Slots the player can save into from the Save menu. */
 export const MANUAL_SAVE_SLOT_IDS = ['slot-1', 'slot-2', 'slot-3'] as const satisfies readonly SaveSlotId[];
 
+/** Player-facing slot names. The autosave slot is written by the game, never chosen. */
+export const SAVE_SLOT_LABELS = {
+  'slot-1': 'Slot 1',
+  'slot-2': 'Slot 2',
+  'slot-3': 'Slot 3',
+  autosave: 'Autosave',
+} as const satisfies Record<SaveSlotId, string>;
+
 /** localStorage keys for the save slots — one key per slot so each gets the full size budget. */
 export const SAVE_STORAGE_KEYS = {
   'slot-1': 'fpg-save-slot-1',

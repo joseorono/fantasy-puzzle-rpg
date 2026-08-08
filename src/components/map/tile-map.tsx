@@ -11,7 +11,7 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { findNodeAt, findFloorLootAt, findDialogueTriggerAt } from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { useSaveGame } from '~/hooks/use-save-game';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
@@ -151,7 +151,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
   const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
-  const { autosave } = useSaveGame();
+  const { autosave } = useSaveGameActions();
 
   // Pulse animation for markers
   useEffect(() => {

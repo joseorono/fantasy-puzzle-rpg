@@ -1,20 +1,12 @@
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { RESOURCE_ICON_NAMES } from '~/constants/resources';
-import type { SaveSlotId } from '~/constants/storage-keys';
+import { SAVE_SLOT_LABELS, type SaveSlotId } from '~/constants/storage-keys';
 import { deriveSaveSummary, formatPlaytime } from '~/lib/save-game';
 import { cn } from '~/lib/utils';
 import type { SaveGame } from '~/types/save-game';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
-
-/** Player-facing slot names. The autosave slot is written by the game, never chosen. */
-export const SAVE_SLOT_LABELS: Record<SaveSlotId, string> = {
-  'slot-1': 'Slot 1',
-  'slot-2': 'Slot 2',
-  'slot-3': 'Slot 3',
-  autosave: 'Autosave',
-};
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' });
 

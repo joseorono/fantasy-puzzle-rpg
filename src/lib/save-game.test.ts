@@ -44,7 +44,12 @@ function makeGameState(): SaveGameState {
   return {
     resources: { coins: 42, gold: 7, copper: 3, silver: 1, iron: 0 },
     party: { members: [makeCharacter()] },
-    inventory: { items: [{ itemId: 'potion', quantity: 3 }, { itemId: 'iron-sword', quantity: 1, rarity: 'rare' }] },
+    inventory: {
+      items: [
+        { itemId: 'potion', quantity: 3 },
+        { itemId: 'iron-sword', quantity: 1, rarity: 'rare' },
+      ],
+    },
     mapProgress: {
       battlesCompleted: { battle_1: true },
       bossesCompleted: {},
@@ -61,7 +66,13 @@ function makeGameState(): SaveGameState {
 }
 
 function makeSave(overrides: Partial<SaveGame> = {}): SaveGame {
-  return buildSaveData({ state: makeGameState(), currentMapId: 'map-00', playtimeMs: 90_000, savedAt: SAVED_AT, ...overrides });
+  return buildSaveData({
+    state: makeGameState(),
+    currentMapId: 'map-00',
+    playtimeMs: 90_000,
+    savedAt: SAVED_AT,
+    ...overrides,
+  });
 }
 
 describe('buildSaveData', () => {

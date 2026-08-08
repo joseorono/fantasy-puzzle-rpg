@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
-import { MANUAL_SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
+import { MANUAL_SAVE_SLOT_IDS, SAVE_SLOT_LABELS, type SaveSlotId } from '~/constants/storage-keys';
 import { useConfirm } from '~/hooks/use-confirm';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
-import { useSaveGame } from '~/hooks/use-save-game';
+import { useSaveGameActions, useSaveSlots } from '~/hooks/use-save-game';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { soundService } from '~/services/sound-service';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
-import { SAVE_SLOT_LABELS, SaveSlotCard } from './save-slot-card';
+import { SaveSlotCard } from './save-slot-card';
 
 /** Load offers the autosave first — it's usually the newest thing on disk. */
 const LOAD_SLOT_ORDER: readonly SaveSlotId[] = ['autosave', ...MANUAL_SAVE_SLOT_IDS];
@@ -30,8 +30,15 @@ interface SaveLoadMenuProps {
  * Save mode writes the three manual slots; load mode restores any slot including the
  * autosave. Destructive actions (overwrite, load-over-progress, delete) all confirm.
  */
-export function SaveLoadMenu({ mode, keyboardActive = false, onExitToSidebar, confirmLoad, onLoaded }: SaveLoadMenuProps) {
-  const { slots, saveToSlot, loadSlot, deleteSlot } = useSaveGame();
+export function SaveLoadMenu({
+  mode,
+  keyboardActive = false,
+  onExitToSidebar,
+  confirmLoad,
+  onLoaded,
+}: SaveLoadMenuProps) {
+  const { slots } = useSaveSlots();
+  const { saveToSlot, loadSlot, deleteSlot } = useSaveGameActions();
   const confirm = useConfirm();
 
   const slotIds = mode === 'save' ? MANUAL_SAVE_SLOT_IDS : LOAD_SLOT_ORDER;

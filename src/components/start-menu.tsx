@@ -49,4 +49,3 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
     </div>
   );
 }
-

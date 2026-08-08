@@ -112,7 +112,9 @@ export function formatPlaytime(ms: number): string {
  * Continue button loads. Ties resolve to the earlier slot in `SAVE_SLOT_IDS`
  * order; returns null when every slot is empty.
  */
-export function pickMostRecentSlot(slots: ReadonlyArray<{ slotId: SaveSlotId; save: SaveGame | null }>): SaveSlotId | null {
+export function pickMostRecentSlot(
+  slots: ReadonlyArray<{ slotId: SaveSlotId; save: SaveGame | null }>,
+): SaveSlotId | null {
   let best: { slotId: SaveSlotId; savedAt: number } | null = null;
   for (const id of SAVE_SLOT_IDS) {
     const entry = slots.find((slot) => slot.slotId === id);

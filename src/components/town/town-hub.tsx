@@ -17,7 +17,7 @@ import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 import { getNavDirection, isCancelKey, isConfirmKey, isHelpKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
-import { useSaveGame } from '~/hooks/use-save-game';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { WoodDiscButton } from '~/components/ui-custom/wood-disc-button';
 import { TownHelpPanel } from './town-help-panel';
@@ -44,7 +44,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
   const dialogueText = useState(() => getRandomElement(TOWN_WELCOME_TEXT))[0];
   const isTyping = useState(false)[0];
   const resources = useResources();
-  const { autosave } = useSaveGame();
+  const { autosave } = useSaveGameActions();
 
   /**
    * Every way out of town, so shop purchases, inn heals and blacksmith crafts are
@@ -155,9 +155,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
 
   switch (currentLocation) {
     case 'blacksmith':
-      return (
-        <Blacksmith backgroundImage={subLocationBackgrounds.blacksmith} onLeaveCallback={handleReturnToHub} />
-      );
+      return <Blacksmith backgroundImage={subLocationBackgrounds.blacksmith} onLeaveCallback={handleReturnToHub} />;
     case 'inn':
       return <Inn backgroundImage={subLocationBackgrounds.inn} price={innCost} onLeaveCallback={handleReturnToHub} />;
     case 'item-store':
@@ -225,5 +223,3 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
     </div>
   );
 }
-
-

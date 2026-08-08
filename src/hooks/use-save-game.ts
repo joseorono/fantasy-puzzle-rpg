@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useStore } from 'jotai';
 import { RESET } from 'jotai/utils';
 import { DEFAULT_MAP_ID } from '~/constants/maps';
 import { SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
@@ -21,45 +21,25 @@ function readPersistentState(): SaveGameState {
 }
 
 /**
- * Save-slot orchestration shared by the pause menu, the title screen and the autosave
- * call sites: it owns the four slot atoms, the playtime clock, and the store/router
- * sequencing a load needs.
+ * Save-slot commands: writing, loading, deleting and starting over.
+ *
+ * Deliberately subscription-free — every atom is read imperatively through the Jotai
+ * store, so the returned functions keep a stable identity and a gameplay component
+ * that only ever autosaves doesn't re-render when a slot changes. Components that
+ * need to *display* slots use `useSaveSlots` instead.
  */
-export function useSaveGame() {
-  const [slot1, setSlot1] = useAtom(saveSlotAtoms['slot-1']);
-  const [slot2, setSlot2] = useAtom(saveSlotAtoms['slot-2']);
-  const [slot3, setSlot3] = useAtom(saveSlotAtoms['slot-3']);
-  const [autosaveSlot, setAutosaveSlot] = useAtom(saveSlotAtoms.autosave);
-
-  const basePlaytimeMs = useAtomValue(basePlaytimeMsAtom);
-  const setBasePlaytimeMs = useSetAtom(basePlaytimeMsAtom);
-  const sessionStartedAt = useAtomValue(sessionStartedAtAtom);
-  const setSessionStartedAt = useSetAtom(sessionStartedAtAtom);
-  const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
-  const setIsGameStarted = useSetAtom(isGameStartedAtom);
-
-  const slots: Record<SaveSlotId, SaveGame | null> = {
-    'slot-1': slot1,
-    'slot-2': slot2,
-    'slot-3': slot3,
-    autosave: autosaveSlot,
-  };
-
-  const setters: Record<SaveSlotId, (save: SaveGame | typeof RESET) => void> = {
-    'slot-1': setSlot1,
-    'slot-2': setSlot2,
-    'slot-3': setSlot3,
-    autosave: setAutosaveSlot,
-  };
+export function useSaveGameActions() {
+  const store = useStore();
 
   /** Snapshots the current game into a slot, overwriting whatever was there. */
   function saveToSlot(slotId: SaveSlotId): void {
     const { router } = useGameStore.getState();
-    setters[slotId](
+    store.set(
+      saveSlotAtoms[slotId],
       buildSaveData({
         state: readPersistentState(),
         currentMapId: router.viewData.map?.mapId ?? DEFAULT_MAP_ID,
-        playtimeMs: computePlaytimeMs(basePlaytimeMs, sessionStartedAt, Date.now()),
+        playtimeMs: computePlaytimeMs(store.get(basePlaytimeMsAtom), store.get(sessionStartedAtAtom), Date.now()),
       }),
     );
   }
@@ -77,37 +57,47 @@ export function useSaveGame() {
    * load launched from the title screen swaps to gameplay already hydrated.
    */
   function loadSlot(slotId: SaveSlotId): void {
-    const save = slots[slotId];
+    const save = store.get(saveSlotAtoms[slotId]);
     if (!save) return;
 
-    resetDungeonRun();
+    store.set(resetDungeonRunAtom);
     hydrateGameFromSave(save);
-    setBasePlaytimeMs(save.playtimeMs);
-    setSessionStartedAt(Date.now());
+    store.set(basePlaytimeMsAtom, save.playtimeMs);
+    store.set(sessionStartedAtAtom, Date.now());
     useGameStore.getState().actions.router.goToMap({ mapId: save.currentMapId });
-    setIsGameStarted(true);
+    store.set(isGameStartedAtom, true);
   }
 
   /** Empties a slot, removing its localStorage key entirely. */
   function deleteSlot(slotId: SaveSlotId): void {
-    setters[slotId](RESET);
+    store.set(saveSlotAtoms[slotId], RESET);
   }
 
   /** Wipes progress back to a fresh game and restarts the playtime clock. */
   function newGame(): void {
-    resetDungeonRun();
+    store.set(resetDungeonRunAtom);
     resetGameState();
-    setBasePlaytimeMs(0);
-    setSessionStartedAt(Date.now());
+    store.set(basePlaytimeMsAtom, 0);
+    store.set(sessionStartedAtAtom, Date.now());
   }
+
+  return { saveToSlot, autosave, loadSlot, deleteSlot, newGame };
+}
+
+/**
+ * Live contents of the four save slots, for menus that render them. Subscribes, so
+ * a save or delete repaints the list immediately.
+ */
+export function useSaveSlots() {
+  const slots: Record<SaveSlotId, SaveGame | null> = {
+    'slot-1': useAtomValue(saveSlotAtoms['slot-1']),
+    'slot-2': useAtomValue(saveSlotAtoms['slot-2']),
+    'slot-3': useAtomValue(saveSlotAtoms['slot-3']),
+    autosave: useAtomValue(saveSlotAtoms.autosave),
+  };
 
   return {
     slots,
-    saveToSlot,
-    autosave,
-    loadSlot,
-    deleteSlot,
-    newGame,
     /** Slot the title screen's Continue button loads; null when nothing is saved. */
     mostRecentSlotId: pickMostRecentSlot(SAVE_SLOT_IDS.map((slotId) => ({ slotId, save: slots[slotId] }))),
   };
