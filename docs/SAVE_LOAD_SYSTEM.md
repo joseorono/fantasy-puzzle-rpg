@@ -132,6 +132,46 @@ Hosts:
 **Start Game now genuinely resets.** The defeat path returns to the title without clearing
 progression, so previously a "new" game silently continued the old one.
 
+## Save indicator
+
+A small disk badge blinks in the bottom-right corner whenever a save is written —
+`src/components/save-indicator/`, styled in `src/styles/save-indicator.css`.
+
+It's driven by `saveIndicatorAtom` (`src/stores/save-atoms.ts`), set from `saveToSlot` rather than
+from `autosave()` so manual saves get it too; the slot id decides the wording (`Autosaving…` vs
+`Saving…`). The atom carries an incrementing `id` that the host uses as a React `key`, so a second
+save restarts the animation instead of letting the first one finish its fade. Timings live in
+`SAVE_INDICATOR_HOLD_MS` / `SAVE_INDICATOR_FADE_MS` (`src/constants/game.ts`).
+
+Layering details that are easy to break: the layer insets by `var(--frame-thickness)` (otherwise the
+badge hides under the decorative 32px window border), sits at `z-index: 1200` (above the pause menu,
+dialogue and tooltips; below the click FX), and sets `pointer-events: none`. The badge carries
+`motion-hold` so reduced motion cancels the pulse outright rather than collapsing it to 1ms — its
+resting styles must therefore be visible without any animation running.
+
+The icon is indigolay art, so it lives in `public/assets/icons/indigolay/` and renders smoothed
+rather than pixelated (see the opt-out rules in `src/styles/utilities.css`).
+
+**This badge is a confirmation cue, not a safety window.** The localStorage write is synchronous and
+has already completed before the badge paints. The actual protection against losing progress is the
+close guard below.
+
+## Close / reload guard
+
+`useBeforeUnloadWarning(enabled)` (`src/hooks/use-before-unload-warning.ts`) asks the browser to
+confirm before the tab is closed or reloaded. Mounted in `game-loader.tsx` as
+`useBeforeUnloadWarning(isReady)` — in-game only.
+
+Three constraints worth knowing before changing it:
+
+- The prompt text belongs to the browser; a page cannot supply its own. Browsers also only show it
+  once the player has interacted with the page.
+- The listener is bound **only while enabled**, because a registered `beforeunload` handler
+  disqualifies the page from the back/forward cache. Binding it globally would be a real cost for no
+  benefit on the title screen.
+- It **no-ops under Electron**, where cancelling the unload silently blocks the window from closing
+  instead of raising a dialog — which would make the app impossible to quit.
+
 ## Tests
 
 `src/lib/save-game.test.ts` (23 tests) covers envelope construction and JSON round-trip,
