@@ -35,4 +35,4 @@ Second-Order Systems:
   - [x] Equipment salvage: scrap gear for half its material bars. (Jose)
 - [x] Equipment Rarity system: per-instance tiers (Common→Legendary), stat multipliers, weighted rolls with per-enemy bias, color-coded across all item UI. Done by Jose.
 - [x] Dungeon System. Requires: Properly integrated Map, Town, Battle, and Level-up/progression systems.
-- [ ] Save data: not included until we have a clear idea of the data we'll need. Requires: Most of the base systems.
+- [x] Save data: 3 manual slots + autosave, one localStorage key each, Zod-validated with a version/migration hook. See `docs/SAVE_LOAD_SYSTEM.md`.
