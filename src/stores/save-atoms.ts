@@ -27,3 +27,16 @@ export const basePlaytimeMsAtom = atom(0);
 
 /** Epoch ms the current play session began; re-stamped on new game and on load. */
 export const sessionStartedAtAtom = atom(Date.now());
+
+export interface SaveIndicatorRequest {
+  /** Bumped on every save so back-to-back saves restart the animation rather than merging. */
+  id: number;
+  /** Autosaves read "Autosaving…"; a save the player asked for reads "Saving…". */
+  isAutosave: boolean;
+}
+
+/**
+ * The save-in-progress badge currently showing, or null. Set by `saveToSlot`, consumed
+ * by `SaveIndicatorHost`, which clears it once the badge has faded out.
+ */
+export const saveIndicatorAtom = atom<SaveIndicatorRequest | null>(null);

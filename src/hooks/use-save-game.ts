@@ -6,7 +6,7 @@ import { buildSaveData, computePlaytimeMs, pickMostRecentSlot } from '~/lib/save
 import { isGameStartedAtom } from '~/stores/app-atoms';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { hydrateGameFromSave, resetGameState, useGameStore } from '~/stores/game-store';
-import { basePlaytimeMsAtom, saveSlotAtoms, sessionStartedAtAtom } from '~/stores/save-atoms';
+import { basePlaytimeMsAtom, saveIndicatorAtom, saveSlotAtoms, sessionStartedAtAtom } from '~/stores/save-atoms';
 import type { SaveGame, SaveGameState } from '~/types/save-game';
 
 /**
@@ -42,6 +42,9 @@ export function useSaveGameActions() {
         playtimeMs: computePlaytimeMs(store.get(basePlaytimeMsAtom), store.get(sessionStartedAtAtom), Date.now()),
       }),
     );
+    // Flashed here rather than in `autosave()` so manual saves get the badge too, and the
+    // slot id is what decides the wording.
+    store.set(saveIndicatorAtom, (prev) => ({ id: (prev?.id ?? 0) + 1, isAutosave: slotId === 'autosave' }));
   }
 
   /** Writes the autosave slot. Called at major progress beats, never by the player. */
