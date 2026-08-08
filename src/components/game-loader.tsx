@@ -7,12 +7,14 @@ import { loaderService } from '~/services/loader-service';
 import { MIN_LOAD_TIME_MS } from '~/constants/game';
 import { SKIP_TO_DEBUG_VIEW } from '~/constants/dev';
 import { useWakeLock } from '~/hooks/use-wake-lock';
+import { useBeforeUnloadWarning } from '~/hooks/use-before-unload-warning';
 import GameScreen from '~/game-screen';
 import LoopingProgressBar from '~/components/looping-progress-bar';
 import { PauseMenuOverlay } from '~/components/pause-menu/pause-menu-overlay';
 import { OverlayHost } from '~/components/overlays/overlay-host';
 import { TitleSignHost } from '~/components/title-sign/title-sign-host';
 import { ConfirmDialogHost } from '~/components/confirm-dialog/confirm-dialog-host';
+import { SaveIndicatorHost } from '~/components/save-indicator/save-indicator-host';
 import { StartMenu } from '~/components/start-menu';
 
 function delay(ms: number): Promise<void> {
@@ -32,6 +34,10 @@ export function GameLoader() {
   // Keep the screen awake while actively playing; release it behind the pause menu
   // so the player isn't forced to keep the tab active just to let the display sleep.
   useWakeLock(isReady && !isPauseMenuOpen);
+
+  // Guard against closing or reloading mid-run. Only while in-game: on the title screen
+  // there's nothing to lose, and an always-bound handler would cost the page its bfcache entry.
+  useBeforeUnloadWarning(isReady);
 
   useEffect(() => {
     // Dev shortcut: skip the start menu and jump straight into the debug view.
@@ -71,6 +77,7 @@ export function GameLoader() {
         <OverlayHost />
         <TitleSignHost />
         <ConfirmDialogHost />
+        <SaveIndicatorHost />
       </>
     );
   }
