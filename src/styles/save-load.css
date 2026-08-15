@@ -183,12 +183,6 @@
   opacity: 1;
 }
 
-/* Keep the delete button clear of the timestamp when it's showing. */
-.save-slot-card:hover .save-slot-card__timestamp,
-.save-slot-card--selected .save-slot-card__timestamp {
-  margin-right: 1.4rem;
-}
-
 @media (max-width: 640px) {
   .save-slot-card__meta {
     gap: 0.4rem;
