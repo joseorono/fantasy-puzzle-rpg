@@ -105,8 +105,9 @@
 }
 
 .save-slot-card__label {
-  font-size: 0.7rem;
-  color: #f2d2af;
+  font-family: monospace;
+  font-size: 0.6rem;
+  color: #ffffff;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
 

@@ -52,7 +52,7 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
         }}
       >
         <div className="save-slot-card__header">
-          <span className="save-slot-card__label pixel-font">{SAVE_SLOT_LABELS[slotId]}</span>
+          <span className="save-slot-card__label">{SAVE_SLOT_LABELS[slotId]}</span>
           {summary && (
             <span className="save-slot-card__timestamp pixel-font">{timestampFormatter.format(summary.savedAt)}</span>
           )}
