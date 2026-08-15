@@ -57,6 +57,8 @@
   background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
   border-color: #d4a574;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  /* Subtler version of the generic white drop-shadow from cursor.css */
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25)) brightness(1.08) !important;
 }
 
 .save-slot-card--selected {
@@ -65,6 +67,7 @@
   box-shadow:
     0 0 10px rgba(212, 165, 116, 0.28),
     0 4px 8px rgba(0, 0, 0, 0.4);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25)) brightness(1.08) !important;
 }
 
 /* Autosave is the game's own slot — marked with a cooler border so it reads as
