@@ -6,7 +6,6 @@ import { cn } from '~/lib/utils';
 import type { SaveGame } from '~/types/save-game';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' });
 
@@ -51,59 +50,68 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
           onActivate();
         }}
       >
-        <div className="save-slot-card__header">
-          <span className="save-slot-card__label pixel-font">{SAVE_SLOT_LABELS[slotId]}</span>
+        <div className="save-slot-card__content">
+          <div className="save-slot-card__main">
+            <div className="save-slot-card__header">
+              <span className="save-slot-card__label">{SAVE_SLOT_LABELS[slotId]}</span>
+            </div>
+
+            {summary ? (
+              <>
+                <div className="save-slot-card__party">
+                  {summary.party.map((member) => {
+                    const Icon = CHARACTER_ICONS[member.class];
+                    return (
+                      <span key={member.id} className="save-slot-card__member" title={member.name}>
+                        <Icon className={cn('save-slot-card__member-icon', CHARACTER_COLORS[member.class].icon)} />
+                        <span className="save-slot-card__member-level pixel-font">Lv{member.level}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+
+                <div className="save-slot-card__meta pixel-font">
+                  <span className="save-slot-card__stat">
+                    <FrostyRpgIcon name={RESOURCE_ICON_NAMES.coins} size={16} />
+                    {summary.coins}
+                  </span>
+                  <span className="save-slot-card__stat">
+                    <FrostyRpgIcon name={RESOURCE_ICON_NAMES.gold} size={16} />
+                    {summary.gold}
+                  </span>
+                  <span className="save-slot-card__location">{summary.mapName}</span>
+                </div>
+              </>
+            ) : (
+              <div className="save-slot-card__empty-text pixel-font">
+                {mode === 'save' ? '— Empty — Save here' : '— Empty —'}
+              </div>
+            )}
+          </div>
+
           {summary && (
-            <span className="save-slot-card__timestamp pixel-font">{timestampFormatter.format(summary.savedAt)}</span>
+            <div className="save-slot-card__side">
+              <div className="save-slot-card__details">
+                <span className="save-slot-card__timestamp pixel-font">{timestampFormatter.format(summary.savedAt)}</span>
+                <span className="save-slot-card__playtime pixel-font">{formatPlaytime(summary.playtimeMs)}</span>
+              </div>
+              {onDelete && (
+                <button
+                  type="button"
+                  className="save-slot-card__delete"
+                  aria-label={`Delete ${SAVE_SLOT_LABELS[slotId]}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  <img src="/assets/icons/indigolay/Icon_trash.png" alt="" className="save-slot-card__delete-icon" />
+                </button>
+              )}
+            </div>
           )}
         </div>
 
-        {summary ? (
-          <>
-            <div className="save-slot-card__party">
-              {summary.party.map((member) => {
-                const Icon = CHARACTER_ICONS[member.class];
-                return (
-                  <span key={member.id} className="save-slot-card__member" title={member.name}>
-                    <Icon className={cn('save-slot-card__member-icon', CHARACTER_COLORS[member.class].icon)} />
-                    <span className="save-slot-card__member-level pixel-font">Lv{member.level}</span>
-                  </span>
-                );
-              })}
-            </div>
-
-            <div className="save-slot-card__meta pixel-font">
-              <span className="save-slot-card__stat">
-                <FrostyRpgIcon name={RESOURCE_ICON_NAMES.coins} size={16} />
-                {summary.coins}
-              </span>
-              <span className="save-slot-card__stat">
-                <FrostyRpgIcon name={RESOURCE_ICON_NAMES.gold} size={16} />
-                {summary.gold}
-              </span>
-              <span className="save-slot-card__location">{summary.mapName}</span>
-              <span className="save-slot-card__playtime">{formatPlaytime(summary.playtimeMs)}</span>
-            </div>
-          </>
-        ) : (
-          <div className="save-slot-card__empty-text pixel-font">
-            {mode === 'save' ? '— Empty — Save here' : '— Empty —'}
-          </div>
-        )}
-
-        {onDelete && summary && (
-          <ToffecSquareButton
-            icon="close"
-            size="sm"
-            variant="medieval3"
-            className="save-slot-card__delete"
-            aria-label={`Delete ${SAVE_SLOT_LABELS[slotId]}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete();
-            }}
-          />
-        )}
       </div>
     </ToffecBeigeCornersWrapper>
   );
