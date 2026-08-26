@@ -110,6 +110,7 @@ class SoundService {
     volVariance = betweenZeroAndOne(volVariance, 'volVariance');
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
+    sound.resumeAll();
     sound.play(alias, {
       volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
       speed: getRandomlyVariedValue(1, spdVariance),
@@ -121,6 +122,7 @@ class SoundService {
     volVariance = betweenZeroAndOne(volVariance, 'volVariance');
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
+    sound.resumeAll();
     sound.play(alias, {
       volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
       speed: getRandomlyVariedValue(1, spdVariance),

@@ -67,7 +67,6 @@ export function SaveLoadMenu({
         if (!ok) return;
       }
       saveToSlot(slotId);
-      soundService.playSound(SoundNames.shimmeringSuccessShort, 0.6);
       return;
     }
 

@@ -1,10 +1,12 @@
 import { useAtomValue, useStore } from 'jotai';
 import { RESET } from 'jotai/utils';
+import { SoundNames } from '~/constants/audio';
 import { DEFAULT_MAP_ID } from '~/constants/maps';
 import { SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
 import { buildSaveData, computePlaytimeMs, pickMostRecentSlot } from '~/lib/save-game';
 import { isGameStartedAtom } from '~/stores/app-atoms';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
+import { soundService } from '~/services/sound-service';
 import { hydrateGameFromSave, resetGameState, useGameStore } from '~/stores/game-store';
 import { basePlaytimeMsAtom, saveIndicatorAtom, saveSlotAtoms, sessionStartedAtAtom } from '~/stores/save-atoms';
 import type { SaveGame, SaveGameState } from '~/types/save-game';
@@ -45,6 +47,7 @@ export function useSaveGameActions() {
     // Flashed here rather than in `autosave()` so manual saves get the badge too, and the
     // slot id is what decides the wording.
     store.set(saveIndicatorAtom, (prev) => ({ id: (prev?.id ?? 0) + 1, isAutosave: slotId === 'autosave' }));
+    soundService.playSound(SoundNames.saveChime, 0.7);
   }
 
   /** Writes the autosave slot. Called at major progress beats, never by the player. */
@@ -69,6 +72,7 @@ export function useSaveGameActions() {
     store.set(sessionStartedAtAtom, Date.now());
     useGameStore.getState().actions.router.goToMap({ mapId: save.currentMapId });
     store.set(isGameStartedAtom, true);
+    soundService.playSound(SoundNames.loadChime, 0.7);
   }
 
   /** Empties a slot, removing its localStorage key entirely. */

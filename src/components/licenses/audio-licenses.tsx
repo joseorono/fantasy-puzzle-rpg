@@ -159,6 +159,20 @@ export default function AudioLicensesDialogContent() {
           Anime Fight Music Loop #1 by Sirkoto51 (fight-music) -- License: Attribution 4.0
           <a href="https://freesound.org/s/414214/">https://freesound.org/s/414214/</a>
         </p>
+
+        <p>
+          Chimes / Saved (loadChime) by melokacool — License: Creative Commons 0&nbsp;
+          <a href="https://freesound.org/people/melokacool/sounds/616696/">
+            https://freesound.org/people/melokacool/sounds/616696/
+          </a>
+        </p>
+
+        <p>
+          Chimes 2 - Short (saveChime) by 13712885766 — License: Creative Commons 0&nbsp;
+          <a href="https://freesound.org/people/13712885766/sounds/789599/">
+            https://freesound.org/people/13712885766/sounds/789599/
+          </a>
+        </p>
       </div>
     </>
   );
