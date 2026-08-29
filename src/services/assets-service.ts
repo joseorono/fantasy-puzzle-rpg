@@ -142,6 +142,12 @@ export const assetList: string[] = [
   '/assets/skills/ui/indigolay-skill-panel-text-area.png',
   '/assets/skills/ui/indigolay-icon-equip.png',
 
+  // Save/load slot scrolls (SaveSlotCard chrome)
+  '/assets/menu/save-load/indigolay-scroll-normal.png',
+  '/assets/menu/save-load/indigolay-scroll-hover.png',
+  '/assets/menu/save-load/indigolay-scroll-dim.png',
+  '/assets/menu/save-load/indigolay-slot-plaque.png',
+
   // Menu assets
   '/assets/menu/back-button-hover.png',
   '/assets/menu/back-button.png',

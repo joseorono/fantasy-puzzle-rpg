@@ -1,10 +1,14 @@
 /*
  * Save / Load slot list.
  *
- * Built on the same warm parchment-on-dark-wood palette as `.equipment-list`
- * (town.css) so the save menu reads as part of the same cabinet of menus, and
- * uses the shared `.cursor-corners` brackets for selection rather than its own
- * highlight treatment.
+ * Slot cards are the Indigolay Adventure Book parchment scrolls
+ * (`UI_ListItem2_*`), 9-sliced through border-image like the skills parchment
+ * panel (pause-menu-skills.css) and IndigolayBar. Scroll art is 468x170 with
+ * ~60px rolled ends, displayed at half scale; the gold-outlined hover variant
+ * doubles as the selected state (border-image-source can't transition, and an
+ * instant swap suits pixel art). Selection still adds the shared
+ * `.cursor-corners` brackets so keyboard and pointer highlighting look
+ * identical to every other menu.
  */
 
 .save-load-menu {
@@ -16,7 +20,7 @@
 .save-load-menu__list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
   padding: 0.75rem;
   background-image: linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
   background-repeat: no-repeat, repeat;
@@ -47,59 +51,40 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.55rem 0.7rem;
-  background: rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(212, 165, 116, 0.22);
-  border-left: 3px solid rgba(212, 165, 116, 0.4);
-  border-radius: 6px;
-  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
+  padding: 0.3rem 0.4rem 0.15rem;
+  border: 22px solid transparent;
+  border-left-width: 30px;
+  border-right-width: 30px;
+  border-image: url('/assets/menu/save-load/indigolay-scroll-normal.png') 44 60 fill / 22px 30px stretch;
+  image-rendering: auto;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .save-slot-card:hover {
-  background: rgba(212, 165, 116, 0.1);
-  border-color: rgba(212, 165, 116, 0.55);
-  border-left-color: #d4a574;
-  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.08);
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-hover.png');
   filter: none !important;
+}
+
+/* Empty slots use the pack's greyed dim scroll; in save mode they stay
+   clickable, so hover/selection still light them up gold. */
+.save-slot-card--empty {
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
 }
 
 .save-slot-card--selected {
-  background: rgba(212, 165, 116, 0.1);
-  border-color: rgba(212, 165, 116, 0.55);
-  border-left-color: #d4a574;
-  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.1);
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-hover.png');
   filter: none !important;
 }
 
-/* Autosave is the game's own slot — marked with a cooler border so it reads as
-   "not yours to manage" next to the three manual slots. */
-.save-slot-card--autosave {
-  border-color: #6a7a94;
-}
-
-.save-slot-card--autosave:hover,
-.save-slot-card--autosave.save-slot-card--selected {
-  border-color: #9fb0cc;
-}
-
-.save-slot-card--empty {
-  border-style: dashed;
-  background: rgba(0, 0, 0, 0.2);
-}
-
+/* The dim scroll already reads as inactive — a strong opacity fade on top made
+   the text illegible, so the fade stays light. */
 .save-slot-card--disabled {
   cursor: default;
-  opacity: 0.55;
+  opacity: 0.85;
 }
 
 .save-slot-card--disabled:hover {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(212, 165, 116, 0.22);
-  border-left-color: rgba(212, 165, 116, 0.4);
-  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
 }
 
 .save-slot-card__content {
@@ -109,13 +94,50 @@
 }
 
 .save-slot-card__main {
+  display: flex;
   min-width: 0;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.save-slot-card__header {
-  display: flex;
-  align-items: baseline;
+/* ── Slot plaque ────────────────────────────────────────────────────── */
+
+/* The brown label tab (UI_SloaPane_bg, 127x42 at half scale) pinned over the
+   scroll's top edge. Absolute offsets are from the padding box, so negative
+   values reach up/left into the border-image region. The 0-height top/bottom
+   slices keep the gold-rimmed circle (left 46px of art) unsquashed as long as
+   the plaque stays exactly 21px tall. */
+.save-slot-card__plaque {
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 6px 0 3px;
+  border: 0 solid transparent;
+  border-left-width: 23px;
+  border-right-width: 7px;
+  border-image: url('/assets/menu/save-load/indigolay-slot-plaque.png') 0 14 0 46 fill / 0 7px 0 23px stretch;
+  image-rendering: auto;
+  font-size: 0.55rem;
+  color: #f7ecd8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
+
+/* Sits inside the plaque's circle — the autosave marker. */
+.save-slot-card__plaque-icon {
+  position: absolute;
+  top: 50%;
+  left: -18px;
+  width: 13px;
+  height: 13px;
+  transform: translateY(-50%);
+  image-rendering: pixelated;
+}
+
+/* ── Slot contents (dark ink on parchment) ──────────────────────────── */
 
 .save-slot-card__side {
   display: grid;
@@ -124,7 +146,7 @@
   align-items: center;
   gap: 0.75rem;
   padding-left: 1rem;
-  border-left: 1px solid rgba(212, 165, 116, 0.4);
+  border-left: 1px dotted rgba(90, 58, 30, 0.45);
 }
 
 .save-slot-card__details {
@@ -135,17 +157,10 @@
   gap: 0.2rem;
 }
 
-.save-slot-card__label {
-  font-family: monospace;
-  font-size: 0.6rem;
-  color: #ffffff;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
-}
-
 .save-slot-card__timestamp {
   white-space: nowrap;
-  font-size: 0.55rem;
-  color: #a08a6a;
+  font-size: 0.6rem;
+  color: #2a1608;
 }
 
 .save-slot-card__party {
@@ -160,14 +175,17 @@
   gap: 0.2rem;
 }
 
+/* Class tints were picked for dark backgrounds; the shadow keeps them legible
+   on light parchment. */
 .save-slot-card__member-icon {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  filter: saturate(1.3) drop-shadow(1px 1px 0 rgba(42, 22, 8, 0.6));
 }
 
 .save-slot-card__member-level {
-  font-size: 0.55rem;
-  color: #d4c4a8;
+  font-size: 0.6rem;
+  color: #2a1608;
 }
 
 .save-slot-card__meta {
@@ -175,8 +193,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.55rem;
-  color: #c4a882;
+  font-size: 0.6rem;
+  color: #3d2812;
 }
 
 .save-slot-card__stat {
@@ -187,20 +205,19 @@
 
 .save-slot-card__location {
   flex-basis: 100%;
-  color: #f2d2af;
+  color: #5a2f10;
 }
 
 /* Pushed to the right edge so the eye can scan playtimes down the column. */
 .save-slot-card__playtime {
   font-size: 0.55rem;
-  color: #9fb0cc;
+  color: #4a3117;
 }
 
 .save-slot-card__empty-text {
   padding: 0.35rem 0;
-  font-size: 0.6rem;
-  font-style: italic;
-  color: #7a7a7a;
+  font-size: 0.65rem;
+  color: #4f4335;
 }
 
 .save-slot-card__delete {
@@ -225,6 +242,12 @@
 }
 
 @media (max-width: 640px) {
+  .save-slot-card {
+    border-left-width: 24px;
+    border-right-width: 24px;
+    border-image-width: 22px 24px;
+  }
+
   .save-slot-card__content {
     grid-template-columns: 1fr;
     gap: 0.5rem;
@@ -235,7 +258,7 @@
     align-items: flex-end;
     padding-top: 0.5rem;
     padding-left: 0;
-    border-top: 1px solid rgba(212, 165, 116, 0.4);
+    border-top: 1px dotted rgba(90, 58, 30, 0.45);
     border-left: 0;
   }
 

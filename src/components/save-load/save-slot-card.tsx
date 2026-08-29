@@ -50,12 +50,15 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
           onActivate();
         }}
       >
+        <span className="save-slot-card__plaque pixel-font">
+          {slotId === 'autosave' && (
+            <img src="/assets/icons/indigolay/icon-autosave.png" alt="" className="save-slot-card__plaque-icon" />
+          )}
+          {SAVE_SLOT_LABELS[slotId]}
+        </span>
+
         <div className="save-slot-card__content">
           <div className="save-slot-card__main">
-            <div className="save-slot-card__header">
-              <span className="save-slot-card__label">{SAVE_SLOT_LABELS[slotId]}</span>
-            </div>
-
             {summary ? (
               <>
                 <div className="save-slot-card__party">
