@@ -1,12 +1,12 @@
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
-import { RESOURCE_ICON_NAMES } from '~/constants/resources';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { SAVE_SLOT_LABELS, type SaveSlotId } from '~/constants/storage-keys';
 import { SAVE_SLOT_TOOLTIP_DELAY_MS } from '~/constants/ui';
 import { deriveSaveSummary, formatPlaytime } from '~/lib/save-game';
 import { cn } from '~/lib/utils';
 import type { SaveGame } from '~/types/save-game';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui-custom/tooltip';
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' });
@@ -85,14 +85,19 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
                 </div>
 
                 <div className="save-slot-card__meta pixel-font">
-                  <span className="save-slot-card__stat">
-                    <FrostyRpgIcon name={RESOURCE_ICON_NAMES.coins} size={16} />
-                    {summary.coins}
-                  </span>
-                  <span className="save-slot-card__stat">
-                    <FrostyRpgIcon name={RESOURCE_ICON_NAMES.gold} size={16} />
-                    {summary.gold}
-                  </span>
+                  <div className="save-slot-card__resources">
+                    {RESOURCE_DISPLAY_ORDER.map((resource) => (
+                      <ResourceStatItem
+                        key={resource}
+                        variant="compact"
+                        resource={resource}
+                        label={RESOURCE_LABELS[resource]}
+                        value={summary.resources[resource]}
+                        iconName={RESOURCE_ICON_NAMES[resource]}
+                        className={cn(summary.resources[resource] === 0 && 'save-slot-card__stat--empty')}
+                      />
+                    ))}
+                  </div>
                   <span className="save-slot-card__location">{summary.mapName}</span>
                 </div>
               </>

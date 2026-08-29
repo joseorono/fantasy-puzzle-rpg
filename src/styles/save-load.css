@@ -259,10 +259,31 @@
   color: #3d2812;
 }
 
-.save-slot-card__stat {
+/* A recessed tray behind the five readouts: without it the small numbers get
+   lost in the parchment's own mottling. */
+.save-slot-card__resources {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(90, 58, 30, 0.3);
+  border-radius: 4px;
+  background: rgba(74, 49, 23, 0.16);
+  box-shadow: inset 0 1px 2px rgba(58, 36, 16, 0.2);
+}
+
+/* The stock resource palette is tuned for dark chrome (coins/gold are #ffd700),
+   which vanishes on parchment — one ink colour for all five, with the sprites
+   left to say which resource is which. Two classes to outrank
+   `.resource-stat--<resource>`, which owns the property by default. */
+.save-slot-card .resource-stat {
+  --rs-value-color: #2a1608;
+}
+
+/* A resource this save has none of: still holds its column, reads as absent. */
+.save-slot-card__stat--empty {
+  opacity: 0.45;
 }
 
 .save-slot-card__location {
