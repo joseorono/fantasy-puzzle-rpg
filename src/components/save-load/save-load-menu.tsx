@@ -132,7 +132,7 @@ export function SaveLoadMenu({
   return (
     <div className="save-load-menu">
       <div className="save-load-menu__header">
-        {heading}
+        <span className="save-load-menu__title">{heading}</span>
         <p className="save-load-menu__hint pixel-font">
           {mode === 'save' ? 'Choose a slot to save your progress.' : 'Choose a save to load.'}
         </p>

@@ -36,8 +36,7 @@
   width: 100%;
 }
 
-/* Title and hint share one row — bottom-aligned since the NarikHeading is
-   bitmap art with no text baseline to align to. */
+/* Title and hint share one row, bottom-aligned. */
 .save-load-menu__header {
   display: flex;
   align-items: flex-end;
@@ -45,8 +44,17 @@
   margin-bottom: 0.6rem;
 }
 
+/* Both boxes keep empty space under their letters — the Narik cell reserves 5
+   of its 25 px plus the h2's line-box slack, Press Start 2P rather less — so
+   bottom-aligning the boxes alone staggers the visible text. These offsets,
+   measured in the browser, drop both onto one line. */
+.save-load-menu__title {
+  display: inline-flex;
+  margin-bottom: -6px;
+}
+
 .save-load-menu__hint {
-  margin: 0 0 0.15rem;
+  margin: 0 0 6px;
   font-size: 0.6rem;
   color: #a08a6a;
 }
