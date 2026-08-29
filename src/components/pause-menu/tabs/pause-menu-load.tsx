@@ -14,10 +14,10 @@ export function PauseMenuLoad({ keyboardActive, onExitToSidebar }: PauseMenuLoad
 
   return (
     <>
-      <NarikHeading as="h2" text="Load" />
       {/* Loading mid-run discards unsaved progress, so this host confirms first. */}
       <SaveLoadMenu
         mode="load"
+        heading={<NarikHeading as="h2" text="Load" />}
         confirmLoad
         keyboardActive={keyboardActive}
         onExitToSidebar={onExitToSidebar}

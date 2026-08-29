@@ -7,7 +7,6 @@ import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useSaveGameActions, useSaveSlots } from '~/hooks/use-save-game';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { soundService } from '~/services/sound-service';
-import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { SaveSlotCard } from './save-slot-card';
 
 /** Load offers the autosave first — it's usually the newest thing on disk. */
@@ -15,6 +14,8 @@ const LOAD_SLOT_ORDER: readonly SaveSlotId[] = ['autosave', ...MANUAL_SAVE_SLOT_
 
 interface SaveLoadMenuProps {
   mode: 'save' | 'load';
+  /** Host's title (e.g. a NarikHeading), rendered in one bottom-aligned row with the hint. */
+  heading?: React.ReactNode;
   /** The hosting surface has handed the keyboard to this pane. */
   keyboardActive?: boolean;
   /** Fired when ← should hand the keyboard back to the host's own nav (the pause sidebar). */
@@ -32,6 +33,7 @@ interface SaveLoadMenuProps {
  */
 export function SaveLoadMenu({
   mode,
+  heading,
   keyboardActive = false,
   onExitToSidebar,
   confirmLoad,
@@ -129,7 +131,12 @@ export function SaveLoadMenu({
 
   return (
     <div className="save-load-menu">
-      <IndigolayDivider />
+      <div className="save-load-menu__header">
+        {heading}
+        <p className="save-load-menu__hint pixel-font">
+          {mode === 'save' ? 'Choose a slot to save your progress.' : 'Choose a save to load.'}
+        </p>
+      </div>
       <div className="save-load-menu__list">
         {slotIds.map((slotId) => (
           <SaveSlotCard
@@ -144,9 +151,6 @@ export function SaveLoadMenu({
           />
         ))}
       </div>
-      <p className="save-load-menu__hint pixel-font">
-        {mode === 'save' ? 'Choose a slot to save your progress.' : 'Choose a save to load.'}
-      </p>
     </div>
   );
 }

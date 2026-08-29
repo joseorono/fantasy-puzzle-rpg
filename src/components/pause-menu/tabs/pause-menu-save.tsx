@@ -11,8 +11,12 @@ interface PauseMenuSaveProps {
 export function PauseMenuSave({ keyboardActive, onExitToSidebar }: PauseMenuSaveProps) {
   return (
     <>
-      <NarikHeading as="h2" text="Save" />
-      <SaveLoadMenu mode="save" keyboardActive={keyboardActive} onExitToSidebar={onExitToSidebar} />
+      <SaveLoadMenu
+        mode="save"
+        heading={<NarikHeading as="h2" text="Save" />}
+        keyboardActive={keyboardActive}
+        onExitToSidebar={onExitToSidebar}
+      />
     </>
   );
 }

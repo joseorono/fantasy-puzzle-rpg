@@ -36,9 +36,17 @@
   width: 100%;
 }
 
+/* Title and hint share one row — bottom-aligned since the NarikHeading is
+   bitmap art with no text baseline to align to. */
+.save-load-menu__header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
 .save-load-menu__hint {
-  margin-top: 0.6rem;
-  text-align: center;
+  margin: 0 0 0.15rem;
   font-size: 0.6rem;
   color: #a08a6a;
 }
@@ -97,9 +105,11 @@
   content: none;
 }
 
+/* The side column must fit icon + nowrap timestamp + delete button — too
+   narrow and the timestamp runs under the button. */
 .save-slot-card__content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 13rem;
+  grid-template-columns: minmax(0, 1fr) 16rem;
   gap: 1rem;
 }
 
@@ -142,13 +152,14 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
 
-/* Sits inside the plaque's circle — the autosave marker. */
+/* Sits centered in the plaque's gold-rimmed circle (circle center is ~12.5px
+   left of the padding box at half art scale). */
 .save-slot-card__plaque-icon {
   position: absolute;
   top: 50%;
-  left: -18px;
-  width: 13px;
-  height: 13px;
+  left: -20px;
+  width: 15px;
+  height: 15px;
   transform: translateY(-50%);
   image-rendering: pixelated;
 }
@@ -164,7 +175,7 @@
 .save-slot-card__side {
   display: grid;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) 1rem;
+  grid-template-columns: minmax(0, 1fr) 1.7rem;
   align-items: center;
   gap: 0.75rem;
   padding-left: 1rem;
@@ -188,7 +199,11 @@
   color: #2a1608;
 }
 
+/* Nudged down: Press Start 2P leaves its descender space empty, so flex
+   centering leaves icons floating above the visible glyphs. */
 .save-slot-card__detail-icon {
+  position: relative;
+  top: 1px;
   width: 15px;
   height: 15px;
   object-fit: contain;
@@ -265,8 +280,8 @@
 
 .save-slot-card__delete {
   display: flex;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.7rem;
+  height: 1.7rem;
   align-self: center;
   justify-self: center;
   align-items: center;
