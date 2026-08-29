@@ -4,11 +4,9 @@
  * Slot cards are the Indigolay Adventure Book parchment scrolls
  * (`UI_ListItem2_*`), 9-sliced through border-image like the skills parchment
  * panel (pause-menu-skills.css) and IndigolayBar. Scroll art is 468x170 with
- * ~60px rolled ends, displayed at half scale; the gold-outlined hover variant
- * doubles as the selected state (border-image-source can't transition, and an
- * instant swap suits pixel art). Selection still adds the shared
- * `.cursor-corners` brackets so keyboard and pointer highlighting look
- * identical to every other menu.
+ * ~60px rolled ends, displayed at half scale. Hover/selection keep the scroll
+ * art untouched: the shared `.cursor-corners` brackets plus a faint warm wash
+ * do the highlighting, so it matches every other menu instead of shouting.
  */
 
 .save-load-menu {
@@ -60,20 +58,32 @@
   cursor: pointer;
 }
 
+/* `filter: none` blocks the global [role="button"]:hover white glow
+   (cursor.css); the wash below is the whole hover treatment. */
 .save-slot-card:hover {
-  border-image-source: url('/assets/menu/save-load/indigolay-scroll-hover.png');
   filter: none !important;
-}
-
-/* Empty slots use the pack's greyed dim scroll; in save mode they stay
-   clickable, so hover/selection still light them up gold. */
-.save-slot-card--empty {
-  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
 }
 
 .save-slot-card--selected {
-  border-image-source: url('/assets/menu/save-load/indigolay-scroll-hover.png');
   filter: none !important;
+}
+
+/* Faint warm wash over the parchment on hover/selection — negative insets
+   reach from the padding box back over the border-image chrome. */
+.save-slot-card:hover::after,
+.save-slot-card--selected::after {
+  content: '';
+  position: absolute;
+  inset: -12px -16px;
+  border-radius: 8px;
+  background: rgba(255, 214, 150, 0.12);
+  pointer-events: none;
+}
+
+/* Empty slots use the pack's greyed dim scroll; in save mode they stay
+   clickable, so the hover wash and brackets still apply. */
+.save-slot-card--empty {
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
 }
 
 /* The dim scroll already reads as inactive — a strong opacity fade on top made
@@ -83,8 +93,8 @@
   opacity: 0.85;
 }
 
-.save-slot-card--disabled:hover {
-  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
+.save-slot-card--disabled:hover::after {
+  content: none;
 }
 
 .save-slot-card__content {
@@ -98,6 +108,12 @@
   min-width: 0;
   flex-direction: column;
   gap: 0.4rem;
+}
+
+/* .pixel-font's 2px offset shadow muddies dark ink on light parchment.
+   :where() keeps specificity low so the plaque can restore its own shadow. */
+.save-slot-card :where(.pixel-font) {
+  text-shadow: none;
 }
 
 /* ── Slot plaque ────────────────────────────────────────────────────── */
@@ -121,7 +137,7 @@
   border-right-width: 7px;
   border-image: url('/assets/menu/save-load/indigolay-slot-plaque.png') 0 14 0 46 fill / 0 7px 0 23px stretch;
   image-rendering: auto;
-  font-size: 0.55rem;
+  font-size: 0.5625rem;
   color: #f7ecd8;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
@@ -135,6 +151,12 @@
   height: 13px;
   transform: translateY(-50%);
   image-rendering: pixelated;
+}
+
+/* The game's own slot gets a cool slate plaque so it reads as "not yours to
+   manage". hue-rotate barely moves the near-neutral cream label. */
+.save-slot-card--autosave .save-slot-card__plaque {
+  filter: hue-rotate(160deg) saturate(0.75);
 }
 
 /* ── Slot contents (dark ink on parchment) ──────────────────────────── */
@@ -158,9 +180,18 @@
 }
 
 .save-slot-card__timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   white-space: nowrap;
-  font-size: 0.6rem;
+  font-size: 0.625rem;
   color: #2a1608;
+}
+
+.save-slot-card__detail-icon {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
 }
 
 .save-slot-card__party {
@@ -184,7 +215,7 @@
 }
 
 .save-slot-card__member-level {
-  font-size: 0.6rem;
+  font-size: 0.625rem;
   color: #2a1608;
 }
 
@@ -193,7 +224,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.6rem;
+  font-size: 0.625rem;
   color: #3d2812;
 }
 
@@ -210,28 +241,46 @@
 
 /* Pushed to the right edge so the eye can scan playtimes down the column. */
 .save-slot-card__playtime {
-  font-size: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
   color: #4a3117;
 }
 
 .save-slot-card__empty-text {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   padding: 0.35rem 0;
-  font-size: 0.65rem;
+  font-size: 0.625rem;
   color: #4f4335;
+}
+
+.save-slot-card__empty-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
 }
 
 .save-slot-card__delete {
   display: flex;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.35rem;
+  height: 1.35rem;
   align-self: center;
   justify-self: center;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  padding: 2px;
+  border: 1px solid rgba(90, 58, 30, 0.5);
+  border-radius: 3px;
+  background: rgba(90, 58, 30, 0.12);
   cursor: pointer;
+}
+
+.save-slot-card__delete:hover {
+  border-color: #e55353;
+  background: rgba(229, 83, 83, 0.16);
 }
 
 .save-slot-card__delete-icon {

@@ -1,13 +1,22 @@
 import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { RESOURCE_ICON_NAMES } from '~/constants/resources';
 import { SAVE_SLOT_LABELS, type SaveSlotId } from '~/constants/storage-keys';
+import { SAVE_SLOT_TOOLTIP_DELAY_MS } from '~/constants/ui';
 import { deriveSaveSummary, formatPlaytime } from '~/lib/save-game';
 import { cn } from '~/lib/utils';
 import type { SaveGame } from '~/types/save-game';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui-custom/tooltip';
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' });
+
+/** What sits in the plaque's gold-rimmed circle: a bookmark for the player's
+    slots, the game's own mark for the autosave. */
+const PLAQUE_CIRCLE_ICONS = {
+  manual: '/assets/icons/indigolay/Icon_bookmark-fill.png',
+  autosave: '/assets/icons/indigolay/icon-autosave.png',
+} as const;
 
 interface SaveSlotCardProps {
   slotId: SaveSlotId;
@@ -51,9 +60,11 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
         }}
       >
         <span className="save-slot-card__plaque pixel-font">
-          {slotId === 'autosave' && (
-            <img src="/assets/icons/indigolay/icon-autosave.png" alt="" className="save-slot-card__plaque-icon" />
-          )}
+          <img
+            src={PLAQUE_CIRCLE_ICONS[slotId === 'autosave' ? 'autosave' : 'manual']}
+            alt=""
+            className="save-slot-card__plaque-icon"
+          />
           {SAVE_SLOT_LABELS[slotId]}
         </span>
 
@@ -87,7 +98,14 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
               </>
             ) : (
               <div className="save-slot-card__empty-text pixel-font">
-                {mode === 'save' ? '— Empty — Save here' : '— Empty —'}
+                {mode === 'save' ? (
+                  <>
+                    <img src="/assets/icons/indigolay/Icon_plus.png" alt="" className="save-slot-card__empty-icon" />
+                    Empty — Save here
+                  </>
+                ) : (
+                  '— Empty —'
+                )}
               </div>
             )}
           </div>
@@ -95,21 +113,34 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
           {summary && (
             <div className="save-slot-card__side">
               <div className="save-slot-card__details">
-                <span className="save-slot-card__timestamp pixel-font">{timestampFormatter.format(summary.savedAt)}</span>
-                <span className="save-slot-card__playtime pixel-font">{formatPlaytime(summary.playtimeMs)}</span>
+                <span className="save-slot-card__timestamp pixel-font">
+                  <img src="/assets/icons/indigolay/Icon_clock-fill.png" alt="" className="save-slot-card__detail-icon" />
+                  {timestampFormatter.format(summary.savedAt)}
+                </span>
+                <span className="save-slot-card__playtime pixel-font">
+                  <img src="/assets/icons/indigolay/Icon_history.png" alt="" className="save-slot-card__detail-icon" />
+                  {formatPlaytime(summary.playtimeMs)}
+                </span>
               </div>
               {onDelete && (
-                <button
-                  type="button"
-                  className="save-slot-card__delete"
-                  aria-label={`Delete ${SAVE_SLOT_LABELS[slotId]}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onDelete();
-                  }}
-                >
-                  <img src="/assets/icons/indigolay/Icon_trash.png" alt="" className="save-slot-card__delete-icon" />
-                </button>
+                <Tooltip delayDuration={SAVE_SLOT_TOOLTIP_DELAY_MS}>
+                  <TooltipTrigger>
+                    <button
+                      type="button"
+                      className="save-slot-card__delete"
+                      aria-label={`Delete ${SAVE_SLOT_LABELS[slotId]}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDelete();
+                      }}
+                    >
+                      <img src="/assets/icons/indigolay/Icon_trash.png" alt="" className="save-slot-card__delete-icon" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" sideOffset={6}>
+                    Delete this save
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           )}
