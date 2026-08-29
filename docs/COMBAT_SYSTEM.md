@@ -233,10 +233,10 @@ much a block costs.
   when full, and shatters with a "BLOCK!"/"GUARD" popup + clang when it mitigates a hit.
 
 ## Future Enhancements
-- Character-specific abilities when skills are ready
-- Healing orbs that restore party HP
+- Status effects (Poison, Burn, Stun, Shield)
+- Elemental matchups (Fire, Ice, Lightning)
 - Critical hits and damage variance
-- Multiple enemy types with different patterns
-- Boss battles with special mechanics
-- Difficulty levels
-- Sound effects for attacks and victories
+- Boss phases with special mechanics (enrage thresholds, summons)
+- Board hazards (frozen orbs, enemy counter-hazards)
+- Class-specific character attack SFX & animations
+

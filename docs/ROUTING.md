@@ -17,11 +17,13 @@ A store-based routing system for the game that provides full control over naviga
 ## Available Views
 
 - `town-hub` - Main town hub (contains blacksmith, inn, and item Shop as sub-locations)
-- `battle-demo` - Battle demo screen
-- `map` - Any map; `mapId` in the view data selects which one from `MAP_REGISTRY`
-- `dialogue-demo` - Dialogue demo
-- `inventory` - Inventory management
-- `debug` - Debug/test view
+- `battle-demo` - Match-3 battle screen
+- `battle-rewards` - Post-battle rewards and EXP distribution screen
+- `dungeon` - Multi-floor dungeon exploration view
+- `map` - Overworld map; `mapId` in the view data selects which one from `MAP_REGISTRY`
+- `dialogue-demo` - Dialogue test/demo view
+- `inventory` - Inventory management view
+- `debug` - Debug & feature testing dashboard
 
 ## Usage
 
