@@ -164,6 +164,14 @@
   image-rendering: pixelated;
 }
 
+/* The autosave mark is chunkier art than the bookmark, so it wants the
+   smaller size (recentered: icon center stays ~12.5px left of the padding box). */
+.save-slot-card--autosave .save-slot-card__plaque-icon {
+  width: 13px;
+  height: 13px;
+  left: -19px;
+}
+
 /* The game's own slot gets a cool slate plaque so it reads as "not yours to
    manage". hue-rotate barely moves the near-neutral cream label. */
 .save-slot-card--autosave .save-slot-card__plaque {
@@ -221,12 +229,12 @@
   gap: 0.2rem;
 }
 
-/* Class tints were picked for dark backgrounds; the shadow keeps them legible
-   on light parchment. */
+/* The pale text-*-200 class tints are for dark backgrounds; darkening them to
+   ink-strength keeps each class hue but reads on light parchment. */
 .save-slot-card__member-icon {
   width: 0.95rem;
   height: 0.95rem;
-  filter: saturate(1.3) drop-shadow(1px 1px 0 rgba(42, 22, 8, 0.6));
+  filter: brightness(0.45) saturate(2.4);
 }
 
 .save-slot-card__member-level {
