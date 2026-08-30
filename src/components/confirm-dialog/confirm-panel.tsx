@@ -101,12 +101,7 @@ export function ConfirmPanel({
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
       >
-        <ToffecSquareButton
-          variant="medieval2"
-          className="confirm-panel__close"
-          style={{ width: '26px', height: '26px' }}
-          onClick={onCancel}
-        />
+        <ToffecSquareButton variant="medieval1" hasBg size="sm" className="confirm-panel__close" onClick={onCancel} />
 
         <div className="confirm-panel__header">
           {icon ? (
@@ -136,7 +131,9 @@ export function ConfirmPanel({
           </ToffecBeigeCornersWrapper>
         </div>
 
-        <p className="confirm-panel__key-hint pixel-font">← → to choose · Enter to confirm · Esc to cancel</p>
+        {/* Spelled out, not ← →: Press Start 2P has no left/right arrow glyphs
+            (it does have ↑ ↓), so they render as missing-glyph boxes. */}
+        <p className="confirm-panel__key-hint pixel-font">Arrows choose · Enter confirm · Esc cancel</p>
       </div>
     </div>
   );

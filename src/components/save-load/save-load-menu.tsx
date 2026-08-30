@@ -62,6 +62,7 @@ export function SaveLoadMenu({
       if (slots[slotId]) {
         const ok = await confirm({
           title: 'Overwrite Save?',
+          icon: 'sealedScroll',
           message: `${SAVE_SLOT_LABELS[slotId]} already holds a save. It will be replaced.`,
           confirmLabel: 'Overwrite',
           variant: 'danger',
@@ -77,6 +78,7 @@ export function SaveLoadMenu({
     if (confirmLoad) {
       const ok = await confirm({
         title: 'Load Game?',
+        icon: 'openBook',
         message: 'Any progress since your last save will be lost.',
         confirmLabel: 'Load',
         variant: 'danger',
@@ -91,6 +93,7 @@ export function SaveLoadMenu({
   async function handleDelete(slotId: SaveSlotId) {
     const ok = await confirm({
       title: 'Delete Save?',
+      icon: 'skull',
       message: `${SAVE_SLOT_LABELS[slotId]} will be erased for good.`,
       confirmLabel: 'Delete',
       variant: 'danger',

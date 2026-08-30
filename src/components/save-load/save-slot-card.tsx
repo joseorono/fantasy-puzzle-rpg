@@ -119,7 +119,11 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
             <div className="save-slot-card__side">
               <div className="save-slot-card__details">
                 <span className="save-slot-card__timestamp pixel-font">
-                  <img src="/assets/icons/indigolay/Icon_clock-fill.png" alt="" className="save-slot-card__detail-icon" />
+                  <img
+                    src="/assets/icons/indigolay/Icon_clock-fill.png"
+                    alt=""
+                    className="save-slot-card__detail-icon"
+                  />
                   {timestampFormatter.format(summary.savedAt)}
                 </span>
                 <span className="save-slot-card__playtime pixel-font">
@@ -139,7 +143,11 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
                         onDelete();
                       }}
                     >
-                      <img src="/assets/icons/indigolay/Icon_trash.png" alt="" className="save-slot-card__delete-icon" />
+                      <img
+                        src="/assets/icons/indigolay/Icon_trash.png"
+                        alt=""
+                        className="save-slot-card__delete-icon"
+                      />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="left" sideOffset={6}>
@@ -150,7 +158,6 @@ export function SaveSlotCard({ slotId, save, mode, selected, onActivate, onDelet
             </div>
           )}
         </div>
-
       </div>
     </ToffecBeigeCornersWrapper>
   );

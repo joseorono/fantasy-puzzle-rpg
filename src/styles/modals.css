@@ -112,16 +112,13 @@
 
 /* ─── Close button ─────────────────────────────────────────────────────── */
 
+/* Position only — the framed look now comes from ToffecSquareButton's own
+   `hasBg` skin, the same one the start-menu and credits modals wear. */
 .confirm-panel .confirm-panel__close {
   position: absolute;
-  top: calc(1.1rem + 0.75px);
-  right: 1.25rem;
+  top: 0.9rem;
+  right: 0.9rem;
   z-index: 3;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: none;
-  background: transparent;
   image-rendering: pixelated;
   cursor: pointer;
   transition:
@@ -186,10 +183,18 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 1.1rem 1.25rem;
+  padding: 0.9rem 1.25rem 1rem;
 }
 
+/* Recessed tray, so the text reads as set into the panel rather than floating
+   on the board texture. Only the plain-text path gets it — rich bodies
+   (salvage, skill unlock) pass `children` and bring their own layout. */
 .confirm-panel__message {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(212, 165, 116, 0.22);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
   font-size: 0.7rem;
   line-height: 1.6;
   text-align: center;
@@ -218,7 +223,7 @@
 
 /* Same quiet parchment tone as the other key hints; sits under the action row. */
 .confirm-panel__key-hint {
-  margin: -0.35rem 0 0;
+  margin: -0.2rem 0 0;
   padding: 0 1.25rem 1rem;
   text-align: center;
   font-size: 0.5rem;
