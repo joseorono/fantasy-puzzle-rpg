@@ -4,6 +4,7 @@ import { getMapById } from '~/constants/maps';
 import type { SaveSlotId } from '~/constants/storage-keys';
 import { SAVE_SLOT_IDS } from '~/constants/storage-keys';
 import type { MapId } from '~/types/map';
+import type { Resources } from '~/types/resources';
 import type { CharacterClass, CharacterData } from '~/types/rpg-elements';
 import type { SaveGame, SaveGameState, SavedCharacter } from '~/types/save-game';
 import { saveGameSchema } from '~/types/save-game';
@@ -62,8 +63,7 @@ export const saveSlotSchema = z.preprocess(migrateSave, saveGameSchema.nullable(
 export interface SaveSummary {
   savedAt: number;
   playtimeMs: number;
-  coins: number;
-  gold: number;
+  resources: Resources;
   mapName: string;
   party: Array<{ id: string; name: string; class: CharacterClass; level: number }>;
 }
@@ -75,8 +75,7 @@ export function deriveSaveSummary(save: SaveGame): SaveSummary {
   return {
     savedAt: save.savedAt,
     playtimeMs: save.playtimeMs,
-    coins: save.state.resources.coins,
-    gold: save.state.resources.gold,
+    resources: save.state.resources,
     mapName: getMapById(save.currentMapId).displayMapName,
     party: save.state.party.members.map((member) => ({
       id: member.id,

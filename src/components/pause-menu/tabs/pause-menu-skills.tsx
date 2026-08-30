@@ -20,7 +20,7 @@ import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { INFO_ICON_SRC } from '~/constants/ui';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
@@ -268,9 +268,7 @@ export function PauseMenuSkills({ keyboardActive = false, onExitToSidebar }: Pau
 
   return (
     <>
-      <h2>
-        <NarikRedwoodBitFont text="SKILLS" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Skills" />
       <div className="pause-menu-skills-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (

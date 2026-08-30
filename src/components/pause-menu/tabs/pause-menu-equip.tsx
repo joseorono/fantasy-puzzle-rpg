@@ -10,7 +10,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -198,9 +198,7 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
 
   return (
     <div className="pause-menu-equip-tab">
-      <h2>
-        <NarikRedwoodBitFont text="EQUIP" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Equip" />
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-equip-top-section">
           <div className="pause-menu-party-roster">

@@ -14,7 +14,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import { cn } from '~/lib/utils';
 
 type OptionRowId = 'master' | 'music' | 'sfx' | 'mute' | 'reduced-motion';
@@ -192,9 +192,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
 
   return (
     <>
-      <h2>
-        <NarikRedwoodBitFont text="OPTIONS" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Options" />
       <div className="pause-menu-options-list">
         <div className={rowClass('master')}>
           <div className="pause-menu-option-header">

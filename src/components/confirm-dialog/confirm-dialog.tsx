@@ -4,6 +4,7 @@ import type { ConfirmDialogVariant } from '~/stores/confirm-dialog-atoms';
 interface ConfirmDialogProps {
   title: string;
   message?: string;
+  icon?: RenderableElement;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: ConfirmDialogVariant;
@@ -18,6 +19,7 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   title,
   message,
+  icon,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
@@ -28,6 +30,7 @@ export function ConfirmDialog({
     <ConfirmPanel
       title={title}
       message={message}
+      icon={icon}
       confirmLabel={confirmLabel}
       cancelLabel={cancelLabel}
       variant={variant}

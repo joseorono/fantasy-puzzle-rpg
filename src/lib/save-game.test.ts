@@ -162,8 +162,7 @@ describe('deriveSaveSummary', () => {
     expect(summary).toEqual({
       savedAt: SAVED_AT,
       playtimeMs: 90_000,
-      coins: 42,
-      gold: 7,
+      resources: { coins: 42, gold: 7, copper: 3, silver: 1, iron: 0 },
       mapName: getMapById('map-00').displayMapName,
       party: [{ id: 'warrior', name: 'Roland', class: 'warrior', level: 3 }],
     });

@@ -7,14 +7,16 @@ import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useSaveGameActions, useSaveSlots } from '~/hooks/use-save-game';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { soundService } from '~/services/sound-service';
-import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { SaveSlotCard } from './save-slot-card';
+import { FrostyRpgIcon } from '../sprite-icons/frost-icons';
 
 /** Load offers the autosave first — it's usually the newest thing on disk. */
 const LOAD_SLOT_ORDER: readonly SaveSlotId[] = ['autosave', ...MANUAL_SAVE_SLOT_IDS];
 
 interface SaveLoadMenuProps {
   mode: 'save' | 'load';
+  /** Host's title (e.g. a NarikHeading), rendered in one bottom-aligned row with the hint. */
+  heading?: React.ReactNode;
   /** The hosting surface has handed the keyboard to this pane. */
   keyboardActive?: boolean;
   /** Fired when ← should hand the keyboard back to the host's own nav (the pause sidebar). */
@@ -32,6 +34,7 @@ interface SaveLoadMenuProps {
  */
 export function SaveLoadMenu({
   mode,
+  heading,
   keyboardActive = false,
   onExitToSidebar,
   confirmLoad,
@@ -60,6 +63,7 @@ export function SaveLoadMenu({
       if (slots[slotId]) {
         const ok = await confirm({
           title: 'Overwrite Save?',
+          icon: <FrostyRpgIcon name="sealedScroll" size={32} />,
           message: `${SAVE_SLOT_LABELS[slotId]} already holds a save. It will be replaced.`,
           confirmLabel: 'Overwrite',
           variant: 'danger',
@@ -75,6 +79,7 @@ export function SaveLoadMenu({
     if (confirmLoad) {
       const ok = await confirm({
         title: 'Load Game?',
+        icon: <FrostyRpgIcon name="openBook" size={32} />,
         message: 'Any progress since your last save will be lost.',
         confirmLabel: 'Load',
         variant: 'danger',
@@ -89,6 +94,7 @@ export function SaveLoadMenu({
   async function handleDelete(slotId: SaveSlotId) {
     const ok = await confirm({
       title: 'Delete Save?',
+      icon: <FrostyRpgIcon name="skull" size={32} />,
       message: `${SAVE_SLOT_LABELS[slotId]} will be erased for good.`,
       confirmLabel: 'Delete',
       variant: 'danger',
@@ -129,7 +135,12 @@ export function SaveLoadMenu({
 
   return (
     <div className="save-load-menu">
-      <IndigolayDivider />
+      <div className="save-load-menu__header">
+        <span className="save-load-menu__title">{heading}</span>
+        <p className="save-load-menu__hint pixel-font">
+          {mode === 'save' ? 'Choose a slot to save your progress.' : 'Choose a save to load.'}
+        </p>
+      </div>
       <div className="save-load-menu__list">
         {slotIds.map((slotId) => (
           <SaveSlotCard
@@ -144,9 +155,6 @@ export function SaveLoadMenu({
           />
         ))}
       </div>
-      <p className="save-load-menu__hint pixel-font">
-        {mode === 'save' ? 'Choose a slot to save your progress.' : 'Choose a save to load.'}
-      </p>
     </div>
   );
 }

@@ -88,6 +88,9 @@ export const INFO_ICON_SRC = '/assets/icons/ui/info-badge.svg';
  */
 export const SKILL_SLOT_TOOLTIP_DELAY_MS = 250;
 
+/** Rest time before the save-slot delete button reveals its tooltip. */
+export const SAVE_SLOT_TOOLTIP_DELAY_MS = 250;
+
 /**
  * Denominator for the level-up stat meters — the notional stat ceiling, used for bar
  * width only. Not a gameplay cap; nothing clamps stats to this value.

@@ -16,6 +16,7 @@ const resourceStatItemVariants = cva('resource-stat', {
       chip: 'resource-stat--chip',
       card: 'resource-stat--card',
       town: 'resource-stat--town',
+      compact: 'resource-stat--compact',
     },
   },
   defaultVariants: {
@@ -31,6 +32,13 @@ const resourceStatItemVariants = cva('resource-stat', {
  * and the art reads as lumpy.
  */
 const ICON_SPRITE_SIZE = 24;
+
+/**
+ * Compact rows sit beside 10px text, so the sprite steps down to two-thirds.
+ * That does resample unevenly — half a cell (12) would not — but 12px is too
+ * small to read the sheet's resources apart, which is the icon's whole job here.
+ */
+const COMPACT_ICON_SPRITE_SIZE = 16;
 
 interface ResourceStatItemProps extends VariantProps<typeof resourceStatItemVariants> {
   /** Picks the value colour via the `resource-stat--<resource>` modifier. */
@@ -74,7 +82,11 @@ export function ResourceStatItem({
         riveted && 'resource-stat--riveted',
       )}
     >
-      <FrostyRpgIcon name={iconName} size={ICON_SPRITE_SIZE} className="resource-stat__icon" />
+      <FrostyRpgIcon
+        name={iconName}
+        size={variant === 'compact' ? COMPACT_ICON_SPRITE_SIZE : ICON_SPRITE_SIZE}
+        className="resource-stat__icon"
+      />
       <div className="resource-stat__content">
         <span className="resource-stat__label">{label}</span>
         <div className="resource-stat__values">

@@ -122,6 +122,9 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/Icon_bookmark-fill.png',
   '/assets/icons/indigolay/Icon_setting.png',
   '/assets/icons/indigolay/Icon_share_.png',
+  '/assets/icons/indigolay/Icon_clock-fill.png',
+  '/assets/icons/indigolay/Icon_history.png',
+  '/assets/icons/indigolay/Icon_plus.png',
   '/assets/icons/indigolay/icon-autosave.png',
   '/assets/icons/indigolay/icon-columns.png',
   '/assets/icons/indigolay/icon-hp.png',
@@ -141,6 +144,11 @@ export const assetList: string[] = [
   '/assets/skills/ui/indigolay-skill-slot-deco.png',
   '/assets/skills/ui/indigolay-skill-panel-text-area.png',
   '/assets/skills/ui/indigolay-icon-equip.png',
+
+  // Save/load slot scrolls (SaveSlotCard chrome)
+  '/assets/menu/save-load/indigolay-scroll-normal.png',
+  '/assets/menu/save-load/indigolay-scroll-dim.png',
+  '/assets/menu/save-load/indigolay-slot-plaque.png',
 
   // Menu assets
   '/assets/menu/back-button-hover.png',
