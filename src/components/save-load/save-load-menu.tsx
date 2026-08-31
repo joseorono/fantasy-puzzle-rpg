@@ -8,6 +8,7 @@ import { useSaveGameActions, useSaveSlots } from '~/hooks/use-save-game';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { soundService } from '~/services/sound-service';
 import { SaveSlotCard } from './save-slot-card';
+import { FrostyRpgIcon } from '../sprite-icons/frost-icons';
 
 /** Load offers the autosave first — it's usually the newest thing on disk. */
 const LOAD_SLOT_ORDER: readonly SaveSlotId[] = ['autosave', ...MANUAL_SAVE_SLOT_IDS];
@@ -62,7 +63,7 @@ export function SaveLoadMenu({
       if (slots[slotId]) {
         const ok = await confirm({
           title: 'Overwrite Save?',
-          icon: 'sealedScroll',
+          icon: <FrostyRpgIcon name="sealedScroll" size={32} />,
           message: `${SAVE_SLOT_LABELS[slotId]} already holds a save. It will be replaced.`,
           confirmLabel: 'Overwrite',
           variant: 'danger',
