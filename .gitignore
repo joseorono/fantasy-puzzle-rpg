@@ -14,6 +14,10 @@ dist
 dist-ssr
 *.local
 
+# Electron: compiled main/preload, and electron-builder's packaged output
+dist-electron
+release
+
 # Vitest coverage
 coverage
 
@@ -50,3 +54,12 @@ current-prompt.md
 
 # Tiled session files
 *.tiled-session
+
+# Developer-local Claude Code config (tool permissions, etc.)
+.claude/settings.local.json
+
+# Local agent tooling cache (skill registry, etc.)
+.atl/
+
+# Scratch planning notes for the save-slot redesign (kept locally, not shipped)
+SAVE_SLOT_CARD_IMPROVEMENT_PLAN_*.md

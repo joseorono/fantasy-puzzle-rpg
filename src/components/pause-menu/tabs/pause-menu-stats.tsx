@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty } from '~/stores/game-store';
-import { CHARACTER_COLORS, CHARACTER_ICONS, SKILL_DEFINITIONS } from '~/constants/party';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
+import { getSelectedSkill, getSkillLevel, resolveActiveSkillStats } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -14,27 +20,67 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
-export function PauseMenuStats() {
+/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
+const STATS_SKILL_ICON_SIZE = 32;
+
+interface PauseMenuStatsProps {
+  /** The content zone owns the keyboard — arrows act on the roster. */
+  keyboardActive?: boolean;
+  /** Fired when ← hands the keyboard back to the sidebar. */
+  onExitToSidebar?: () => void;
+}
+
+export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: PauseMenuStatsProps) {
   const party = useParty();
   const [selectedId, setSelectedId] = useState(party[0]?.id ?? '');
+
+  // The roster cursor IS the selected member (activate-on-land, like the sidebar
+  // tabs), so ↑↓ needs no extra selection state. This tab has no main column.
+  useWindowKeyDown((event) => {
+    if (event.defaultPrevented) return;
+
+    const direction = getNavDirection(event.key);
+    if (direction === 'up' || direction === 'down') {
+      event.preventDefault();
+      const currentIndex = party.findIndex((m) => m.id === selectedId);
+      const step = direction === 'down' ? 1 : -1;
+      const next = party[(currentIndex + step + party.length) % party.length];
+      if (next && next.id !== selectedId) {
+        soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+        setSelectedId(next.id);
+      }
+      return;
+    }
+
+    if (direction === 'left') {
+      event.preventDefault();
+      onExitToSidebar?.();
+      return;
+    }
+
+    // → / Enter: swallowed — everything to the right is read-only.
+    if (direction === 'right' || isConfirmKey(event.key)) {
+      event.preventDefault();
+    }
+  }, keyboardActive);
 
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
 
   const colors = CHARACTER_COLORS[selected.class];
   const Icon = CHARACTER_ICONS[selected.class];
-  const skill = SKILL_DEFINITIONS[selected.class];
+  const activeSkill = getSelectedSkill(selected);
+  const activeSkillStats = resolveActiveSkillStats(activeSkill, getSkillLevel(selected, activeSkill.id));
 
   const effectiveStats = getEffectiveStats(selected);
   const maxHp = getEffectiveMaxHp(selected);
   const attackDmg = calculateDamage(10, effectiveStats.pow);
-  const cooldown = calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd);
+  const cooldown =
+    calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd) * activeSkillStats.cooldownMultiplier;
 
   return (
     <>
-      <h2 className="mb-4">
-        <NarikRedwoodBitFont text="STATS" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Stats" />
       <div className="pause-menu-stats-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (
@@ -43,6 +89,7 @@ export function PauseMenuStats() {
               member={member}
               variant="roster"
               isActive={member.id === selectedId}
+              isKeyboardCursor={keyboardActive && member.id === selectedId}
               onClick={() => setSelectedId(member.id)}
             />
           ))}
@@ -150,13 +197,18 @@ export function PauseMenuStats() {
 
           <div className="pause-menu-stats-skill">
             <div className="pause-menu-stats-skill-name">
-              {skill.icon} {skill.name}
+              <SkillIcon
+                characterClass={selected.class}
+                position={activeSkill.icon}
+                size={STATS_SKILL_ICON_SIZE}
+                sheetSize={32}
+              />{' '}
+              {activeSkill.name}
             </div>
-            <div className="pause-menu-stats-skill-desc">{skill.description}</div>
+            <div className="pause-menu-stats-skill-desc">{activeSkill.description}</div>
           </div>
         </div>
       </div>
     </>
   );
 }
-

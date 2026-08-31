@@ -44,8 +44,14 @@
   gap: 0;
 }
 
-/* Corner styling */
+/* Corner styling.
+   Corners/edges sit above the battle effect overlays (retro-screen, skill bursts,
+   particles — all `position: fixed; inset: 0`, so they'd otherwise paint over the
+   decorative border). The intermediate elements create no stacking context, so a
+   positioned z-index here resolves in the same root context and keeps the frame on top. */
 .wf-corner {
+  position: relative;
+  z-index: 60;
   width: var(--frame-thickness);
   height: var(--frame-thickness);
   background-size: cover;
@@ -68,8 +74,10 @@
   background-image: url('/assets/frame/frame1-lower-right-corner.png');
 }
 
-/* Edge styling */
+/* Edge styling (kept above the fixed battle overlays — see .wf-corner). */
 .wf-edge {
+  position: relative;
+  z-index: 60;
   background-size: var(--frame-thickness) var(--frame-thickness);
   background-repeat: repeat;
 }

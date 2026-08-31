@@ -338,11 +338,11 @@
 
     user-select: none;
 
-    /* ToDo: Change the background to be more like a frame
+    background-color: #0f0a06;
+  }
 
-    like what we showed off in the group chat */
-
-    background-color: brown;
+  .game-view {
+    background-color: #0f0a06;
   }
 
   *,
@@ -404,7 +404,17 @@
 
 @import './styles/battle-top-bar.css';
 
+@import './styles/radial-countdown.css';
+
 @import './styles/battle-over-modal.css';
+
+@import './styles/battle-rating-screen.css';
+
+@import './styles/dungeon-clear-screen.css';
+
+@import './styles/crafting-success.css';
+
+@import './styles/title-sign.css';
 
 @import './styles/exp-bar.css';
 
@@ -420,13 +430,22 @@
 
 @import './styles/start-menu-modal.css';
 
+@import './styles/modals.css';
+
 @import './styles/marquee.css';
 
 @import './styles/town.css';
 
+@import './styles/salvage-confirm-dialog.css';
+
+@import './styles/dungeon.css';
+
+@import './styles/dividers.css';
 @import './styles/top-bar-resources.css';
 
 @import './styles/pause-menu.css';
+
+@import './styles/save-load.css';
 
 @import './styles/icons.css';
 
@@ -438,8 +457,32 @@
 
 @import './components/ui-custom/styles/toffec-button.css';
 
-@import './components/ui-custom/styles/toffec-close-button.css';
+@import './components/ui-custom/styles/indigolay-bar.css';
+
+@import './components/ui-custom/styles/indigolay-checkbox.css';
+
+@import './components/ui-custom/styles/indigolay-tab.css';
+
+@import './components/skill-sprite-icons/styles/indigolay-skill-icon.css';
+
+@import './components/ui-custom/styles/level-tag.css';
+
+@import './components/ui-custom/styles/resource-stat-item.css';
+
+@import './components/ui-custom/styles/toffec-square-button.css';
+
+@import './components/ui-custom/styles/wood-disc-button.css';
 
 @import './styles/node-interaction-menu.css';
 
 @import './styles/sliders.css';
+
+@import './styles/lists.css';
+
+/* Skills tab — must load after the component styles it overrides (skill icon, lists, town cost chips). */
+@import './styles/pause-menu-skills.css';
+
+@import './styles/save-indicator.css';
+
+/* Last so its overrides win over every animation defined above. */
+@import './styles/reduced-motion.css';

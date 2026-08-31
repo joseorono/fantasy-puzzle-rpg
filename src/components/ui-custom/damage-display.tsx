@@ -1,68 +1,48 @@
 import { cn } from '~/lib/utils';
 import type { DamageDisplayProps } from '~/types/components';
 
-interface DamagePalette {
-  base: string;
-  light: string;
-  dark: string;
-  border: string;
-  shadow: string;
-}
-
-function getDamagePalette(type: DamageDisplayProps['type']): DamagePalette {
+/** Numeral fill per hit type — the only thing carrying the type now (boxless). */
+function getNumeralColor(type: DamageDisplayProps['type']): string {
   switch (type) {
     case 'heal':
-      return { base: '#1d8f4a', light: '#2fd06d', dark: '#0f5f31', border: '#0a3e20', shadow: 'rgba(0, 40, 0, 0.7)' };
+      return '#9bf0a6';
     case 'critical':
-      return { base: '#d97a1c', light: '#f7b24f', dark: '#9c4f0b', border: '#5a2b04', shadow: 'rgba(45, 18, 0, 0.75)' };
+      return '#ffd47a';
     case 'damage':
     default:
-      return { base: '#b83232', light: '#e35c5c', dark: '#7c1c1c', border: '#4a0f0f', shadow: 'rgba(35, 0, 0, 0.75)' };
+      return '#ff8a78';
   }
 }
 
-export function DamageDisplay({ amount, type, className }: DamageDisplayProps) {
-  const palette = getDamagePalette(type);
+/** Warm near-black, built into a chunky 2px pixel outline + a soft dark halo so the
+ *  numerals stay readable over any battle background without a box or border. */
+const OUTLINE = '#160a06';
+const NUMERAL_SHADOW = [
+  `-2px 0 0 ${OUTLINE}`,
+  `2px 0 0 ${OUTLINE}`,
+  `0 -2px 0 ${OUTLINE}`,
+  `0 2px 0 ${OUTLINE}`,
+  `-2px -2px 0 ${OUTLINE}`,
+  `2px -2px 0 ${OUTLINE}`,
+  `-2px 2px 0 ${OUTLINE}`,
+  `2px 2px 0 ${OUTLINE}`,
+  '0 3px 4px rgba(0,0,0,0.55)',
+].join(', ');
 
+export function DamageDisplay({ amount, type, className }: DamageDisplayProps) {
   return (
     <div
       className={cn('animate-in zoom-in relative inline-flex items-center justify-center duration-150', className)}
-      style={{
-        imageRendering: 'pixelated',
-        filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.55))',
-      }}
+      style={{ imageRendering: 'pixelated' }}
     >
-      <div
-        className="relative inline-flex items-center justify-center rounded-md px-3 py-1.5"
-        style={{
-          background: `linear-gradient(180deg, ${palette.light} 0%, ${palette.base} 55%, ${palette.dark} 100%)`,
-          border: `3px solid ${palette.border}`,
-          boxShadow:
-            'inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -2px 0 rgba(0,0,0,0.38), inset 2px 0 0 rgba(255,255,255,0.14), inset -2px 0 0 rgba(0,0,0,0.2)',
-        }}
+      {/* Boxless — bold numerals, thick dark pixel outline + soft halo. No box, no border. */}
+      <span
+        className="pixel-font-alt relative z-10 text-xl font-bold md:text-2xl"
+        style={{ color: getNumeralColor(type), textShadow: NUMERAL_SHADOW }}
       >
-        <span
-          className="pixel-font-alt relative z-10 text-2xl font-bold text-white md:text-3xl"
-          style={{ textShadow: `2px 2px 0 ${palette.shadow}` }}
-        >
-          {type === 'heal' ? '+' : '-'}
-          {amount}
-        </span>
-
-        {/* Gloss + outline */}
-        <div
-          className="pointer-events-none absolute inset-0 rounded-sm"
-          style={{
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 45%, rgba(0,0,0,0.1) 100%)',
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-0 rounded-sm"
-          style={{
-            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.14), inset 0 0 0 2px rgba(0,0,0,0.25)',
-          }}
-        />
-      </div>
+        {type === 'heal' ? '+' : '-'}
+        {amount}
+      </span>
     </div>
   );
 }

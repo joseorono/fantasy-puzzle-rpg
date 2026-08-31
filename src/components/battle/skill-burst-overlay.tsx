@@ -58,11 +58,11 @@ export function SkillBurstOverlay() {
         </div>
       </div>
 
-      {/* Skill name text */}
-      <div className="absolute inset-0 flex items-end justify-center pb-[20%]">
-        <span className="skill-burst-text pixel-font text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-2xl md:text-3xl">
-          {displayData.skillName}
-        </span>
+      {/* Skill name on a ribbon banner (reuses the title-sign artwork). */}
+      <div className="absolute inset-0 flex items-end justify-center pb-[16%]">
+        <div className="skill-burst-text title-sign title-sign--large title-sign--text-gold">
+          <span className="title-sign__text pixel-font">{displayData.skillName}</span>
+        </div>
       </div>
     </div>
   );

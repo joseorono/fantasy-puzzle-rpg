@@ -13,14 +13,42 @@ export const STAT_TYPES: StatType[] = ['pow', 'vit', 'spd'];
 // Match configuration
 export const MIN_MATCH_LENGTH = 3;
 
+/** A line match of this size or larger spawns a wildcard bomb in the refill. */
+export const BOMB_MATCH_SPAWN_THRESHOLD = 5;
+
+/** Chance (0-1) that any individual refilled orb spawns as a wildcard bomb. */
+export const BOMB_REFILL_CHANCE = 0.02;
+
+/** After the first bomb spawns in a cascade chain, the per-orb bomb chance is multiplied by this. */
+export const CASCADE_BOMB_CHANCE_MULTIPLIER = 0.75;
+
+/** Max wildcard bombs that may spawn across a single cascade chain (anti-runaway). */
+export const MAX_CHAIN_BOMB_SPAWNS = 3;
+
 /** Minimum time (ms) the loading screen is shown, regardless of actual load speed. */
 export const MIN_LOAD_TIME_MS = 800;
 
 /** Duration (ms) before the loot notification auto-dismisses with a fade-out. */
 export const LOOT_NOTIFICATION_DISMISS_MS = 3000;
 
+/** Loot notification fade-out length (ms). Must match its `transition-duration` in the markup. */
+export const LOOT_NOTIFICATION_FADE_MS = 500;
+
+/** Delay (ms) before the loot notification fades in, so its slide-in transition has a frame to run. */
+export const LOOT_NOTIFICATION_FADE_IN_DELAY_MS = 50;
+
 /** Duration (ms) before the floor loot notification auto-dismisses with a fade-out. */
 export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 1500;
+
+/** How long (ms) the save indicator holds on screen before it starts fading out. */
+export const SAVE_INDICATOR_HOLD_MS = 1800;
+
+/** Save indicator fade-out length (ms). Must match `save-indicator-out`'s duration in its CSS. */
+export const SAVE_INDICATOR_FADE_MS = 350;
+
+/** Columns in the Inn's hero grid. Must match `.inn-party-members-grid`'s CSS `repeat(N, …)`,
+ *  since the keyboard cursor chunks the party by it to keep ←/→ spatially truthful. */
+export const INN_HERO_COLUMNS = 4;
 
 /**
  * Store configuration

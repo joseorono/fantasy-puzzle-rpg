@@ -151,13 +151,13 @@ const startQuest = () => {
 ```typescript
 type ViewType =
   | 'town-hub'
-  | 'battle'
+  | 'battle-demo'
   | 'map'
-  | 'store'
-  | 'inn'
-  | 'dialogue'
+  | 'dialogue-demo'
   | 'inventory'
-  | 'debug';
+  | 'debug'
+  | 'battle-rewards'
+  | 'dungeon';
 ```
 
 ## Notes

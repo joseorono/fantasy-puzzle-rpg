@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
+  EXP_COUNTER_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 import {
@@ -17,15 +18,41 @@ import {
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
-import { levelUp, getRandomPotentialStats } from '~/lib/leveling-system';
+import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
+import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
+import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { getRarityColor, getRarityLabel } from '~/lib/rarity';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
+import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
+import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
+import { isReducedMotion } from '~/lib/reduced-motion';
+import { isConfirmKey } from '~/constants/keyboard';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
+import { soundService } from '~/services/sound-service';
+import { SoundNames } from '~/constants/audio';
+
+/**
+ * Play the level-up jingle, throttled so the up-to-four party cards crossing a level on
+ * the same frame collapse into a single play instead of stacking into a loud blare.
+ * Sequential level-ups (≥ a segment apart) still each get their own play.
+ */
+let lastLevelUpSoundAt = -Infinity;
+function playLevelUpSound() {
+  const now = performance.now();
+  if (now - lastLevelUpSoundAt < 120) return;
+  lastLevelUpSoundAt = now;
+  soundService.playSound(SoundNames.levelUp, 0.8);
+}
 
 /**
  * Battle Rewards Screen View
@@ -39,14 +66,19 @@ export function BattleRewardsScreen() {
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
   const [randomPotentialStats, setRandomPotentialStats] = useState<CoreRPGStats | null>(null);
+  const { autosave } = useSaveGameActions();
 
   // Handle completion of all level-ups in step 3
   useEffect(() => {
     if (step !== 3) return;
 
-    // No level-ups or all level-ups complete - navigate back
+    // No level-ups or all level-ups complete - navigate back.
+    // Deliberately no step reset: the screen unmounts on navigation, so state resets on the
+    // next entry anyway, and resetting here would replay (and re-grant) the whole reward
+    // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
-      setStep(1);
+      // Loot, EXP and level-ups are all committed by now, so this is the checkpoint.
+      autosave();
       routerActions.goBack();
       return;
     }
@@ -64,13 +96,13 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, setStep, routerActions]);
+  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions, autosave]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;
   }
 
-  const { lootTable, expReward } = battleRewardsData;
+  const { lootTable, expReward, lootMultiplier } = battleRewardsData;
 
   const earnedResources: Resources = {
     coins: lootTable.resources?.item?.coins || 0,
@@ -90,7 +122,7 @@ export function BattleRewardsScreen() {
         (hasNoItems ? (
           <SkipToStep2 setStep={setStep} />
         ) : (
-          <ItemRewardsScreen lootTable={lootTable} onFinish={() => setStep(2)} />
+          <ItemRewardsScreen lootTable={lootTable} lootMultiplier={lootMultiplier} onFinish={() => setStep(2)} />
         ))}
 
       {/* Step 2: Show exp bar filling up */}
@@ -136,14 +168,16 @@ export function BattleRewardsScreen() {
           const displayCharacter: CharacterData = {
             ...charCopy,
             level: charCopy.level + totalLevelUps,
-            expToNextLevel: currentPending.remainingExp,
+            currentLevelExp: currentPending.remainingExp,
           };
 
+          // Skills are no longer granted free on level-up — reaching a level only makes
+          // them purchasable at the pause-menu Skills tab.
           function handleConfirm(allocatedStats: CoreRPGStats) {
             if (!randomPotentialStats) return;
             // Apply the stat changes using the leveling system
             const updatedCharacter = levelUp(charCopy, allocatedStats, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             // Move to next character
             setCurrentLevelUpIndex((prev) => prev + 1);
@@ -154,7 +188,7 @@ export function BattleRewardsScreen() {
             if (!randomPotentialStats) return;
             // Apply level-up with only random stats (no player allocation)
             const updatedCharacter = levelUp(charCopy, { pow: 0, vit: 0, spd: 0 }, randomPotentialStats, totalLevelUps);
-            updatedCharacter.expToNextLevel = currentPending.remainingExp;
+            updatedCharacter.currentLevelExp = currentPending.remainingExp;
             partyActions.updateCharacter(currentPending.charId, updatedCharacter);
             setCurrentLevelUpIndex((prev) => prev + 1);
             setRandomPotentialStats(null);
@@ -162,6 +196,9 @@ export function BattleRewardsScreen() {
 
           return (
             <LevelUpView
+              // Remount per character so pending allocations and the keyboard selection reset
+              // structurally instead of relying on the confirm handler to clear them.
+              key={currentPending.charId}
               character={displayCharacter}
               availablePoints={totalPoints}
               potentialStatPoints={randomPotentialStats || { pow: 0, vit: 0, spd: 0 }}
@@ -189,95 +226,102 @@ function SkipToStep2({ setStep }: { setStep: (step: number) => void }) {
  */
 interface ItemRewardsScreenProps {
   lootTable: LootTable;
+  /** Battle-rating loot bonus applied to the resources (shown as a badge when > 1). */
+  lootMultiplier?: number;
   onFinish: () => void;
 }
 
-const RESOURCE_CONFIG = [
-  {
-    key: 'coins' as keyof Resources,
-    label: 'Coins',
-    iconName: 'coinPurse' as const,
-    colorClass: 'rewards-resource-row--coins',
-  },
-  {
-    key: 'gold' as keyof Resources,
-    label: 'Gold',
-    iconName: 'goldBar' as const,
-    colorClass: 'rewards-resource-row--gold',
-  },
-  {
-    key: 'silver' as keyof Resources,
-    label: 'Silver',
-    iconName: 'silverBar' as const,
-    colorClass: 'rewards-resource-row--silver',
-  },
-  {
-    key: 'iron' as keyof Resources,
-    label: 'Iron',
-    iconName: 'ironBar' as const,
-    colorClass: 'rewards-resource-row--iron',
-  },
-  {
-    key: 'copper' as keyof Resources,
-    label: 'Copper',
-    iconName: 'copperBar' as const,
-    colorClass: 'rewards-resource-row--copper',
-  },
-];
+const RESOURCE_CONFIG = RESOURCE_DISPLAY_ORDER.map((key) => ({
+  key,
+  label: RESOURCE_LABELS[key],
+  iconName: RESOURCE_ICON_NAMES[key],
+}));
 
 interface RewardsResourcesPanelProps {
   earnedResources: Resources;
   currentResources?: Resources;
+  /** Fast-forwards the stagger to its finished state. */
+  skip?: boolean;
+  /** Fired once every card has been revealed (immediately when there is nothing to stagger). */
+  onRevealComplete?: () => void;
 }
 
-function RewardsResourcesPanel({ earnedResources, currentResources }: RewardsResourcesPanelProps) {
+function RewardsResourcesPanel({
+  earnedResources,
+  currentResources,
+  skip = false,
+  onRevealComplete,
+}: RewardsResourcesPanelProps) {
   const activeResources = RESOURCE_CONFIG.filter((r) => earnedResources[r.key] > 0);
+  const reduced = isReducedMotion();
+  const [revealedCount, setRevealedCount] = useState(reduced ? activeResources.length : 0);
+  // Held in a ref so the skip path can cancel pending timers. Without that, a timer scheduled
+  // before the skip would later fire setRevealedCount(i + 1) and *regress* the finished reveal.
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const onRevealCompleteRef = useRef(onRevealComplete);
+  onRevealCompleteRef.current = onRevealComplete;
+
+  // NumberFlow renders its first value statically and only rolls on a change, so each
+  // card mounts at zero (and at the pre-reward balance) and flips to its real figure a
+  // beat later. Depends on the length, not the array: `activeResources` is rebuilt every
+  // render, which would re-arm every timer and the reveal would never land.
+  useEffect(() => {
+    if (reduced) return;
+    const timers = timersRef.current;
+    activeResources.forEach((_, i) => {
+      timers.push(
+        setTimeout(
+          () => setRevealedCount(i + 1),
+          REWARDS_RESOURCE_REVEAL.startDelayMs + i * REWARDS_RESOURCE_REVEAL.staggerMs,
+        ),
+      );
+    });
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, activeResources.length]);
+
+  useEffect(() => {
+    if (!skip) return;
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.length = 0;
+    setRevealedCount(activeResources.length);
+  }, [skip, activeResources.length]);
+
+  useEffect(() => {
+    if (revealedCount >= activeResources.length) onRevealCompleteRef.current?.();
+  }, [revealedCount, activeResources.length]);
 
   if (activeResources.length === 0) return null;
 
   return (
     <div className="rewards-resources-panel">
-      {activeResources.map((r) => (
-        <div key={r.key} className={`rewards-resource-card rewards-resource-card--${r.key}`}>
-          <FrostyRpgIcon name={r.iconName} size={24} className="rewards-resource-card__icon" />
-          <div className="rewards-resource-card__content">
-            <span className="rewards-resource-card__label">{r.label}</span>
-            <div className="rewards-resource-card__values">
-              <span className="rewards-resource-card__earned number-flow-container">
-                <NumberFlow
-                  value={earnedResources[r.key]}
-                  format={INTEGER_FORMAT}
-                  prefix="+"
-                  trend={1}
-                  spinTiming={SNAPPY_SPIN_TIMING}
-                  transformTiming={SNAPPY_TRANSFORM_TIMING}
-                  opacityTiming={SNAPPY_OPACITY_TIMING}
-                />
-              </span>
-              {currentResources && (
-                <>
-                  <span className="rewards-resource-card__arrow">{'\u2192'}</span>
-                  <span className="rewards-resource-card__balance number-flow-container">
-                    <NumberFlow
-                      value={currentResources[r.key] + earnedResources[r.key]}
-                      format={INTEGER_FORMAT}
-                      trend={1}
-                      spinTiming={SNAPPY_SPIN_TIMING}
-                      transformTiming={SNAPPY_TRANSFORM_TIMING}
-                      opacityTiming={SNAPPY_OPACITY_TIMING}
-                    />
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+      {activeResources.map((r, index) => {
+        const earned = index < revealedCount ? earnedResources[r.key] : 0;
+
+        return (
+          <ResourceStatItem
+            key={r.key}
+            variant="card"
+            resource={r.key}
+            label={r.label}
+            iconName={r.iconName}
+            prefix="+"
+            trend={1}
+            value={earned}
+            // Starts at what the player owns now and climbs to the post-reward total.
+            // The store itself is still credited on Continue, so this stays arithmetic.
+            balance={currentResources ? currentResources[r.key] + earned : undefined}
+          />
+        );
+      })}
     </div>
   );
 }
 
-function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
+function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewardsScreenProps) {
   const resources = useResources();
   const resourcesActions = useResourcesActions();
   const inventoryActions = useInventoryActions();
@@ -290,15 +334,24 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
     copper: lootTable.resources?.item?.copper || 0,
   };
 
+  // The item list is static, so the only thing to wait on is the resource panel's stagger.
+  const [skipRequested, setSkipRequested] = useState(false);
+  const [isRevealComplete, setIsRevealComplete] = useState(false);
+  // handleContinue credits resources and items, so held-Enter auto-repeat must not run it twice.
+  const hasFinishedRef = useRef(false);
+
   function handleContinue() {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+
     // Add resources to store
     if (Object.values(earnedResources).some((v) => v > 0)) {
       resourcesActions.addResources(earnedResources);
     }
 
-    // Add equipment items to inventory
+    // Add equipment items to inventory, carrying each drop's rolled rarity
     for (const entry of lootTable.equipableItems) {
-      inventoryActions.addItem(entry.item.id, 1);
+      inventoryActions.addItem(entry.item.id, 1, entry.rarity);
     }
 
     // Add consumable items to inventory
@@ -309,6 +362,17 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
     onFinish();
   }
 
+  // Two-stage confirm key: fast-forward the reveal first, advance on the next press.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (!isRevealComplete) {
+      setSkipRequested(true);
+      return;
+    }
+    handleContinue();
+  });
+
   return (
     <div className="victory-container">
       <header className="victory-header">
@@ -316,9 +380,20 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         <h1 className="victory-title rewards-section-title">
           <NarikWoodBitFont text="Loot Summary" size={2} />
         </h1>
+        {lootMultiplier > 1 && (
+          <div className="rewards-loot-bonus pixel-font">
+            <span className="rewards-loot-bonus__label">Rating Bonus</span>
+            <span className="rewards-loot-bonus__value">×{lootMultiplier}</span>
+          </div>
+        )}
       </header>
 
-      <RewardsResourcesPanel earnedResources={earnedResources} currentResources={resources} />
+      <RewardsResourcesPanel
+        earnedResources={earnedResources}
+        currentResources={resources}
+        skip={skipRequested}
+        onRevealComplete={() => setIsRevealComplete(true)}
+      />
 
       <div className="items-found-container">
         <h2 className="items-found-header rewards-section-subtitle">
@@ -330,9 +405,14 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
               <div className="item-entry-icon">
                 {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
               </div>
-              <span className="item-name">
+              <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
-                <span className="item-type">EQUIPMENT</span>
+                <span
+                  className="item-type"
+                  style={{ color: getRarityColor(item.rarity), borderColor: getRarityColor(item.rarity) }}
+                >
+                  {getRarityLabel(item.rarity)}
+                </span>
               </span>
             </li>
           ))}
@@ -350,9 +430,12 @@ function ItemRewardsScreen({ lootTable, onFinish }: ItemRewardsScreenProps) {
         </ul>
       </div>
 
-      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
-        Continue
-      </ToffecButton>
+      <div className="rewards-actions">
+        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to continue' : 'Enter to skip'}</span>
+        <ToffecButton variant="cream" onClick={handleContinue}>
+          Continue
+        </ToffecButton>
+      </div>
     </div>
   );
 }
@@ -369,24 +452,24 @@ interface ExpBarFillingUpProps {
 function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFillingUpProps) {
   const partyMembers = useParty();
   const partyActions = usePartyActions();
-  const [progress, setProgress] = useState(0);
 
-  // Pre-calculate which characters will level up
-  const [levelUpSet] = useState(() => {
-    const preview = partyMembers.map((member) => ({
-      ...member,
-      expToNextLevel: member.expToNextLevel + expReward,
-    }));
-    const pending = calculateLevelUpsForParty(preview, expReward);
-    return new Set(pending.filter((p) => p.pendingLevelUps > 0).map((p) => p.charId));
-  });
+  const members = partyMembers.slice(0, 4);
+  const [skipRequested, setSkipRequested] = useState(false);
+  // Tracked by id rather than a counter so a repeated callback can't over-count the party.
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const isRevealComplete = completedIds.size >= members.length;
+  // handleContinue grants EXP, so held-Enter auto-repeat must not run it twice.
+  const hasFinishedRef = useRef(false);
 
   function handleContinue() {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+
     // Apply exp to all party members and compute the updated party snapshot
     const updatedPartyMembers: CharacterData[] = partyMembers.map((member) => {
       const updatedMember: CharacterData = {
         ...member,
-        expToNextLevel: member.expToNextLevel + expReward,
+        currentLevelExp: member.currentLevelExp + expReward,
       };
       partyActions.updateCharacter(member.id, updatedMember);
       return updatedMember;
@@ -395,21 +478,16 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
     onFinish(updatedPartyMembers);
   }
 
-  // Animate the exp bar
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 2;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return next;
-      });
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Two-stage confirm key: fast-forward every bar first, advance on the next press.
+  useWindowKeyDown((event) => {
+    if (!isConfirmKey(event.key)) return;
+    event.preventDefault();
+    if (!isRevealComplete) {
+      setSkipRequested(true);
+      return;
+    }
+    handleContinue();
+  });
 
   return (
     <div className="exp-gained-container">
@@ -418,39 +496,141 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
         <h1 className="exp-gained-title rewards-section-title">
           <NarikWoodBitFont text="Exp Gained" size={2} />
         </h1>
-        <div className="exp-gained-amount number-flow-container">
-          <NumberFlow
-            value={expReward}
-            format={INTEGER_FORMAT}
-            prefix="+"
-            trend={1}
-            spinTiming={SNAPPY_SPIN_TIMING}
-            transformTiming={SNAPPY_TRANSFORM_TIMING}
-            opacityTiming={SNAPPY_OPACITY_TIMING}
-          />
+        {/* EXP total on a tan ribbon banner (reuses the title-sign artwork) so it reads
+            as a labelled reward rather than a bare number. */}
+        <div
+          className="exp-gained-ribbon title-sign title-sign--tan title-sign--text-dark"
+          style={{ '--ts-scale': 0.42 } as CSSProperties}
+        >
+          <span className="title-sign__text pixel-font number-flow-container">
+            <NumberFlow
+              value={expReward}
+              format={INTEGER_FORMAT}
+              prefix="+"
+              suffix=" EXP"
+              trend={1}
+              spinTiming={SNAPPY_SPIN_TIMING}
+              transformTiming={SNAPPY_TRANSFORM_TIMING}
+              opacityTiming={SNAPPY_OPACITY_TIMING}
+            />
+          </span>
         </div>
       </header>
 
       <div className="character-cards-grid">
-        {partyMembers.slice(0, 4).map((member) => (
-          <div key={member.id} className="character-card">
-            <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
-            <div className="character-info">
-              <h3 className="character-name">{member.name}</h3>
-              <div className="character-level">Lv {member.level}</div>
-              <div className="exp-gained-text">EXP +{expReward}</div>
-              <ExperienceBar percentage={progress} variant="compact" />
-            </div>
-            {levelUpSet.has(member.id) && <div className="level-up-badge">LEVEL UP</div>}
-          </div>
+        {members.map((member) => (
+          <CharacterExpCard
+            key={member.id}
+            member={member}
+            expReward={expReward}
+            skip={skipRequested}
+            onComplete={(id) => setCompletedIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))}
+          />
         ))}
       </div>
 
-      <RewardsResourcesPanel earnedResources={earnedResources} />
+      <IndigolayDivider variant="gold" className="rewards-divider" />
 
-      <ToffecButton variant="cream" onClick={handleContinue} className="self-end">
-        Finish
-      </ToffecButton>
+      {/* Deliberately not part of isRevealComplete — these resources are a recap of what step 1
+          already credited, so Finish need not wait on their stagger. */}
+      <RewardsResourcesPanel earnedResources={earnedResources} skip={skipRequested} />
+
+      <div className="rewards-actions">
+        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to finish' : 'Enter to skip'}</span>
+        <ToffecButton variant="cream" onClick={handleContinue}>
+          Finish
+        </ToffecButton>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A single party member's reward card: drives its EXP bar through the character's real
+ * gain timeline, popping the "Level Up" badge each time the bar actually crosses a level.
+ */
+interface CharacterExpCardProps {
+  member: CharacterData;
+  expReward: number;
+  /** Fast-forwards this card's bar to its finished state. */
+  skip: boolean;
+  /** Reports this card's id once its bar has landed, so the parent can gate Finish. */
+  onComplete: (id: string) => void;
+}
+
+function CharacterExpCard({ member, expReward, skip, onComplete }: CharacterExpCardProps) {
+  // Build the timeline once so the rAF animation has a stable input.
+  const [timeline] = useState(() => buildExpGainTimeline(member, expReward));
+  const { percentage, level, badgeKey, hasLeveledUp, isComplete } = useExpGainAnimation(timeline, {
+    onLevelUp: playLevelUpSound,
+    skip,
+  });
+
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  useEffect(() => {
+    if (isComplete) onCompleteRef.current(member.id);
+  }, [isComplete, member.id]);
+
+  // Derived straight from `percentage` (the same value driving the bar's width), so these
+  // numbers are mathematically locked to the bar's fill — same easing, same duration, every frame.
+  const expThreshold = getExpThresholdForLevel(level);
+  const currentExp = Math.round((percentage / 100) * expThreshold);
+  const missingExp = Math.max(0, expThreshold - currentExp);
+
+  return (
+    <div className="character-card">
+      {/* Portrait carries the level on a hanging pennant tag in the top-left corner. */}
+      <div className="reward-portrait">
+        <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+        <LevelTag level={level} />
+      </div>
+      <div className="character-info">
+        <h3 className="character-name">{member.name}</h3>
+        <div className="reward-sub pixel-font">
+          <span className="reward-level">Lv {level}</span>
+          <span className="reward-class">{member.class}</span>
+        </div>
+        <ExperienceBar percentage={percentage} variant="compact" />
+        <div className="reward-exp-numbers pixel-font">
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--have">
+            <span className="reward-exp-numbers__label">EXP</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={currentExp}
+                format={INTEGER_FORMAT}
+                trend={1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+          <div className="reward-exp-numbers__row reward-exp-numbers__row--missing">
+            <span className="reward-exp-numbers__label">Next Lv</span>
+            <span className="reward-exp-numbers__value number-flow-container">
+              <NumberFlow
+                value={missingExp}
+                format={INTEGER_FORMAT}
+                trend={-1}
+                spinTiming={EXP_COUNTER_TIMING}
+                transformTiming={EXP_COUNTER_TIMING}
+                opacityTiming={EXP_COUNTER_TIMING}
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+      {hasLeveledUp && (
+        // The bookmark animates once when it first appears (no key on the container),
+        // while the inner text re-keys on every level-up so it pops again — a live
+        // signal that you're still leveling.
+        <div className="level-up-badge level-up-badge--pop">
+          <span key={badgeKey} className="level-up-badge__text">
+            Level Up
+          </span>
+        </div>
+      )}
     </div>
   );
 }

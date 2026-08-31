@@ -8,7 +8,7 @@ declare global {
   type RenderableElement = JSX.Element | string | null;
 
   // Utility type to extract values from an array as a union
-  type ValuesOf<T extends readonly any[]> = T[number];
+  type ValuesOf<T extends readonly unknown[]> = T[number];
 
   // DO NOT MODIFY
   // utility type that takes an object type and makes the hover overlay more readable.
@@ -17,6 +17,10 @@ declare global {
     [K in keyof T]: T[K];
   } & {};
 }
+
+// Plain CSS side-effect imports (e.g. `import '@fontsource/press-start-2p/index.css'`).
+// Required because noUncheckedSideEffectImports rejects untyped .css imports.
+declare module '*.css';
 
 // CSS Modules type declaration
 declare module '*.module.css' {
@@ -55,8 +59,6 @@ declare module '*.webp' {
   export default value;
 }
 
-// Font declarations
-declare module '@fontsource/press-start-2p';
 
 // This export statement is required to make this file a module
 // and enable the global declarations above

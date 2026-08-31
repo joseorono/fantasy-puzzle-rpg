@@ -16,6 +16,15 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     description: 'A group of monsters blocks your path',
   },
   {
+    id: 'dungeon_1',
+    type: 'Dungeon',
+    position: { row: 45, col: 48 },
+    name: 'Echoing Hollow',
+    dungeonId: 'sample-cave',
+    blocksMovement: false,
+    description: 'A yawning cave mouth breathes cold air — something stirs in the dark below',
+  },
+  {
     id: 'battle_2',
     type: 'Battle',
     position: { row: 40, col: 69 },
@@ -156,18 +165,4 @@ export const DEMO_MAP_NODES: InteractiveMapNode[] = [
     description: 'The ultimate challenge awaits',
   },
 ];
-
-/**
- * Get a node by its position
- */
-export function getNodeAtPosition(row: number, col: number): InteractiveMapNode | undefined {
-  return DEMO_MAP_NODES.find((node) => node.position.row === row && node.position.col === col);
-}
-
-/**
- * Get a node by its ID
- */
-export function getNodeById(id: string): InteractiveMapNode | undefined {
-  return DEMO_MAP_NODES.find((node) => node.id === id);
-}
 

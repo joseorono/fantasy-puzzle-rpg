@@ -1,4 +1,4 @@
-import { expect, expectTypeOf, test } from 'vitest';
+import { expect, expectTypeOf, test, vi } from 'vitest';
 
 import * as math from './math';
 import type { Integer } from '~/types/number-types';
@@ -48,12 +48,21 @@ test('generateRange', () => {
   expect(() => math.generateRange(3, 2)).toThrowError(/RANGE ERROR/);
 });
 
-test.skip('randIntInRangeAfterTimeInterval gives you an integer', async () => {
-  const result = await math.randIntInRangeAfterTimeInterval(1 as Integer, 2 as Integer, 2000);
+test('randIntInRangeAfterTimeInterval gives you an integer', async () => {
+  // Fake timers so we don't wait the real 2s; advance past the interval, then await the result.
+  vi.useFakeTimers();
+  try {
+    const pending = math.randIntInRangeAfterTimeInterval(1 as Integer, 2 as Integer, 2000);
+    await vi.advanceTimersByTimeAsync(2000);
+    const result = await pending;
 
-  expectTypeOf(result).toBeNumber();
-  expect(result).toBeGreaterThanOrEqual(1);
-  expect(result).toBeLessThanOrEqual(2);
+    expectTypeOf(result).toBeNumber();
+    expect(Number.isInteger(result)).toBe(true);
+    expect(result).toBeGreaterThanOrEqual(1);
+    expect(result).toBeLessThanOrEqual(2);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test('betweenZeroAndOne is between zero and one', () => {

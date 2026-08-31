@@ -7,6 +7,7 @@ import {
   validateGoldAmount,
   howManyCanAfford,
   createResources,
+  getPercentageOfResources,
 } from './resources';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 
@@ -155,6 +156,21 @@ describe('resource utilities', () => {
 
     it('should early return 0 when any resource is insufficient', () => {
       expect(howManyCanAfford(fullResources, createResources({ gold: 50, coins: 150 }))).toBe(0);
+    });
+  });
+
+  describe('getPercentageOfResources', () => {
+    it('scales each field by the fraction and floors the result', () => {
+      const result = getPercentageOfResources(createResources({ coins: 100, iron: 3 }), 0.5);
+      expect(result).toEqual(createResources({ coins: 50, iron: 1 })); // floor(1.5) = 1
+    });
+
+    it('returns all zeros at 0%', () => {
+      expect(getPercentageOfResources(fullResources, 0)).toEqual(createResources());
+    });
+
+    it('returns whole numbers unchanged at 100%', () => {
+      expect(getPercentageOfResources(fullResources, 1)).toEqual(fullResources);
     });
   });
 });

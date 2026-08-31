@@ -1,5 +1,10 @@
-import { useRouterActions, useRouterState } from '~/stores/game-store';
+import { useSetAtom } from 'jotai';
+import { useRouterActions, useRouterState, useParty } from '~/stores/game-store';
+import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
+import { INITIAL_ENEMIES } from '~/constants/party';
+import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
+import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 
 /**
@@ -7,19 +12,13 @@ import { createLootTable } from '~/types/loot';
  */
 export default function RouterTestView() {
   const router = useRouterState();
-  const {
-    goToTownHub,
-    goToBattleDemo,
-    goToMapDemo,
-    goToMapDemo2,
-    goToDialogueDemo,
-    goToBattleRewards,
-    goToDebug,
-    goBack,
-  } = useRouterActions();
+  const party = useParty();
+  const setupBattle = useSetAtom(setupBattleAtom);
+  const { goToTownHub, goToBattleDemo, goToMap, goToDialogueDemo, goToBattleRewards, goToDebug, goBack } =
+    useRouterActions();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2.5 p-5">
+    <div id="router-test" className="flex flex-col items-center justify-center gap-2.5 p-5">
       <h3 className="mb-2 text-xl font-bold">Router Test</h3>
 
       <div className="mb-2">
@@ -47,29 +46,33 @@ export default function RouterTestView() {
 
         <button
           className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() =>
+          onClick={() => {
+            // Set up a fresh demo encounter (enemies at full HP) before navigating,
+            // mirroring the map's startBattle so the demo is deterministic.
+            setupBattle({ enemies: INITIAL_ENEMIES, party });
             goToBattleDemo({
               enemyId: 'moss-golem',
               location: 'Forest',
               canFlee: true,
-            })
-          }
+            });
+          }}
         >
           Battle Demo
         </button>
 
         <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo()}
+          className="rounded bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-600"
+          onClick={() => {
+            setupBattle({ enemies: EXP_PINATA_FROGS, party });
+            goToBattleDemo({
+              enemyId: EXP_PINATA_FROGS[0].id,
+              location: 'Swamp',
+              canFlee: true,
+            });
+          }}
+          title={`Three harmless frogs worth ${EXP_PINATA_TOTAL_EXP} EXP between them — clears a level-1 party to level ${EXP_PINATA_TARGET_LEVEL}.`}
         >
-          Map Demo
-        </button>
-
-        <button
-          className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-          onClick={() => goToMapDemo2()}
-        >
-          Map Demo 2
+          EXP Piñata Frogs (→ Lv {EXP_PINATA_TARGET_LEVEL})
         </button>
 
         <button
@@ -119,6 +122,23 @@ export default function RouterTestView() {
         >
           Go Back
         </button>
+      </div>
+
+      <div className="mt-4 flex flex-col items-center gap-2">
+        <h4 className="text-lg font-bold">Maps</h4>
+
+        {/* Generated from the registry, so a new map shows up here on its own. */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {ALL_MAPS.map((map) => (
+            <button
+              key={map.id}
+              className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
+              onClick={() => goToMap({ mapId: map.id })}
+            >
+              {map.displayMapName}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

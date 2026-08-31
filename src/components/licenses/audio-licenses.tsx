@@ -1,13 +1,7 @@
 export default function AudioLicensesDialogContent() {
   return (
     <>
-      <div className="text-large flex flex-col justify-center gap-2 overflow-y-auto">
-        <h1 className="text-3xl">CREDITS</h1>
-
-        <h1 className="text-3xl" id="licences-and-credits">
-          Licences and Credits
-        </h1>
-
+      <div className="text-large flex flex-col justify-center gap-2">
         <h2 className="text-2xl" id="audio-assets-licences-and-credits-">
           Audio Assets - Licences and Credits
         </h2>
@@ -15,6 +9,20 @@ export default function AudioLicensesDialogContent() {
         <h3 className="text-xl" id="sound-effects-">
           Sound Effects
         </h3>
+
+        <p>
+          LevelUp (levelUp) 320655__rhodesmas__level-up-01.mp3 by shinephoenixstormcrow -- License: Attribution 3.0
+          <a href="https://freesound.org/people/shinephoenixstormcrow/sounds/337049/">
+            https://freesound.org/people/shinephoenixstormcrow/sounds/337049/
+          </a>
+        </p>
+
+        <p>
+          LevelUp (levelUp) by Kenneth_Cooney -- License: Creative Commons 0
+          <a href="https://freesound.org/people/Kenneth_Cooney/sounds/609335/">
+            https://freesound.org/people/Kenneth_Cooney/sounds/609335/
+          </a>
+        </p>
 
         <p>
           Close modal sound, Creative Commons 0, modusmogulus&nbsp;
@@ -150,6 +158,20 @@ export default function AudioLicensesDialogContent() {
         <p>
           Anime Fight Music Loop #1 by Sirkoto51 (fight-music) -- License: Attribution 4.0
           <a href="https://freesound.org/s/414214/">https://freesound.org/s/414214/</a>
+        </p>
+
+        <p>
+          Chimes / Saved (loadChime) by melokacool — License: Creative Commons 0&nbsp;
+          <a href="https://freesound.org/people/melokacool/sounds/616696/">
+            https://freesound.org/people/melokacool/sounds/616696/
+          </a>
+        </p>
+
+        <p>
+          Chimes 2 - Short (saveChime) by 13712885766 — License: Creative Commons 0&nbsp;
+          <a href="https://freesound.org/people/13712885766/sounds/789599/">
+            https://freesound.org/people/13712885766/sounds/789599/
+          </a>
         </p>
       </div>
     </>

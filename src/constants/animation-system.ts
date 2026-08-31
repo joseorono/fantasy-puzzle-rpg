@@ -3,6 +3,9 @@
 export type GlobalAnimationType = 'screen-shake' | 'fade-in-and-out' | 'view-transition-circle';
 export type AnimationStrategy = 'overlay' | 'game-screen';
 
+/** Duration of the battle hitstop freeze-frame at the moment a hit lands. */
+export const HITSTOP_DURATION_MS = 80;
+
 export interface AnimationConfig {
   duration: number;
   strategy: AnimationStrategy;

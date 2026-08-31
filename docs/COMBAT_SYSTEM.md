@@ -10,6 +10,8 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Attack Damage**: 25 HP per attack (distributed across all living party members)
 - **Visual Timer**: Red pulsing countdown timer in the header shows "ATTACK IN: Xs"
 - **Auto-pause**: Timer stops when game is over (won/lost)
+- **Stagger / Flinch**: Player hits delay the enemy's next attack timer up to a hard-capped limit per attack cycle (see [Enemy Stagger System](#enemy-stagger-flinch-system)).
+
 
 ### Player Attack System
 - **Match-3 Damage**: Making matches deals damage to the enemy
@@ -18,13 +20,38 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Damage Numbers**: Animated floating damage numbers appear when damage is dealt
   - Red numbers for enemy damage
   - Orange numbers for party damage
+- **Cascade Combos**: Chained cascades (matches from refilled orbs) multiply damage on a
+  diminishing square-root curve — `min(MAX_COMBO_MULTIPLIER, 1 + (CASCADE_DAMAGE_BONUS_PER_LEVEL +
+  equipmentComboBonus) × √cascadeLevel)` (`src/lib/rpg-calculations.ts`). Rises fast early, then
+  flattens, and is hard-capped at `MAX_COMBO_MULTIPLIER` (2.0×) so deep chains stay flashy without
+  speedrunning a battle. The chain (and its combo level) resets on each new player swap.
+- **Bomb chains (anti-runaway)**: Matching a wildcard bomb still triggers a 3×3 blast and can chain,
+  but bomb spawning is bounded per cascade chain: after the first bomb spawns in a chain the per-orb
+  refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.75), and a chain spawns at most
+  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/game.ts`). So bomb cascades can't self-feed
+  into runaway x8 combos.
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top
   - Glow effect on matched orbs (400ms)
   - Scale-down and fade-out animation (200ms)
-  - Gravity effect: remaining orbs fall down
   - New random orbs spawn at the top to refill the board
 
+### Enemy Stagger (Flinch) System
+- **Mechanic**: Player hits push back the targeted enemy's next attack timer by a small delay.
+- **Push Formula**: `pushMs = interval × BASE_STAGGER_FRACTION × damageRatio × vitResist`
+  - `damageRatio = min(1, damage / (enemyMaxHp × STAGGER_REF_FRACTION))` — scaled by hit intensity relative to 15% of max HP (`STAGGER_REF_FRACTION` = 0.15).
+  - `vitResist = 1 / (1 + √max(0, VIT) / STAGGER_VIT_DIVISOR)` — diminishing resistance curve (`STAGGER_VIT_DIVISOR` = 8). High VIT enemies flinch less.
+  - `BASE_STAGGER_FRACTION` = 0.10 (10% base delay multiplier).
+- **Anti-Stunlock Hard Cap**:
+  - The total accumulated stagger per attack cycle is capped at `MAX_STAGGER_FRACTION_PER_CYCLE` (12% of the enemy's attack interval).
+  - Guarantees an enemy will always fire within `interval × (1 + 0.12)` of its previous attack regardless of hit rate.
+  - The budget resets to 0 whenever the enemy fires its attack.
+- **Visual Feedback**:
+  - **Countdown Ring Nudge**: The timer ring (`RadialCountdown`) nudges backward on hit.
+  - **"STAGGER!" Callout**: Pop of warm-amber "STAGGER!" text over the enemy sprite when a hit reaches the per-cycle cap.
+- **Implementation**: Pure formulas in `src/lib/rpg-calculations.ts` (`calculateStaggerPushMs`, `clampStaggerToCycleBudget`), timers in `src/hooks/use-enemy-attack-timers.ts`, and tunables in `src/constants/battle.ts`.
+
 ### Win/Lose Conditions
+
 
 #### Victory (Won)
 - Triggered when enemy HP reaches 0
@@ -173,13 +200,43 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
 - Each character is associated with an orb type (color)
 - Matching orbs of a character's type provides visual feedback
 - Health bar changes color based on last matched type
-- Gray orbs are neutral and don't trigger character-specific effects
+- Gray orbs are neutral: they deal reduced chip damage and charge the party-wide **Guard** meter (see below)
+
+### Guard Meter
+The party shares a **Guard** meter (`BattleState.guard`, `0..GUARD_MAX`) — its own defensive resource,
+charged by matching gray orbs. Math lives in `src/lib/rpg-calculations.ts`; balance constants in
+`src/constants/battle.ts` (mitigation/drain/decay/charge rate) and `src/constants/party.ts`
+(gray damage, per-orb charge).
+
+Three independent stats/levers move the meter, so none of them alone trivializes defense:
+**SPD** charges it faster, **VIT** makes it last longer, and the enemy's **`guardBreak`** decides how
+much a block costs.
+
+- **Charging:** matching gray adds `matchSize × GUARD_CHARGE_PER_ORB × guardChargeRate`, where the
+  SPD-derived `calculateGuardChargeRate(party)` scales charge with the living party's collective SPD
+  on a diminishing (sqrt) curve. Gray's enemy chip damage is scaled by `GRAY_MATCH_DAMAGE_MULTIPLIER`.
+- **Mitigation (percentage-based, scales to any damage):** an incoming hit is reduced by the bar's
+  **fill %** (capped at `MAX_GUARD_REDUCTION`). A full bar fully blocks one attack. Resolved centrally
+  in `damagePartyAtom` via `resolveGuardedDamage(incoming, guard, guardBreak)`.
+- **`guardBreak` (per enemy, default 1):** scales only how much of the bar each block *drains* — `2.0`
+  erodes it twice as fast (forces more gray-matching to stay shielded), `0.5` barely dents it. It does
+  **not** weaken mitigation, so a full bar always fully blocks.
+- **Anti-hoard decay:** Guard bleeds over time proportional to its fill (`decayGuard`, ticked in the
+  battle screen's cooldown loop), so a full bar can't be parked — blocking a big hit is a timing play.
+  The bleed is scaled by `calculateGuardDecayResistance(party) = 1 / (1 + livingVit / GUARD_DECAY_VIT_DIVISOR)`,
+  a diminishing (hyperbolic) curve in the living party's collective VIT that stays in `(0, 1]` — VIT
+  makes the shield last but can never freeze it. Because both this and the charge rate count only
+  *living* members, a party that is losing people charges slower **and** bleeds faster.
+  Decay is proportional to fill, so it only approaches zero asymptotically; anything under
+  `GUARD_MIN_THRESHOLD` snaps to exactly 0 so an empty bar stops ticking.
+- **Feedback:** the Guard bar (steelArmor icon, below the HEROES HP bar) shimmers while charging, glows
+  when full, and shatters with a "BLOCK!"/"GUARD" popup + clang when it mitigates a hit.
 
 ## Future Enhancements
-- Character-specific abilities when skills are ready
-- Healing orbs that restore party HP
+- Status effects (Poison, Burn, Stun, Shield)
+- Elemental matchups (Fire, Ice, Lightning)
 - Critical hits and damage variance
-- Multiple enemy types with different patterns
-- Boss battles with special mechanics
-- Difficulty levels
-- Sound effects for attacks and victories
+- Boss phases with special mechanics (enrage thresholds, summons)
+- Board hazards (frozen orbs, enemy counter-hazards)
+- Class-specific character attack SFX & animations
+

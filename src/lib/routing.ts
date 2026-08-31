@@ -131,17 +131,26 @@ export function goToBattleDemo(currentState: RouterState, data: ViewDataMap['bat
 }
 
 /**
- * Navigate to map demo
+ * Navigate to a dungeon run with required data.
+ * Records the launching view in `returnView` (unless the caller supplied one) so the run can
+ * navigate back explicitly on Finish/Leave — see `DungeonViewData.returnView`.
  */
-export function goToMapDemo(currentState: RouterState, data?: ViewDataMap['map-demo']): NavigationResult {
-  return prepareNavigation(currentState, 'map-demo', data ?? {});
+export function goToDungeon(currentState: RouterState, data: ViewDataMap['dungeon']): NavigationResult {
+  // Guard against a dungeon launching a dungeon, which would return to itself.
+  const entryView = currentState.currentView === 'dungeon' ? undefined : currentState.currentView;
+  return prepareNavigation(currentState, 'dungeon', { ...data, returnView: data.returnView ?? entryView });
 }
 
 /**
- * Navigate to map demo 2
+ * Navigate to a map. `data.mapId` selects which one — every map shares this view.
+ * Records the launching view in `returnView` (unless the caller supplied one) so the map can
+ * still be left after a battle round-trip has cleared `previousView` — see
+ * `MapViewData.returnView`.
  */
-export function goToMapDemo2(currentState: RouterState, data?: ViewDataMap['map-demo-2']): NavigationResult {
-  return prepareNavigation(currentState, 'map-demo-2', data ?? {});
+export function goToMap(currentState: RouterState, data: ViewDataMap['map']): NavigationResult {
+  // Guard against a map launching a map, which would return to itself.
+  const entryView = currentState.currentView === 'map' ? undefined : currentState.currentView;
+  return prepareNavigation(currentState, 'map', { ...data, returnView: data.returnView ?? entryView });
 }
 
 /**
@@ -167,20 +176,27 @@ export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']
 
 /**
  * Navigate to battle rewards
- * Preserves the pre-battle previousView so that goBack() from rewards
- * returns to the view before battle (map, town, etc.) instead of back to battle.
+ * When launched from a battle, keeps the pre-battle previousView so that goBack() from
+ * rewards returns to the view before battle (map, dungeon, town) instead of back into the
+ * finished battle. Launched from anywhere else (the debug demo) it behaves like normal
+ * navigation and returns to the launching view.
  */
 export function goToBattleRewards(currentState: RouterState, data: ViewDataMap['battle-rewards']): NavigationResult {
-  if (!canNavigate(currentState, 'battle-rewards')) {
+  if (!canNavigate()) {
     return {
       success: false,
       error: `Cannot navigate from ${currentState.currentView} to battle-rewards`,
     };
   }
 
+  // The skip-the-battle rule only applies when a battle is what we're coming from. Applying
+  // it elsewhere would inherit an unrelated previousView and send goBack() somewhere the
+  // player never launched the rewards from.
+  const isFromBattle = currentState.currentView === 'battle-demo';
+
   const nextState: RouterState = {
     currentView: 'battle-rewards',
-    previousView: currentState.previousView, // keep pre-battle view, not battle
+    previousView: isFromBattle ? currentState.previousView : currentState.currentView,
     viewData: {
       ...currentState.viewData,
       'battle-rewards': data,

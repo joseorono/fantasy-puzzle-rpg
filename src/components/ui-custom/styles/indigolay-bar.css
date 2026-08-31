@@ -1,0 +1,203 @@
+/* IndigolayBar — pixel-art progress bar on the indigolay HUD art.
+
+   The track is bar-track.png (104x39) 9-sliced through border-image, the same
+   technique as #battle-top-bar. `fill` paints the maroon channel; without it the
+   centre is transparent, since the art's corners are alpha-0. Slice values are the
+   measured frame thickness in source px (interior spans x 7-95, y 8-29).
+
+   Per-size border-width is the *rendered* cap size, so the caps downscale; the
+   heights below are chosen so the 24px-tall fill art lands on a clean integer
+   ratio (channel 8 = 3:1, 12 = 2:1, 24 = 1:1). Uneven sampling is what makes the
+   fill's three bands look ragged.
+
+   No border-radius or background here: border-image ignores the former and the
+   opaque art covers the latter. */
+
+.indigolay-bar {
+  position: relative;
+  box-sizing: border-box;
+  border-style: solid;
+  border-image-source: url('/assets/hud/indigolay/bar-track.png');
+  border-image-slice: 8 8 9 7 fill;
+  border-image-repeat: stretch;
+}
+
+/* The fill is just the clipping box now — the sprite lives on stacked __layer
+   children so colour changes can crossfade. */
+.indigolay-bar__fill {
+  position: relative;
+  height: 100%;
+  /* Load-bearing: the inn's heal animation relies on this transition. */
+  transition: width 0.3s ease;
+}
+
+/* One sprite layer. 9-sliced the same way the track is, so the art's 4px rounded
+   caps render 1:1 and only its flat core (source x 4..87) stretches.
+
+   Stretching the whole 92px sprite instead (background-size: 100% 100%) blows its
+   1px anti-aliased margin up ~3.5x on a wide bar, which reads as a blurry fade at
+   both ends — no image-rendering mode helps, because those pixels really are
+   semi-transparent and any scaling stretches the transparency with them.
+
+   Vertical slices are 0, so the sprite stretches top-to-bottom and the per-size
+   downscales stay clean (12px channel = 2:1, 8px = 3:1). */
+.indigolay-bar__layer {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0 4px;
+  border-image-source: var(--ib-fill);
+  border-image-slice: 0 4 0 4 fill;
+  border-image-repeat: stretch;
+  filter: var(--ib-filter, none);
+}
+
+/* Only the incoming layer animates; the outgoing one sits underneath at full
+   opacity and is unmounted when this finishes. */
+.indigolay-bar__layer--in {
+  animation: ib-layer-in var(--ib-fade, 0.4s) ease forwards;
+}
+
+@keyframes ib-layer-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Notches drawn as a single repeating gradient rather than N child divs. */
+.indigolay-bar__segments {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(100% / var(--ib-segments, 10) - 1px),
+    rgba(0, 0, 0, 0.2) calc(100% / var(--ib-segments, 10) - 1px) calc(100% / var(--ib-segments, 10))
+  );
+}
+
+/* Sits over the whole channel rather than clipping to the fill — for flashes and
+   popups that must show at any fill level. */
+.indigolay-bar__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Centred on the border box: the borders are symmetric, so the padding-box centre
+   the transform resolves against coincides with the bar's visual centre. */
+.indigolay-bar__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: 700;
+  line-height: 1;
+  color: #f5e6c8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* ========== SIZES ========== */
+
+.indigolay-bar--xs {
+  height: 14px;
+  border-width: 3px;
+}
+
+.indigolay-bar--sm {
+  height: 16px;
+  border-width: 4px;
+}
+
+.indigolay-bar--default {
+  height: 20px;
+  border-width: 4px;
+}
+
+.indigolay-bar--lg {
+  height: 26px;
+  border-width: 4px;
+}
+
+.indigolay-bar--xl {
+  height: 32px;
+  border-width: 4px;
+}
+
+.indigolay-bar--xs .indigolay-bar__label,
+.indigolay-bar--sm .indigolay-bar__label {
+  font-size: 0.5rem;
+}
+
+.indigolay-bar--default .indigolay-bar__label {
+  font-size: 0.6rem;
+}
+
+.indigolay-bar--lg .indigolay-bar__label,
+.indigolay-bar--xl .indigolay-bar__label {
+  font-size: 0.7rem;
+}
+
+/* ========== COLOR VARIANTS ========== */
+
+/* These sit on the layer, not the bar, because each crossfading layer needs its
+   own sprite.
+
+   The artist's colours ship as-is. Do NOT bake a desaturation in here: these are
+   shared by battle health bars, where a muted green reads as olive rather than
+   "healthy". Screens wanting a muted palette set --ib-filter on the bar itself
+   (see .stat-meter in level-up-screen.css) — it inherits down to the layer. */
+
+.indigolay-bar__layer--orange {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-orange.png');
+}
+
+.indigolay-bar__layer--green {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-green.png');
+}
+
+.indigolay-bar__layer--sky-blue {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
+}
+
+.indigolay-bar__layer--blue {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-blue.png');
+}
+
+.indigolay-bar__layer--blue-green {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-blue-green.png');
+}
+
+.indigolay-bar__layer--pink {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-pink.png');
+}
+
+.indigolay-bar__layer--purple {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-purple.png');
+}
+
+.indigolay-bar__layer--red {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-red.png');
+}
+
+.indigolay-bar__layer--yellow {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-yellow.png');
+}
+
+/* The pack ships no grey fill, so slate is the sky-blue art desaturated almost
+   flat — for the battle Guard bar, which is slate in the current design. This is
+   the one variant whose filter is intrinsic to the colour, not a screen's taste. */
+.indigolay-bar__layer--slate {
+  --ib-fill: url('/assets/hud/indigolay/bar-fill-sky-blue.png');
+  --ib-filter: saturate(0.12) brightness(1.06);
+}
+
+/* Reduced motion is handled globally in src/styles/reduced-motion.css. */

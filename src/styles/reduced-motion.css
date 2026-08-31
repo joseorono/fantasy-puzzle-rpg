@@ -1,0 +1,42 @@
+/* reduced-motion.css
+   Drives the in-game "Reduced Motion" option (pause menu → Options). The attribute is set on
+   <html> by ~/lib/reduced-motion. Strictly opt-in and off by default — this is a game, so the OS
+   `prefers-reduced-motion` setting is deliberately not consulted anywhere.
+   Animations still run for ~1ms so `animationend`/`transitionend` listeners keep firing and the
+   screens that wait on them still advance. */
+
+html[data-reduced-motion] *:not(.motion-exempt, .motion-exempt *),
+html[data-reduced-motion] *:not(.motion-exempt, .motion-exempt *)::before,
+html[data-reduced-motion] *:not(.motion-exempt, .motion-exempt *)::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0ms !important;
+}
+
+html[data-reduced-motion] {
+  scroll-behavior: auto !important;
+}
+
+/* `.motion-hold` — for elements whose animation is also what makes them visible and then disposes
+   of them (they end at opacity 0 with `forwards`). Collapsing those would flash the content out
+   inside a frame, so hold them static and legible instead; the JS timer that owns each one still
+   clears it on schedule. Motion goes, information stays. */
+html[data-reduced-motion] .motion-hold,
+html[data-reduced-motion] .damage-erupt,
+html[data-reduced-motion] .stagger-callout,
+html[data-reduced-motion] .guard-block-popup {
+  animation: none !important;
+}
+
+/* The hitstop freeze-frame is skipped in JS too (`triggerHitstop`); this covers a class that was
+   already on the screen when the setting was flipped mid-battle. */
+html[data-reduced-motion] #game-screen.hitstop-freeze,
+html[data-reduced-motion] #game-screen.hitstop-freeze * {
+  animation-play-state: running !important;
+}
+
+html[data-reduced-motion] #game-screen.hitstop-freeze {
+  transform: none !important;
+}

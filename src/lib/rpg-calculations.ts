@@ -1,5 +1,22 @@
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { calculatePercentage } from './math';
+import {
+  BASE_STAGGER_FRACTION,
+  CASCADE_DAMAGE_BONUS_PER_LEVEL,
+  GUARD_CHARGE_RATE_DIVISOR,
+  GUARD_DECAY_RATE,
+  GUARD_DECAY_VIT_DIVISOR,
+  GUARD_DRAIN_FRACTION,
+  GUARD_MAX,
+  GUARD_MIN_THRESHOLD,
+  MAX_COMBO_MULTIPLIER,
+  MAX_GUARD_REDUCTION,
+  MAX_STAGGER_FRACTION_PER_CYCLE,
+  POW_DAMAGE_PERCENT_PER_POINT,
+  STAGGER_REF_FRACTION,
+  STAGGER_VIT_DIVISOR,
+} from '~/constants/battle';
+import { ENEMY_EXP_FLAT, ENEMY_EXP_PER_HP } from '~/constants/progression';
 
 /**
  * RPG Calculation Functions
@@ -70,7 +87,7 @@ export function calculatePartyHpPercentage(party: CharacterData[]): number {
 
 /**
  * Calculates damage output based on power stat.
- * Formula: baseDamage * (1 + (POW / 100))
+ * Formula: baseDamage * (1 + (POW * POW_DAMAGE_PERCENT_PER_POINT / 100))
  * @param baseDamage Base damage value
  * @param pow Power stat
  * @returns Calculated damage (rounded)
@@ -78,8 +95,8 @@ export function calculatePartyHpPercentage(party: CharacterData[]): number {
 export function calculateDamage(baseDamage: number, pow: number): number {
   // Use scaled integer math to avoid floating point precision issues
   // Example: 100 * 1.15 may evaluate to 114.999... causing floor to return 114.
-  // Compute as (baseDamage * (100 + pow)) / 100 instead.
-  return Math.floor((baseDamage * (100 + pow)) / 100);
+  // Compute as (baseDamage * (100 + powPercent)) / 100 instead.
+  return Math.floor((baseDamage * (100 + pow * POW_DAMAGE_PERCENT_PER_POINT)) / 100);
 }
 
 /**
@@ -121,6 +138,44 @@ export function calculateEnemyDamage(enemy: EnemyData): number {
 }
 
 /**
+ * Calculates the EXP an enemy awards, derived from its max HP.
+ *
+ * Durability is the honest proxy for what a fight costs the player: there is no
+ * defense stat, so time-to-kill tracks max HP directly. Tying the reward to it stops
+ * weak-but-numerous enemies from out-earning elites per second, which is what
+ * hand-authored values drift into. The flat term keeps trash worth clearing.
+ *
+ * Formula: `maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT`, tuned alongside
+ * {@link getExpThresholdForLevel} for a ~3 hour, ~level-30 campaign.
+ *
+ * @param maxHp Enemy max HP
+ * @returns EXP reward, rounded to a whole number
+ * @example
+ * ```ts
+ * calculateEnemyExpReward(400); // 62 — a tanky elite
+ * calculateEnemyExpReward(68);  // 21 — a trash mob
+ * ```
+ */
+export function calculateEnemyExpReward(maxHp: number): number {
+  return Math.round(maxHp * ENEMY_EXP_PER_HP + ENEMY_EXP_FLAT);
+}
+
+/**
+ * Calculates the cascade combo multiplier for a given cascade depth.
+ * Level 0 (the initial match) is always 1x. Deeper cascades scale on a
+ * diminishing (square-root) curve and are clamped at MAX_COMBO_MULTIPLIER.
+ * Formula: min(MAX_COMBO_MULTIPLIER, 1 + (CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus) * sqrt(cascadeLevel))
+ * @param cascadeLevel Cascade depth (0 = first match, 1+ = chained cascades)
+ * @param equipmentComboBonus Extra coefficient bonus from equipment (default 0)
+ * @returns Combo multiplier (1 .. MAX_COMBO_MULTIPLIER)
+ */
+export function calculateComboMultiplier(cascadeLevel: number, equipmentComboBonus: number = 0): number {
+  if (cascadeLevel <= 0) return 1;
+  const perLevel = CASCADE_DAMAGE_BONUS_PER_LEVEL + equipmentComboBonus;
+  return Math.min(MAX_COMBO_MULTIPLIER, 1 + perLevel * Math.sqrt(cascadeLevel));
+}
+
+/**
  * Calculates the damage multiplier based on match size.
  * @param matchSize Number of orbs matched
  * @returns Damage multiplier (1x, 1.5x, or 2x)
@@ -137,21 +192,28 @@ export function calculateMatchMultiplier(matchSize: number): number {
 }
 
 /**
- * Calculates match-3 damage based on match size and character power.
- * @param matchSize Number of orbs matched
+ * Calculates match-3 damage based on match size, character power, and an
+ * optional cascade combo multiplier.
+ * @param matchSize Number of orbs matched (including orbs destroyed by bomb explosions)
  * @param baseDamage Base damage per match
  * @param pow Power stat
+ * @param comboMultiplier Cascade combo multiplier from calculateComboMultiplier (default 1)
  * @returns Calculated damage
  */
-export function calculateMatchDamage(matchSize: number, baseDamage: number = 10, pow: number = 0): number {
+export function calculateMatchDamage(
+  matchSize: number,
+  baseDamage: number = 10,
+  pow: number = 0,
+  comboMultiplier: number = 1,
+): number {
   const matchMultiplier = calculateMatchMultiplier(matchSize);
-  const damage = baseDamage * matchMultiplier;
+  const damage = baseDamage * matchMultiplier * comboMultiplier;
 
   if (pow > 0) {
     return calculateDamage(damage, pow);
   }
 
-  return damage;
+  return Math.floor(damage);
 }
 
 // ============================================================================
@@ -233,13 +295,149 @@ export function calculatePartyCollectiveSpd(party: CharacterData[]): number {
 /**
  * Calculates the shared item cooldown in milliseconds based on the party's collective SPD.
  * Higher collective SPD = shorter cooldown.
- * Formula: (BASE_ITEM_COOLDOWN / (1 + collectiveSPD / 100)) * 1000
+ * Formula: (BASE_ITEM_COOLDOWN / (1 + (collectiveSPD + bonusSpd) / 100)) * 1000
  * @param party Array of character data
+ * @param bonusSpd Flat effective SPD added for this calculation only (passive `itemCooldownSpdBonus`)
  * @returns Item cooldown in milliseconds
  */
-export function calculateItemCooldownInMs(party: CharacterData[]): number {
-  const collectiveSpd = calculatePartyCollectiveSpd(party);
+export function calculateItemCooldownInMs(party: CharacterData[], bonusSpd: number = 0): number {
+  const collectiveSpd = calculatePartyCollectiveSpd(party) + bonusSpd;
   return Math.floor((BASE_ITEM_COOLDOWN / (1 + collectiveSpd / 100)) * 1000);
+}
+
+// ============================================================================
+// Guard Calculations
+// ============================================================================
+
+/**
+ * Calculates the party's Guard Charge Rate — a multiplier on the guard gained from matching
+ * gray orbs. Scales with the collective SPD of living members on a diminishing (square-root)
+ * curve so stacking SPD can't trivialize defense.
+ * Formula: 1 + sqrt(livingCollectiveSpd) / GUARD_CHARGE_RATE_DIVISOR
+ * @param party Array of character data
+ * @returns Guard charge multiplier (>= 1)
+ */
+export function calculateGuardChargeRate(party: CharacterData[]): number {
+  const livingSpd = party.reduce(
+    (total, char) => (char.currentHp > 0 ? total + char.stats.spd : total),
+    0,
+  );
+  // Clamp to >= 0: negative-SPD equipment can drag the collective SPD below zero,
+  // and Math.sqrt of a negative would return NaN and poison the entire Guard meter.
+  return 1 + Math.sqrt(Math.max(0, livingSpd)) / GUARD_CHARGE_RATE_DIVISOR;
+}
+
+/**
+ * Calculates the party's Guard decay resistance — a multiplier on the passive bleed rate, where
+ * lower is better. Scales with the collective VIT of living members on a diminishing (hyperbolic)
+ * curve that never reaches 0, so stacking VIT makes the shield last without ever freezing it.
+ * Pairs with {@link calculateGuardChargeRate}: SPD builds the shield fast, VIT makes it last.
+ * Formula: 1 / (1 + livingCollectiveVit / GUARD_DECAY_VIT_DIVISOR)
+ * @param party Array of character data
+ * @returns Decay multiplier in (0, 1] — 1 at zero VIT, approaching 0 as VIT grows
+ */
+export function calculateGuardDecayResistance(party: CharacterData[]): number {
+  const livingVit = party.reduce(
+    (total, char) => (char.currentHp > 0 ? total + char.stats.vit : total),
+    0,
+  );
+  // Clamp to >= 0 for the same reason as calculateGuardChargeRate: negative-VIT equipment could
+  // otherwise drive the divisor negative and invert the decay into growth.
+  return 1 / (1 + Math.max(0, livingVit) / GUARD_DECAY_VIT_DIVISOR);
+}
+
+/** Result of resolving an incoming hit against the Guard meter. */
+export interface GuardResolution {
+  /** Damage that gets through after Guard mitigation. */
+  damageTaken: number;
+  /** Remaining Guard after the hit drains it. */
+  guardAfter: number;
+  /** True when the hit was fully blocked by a maxed-out bar. */
+  wasFullBlock: boolean;
+}
+
+/**
+ * Resolves an incoming hit against the party Guard meter. Mitigation is a percentage of the
+ * incoming damage equal to the bar's fill (capped at MAX_GUARD_REDUCTION), so it scales to any
+ * damage magnitude. The enemy's `guardBreak` only scales how much of the bar the block drains.
+ * @param incoming Raw incoming damage
+ * @param guard Current guard value (0..GUARD_MAX)
+ * @param guardBreak Enemy drain multiplier (default 1; 0.5 barely erodes, 2+ chews through)
+ * @returns The damage taken, the guard remaining, and whether it was a full block
+ */
+export function resolveGuardedDamage(
+  incoming: number,
+  guard: number,
+  guardBreak: number = 1,
+): GuardResolution {
+  const reduction = Math.min(MAX_GUARD_REDUCTION, guard / GUARD_MAX);
+  const damageTaken = Math.max(0, Math.round(incoming * (1 - reduction)));
+  const drain = reduction * GUARD_DRAIN_FRACTION * GUARD_MAX * guardBreak;
+  return {
+    damageTaken,
+    guardAfter: Math.max(0, guard - drain),
+    wasFullBlock: reduction >= MAX_GUARD_REDUCTION && damageTaken === 0,
+  };
+}
+
+/**
+ * Bleeds the Guard meter over time, faster the fuller the bar (anti-hoard decay).
+ * Because the bleed is proportional to fill, it approaches zero asymptotically — so anything under
+ * GUARD_MIN_THRESHOLD snaps to exactly 0, letting callers stop ticking a bar that is empty in all
+ * but name.
+ * Formula: guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt * decayResistance
+ * @param guard Current guard value
+ * @param dt Elapsed time in seconds
+ * @param decayResistance Multiplier on the bleed rate, from {@link calculateGuardDecayResistance}
+ * @returns The decayed guard value, snapped to 0 once negligible
+ */
+export function decayGuard(guard: number, dt: number, decayResistance: number = 1): number {
+  const next = guard - GUARD_DECAY_RATE * (guard / GUARD_MAX) * dt * decayResistance;
+  return next < GUARD_MIN_THRESHOLD ? 0 : next;
+}
+
+// ============================================================================
+// Stagger (Flinch) Calculations
+// ============================================================================
+
+/**
+ * Calculates the uncapped per-hit stagger push-back (ms) — how far a single hit delays the
+ * enemy's next attack, before the per-cycle cap. Scaled by how hard the hit lands relative to
+ * the enemy's max HP, and reduced by VIT on a diminishing (square-root) curve that never reaches
+ * zero, so every enemy always flinches a little. Apply {@link clampStaggerToCycleBudget} to the
+ * result to enforce the anti-stunlock cap. See docs/ideas-proposals/ENEMY_STAGGER.md.
+ * @param damage The damage dealt by the hit
+ * @param enemyMaxHp The enemy's maximum HP (durability reference for "how hard")
+ * @param vit The enemy's VIT stat (stagger resistance)
+ * @param interval The enemy's effective attack interval in ms
+ * @returns Uncapped push-back in milliseconds (>= 0)
+ */
+export function calculateStaggerPushMs(
+  damage: number,
+  enemyMaxHp: number,
+  vit: number,
+  interval: number,
+): number {
+  if (damage <= 0 || interval <= 0) return 0;
+  const reference = enemyMaxHp * STAGGER_REF_FRACTION;
+  const damageRatio = reference > 0 ? Math.min(1, damage / reference) : 1;
+  // Clamp VIT >= 0 so negative-stat edge cases can't NaN via Math.sqrt.
+  const vitResist = 1 / (1 + Math.sqrt(Math.max(0, vit)) / STAGGER_VIT_DIVISOR);
+  return interval * BASE_STAGGER_FRACTION * damageRatio * vitResist;
+}
+
+/**
+ * Clamps a stagger push against the remaining per-cycle budget so cumulative push-back between
+ * two of an enemy's attacks can never exceed `interval * MAX_STAGGER_FRACTION_PER_CYCLE`. This is
+ * the anti-stunlock guarantee: no hit pattern can stop the enemy from eventually attacking.
+ * @param pushMs The uncapped push from {@link calculateStaggerPushMs}
+ * @param interval The enemy's effective attack interval in ms
+ * @param usedMs Push-back already applied during the current attack cycle
+ * @returns The push-back to actually apply (>= 0), never exceeding the remaining budget
+ */
+export function clampStaggerToCycleBudget(pushMs: number, interval: number, usedMs: number): number {
+  const capMs = interval * MAX_STAGGER_FRACTION_PER_CYCLE;
+  return Math.max(0, Math.min(pushMs, capMs - usedMs));
 }
 
 // ============================================================================
@@ -252,11 +450,11 @@ export type HpThreshold = 'high' | 'medium' | 'low';
  * Returns a threshold tier based on an HP percentage.
  * Used across UI components to determine HP bar colors/classes.
  * @param percentage HP percentage (0-100)
- * @returns 'high' if >50%, 'medium' if >25%, 'low' otherwise
+ * @returns 'high' if >55%, 'medium' if >30%, 'low' otherwise
  */
 export function getHpThreshold(percentage: number): HpThreshold {
-  if (percentage > 50) return 'high';
-  if (percentage > 25) return 'medium';
+  if (percentage > 55) return 'high';
+  if (percentage > 30) return 'medium';
   return 'low';
 }
 

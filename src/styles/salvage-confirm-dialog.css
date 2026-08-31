@@ -1,0 +1,88 @@
+/* ==========================================
+   SALVAGE CONFIRM — body content for the generic ConfirmPanel shell
+   Only the salvage-specific item preview lives here; the modal chrome
+   (backdrop, panel, corners, header, actions) comes from the CONFIRM PANEL
+   section of modals.css (which must import before this file).
+   ========================================== */
+
+.salvage-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.salvage-confirm__item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-radius: 8px;
+}
+
+.salvage-confirm__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0.4rem;
+  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.salvage-confirm__name {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  font-size: 1rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.salvage-confirm__rarity {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  color: #e0e0e0;
+}
+
+.salvage-confirm__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.25rem 0;
+  margin: -0.25rem 0;
+}
+
+.salvage-confirm__return {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-radius: 8px;
+}
+
+.salvage-confirm__return-label {
+  font-size: 0.75rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+.salvage-confirm__return-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}

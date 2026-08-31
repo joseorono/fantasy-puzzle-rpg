@@ -6,6 +6,7 @@
 
 import { soundService } from './sound-service';
 import { SoundNames } from '~/constants/audio';
+import type { TilemapData } from '~/types/tilemap';
 
 /**
  * Surface types for footstep audio
@@ -180,9 +181,9 @@ export function determineSurfaceType(tileId: number, layerName?: string): Surfac
  * @param mapData - The map data object
  * @returns The surface type
  */
-export function determineSurfaceTypeFromPosition(row: number, col: number, mapData: any): SurfaceType {
+export function determineSurfaceTypeFromPosition(row: number, col: number, mapData: TilemapData): SurfaceType {
   // Check road layer first (highest priority)
-  const roadLayer = mapData.layers?.find((layer: any) => layer.name === 'road');
+  const roadLayer = mapData.layers?.find((layer) => layer.name === 'road');
   if (roadLayer) {
     const dataIndex = row * roadLayer.width + col;
     const tileId = roadLayer.data[dataIndex];
@@ -192,7 +193,7 @@ export function determineSurfaceTypeFromPosition(row: number, col: number, mapDa
   }
 
   // Check ground layer
-  const groundLayer = mapData.layers?.find((layer: any) => layer.name === 'ground');
+  const groundLayer = mapData.layers?.find((layer) => layer.name === 'ground');
   if (groundLayer) {
     const dataIndex = row * groundLayer.width + col;
     const tileId = groundLayer.data[dataIndex];

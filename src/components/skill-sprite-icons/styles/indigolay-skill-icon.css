@@ -1,0 +1,27 @@
+/* IndigolaySkillIcon — one icon out of a skill spritesheet.
+
+   Each sheet is a grid of normal icons with an identical grid of disabled icons
+   to its right, so a variant swap is a horizontal jump of one half-sheet. That
+   cannot be transitioned on a single element — interpolating background-position
+   would slide the whole sheet through the frame — so both variants are painted
+   as stacked layers and only their opacity animates.
+
+   Cell geometry (background-size / -position) is computed per icon and set
+   inline by the component. */
+
+.indigolay-skill-icon {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* One variant. Both are always mounted; `opacity` decides which is visible, so
+   the crossfade needs no state or remount. */
+.indigolay-skill-icon__layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  transition: opacity var(--isi-fade, 120ms) ease;
+}
+
+/* Reduced motion is handled globally in src/styles/reduced-motion.css. */

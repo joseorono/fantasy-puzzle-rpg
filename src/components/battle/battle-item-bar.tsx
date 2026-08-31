@@ -8,18 +8,24 @@ import {
   clearBoardRowAtom,
   clearBoardColumnAtom,
   fillPartyUltimateAtom,
+  recordItemUsedAtom,
   gameStatusAtom,
   partyAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
+import { getPartyPassiveModifiers } from '~/lib/skill-system';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import type { ConsumableItemData } from '~/types';
 
-export function BattleItemBar() {
+interface BattleItemBarProps {
+  isBattlePaused: boolean;
+}
+
+export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
@@ -28,8 +34,9 @@ export function BattleItemBar() {
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
+  const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party);
+  const cooldownDuration = calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
 
   const [cooldownProgress, setCooldownProgress] = useState(1); // 1 = ready, 0 = just started
   const cooldownEndRef = useRef<number>(0);
@@ -61,7 +68,7 @@ export function BattleItemBar() {
   const battleItems = ConsumableItems.filter((item) => item.usableInBattle && item.action);
 
   const handleUseItem = (item: ConsumableItemData) => {
-    if (gameStatus !== 'playing' || isOnCooldown) return;
+    if (gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown) return;
 
     const quantity = getItemQuantity(inventory, item.id);
     if (quantity <= 0 || !item.action) return;
@@ -82,6 +89,8 @@ export function BattleItemBar() {
     }
 
     inventoryActions.removeItem(item.id);
+    // Count this consumption for the victory rating (items used is a penalty).
+    recordItemUsed();
 
     // Start shared cooldown
     cooldownEndRef.current = Date.now() + cooldownDuration;
@@ -97,7 +106,7 @@ export function BattleItemBar() {
       {battleItems.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
-        const isDisabled = isEmpty || gameStatus !== 'playing' || isOnCooldown;
+        const isDisabled = isEmpty || gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown;
 
         return (
           <ToffecBeigeCornersWrapper key={item.id}>
@@ -107,7 +116,7 @@ export function BattleItemBar() {
                   onClick={() => handleUseItem(item)}
                   disabled={isDisabled}
                   className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-                    isEmpty || gameStatus !== 'playing'
+                    isEmpty || gameStatus !== 'playing' || isBattlePaused === true
                       ? 'cursor-not-allowed opacity-40'
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   }`}
@@ -121,18 +130,23 @@ export function BattleItemBar() {
                 <NarikWoodBitFont text={String(quantity)} size={1} />
               </div>
 
-              {/* Cooldown pie overlay */}
+              {/* Cooldown pie overlay & countdown text */}
               {isOnCooldown && !isEmpty && (
-                <div
-                  className="pointer-events-none absolute inset-0 rounded"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                  }}
-                />
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded"
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                    {Math.max(1, Math.ceil((cooldownEndRef.current - Date.now()) / 1000))}s
+                  </div>
+                </>
               )}
             </button>
               </TooltipTrigger>
-              <TooltipContent>{item.name}: {item.description}</TooltipContent>
+              <TooltipContent className="battle-item-tooltip">{item.name}: {item.description}</TooltipContent>
             </Tooltip>
           </ToffecBeigeCornersWrapper>
         );

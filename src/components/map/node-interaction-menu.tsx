@@ -1,26 +1,31 @@
+import { useState } from 'react';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { Position } from '~/types/geometry';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { cn } from '~/lib/utils';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
   isCompleted: boolean;
   onFight?: () => void;
   onEnter?: () => void;
+  onRandomize?: () => void;
   onOpenChest?: () => void;
   onViewDialogue?: () => void;
   characterPosition: Position;
+  isClosing?: boolean;
 }
 
 const NODE_ICONS: Record<MapNodeType, FrostyRpgIconName> = {
-  Battle: 'broadsword',
-  Boss: 'crown',
-  Town: 'lantern',
+  Battle: 'steelSword',
+  Boss: 'redBook',
+  Town: 'elixir',
   Dungeon: 'skull',
-  Treasure: 'chest',
-  Mystery: 'orbPurple',
+  Treasure: 'parchment',
+  Mystery: 'pouch',
 };
 
 /**
@@ -31,14 +36,29 @@ export function NodeInteractionMenu({
   isCompleted,
   onFight,
   onEnter,
+  onRandomize,
   onOpenChest,
   onViewDialogue,
   characterPosition,
+  isClosing: externalIsClosing = false,
 }: NodeInteractionMenuProps) {
+  const [isClosingInternal, setIsClosingInternal] = useState(false);
+  const isClosing = externalIsClosing || isClosingInternal;
+
+  const handleAction = (actionFn?: () => void) => {
+    if (!actionFn || isClosingInternal) return;
+    setIsClosingInternal(true);
+    setTimeout(() => {
+      actionFn();
+    }, 180);
+  };
+
   const canFight = node.type === 'Battle' || node.type === 'Boss';
   const canEnter = node.type === 'Town' || node.type === 'Dungeon';
   const canOpenChest = node.type === 'Treasure' && !isCompleted;
   const canInteract = node.type === 'Mystery';
+  // The remix is a post-clear replay mode — it only unlocks once the dungeon has been beaten.
+  const canRandomize = node.type === 'Dungeon' && isCompleted;
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;
@@ -50,7 +70,7 @@ export function NodeInteractionMenu({
 
   return (
     <div
-      className="nim fixed z-50"
+      className={`nim fixed z-50 ${isClosing ? 'nim--leaving' : ''}`}
       style={{
         left: `${finalLeft}px`,
         top: `${finalTop}px`,
@@ -97,35 +117,62 @@ export function NodeInteractionMenu({
       {/* Action buttons */}
       <div className="nim-actions">
         {canFight && onFight && (
-          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onFight}>
-            <FrostyRpgIcon name="broadsword" size={16} />
+          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={() => handleAction(onFight)}>
+            <FrostyRpgIcon name="steelSword" size={16} />
             Fight
           </ToffecButton>
         )}
 
         {canEnter && onEnter && (
-          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="lantern" size={16} />
+          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={() => handleAction(onEnter)}>
+            <FrostyRpgIcon name="elixir" size={16} />
             Enter
           </ToffecButton>
         )}
 
+        {node.type === 'Dungeon' && onRandomize && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* span wrapper: ToffecButton doesn't forward a ref for Radix to anchor to. The
+                  disabled button drops pointer events so hover still reaches this span —
+                  browsers don't dispatch pointer events on disabled controls. */}
+              <span className={cn('nim-btn-tooltip', !canRandomize && 'cursor-not-allowed')}>
+                <ToffecButton
+                  variant="indigolay-red"
+                  size="sm"
+                  className="nim-btn disabled:pointer-events-none"
+                  onClick={() => handleAction(onRandomize)}
+                  disabled={!canRandomize}
+                >
+                  <FrostyRpgIcon name="skull" size={16} />
+                  Randomize
+                </ToffecButton>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[240px]">
+              {canRandomize
+                ? 'A remixed run — shuffled floors and enemies with bonus loot, and no story. The boss still waits at the end.'
+                : 'Clear this dungeon first to unlock its remix — shuffled floors and enemies with bonus loot, and no story.'}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {canOpenChest && onOpenChest && (
-          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onOpenChest}>
-            <FrostyRpgIcon name="openChest" size={16} />
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => handleAction(onOpenChest)}>
+            <FrostyRpgIcon name="sealedScroll" size={16} />
             Open
           </ToffecButton>
         )}
 
         {canInteract && onEnter && (
-          <ToffecButton variant="mauve" size="sm" className="nim-btn" onClick={onEnter}>
-            <FrostyRpgIcon name="orbPurple" size={16} />
+          <ToffecButton variant="indigolay-red" size="sm" className="nim-btn" onClick={() => handleAction(onEnter)}>
+            <FrostyRpgIcon name="pouch" size={16} />
             Interact
           </ToffecButton>
         )}
 
         {node.dialogueScene && onViewDialogue && (
-          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={onViewDialogue}>
+          <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => handleAction(onViewDialogue)}>
             <FrostyRpgIcon name="openBook" size={16} />
             Talk
           </ToffecButton>

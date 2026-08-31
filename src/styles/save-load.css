@@ -1,0 +1,374 @@
+/*
+ * Save / Load slot list.
+ *
+ * Slot cards are the Indigolay Adventure Book parchment scrolls
+ * (`UI_ListItem2_*`), 9-sliced through border-image like the skills parchment
+ * panel (pause-menu-skills.css) and IndigolayBar. Scroll art is 468x170 with
+ * ~60px rolled ends, displayed at half scale. Hover/selection keep the scroll
+ * art untouched: the shared `.cursor-corners` brackets plus a faint warm wash
+ * do the highlighting, so it matches every other menu instead of shouting.
+ */
+
+.save-load-menu {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.save-load-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  overflow-y: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* The bracket wrapper is inline-flex by default; slots are full-width rows. */
+.save-load-menu__list > .save-slot-card-wrapper {
+  display: block;
+  width: 100%;
+}
+
+/* Title and hint share one row, bottom-aligned. */
+.save-load-menu__header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Both boxes keep empty space under their letters — the Narik cell reserves 5
+   of its 25 px plus the h2's line-box slack, Press Start 2P rather less — so
+   bottom-aligning the boxes alone staggers the visible text. These offsets,
+   measured in the browser, drop both onto one line. */
+.save-load-menu__title {
+  display: inline-flex;
+  margin-bottom: -6px;
+}
+
+.save-load-menu__hint {
+  margin: 0 0 6px;
+  font-size: 0.6rem;
+  color: #a08a6a;
+}
+
+/* ── Slot card ──────────────────────────────────────────────────────── */
+
+.save-slot-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0.4rem 0.15rem;
+  border: 22px solid transparent;
+  border-left-width: 30px;
+  border-right-width: 30px;
+  border-image: url('/assets/menu/save-load/indigolay-scroll-normal.png') 44 60 fill / 22px 30px stretch;
+  image-rendering: auto;
+  cursor: pointer;
+}
+
+/* `filter: none` blocks the global [role="button"]:hover white glow
+   (cursor.css); the wash below is the whole hover treatment. */
+.save-slot-card:hover {
+  filter: none !important;
+}
+
+.save-slot-card--selected {
+  filter: none !important;
+}
+
+/* Faint warm wash over the parchment on hover/selection — negative insets
+   reach from the padding box back over the border-image chrome. */
+.save-slot-card:hover::after,
+.save-slot-card--selected::after {
+  content: '';
+  position: absolute;
+  inset: -12px -16px;
+  border-radius: 8px;
+  background: rgba(255, 214, 150, 0.12);
+  pointer-events: none;
+}
+
+/* Empty slots use the pack's greyed dim scroll; in save mode they stay
+   clickable, so the hover wash and brackets still apply. */
+.save-slot-card--empty {
+  border-image-source: url('/assets/menu/save-load/indigolay-scroll-dim.png');
+}
+
+/* The dim scroll already reads as inactive — a strong opacity fade on top made
+   the text illegible, so the fade stays light. */
+.save-slot-card--disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.save-slot-card--disabled:hover::after {
+  content: none;
+}
+
+/* The side column must fit icon + nowrap timestamp + delete button — too
+   narrow and the timestamp runs under the button. */
+.save-slot-card__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: 1rem;
+}
+
+.save-slot-card__main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* .pixel-font's 2px offset shadow muddies dark ink on light parchment.
+   :where() keeps specificity low so the plaque can restore its own shadow. */
+.save-slot-card :where(.pixel-font) {
+  text-shadow: none;
+}
+
+/* ── Slot plaque ────────────────────────────────────────────────────── */
+
+/* The brown label tab (UI_SloaPane_bg, 127x42 at half scale) pinned over the
+   scroll's top edge. Absolute offsets are from the padding box, so negative
+   values reach up/left into the border-image region. The 0-height top/bottom
+   slices keep the gold-rimmed circle (left 46px of art) unsquashed as long as
+   the plaque stays exactly 21px tall. */
+.save-slot-card__plaque {
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 21px;
+  padding: 0 6px 0 3px;
+  border: 0 solid transparent;
+  border-left-width: 23px;
+  border-right-width: 7px;
+  border-image: url('/assets/menu/save-load/indigolay-slot-plaque.png') 0 14 0 46 fill / 0 7px 0 23px stretch;
+  image-rendering: auto;
+  font-size: 0.5625rem;
+  color: #f7ecd8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Sits centered in the plaque's gold-rimmed circle (circle center is ~12.5px
+   left of the padding box at half art scale). */
+.save-slot-card__plaque-icon {
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  width: 15px;
+  height: 15px;
+  transform: translateY(-50%);
+  image-rendering: pixelated;
+}
+
+/* The autosave mark is chunkier art than the bookmark, so it wants the
+   smaller size (recentered: icon center stays ~12.5px left of the padding box). */
+.save-slot-card--autosave .save-slot-card__plaque-icon {
+  width: 13px;
+  height: 13px;
+  left: -19px;
+}
+
+/* The game's own slot gets a cool slate plaque so it reads as "not yours to
+   manage". hue-rotate barely moves the near-neutral cream label. */
+.save-slot-card--autosave .save-slot-card__plaque {
+  filter: hue-rotate(160deg) saturate(0.75);
+}
+
+/* ── Slot contents (dark ink on parchment) ──────────────────────────── */
+
+.save-slot-card__side {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) 1.7rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding-left: 1rem;
+  border-left: 1px dotted rgba(90, 58, 30, 0.45);
+}
+
+.save-slot-card__details {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.save-slot-card__timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  color: #2a1608;
+}
+
+/* Nudged down: Press Start 2P leaves its descender space empty, so flex
+   centering leaves icons floating above the visible glyphs. */
+.save-slot-card__detail-icon {
+  position: relative;
+  top: 1px;
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+}
+
+.save-slot-card__party {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.save-slot-card__member {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* The pale text-*-200 class tints are for dark backgrounds; darkening them to
+   ink-strength keeps each class hue but reads on light parchment. */
+.save-slot-card__member-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  filter: brightness(0.45) saturate(2.4);
+}
+
+.save-slot-card__member-level {
+  font-size: 0.625rem;
+  color: #2a1608;
+}
+
+/* Row gap first: the location wraps onto its own line, so a single value would
+   space it off the resource tray as widely as items sitting side by side. */
+.save-slot-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.625rem;
+  color: #3d2812;
+}
+
+/* A recessed tray behind the five readouts: without it the small numbers get
+   lost in the parchment's own mottling. */
+.save-slot-card__resources {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(90, 58, 30, 0.3);
+  border-radius: 4px;
+  background: rgba(74, 49, 23, 0.16);
+  box-shadow: inset 0 1px 2px rgba(58, 36, 16, 0.2);
+}
+
+/* The stock resource palette is tuned for dark chrome (coins/gold are #ffd700),
+   which vanishes on parchment — one ink colour for all five, with the sprites
+   left to say which resource is which. Two classes to outrank
+   `.resource-stat--<resource>`, which owns the property by default. */
+.save-slot-card .resource-stat {
+  --rs-value-color: #2a1608;
+}
+
+/* A resource this save has none of: still holds its column, reads as absent. */
+.save-slot-card__stat--empty {
+  opacity: 0.45;
+}
+
+.save-slot-card__location {
+  flex-basis: 100%;
+  color: #2a1608;
+}
+
+/* Pushed to the right edge so the eye can scan playtimes down the column. */
+.save-slot-card__playtime {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  color: #4a3117;
+}
+
+.save-slot-card__empty-text {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0;
+  font-size: 0.625rem;
+  color: #4f4335;
+}
+
+.save-slot-card__empty-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+.save-slot-card__delete {
+  display: flex;
+  width: 1.7rem;
+  height: 1.7rem;
+  align-self: center;
+  justify-self: center;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid rgba(90, 58, 30, 0.5);
+  border-radius: 3px;
+  background: rgba(90, 58, 30, 0.12);
+  cursor: pointer;
+}
+
+.save-slot-card__delete:hover {
+  border-color: #e55353;
+  background: rgba(229, 83, 83, 0.16);
+}
+
+.save-slot-card__delete-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .save-slot-card {
+    border-left-width: 24px;
+    border-right-width: 24px;
+    border-image-width: 22px 24px;
+  }
+
+  .save-slot-card__content {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .save-slot-card__side {
+    min-width: 0;
+    align-items: flex-end;
+    padding-top: 0.5rem;
+    padding-left: 0;
+    border-top: 1px dotted rgba(90, 58, 30, 0.45);
+    border-left: 0;
+  }
+
+  .save-slot-card__meta {
+    gap: 0.4rem;
+  }
+}

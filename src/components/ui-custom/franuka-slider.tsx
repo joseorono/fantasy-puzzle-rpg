@@ -14,7 +14,9 @@ const FranukaSlider = React.forwardRef<
   React.ComponentRef<typeof SliderPrimitive.Root>,
   FranukaSliderProps
 >(({ className, variant = 'default', frameVariant = 'wood', fillInVariant = 'blue', markerVariant = 'block', ...props }, ref) => (
-  <div className={`franuka-slider-wrapper ${variant} frame-${frameVariant} marker-${markerVariant}`}>
+  <div
+    className={`franuka-slider-wrapper ${variant} frame-${frameVariant} marker-${markerVariant}${className ? ` ${className}` : ''}`}
+  >
     <SliderPrimitive.Root
       ref={ref}
       className="franuka-slider"

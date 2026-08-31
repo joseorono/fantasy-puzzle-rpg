@@ -1,3 +1,6 @@
+import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
+import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
+
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
 
@@ -21,6 +24,8 @@ export const assetList: string[] = [
   '/assets/bg/item-shop-bg1.jpg',
   '/assets/bg/item-shop-bg2.jpg',
   '/assets/bg/reception-desk.jpg',
+  '/assets/bg/grid-pattern.svg',
+  ...DUNGEON_BG_IMAGES,
 
   // Looping Backgrounds
   '/assets/bg/looping/bg-board-2.png',
@@ -43,7 +48,25 @@ export const assetList: string[] = [
   '/assets/bg/tc-bg-item-darker.png',
   '/assets/bg/tc-bg-item-lighter.png',
 
+  // Bookmarks
+  //'/assets/bookmarks/ui-bookmark-horizontal-l-red.png',
+  '/assets/bookmarks/ui-bookmark-horizontal-m-red.png',
+
+  // Checkboxes
+  '/assets/checkboxes/indigolay-checkbox-bg.png',
+  '/assets/checkboxes/indigolay-checkbox-mark.png',
+
+  // Decorations
+  '/assets/decorations/indigolay/divider-ornament.png',
+
+  // Indicators
+  '/assets/indicators/indigolay/level-tag-red.png',
+
   // Cursors
+  '/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png',
+  '/assets/cursors/corners/indigolay/indigolay-cursor-topright.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomleft.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-bottomright.png',
   '/assets/cursors/corners/toffeec-beige/toffeec-beige-cursor-topleft.png',
@@ -78,9 +101,55 @@ export const assetList: string[] = [
   '/assets/frame/franuka-05a/frame-top-left-corner.png',
   '/assets/frame/franuka-05a/frame-top-right-corner.png',
 
+  // HUD
+  '/assets/hud/bar-red.png',
+  '/assets/hud/btn-sys.png',
+  '/assets/hud/chip-currency.png',
+
+  // HUD — indigolay progress bars (IndigolayBar)
+  '/assets/hud/indigolay/bar-track.png',
+  '/assets/hud/indigolay/bar-fill-orange.png',
+  '/assets/hud/indigolay/bar-fill-green.png',
+  '/assets/hud/indigolay/bar-fill-sky-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue.png',
+  '/assets/hud/indigolay/bar-fill-blue-green.png',
+  '/assets/hud/indigolay/bar-fill-pink.png',
+  '/assets/hud/indigolay/bar-fill-purple.png',
+  '/assets/hud/indigolay/bar-fill-red.png',
+  '/assets/hud/indigolay/bar-fill-yellow.png',
+
   // Icons
+  '/assets/icons/indigolay/Icon_bookmark-fill.png',
+  '/assets/icons/indigolay/Icon_setting.png',
+  '/assets/icons/indigolay/Icon_share_.png',
+  '/assets/icons/indigolay/Icon_clock-fill.png',
+  '/assets/icons/indigolay/Icon_history.png',
+  '/assets/icons/indigolay/Icon_plus.png',
+  '/assets/icons/indigolay/icon-autosave.png',
+  '/assets/icons/indigolay/Icon_trash.png',
+  '/assets/icons/indigolay/icon-columns.png',
+  '/assets/icons/indigolay/icon-hp.png',
+  '/assets/icons/indigolay/icon-mute.png',
+  '/assets/icons/indigolay/icon-sys-defense.png',
+  '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
+
+  // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
+  ...SKILL_ICON_SHEET_IMAGES,
+
+  // Skills tab chrome (slot frames, deco frame, parchment panel, equip mark)
+  '/assets/skills/ui/indigolay-slot-normal.png',
+  '/assets/skills/ui/indigolay-slot-hover.png',
+  '/assets/skills/ui/indigolay-slot-selected.png',
+  '/assets/skills/ui/indigolay-skill-slot-deco.png',
+  '/assets/skills/ui/indigolay-skill-panel-text-area.png',
+  '/assets/skills/ui/indigolay-icon-equip.png',
+
+  // Save/load slot scrolls (SaveSlotCard chrome)
+  '/assets/menu/save-load/indigolay-scroll-normal.png',
+  '/assets/menu/save-load/indigolay-scroll-dim.png',
+  '/assets/menu/save-load/indigolay-slot-plaque.png',
 
   // Menu assets
   '/assets/menu/back-button-hover.png',
@@ -102,12 +171,21 @@ export const assetList: string[] = [
   '/assets/orbs/orb_yellow.png',
 
   // Sprites
-  '/assets/sprite/character-placeholder.png',
+  '/assets/sprite/placeholder.png',
+
+  // Tabs
+  '/assets/tabs/UI_tab_Off.png',
+  '/assets/tabs/UI_tab_On.png',
 
   // Tilesets
   '/assets/tileset/demo-map-2.png',
   '/assets/tileset/demo-map.png',
   '/assets/tileset/pc-forge-tileset.png',
+
+  // Title Signs
+  '/assets/title-signs/ribbon-red-large.png',
+  '/assets/title-signs/ribbon-red.png',
+  '/assets/title-signs/ribbon-tan.png',
 
   // Transitions
   '/assets/transitions/circle.svg',
@@ -138,7 +216,13 @@ class AssetsService {
   preloadImage = (src: string) =>
     new Promise((resolve, reject) => {
       const img = new Image();
-      img.onload = resolve;
+      img.onload = () => {
+        if ('decode' in img) {
+          img.decode().then(resolve).catch(resolve);
+        } else {
+          resolve(true);
+        }
+      };
       img.onerror = reject;
       img.src = src;
     });
