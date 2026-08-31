@@ -2,177 +2,110 @@
 
 The game store is built with Zustand and uses a slice-based architecture for modularity.
 
-## Features
+## Architecture
 
-- **DevTools Integration**: Redux DevTools support for debugging (dev mode only)
-- **Persistence**: Automatic state persistence to localStorage with versioning
-- **Immer Middleware**: Simplified state updates with draft mutations
-- **Type-Safe**: Full TypeScript support with proper interfaces
-- **Performance**: No barrel exports - direct imports for optimal TypeScript performance
+- **Zustand (`src/stores/game-store.ts`)**: Primary global store managing the 8 core slices.
+- **Jotai (`src/stores/battle-atoms.ts`, `dungeon-atoms.ts`, `pause-menu-atoms.ts`)**: Ephemeral combat, dungeon run, and pause menu UI state.
+- **DevTools Integration**: Redux DevTools support for debugging (dev mode only).
+- **Persistence**: Explicit save slots (3 manual + autosave), not middleware — see `docs/SAVE_LOAD_SYSTEM.md`.
+- **Immer Middleware**: Simplified state updates with draft mutations.
+- **Type-Safe**: Full TypeScript support with slice-specific interfaces.
+- **Performance**: Direct imports and focused selector hooks.
+
+## Store Slices
+
+```
+src/stores/
+├── slices/
+│   ├── resources.ts / resources.types.ts           # Currency & material bars (coins, gold, silver, iron, copper)
+│   ├── party.ts / party.types.ts                   # Hero party members, current HP, stats, and unlocked skill IDs
+│   ├── inventory.ts / inventory.types.ts           # Equipment and consumable items, rarity-keyed stacks
+│   ├── router.ts / router.types.ts                 # Type-safe view router and navigation history
+│   ├── map-progress.ts / map-progress.types.ts     # Completed nodes and character map positions
+│   ├── floor-loot-progress.ts / .types.ts          # Floor loot pickup collection state
+│   ├── crafting.ts / crafting.types.ts             # Crafting pity counters and bad-luck protection
+│   └── dungeon-progress.ts / .types.ts             # Dungeon completion records and replay tracking
+├── game-store.ts                                   # Main Zustand store assembly
+├── battle-atoms.ts                                 # Jotai atoms for combat & match-3 board
+├── dungeon-atoms.ts                                # Jotai atoms for active dungeon runs
+├── pause-menu-atoms.ts                             # Jotai atoms for pause menu tabs & audio settings
+└── save-atoms.ts                                   # Jotai atoms for save slots & indicator
+```
 
 ## Usage
 
-### Basic Usage
+### Reading Store State with Custom Hooks
 
 ```typescript
-import { useGameStore, useGold, useMoneyActions } from '~/stores/game-store';
+import {
+  useResources,
+  useParty,
+  useInventory,
+  useCurrentView,
+  useRouterActions,
+} from '~/stores/game-store';
 
 function MyComponent() {
-  // Get specific value with selector
-  const gold = useGold();
-  
-  // Get all money actions
-  const { addGold, removeGold, setGold } = useMoneyActions();
-  
+  const resources = useResources();
+  const party = useParty();
+  const { items } = useInventory();
+  const currentView = useCurrentView();
+  const { goToTownHub, goToBattleDemo } = useRouterActions();
+
   return (
     <div>
-      <p>Gold: {gold}</p>
-      <button onClick={() => addGold(10)}>Add 10 Gold</button>
-      <button onClick={() => removeGold(5)}>Remove 5 Gold</button>
+      <p>Coins: {resources.coins}</p>
+      <p>Party Size: {party.length}</p>
+      <button onClick={() => goToBattleDemo({ enemyId: 'moss-golem' })}>
+        Battle
+      </button>
     </div>
   );
 }
 ```
 
-### Using Pure Functions
+### Pure Functions for Business Logic
+
+State updates and validation should use pure helper functions from `src/lib/`:
 
 ```typescript
-import { canAfford, deductCost } from '~/lib/money';
-import { useMoneyState, useMoneyActions } from '~/stores/game-store';
+import { canAfford, deductCost } from '~/lib/resources';
+import { useResources, useResourceActions } from '~/stores/game-store';
 
-function ShopItem({ cost }: { cost: { gold: number } }) {
-  const money = useMoneyState();
-  const { setGold } = useMoneyActions();
-  
-  const affordable = canAfford(money, cost);
-  
-  const handlePurchase = () => {
-    if (affordable) {
-      const newResources = deductCost(money, cost);
-      setGold(newResources.gold);
-      // Process purchase...
+function ShopPurchaseButton({ cost }: { cost: Resources }) {
+  const resources = useResources();
+  const { reduceResources } = useResourceActions();
+
+  const handleBuy = () => {
+    if (canAfford(resources, cost)) {
+      reduceResources(cost);
+      // Process item grant...
     }
   };
-  
+
   return (
-    <button 
-      onClick={handlePurchase} 
-      disabled={!affordable}
-    >
-      Buy ({cost.gold} gold)
+    <button onClick={handleBuy} disabled={!canAfford(resources, cost)}>
+      Buy
     </button>
   );
 }
 ```
 
-### Accessing the Full Store
-
-```typescript
-import { useGameStore } from '~/stores/game-store';
-
-function AnyComponent() {
-  // Access any part of the store
-  const store = useGameStore();
-  
-  // Use specific selectors for better performance
-  const gold = useGameStore(state => state.money.gold);
-}
-```
-
-## Store Structure
-
-```
-stores/
-├── slices/
-│   ├── money.ts          # Money slice implementation
-│   └── money.types.ts    # Money slice types
-├── game-store.ts         # Main store with middleware
-└── README.md             # This file
-```
-
-### Current Slices
-
-- **Money Slice** (`slices/money.ts`): Manages the game's currency (gold)
-
-### Adding New Slices
-
-1. Create type definitions in `slices/your-slice.types.ts`
-2. Implement the slice in `slices/your-slice.ts`
-3. Add the slice to `GameStore` type in `game-store.ts`
-4. Merge the slice in the store creator
-
-Example:
-
-```typescript
-// slices/your-slice.types.ts
-import type { BaseSlice } from '../types';
-
-export interface YourSlice extends BaseSlice {
-  yourState: YourState;
-  actions: {
-    yourActions: YourActions;
-  };
-}
-
-// slices/your-slice.ts
-import type { YourSlice } from './your-slice.types';
-import { INITIAL_YOUR_STATE } from '../../constants/your-slice';
-
-export const createYourSlice = (set: any): YourSlice => ({
-  yourState: INITIAL_YOUR_STATE,
-  actions: {
-    yourActions: {
-      someAction: () => set((state: YourSlice) => {
-        // mutate state with immer
-        state.yourState.someValue = newValue;
-      }, false, 'your/someAction'),
-    },
-  },
-});
-
-// game-store.ts
-import type { YourSlice } from './slices/your-slice.types';
-import { createYourSlice } from './slices/your-slice';
-
-export type GameStore = MoneySlice & YourSlice;
-
-export const useGameStore = create<GameStore>()(
-  devtools(
-    persist(
-      immer((set) => ({
-        ...createMoneySlice(set),
-        ...createYourSlice(set),
-      })),
-      // ... config
-    )
-  )
-);
-```
-
-## Middleware
+## Middleware & Reset Rules
 
 ### DevTools
+- Enabled only in development mode.
+- Actions use descriptive names with slice prefixes (e.g., `'resources/addCoins'`, `'party/updateHp'`).
 
-- Enabled only in development mode
-- Each action includes a descriptive name for debugging (e.g., `'money/addGold'`)
-
-### Persist
-
-- **Version**: 1 (increment when making breaking changes to state structure)
-- **Storage**: localStorage
-- **Key**: `fantasy-puzzle-rpg-store`
-- State is automatically rehydrated on app load
+### Persistence & Save Hydration
+Progress is serialized across the 7 persistent gameplay slices (router is excluded because it contains callback refs).
+- `hydrateGameFromSave(save)` — Overwrites slices in one atomic `setState`.
+- `resetGameState()` — Clean new game reset cloning initial constants.
 
 ### Immer
+- Reducers directly mutate draft state safely.
+- Produce immutable updates without manual spreading.
 
-- Allows direct mutation of draft state in reducers
-- Simplifies complex nested state updates
-- Automatically produces immutable updates
+### No Per-Slice Reset
+Slices are spread into one store object, so a top-level `reset()` in individual slices would collide. Whole-game resets must go through `resetGameState()` in `src/stores/game-store.ts`.
 
-## Best Practices
-
-1. **Use Selectors**: Create custom selector hooks for commonly accessed state
-2. **Keep Logic Pure**: Business logic should be in `/lib` as pure functions
-3. **Action Naming**: Use descriptive action names with slice prefix (e.g., `'money/addGold'`)
-4. **Validation**: Always validate inputs in actions (e.g., `validateGoldAmount`)
-5. **Reset Methods**: Include `reset()` in slices for cleanup/testing

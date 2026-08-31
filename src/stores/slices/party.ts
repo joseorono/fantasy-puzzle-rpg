@@ -170,13 +170,4 @@ export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartyS
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: PartySlice) => {
-        state.party.members = INITIAL_PARTY;
-      },
-      false,
-      'party/reset',
-    ),
 });

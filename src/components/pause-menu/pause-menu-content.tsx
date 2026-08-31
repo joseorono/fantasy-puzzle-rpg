@@ -19,8 +19,7 @@ export function PauseMenuContent() {
     'pause-menu-content--skills': activeTab === 'skills',
   });
 
-  // Keyboard flows into the active tab only while the content zone owns it. Save/Load
-  // are placeholders and stay outside the zone system for now.
+  // Keyboard flows into the active tab only while the content zone owns it.
   const keyboardActive = zone === 'content';
   const exitToSidebar = () => setZone('sidebar');
 
@@ -34,8 +33,8 @@ export function PauseMenuContent() {
       {activeTab === 'skills' && <PauseMenuSkills keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'stats' && <PauseMenuStats keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'options' && <PauseMenuOptions keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
-      {activeTab === 'save' && <PauseMenuSave />}
-      {activeTab === 'load' && <PauseMenuLoad />}
+      {activeTab === 'save' && <PauseMenuSave keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
+      {activeTab === 'load' && <PauseMenuLoad keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
     </div>
   );
 }

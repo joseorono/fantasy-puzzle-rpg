@@ -43,13 +43,4 @@ export const createResourcesSlice = (set: SliceSet<ResourcesSlice>): ResourcesSl
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: ResourcesSlice) => {
-        state.resources = INITIAL_RESOURCES_STATE;
-      },
-      false,
-      'resources/reset',
-    ),
 });

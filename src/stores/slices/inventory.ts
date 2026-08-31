@@ -5,9 +5,10 @@ import type { RarityTier } from '~/constants/rarity';
 import type { SliceSet } from '~/types/store';
 
 /**
- * Initial inventory state
+ * Fresh starting inventory. A factory (not a shared constant) so a new game and the
+ * initial store each get their own array, and stack edits can't leak across a reset.
  */
-const INITIAL_INVENTORY_STATE: InventoryItem[] = [
+export const createInitialInventoryState = (): InventoryItem[] => [
   { itemId: 'potion', quantity: 3 },
   { itemId: 'high-potion', quantity: 2 },
   { itemId: 'row-clear', quantity: 2 },
@@ -23,7 +24,7 @@ const INITIAL_INVENTORY_STATE: InventoryItem[] = [
  */
 export const createInventorySlice = (set: SliceSet<InventorySlice>): InventorySlice => ({
   inventory: {
-    items: INITIAL_INVENTORY_STATE,
+    items: createInitialInventoryState(),
   },
 
   actions: {
@@ -65,13 +66,4 @@ export const createInventorySlice = (set: SliceSet<InventorySlice>): InventorySl
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: InventorySlice) => {
-        state.inventory.items = INITIAL_INVENTORY_STATE;
-      },
-      false,
-      'inventory/reset',
-    ),
 });

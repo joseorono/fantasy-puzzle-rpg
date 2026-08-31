@@ -34,13 +34,4 @@ export const createCraftingSlice = (set: SliceSet<CraftingSlice>): CraftingSlice
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: CraftingSlice) => {
-        state.crafting.pity = 0;
-      },
-      false,
-      'crafting/reset',
-    ),
 });

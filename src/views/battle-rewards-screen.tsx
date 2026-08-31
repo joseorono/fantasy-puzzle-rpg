@@ -33,6 +33,7 @@ import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
 import { isReducedMotion } from '~/lib/reduced-motion';
 import { isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -65,6 +66,7 @@ export function BattleRewardsScreen() {
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
   const [randomPotentialStats, setRandomPotentialStats] = useState<CoreRPGStats | null>(null);
+  const { autosave } = useSaveGameActions();
 
   // Handle completion of all level-ups in step 3
   useEffect(() => {
@@ -75,6 +77,8 @@ export function BattleRewardsScreen() {
     // next entry anyway, and resetting here would replay (and re-grant) the whole reward
     // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
+      // Loot, EXP and level-ups are all committed by now, so this is the checkpoint.
+      autosave();
       routerActions.goBack();
       return;
     }
@@ -92,7 +96,7 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions]);
+  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions, autosave]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;

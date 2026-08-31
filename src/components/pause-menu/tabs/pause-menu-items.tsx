@@ -17,7 +17,7 @@ import { getScaledEquipmentStats } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
@@ -217,9 +217,7 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
 
   return (
     <>
-      <h2>
-        <NarikRedwoodBitFont text="ITEMS" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Items" />
       <div className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
           <IndigolayTab

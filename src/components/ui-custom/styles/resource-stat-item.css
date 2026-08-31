@@ -1,7 +1,7 @@
 /* ResourceStatItem — icon + label + animated value.
 
    Three independent modifier axes sit on the same block:
-     .resource-stat--chip / --card / --town   the skin (metrics and chrome)
+     .resource-stat--chip / --card / --town / --compact   the skin (metrics and chrome)
      .resource-stat--coins / --gold / …       the resource (value colour only)
      .resource-stat--riveted                  the golden corner orbs
 
@@ -98,6 +98,26 @@
 
 .resource-stat--chip .resource-stat__value {
   font-size: 0.7rem;
+}
+
+/* ========== COMPACT SKIN (save/load slot cards) ==========
+
+   Icon and number only, no chrome, for readouts that sit inline in a row of
+   text. The label still renders for the DOM's sake but is hidden — at this size
+   the sprite is the only identifier there's room for. Carries no colour of its
+   own, so the resource axis (or a host that overrides --rs-value-color) decides. */
+
+.resource-stat--compact {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+
+.resource-stat--compact .resource-stat__label {
+  display: none;
+}
+
+.resource-stat--compact .resource-stat__value {
+  font-size: 0.625rem;
 }
 
 /* ========== CARD SKIN (battle rewards) ========== */

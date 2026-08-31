@@ -13,6 +13,8 @@ export type ConfirmDialogVariant = 'default' | 'danger';
 export interface ConfirmDialogOptions {
   title: string;
   message?: string;
+  /** Element shown in the header medallion; omit for a title-only header. */
+  icon?: RenderableElement;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: ConfirmDialogVariant;

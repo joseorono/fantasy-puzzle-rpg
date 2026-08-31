@@ -2,7 +2,11 @@ import { produce } from 'immer';
 import type { FloorLootProgressSlice, FloorLootProgressState } from './floor-loot-progress.types';
 import type { SliceSet, SliceGet } from '~/types/store';
 
-const INITIAL_FLOOR_LOOT_PROGRESS_STATE: FloorLootProgressState = {};
+/**
+ * Fresh floor loot progress — nothing collected. A factory (not a shared constant)
+ * so init and reset each get their own object.
+ */
+export const createInitialFloorLootProgressState = (): FloorLootProgressState => ({});
 
 /**
  * Floor loot progress slice - tracks collected floor loot spots across all maps
@@ -12,7 +16,7 @@ export const createFloorLootProgressSlice = (
   set: SliceSet<FloorLootProgressSlice>,
   get: SliceGet<FloorLootProgressSlice>,
 ): FloorLootProgressSlice => ({
-  floorLootProgress: INITIAL_FLOOR_LOOT_PROGRESS_STATE,
+  floorLootProgress: createInitialFloorLootProgressState(),
 
   actions: {
     floorLootProgress: {
@@ -36,7 +40,7 @@ export const createFloorLootProgressSlice = (
       resetFloorLootProgress: () =>
         set(
           (state) => {
-            state.floorLootProgress = INITIAL_FLOOR_LOOT_PROGRESS_STATE;
+            state.floorLootProgress = createInitialFloorLootProgressState();
           },
           false,
           'floorLootProgress/resetFloorLootProgress',

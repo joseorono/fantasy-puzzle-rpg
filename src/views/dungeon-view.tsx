@@ -57,6 +57,7 @@ import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
 import { useConfirm } from '~/hooks/use-confirm';
+import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
@@ -181,6 +182,7 @@ export default function DungeonView() {
   // goBack(): the battle round-trip leaves the router's previousView null.
   const { goToBattleDemo, goBackTo } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
+  const { autosave } = useSaveGameActions();
 
   const pauseMenu = usePauseMenu();
   const confirm = useConfirm();
@@ -230,7 +232,11 @@ export default function DungeonView() {
       // Floor exhausted: advance to the next floor, or finish the dungeon.
       if (isLastFloor(dungeon, liveFloorIndex)) {
         // The single store write of the run. Remixes opt out — their id is throwaway.
-        if (dungeon.recordsCompletion !== false) markDungeonCompleted(dungeon.id);
+        if (dungeon.recordsCompletion !== false) {
+          markDungeonCompleted(dungeon.id);
+          // `set` is synchronous, so the autosave already sees the completion flag.
+          autosave();
+        }
         setPhase('complete');
       } else {
         advanceFloor();
@@ -385,6 +391,7 @@ export default function DungeonView() {
     try {
       const ok = await confirm({
         title: 'Leave Dungeon?',
+        icon: <FrostyRpgIcon name="walnut" size={32} />,
         message: 'You will lose all progress in this run.',
         confirmLabel: 'Leave',
         cancelLabel: 'Stay',

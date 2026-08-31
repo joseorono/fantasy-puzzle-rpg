@@ -20,6 +20,7 @@ export function ConfirmDialogHost() {
     <ConfirmDialog
       title={request.title}
       message={request.message}
+      icon={request.icon}
       confirmLabel={request.confirmLabel}
       cancelLabel={request.cancelLabel}
       variant={request.variant}

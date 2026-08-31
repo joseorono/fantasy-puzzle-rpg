@@ -30,20 +30,9 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
     }
   }, !showMainMenu);
 
-  const handleNewGame = () => {
-    onStartClick();
-  };
-
-  const handleLoadGame = () => {
-    console.log('Load Game clicked');
-  };
-
-  const handleCredits = () => {
-    console.log('Credits clicked');
-  };
-
+  // Load and Credits are handled inside the menu itself, so only New Game bubbles up.
   if (showMainMenu) {
-    return <MainMenu onNewGame={handleNewGame} onLoadGame={handleLoadGame} onCredits={handleCredits} />;
+    return <MainMenu onNewGame={onStartClick} />;
   }
 
   return (
@@ -60,4 +49,3 @@ export function StartMenu({ onStartClick }: StartMenuProps) {
     </div>
   );
 }
-

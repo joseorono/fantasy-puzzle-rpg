@@ -47,4 +47,3 @@ export interface MapProgressSlice extends BaseSlice {
     mapProgress: MapProgressActions;
   };
 }
-

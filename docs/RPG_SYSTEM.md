@@ -190,10 +190,15 @@ Refer to the source file for the complete and up-to-date type definitions.
 - **VIT**: Linear scaling for HP (5 per point); diminishing (hyperbolic) for Guard decay resistance
 - **SPD**: Diminishing returns (hyperbolic), more effective at lower values
 
+## Progression & Skill Integration
+
+- **Leveling System (`src/lib/leveling-system.ts`)**: Characters earn EXP from battle victories, level up, and allocate stat points (POW, VIT, SPD) via the Level-Up screen.
+- **Skill System (`src/lib/skill-system.ts`)**: Active skills (Ultimates) unlock as characters level up; Passive skills with closed-set modifiers are purchased with resources in the pause menu Skills tab.
+
 ## Future Enhancements
 
-### Leveling System (Not Yet Implemented)
-- Experience points and level progression
-- Stat growth on level up
-- Skill unlocks and upgrades
-- See `src/lib/leveling-system.ts` for planned features
+- Status effects (Poison, Burn, Stun, Shield)
+- Elemental matchups (Fire, Ice, Lightning)
+- Random equipment affixes on high-tier gear
+- Boss phases and dynamic enemy transformations
+

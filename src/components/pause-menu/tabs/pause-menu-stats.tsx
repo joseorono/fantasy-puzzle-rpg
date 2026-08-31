@@ -12,7 +12,7 @@ import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
-import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
+import { NarikHeading } from '~/components/typography/narik-heading';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -80,9 +80,7 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
 
   return (
     <>
-      <h2>
-        <NarikRedwoodBitFont text="STATS" size={1.2} />
-      </h2>
+      <NarikHeading as="h2" text="Stats" />
       <div className="pause-menu-stats-layout">
         <div className="pause-menu-party-roster">
           {party.map((member) => (

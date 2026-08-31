@@ -56,5 +56,3 @@ export const reducedMotionAtom = atomWithStorage<boolean>(
   ACCESSIBILITY_DEFAULTS.reducedMotion,
   reducedMotionStorage,
 );
-
-// ToDo: For saving, use saveSlotAtom1, saveSlotAtom2, saveSlotAtom3..

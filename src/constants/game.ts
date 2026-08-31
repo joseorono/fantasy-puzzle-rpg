@@ -40,6 +40,12 @@ export const LOOT_NOTIFICATION_FADE_IN_DELAY_MS = 50;
 /** Duration (ms) before the floor loot notification auto-dismisses with a fade-out. */
 export const FLOOR_LOOT_NOTIFICATION_DISMISS_MS = 1500;
 
+/** How long (ms) the save indicator holds on screen before it starts fading out. */
+export const SAVE_INDICATOR_HOLD_MS = 1800;
+
+/** Save indicator fade-out length (ms). Must match `save-indicator-out`'s duration in its CSS. */
+export const SAVE_INDICATOR_FADE_MS = 350;
+
 /** Columns in the Inn's hero grid. Must match `.inn-party-members-grid`'s CSS `repeat(N, …)`,
  *  since the keyboard cursor chunks the party by it to keep ←/→ spatially truthful. */
 export const INN_HERO_COLUMNS = 4;
