@@ -126,6 +126,7 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/Icon_history.png',
   '/assets/icons/indigolay/Icon_plus.png',
   '/assets/icons/indigolay/icon-autosave.png',
+  '/assets/icons/indigolay/Icon_trash.png',
   '/assets/icons/indigolay/icon-columns.png',
   '/assets/icons/indigolay/icon-hp.png',
   '/assets/icons/indigolay/icon-mute.png',
