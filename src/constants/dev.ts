@@ -9,7 +9,7 @@ import type { Resources } from '~/types/resources';
  * When true, the start menu is skipped after loading and the game jumps straight
  * to the debug view. Saves time while iterating. Keep `false` for normal play.
  */
-export const SKIP_TO_DEBUG_VIEW = true;
+export const SKIP_TO_DEBUG_VIEW = false;
 
 /**
  * When true, browser affordances the game normally suppresses stay available — currently
