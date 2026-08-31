@@ -79,7 +79,7 @@ export function SaveLoadMenu({
     if (confirmLoad) {
       const ok = await confirm({
         title: 'Load Game?',
-        icon: 'openBook',
+        icon: <FrostyRpgIcon name="openBook" size={32} />,
         message: 'Any progress since your last save will be lost.',
         confirmLabel: 'Load',
         variant: 'danger',
@@ -94,7 +94,7 @@ export function SaveLoadMenu({
   async function handleDelete(slotId: SaveSlotId) {
     const ok = await confirm({
       title: 'Delete Save?',
-      icon: 'skull',
+      icon: <FrostyRpgIcon name="skull" size={32} />,
       message: `${SAVE_SLOT_LABELS[slotId]} will be erased for good.`,
       confirmLabel: 'Delete',
       variant: 'danger',
