@@ -391,7 +391,7 @@ export default function DungeonView() {
     try {
       const ok = await confirm({
         title: 'Leave Dungeon?',
-        icon: 'skull',
+        icon: <FrostyRpgIcon name="walnut" size={32} />,
         message: 'You will lose all progress in this run.',
         confirmLabel: 'Leave',
         cancelLabel: 'Stay',

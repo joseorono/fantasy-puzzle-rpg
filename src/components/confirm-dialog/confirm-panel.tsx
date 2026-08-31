@@ -4,7 +4,6 @@ import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button'
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { getNavDirection, isConfirmKey, isCancelKey } from '~/constants/keyboard';
@@ -16,8 +15,8 @@ import type { ConfirmDialogVariant } from '~/stores/confirm-dialog-atoms';
 interface ConfirmPanelProps {
   /** Title shown in the header (rendered with the wood bitmap font). */
   title: string;
-  /** Optional icon shown in a rotated pixel-art medallion above the title. */
-  icon?: FrostyRpgIconName;
+  /** Optional element shown in a rotated pixel-art medallion above the title. */
+  icon?: RenderableElement;
   /** Optional rich body. Plain confirmations can omit this and pass `message` instead. */
   children?: ReactNode;
   /** Convenience text body — rendered as a centered message when `children` is absent. */
@@ -104,11 +103,7 @@ export function ConfirmPanel({
         <ToffecSquareButton variant="medieval1" hasBg size="sm" className="confirm-panel__close" onClick={onCancel} />
 
         <div className="confirm-panel__header">
-          {icon ? (
-            <div className="confirm-panel__medallion">
-              <FrostyRpgIcon name={icon} size={32} />
-            </div>
-          ) : null}
+          {icon ? <div className="confirm-panel__medallion">{icon}</div> : null}
           <div className="confirm-panel__title">
             <NarikWoodBitFont text={title} size={1.1} />
           </div>

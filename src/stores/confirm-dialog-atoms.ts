@@ -5,7 +5,6 @@
  */
 
 import { atom } from 'jotai';
-import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 
 /** Visual emphasis for the confirm action. */
 export type ConfirmDialogVariant = 'default' | 'danger';
@@ -14,8 +13,8 @@ export type ConfirmDialogVariant = 'default' | 'danger';
 export interface ConfirmDialogOptions {
   title: string;
   message?: string;
-  /** Sprite shown in the header medallion; omit for a title-only header. */
-  icon?: FrostyRpgIconName;
+  /** Element shown in the header medallion; omit for a title-only header. */
+  icon?: RenderableElement;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: ConfirmDialogVariant;

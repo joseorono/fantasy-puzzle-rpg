@@ -1,11 +1,10 @@
 import { ConfirmPanel } from './confirm-panel';
-import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import type { ConfirmDialogVariant } from '~/stores/confirm-dialog-atoms';
 
 interface ConfirmDialogProps {
   title: string;
   message?: string;
-  icon?: FrostyRpgIconName;
+  icon?: RenderableElement;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: ConfirmDialogVariant;
