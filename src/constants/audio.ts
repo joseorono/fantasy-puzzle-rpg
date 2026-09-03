@@ -48,10 +48,12 @@ export const soundFiles = {
   [SoundNames.metalSharpening]: '/assets/audio/bg-noise/metal-sharpening.wav',
   [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.wav',
   [SoundNames.uncork]: '/assets/audio/ui/uncork.wav',
-  [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.wav',
-  [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.wav',
-  [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.wav',
-  [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.wav',
+  // Music is Ogg Vorbis: these four were 80.65 MB as WAV, 7.00 MB encoded.
+  // Regenerate with `npm run assets:audio-write` (scripts/convert-audio.mjs).
+  [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.ogg',
+  [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.ogg',
+  [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.ogg',
+  [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.ogg',
   [SoundNames.levelUp]: '/assets/audio/ui/levelup.ogg',
   [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
   [SoundNames.saveChime]: '/assets/audio/ui/chime-saved-1.mp3',
