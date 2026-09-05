@@ -473,6 +473,61 @@ export const addGuardAtom = atom(null, (get, set, amount: number) => {
   });
 });
 
+/**
+ * Single-entry cache for the Guard decay factor. `getPartyPassiveModifiers` walks every
+ * member's passive list and allocates on each call, but the factor only moves when a member
+ * dies or is revived — VIT and passives are frozen for the duration of a battle.
+ *
+ * Keyed on values rather than on the `party` array reference: `tickSkillCooldownsAtom` runs
+ * immediately before the decay tick and allocates a fresh party array (plus fresh member
+ * objects for anyone whose cooldown is counting down), so a reference key would miss every tick.
+ *
+ * The watched fields are exactly what the two functions read: living/dead status and VIT for
+ * `calculateGuardDecayResistance`, the passive and level records for `getPartyPassiveModifiers`.
+ * Anything that starts varying another input mid-battle — a VIT buff, a passive granted during
+ * combat — must be added to `guardDecayFactorInputsMatch` or the factor will go stale.
+ */
+let guardDecayFactorParty: CharacterData[] | null = null;
+let guardDecayFactor = 1;
+
+function guardDecayFactorInputsMatch(party: CharacterData[]): boolean {
+  const cached = guardDecayFactorParty;
+  if (cached === null || cached.length !== party.length) return false;
+
+  for (let i = 0; i < party.length; i++) {
+    const next = party[i];
+    const prev = cached[i];
+    if (next === prev) continue;
+    if (
+      // The living/dead flip matters, the HP value itself does not.
+      next.currentHp > 0 !== prev.currentHp > 0 ||
+      next.stats.vit !== prev.stats.vit ||
+      next.unlockedPassiveIds !== prev.unlockedPassiveIds ||
+      next.skillLevels !== prev.skillLevels
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Resolves the multiplier on the Guard bleed rate, recomputing only when the party inputs it
+ * depends on actually change. Passive resistance stacks multiplicatively with the VIT-derived
+ * curve, and the passive set is frozen with the snapshot party, so this stays deterministic.
+ * @param party The current battle party
+ * @returns The combined decay resistance factor, as `decayGuard` expects it
+ */
+function resolveGuardDecayFactor(party: CharacterData[]): number {
+  if (!guardDecayFactorInputsMatch(party)) {
+    guardDecayFactor =
+      calculateGuardDecayResistance(party) *
+      getPartyPassiveModifiers(party).guardDecayResistanceMultiplier;
+    guardDecayFactorParty = party;
+  }
+  return guardDecayFactor;
+}
+
 // Atom to bleed the Guard meter over time (anti-hoard decay)
 export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);
@@ -483,10 +538,7 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
     guard: decayGuard(
       currentState.guard,
       deltaSeconds,
-      // Passive resistance stacks multiplicatively with the VIT-derived curve. The
-      // passive set is frozen with the snapshot party, so this stays deterministic.
-      calculateGuardDecayResistance(currentState.party) *
-        getPartyPassiveModifiers(currentState.party).guardDecayResistanceMultiplier,
+      resolveGuardDecayFactor(currentState.party),
     ),
   });
 });

@@ -39,9 +39,20 @@ The single biggest issue. `battleStateAtom` (`src/stores/battle-atoms.ts:52`) is
 
 ### 1.3 Cache the guard-decay resistance factor
 
-- [ ] Done
+- [x] Done
 
 `tickGuardDecayAtom` (`:477-492`) recomputes `calculateGuardDecayResistance(party) * getPartyPassiveModifiers(party).guardDecayResistanceMultiplier` every 100 ms while guard > 0. The party composition it depends on only changes on death/revival. **Fix:** cache the factor keyed on the `party` array reference (module-level WeakMap or recompute-on-reference-change inside the tick atom).
+
+**Implemented — but not on the array reference.** A reference key would have hit ~0% of the time: `tickSkillCooldownsAtom` runs immediately before the decay tick in the same interval callback (`battle-screen.tsx:80-81`) and unconditionally allocates a fresh `party` array, so the reference is always new. This only becomes a viable key once **1.1** lands, and even then it would miss whenever a cooldown is mid-countdown.
+
+The cache is keyed on the **values the factor actually depends on**, checked in an allocation-free pass over the ≤4 members:
+
+- living/dead status (the flip, not the HP value) and `stats.vit` — the inputs to `calculateGuardDecayResistance`
+- the `unlockedPassiveIds` and `skillLevels` **references** — the inputs to `getPartyPassiveModifiers`. Both survive the tick's object spread untouched, so they compare equal by identity.
+
+Members are compared index-by-index with an early `continue` on reference equality, so an unchanged party costs a handful of primitive comparisons instead of ~10 object allocations plus a registry walk. Both underlying functions are order-independent, so index-wise comparison is safe. `resolveGuardDecayFactor` and its cache live in `battle-atoms.ts` next to the atom that uses them (there is no store-level test suite; all 704 tests still pass).
+
+⚠️ The comparison list is the correctness boundary: a mid-battle VIT buff or a passive granted during combat would go stale until added to `guardDecayFactorInputsMatch`. Noted in the JSDoc at the call site.
 
 ### 1.4 Batch match-resolution writes
 
