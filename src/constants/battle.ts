@@ -50,6 +50,13 @@ export const STAGGER_VIT_DIVISOR = 8;
  */
 export const PARTY_BAR_SEGMENTS = 10;
 
+/**
+ * Drifting motes in the battle screen's ambient background layer. Purely decorative.
+ * Each one is an always-animating element, so this is the knob to turn down first
+ * when tuning the battle screen for low-end machines.
+ */
+export const BATTLE_AMBIENT_PARTICLE_COUNT = 20;
+
 // ─── Battle Loop ─────────────────────────────────────────────────────────────
 
 /** How often the battle loop ticks Guard decay and skill cooldowns. */
