@@ -62,9 +62,17 @@ One swap currently produces **6–10 sequential whole-state writes** from the ca
 
 ### 1.5 Stable `enemyTimers` output
 
-- [ ] Done
+- [x] Done
 
 `use-enemy-attack-timers.ts:267-288` builds a fresh array of fresh objects every render (which, with 1.1 fixed, becomes rare — but still). Keep the hook's timer logic (it's well-built); just make the returned array only change identity when its contents actually change (compare against a ref).
+
+**Implemented.** The built list is compared field-for-field against `lastTimersRef` by a module-level `timerListsMatch`; when nothing moved the hook hands back the *previous* array. `staggerPulse` is compared by `nonce`/`level` rather than by reference, so mutating a pulse in place could not slip through as "unchanged". Timer logic untouched.
+
+The payoff is in the consumer, not the hook: `enemyTimers` is a prop from `BattleScreen` to `BattleTopBar` (`battle-screen.tsx:102`), which renders up to four `RadialCountdown` rings. A prop that was new by identity on every render defeated the compiler's bailout; now `BattleTopBar` re-renders only at real anchor points (cycle start, mid-battle rebuild, stagger).
+
+⚠️ **Adjacent finding — the hook itself forces the 10 Hz re-render of `BattleScreen`.** `useEnemyAttackTimers` calls `useAtomValue(partyAtom)` (`:73`) purely to keep `partyRef` current for the stagger effect, which reads it inside a callback. That subscription is what re-renders the whole battle screen on every cooldown tick. Note that `enemiesAtom` does **not** have this problem: the tick replaces only `state.party`, so the derived enemies array keeps its identity and Jotai skips the notify.
+
+Fix (not applied — changes subscription semantics, worth doing with 1.1): drop the `partyAtom` subscription and read the party on demand via `useAtomCallback` or `useStore().get(partyAtom)` inside the stagger effect. Even after 1.1 lands, `party` still changes identity whenever any cooldown is counting down — which is most of a fight — so 1.1 alone does not fix this.
 
 **Verify:** React DevTools Profiler on an idle battle — after 1.1/1.2, there should be **zero** re-renders between player actions and enemy attacks (except guard-decay ticks while guard > 0). All existing Vitest suites pass (`npm run test-cli`).
 
@@ -93,9 +101,29 @@ Styles in `src/styles/floating-particles.css`. Count held at 20 — 👁 the opt
 
 ### 2.2 Item bar 60 fps setState loop 🔴
 
-- [ ] Done
+- [x] Done
 
-`battle-item-bar.tsx:45-58` runs a rAF loop calling `setCooldownProgress` every frame for the entire item-cooldown window, re-rendering the whole bar at 60 fps, rebuilding the inline `conic-gradient` string (`:139`) and reading `Date.now()` in render (`:143`). **Fix:** drive the radial sweep in CSS instead — the codebase already has the exact pattern in `RadialCountdown` (`radial-countdown.css:44-64`): a registered `@property` angle animated by a keyframe with `animation-duration` set to the cooldown length, keyed remount on cooldown start. React then renders **twice** per cooldown (start/end) instead of ~60×/sec. Also hoist `calculateItemCooldownInMs`/`getPartyPassiveModifiers` (`:39`) and the `ConsumableItems` filter (`:68`) out of the per-frame path.
+`battle-item-bar.tsx:45-58` ran a rAF loop calling `setCooldownProgress` every frame for the entire item-cooldown window, re-rendering the whole bar at 60 fps, rebuilding the inline `conic-gradient` string (`:139`) and reading `Date.now()` in render (`:143`).
+
+**Implemented, with no visual change.** The wedge is now a registered `@property --item-cd-angle` animated by `battle-item-cd-sweep` (`src/styles/battle-elements.css`), mirroring `RadialCountdown`'s pattern; `animation-duration` is set inline from the party's SPD-derived cooldown and the layer is keyed on the cooldown's end timestamp so each use replays it. The rAF loop, `cooldownProgress` state and the `useCallback` are gone.
+
+- The `Ns` label is the only thing React still moves. It polls every `ITEM_COOLDOWN_LABEL_TICK_MS` (250 ms, `src/constants/battle.ts`) rather than scheduling on second boundaries — a throttled tab can't desync it — and is guarded against repeat values by a ref, so it costs **one render per second**, not four.
+- Polling (rather than one `setTimeout` per second) keeps the digit honest if the tab is backgrounded; the guard is what keeps the render count at 1/s.
+- `ConsumableItems.filter(...)` hoisted to a module-level `BATTLE_ITEMS`. `calculateItemCooldownInMs`/`getPartyPassiveModifiers` are no longer on any per-frame path.
+- `.motion-exempt` on the wedge is deliberate: it is the cooldown *readout*, not decoration, so it must keep its real duration under Reduced Motion — same reasoning the codebase already applies to `.radial-countdown__fill`. Without it the global 1 ms override would blank the wedge while the item was still locked.
+
+**Measured in-browser** (Playwright against the dev server, one full cooldown of 6578 ms):
+
+| | before | after |
+|---|---|---|
+| inline `style` writes inside `#battle-item-bar` | **1837** | **2** |
+| label sequence | `7s…1s` | `7s…1s` (identical) |
+| overlay cleared / button re-enabled | ~6.9 s | ~6.8 s |
+| wedge angle | JS, per frame | linear `28.3°→344.8°`, `animation-duration: 6.578s` |
+
+Reduced Motion re-checked with `data-reduced-motion` set: `animation-duration` stays `6.578s` (not collapsed to `1ms`).
+
+⚠️ Same adjacent finding as 1.5: the bar subscribes to `partyAtom` (`:32`) only to derive `cooldownDuration`, so it still re-renders at 10 Hz from the cooldown tick. That is now the bar's *only* remaining render churn, and it belongs with 1.1.
 
 ### 2.3 Orb keys — verified, no change needed ✅
 

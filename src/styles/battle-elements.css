@@ -19,6 +19,39 @@
     0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+/* Shared item-cooldown pie. The dark wedge shrinks clockwise as the cooldown runs, exactly as
+   the old per-frame JS sweep drew it — but the angle is a registered custom property animated by
+   the compositor, so React renders twice per cooldown instead of ~60 times a second.
+   `animation-duration` is set inline by the component from the party's SPD-derived cooldown.
+
+   `.motion-exempt` is deliberate: this wedge is the cooldown readout, not decoration, so it must
+   keep its real duration under Reduced Motion (same reasoning as `.radial-countdown__fill`).
+   Without it the global 1ms override would blank the wedge while the item was still locked. */
+
+@property --item-cd-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.battle-item-cooldown-pie {
+  background: conic-gradient(
+    from 0deg,
+    transparent var(--item-cd-angle),
+    rgba(0, 0, 0, 0.65) var(--item-cd-angle)
+  );
+  animation: battle-item-cd-sweep linear forwards;
+}
+
+@keyframes battle-item-cd-sweep {
+  from {
+    --item-cd-angle: 0deg;
+  }
+  to {
+    --item-cd-angle: 360deg;
+  }
+}
+
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,
