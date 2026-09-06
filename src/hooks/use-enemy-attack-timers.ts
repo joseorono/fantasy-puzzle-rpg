@@ -42,6 +42,34 @@ export interface EnemyAttackTimer {
 }
 
 /**
+ * Compares two timer lists field by field. `staggerPulse` is compared by value rather than by
+ * reference so that mutating a pulse in place could never slip through as "unchanged".
+ * @param next The list just built this render
+ * @param prev The list handed out on the previous render
+ * @returns True when nothing the UI reads has changed
+ */
+function timerListsMatch(next: EnemyAttackTimer[], prev: EnemyAttackTimer[]): boolean {
+  if (next.length !== prev.length) return false;
+
+  for (let i = 0; i < next.length; i++) {
+    const a = next[i];
+    const b = prev[i];
+    if (
+      a.id !== b.id ||
+      a.durationMs !== b.durationMs ||
+      a.elapsedMs !== b.elapsedMs ||
+      a.cycleKey !== b.cycleKey ||
+      a.isStandby !== b.isStandby ||
+      a.staggerPulse?.nonce !== b.staggerPulse?.nonce ||
+      a.staggerPulse?.level !== b.staggerPulse?.level
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Runs each living enemy's attack loop and reports its timing for the UI.
  *
  * At battle start every enemy first spends a randomized **standby** delay (from
@@ -95,6 +123,8 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   // Guards against re-processing the same hit (effect re-runs / StrictMode double-invoke).
   const processedDamageRef = useRef<typeof lastDamage>(null);
+  // Last list handed to the caller, reused whenever the new one is field-for-field identical.
+  const lastTimersRef = useRef<EnemyAttackTimer[]>([]);
 
   const livingEnemies = enemies.filter((enemy) => enemy.currentHp > 0);
 
@@ -268,7 +298,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastDamage, gameStatus, isBattlePaused]);
 
-  return livingEnemies.map((enemy) => {
+  const timers: EnemyAttackTimer[] = livingEnemies.map((enemy) => {
     const id = enemy.id;
     const isStandby = standbyEnemyIds.includes(id);
     if (isStandby) {
@@ -290,4 +320,12 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       staggerPulse: staggerPulseRef.current.get(id) ?? null,
     };
   });
+
+  // The ring timings only move at anchor points (cycle start, mid-battle rebuild, stagger), but this
+  // list is rebuilt on every render of the battle screen. Handing back the previous array when
+  // nothing changed lets the compiler skip re-rendering `BattleTopBar` and its countdown rings
+  // instead of reconciling them behind a prop that is new only by identity.
+  if (timerListsMatch(timers, lastTimersRef.current)) return lastTimersRef.current;
+  lastTimersRef.current = timers;
+  return timers;
 }
