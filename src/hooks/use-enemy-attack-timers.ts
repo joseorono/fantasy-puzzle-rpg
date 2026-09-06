@@ -221,6 +221,16 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
 
     const now = performance.now();
     const ids = lastDamage.enemyIds ?? (lastDamage.enemyId ? [lastDamage.enemyId] : []);
+    // A multi-color match arrives as one event carrying every hit; a single hit has no `hits`.
+    const rawHits = lastDamage.hits ?? [{ amount: lastDamage.amount, characterId: lastDamage.characterId }];
+    // Attacker passives and the skill bonus scale each hit's raw push; both are applied BEFORE
+    // the per-cycle clamp (inside resolveStaggerHits), so the anti-stunlock cap stays authoritative.
+    const skillMultiplier = lastDamage.source === 'skill' ? SKILL_STAGGER_MULTIPLIER : 1;
+    const hits = rawHits.map((hit) => {
+      const attacker = hit.characterId ? partyRef.current.find((c) => c.id === hit.characterId) : undefined;
+      const passiveMultiplier = attacker ? getCharacterPassiveModifiers(attacker).staggerPushMultiplier : 1;
+      return { amount: hit.amount, multiplier: passiveMultiplier * skillMultiplier };
+    });
 
     for (const id of ids) {
       // Skip enemies still observing (not attacking yet) or without a live attack cycle.
@@ -246,16 +256,6 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       // Pulse the ring shake: bigger on the maxing hit, subtle otherwise.
       const prevNonce = staggerPulseRef.current.get(id)?.nonce ?? 0;
       staggerPulseRef.current.set(id, { nonce: prevNonce + 1, level: maxedFlinch ? 'max' : 'normal' });
-    // A multi-color match arrives as one event carrying every hit; a single hit has no `hits`.
-    const rawHits = lastDamage.hits ?? [{ amount: lastDamage.amount, characterId: lastDamage.characterId }];
-    // Attacker passives and the skill bonus scale each hit's raw push; both are applied BEFORE
-    // the per-cycle clamp (inside resolveStaggerHits), so the anti-stunlock cap stays authoritative.
-    const skillMultiplier = lastDamage.source === 'skill' ? SKILL_STAGGER_MULTIPLIER : 1;
-    const hits = rawHits.map((hit) => {
-      const attacker = hit.characterId ? partyRef.current.find((c) => c.id === hit.characterId) : undefined;
-      const passiveMultiplier = attacker ? getCharacterPassiveModifiers(attacker).staggerPushMultiplier : 1;
-      return { amount: hit.amount, multiplier: passiveMultiplier * skillMultiplier };
-    });
       const release = (releaseAtRef.current.get(id) ?? now) + applied;
       releaseAtRef.current.set(id, release);
       // Re-anchor the ring as "time remaining until release" so the fill visibly steps back by
