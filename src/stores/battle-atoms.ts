@@ -165,9 +165,15 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
   });
 });
 
-// Atom to damage the selected enemy
-export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: number; characterId?: string }) => {
-  const { amount: damage, characterId } = typeof hit === 'number' ? { amount: hit, characterId: undefined } : hit;
+type EnemyHit = { amount: number; characterId?: string };
+
+// Atom to damage the selected enemy. A multi-color match lands all of its colors as ONE batched
+// call (`{ hits }`) so a single `lastDamage` event carries every hit: consumers that only see the
+// final commit (the stagger hook, the damage popup) would otherwise miss all but the last one.
+export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { hits: EnemyHit[] }) => {
+  const hits: EnemyHit[] =
+    typeof hit === 'number' ? [{ amount: hit, characterId: undefined }] : 'hits' in hit ? hit.hits : [hit];
+  if (hits.length === 0) return;
   const currentState = get(battleStateAtom);
 
   // The fight is already decided and the win is just waiting on the cascade to settle. Any
@@ -179,9 +185,11 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: num
 
   // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
   const isPreemptive = (currentState.standbyEnemyIds ?? []).includes(selectedId);
-  const finalDamage = isPreemptive
-    ? Math.round(damage * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS))
-    : damage;
+  const finalHits = isPreemptive
+    ? hits.map((h) => ({ ...h, amount: Math.round(h.amount * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS)) }))
+    : hits;
+  const finalDamage = finalHits.reduce((sum, h) => sum + h.amount, 0);
+  const characterId = finalHits[finalHits.length - 1].characterId;
 
   const enemies = currentState.enemies.map((e) => {
     if (e.id !== selectedId) return e;
@@ -207,7 +215,7 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: num
     enemies,
     selectedEnemyId: newSelectedId,
     pendingVictory: allDead,
-    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId },
+    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId, hits: finalHits },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
 });
@@ -473,6 +481,61 @@ export const addGuardAtom = atom(null, (get, set, amount: number) => {
   });
 });
 
+/**
+ * Single-entry cache for the Guard decay factor. `getPartyPassiveModifiers` walks every
+ * member's passive list and allocates on each call, but the factor only moves when a member
+ * dies or is revived — VIT and passives are frozen for the duration of a battle.
+ *
+ * Keyed on values rather than on the `party` array reference: `tickSkillCooldownsAtom` runs
+ * immediately before the decay tick and allocates a fresh party array (plus fresh member
+ * objects for anyone whose cooldown is counting down), so a reference key would miss every tick.
+ *
+ * The watched fields are exactly what the two functions read: living/dead status and VIT for
+ * `calculateGuardDecayResistance`, the passive and level records for `getPartyPassiveModifiers`.
+ * Anything that starts varying another input mid-battle — a VIT buff, a passive granted during
+ * combat — must be added to `guardDecayFactorInputsMatch` or the factor will go stale.
+ */
+let guardDecayFactorParty: CharacterData[] | null = null;
+let guardDecayFactor = 1;
+
+function guardDecayFactorInputsMatch(party: CharacterData[]): boolean {
+  const cached = guardDecayFactorParty;
+  if (cached === null || cached.length !== party.length) return false;
+
+  for (let i = 0; i < party.length; i++) {
+    const next = party[i];
+    const prev = cached[i];
+    if (next === prev) continue;
+    if (
+      // The living/dead flip matters, the HP value itself does not.
+      next.currentHp > 0 !== prev.currentHp > 0 ||
+      next.stats.vit !== prev.stats.vit ||
+      next.unlockedPassiveIds !== prev.unlockedPassiveIds ||
+      next.skillLevels !== prev.skillLevels
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Resolves the multiplier on the Guard bleed rate, recomputing only when the party inputs it
+ * depends on actually change. Passive resistance stacks multiplicatively with the VIT-derived
+ * curve, and the passive set is frozen with the snapshot party, so this stays deterministic.
+ * @param party The current battle party
+ * @returns The combined decay resistance factor, as `decayGuard` expects it
+ */
+function resolveGuardDecayFactor(party: CharacterData[]): number {
+  if (!guardDecayFactorInputsMatch(party)) {
+    guardDecayFactor =
+      calculateGuardDecayResistance(party) *
+      getPartyPassiveModifiers(party).guardDecayResistanceMultiplier;
+    guardDecayFactorParty = party;
+  }
+  return guardDecayFactor;
+}
+
 // Atom to bleed the Guard meter over time (anti-hoard decay)
 export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);
@@ -483,10 +546,7 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
     guard: decayGuard(
       currentState.guard,
       deltaSeconds,
-      // Passive resistance stacks multiplicatively with the VIT-derived curve. The
-      // passive set is frozen with the snapshot party, so this stays deterministic.
-      calculateGuardDecayResistance(currentState.party) *
-        getPartyPassiveModifiers(currentState.party).guardDecayResistanceMultiplier,
+      resolveGuardDecayFactor(currentState.party),
     ),
   });
 });

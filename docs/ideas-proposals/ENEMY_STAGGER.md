@@ -135,22 +135,26 @@ standby constants), so all stagger tuning sits in one place with the other battl
 
 ## Worked examples (real enemies)
 
-Using `MOSS_GOLEM` (VIT 50, maxHP 300, interval 4000 ms, SPD 0) and `SWAMP_FROG`
-(VIT 10, maxHP 50, effective interval ≈ 2608 ms). Resistances:
+Using `MOSS_GOLEM` (VIT 70, maxHP 400, interval 4000 ms, SPD 0) and `SWAMP_FROG`
+(VIT 16, maxHP 68, effective interval ≈ 2608 ms). Resistances:
 
-- Golem: `vitResist = 1/(1 + √50/8) = 0.531`
-- Frog:  `vitResist = 1/(1 + √10/8) = 0.717`
+- Golem: `vitResist = 1/(1 + √70/8) = 0.489`
+- Frog:  `vitResist = 1/(1 + √16/8) = 0.667`
 
 | Scenario | Golem push | (% of its 4000 ms) | Frog push | (% of its ~2608 ms) |
 |---|---:|---:|---:|---:|
-| **Strong match, 50 dmg** | 212 ms | 5.3% | 187 ms | 7.2% |
-| **Weak match, 12 dmg** | 57 ms | 1.4% | 187 ms | 7.2% |
+| **Strong match, 50 dmg** | 163 ms | 4.1% | 174 ms | 6.7% |
+| **Weak match, 12 dmg** | 39 ms | 1.0% | 174 ms | 6.7% |
+| **Ultimate, full-strength (× `SKILL_STAGGER_MULTIPLIER` 2.5)** | 489 → **480 ms** | **12% (maxed)** | 435 → **313 ms** | **12% (maxed)** |
 | **Per-cycle cap (any # of hits)** | **≤ 480 ms** | **≤ 12%** | **≤ 313 ms** | **≤ 12%** |
 
-Read the middle row: the *same* 12-damage tap barely nudges the golem (1.4% — 12 is a sliver of
-its 300 HP and its poise is high) but meaningfully flinches the frog (7.2% — 12 is a big chunk of
-its 50 HP). Even under a relentless barrage, the golem still attacks at least every 4480 ms and
-the frog every ~2921 ms — the fight's rhythm bends but never breaks.
+Read the middle rows: the *same* 12-damage tap barely nudges the golem (1.0% — 12 is a sliver of
+its 400 HP and its poise is high) but meaningfully flinches the frog (6.7% — 12 is a big chunk of
+its 68 HP). With a default, weaponless party a 3-match deals 12–16, so on the golem the nudge is
+sub-pixel on the ring and the callout needs ~11 hits in one cycle; that is the tuning, not a bug.
+A single-target ultimate maxes the flinch on both in one hit. Even under a relentless barrage,
+the golem still attacks at least every 4480 ms and the frog every ~2921 ms — the fight's rhythm
+bends but never breaks.
 
 ---
 
@@ -170,29 +174,41 @@ slot.
    fresh cycle (`releaseAt = now + interval`, ring restarted), and reschedule.
 
 2. **Stagger on hit (derived state).** A second effect keyed on `lastDamageAtom` runs once per
-   enemy-targeting hit: it computes `calculateStaggerPushMs`, clamps it against the per-cycle
-   budget (`clampStaggerToCycleBudget`), extends `releaseAtRef`, and re-anchors the ring. It skips
-   still-observing (standby) enemies. The running shot timer re-defers itself on its next wake, so
-   staggering never tears the timers down. AoE skills (`enemyIds`) stagger each enemy with its own
-   independent budget.
+   enemy-targeting event: it folds the event's hits (`lastDamage.hits`, or the single `amount`)
+   through `resolveStaggerHits` — each hit scaled by its hero's `staggerPushMultiplier` passive
+   and, for `source: 'skill'`, by `SKILL_STAGGER_MULTIPLIER`, then clamped in order against the
+   per-cycle budget — extends `releaseAtRef`, and re-anchors the ring. It skips still-observing
+   (standby) enemies. The running shot timer re-defers itself on its next wake, so staggering
+   never tears the timers down. AoE skills (`enemyIds`) stagger each enemy with its own
+   independent budget. A multi-color match is committed as **one** `damageEnemy({ hits })` call
+   from `match3-board.tsx`; React only commits the last write in a tick, so batching is what lets
+   every color's hit count.
 
 3. **UI feedback.** Two layers:
    - *Ring nudge* — `RadialCountdown` gained an optional `elapsedMs` prop applied as a negative
-     `animation-delay`. Because a stagger grows the ring's `durationMs` while `elapsedMs` stays
-     fixed to the cycle start, the fill **nudges backward proportionally to the push** (and empties
-     at the new release) — an honest flinch rather than a jarring snap-to-full. Wired through
-     `battle-top-bar.tsx`. The existing `enemy-recoil` sprite reaction covers the per-hit flinch.
+     `animation-delay`. The hook anchors the ring via `resolveCountdownRingAnchor`
+     (`battle-system.ts`) so the fill reads as **time remaining until release against the
+     interval**: a push of `p` ms steps the fill back by `p / interval` wherever it lands, and the
+     sweep still empties exactly at the new release — an honest flinch rather than a snap-to-full.
+     (The first cut kept the cycle start fixed and stretched `durationMs` instead, which only moves
+     the fill by `p × elapsed / interval²` — ~1.5° for a 196 ms push early in a cycle, i.e.
+     invisible.) Wired through `battle-top-bar.tsx`. The fill is exempt from the hitstop freeze
+     (`global-animations.css`): the ring is a wall-clock readout of `releaseAtRef`, and pausing it
+     80 ms per hit made the next re-anchor jump the ring *forward* by more than a weak hit's push.
+     The existing `enemy-recoil` sprite reaction covers the per-hit flinch.
    - *Max-flinch callout* — when a hit pushes a cycle **over its cap** (the moment further hits
      stop delaying the attack), the hook flags `flagMaxFlinchAtom` once per cycle, and the struck
      enemy pops a warm-amber "STAGGER!" float (`enemy-display.tsx` + the `stagger-callout` keyframe
      in `animations.css`, reduced-motion guarded), styled like the per-enemy damage numbers.
 
-4. **Pure helpers + tests.** `calculateStaggerPushMs(damage, enemyMaxHp, vit, interval)` and
-   `clampStaggerToCycleBudget(pushMs, interval, usedMs)` live in `rpg-calculations.ts` (JSDoc'd,
+4. **Pure helpers + tests.** `calculateStaggerPushMs(damage, enemyMaxHp, vit, interval)`,
+   `clampStaggerToCycleBudget(pushMs, interval, usedMs)` and the batch resolver
+   `resolveStaggerHits(hits, enemy, interval, usedMs)` live in `rpg-calculations.ts` (JSDoc'd,
    importing the constants from `~/constants/battle`). Covered in `rpg-calculations.test.ts`
-   (positive push for any hit, VIT monotonicity, damage→plateau at the reference, and a
-   relentless-hits loop proving the per-cycle cap is never exceeded) and benched in
-   `rpg-calculations.bench.ts`.
+   (positive push for any hit, VIT monotonicity, damage→plateau at the reference, a
+   relentless-hits loop proving the per-cycle cap is never exceeded, every hit in a batch
+   counting, `maxedFlinch` firing exactly once per cycle, and the skill multiplier maxing the
+   flinch on both demo enemies) and benched in `rpg-calculations.bench.ts`.
 
 ---
 
@@ -224,5 +240,6 @@ slot.
   `enemyMaxHp` if high-VIT enemies feel *too* immovable.
 - **Preemptive-strike interaction.** A preemptive strike is already +25% damage — should it also
   grant a small flat stagger bonus, or is the higher damage (→ higher `damageRatio`) enough?
-- **Skill hits.** Confirm big single-target skills should stagger through the same path; AoE
+- **Skill hits — resolved.** Skills stagger through the same `lastDamage` path with a
+  `SKILL_STAGGER_MULTIPLIER` (2.5) bonus so one ultimate maxes the flinch on most enemies; AoE
   skills would apply the push per enemy (each with its own capped budget).

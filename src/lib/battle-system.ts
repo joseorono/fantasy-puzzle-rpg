@@ -60,6 +60,32 @@ export function generateEnemyStandbyDelays(
   return delays;
 }
 
+/** Geometry for one countdown ring: total sweep length and how far into it the fill starts. */
+export interface CountdownRingAnchor {
+  /** Ring length in ms; the fill empties exactly when the enemy's attack releases */
+  durationMs: number;
+  /** Negative animation offset in ms, so a remount resumes mid-sweep instead of snapping to full */
+  elapsedMs: number;
+}
+
+/**
+ * Anchors an enemy's countdown ring so the fill reads as **time remaining until its attack**,
+ * measured against its normal attack interval. Extending the ring's total instead (keeping the
+ * cycle start fixed) would only shift the fill by `push × elapsed / interval²`, so a stagger early
+ * in a cycle would be invisible; this keeps the sweep length constant and moves the start back,
+ * so a push of `p` ms always visibly nudges the fill back by `p / interval` of the ring.
+ * When more than one full interval remains (a push landed right after the cycle opened) the ring
+ * shows full and lengthens its sweep to still empty exactly at release.
+ * @param intervalMs The enemy's effective attack interval in ms (the ring's normal sweep length)
+ * @param remainingMs Milliseconds until the enemy's next attack releases
+ * @returns The ring's sweep length and elapsed offset
+ */
+export function resolveCountdownRingAnchor(intervalMs: number, remainingMs: number): CountdownRingAnchor {
+  const remaining = Math.max(0, remainingMs);
+  if (remaining >= intervalMs) return { durationMs: remaining, elapsedMs: 0 };
+  return { durationMs: intervalMs, elapsedMs: intervalMs - remaining };
+}
+
 /**
  * Creates a fresh BattleState for a given party and set of enemies.
  * Bakes equipment bonuses into party stats, sets skills on cooldown,

@@ -7,6 +7,7 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
+import { FloatingParticles } from '~/components/effects/floating-particles';
 import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
 import {
   gameStatusAtom,
@@ -106,8 +107,6 @@ export default function BattleScreen() {
         {/* Main battle area - Split view */}
         <div className="battleContainer">
           <div className="battleArea">
-            
-
             {/* Right/Bottom section - Party */}
             <div
               className="partySection relative"
@@ -158,20 +157,7 @@ export default function BattleScreen() {
       </div>
 
       {/* Floating particles effect */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute h-1 w-1 animate-pulse rounded-full bg-white opacity-30"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-            }}
-          />
-        ))}
-      </div>
+      <FloatingParticles />
 
       {/* Ace Attorney-style skill burst overlay */}
       <SkillBurstOverlay />
