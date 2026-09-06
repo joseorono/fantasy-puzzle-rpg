@@ -2,7 +2,14 @@ import { expect, test, describe } from 'vitest';
 import * as rpg from './rpg-calculations';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { createEmptyLootTable } from '~/types/loot';
-import { GUARD_DECAY_RATE, GUARD_MAX, MAX_COMBO_MULTIPLIER, POW_DAMAGE_PERCENT_PER_POINT } from '~/constants/battle';
+import {
+  GUARD_DECAY_RATE,
+  GUARD_MAX,
+  MAX_COMBO_MULTIPLIER,
+  MAX_STAGGER_FRACTION_PER_CYCLE,
+  POW_DAMAGE_PERCENT_PER_POINT,
+  SKILL_STAGGER_MULTIPLIER,
+} from '~/constants/battle';
 import { ENEMY_EXP_FLAT } from '~/constants/progression';
 
 // ============================================================================
@@ -448,6 +455,76 @@ describe('Stagger Calculations', () => {
       used += rpg.clampStaggerToCycleBudget(push, interval, used);
     }
     expect(used).toBeLessThanOrEqual(interval * 0.12 + 1e-9);
+  });
+
+  // Demo roster stats (src/constants/enemies/world-00): the tankiest and frailest enemies.
+  const mossGolem = { maxHp: 400, vit: 70 };
+  const swampFrog = { maxHp: 68, vit: 16 };
+  const golemInterval = 4000;
+  const frogInterval = 2608;
+
+  test('resolveStaggerHits: an empty batch applies nothing and never maxes', () => {
+    expect(rpg.resolveStaggerHits([], mossGolem, golemInterval, 0)).toEqual({ appliedMs: 0, maxedFlinch: false });
+  });
+
+  test('resolveStaggerHits: a single hit matches the standalone push', () => {
+    const expected = rpg.calculateStaggerPushMs(13, mossGolem.maxHp, mossGolem.vit, golemInterval);
+    const { appliedMs } = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
+    expect(appliedMs).toBeCloseTo(expected, 6);
+  });
+
+  test('resolveStaggerHits: every hit in a batch counts (multi-color match regression)', () => {
+    const one = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
+    const two = rpg.resolveStaggerHits(
+      [
+        { amount: 13, multiplier: 1 },
+        { amount: 16, multiplier: 1 },
+      ],
+      mossGolem,
+      golemInterval,
+      0,
+    );
+    expect(two.appliedMs).toBeGreaterThan(one.appliedMs);
+    const separate =
+      rpg.calculateStaggerPushMs(13, mossGolem.maxHp, mossGolem.vit, golemInterval) +
+      rpg.calculateStaggerPushMs(16, mossGolem.maxHp, mossGolem.vit, golemInterval);
+    expect(two.appliedMs).toBeCloseTo(separate, 6);
+  });
+
+  test('resolveStaggerHits: per-hit multipliers scale the push before the clamp', () => {
+    const plain = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
+    const boosted = rpg.resolveStaggerHits([{ amount: 13, multiplier: 2 }], mossGolem, golemInterval, 0);
+    expect(boosted.appliedMs).toBeCloseTo(plain.appliedMs * 2, 6);
+  });
+
+  test('resolveStaggerHits: a batch never exceeds the remaining per-cycle budget', () => {
+    const capMs = golemInterval * MAX_STAGGER_FRACTION_PER_CYCLE;
+    const hits = Array.from({ length: 10 }, () => ({ amount: 9999, multiplier: 1 }));
+    const fresh = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 0);
+    expect(fresh.appliedMs).toBeCloseTo(capMs, 6);
+    const partlySpent = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 300);
+    expect(partlySpent.appliedMs).toBeCloseTo(capMs - 300, 6);
+  });
+
+  test('resolveStaggerHits: maxedFlinch fires once, on the batch that crosses the cap', () => {
+    const hits = Array.from({ length: 10 }, () => ({ amount: 9999, multiplier: 1 }));
+    const crossing = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 0);
+    expect(crossing.maxedFlinch).toBe(true);
+    // Same cycle, budget already spent: nothing applies and the callout must not re-fire.
+    const followUp = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, crossing.appliedMs);
+    expect(followUp).toEqual({ appliedMs: 0, maxedFlinch: false });
+    // A weak batch that stays under the cap never flags.
+    const weak = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
+    expect(weak.maxedFlinch).toBe(false);
+  });
+
+  test('SKILL_STAGGER_MULTIPLIER: one full-strength ultimate maxes the flinch on both demo enemies', () => {
+    const ultimate = [{ amount: 9999, multiplier: SKILL_STAGGER_MULTIPLIER }];
+    expect(rpg.resolveStaggerHits(ultimate, mossGolem, golemInterval, 0).maxedFlinch).toBe(true);
+    expect(rpg.resolveStaggerHits(ultimate, swampFrog, frogInterval, 0).maxedFlinch).toBe(true);
+    // Without the bonus the same hit only nudges the Golem (documents why the bonus exists).
+    const plain = [{ amount: 9999, multiplier: 1 }];
+    expect(rpg.resolveStaggerHits(plain, mossGolem, golemInterval, 0).maxedFlinch).toBe(false);
   });
 });
 

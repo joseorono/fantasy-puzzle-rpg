@@ -165,9 +165,15 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
   });
 });
 
-// Atom to damage the selected enemy
-export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: number; characterId?: string }) => {
-  const { amount: damage, characterId } = typeof hit === 'number' ? { amount: hit, characterId: undefined } : hit;
+type EnemyHit = { amount: number; characterId?: string };
+
+// Atom to damage the selected enemy. A multi-color match lands all of its colors as ONE batched
+// call (`{ hits }`) so a single `lastDamage` event carries every hit: consumers that only see the
+// final commit (the stagger hook, the damage popup) would otherwise miss all but the last one.
+export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { hits: EnemyHit[] }) => {
+  const hits: EnemyHit[] =
+    typeof hit === 'number' ? [{ amount: hit, characterId: undefined }] : 'hits' in hit ? hit.hits : [hit];
+  if (hits.length === 0) return;
   const currentState = get(battleStateAtom);
 
   // The fight is already decided and the win is just waiting on the cascade to settle. Any
@@ -179,9 +185,11 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: num
 
   // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
   const isPreemptive = (currentState.standbyEnemyIds ?? []).includes(selectedId);
-  const finalDamage = isPreemptive
-    ? Math.round(damage * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS))
-    : damage;
+  const finalHits = isPreemptive
+    ? hits.map((h) => ({ ...h, amount: Math.round(h.amount * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS)) }))
+    : hits;
+  const finalDamage = finalHits.reduce((sum, h) => sum + h.amount, 0);
+  const characterId = finalHits[finalHits.length - 1].characterId;
 
   const enemies = currentState.enemies.map((e) => {
     if (e.id !== selectedId) return e;
@@ -207,7 +215,7 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | { amount: num
     enemies,
     selectedEnemyId: newSelectedId,
     pendingVictory: allDead,
-    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId },
+    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId, hits: finalHits },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
 });

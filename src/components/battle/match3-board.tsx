@@ -374,15 +374,15 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // Show highlight for a moment, then resolve every matched color's effect together.
     setTimeout(() => {
-      let didDamage = false;
+      // Every damaging color lands as one batched hit so a single `lastDamage` event carries them all.
+      const hits = pendingEffects
+        .filter((effect) => !effect.isHeal)
+        .map((effect) => ({ amount: effect.amount, characterId: effect.characterId }));
+      const didDamage = hits.length > 0;
       for (const effect of pendingEffects) {
-        if (effect.isHeal) {
-          healParty({ amount: effect.amount, source: 'match' });
-        } else {
-          damageEnemy({ amount: effect.amount, characterId: effect.characterId });
-          didDamage = true;
-        }
+        if (effect.isHeal) healParty({ amount: effect.amount, source: 'match' });
       }
+      if (didDamage) damageEnemy({ hits });
 
       if (pendingEffects.length > 0) {
         // Freeze-frame once on the moment damage lands (skip on heal-only moves).

@@ -440,6 +440,52 @@ export function clampStaggerToCycleBudget(pushMs: number, interval: number, used
   return Math.max(0, Math.min(pushMs, capMs - usedMs));
 }
 
+/** One hit's contribution to a stagger batch: raw damage plus any push multipliers already folded in. */
+export interface StaggerHit {
+  /** Damage dealt by this hit */
+  amount: number;
+  /** Product of every push multiplier for this hit (attacker passives, skill bonus); 1 = none */
+  multiplier: number;
+}
+
+/** Result of resolving a batch of hits against an enemy's per-cycle stagger budget. */
+export interface StaggerResolution {
+  /** Total push-back (ms) to add to the enemy's next release this batch, after clamping */
+  appliedMs: number;
+  /** True when this batch is the one that reaches the per-cycle cap (a once-per-cycle transition) */
+  maxedFlinch: boolean;
+}
+
+/**
+ * Resolves a batch of hits landing on one enemy at the same moment (e.g. every color of a
+ * multi-color match) into a single stagger push. Each hit is scaled by
+ * {@link calculateStaggerPushMs} and its own multiplier, then clamped in order against the
+ * shared per-cycle budget via {@link clampStaggerToCycleBudget}, so the anti-stunlock cap holds
+ * no matter how many hits a batch carries.
+ * @param hits The hits in this batch (empty = no push)
+ * @param enemy The struck enemy's durability (`maxHp`) and poise (`vit`)
+ * @param interval The enemy's effective attack interval in ms
+ * @param usedMs Push-back already applied during the current attack cycle
+ * @returns The push to apply and whether this batch crossed the per-cycle cap
+ */
+export function resolveStaggerHits(
+  hits: StaggerHit[],
+  enemy: { maxHp: number; vit: number },
+  interval: number,
+  usedMs: number,
+): StaggerResolution {
+  const capMs = interval * MAX_STAGGER_FRACTION_PER_CYCLE;
+  let appliedMs = 0;
+
+  for (const hit of hits) {
+    const push = calculateStaggerPushMs(hit.amount, enemy.maxHp, enemy.vit, interval) * hit.multiplier;
+    appliedMs += clampStaggerToCycleBudget(push, interval, usedMs + appliedMs);
+  }
+
+  const maxedFlinch = usedMs < capMs && usedMs + appliedMs >= capMs - 1e-6;
+  return { appliedMs, maxedFlinch };
+}
+
 // ============================================================================
 // HP Threshold
 // ============================================================================

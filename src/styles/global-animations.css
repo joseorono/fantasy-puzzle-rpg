@@ -21,9 +21,11 @@
 }
 
 /* ---- Hitstop freeze-frame (applied to #game-screen on impact) ---- */
-/* Pause every running animation underneath, plus a barely-perceptible scale punch for weight. */
+/* Pause every running animation underneath, plus a barely-perceptible scale punch for weight.
+   The countdown ring fill is exempt: it is a wall-clock readout of the enemy's real release time,
+   and freezing it would drift it behind the actual attack timer on every hit. */
 #game-screen.hitstop-freeze,
-#game-screen.hitstop-freeze * {
+#game-screen.hitstop-freeze *:not(.radial-countdown__fill) {
   animation-play-state: paused !important;
 }
 

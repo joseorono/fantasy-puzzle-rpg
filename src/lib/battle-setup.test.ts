@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { createBattleState, generateEnemyStandbyDelays } from './battle-system';
+import { createBattleState, generateEnemyStandbyDelays, resolveCountdownRingAnchor } from './battle-system';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
 
 /**
@@ -164,5 +164,40 @@ describe('generateEnemyStandbyDelays', () => {
     const a = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
     const b = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
     expect(a).toEqual(b);
+  });
+});
+
+describe('resolveCountdownRingAnchor', () => {
+  const interval = 4000;
+
+  it('a fresh cycle is a full ring over the interval', () => {
+    expect(resolveCountdownRingAnchor(interval, interval)).toEqual({ durationMs: interval, elapsedMs: 0 });
+  });
+
+  it('mid-cycle keeps the sweep length and offsets by the time already spent', () => {
+    expect(resolveCountdownRingAnchor(interval, 3000)).toEqual({ durationMs: interval, elapsedMs: 1000 });
+    expect(resolveCountdownRingAnchor(interval, 0)).toEqual({ durationMs: interval, elapsedMs: interval });
+  });
+
+  it('a stagger push moves the fill back by exactly push / interval, regardless of when it lands', () => {
+    const push = 200;
+    for (const elapsed of [300, 1000, 3900]) {
+      const before = resolveCountdownRingAnchor(interval, interval - elapsed);
+      const after = resolveCountdownRingAnchor(interval, interval - elapsed + push);
+      const fillBefore = 1 - before.elapsedMs / before.durationMs;
+      const fillAfter = 1 - after.elapsedMs / after.durationMs;
+      expect(fillAfter - fillBefore).toBeCloseTo(push / interval, 6);
+    }
+  });
+
+  it('more than a full interval remaining shows a full ring that still empties at release', () => {
+    expect(resolveCountdownRingAnchor(interval, 4150)).toEqual({ durationMs: 4150, elapsedMs: 0 });
+    // A push landing right after the cycle opens clamps at full rather than overfilling.
+    const early = resolveCountdownRingAnchor(interval, interval - 100 + 200);
+    expect(1 - early.elapsedMs / early.durationMs).toBe(1);
+  });
+
+  it('never produces a negative offset from a release already in the past', () => {
+    expect(resolveCountdownRingAnchor(interval, -50)).toEqual({ durationMs: interval, elapsedMs: interval });
   });
 });

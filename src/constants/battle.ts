@@ -45,6 +45,12 @@ export const STAGGER_REF_FRACTION = 0.15;
 export const STAGGER_VIT_DIVISOR = 8;
 
 /**
+ * Multiplies the raw stagger push of skill (ultimate) hits before the per-cycle clamp, so a
+ * single ultimate reliably maxes the flinch on most enemies. Never bypasses the cap.
+ */
+export const SKILL_STAGGER_MULTIPLIER = 2.5;
+
+/**
  * Notches drawn across the party HP and Guard bars. Purely visual — it does not
  * segment the underlying values, which stay continuous percentages.
  */
@@ -64,6 +70,13 @@ export const BATTLE_TICK_INTERVAL_MS = 100;
 
 /** The tick interval as seconds, for the rate-based systems the loop drives. */
 export const BATTLE_TICK_DELTA_SECONDS = BATTLE_TICK_INTERVAL_MS / 1000;
+
+/**
+ * How often the item bar re-reads the clock for its "Ns" cooldown label. The sweeping wedge is a
+ * CSS animation and does not depend on this; only the digit does, and it is guarded against repeat
+ * values, so the bar still re-renders at most once per second no matter how small this gets.
+ */
+export const ITEM_COOLDOWN_LABEL_TICK_MS = 250;
 
 // ─── Damage Pipeline ─────────────────────────────────────────────────────────
 // Damage is a pure product of multipliers: base * matchSize * cascade * POW * gray * preemptive.

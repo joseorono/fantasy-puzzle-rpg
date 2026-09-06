@@ -57,6 +57,8 @@ export interface BattleState {
     enemyId?: string;
     /** Multiple targets hit at once (e.g. an all-enemy skill). Each id flinches. */
     enemyIds?: string[];
+    /** Individual hits folded into this event (a multi-color match). Absent = one hit of `amount`. */
+    hits?: Array<{ amount: number; characterId?: string }>;
     /** What produced the hit. A missing value is treated as `'match'` by consumers. */
     source?: 'match' | 'skill' | 'enemy';
     /** Set when the incoming party hit was mitigated by Guard. */
