@@ -62,6 +62,44 @@
   color: #a08a6a;
 }
 
+/* Shown in place of the slot list while saving is locked (inside a dungeon). */
+.save-load-menu__locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.save-load-menu__locked-icon {
+  filter: grayscale(0.6) brightness(0.85);
+}
+
+.save-load-menu__locked-title {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: #fff8dc;
+}
+
+.save-load-menu__locked-text {
+  margin: 0;
+  font-size: 0.55rem;
+  line-height: 1.7;
+  color: #a08a6a;
+}
+
 /* ── Slot card ──────────────────────────────────────────────────────── */
 
 .save-slot-card {

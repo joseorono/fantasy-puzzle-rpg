@@ -29,7 +29,11 @@ function and a by-reference `DungeonDefinition`, neither of which survives JSON.
 on, and `mapProgress.characterPositions` supplies the tile within it.
 
 Mid-dungeon runs are not resumable: the run lives entirely in Jotai atoms
-(`src/stores/dungeon-atoms.ts`) and is discarded on load, by design.
+(`src/stores/dungeon-atoms.ts`) and is discarded on load, by design. For the same reason
+**manual saving is locked while a run is active** (`activeDungeonIdAtom !== null`):
+`useIsSaveLocked` drives a locked notice in the pause menu's Save tab and dims its sidebar
+entry, and `saveToSlot` refuses manual slots outright. The autosave is exempt so the
+run-completion autosave, which fires before the run is torn down, still lands.
 
 ### Versioning and corrupt data
 
