@@ -12,8 +12,7 @@ import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike
 import { BoardReshuffleIndicator } from '~/components/battle/board-reshuffle-indicator';
 import {
   gameStatusAtom,
-  tickSkillCooldownsAtom,
-  tickGuardDecayAtom,
+  battleTickAtom,
   ensureFreshBattleAtom,
 } from '~/stores/battle-atoms';
 import { useParty, useViewData } from '~/stores/game-store';
@@ -29,8 +28,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 
 export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
-  const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
-  const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
+  const battleTick = useSetAtom(battleTickAtom);
   const party = useParty();
   const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
   const [isBattlePaused, setIsBattlePaused] = useState(false);
@@ -78,12 +76,11 @@ export default function BattleScreen() {
     if (gameStatus !== 'playing' || isBattlePaused === true) return;
 
     const interval = setInterval(() => {
-      tickSkillCooldowns(BATTLE_TICK_DELTA_SECONDS);
-      tickGuardDecay(BATTLE_TICK_DELTA_SECONDS);
+      battleTick(BATTLE_TICK_DELTA_SECONDS);
     }, BATTLE_TICK_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [gameStatus, isBattlePaused, tickSkillCooldowns, tickGuardDecay]);
+  }, [gameStatus, isBattlePaused, battleTick]);
 
   // Combat music
   useEffect(() => {

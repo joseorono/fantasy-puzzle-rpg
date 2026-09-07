@@ -1,7 +1,7 @@
-import { atom } from 'jotai';
+import { atom, type Atom } from 'jotai';
 import type { BattleState, BattleStatus } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
-import type { CharacterData, EnemyData } from '~/types/rpg-elements';
+import type { CharacterData, EnemyData, OrbType } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
@@ -33,7 +33,13 @@ import {
   healAndReviveAllPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
-import { getNextLivingEnemyId, createBattleState, tickPartySkillCooldowns } from '~/lib/battle-system';
+import {
+  getNextLivingEnemyId,
+  createBattleState,
+  tickPartySkillCooldowns,
+  reducePartySkillCooldowns,
+  type SkillCooldownReduction,
+} from '~/lib/battle-system';
 import { swapOrbs, isValidSwap } from '~/lib/match-3';
 import { removeMatchedOrbsAndRefill } from '~/lib/board-generation';
 import type { BattleRatingResult } from '~/lib/battle-rating';
@@ -81,6 +87,26 @@ export const itemCooldownMsAtom = atom((get) => {
   const party = get(partyAtom);
   return calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
 });
+
+// The roster as one joined string, so the party grid can lay out its slots without re-rendering
+// on cooldown ticks.
+export const partyMemberIdsAtom = atom((get) =>
+  get(partyAtom)
+    .map((char) => char.id)
+    .join(','),
+);
+
+// One derived atom per hero, cached by id. Every party mutation copies only the members it touches,
+// so a member atom keeps its value's identity — and stays silent — until *that* hero changes.
+const partyMemberAtoms = new Map<string, Atom<CharacterData | undefined>>();
+export function partyMemberAtom(characterId: string): Atom<CharacterData | undefined> {
+  let memberAtom = partyMemberAtoms.get(characterId);
+  if (!memberAtom) {
+    memberAtom = atom((get) => get(partyAtom).find((char) => char.id === characterId));
+    partyMemberAtoms.set(characterId, memberAtom);
+  }
+  return memberAtom;
+}
 
 // Derived atoms for the party Guard meter
 export const guardAtom = atom((get) => get(battleStateAtom).guard);
@@ -465,6 +491,39 @@ export const fillPartyUltimateAtom = atom(null, (get, set, amount: number) => {
   set(battleStateAtom, { ...currentState, party });
 });
 
+/** Everything a resolved match writes synchronously, applied by {@link applyMatchResolutionAtom}. */
+export interface MatchResolution {
+  /** Score earned by this match. */
+  scoreDelta: number;
+  /** First-seen matched colour, driving the party pulse; null leaves the previous value in place. */
+  primaryMatchedType: OrbType | null;
+  /** Cooldown reduction per matched colour's hero. Dead or already-ready heroes are skipped. */
+  cooldownReductions: ReadonlyArray<SkillCooldownReduction>;
+  /** Guard gained from grey orbs (0 when none). */
+  guardGain: number;
+  /** Cascade chain length reached; the running max is kept. */
+  combo: number;
+}
+
+// Applies one resolved match in a single write. Replaces the five back-to-back writes the board
+// used to issue (score, lastMatchedType, per-colour cooldown, guard, max combo), each of which
+// re-spread the whole state and committed separately. Same per-field guards as those atoms:
+// score and max combo always apply; cooldowns and guard only while the battle is in progress.
+export const applyMatchResolutionAtom = atom(null, (get, set, resolution: MatchResolution) => {
+  const currentState = get(battleStateAtom);
+  const isPlaying = currentState.gameStatus === 'playing';
+  const { scoreDelta, primaryMatchedType, cooldownReductions, guardGain, combo } = resolution;
+
+  set(battleStateAtom, {
+    ...currentState,
+    score: currentState.score + scoreDelta,
+    lastMatchedType: primaryMatchedType ?? currentState.lastMatchedType,
+    party: isPlaying ? reducePartySkillCooldowns(currentState.party, cooldownReductions) : currentState.party,
+    guard: isPlaying && guardGain > 0 ? Math.min(GUARD_MAX, currentState.guard + guardGain) : currentState.guard,
+    maxCombo: Math.max(currentState.maxCombo ?? 0, combo),
+  });
+});
+
 // Atom to tick skill cooldowns each frame. Writes nothing when no cooldown is running, so the
 // idle battle screen is not re-rendered 10x/s (the reducer returns the same array in that case).
 export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number) => {
@@ -556,6 +615,24 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
       resolveGuardDecayFactor(currentState.party),
     ),
   });
+});
+
+// One write per battle tick: skill cooldowns and Guard decay together. Replaces the interval's
+// back-to-back `tickSkillCooldownsAtom` + `tickGuardDecayAtom` calls (two whole-state writes and
+// two commit passes whenever both had work). Same math; the decay factor is resolved against the
+// post-tick party exactly as the second write used to see it.
+export const battleTickAtom = atom(null, (get, set, deltaSeconds: number) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+
+  const party = tickPartySkillCooldowns(currentState.party, deltaSeconds);
+  const guard =
+    currentState.guard > 0
+      ? decayGuard(currentState.guard, deltaSeconds, resolveGuardDecayFactor(party))
+      : currentState.guard;
+  if (party === currentState.party && guard === currentState.guard) return;
+
+  set(battleStateAtom, { ...currentState, party, guard });
 });
 
 // Atom to increment turn counter

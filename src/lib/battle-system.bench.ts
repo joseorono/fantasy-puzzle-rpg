@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { tickPartySkillCooldowns } from './battle-system';
+import { tickPartySkillCooldowns, reducePartySkillCooldowns } from './battle-system';
 import { BENCH_OPTIONS } from './bench-options';
 import { INITIAL_PARTY } from '~/constants/party';
 import { BATTLE_TICK_DELTA_SECONDS } from '~/constants/battle';
@@ -38,6 +38,40 @@ describe('tickPartySkillCooldowns (pure, no Jotai)', () => {
     'all four running',
     () => {
       tickPartySkillCooldowns(allRunningParty, DELTA);
+    },
+    BENCH_OPTIONS,
+  );
+});
+
+const oneReduction = [{ characterId: INITIAL_PARTY[0].id, amount: 0.9 }];
+const twoReductions = [
+  { characterId: INITIAL_PARTY[0].id, amount: 0.9 },
+  { characterId: INITIAL_PARTY[1].id, amount: 0.9 },
+];
+
+// The per-match cooldown reducer behind applyMatchResolutionAtom; see battle-atoms.bench.ts for the
+// same work through the store.
+describe('reducePartySkillCooldowns (pure, no Jotai)', () => {
+  bench(
+    'one reduction applies',
+    () => {
+      reducePartySkillCooldowns(allRunningParty, oneReduction);
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
+    'two reductions apply',
+    () => {
+      reducePartySkillCooldowns(allRunningParty, twoReductions);
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
+    'nothing applies (all heroes ready)',
+    () => {
+      reducePartySkillCooldowns(idleParty, twoReductions);
     },
     BENCH_OPTIONS,
   );

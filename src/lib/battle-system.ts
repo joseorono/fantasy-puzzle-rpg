@@ -158,6 +158,37 @@ export function tickPartySkillCooldowns(party: CharacterData[], deltaSeconds: nu
   return next ?? party;
 }
 
+/** A per-hero cooldown reduction earned by a match, as applied by {@link reducePartySkillCooldowns}. */
+export interface SkillCooldownReduction {
+  characterId: string;
+  amount: number;
+}
+
+/**
+ * Applies match-earned cooldown reductions to the party. Dead heroes and heroes whose skill is
+ * already ready are skipped; each hit floors at 0. Copy-on-first-change like
+ * {@link tickPartySkillCooldowns}: untouched members keep their identity and the **input array**
+ * comes back when nothing applied, so a caller can skip its state write with a reference compare.
+ * @param party - The current battle party
+ * @param reductions - One entry per matched colour, in any order
+ * @returns The same array when nothing changed, otherwise a new array with updated members
+ */
+export function reducePartySkillCooldowns(
+  reductions: ReadonlyArray<SkillCooldownReduction>,
+): CharacterData[] {
+  let next: CharacterData[] | null = null;
+  for (const { characterId, amount } of reductions) {
+    const source = next ?? party;
+    const i = source.findIndex((char) => char.id === characterId);
+    if (i === -1) continue;
+    const char = source[i];
+    if (char.currentHp <= 0 || char.skillCooldown <= 0) continue;
+    next ??= party.slice();
+    next[i] = { ...char, skillCooldown: Math.max(0, char.skillCooldown - amount) };
+  }
+  return next ?? party;
+}
+
 /**
  * Returns the ID of the next living enemy after the current one, wrapping around
  * the encounter order. Useful for auto-selecting a new target when the current

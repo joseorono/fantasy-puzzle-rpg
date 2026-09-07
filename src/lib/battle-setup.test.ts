@@ -5,6 +5,7 @@ import {
   generateEnemyStandbyDelays,
   resolveCountdownRingAnchor,
   tickPartySkillCooldowns,
+  reducePartySkillCooldowns,
 } from './battle-system';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
 import { BOARD_ROWS, BOARD_COLS, OPENING_MAX_MATCHES, OPENING_MAX_RUN_LENGTH } from '~/constants/board';
@@ -255,5 +256,46 @@ describe('tickPartySkillCooldowns', () => {
     tickPartySkillCooldowns(party, 0.1);
     expect(party[1].skillCooldown).toBe(12.5);
     expect(party[3].skillCooldown).toBe(0.05);
+  });
+});
+
+describe('reducePartySkillCooldowns', () => {
+  const party = [
+    createTestCharacter({ id: 'ready', skillCooldown: 0 }),
+    createTestCharacter({ id: 'running', skillCooldown: 12.5 }),
+    createTestCharacter({ id: 'dead', currentHp: 0, skillCooldown: 8 }),
+    createTestCharacter({ id: 'almost', skillCooldown: 0.5 }),
+  ];
+
+  it('returns the same array reference when nothing applies', () => {
+    expect(reducePartySkillCooldowns(party, [])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'ready', amount: 1 }])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'dead', amount: 1 }])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'nobody', amount: 1 }])).toBe(party);
+  });
+
+  it('reduces only the targeted living heroes and keeps the others by reference', () => {
+    const next = reducePartySkillCooldowns(party, [
+      { characterId: 'running', amount: 0.9 },
+      { characterId: 'almost', amount: 0.9 },
+    ]);
+    expect(next).not.toBe(party);
+    expect(next[0]).toBe(party[0]);
+    expect(next[1].skillCooldown).toBeCloseTo(11.6, 10);
+    expect(next[2]).toBe(party[2]);
+    expect(next[3].skillCooldown).toBe(0);
+  });
+
+  it('stacks repeated reductions for the same hero', () => {
+    const next = reducePartySkillCooldowns(party, [
+      { characterId: 'running', amount: 1 },
+      { characterId: 'running', amount: 2 },
+    ]);
+    expect(next[1].skillCooldown).toBeCloseTo(9.5, 10);
+  });
+
+  it('does not mutate the input party', () => {
+    reducePartySkillCooldowns(party, [{ characterId: 'running', amount: 1 }]);
+    expect(party[1].skillCooldown).toBe(12.5);
   });
 });

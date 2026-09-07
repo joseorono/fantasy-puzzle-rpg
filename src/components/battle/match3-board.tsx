@@ -8,21 +8,18 @@ import {
   damageEnemyAtom,
   healPartyAtom,
   removeMatchedOrbsAtom,
-  battleStateAtom,
   partyAtom,
   deadOrbColorClassesAtom,
-  reduceSkillCooldownAtom,
   incrementTurnAtom,
-  addScoreAtom,
-  recordMaxComboAtom,
-  addGuardAtom,
+  applyMatchResolutionAtom,
   pendingVictoryAtom,
   commitPendingVictoryAtom,
 } from '~/stores/battle-atoms';
-import type { Orb, BattleState } from '~/types/battle';
+import type { Orb } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
+import type { SkillCooldownReduction } from '~/lib/battle-system';
 import {
   calculateMatchDamage,
   calculateComboMultiplier,
@@ -191,12 +188,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const damageEnemy = useSetAtom(damageEnemyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
-  const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
-  const addScore = useSetAtom(addScoreAtom);
-  const recordMaxCombo = useSetAtom(recordMaxComboAtom);
-  const addGuard = useSetAtom(addGuardAtom);
-  const setBattleState = useSetAtom(battleStateAtom);
+  const applyMatchResolution = useSetAtom(applyMatchResolutionAtom);
   const pendingVictory = useAtomValue(pendingVictoryAtom);
   const commitPendingVictory = useSetAtom(commitPendingVictoryAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
@@ -280,7 +273,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // The exploded orbs are added to the damage/score count via matches.size.
     const matchSizeBonus = (matches.size - 3) * MATCH_SIZE_BONUS_MULTIPLIER;
     const totalScore = BASE_MATCH_SCORE + matchSizeBonus;
-    addScore(totalScore);
 
     // Clear any existing timer
     if (processingTimerRef.current) {
@@ -304,12 +296,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // The primary (first-seen) color drives the party-wide pulse + health-bar flash.
     const primaryMatchedType = matchedTypes[0] ?? null;
-    if (primaryMatchedType) {
-      setBattleState((prev: BattleState) => ({
-        ...prev,
-        lastMatchedType: primaryMatchedType,
-      }));
-    }
 
     // Cascade combo multiplier: initial match is level 0 (1x), cascades escalate.
     const cascadeLevel = cascadeLevelRef.current;
@@ -337,6 +323,9 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // Collect the damage/heal each living character applies, then resolve them together
     // after the highlight delay so the hitstop + match sound fire once for the whole move.
     const pendingEffects: Array<{ amount: number; isHeal: boolean; characterId?: string }> = [];
+    // Synchronous state changes are collected here and committed as one write below.
+    const cooldownReductions: SkillCooldownReduction[] = [];
+    let guardGain = 0;
     for (const matchedType of matchedTypes) {
       const matchingCharacter = party.find((char) => char.color === matchedType);
       const isCharacterDead = matchingCharacter ? matchingCharacter.currentHp <= 0 : false;
@@ -364,17 +353,16 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
       // Reduce the matching character's skill cooldown based on orbs matched.
       if (matchingCharacter) {
-        reduceSkillCooldown(matchingCharacter.id, matches.size * COOLDOWN_REDUCTION_PER_ORB);
+        cooldownReductions.push({ characterId: matchingCharacter.id, amount: matches.size * COOLDOWN_REDUCTION_PER_ORB });
       }
 
       // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
       // Charge scales with match size and the party's SPD-derived Guard Charge Rate.
       if (isGrayMatch) {
-        addGuard(
+        guardGain +=
           matches.size *
-            GUARD_CHARGE_PER_ORB *
-            (calculateGuardChargeRate(party) + getPartyPassiveModifiers(party).guardChargeRateBonus),
-        );
+          GUARD_CHARGE_PER_ORB *
+          (calculateGuardChargeRate(party) + getPartyPassiveModifiers(party).guardChargeRateBonus);
       }
 
       // Healer's default action heals the most damaged ally instead of dealing damage.
@@ -384,6 +372,16 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
         characterId: matchingCharacter?.id,
       });
     }
+
+    // Score, pulse colour, cooldowns, Guard and the deepest chain this battle (chain length =
+    // level + 1) land in one state write instead of five (see applyMatchResolutionAtom).
+    applyMatchResolution({
+      scoreDelta: totalScore,
+      primaryMatchedType,
+      cooldownReductions,
+      guardGain,
+      combo: cascadeLevel + 1,
+    });
 
     // Show highlight for a moment, then resolve every matched color's effect together.
     setTimeout(() => {
@@ -410,8 +408,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // Advance the cascade chain so the next refill-driven match scores higher.
     cascadeLevelRef.current = cascadeLevel + 1;
-    // Track the deepest chain this battle for the victory rating (chain length = level + 1).
-    recordMaxCombo(cascadeLevel + 1);
 
     // Remove matched orbs after animation - this will trigger a new board state
     // which will cause this effect to run again and check for new (cascade) matches
