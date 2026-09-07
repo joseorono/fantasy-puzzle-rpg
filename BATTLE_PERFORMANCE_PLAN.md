@@ -141,7 +141,7 @@ Reduced Motion re-checked with `data-reduced-motion` set: `animation-duration` s
 
 - [ ] Done
 
-- [ ] `hasMatchAtPosition` (`match-3.ts:186`) runs `findLineMatches` over the **whole board** to answer one cell; `swapOrbsAtom` calls it twice per swap (`battle-atoms.ts:99-100`). Replace with a localized check of the two swapped cells' rows/columns (≤ ~14 cells vs 2×48 + allocation).
+- [x] `hasMatchAtPosition` (`match-3.ts:186`) runs `findLineMatches` over the **whole board** to answer one cell; `swapOrbsAtom` calls it twice per swap (`battle-atoms.ts:99-100`). Replace with a localized check of the two swapped cells' rows/columns (≤ ~14 cells vs 2×48 + allocation). → **Done** in `BOARD_PLAYABILITY_PLAN.md`: `hasMatchAtPosition` is a localized window check and `isValidSwap` no longer copies the board or allocates a `Set` (measured ~7× faster in-process).
 - [ ] `expandBombExplosions` (`match-3.ts:121`) scans all 48 cells even when the board has no bombs — early-return when no matched orb is a bomb.
 - [ ] `findLineMatches` allocates a fresh column array per column (`:102-103`) — index directly instead.
 

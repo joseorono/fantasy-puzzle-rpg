@@ -1,42 +1,54 @@
 import { describe, it, expect } from 'vitest';
 import {
-  findLineMatches,
-  expandBombExplosions,
-  isValidSwap,
-  removeMatchedOrbsAndRefill,
-  createBombOrb,
   orbsMatch,
+  findLineMatches,
+  countLineRuns,
+  longestLineRun,
+  expandBombExplosions,
+  hasMatchAtPosition,
+  hasAnyLineMatch,
+  swapOrbs,
+  isValidSwap,
+  findPossibleMove,
+  hasPossibleMove,
+  isBoardPlayable,
 } from './match-3';
+import {
+  makeBoard,
+  makeRandomBoard,
+  sprinkleBombs,
+  copySwap,
+  adjacentPairs,
+  bruteForceIsValidSwap,
+  bruteForceFindMove,
+  DEADLOCKED_GRID,
+  DEADLOCKED_CORNER_BOMB_GRID,
+  EARLY_MOVE_GRID,
+  LATE_MOVE_GRID,
+  MATCH_GRID,
+  EARLY_MOVE,
+  LATE_MOVE,
+} from './match-3.fixtures';
+import { createSeededRandom } from './math';
+import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
 import type { Orb } from '~/types/battle';
-import type { OrbType } from '~/types/rpg-elements';
 
 // ============================================================================
 // Test helpers
 // ============================================================================
 
-/**
- * Build a board from a grid of cell tokens.
- * A token is an OrbType ('blue', 'green', ...) or '*' for a wildcard bomb.
- * Orb ids are deterministic ("row-col") so they survive swaps.
- */
-function makeBoard(grid: string[][]): Orb[][] {
-  return grid.map((row, r) =>
-    row.map((cell, c) => {
-      const isBomb = cell === '*';
-      const orb: Orb = {
-        id: `${r}-${c}`,
-        type: (isBomb ? 'gray' : cell) as OrbType,
-        row: r,
-        col: c,
-      };
-      if (isBomb) orb.isBomb = true;
-      return orb;
-    }),
-  );
-}
+const PROPERTY_SAMPLES = 300;
 
-function countBombs(board: Orb[][]): number {
-  return board.reduce((total, row) => total + row.filter((orb) => orb.isBomb).length, 0);
+/** Random boards with no line match (filtered by the greedy reference), optionally with bombs. */
+function settledRandomBoards(count: number, bombs: number, seed: number): Orb[][][] {
+  const rng = createSeededRandom(seed);
+  const boards: Orb[][][] = [];
+  while (boards.length < count) {
+    let board = makeRandomBoard(rng);
+    if (bombs > 0) board = sprinkleBombs(board, bombs, rng);
+    if (findLineMatches(board).size === 0) boards.push(board);
+  }
+  return boards;
 }
 
 // ============================================================================
@@ -115,6 +127,30 @@ describe('findLineMatches', () => {
   });
 });
 
+describe('countLineRuns / longestLineRun', () => {
+  it('report zero on a settled board', () => {
+    const board = makeBoard(DEADLOCKED_GRID);
+    expect(countLineRuns(board)).toBe(0);
+    expect(longestLineRun(board)).toBe(0);
+  });
+
+  it('count one run and its length for a single 4-run', () => {
+    const board = makeBoard(MATCH_GRID);
+    expect(countLineRuns(board)).toBe(1);
+    expect(longestLineRun(board)).toBe(4);
+  });
+
+  it('count a cross-shaped match as two runs', () => {
+    const board = makeBoard([
+      ['green', 'blue', 'green'],
+      ['blue', 'blue', 'blue'],
+      ['green', 'blue', 'green'],
+    ]);
+    expect(countLineRuns(board)).toBe(2);
+    expect(longestLineRun(board)).toBe(3);
+  });
+});
+
 // ============================================================================
 // expandBombExplosions
 // ============================================================================
@@ -161,6 +197,128 @@ describe('expandBombExplosions', () => {
 });
 
 // ============================================================================
+// hasMatchAtPosition (localized window check)
+// ============================================================================
+
+describe('hasMatchAtPosition', () => {
+  it('detects a horizontal and a vertical run through the cell', () => {
+    const horizontal = makeBoard([['green', 'blue', 'blue', 'blue', 'green']]);
+    expect(hasMatchAtPosition(horizontal, 0, 2)).toBe(true);
+    expect(hasMatchAtPosition(horizontal, 0, 0)).toBe(false);
+
+    const vertical = makeBoard([['green'], ['blue'], ['blue'], ['blue'], ['green']]);
+    expect(hasMatchAtPosition(vertical, 3, 0)).toBe(true);
+    expect(hasMatchAtPosition(vertical, 4, 0)).toBe(false);
+  });
+
+  it('matches through a bomb in the middle [blue, *, blue]', () => {
+    const board = makeBoard([['blue', '*', 'blue', 'green']]);
+    expect(hasMatchAtPosition(board, 0, 0)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 1)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 3)).toBe(false);
+  });
+
+  it('matches a bomb at the line end [*, *, blue]', () => {
+    const board = makeBoard([['*', '*', 'blue', 'green']]);
+    expect(hasMatchAtPosition(board, 0, 0)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 2)).toBe(true);
+  });
+
+  it('treats adjacent bombs as part of any run [blue, *, *, green]', () => {
+    const board = makeBoard([['blue', '*', '*', 'green']]);
+    expect(hasMatchAtPosition(board, 0, 1)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 2)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 0)).toBe(true);
+    expect(hasMatchAtPosition(board, 0, 3)).toBe(true);
+  });
+
+  it('does not match a wildcard between two different colors [blue, *, green]', () => {
+    const board = makeBoard([['blue', '*', 'green']]);
+    expect(hasMatchAtPosition(board, 0, 1)).toBe(false);
+  });
+
+  it('matches an all-bomb line of three but not of two', () => {
+    expect(hasMatchAtPosition(makeBoard([['*', '*', '*']]), 0, 1)).toBe(true);
+    expect(hasMatchAtPosition(makeBoard([['*', '*', 'blue', 'green']]), 0, 3)).toBe(false);
+    expect(hasMatchAtPosition(makeBoard([['*', '*']]), 0, 0)).toBe(false);
+  });
+
+  it('is more permissive than the greedy scan only on an already-matched board', () => {
+    // Greedy assigns the shared bomb to the leftmost run and marks cells 0-2 only.
+    const board = makeBoard([['blue', 'blue', '*', 'green', 'green']]);
+    expect(findLineMatches(board)).toEqual(new Set(['0-0', '0-1', '0-2']));
+    expect(hasMatchAtPosition(board, 0, 3)).toBe(true);
+  });
+
+  it('agrees with greedy membership for every cell of a settled board after any swap', () => {
+    for (const bombs of [0, 3]) {
+      for (const board of settledRandomBoards(PROPERTY_SAMPLES, bombs, 11 + bombs)) {
+        for (const { from, to } of adjacentPairs(BOARD_ROWS, BOARD_COLS)) {
+          const swapped = copySwap(board, from, to);
+          const greedy = findLineMatches(swapped);
+          expect(hasMatchAtPosition(swapped, from.row, from.col)).toBe(greedy.has(swapped[from.row][from.col].id));
+          expect(hasMatchAtPosition(swapped, to.row, to.col)).toBe(greedy.has(swapped[to.row][to.col].id));
+        }
+      }
+    }
+  });
+});
+
+// ============================================================================
+// hasAnyLineMatch
+// ============================================================================
+
+describe('hasAnyLineMatch', () => {
+  it('agrees with findLineMatches on the named fixtures', () => {
+    for (const grid of [DEADLOCKED_GRID, DEADLOCKED_CORNER_BOMB_GRID, EARLY_MOVE_GRID, LATE_MOVE_GRID, MATCH_GRID]) {
+      const board = makeBoard(grid);
+      expect(hasAnyLineMatch(board)).toBe(findLineMatches(board).size > 0);
+    }
+  });
+
+  it('agrees with findLineMatches on random boards with and without bombs', () => {
+    for (const bombs of [0, 3]) {
+      const rng = createSeededRandom(21 + bombs);
+      for (let i = 0; i < PROPERTY_SAMPLES; i++) {
+        let board = makeRandomBoard(rng);
+        if (bombs > 0) board = sprinkleBombs(board, bombs, rng);
+        expect(hasAnyLineMatch(board)).toBe(findLineMatches(board).size > 0);
+      }
+    }
+  });
+
+  it('handles lines shorter than a match', () => {
+    expect(hasAnyLineMatch(makeBoard([['blue', 'blue']]))).toBe(false);
+  });
+});
+
+// ============================================================================
+// swapOrbs
+// ============================================================================
+
+describe('swapOrbs', () => {
+  it('never mutates the input board or its orbs', () => {
+    const board = makeBoard(EARLY_MOVE_GRID);
+    const before = board.map((row) => row.map((orb) => ({ ...orb })));
+
+    swapOrbs(board, EARLY_MOVE.from, EARLY_MOVE.to);
+
+    expect(board).toEqual(before);
+  });
+
+  it('gives the swapped orbs their new coordinates and shares untouched rows', () => {
+    const board = makeBoard(EARLY_MOVE_GRID);
+    const swapped = swapOrbs(board, { row: 0, col: 2 }, { row: 1, col: 2 });
+
+    expect(swapped[0][2]).toMatchObject({ id: '1-2', row: 0, col: 2 });
+    expect(swapped[1][2]).toMatchObject({ id: '0-2', row: 1, col: 2 });
+    expect(swapped[0]).not.toBe(board[0]);
+    expect(swapped[1]).not.toBe(board[1]);
+    expect(swapped[2]).toBe(board[2]);
+  });
+});
+
+// ============================================================================
 // isValidSwap (wildcard-aware)
 // ============================================================================
 
@@ -190,96 +348,65 @@ describe('isValidSwap', () => {
     // Swap (0,2)green with (1,2)bomb -> row0 becomes blue, blue, * (wildcard match)
     expect(isValidSwap(board, { row: 0, col: 2 }, { row: 1, col: 2 })).toBe(true);
   });
-});
 
-// ============================================================================
-// removeMatchedOrbsAndRefill
-// ============================================================================
-
-describe('removeMatchedOrbsAndRefill', () => {
-  it('removes matched orbs and keeps the board full', () => {
-    const board = makeBoard([
-      ['blue', 'green'],
-      ['blue', 'green'],
-      ['blue', 'green'],
-    ]);
-    const matched = new Set(['0-0', '1-0', '2-0']);
-    const { board: result } = removeMatchedOrbsAndRefill(board, matched, 0, 0);
-
-    // Same dimensions, no leftover matched ids
-    expect(result.length).toBe(3);
-    expect(result[0].length).toBe(2);
-    const allIds = result.flat().map((o) => o.id);
-    expect(allIds.some((id) => matched.has(id))).toBe(false);
+  it('does not touch the board', () => {
+    const board = makeBoard(LATE_MOVE_GRID);
+    const before = board.map((row) => row.map((orb) => ({ ...orb })));
+    isValidSwap(board, LATE_MOVE.from, LATE_MOVE.to);
+    expect(board).toEqual(before);
   });
 
-  it('returns the same board and zero spawns when nothing is matched', () => {
-    const board = makeBoard([['blue', 'green', 'purple']]);
-    const result = removeMatchedOrbsAndRefill(board, new Set(), 1, 1);
-    expect(result.board).toBe(board);
-    expect(result.bombsSpawned).toBe(0);
-  });
-
-  it('spawns no bombs when bombsToSpawn=0 and chance=0', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']);
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 0);
-    expect(countBombs(result)).toBe(0);
-    expect(bombsSpawned).toBe(0);
-  });
-
-  it('guarantees exactly bombsToSpawn bombs (random chance disabled)', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']); // 3 new orbs spawned
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 2, 0);
-    expect(countBombs(result)).toBe(2);
-    expect(bombsSpawned).toBe(2);
-  });
-
-  it('turns every refilled orb into a bomb when chance=1', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']); // 3 refilled slots
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 1);
-    expect(countBombs(result)).toBe(3);
-    expect(bombsSpawned).toBe(3);
-  });
-
-  it('caps random bomb spawns at maxBombs', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']); // 3 refilled slots, chance=1
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 0, 1, 2);
-    expect(countBombs(result)).toBe(2);
-    expect(bombsSpawned).toBe(2);
-  });
-
-  it('clamps guaranteed bombs to maxBombs', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']);
-    // Ask for 5 guaranteed bombs but cap at 2
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 5, 0, 2);
-    expect(countBombs(result)).toBe(2);
-    expect(bombsSpawned).toBe(2);
-  });
-
-  it('counts random and guaranteed bombs together against maxBombs', () => {
-    const board = makeBoard([['blue'], ['blue'], ['blue'], ['green']]);
-    const matched = new Set(['0-0', '1-0', '2-0']);
-    // chance=1 would fill all 3, guaranteed adds more, but the cap holds at 2 total
-    const { board: result, bombsSpawned } = removeMatchedOrbsAndRefill(board, matched, 2, 1, 2);
-    expect(countBombs(result)).toBe(2);
-    expect(bombsSpawned).toBe(2);
+  it('agrees with the copy-swap reference on every pair of settled boards, with and without bombs', () => {
+    for (const bombs of [0, 3]) {
+      for (const board of settledRandomBoards(PROPERTY_SAMPLES, bombs, 31 + bombs)) {
+        for (const { from, to } of adjacentPairs(BOARD_ROWS, BOARD_COLS)) {
+          expect(isValidSwap(board, from, to)).toBe(bruteForceIsValidSwap(board, from, to));
+        }
+      }
+    }
   });
 });
 
 // ============================================================================
-// createBombOrb
+// findPossibleMove / hasPossibleMove / isBoardPlayable
 // ============================================================================
 
-describe('createBombOrb', () => {
-  it('creates a bomb orb at the given position', () => {
-    const orb = createBombOrb(2, 3);
-    expect(orb.isBomb).toBe(true);
-    expect(orb.row).toBe(2);
-    expect(orb.col).toBe(3);
+describe('findPossibleMove', () => {
+  it('returns null on the dead fixtures (brute-force confirmed)', () => {
+    for (const grid of [DEADLOCKED_GRID, DEADLOCKED_CORNER_BOMB_GRID]) {
+      const board = makeBoard(grid);
+      expect(findLineMatches(board).size).toBe(0);
+      expect(bruteForceFindMove(board)).toBeNull();
+      expect(findPossibleMove(board)).toBeNull();
+      expect(hasPossibleMove(board)).toBe(false);
+    }
+  });
+
+  it('finds the early move and the late move', () => {
+    expect(findPossibleMove(makeBoard(EARLY_MOVE_GRID))).toEqual(EARLY_MOVE);
+    expect(findPossibleMove(makeBoard(LATE_MOVE_GRID))).toEqual(LATE_MOVE);
+  });
+
+  it('finds a move exactly when the brute-force search does, on settled random boards', () => {
+    for (const bombs of [0, 3]) {
+      for (const board of settledRandomBoards(PROPERTY_SAMPLES, bombs, 41 + bombs)) {
+        const found = findPossibleMove(board);
+        expect(found === null).toBe(bruteForceFindMove(board) === null);
+        if (found) {
+          const distance = Math.abs(found.from.row - found.to.row) + Math.abs(found.from.col - found.to.col);
+          expect(distance).toBe(1);
+          expect(isValidSwap(board, found.from, found.to)).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+describe('isBoardPlayable', () => {
+  it('is true with a pending match, true with a move, false when dead', () => {
+    expect(isBoardPlayable(makeBoard(MATCH_GRID))).toBe(true);
+    expect(isBoardPlayable(makeBoard(EARLY_MOVE_GRID))).toBe(true);
+    expect(isBoardPlayable(makeBoard(DEADLOCKED_GRID))).toBe(false);
+    expect(isBoardPlayable(makeBoard(DEADLOCKED_CORNER_BOMB_GRID))).toBe(false);
   });
 });

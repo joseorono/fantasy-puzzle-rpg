@@ -43,7 +43,7 @@ import {
   BOMB_REFILL_CHANCE,
   CASCADE_BOMB_CHANCE_MULTIPLIER,
   MAX_CHAIN_BOMB_SPAWNS,
-} from '~/constants/game';
+} from '~/constants/board';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';

@@ -7,7 +7,7 @@
  * on its `isBoss` floor) is preserved untouched as the finale and is never reshuffled.
  *
  * All randomness is `Math.random`-based (via the shared utils), matching the rest of the
- * codebase; there is no seeding.
+ * codebase. Seeding exists only for tests and benches (`createSeededRandom` in `~/lib/math`).
  */
 
 import type { DungeonDefinition, DungeonFloor, DungeonEvent } from '~/types/dungeon';

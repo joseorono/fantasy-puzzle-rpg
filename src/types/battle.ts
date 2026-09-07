@@ -14,6 +14,12 @@ export interface Orb {
   isBomb?: boolean;
 }
 
+/** An adjacent-orb swap, as found by the move search or requested by the player. */
+export interface OrbSwap {
+  from: GridPosition;
+  to: GridPosition;
+}
+
 export interface Match {
   orbs: Orb[];
   type: OrbType;
@@ -86,6 +92,11 @@ export interface BattleState {
    * callout can replay. The timestamp re-triggers the animation on repeat strikes.
    */
   lastPreemptiveStrike: { timestamp: number } | null;
+  /**
+   * Fires when a refill left a board with no match and no legal move, so it was fully
+   * reshuffled (colors and bombs preserved). Drives the "No moves! Reshuffle!" callout.
+   */
+  lastReshuffle: { timestamp: number } | null;
   /**
    * Fires when an enemy reaches its per-cycle stagger (flinch) cap — the point where further hits
    * this cycle no longer delay its attack — so the per-enemy "STAGGER!" callout can replay. The
