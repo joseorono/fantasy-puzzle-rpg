@@ -9,6 +9,7 @@ import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
 import { FloatingParticles } from '~/components/effects/floating-particles';
 import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
+import { BoardReshuffleIndicator } from '~/components/battle/board-reshuffle-indicator';
 import {
   gameStatusAtom,
   tickSkillCooldownsAtom,
@@ -103,6 +104,8 @@ export default function BattleScreen() {
 
         {/* Centered callout when a hit lands on a still-observing enemy. */}
         <PreemptiveStrikeIndicator />
+        {/* Centered callout when a dead board had to be reshuffled. */}
+        <BoardReshuffleIndicator />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">

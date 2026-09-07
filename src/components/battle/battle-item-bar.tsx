@@ -16,7 +16,7 @@ import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
 import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
 import { getPartyPassiveModifiers } from '~/lib/skill-system';
-import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
 import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';

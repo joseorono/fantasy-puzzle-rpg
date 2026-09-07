@@ -6,7 +6,7 @@ import type { BattleState } from '~/types/battle';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { resolveCharacterCooldown } from '~/lib/skill-system';
 import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
-import { createInitialBoard } from '~/lib/match-3';
+import { createOpeningBoard } from '~/lib/board-generation';
 import { MIN_MATCH_SOUND_VOLUME, MAX_MATCH_SOUND_VOLUME } from '~/constants/audio';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
 
@@ -116,9 +116,10 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     // Every enemy that actually has a standby delay starts out observing.
     standbyEnemyIds: enemies.map((e) => e.id).filter((id) => (enemyStandbyMs[id] ?? 0) > 0),
     lastPreemptiveStrike: null,
+    lastReshuffle: null,
     lastMaxFlinch: null,
     selectedEnemyId: enemies[0].id,
-    board: createInitialBoard(),
+    board: createOpeningBoard(),
     selectedOrb: null,
     currentMatches: [],
     score: 0,

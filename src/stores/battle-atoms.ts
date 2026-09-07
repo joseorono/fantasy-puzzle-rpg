@@ -5,7 +5,7 @@ import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
-import { BOMB_REFILL_CHANCE } from '~/constants/game';
+import { BOMB_REFILL_CHANCE } from '~/constants/board';
 import { GUARD_MAX, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
@@ -33,12 +33,8 @@ import {
   isPartyDefeated,
 } from '~/lib/party-system';
 import { getNextLivingEnemyId, createBattleState } from '~/lib/battle-system';
-import {
-  hasMatchAtPosition,
-  swapOrbs,
-  isValidSwap,
-  removeMatchedOrbsAndRefill,
-} from '~/lib/match-3';
+import { swapOrbs, isValidSwap } from '~/lib/match-3';
+import { removeMatchedOrbsAndRefill } from '~/lib/board-generation';
 import type { BattleRatingResult } from '~/lib/battle-rating';
 
 // Use initial data from constants
@@ -93,23 +89,16 @@ export const swapOrbsAtom = atom(
   null,
   (get, set, from: GridPosition, to: GridPosition) => {
     const currentState = get(battleStateAtom);
-    const newBoard = swapOrbs(currentState.board, from, to);
 
-    // Check if the swap creates a match
-    const createsMatch =
-      hasMatchAtPosition(newBoard, from.row, from.col) || hasMatchAtPosition(newBoard, to.row, to.col);
+    // Invalid swap: don't update state at all - keep the selection
+    if (!isValidSwap(currentState.board, from, to)) return false;
 
-    if (createsMatch) {
-      // Valid swap - update board and clear selection
-      set(battleStateAtom, {
-        ...currentState,
-        board: newBoard,
-        selectedOrb: null,
-      });
-    }
-    // If invalid, don't update state at all - keep the selection
-
-    return createsMatch;
+    set(battleStateAtom, {
+      ...currentState,
+      board: swapOrbs(currentState.board, from, to),
+      selectedOrb: null,
+    });
+    return true;
   },
 );
 
@@ -266,17 +255,16 @@ export const removeMatchedOrbsAtom = atom(
     if (matchedOrbIds.size === 0) return 0;
 
     const currentState = get(battleStateAtom);
-    const { board, bombsSpawned } = removeMatchedOrbsAndRefill(
-      currentState.board,
-      matchedOrbIds,
+    const { board, bombsSpawned, wasReshuffled } = removeMatchedOrbsAndRefill(currentState.board, matchedOrbIds, {
       bombsToSpawn,
       bombRefillChance,
       maxBombs,
-    );
+    });
 
     set(battleStateAtom, {
       ...currentState,
       board,
+      lastReshuffle: wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
     });
 
     return bombsSpawned;
@@ -321,11 +309,12 @@ export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
   const board = currentState.board;
 
   const orbIds = new Set(board[row].map((orb) => orb.id));
-  const newBoard = removeMatchedOrbsAndRefill(board, orbIds);
+  const refill = removeMatchedOrbsAndRefill(board, orbIds);
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard.board,
+    board: refill.board,
+    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
   });
 });
 
@@ -335,11 +324,12 @@ export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
   const board = currentState.board;
 
   const orbIds = new Set(board.map((row) => row[col].id));
-  const newBoard = removeMatchedOrbsAndRefill(board, orbIds);
+  const refill = removeMatchedOrbsAndRefill(board, orbIds);
 
   set(battleStateAtom, {
     ...currentState,
-    board: newBoard.board,
+    board: refill.board,
+    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
   });
 });
 
@@ -369,6 +359,8 @@ export const enemyStandbyMsAtom = atom((get) => get(battleStateAtom).enemyStandb
 export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEnemyIds ?? []);
 // Centered "Preemptive Strike!" callout trigger (see PreemptiveStrikeIndicator).
 export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
+// Centered "No moves! Reshuffle!" callout trigger (see BoardReshuffleIndicator).
+export const lastReshuffleAtom = atom((get) => get(battleStateAtom).lastReshuffle ?? null);
 // Per-enemy "STAGGER!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
 export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
 

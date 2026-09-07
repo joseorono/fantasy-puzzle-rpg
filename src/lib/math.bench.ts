@@ -9,6 +9,7 @@ import {
   additionWithMax,
   multiplyDimensions,
   calculatePercentage,
+  createSeededRandom,
 } from './math';
 
 describe('randIntInRange', () => {
@@ -94,5 +95,13 @@ describe('calculatePercentage', () => {
 
   bench('zero total (safe division)', () => {
     calculatePercentage(50, 0);
+  });
+});
+
+describe('createSeededRandom', () => {
+  const rng = createSeededRandom(1);
+
+  bench('next value', () => {
+    rng();
   });
 });

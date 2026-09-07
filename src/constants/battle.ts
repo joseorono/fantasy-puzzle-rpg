@@ -50,6 +50,9 @@ export const STAGGER_VIT_DIVISOR = 8;
  */
 export const SKILL_STAGGER_MULTIPLIER = 2.5;
 
+/** How long (ms) a centered battle callout ("Preemptive Strike!", "No moves! Reshuffle!") stays on screen. */
+export const BATTLE_CALLOUT_DURATION_MS = 1200;
+
 /**
  * Notches drawn across the party HP and Guard bars. Purely visual — it does not
  * segment the underlying values, which stay continuous percentages.

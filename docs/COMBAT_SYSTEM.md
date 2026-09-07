@@ -28,12 +28,21 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Bomb chains (anti-runaway)**: Matching a wildcard bomb still triggers a 3×3 blast and can chain,
   but bomb spawning is bounded per cascade chain: after the first bomb spawns in a chain the per-orb
   refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.75), and a chain spawns at most
-  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/game.ts`). So bomb cascades can't self-feed
+  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/board.ts`). So bomb cascades can't self-feed
   into runaway x8 combos.
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top
   - Glow effect on matched orbs (400ms)
   - Scale-down and fade-out animation (200ms)
   - New random orbs spawn at the top to refill the board
+- **Always playable**: every refill runs through `ensurePlayableBoard` (`src/lib/board-generation.ts`). If the
+  board has no match and no legal swap, only the freshly spawned orbs are re-drawn (up to `MAX_SPAWN_REROLLS`);
+  if that still fails the board is reshuffled — same colors, bombs stay put, moved orbs replay their fall-in —
+  and a "No moves! Reshuffle!" callout fires (`lastReshuffle`). Refills never avoid matches, so cascades are
+  unchanged.
+- **Opening board**: `createOpeningBoard` deals a random board and keeps it only if it has at most
+  `OPENING_MAX_MATCHES` (2) pre-made runs, none of bomb-spawning length (`OPENING_MAX_RUN_LENGTH`), and a legal
+  move or a match — a small free opening cascade stays possible, a runaway one does not. All board knobs live in
+  `src/constants/board.ts`.
 
 ### Enemy Stagger (Flinch) System
 - **Mechanic**: Player hits push back the targeted enemy's next attack timer by a small delay.

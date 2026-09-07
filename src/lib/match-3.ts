@@ -1,17 +1,10 @@
-import type { Orb } from '~/types/battle';
+import type { Orb, OrbSwap } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
-import { getRandomElement } from '~/lib/utils';
-import { ORB_TYPES, BOARD_ROWS, BOARD_COLS, BOMB_REFILL_CHANCE } from '~/constants/game';
+import { MIN_MATCH_LENGTH } from '~/constants/board';
 
-/**
- * Generates a random orb type from the available ORB_TYPES.
- *
- * @returns A randomly selected OrbType
- */
-export function getRandomOrbType(): OrbType {
-  return getRandomElement(ORB_TYPES);
-}
+// Read once: vite-node serves imported bindings through getters, which the hot loops below would pay per cell.
+const RUN_LENGTH = MIN_MATCH_LENGTH;
 
 /**
  * Determines whether two orbs can belong to the same match.
@@ -25,19 +18,23 @@ export function orbsMatch(a: Orb, b: Orb): boolean {
   return Boolean(a.isBomb) || Boolean(b.isBomb) || a.type === b.type;
 }
 
+// ============================================================================
+// Greedy line scan (the source of truth for match membership)
+// ============================================================================
+
 /**
- * Scans a single line (row or column) of orbs and returns the indices that
- * belong to a run of 3 or more matching orbs. Bomb orbs act as wildcards: a
- * run's color is set by its first non-bomb orb, and bombs extend any run.
+ * Scans a single line (row or column) and returns its runs of `MIN_MATCH_LENGTH` or more as
+ * flat `[start, endExclusive, ...]` index pairs. Bomb orbs act as wildcards: a run's color is
+ * set by its first non-bomb orb, and bombs extend any run.
  *
- * Uses a greedy left-to-right scan — the color is committed by the first
- * non-bomb orb encountered in a run.
+ * Uses a greedy left-to-right scan — the color is committed by the first non-bomb orb
+ * encountered in a run, and a failed run restarts one cell later.
  *
  * @param line - A 1D array of orbs (a board row or column)
- * @returns Array of indices within the line that are part of a 3+ run
+ * @returns Flat array of `[start, end)` pairs, one per run
  */
-function scanLineForMatches(line: Orb[]): number[] {
-  const matchedIndices: number[] = [];
+function scanLineRuns(line: Orb[]): number[] {
+  const runs: number[] = [];
   const n = line.length;
 
   let i = 0;
@@ -49,7 +46,6 @@ function scanLineForMatches(line: Orb[]): number[] {
     while (j < n) {
       const orb = line[j];
       if (orb.isBomb) {
-        // Wildcard always extends the run without changing its color.
         j++;
         continue;
       }
@@ -65,22 +61,26 @@ function scanLineForMatches(line: Orb[]): number[] {
       break;
     }
 
-    const runLength = j - i;
-    if (runLength >= 3) {
-      for (let k = i; k < j; k++) matchedIndices.push(k);
+    if (j - i >= RUN_LENGTH) {
+      runs.push(i, j);
       i = j;
     } else {
       i++;
     }
   }
 
-  return matchedIndices;
+  return runs;
+}
+
+function columnOf(board: Orb[][], col: number): Orb[] {
+  const column: Orb[] = [];
+  for (let row = 0; row < board.length; row++) column.push(board[row][col]);
+  return column;
 }
 
 /**
- * Finds every orb that is part of a horizontal or vertical line match (3+),
- * with wildcard bomb support. This is the single source of truth for line
- * match detection.
+ * Finds every orb that is part of a horizontal or vertical line match, with wildcard bomb
+ * support. This is the single source of truth for line match detection.
  *
  * @param board - The game board containing orbs
  * @returns A set of orb IDs that are part of a line match
@@ -90,23 +90,60 @@ export function findLineMatches(board: Orb[][]): Set<string> {
   const rows = board.length;
   const cols = board[0].length;
 
-  // Horizontal lines
   for (let row = 0; row < rows; row++) {
-    for (const col of scanLineForMatches(board[row])) {
-      matchedIds.add(board[row][col].id);
+    const runs = scanLineRuns(board[row]);
+    for (let k = 0; k < runs.length; k += 2) {
+      for (let col = runs[k]; col < runs[k + 1]; col++) matchedIds.add(board[row][col].id);
     }
   }
 
-  // Vertical lines
   for (let col = 0; col < cols; col++) {
-    const column: Orb[] = [];
-    for (let row = 0; row < rows; row++) column.push(board[row][col]);
-    for (const row of scanLineForMatches(column)) {
-      matchedIds.add(board[row][col].id);
+    const runs = scanLineRuns(columnOf(board, col));
+    for (let k = 0; k < runs.length; k += 2) {
+      for (let row = runs[k]; row < runs[k + 1]; row++) matchedIds.add(board[row][col].id);
     }
   }
 
   return matchedIds;
+}
+
+/** Lengths of every greedy run on the board, rows first then columns. */
+function lineRunLengths(board: Orb[][]): number[] {
+  const lengths: number[] = [];
+  const rows = board.length;
+  const cols = board[0].length;
+
+  for (let row = 0; row < rows; row++) {
+    const runs = scanLineRuns(board[row]);
+    for (let k = 0; k < runs.length; k += 2) lengths.push(runs[k + 1] - runs[k]);
+  }
+  for (let col = 0; col < cols; col++) {
+    const runs = scanLineRuns(columnOf(board, col));
+    for (let k = 0; k < runs.length; k += 2) lengths.push(runs[k + 1] - runs[k]);
+  }
+
+  return lengths;
+}
+
+/**
+ * Counts the line matches (greedy runs) currently on the board. A cross-shaped match counts
+ * as two runs, one per orientation.
+ *
+ * @param board - The game board containing orbs
+ * @returns Number of runs across all rows and columns; 0 when the board is settled
+ */
+export function countLineRuns(board: Orb[][]): number {
+  return lineRunLengths(board).length;
+}
+
+/**
+ * Length of the longest line match currently on the board.
+ *
+ * @param board - The game board containing orbs
+ * @returns The longest run length, or 0 when the board is settled
+ */
+export function longestLineRun(board: Orb[][]): number {
+  return Math.max(0, ...lineRunLengths(board));
 }
 
 /**
@@ -157,205 +194,252 @@ export function expandBombExplosions(board: Orb[][], matchedIds: Set<string>): S
   return destroyed;
 }
 
-/**
- * Creates a wildcard bomb orb at the given position.
- *
- * @param row - The row index for the orb
- * @param col - The column index for the orb
- * @returns A new bomb Orb
- */
-export function createBombOrb(row: number, col: number): Orb {
-  return {
-    id: `bomb-${Date.now()}-${row}-${col}`,
-    type: getRandomOrbType(),
-    row,
-    col,
-    isBomb: true,
-  };
+// ============================================================================
+// Localized detection (allocation-free window checks)
+// ============================================================================
+// A "window" is MIN_MATCH_LENGTH consecutive cells in one orientation; it is "uniform" when its
+// non-bomb cells share one color. A cell sits in a run exactly when one of the windows through
+// it is uniform, and a swap creates a match exactly when a window through one of its endpoints
+// is uniform afterwards. These checks read the board through an optional virtual swap so the
+// move search never copies or mutates the board.
+
+/** The orb at (row, col) as it would be after `swap`, without touching the board. */
+function orbAt(board: Orb[][], row: number, col: number, swap: OrbSwap | null): Orb {
+  if (swap !== null) {
+    if (row === swap.from.row && col === swap.from.col) return board[swap.to.row][swap.to.col];
+    if (row === swap.to.row && col === swap.to.col) return board[swap.from.row][swap.from.col];
+  }
+  return board[row][col];
+}
+
+/** True when the window starting at (row, col) along (dr, dc) is uniform. Caller ensures bounds. */
+function isWindowUniform(
+  board: Orb[][],
+  row: number,
+  col: number,
+  dr: number,
+  dc: number,
+  swap: OrbSwap | null,
+): boolean {
+  let color: OrbType | null = null;
+  for (let k = 0; k < RUN_LENGTH; k++) {
+    const r = row + dr * k;
+    const c = col + dc * k;
+    const orb = swap === null ? board[r][c] : orbAt(board, r, c, swap);
+    if (orb.isBomb) continue;
+    if (color === null) {
+      color = orb.type;
+    } else if (orb.type !== color) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** True when any window containing (row, col), in either orientation, is uniform. */
+function hasRunThrough(board: Orb[][], row: number, col: number, swap: OrbSwap | null): boolean {
+  const rows = board.length;
+  const cols = board[0].length;
+
+  for (let start = col - (RUN_LENGTH - 1); start <= col; start++) {
+    if (start < 0 || start + RUN_LENGTH > cols) continue;
+    if (isWindowUniform(board, row, start, 0, 1, swap)) return true;
+  }
+  for (let start = row - (RUN_LENGTH - 1); start <= row; start++) {
+    if (start < 0 || start + RUN_LENGTH > rows) continue;
+    if (isWindowUniform(board, start, col, 1, 0, swap)) return true;
+  }
+  return false;
 }
 
 /**
- * Checks if there is a line match (3 or more, wildcard-aware) at the specified
- * position on the board.
+ * Checks if the orb at the specified position is part of a line match (wildcard-aware),
+ * reading only the windows through that cell — no board scan, no allocation.
+ *
+ * On a settled board this agrees with `findLineMatches` membership for every cell a swap can
+ * touch. On a board that already contains a run it can be more permissive than the greedy
+ * scan, which assigns a shared bomb to the leftmost run (`[blue, blue, *, green, green]` marks
+ * cells 0-2 greedily, while this reports cell 3 as matched too). Use `findLineMatches` when
+ * exact membership matters.
  *
  * @param board - The game board containing orbs
  * @param row - The row index to check
  * @param col - The column index to check
- * @returns True if the orb at the position is part of a line match
+ * @returns True if a uniform window runs through the position
  */
 export function hasMatchAtPosition(board: Orb[][], row: number, col: number): boolean {
-  return findLineMatches(board).has(board[row][col].id);
+  return hasRunThrough(board, row, col, null);
 }
 
 /**
- * Creates an initial game board with randomly generated orbs.
+ * Whether the board contains any line match at all. Equivalent to
+ * `findLineMatches(board).size > 0` but scans windows with early exit and allocates nothing.
  *
- * @param rows - Number of rows in the board (defaults to BOARD_ROWS)
- * @param cols - Number of columns in the board (defaults to BOARD_COLS)
- * @returns A 2D array representing the game board with orbs
+ * @param board - The game board containing orbs
+ * @returns True if at least one uniform window exists
  */
-export function createInitialBoard(rows: number = BOARD_ROWS, cols: number = BOARD_COLS): Orb[][] {
-  const board: Orb[][] = [];
+export function hasAnyLineMatch(board: Orb[][]): boolean {
+  const rows = board.length;
+  const cols = board[0].length;
+
   for (let row = 0; row < rows; row++) {
-    board[row] = [];
-    for (let col = 0; col < cols; col++) {
-      board[row][col] = {
-        id: `orb-${row}-${col}`,
-        type: getRandomOrbType(),
-        row,
-        col,
-      };
+    for (let col = 0; col + RUN_LENGTH <= cols; col++) {
+      if (isWindowUniform(board, row, col, 0, 1, null)) return true;
     }
   }
-  return board;
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row + RUN_LENGTH <= rows; row++) {
+      if (isWindowUniform(board, row, col, 1, 0, null)) return true;
+    }
+  }
+  return false;
 }
 
+// ============================================================================
+// Swaps and moves
+// ============================================================================
+
 /**
- * Swaps two orbs on the board and updates their positions.
+ * Swaps two orbs on the board and returns a new board. Only the touched rows are copied and
+ * the two orbs are re-created with their new coordinates; the input board and its orbs are
+ * never mutated.
  *
  * @param board - The game board containing orbs
  * @param from - The position of the first orb to swap
  * @param to - The position of the second orb to swap
  * @returns A new board with the orbs swapped
  */
-export function swapOrbs(
-  board: Orb[][],
-  from: GridPosition,
-  to: GridPosition,
-): Orb[][] {
-  const newBoard = board.map((row) => [...row]);
+export function swapOrbs(board: Orb[][], from: GridPosition, to: GridPosition): Orb[][] {
+  const newBoard = [...board];
+  newBoard[from.row] = [...board[from.row]];
+  if (to.row !== from.row) newBoard[to.row] = [...board[to.row]];
 
-  // Swap orbs
-  const temp = newBoard[from.row][from.col];
-  newBoard[from.row][from.col] = newBoard[to.row][to.col];
-  newBoard[to.row][to.col] = temp;
-
-  // Update positions
-  newBoard[from.row][from.col].row = from.row;
-  newBoard[from.row][from.col].col = from.col;
-  newBoard[to.row][to.col].row = to.row;
-  newBoard[to.row][to.col].col = to.col;
+  newBoard[from.row][from.col] = { ...board[to.row][to.col], row: from.row, col: from.col };
+  newBoard[to.row][to.col] = { ...board[from.row][from.col], row: to.row, col: to.col };
 
   return newBoard;
 }
 
 /**
- * Checks if swapping two orbs would create a valid match (wildcard-aware).
+ * Checks if swapping two orbs would create a line match (wildcard-aware). The swap is applied
+ * virtually: the board is neither copied nor mutated.
  *
  * @param board - The game board containing orbs
  * @param from - The position of the first orb to swap
  * @param to - The position of the second orb to swap
  * @returns True if the swap would create a match, false otherwise
  */
-export function isValidSwap(
-  board: Orb[][],
-  from: GridPosition,
-  to: GridPosition,
-): boolean {
-  const testBoard = swapOrbs(board, from, to);
-  const matched = findLineMatches(testBoard);
-  return (
-    matched.has(testBoard[from.row][from.col].id) || matched.has(testBoard[to.row][to.col].id)
-  );
+export function isValidSwap(board: Orb[][], from: GridPosition, to: GridPosition): boolean {
+  const swap: OrbSwap = { from, to };
+  return hasRunThrough(board, from.row, from.col, swap) || hasRunThrough(board, to.row, to.col, swap);
+}
+
+/** True when `orb` can sit in a run of `color` (`null` = the run is all bombs so far). */
+function fitsColor(orb: Orb, color: OrbType | null): boolean {
+  return orb.isBomb === true || color === null || orb.type === color;
 }
 
 /**
- * Removes matched orbs from the board and applies gravity to fill empty spaces.
- * Matched orbs are removed, remaining orbs fall down, and new random orbs are
- * generated at the top. Newly spawned orbs may become wildcard bombs in two ways:
- * a guaranteed `bombsToSpawn` count, plus an independent per-orb random chance.
+ * Finds a swap that completes the window starting at (row, col) along (dr, dc): one window cell
+ * is exchanged with an adjacent cell outside the window whose orb agrees with the rest of the
+ * window. Reads every cell directly; nothing is allocated until a move is found.
+ */
+function findMoveCompletingWindow(board: Orb[][], row: number, col: number, dr: number, dc: number): OrbSwap | null {
+  const rows = board.length;
+  const cols = board[0].length;
+
+  for (let k = 0; k < RUN_LENGTH; k++) {
+    // Color the other cells of the window agree on; skip the slot if they conflict.
+    let color: OrbType | null = null;
+    let conflict = false;
+    for (let j = 0; j < RUN_LENGTH; j++) {
+      if (j === k) continue;
+      const orb = board[row + dr * j][col + dc * j];
+      if (orb.isBomb) continue;
+      if (color === null) {
+        color = orb.type;
+      } else if (orb.type !== color) {
+        conflict = true;
+        break;
+      }
+    }
+    if (conflict) continue;
+
+    const kr = row + dr * k;
+    const kc = col + dc * k;
+    // Neighbors outside the window: along the line only at its two ends, plus both sides.
+    for (let n = 0; n < 4; n++) {
+      let nr: number;
+      let nc: number;
+      if (n === 0) {
+        if (k !== 0) continue;
+        nr = kr - dr;
+        nc = kc - dc;
+      } else if (n === 1) {
+        if (k !== RUN_LENGTH - 1) continue;
+        nr = kr + dr;
+        nc = kc + dc;
+      } else {
+        const side = n === 2 ? 1 : -1;
+        nr = kr + dc * side;
+        nc = kc + dr * side;
+      }
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+      if (fitsColor(board[nr][nc], color)) {
+        return { from: { row: kr, col: kc }, to: { row: nr, col: nc } };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Finds an adjacent swap that would create a line match on a settled board, scanning the
+ * windows of every row and then every column. Any legal move completes some window by
+ * swapping exactly one of its cells with a neighbor outside it, so enumerating windows finds
+ * every move with a handful of direct reads each.
+ *
+ * Assumes no match is currently on the board (resolve matches first; see `isBoardPlayable`).
  *
  * @param board - The game board containing orbs
- * @param matchedOrbIds - Set of orb IDs that should be removed
- * @param bombsToSpawn - How many of the newly spawned orbs are guaranteed to become bombs (default 0)
- * @param bombRefillChance - Per-orb probability (0-1) that a refilled orb spawns as a bomb (default BOMB_REFILL_CHANCE)
- * @param maxBombs - Hard cap on total bombs spawned this call (random + guaranteed) (default Infinity)
- * @returns The refilled board and the number of bombs actually spawned
+ * @returns A move, or null when the board has no possible move
  */
-export function removeMatchedOrbsAndRefill(
-  board: Orb[][],
-  matchedOrbIds: Set<string>,
-  bombsToSpawn: number = 0,
-  bombRefillChance: number = BOMB_REFILL_CHANCE,
-  maxBombs: number = Infinity,
-): { board: Orb[][]; bombsSpawned: number } {
-  if (matchedOrbIds.size === 0) return { board, bombsSpawned: 0 };
+export function findPossibleMove(board: Orb[][]): OrbSwap | null {
+  const rows = board.length;
+  const cols = board[0].length;
 
-  const newBoard = board.map((row) => [...row]);
-  const rows = newBoard.length;
-  const cols = newBoard[0].length;
-
-  // Mark matched orbs for removal
-  const matchedPositions = new Set<string>();
   for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (matchedOrbIds.has(newBoard[row][col].id)) {
-        matchedPositions.add(`${row}-${col}`);
-      }
+    for (let col = 0; col + RUN_LENGTH <= cols; col++) {
+      const move = findMoveCompletingWindow(board, row, col, 0, 1);
+      if (move !== null) return move;
     }
   }
-
-  // Track freshly spawned orbs so some can be promoted to bombs afterwards
-  const newlySpawned: GridPosition[] = [];
-  // Total bombs created this call (random + guaranteed), clamped to maxBombs.
-  let bombsSpawned = 0;
-
-  // Process each column for gravity
   for (let col = 0; col < cols; col++) {
-    // Collect non-matched orbs from bottom to top
-    const remainingOrbs: Orb[] = [];
-    for (let row = rows - 1; row >= 0; row--) {
-      if (!matchedPositions.has(`${row}-${col}`)) {
-        remainingOrbs.push(newBoard[row][col]);
-      }
-    }
-
-    // Calculate how many new orbs we need
-    const newOrbsNeeded = rows - remainingOrbs.length;
-
-    // Fill from bottom with remaining orbs
-    for (let i = 0; i < remainingOrbs.length; i++) {
-      const row = rows - 1 - i;
-      newBoard[row][col] = {
-        ...remainingOrbs[i],
-        row,
-        col,
-      };
-    }
-
-    // Fill top with new random orbs; each has an independent chance to be a bomb,
-    // until the per-call bomb cap is reached.
-    for (let i = 0; i < newOrbsNeeded; i++) {
-      const row = newOrbsNeeded - 1 - i;
-      const isBomb = bombsSpawned < maxBombs && Math.random() < bombRefillChance;
-      if (isBomb) bombsSpawned++;
-      newBoard[row][col] = {
-        id: `${isBomb ? 'bomb' : 'orb'}-${Date.now()}-${row}-${col}`,
-        type: getRandomOrbType(),
-        row,
-        col,
-        ...(isBomb ? { isBomb: true } : {}),
-      };
-      newlySpawned.push({ row, col });
+    for (let row = 0; row + RUN_LENGTH <= rows; row++) {
+      const move = findMoveCompletingWindow(board, row, col, 1, 0);
+      if (move !== null) return move;
     }
   }
+  return null;
+}
 
-  // Guarantee `bombsToSpawn` bombs by promoting freshly spawned orbs that the
-  // random roll above didn't already turn into bombs — but never exceed maxBombs.
-  const nonBombSpawns = newlySpawned.filter(({ row, col }) => !newBoard[row][col].isBomb);
-  const guaranteedBudget = Math.max(0, maxBombs - bombsSpawned);
-  const bombCount = Math.min(Math.max(0, Math.floor(bombsToSpawn)), nonBombSpawns.length, guaranteedBudget);
-  for (let i = 0; i < bombCount; i++) {
-    // Partial Fisher-Yates: pick a not-yet-chosen position into slot i.
-    const pick = i + Math.floor(Math.random() * (nonBombSpawns.length - i));
-    const swap = nonBombSpawns[i];
-    nonBombSpawns[i] = nonBombSpawns[pick];
-    nonBombSpawns[pick] = swap;
+/**
+ * Whether at least one adjacent swap on a settled board would create a line match.
+ *
+ * @param board - The game board containing orbs
+ * @returns True if the player has a legal move
+ */
+export function hasPossibleMove(board: Orb[][]): boolean {
+  return findPossibleMove(board) !== null;
+}
 
-    const { row, col } = nonBombSpawns[i];
-    newBoard[row][col] = { ...newBoard[row][col], isBomb: true };
-  }
-  bombsSpawned += bombCount;
-
-  return { board: newBoard, bombsSpawned };
+/**
+ * Whether the board can progress: either a match is pending (the cascade will act) or the
+ * player has a legal move. A board that is neither is dead and must be repaired.
+ *
+ * @param board - The game board containing orbs
+ * @returns True if the board has a pending match or a possible move
+ */
+export function isBoardPlayable(board: Orb[][]): boolean {
+  return hasAnyLineMatch(board) || hasPossibleMove(board);
 }

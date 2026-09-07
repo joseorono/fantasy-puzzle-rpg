@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { createBattleState, generateEnemyStandbyDelays, resolveCountdownRingAnchor } from './battle-system';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
+import { BOARD_ROWS, BOARD_COLS, OPENING_MAX_MATCHES, OPENING_MAX_RUN_LENGTH } from '~/constants/board';
+import { countLineRuns, longestLineRun, isBoardPlayable } from './match-3';
 
 /**
  * Deterministic `[0, 1)` source that walks a fixed list of values, wrapping around.
@@ -95,10 +97,24 @@ describe('createBattleState', () => {
 
   it('should initialize the board with an 8x6 grid', () => {
     const state = createBattleState(party, enemies);
-    expect(state.board).toHaveLength(8);
+    expect(state.board).toHaveLength(BOARD_ROWS);
     for (const row of state.board) {
-      expect(row).toHaveLength(6);
+      expect(row).toHaveLength(BOARD_COLS);
     }
+  });
+
+  it('should deal a playable opening board within the opening caps', () => {
+    for (let i = 0; i < 25; i++) {
+      const state = createBattleState(party, enemies);
+      expect(isBoardPlayable(state.board)).toBe(true);
+      expect(countLineRuns(state.board)).toBeLessThanOrEqual(OPENING_MAX_MATCHES);
+      expect(longestLineRun(state.board)).toBeLessThanOrEqual(OPENING_MAX_RUN_LENGTH);
+    }
+  });
+
+  it('should start with no reshuffle event', () => {
+    const state = createBattleState(party, enemies);
+    expect(state.lastReshuffle).toBeNull();
   });
 
   it('should reset combat metadata', () => {
