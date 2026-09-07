@@ -98,23 +98,26 @@
   }
 }
 
-.tilemap-container .character-info {
-  font-size: 0.7rem;
-  font-family: monospace;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+/* Debug readout, pinned to the top-right of the game frame (inside the window
+   frame border) so it costs no layout space around the map. */
+.map-debug-overlay {
+  position: fixed;
+  top: calc(var(--frame-thickness) + 0.5rem);
+  right: calc(var(--frame-thickness) + 1rem);
+  z-index: 50;
+  pointer-events: none;
+  max-width: 16rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.15rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(38, 32, 26, 0.72);
+  color: #e8ddc8;
+  font-family: monospace;
+  font-size: 0.7rem;
   line-height: 1.2;
-}
-
-.tilemap-container .character-info br {
-  display: none;
 }
 

@@ -4,6 +4,7 @@ import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
 import type { Position } from '~/types/geometry';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
+import { MapDebugOverlay } from './map-debug-overlay';
 import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
@@ -866,9 +867,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       <div className="tilemap-container">
         <MapInfoPanel
           displayMapName={displayMapName}
-          debug={debug}
-          charPosition={charPosition}
-          status={debugInfo}
           onLeave={returnView || canLeaveMap ? handleLeaveMap : undefined}
         />
         <div
@@ -913,6 +911,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               spriteState={movement.spriteState}
             />
           )}
+
+          {debug && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
       </div>
 
