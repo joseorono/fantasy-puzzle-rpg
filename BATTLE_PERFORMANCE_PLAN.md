@@ -65,11 +65,17 @@ The reducer itself is a wash — four tiny allocations cost nothing in V8 (see t
 
 ⚠️ Seen in the probe, not chased: `BattleTopBar` and `SkillBurstOverlay` register as rendered on every commit that touches the screen (39× in state A) although their inputs are stable, and the pre-change probe showed **two** commits per tick. Whether the probe's `actualStartTime` test also counts bailed-out fibers on the update path was not verified — worth checking with the `PerformedWork` flag before treating it as a compiler-memoization miss.
 
+**Closed 2026-09-07 — on code inspection, not a new probe.** The subscription hypothesis does not hold: `battle-top-bar.tsx` subscribes to `turnAtom`, `scoreAtom`, `gameStatusAtom` and `isMutedAtom` only, and `skill-burst-overlay.tsx` to `lastSkillActivationAtom` only (it reads the party non-reactively via `useStore().get()` inside its effect). Neither touches `partyAtom` or `battleStateAtom`, and `enemyTimers` is reference-stable since 1.5, so no 10 Hz driver reaches either component. What remains is expected React Compiler behaviour — it caches JSX, it does not skip a component body — on a parent that now commits rarely. No fresh `PerformedWork` count was taken for these two specifically; that is still the instrument if the question is reopened.
+
 ### 1.2 Merge the two tick writes into one
 
-- [ ] Done
+- [x] Done
 
 `battle-screen.tsx:78-84` calls `tickSkillCooldowns` **and** `tickGuardDecay` → two whole-state writes + two commit passes per tick. **Fix:** add a single `battleTickAtom` write atom that applies both cooldown decrement and guard decay in one `set` (early-returning when neither applies), keep the old atoms for any other callers. Cadence and math unchanged.
+
+**Implemented** as `battleTickAtom` (`src/stores/battle-atoms.ts`), called from `src/views/battle-screen.tsx` in place of the two separate tick writes. Measured 106 → **58 µs** per tick when both branches fire, 1.9 → **1.0 µs** when idle.
+
+⚠️ Same correction as 1.4: the commit count did not move (1 → 1 per tick), because both dispatches already shared one timer callback. Equivalence with the legacy pair is locked by tests in `src/lib/battle-atoms.test.ts`.
 
 ### 1.3 Cache the guard-decay resistance factor
 
@@ -90,9 +96,13 @@ Members are compared index-by-index with an early `continue` on reference equali
 
 ### 1.4 Batch match-resolution writes
 
-- [ ] Done
+- [x] Done
 
 One swap currently produces **6–10 sequential whole-state writes** from the cascade effect in `match3-board.tsx:233-415`: `addScore` → inline `setBattleState` for `lastMatchedType` (`:295-298`) → `reduceSkillCooldown` per matched color → `addGuard` → `recordMaxCombo` → `damageEnemy`/`healParty` per color — each recomputing all ~25 derived atoms and committing separately. **Fix:** add one composite `applyMatchResolutionAtom` write atom that takes the match summary (score delta, matched colors/counts, guard gain, combo) and produces **one** new state. The existing write atoms stay for their other callers; the board effect calls the composite. Damage/heal formulas are called unchanged, just inside one write.
+
+**Implemented** as `applyMatchResolutionAtom` (`src/stores/battle-atoms.ts`), called from `src/components/battle/match3-board.tsx`. Measured 228 → **57 µs** (two colours, 5 writes → 1) and 324 → **63 µs** (three colours + grey, 7 → 1).
+
+⚠️ The "N writes → N commits" premise was wrong. A deterministic cascade probe (seeded RNG, same board and move, enemies parked, medians of 3) measured **26 commits before and 26 after**, with identical board render counts and ms — React already coalesces every dispatch made inside one effect callback into a single commit. This is a **store** optimisation, not a render one: worth keeping (one composite write, field-for-field equivalence locked by tests in `src/lib/battle-atoms.test.ts`, legacy atoms retained as the bench's A/B arm), but size it in microseconds.
 
 ### 1.5 Stable `enemyTimers` output
 
