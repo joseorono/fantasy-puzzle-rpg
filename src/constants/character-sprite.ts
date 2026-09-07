@@ -38,8 +38,58 @@ export const WALK_STAND_COLUMN = 0;
 /** Number of sit frames used from the spritesheet (sheet has 3; we use the first two). */
 export const SIT_FRAME_COUNT = 2;
 
-/** How many tiles tall the character should render (used for the scale calculation). */
-export const CHARACTER_HEIGHT_TILES = 3.5;
+/** An opaque bounding box inside a 64x64 sprite frame, in sprite pixels. */
+export interface SpriteBodyBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/*
+ * The boxes below were measured off the sheet (alpha > 16). They exist because a
+ * frame is mostly empty: sizing off the raw 64px frame silently includes 16px of
+ * transparent headroom, which is how the character ended up exactly one tile wide
+ * on a 32px map. Re-measure only if the spritesheet is replaced.
+ */
+
+/**
+ * Stand and walk poses. The sizing and collision reference, because it is the pose
+ * the character is in whenever it moves or stands beside a wall.
+ */
+export const SPRITE_WALK_BODY_BOX: SpriteBodyBox = { x: 17, y: 16, width: 32, height: 48 };
+
+/** Run pose: narrower than the walk pose, but fills the frame vertically. */
+export const SPRITE_RUN_BODY_BOX: SpriteBodyBox = { x: 18, y: 0, width: 30, height: 64 };
+
+/** Sit pose: the widest of the three. Only reached after {@link IDLE_SIT_DELAY_MS} standing still. */
+export const SPRITE_SIT_BODY_BOX: SpriteBodyBox = { x: 14, y: 14, width: 38, height: 49 };
+
+/** Union of every pose, for clipping the sprite to the map — a clip must fit the tallest frame. */
+export const SPRITE_UNION_BODY_BOX: SpriteBodyBox = { x: 14, y: 0, width: 38, height: 64 };
+
+/** The body's centre sits this far right of the frame's centre (frame x 32, body x 32.5). */
+export const SPRITE_BODY_CENTER_OFFSET_PX = 0.5;
+
+/**
+ * How many tiles tall the character's *visible body* renders — not the frame.
+ *
+ * 2.625 = 3.5 x 48/64, i.e. exactly what the old frame-based 3.5 produced, so the
+ * 16px maps are unchanged. Body width follows from the walk box's aspect ratio:
+ * `bodyWidthTiles = bodyHeightTiles * 32/48`.
+ */
+export const CHARACTER_BODY_HEIGHT_TILES = 2.625;
+
+/**
+ * How far below its collision point the sprite is drawn, in tiles.
+ *
+ * The collision point rests at the tile's centre, so drawing the feet there reads as
+ * hovering half a tile above the floor. This offset is render-only: the simulation
+ * never sees it, so corner assist, path centering and pointer targeting are untouched.
+ * Keep it at or below {@link MAX_COLLISION_INSET_TILES} — the collision footprint is
+ * what stops the lowered feet from crossing into a wall below. 0 restores the old look.
+ */
+export const CHARACTER_FOOT_OFFSET_TILES = 0.25;
 
 /**
  * Tiles the character must actually travel to advance one walk-cycle frame.

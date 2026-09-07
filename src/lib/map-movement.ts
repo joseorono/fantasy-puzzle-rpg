@@ -36,6 +36,12 @@ export interface MovementContext {
   isWalkable: (row: number, col: number) => boolean;
   /** Duration of this simulation substep in seconds. */
   stepSeconds: number;
+  /**
+   * Half-width of the character's collision footprint in map pixels, so the sprite's
+   * silhouette stops at a wall instead of its centre point. Defaults to 0, which
+   * reproduces the historical dimensionless-point behaviour exactly.
+   */
+  collisionInsetPx?: number;
 }
 
 export interface MovementStepResult extends MovementPointState {
@@ -57,43 +63,55 @@ interface AxisAdvanceResult {
  * Advances one axis by `delta` map pixels, walking tile boundaries one at a
  * time so a large step can never skip past a blocking tile.
  *
- * On contact the position is clamped just inside the last walkable tile, which
- * is a stable fixed point: re-running the same input reproduces the identical
- * position instead of oscillating across the boundary.
+ * What is swept is the *leading edge* of the character's footprint — the point
+ * displaced by `inset` in the direction of travel — not the centre point. On contact
+ * that edge is clamped just inside the last walkable tile, so the character's
+ * silhouette stops at the wall rather than half-entering it. The clamp is a stable
+ * fixed point: re-running the same input reproduces the identical position instead of
+ * oscillating across the boundary.
+ *
+ * At `inset === 0` this reduces exactly to sweeping the point itself, which is the
+ * behaviour every caller had before footprints existed.
+ *
+ * The footprint is per-axis (a cross, not a full box): the perpendicular extent is
+ * still a point. Moving along one axis past a corner where the neighbouring lane turns
+ * to wall can therefore overlap by up to `inset` for a moment, which path centering
+ * then closes. A true box was rejected deliberately — it catches the shoulders on every
+ * corner and would promote corner assist from a nicety to a requirement.
  *
  * @param pos Current position along the axis, in map pixels.
- * @param tile Current tile index along the axis.
  * @param delta Signed displacement to apply, in map pixels.
  * @param tileSize Edge length of one tile in map pixels.
  * @param canEnter Predicate for entering a candidate tile index on this axis.
+ * @param inset Half-width of the footprint on this axis, in map pixels.
  */
 function advanceAxis(
   pos: number,
-  tile: number,
   delta: number,
   tileSize: number,
   canEnter: (tileIndex: number) => boolean,
+  inset: number,
 ): AxisAdvanceResult {
-  if (delta === 0) return { pos, tile, blocked: false };
+  if (delta === 0) return { pos, tile: Math.floor(pos / tileSize), blocked: false };
 
-  const target = pos + delta;
   const direction = Math.sign(delta);
-  let current = tile;
+  const leadingEdge = pos + direction * inset;
+  const target = leadingEdge + delta;
+  let current = Math.floor(leadingEdge / tileSize);
 
   while (Math.floor(target / tileSize) !== current) {
     const candidate = current + direction;
     if (!canEnter(candidate)) {
-      return {
-        pos:
-          direction > 0 ? (current + 1) * tileSize - COLLISION_EPSILON_PX : current * tileSize + COLLISION_EPSILON_PX,
-        tile: current,
-        blocked: true,
-      };
+      const clampedEdge =
+        direction > 0 ? (current + 1) * tileSize - COLLISION_EPSILON_PX : current * tileSize + COLLISION_EPSILON_PX;
+      const clampedPos = clampedEdge - direction * inset;
+      return { pos: clampedPos, tile: Math.floor(clampedPos / tileSize), blocked: true };
     }
     current = candidate;
   }
 
-  return { pos: target, tile: current, blocked: false };
+  const newPos = target - direction * inset;
+  return { pos: newPos, tile: Math.floor(newPos / tileSize), blocked: false };
 }
 
 /**
@@ -166,7 +184,7 @@ export function resolveMovementStep(
   input: MovementInput,
   ctx: MovementContext,
 ): MovementStepResult {
-  const { tileSize, isWalkable, stepSeconds } = ctx;
+  const { tileSize, isWalkable, stepSeconds, collisionInsetPx = 0 } = ctx;
   const { dirX, dirY, speed, walkSpeed } = input;
 
   const startX = state.x;
@@ -182,8 +200,12 @@ export function resolveMovementStep(
   // --- 1. axis-separated movement + collision ---
 
   if (dirX !== 0) {
-    const advanced = advanceAxis(x, col, dirX * speed * stepSeconds, tileSize, (candidateCol) =>
-      isWalkable(row, candidateCol),
+    const advanced = advanceAxis(
+      x,
+      dirX * speed * stepSeconds,
+      tileSize,
+      (candidateCol) => isWalkable(row, candidateCol),
+      collisionInsetPx,
     );
     x = advanced.pos;
     col = advanced.tile;
@@ -191,8 +213,12 @@ export function resolveMovementStep(
   }
 
   if (dirY !== 0) {
-    const advanced = advanceAxis(y, row, dirY * speed * stepSeconds, tileSize, (candidateRow) =>
-      isWalkable(candidateRow, col),
+    const advanced = advanceAxis(
+      y,
+      dirY * speed * stepSeconds,
+      tileSize,
+      (candidateRow) => isWalkable(candidateRow, col),
+      collisionInsetPx,
     );
     y = advanced.pos;
     row = advanced.tile;
@@ -214,8 +240,12 @@ export function resolveMovementStep(
       (candidateRow) => isWalkable(candidateRow, wallCol),
     );
     if (nudge !== 0) {
-      const advanced = advanceAxis(y, row, nudge * cornerStep, tileSize, (candidateRow) =>
-        isWalkable(candidateRow, col),
+      const advanced = advanceAxis(
+        y,
+        nudge * cornerStep,
+        tileSize,
+        (candidateRow) => isWalkable(candidateRow, col),
+        collisionInsetPx,
       );
       y = advanced.pos;
       row = advanced.tile;
@@ -233,8 +263,12 @@ export function resolveMovementStep(
       (candidateCol) => isWalkable(wallRow, candidateCol),
     );
     if (nudge !== 0) {
-      const advanced = advanceAxis(x, col, nudge * cornerStep, tileSize, (candidateCol) =>
-        isWalkable(row, candidateCol),
+      const advanced = advanceAxis(
+        x,
+        nudge * cornerStep,
+        tileSize,
+        (candidateCol) => isWalkable(row, candidateCol),
+        collisionInsetPx,
       );
       x = advanced.pos;
       col = advanced.tile;
