@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
@@ -10,13 +10,12 @@ import {
   fillPartyUltimateAtom,
   recordItemUsedAtom,
   gameStatusAtom,
-  partyAtom,
+  itemCooldownMsAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
-import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
-import { getPartyPassiveModifiers } from '~/lib/skill-system';
-import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
+import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import type { ConsumableItemData } from '~/types';
@@ -25,47 +24,54 @@ interface BattleItemBarProps {
   isBattlePaused: boolean;
 }
 
+// The consumable registry is static, so the battle-usable subset is resolved once at module load
+// rather than refiltered on every render of the bar.
+const BATTLE_ITEMS = ConsumableItems.filter((item) => item.usableInBattle && item.action);
+
 export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
-  const party = useAtomValue(partyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
   const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
+  const cooldownDuration = useAtomValue(itemCooldownMsAtom);
 
-  const [cooldownProgress, setCooldownProgress] = useState(1); // 1 = ready, 0 = just started
-  const cooldownEndRef = useRef<number>(0);
-  const rafRef = useRef<number>(0);
+  // 0 while items are ready, otherwise the absolute timestamp the shared cooldown ends at.
+  const [cooldownEndsAt, setCooldownEndsAt] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const secondsLeftRef = useRef(0);
 
-  const animateCooldown = useCallback(() => {
-    const now = Date.now();
-    const end = cooldownEndRef.current;
-    const remaining = end - now;
+  const isOnCooldown = cooldownEndsAt > 0;
 
-    if (remaining <= 0) {
-      setCooldownProgress(1);
-      return;
+  /**
+   * The sweeping wedge is drawn by CSS, so React is left with only two jobs: move the "Ns" label
+   * when the whole second changes, and retire the overlay when the cooldown ends. The label is
+   * polled rather than scheduled on second boundaries so a throttled tab can't desync it, and
+   * guarded against repeat values so the poll itself never causes a render.
+   */
+  useEffect(() => {
+    if (cooldownEndsAt === 0) return;
+
+    function syncLabel() {
+      const next = Math.max(1, Math.ceil((cooldownEndsAt - Date.now()) / 1000));
+      if (next === secondsLeftRef.current) return;
+      secondsLeftRef.current = next;
+      setSecondsLeft(next);
     }
 
-    const progress = 1 - remaining / cooldownDuration;
-    setCooldownProgress(progress);
-    rafRef.current = requestAnimationFrame(animateCooldown);
-  }, [cooldownDuration]);
+    syncLabel();
+    const label = setInterval(syncLabel, ITEM_COOLDOWN_LABEL_TICK_MS);
+    const finish = setTimeout(() => setCooldownEndsAt(0), Math.max(0, cooldownEndsAt - Date.now()));
 
-  useEffect(() => {
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearInterval(label);
+      clearTimeout(finish);
     };
-  }, []);
-
-  const isOnCooldown = cooldownProgress < 1;
-
-  const battleItems = ConsumableItems.filter((item) => item.usableInBattle && item.action);
+  }, [cooldownEndsAt]);
 
   const handleUseItem = (item: ConsumableItemData) => {
     if (gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown) return;
@@ -93,17 +99,12 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
     recordItemUsed();
 
     // Start shared cooldown
-    cooldownEndRef.current = Date.now() + cooldownDuration;
-    setCooldownProgress(0);
-    rafRef.current = requestAnimationFrame(animateCooldown);
+    setCooldownEndsAt(Date.now() + cooldownDuration);
   };
-
-  // Angle in degrees for the transparent (revealed) portion
-  const revealAngle = cooldownProgress * 360;
 
   return (
     <div id="battle-item-bar" className="mt-2 flex items-center justify-center gap-1.5 sm:gap-2">
-      {battleItems.map((item) => {
+      {BATTLE_ITEMS.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
         const isDisabled = isEmpty || gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown;
@@ -134,13 +135,12 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
               {isOnCooldown && !isEmpty && (
                 <>
                   <div
-                    className="pointer-events-none absolute inset-0 rounded"
-                    style={{
-                      background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                    }}
+                    key={cooldownEndsAt}
+                    className="battle-item-cooldown-pie motion-exempt pointer-events-none absolute inset-0 rounded"
+                    style={{ animationDuration: `${cooldownDuration}ms` }}
                   />
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
-                    {Math.max(1, Math.ceil((cooldownEndRef.current - Date.now()) / 1000))}s
+                    {secondsLeft}s
                   </div>
                 </>
               )}

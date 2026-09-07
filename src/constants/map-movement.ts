@@ -27,8 +27,19 @@ export const MOVEMENT_STEP_SECONDS = 1 / 120;
  */
 export const MAX_FRAME_SECONDS = 0.25;
 
-/** Gap left between the character point and a blocking tile edge, in map pixels. */
+/** Gap left between the character's leading edge and a blocking tile edge, in map pixels. */
 export const COLLISION_EPSILON_PX = 0.01;
+
+/**
+ * Hard ceiling on the character's collision footprint, as a fraction of a tile.
+ *
+ * The footprint is derived from the sprite's real body half-width, then clamped here.
+ * The clamp is not cosmetic: measured by flood fill over the shipped layer data, an
+ * inset of 0.5 leaves only 127 of the Apprentice Forge's 367 walkable tiles reachable,
+ * because the map breaks into disconnected pockets at every tile-wide gap. Everything
+ * up to 0.4375 keeps all three maps fully connected. Do not raise this above 0.4375.
+ */
+export const MAX_COLLISION_INSET_TILES = 0.4;
 
 // --- road assists ---
 
@@ -61,8 +72,8 @@ export const POINTER_DEAD_ZONE_TILES = 0.8;
 
 /**
  * At or beyond this pointer distance (in tiles) the character runs.
- * Roughly one character height (`CHARACTER_HEIGHT_TILES`), so "pull the cursor
- * about a body-length away" reads naturally on screen.
+ * Roughly one and a third body heights (`CHARACTER_BODY_HEIGHT_TILES`), so "pull the
+ * cursor about a body-length away" reads naturally on screen.
  */
 export const POINTER_RUN_DISTANCE_TILES = 3.5;
 

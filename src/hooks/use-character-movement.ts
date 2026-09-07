@@ -45,6 +45,12 @@ export interface UseCharacterMovementOptions {
   /** Predicate: can the character occupy tile (row, col)? */
   canMoveTo: (row: number, col: number) => boolean;
   /**
+   * Half-width of the character's collision footprint in map pixels, so the sprite's
+   * silhouette stops at a wall instead of its centre point. Map-pixel space, never
+   * scaled by `displayScale`. Omit for the historical dimensionless-point behaviour.
+   */
+  collisionInsetPx?: number;
+  /**
    * Freezes the character while something else owns the screen (a blocking modal, a
    * dialogue scene). Input is dropped rather than buffered, so nothing latches across
    * the pause.
@@ -92,6 +98,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     offsetY = 0,
     toMapPoint = NO_MAP_POINT,
     canMoveTo,
+    collisionInsetPx = 0,
     onTileEnter,
     isPaused = false,
   } = options;
@@ -111,6 +118,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   });
 
   const tileSizeRef = useRef(tileSize);
+  const collisionInsetRef = useRef(collisionInsetPx);
   const displayScaleRef = useRef(displayScale);
   const offsetRef = useRef({ x: offsetX, y: offsetY });
   const canMoveToRef = useRef(canMoveTo);
@@ -143,6 +151,9 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   useEffect(() => {
     tileSizeRef.current = tileSize;
   }, [tileSize]);
+  useEffect(() => {
+    collisionInsetRef.current = collisionInsetPx;
+  }, [collisionInsetPx]);
 
   // Whatever was held when the pause began must not survive it: a key still down (or a
   // pointer still captured) would send the character walking the instant the modal closes.
@@ -258,6 +269,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
           tileSize: size,
           stepSeconds: MOVEMENT_STEP_SECONDS,
           isWalkable: (row: number, col: number) => canMoveToRef.current(row, col),
+          collisionInsetPx: collisionInsetRef.current,
         };
 
         while (accumulatorRef.current >= MOVEMENT_STEP_SECONDS) {

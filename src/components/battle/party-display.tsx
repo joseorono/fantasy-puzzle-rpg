@@ -1,6 +1,7 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
-  partyAtom,
+  partyMemberIdsAtom,
+  partyMemberAtom,
   partyHealthPercentageAtom,
   guardPercentageAtom,
   lastMatchedTypeAtom,
@@ -192,7 +193,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
         </div>
         <div className="relative h-2 rounded-sm border border-[#5c3e23] bg-[#120a05] sm:h-2.5">
           <div
-            className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
+            className={cn('h-full transition-all duration-300 ease-linear', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
@@ -211,8 +212,21 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   );
 }
 
+interface PartyMemberSlotProps {
+  characterId: string;
+  onActivateSkill: (characterId: string) => void;
+}
+
+// Subscribes to one hero, so a cooldown tick re-renders only the sprites whose hero moved and not
+// the party panel (HP/Guard bars, counters) around them.
+function PartyMemberSlot({ characterId, onActivateSkill }: PartyMemberSlotProps) {
+  const character = useAtomValue(partyMemberAtom(characterId));
+  if (!character) return null;
+  return <CharacterSprite character={character} onActivateSkill={onActivateSkill} />;
+}
+
 export function PartyDisplay() {
-  const party = useAtomValue(partyAtom);
+  const partyMemberIds = useAtomValue(partyMemberIdsAtom);
   const partyHealthPercentage = useAtomValue(partyHealthPercentageAtom);
   const guardPercentage = useAtomValue(guardPercentageAtom);
   const lastMatchedType = useAtomValue(lastMatchedTypeAtom);
@@ -280,8 +294,8 @@ export function PartyDisplay() {
       {/* Party members grid */}
       <div id="party-members-grid" className="relative flex items-center justify-center">
         <div className="grid grid-cols-4 gap-2 xl:gap-7 sm:gap-3 md:gap-4 2xl:gap-12">
-          {party.map((character) => (
-            <CharacterSprite key={character.id} character={character} onActivateSkill={activateSkill} />
+          {partyMemberIds.split(',').map((characterId) => (
+            <PartyMemberSlot key={characterId} characterId={characterId} onActivateSkill={activateSkill} />
           ))}
         </div>
       </div>

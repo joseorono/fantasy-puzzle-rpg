@@ -81,14 +81,15 @@
 - `jingle` → `/assets/audio/bg-noise/jingle.wav`
 - `beep` → `/assets/audio/ui/beep.wav`
 - `gameOver` → `/assets/audio/ui/game-over.mp3`
-- `combatMusic` → `/assets/audio/bg-noise/combatMusic.wav`
-- `startMenuMusic` → `/assets/audio/ui/epic-cinematic.wav`
-- `bossFight` → `/assets/audio/ui/boss-fight.wav`
-- `fightMusicLoop` → `/assets/audio/ui/fight-music-loop.wav`
+- `combatMusic` → `/assets/audio/bg-noise/combatMusic.ogg`
+- `startMenuMusic` → `/assets/audio/ui/epic-cinematic.ogg`
+- `bossFight` → `/assets/audio/ui/boss-fight.ogg`
+- `fightMusicLoop` → `/assets/audio/ui/fight-music-loop.ogg`
 - `levelUp` → `/assets/audio/ui/levelup.ogg`
 - `rhodesmasChime` → `/assets/audio/ui/rhodesmas-chime.mp3`
 - `saveChime` → `/assets/audio/ui/chime-saved-1.mp3`
 - `loadChime` → `/assets/audio/ui/chimes-saved.mp3`
+- `runningUpStairs` → `/assets/audio/ui/running-up-the-stairs.wav`
 
 ## Active Sound Hooks
 
@@ -108,3 +109,4 @@
 7. **Save & Load**: Saving progress plays `saveChime`; loading a save file plays `loadChime`.
 8. **Pause Menu & Modals**: Tab switching plays `clickChangeTab`; menu selections and dialog buttons play `mechanicalClick`.
 9. **Dialogue**: Advancing dialogue lines plays `mechanicalClick`.
+10. **Dungeon**: Leave Dungeon (after confirming) plays `runningUpStairs` through the `stairs-ascent` global animation before returning to the previous view.

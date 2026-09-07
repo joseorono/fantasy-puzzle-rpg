@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { resolveMovementStep } from './map-movement';
 import type { MovementContext, MovementInput, MovementPointState } from './map-movement';
 import {
+  COLLISION_EPSILON_PX,
   CORNER_ASSIST_MAX_OFFSET_TILES,
+  MAX_COLLISION_INSET_TILES,
   MOVEMENT_STEP_SECONDS,
   PATH_CENTERING_DEADZONE_TILES,
 } from '~/constants/map-movement';
@@ -28,8 +30,8 @@ function atTileCenter(row: number, col: number): MovementPointState {
   return { x: (col + 0.5) * TILE, y: (row + 0.5) * TILE, row, col };
 }
 
-function ctxFor(rows: string[], stepSeconds = MOVEMENT_STEP_SECONDS): MovementContext {
-  return { tileSize: TILE, isWalkable: gridWalkable(rows), stepSeconds };
+function ctxFor(rows: string[], stepSeconds = MOVEMENT_STEP_SECONDS, collisionInsetPx = 0): MovementContext {
+  return { tileSize: TILE, isWalkable: gridWalkable(rows), stepSeconds, collisionInsetPx };
 }
 
 function input(dirX: number, dirY: number, speed = WALK_SPEED): MovementInput {
@@ -265,5 +267,112 @@ describe('resolveMovementStep — corner assist', () => {
     const result = simulate(slightlyHigh, input(diagonal, diagonal), ctxFor(corner), 60);
 
     expect(result.col).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// collision footprint
+// ---------------------------------------------------------------------------
+
+describe('resolveMovementStep — collision footprint', () => {
+  const INSET = MAX_COLLISION_INSET_TILES * TILE; // 6.4 map px at TILE = 16
+  // Column 2 is pinched shut directly above and below row 2, so a wall can be
+  // approached from either vertical direction from the centre tile.
+  const pinch = ['.....', '..#..', '.....', '..#..', '.....'];
+  const bigStep = 1; // one second per substep: always reaches the wall in a single call
+
+  it('reproduces the historical point clamp when the inset is zero', () => {
+    const walls = ['.....', '.....', '..#..', '.....', '.....'];
+    const result = resolveMovementStep(atTileCenter(2, 1), input(1, 0), ctxFor(walls, bigStep, 0));
+
+    expect(result.blockedX).toBe(true);
+    expect(result.x).toBeCloseTo(2 * TILE - COLLISION_EPSILON_PX, 10);
+    expect(result.col).toBe(1);
+  });
+
+  it('stops the footprint short of a wall on +X', () => {
+    const walls = ['.....', '.....', '..#..', '.....', '.....'];
+    const result = resolveMovementStep(atTileCenter(2, 1), input(1, 0), ctxFor(walls, bigStep, INSET));
+
+    expect(result.blockedX).toBe(true);
+    expect(result.x).toBeCloseTo(2 * TILE - INSET - COLLISION_EPSILON_PX, 10);
+    expect(result.col).toBe(1);
+  });
+
+  it('stops the footprint short of a wall on -X', () => {
+    const walls = ['.....', '.....', '..#..', '.....', '.....'];
+    const result = resolveMovementStep(atTileCenter(2, 3), input(-1, 0), ctxFor(walls, bigStep, INSET));
+
+    expect(result.blockedX).toBe(true);
+    expect(result.x).toBeCloseTo(3 * TILE + INSET + COLLISION_EPSILON_PX, 10);
+    expect(result.col).toBe(3);
+  });
+
+  it('stops the footprint short of a wall on +Y', () => {
+    const result = resolveMovementStep(atTileCenter(2, 2), input(0, 1), ctxFor(pinch, bigStep, INSET));
+
+    expect(result.blockedY).toBe(true);
+    expect(result.y).toBeCloseTo(3 * TILE - INSET - COLLISION_EPSILON_PX, 10);
+    expect(result.row).toBe(2);
+  });
+
+  it('stops the footprint short of a wall on -Y, which is what keeps lowered feet out of it', () => {
+    const result = resolveMovementStep(atTileCenter(2, 2), input(0, -1), ctxFor(pinch, bigStep, INSET));
+
+    expect(result.blockedY).toBe(true);
+    expect(result.y).toBeCloseTo(2 * TILE + INSET + COLLISION_EPSILON_PX, 10);
+    expect(result.row).toBe(2);
+  });
+
+  it('rests at a fixed point: pushing into the wall again does not move it', () => {
+    const walls = ['.....', '.....', '..#..', '.....', '.....'];
+    const ctx = ctxFor(walls, bigStep, INSET);
+    const first = resolveMovementStep(atTileCenter(2, 1), input(1, 0), ctx);
+    const second = resolveMovementStep(first, input(1, 0), ctx);
+
+    expect(second.x).toBeCloseTo(first.x, 10);
+    expect(second.col).toBe(first.col);
+    expect(second.movedDistance).toBeCloseTo(0, 10);
+  });
+
+  it('keeps the reported tile consistent with the position', () => {
+    const walls = ['.....', '.....', '..#..', '.....', '.....'];
+    const result = resolveMovementStep(atTileCenter(2, 1), input(1, 0), ctxFor(walls, bigStep, INSET));
+
+    // The documented MovementPointState invariant: the tile is always floor(pos / tileSize),
+    // even though the leading edge now sits in the tile ahead of it.
+    expect(result.col).toBe(Math.floor(result.x / TILE));
+    expect(result.row).toBe(Math.floor(result.y / TILE));
+  });
+
+  it('still reaches every tile centre in a one-tile corridor', () => {
+    // The reachability guarantee behind MAX_COLLISION_INSET_TILES: at 0.4 the inset stays
+    // under half a tile, so a corridor exactly one tile wide never seals shut.
+    const corridor = ['#####', '#####', '.....', '#####', '#####'];
+    const ctx = ctxFor(corridor, MOVEMENT_STEP_SECONDS, INSET);
+
+    let state: MovementPointState = atTileCenter(2, 0);
+    for (let i = 0; i < 600; i++) state = resolveMovementStep(state, input(1, 0), ctx);
+    expect(state.col).toBe(4);
+
+    for (let i = 0; i < 600; i++) state = resolveMovementStep(state, input(-1, 0), ctx);
+    expect(state.col).toBe(0);
+  });
+
+  it('lets corner assist fire with a footprint applied', () => {
+    // The same corner the unfootprinted assist test uses: moving right from (1,0),
+    // (1,1) is blocked, (0,1) is open and (0,0) is reachable.
+    const corner = ['..', '.#'];
+    const slightlyHigh: MovementPointState = {
+      x: 0.5 * TILE,
+      y: (1 + CORNER_ASSIST_MAX_OFFSET_TILES / 2) * TILE,
+      row: 1,
+      col: 0,
+    };
+
+    const result = simulate(slightlyHigh, input(1, 0), ctxFor(corner, MOVEMENT_STEP_SECONDS, INSET), 400);
+
+    expect(result.row).toBe(0); // slipped up and around the corner
+    expect(result.col).toBe(1);
   });
 });

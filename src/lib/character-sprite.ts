@@ -5,10 +5,12 @@ import {
   SPRITE_RUN_BLOCK_Y,
   SPRITE_SIT_BLOCK_Y,
   SPRITE_WALK_BLOCK_Y,
+  SPRITE_WALK_BODY_BOX,
   WALK_STAND_COLUMN,
   RUN_FRAME_COUNT,
   WALK_FRAME_COUNT,
 } from '~/constants/character-sprite';
+import { MAX_COLLISION_INSET_TILES } from '~/constants/map-movement';
 
 /** The modes a character sprite can be in at any moment. */
 export type CharacterSpriteMode = 'walk' | 'run' | 'stand' | 'sit';
@@ -69,4 +71,60 @@ export function advanceFrame(mode: CharacterSpriteMode, frameIndex: number): num
     case 'stand':
       return 0;
   }
+}
+
+/** Everything the map needs to draw and collide the character at a given tile size. */
+export interface CharacterSpriteMetrics {
+  /** Sprite pixels to CSS pixels, including `displayScale`. Feeds the CSS transform. */
+  scale: number;
+  /** Rendered edge length of one square frame, in CSS pixels. */
+  frameSizePx: number;
+  /** Visible body width in *map* pixels. Display-independent. */
+  bodyWidthPx: number;
+  /** Visible body height in *map* pixels. Display-independent. */
+  bodyHeightPx: number;
+  /** Collision half-width in *map* pixels, clamped. Display-independent. */
+  collisionInsetPx: number;
+  /** How far below the collision point to draw the sprite, in CSS pixels. */
+  footOffsetPx: number;
+}
+
+/**
+ * Derives every size the character needs from its *visible body*, not from the
+ * mostly-empty 64px frame.
+ *
+ * Splitting map pixels from CSS pixels is the point of this function. `scale` and
+ * `frameSizePx` are what gets drawn, so they carry `displayScale`. `bodyWidthPx` and
+ * `collisionInsetPx` feed the movement simulation, which runs entirely in map-pixel
+ * space, so they must never see `displayScale` — otherwise collision would change
+ * when the window is resized.
+ *
+ * The collision inset is the body's half-width, clamped by
+ * {@link MAX_COLLISION_INSET_TILES}. Because the clamp can only ever *lower* it, the
+ * character can never stop short of a wall with a visible gap; the clamp only leaves
+ * some residual overlap on maps whose sprite is wide relative to a tile.
+ *
+ * @param tileSize Edge length of one map tile in map pixels.
+ * @param bodyHeightTiles How many tiles tall the visible body should render.
+ * @param displayScale CSS scale the canvas is currently displayed at.
+ * @param footOffsetTiles How far below the collision point to draw the sprite, in tiles.
+ */
+export function getCharacterSpriteMetrics(
+  tileSize: number,
+  bodyHeightTiles: number,
+  displayScale: number,
+  footOffsetTiles: number,
+): CharacterSpriteMetrics {
+  const spriteScale = (tileSize * bodyHeightTiles) / SPRITE_WALK_BODY_BOX.height;
+  const bodyWidthPx = SPRITE_WALK_BODY_BOX.width * spriteScale;
+  const collisionInsetTiles = Math.min(bodyWidthPx / 2 / tileSize, MAX_COLLISION_INSET_TILES);
+
+  return {
+    scale: spriteScale * displayScale,
+    frameSizePx: SPRITE_FRAME_SIZE_PX * spriteScale * displayScale,
+    bodyWidthPx,
+    bodyHeightPx: SPRITE_WALK_BODY_BOX.height * spriteScale,
+    collisionInsetPx: collisionInsetTiles * tileSize,
+    footOffsetPx: footOffsetTiles * tileSize * displayScale,
+  };
 }

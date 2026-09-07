@@ -3,10 +3,11 @@ import type { InteractiveMapNode, EncounterDefinition, FloorLootSpot } from './m
 import type { DialogueScene } from './dialogue';
 
 /**
- * Every map in the game. Adding one means adding a member here and an entry in
- * MAP_REGISTRY — TypeScript flags a half-added map at both ends.
+ * Every map in the game. Adding one means adding a member here, an entry in
+ * MAP_REGISTRY, and a key in `MAP_ID_COVERAGE` (src/types/save-game.ts) so the
+ * id validates in saves — TypeScript flags a half-added map at every end.
  */
-export type MapId = 'map-00' | 'map-01';
+export type MapId = 'map-00' | 'map-01' | 'map-00-apprentice-forge';
 
 /**
  * A dialogue scene that fires when the player steps onto a tile.

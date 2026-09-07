@@ -28,12 +28,21 @@ The battle screen now features a fully functional combat system with enemy attac
 - **Bomb chains (anti-runaway)**: Matching a wildcard bomb still triggers a 3×3 blast and can chain,
   but bomb spawning is bounded per cascade chain: after the first bomb spawns in a chain the per-orb
   refill chance is multiplied by `CASCADE_BOMB_CHANCE_MULTIPLIER` (0.75), and a chain spawns at most
-  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/game.ts`). So bomb cascades can't self-feed
+  `MAX_CHAIN_BOMB_SPAWNS` (3) bombs total (`src/constants/board.ts`). So bomb cascades can't self-feed
   into runaway x8 combos.
 - **Orb Removal**: Matched orbs disappear with animation and new orbs fall from the top
   - Glow effect on matched orbs (400ms)
   - Scale-down and fade-out animation (200ms)
   - New random orbs spawn at the top to refill the board
+- **Always playable**: every refill runs through `ensurePlayableBoard` (`src/lib/board-generation.ts`). If the
+  board has no match and no legal swap, only the freshly spawned orbs are re-drawn (up to `MAX_SPAWN_REROLLS`);
+  if that still fails the board is reshuffled — same colors, bombs stay put, moved orbs replay their fall-in —
+  and a "No moves! Reshuffle!" callout fires (`lastReshuffle`). Refills never avoid matches, so cascades are
+  unchanged.
+- **Opening board**: `createOpeningBoard` deals a random board and keeps it only if it has at most
+  `OPENING_MAX_MATCHES` (2) pre-made runs, none of bomb-spawning length (`OPENING_MAX_RUN_LENGTH`), and a legal
+  move or a match — a small free opening cascade stays possible, a runaway one does not. All board knobs live in
+  `src/constants/board.ts`.
 
 ### Enemy Stagger (Flinch) System
 - **Mechanic**: Player hits push back the targeted enemy's next attack timer by a small delay.
@@ -41,12 +50,14 @@ The battle screen now features a fully functional combat system with enemy attac
   - `damageRatio = min(1, damage / (enemyMaxHp × STAGGER_REF_FRACTION))` — scaled by hit intensity relative to 15% of max HP (`STAGGER_REF_FRACTION` = 0.15).
   - `vitResist = 1 / (1 + √max(0, VIT) / STAGGER_VIT_DIVISOR)` — diminishing resistance curve (`STAGGER_VIT_DIVISOR` = 8). High VIT enemies flinch less.
   - `BASE_STAGGER_FRACTION` = 0.10 (10% base delay multiplier).
+  - Skill (ultimate) hits multiply their raw push by `SKILL_STAGGER_MULTIPLIER` (2.5) before the clamp, so one ultimate maxes the flinch on most enemies.
+- **Multi-hit batching**: A multi-color match lands as one `damageEnemy({ hits })` call; every color's hit contributes its own push (with its own hero's passive multiplier) via `resolveStaggerHits`, clamped in order against the shared budget.
 - **Anti-Stunlock Hard Cap**:
   - The total accumulated stagger per attack cycle is capped at `MAX_STAGGER_FRACTION_PER_CYCLE` (12% of the enemy's attack interval).
   - Guarantees an enemy will always fire within `interval × (1 + 0.12)` of its previous attack regardless of hit rate.
   - The budget resets to 0 whenever the enemy fires its attack.
 - **Visual Feedback**:
-  - **Countdown Ring Nudge**: The timer ring (`RadialCountdown`) nudges backward on hit.
+  - **Countdown Ring Nudge**: The timer ring (`RadialCountdown`) reads as time remaining until the attack, anchored by `resolveCountdownRingAnchor` (`src/lib/battle-system.ts`), so a push of `p` ms steps the fill back by `p / interval` wherever it lands in the cycle. The ring fill is exempt from the hitstop freeze so it stays in sync with the real release time.
   - **"STAGGER!" Callout**: Pop of warm-amber "STAGGER!" text over the enemy sprite when a hit reaches the per-cycle cap.
 - **Implementation**: Pure formulas in `src/lib/rpg-calculations.ts` (`calculateStaggerPushMs`, `clampStaggerToCycleBudget`), timers in `src/hooks/use-enemy-attack-timers.ts`, and tunables in `src/constants/battle.ts`.
 

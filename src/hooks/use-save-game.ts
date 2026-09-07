@@ -5,7 +5,7 @@ import { DEFAULT_MAP_ID } from '~/constants/maps';
 import { SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
 import { buildSaveData, computePlaytimeMs, pickMostRecentSlot } from '~/lib/save-game';
 import { isGameStartedAtom } from '~/stores/app-atoms';
-import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
+import { activeDungeonIdAtom, resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { soundService } from '~/services/sound-service';
 import { hydrateGameFromSave, resetGameState, useGameStore } from '~/stores/game-store';
 import { basePlaytimeMsAtom, saveIndicatorAtom, saveSlotAtoms, sessionStartedAtAtom } from '~/stores/save-atoms';
@@ -33,8 +33,13 @@ function readPersistentState(): SaveGameState {
 export function useSaveGameActions() {
   const store = useStore();
 
-  /** Snapshots the current game into a slot, overwriting whatever was there. */
+  /**
+   * Snapshots the current game into a slot, overwriting whatever was there.
+   * Manual slots refuse while a dungeon run is active (see `useIsSaveLocked`); the
+   * autosave is exempt because the run-completion autosave fires before the run is torn down.
+   */
   function saveToSlot(slotId: SaveSlotId): void {
+    if (slotId !== 'autosave' && store.get(activeDungeonIdAtom) !== null) return;
     const { router } = useGameStore.getState();
     store.set(
       saveSlotAtoms[slotId],
@@ -89,6 +94,15 @@ export function useSaveGameActions() {
   }
 
   return { saveToSlot, autosave, loadSlot, deleteSlot, newGame };
+}
+
+/**
+ * Whether manual saving is currently locked. A dungeon run lives only in memory and is
+ * discarded on load, so saving mid-run would either lose the run or let the player bail
+ * out of it for free. Unlocks once the run is torn down (leave, wipe or finish).
+ */
+export function useIsSaveLocked(): boolean {
+  return useAtomValue(activeDungeonIdAtom) !== null;
 }
 
 /**

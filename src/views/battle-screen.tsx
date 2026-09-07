@@ -7,11 +7,12 @@ import { Match3Board } from '~/components/battle/match3-board';
 import { BattleOverModal } from '~/components/battle/battle-over-modal';
 import { BattleItemBar } from '~/components/battle/battle-item-bar';
 import { DamageNumber } from '~/components/battle/damage-number';
+import { FloatingParticles } from '~/components/effects/floating-particles';
 import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
+import { BoardReshuffleIndicator } from '~/components/battle/board-reshuffle-indicator';
 import {
   gameStatusAtom,
-  tickSkillCooldownsAtom,
-  tickGuardDecayAtom,
+  battleTickAtom,
   ensureFreshBattleAtom,
 } from '~/stores/battle-atoms';
 import { useParty, useViewData } from '~/stores/game-store';
@@ -27,8 +28,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 
 export default function BattleScreen() {
   const gameStatus = useAtomValue(gameStatusAtom);
-  const tickSkillCooldowns = useSetAtom(tickSkillCooldownsAtom);
-  const tickGuardDecay = useSetAtom(tickGuardDecayAtom);
+  const battleTick = useSetAtom(battleTickAtom);
   const party = useParty();
   const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
   const [isBattlePaused, setIsBattlePaused] = useState(false);
@@ -76,12 +76,11 @@ export default function BattleScreen() {
     if (gameStatus !== 'playing' || isBattlePaused === true) return;
 
     const interval = setInterval(() => {
-      tickSkillCooldowns(BATTLE_TICK_DELTA_SECONDS);
-      tickGuardDecay(BATTLE_TICK_DELTA_SECONDS);
+      battleTick(BATTLE_TICK_DELTA_SECONDS);
     }, BATTLE_TICK_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [gameStatus, isBattlePaused, tickSkillCooldowns, tickGuardDecay]);
+  }, [gameStatus, isBattlePaused, battleTick]);
 
   // Combat music
   useEffect(() => {
@@ -102,12 +101,12 @@ export default function BattleScreen() {
 
         {/* Centered callout when a hit lands on a still-observing enemy. */}
         <PreemptiveStrikeIndicator />
+        {/* Centered callout when a dead board had to be reshuffled. */}
+        <BoardReshuffleIndicator />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">
           <div className="battleArea">
-            
-
             {/* Right/Bottom section - Party */}
             <div
               className="partySection relative"
@@ -158,20 +157,7 @@ export default function BattleScreen() {
       </div>
 
       {/* Floating particles effect */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute h-1 w-1 animate-pulse rounded-full bg-white opacity-30"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-            }}
-          />
-        ))}
-      </div>
+      <FloatingParticles />
 
       {/* Ace Attorney-style skill burst overlay */}
       <SkillBurstOverlay />

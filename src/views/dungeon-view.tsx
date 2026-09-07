@@ -45,6 +45,7 @@ import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
 import { DialogueScene } from '~/components/dialogue';
+import { useGlobalAnimation } from '~/components/global-animations-system';
 import { LootNotification } from '~/components/map/loot-notification';
 import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
@@ -187,11 +188,14 @@ export default function DungeonView() {
   const pauseMenu = usePauseMenu();
   const confirm = useConfirm();
   const confirmRequest = useAtomValue(confirmDialogRequestAtom);
+  const { trigger: triggerGlobalAnimation } = useGlobalAnimation();
 
   // ─── Local UI state ──────────────────────────────────────────────────
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [showClearOverlay, setShowClearOverlay] = useState(false);
+  // True from a confirmed Leave until the exit animation hands off to the router.
+  const [isExiting, setIsExiting] = useState(false);
   const [flavorLine, setFlavorLine] = useState<string>(() => getRandomElement(DUNGEON_CONTINUE_FLAVOR));
   // One-shot latches: these actions navigate away (or await a dialog), so a second
   // activation before the unmount must not run them twice.
@@ -272,8 +276,8 @@ export default function DungeonView() {
   const isBrowsing = phase === 'browsing' && !activeDialogue;
   const canEngage = isBrowsing && currentEvent !== undefined;
 
-  // Footer controls available only between events (not mid-combat / mid-dialogue).
-  const controlsEnabled = isBrowsing && !isComplete;
+  // Footer controls available only between events (not mid-combat / mid-dialogue / mid-exit).
+  const controlsEnabled = isBrowsing && !isComplete && !isExiting;
   const partyFull = isPartyFullyHealed(party);
   const restsLeft = (dungeon ? getDungeonRestPool(dungeon) : 0) - restsUsed;
   // No resting on the entrance floor: otherwise players could walk in, rest, and leave,
@@ -303,7 +307,12 @@ export default function DungeonView() {
   // has no arbitration — every mounted subscriber fires on every keydown — so each surface
   // that takes over (dialogue, pause menu, confirm dialog, clear overlay) is gated out here.
   const keyboardEnabled =
-    !pauseMenu.isOpen && !activeDialogue && confirmRequest === null && !showClearOverlay && phase !== 'awaiting-battle';
+    !pauseMenu.isOpen &&
+    !activeDialogue &&
+    confirmRequest === null &&
+    !showClearOverlay &&
+    !isExiting &&
+    phase !== 'awaiting-battle';
 
   // Escape is deliberately NOT handled here: usePauseMenu owns it globally, and "Leave
   // Dungeon" forfeits the run — it must never be one keystroke away. Leave stays a
@@ -398,6 +407,8 @@ export default function DungeonView() {
         variant: 'danger',
       });
       if (!ok) return;
+      setIsExiting(true);
+      await triggerGlobalAnimation('stairs-ascent');
       resetRun();
       goBackTo(returnView);
     } finally {

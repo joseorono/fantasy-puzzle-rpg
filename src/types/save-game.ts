@@ -13,7 +13,11 @@ import type { DungeonProgressState } from '~/stores/slices/dungeon-progress.type
 const rarityTierSchema = z.enum(RARITY_TIERS);
 
 /** Must list every MapId — a new map becomes a compile error here, not a save that fails to validate. */
-const MAP_ID_COVERAGE = { 'map-00': true, 'map-01': true } as const satisfies Record<MapId, true>;
+const MAP_ID_COVERAGE = {
+  'map-00': true,
+  'map-01': true,
+  'map-00-apprentice-forge': true,
+} as const satisfies Record<MapId, true>;
 export const mapIdSchema = z.enum(Object.keys(MAP_ID_COVERAGE) as [MapId, ...MapId[]]);
 
 const gridPositionSchema = z.object({ row: z.number().int(), col: z.number().int() });

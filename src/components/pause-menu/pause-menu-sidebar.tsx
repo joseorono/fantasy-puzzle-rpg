@@ -11,6 +11,7 @@ import { cn } from '~/lib/utils';
 import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { LogOut } from 'lucide-react';
+import { useIsSaveLocked } from '~/hooks/use-save-game';
 
 const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
   { id: 'items', label: 'Items', icon: 'smallPotion' },
@@ -25,6 +26,8 @@ const TABS: { id: PauseMenuTab; label: string; icon: FrostyRpgIconName }[] = [
 export function PauseMenuSidebar() {
   const { activeTab, selectTab, close } = usePauseMenu();
   const [zone, setZone] = useAtom(pauseMenuZoneAtom);
+  // Save stays in the ring so its tab can explain the lock; it's only dimmed here.
+  const isSaveLocked = useIsSaveLocked();
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   // The ↑↓ ring is the 7 tabs plus Exit. Landing on a tab activates it immediately
   // (the established feel); landing on Exit only highlights it — Enter closes.
@@ -89,7 +92,9 @@ export function PauseMenuSidebar() {
           <ToffecBeigeCornersWrapper key={tab.id} forceDisplay={zone === 'sidebar' && !isExitHighlighted && isActive}>
             <button
               ref={isActive ? activeButtonRef : null}
-              className={cn('pause-menu-nav-btn', isActive && 'active')}
+              className={cn('pause-menu-nav-btn', isActive && 'active', {
+                'pause-menu-nav-btn--locked': tab.id === 'save' && isSaveLocked,
+              })}
               onClick={() => handleTabClick(tab.id)}
               aria-current={isActive ? 'page' : undefined}
             >

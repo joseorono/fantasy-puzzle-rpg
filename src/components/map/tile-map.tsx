@@ -4,6 +4,7 @@ import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
 import type { Position } from '~/types/geometry';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
+import { MapDebugOverlay } from './map-debug-overlay';
 import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
@@ -16,6 +17,8 @@ import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
+import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
+import { CHARACTER_BODY_HEIGHT_TILES, CHARACTER_FOOT_OFFSET_TILES } from '~/constants/character-sprite';
 import MapCharacterSprite from './map-character-sprite';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
@@ -301,6 +304,16 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { scale, offsetX, offsetY } = useCanvasMetrics(canvasRef, canvasContainerRef, mapData.width * tileSize);
 
   // --- Smooth character movement (rAF-based) ---
+  // Sizes derive from the sprite's visible body, not its mostly-empty 64px frame.
+  // `displayScale` is passed as 1 here: only `collisionInsetPx` is read, and the
+  // simulation must never see the display scale.
+  const characterMetrics = getCharacterSpriteMetrics(
+    tileSize,
+    map.characterBodyHeightTiles ?? CHARACTER_BODY_HEIGHT_TILES,
+    1,
+    map.characterFootOffsetTiles ?? CHARACTER_FOOT_OFFSET_TILES,
+  );
+
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
     initialCol: charPosition.col,
@@ -314,6 +327,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       return clientToMapPoint(clientX, clientY, canvasElement.getBoundingClientRect(), scale);
     },
     canMoveTo: (row, col) => isRoadTile(row, col),
+    // Map pixels, deliberately independent of `scale`: the simulation runs in map space.
+    collisionInsetPx: characterMetrics.collisionInsetPx,
     // An event prompt is a decision, not scenery — walking away from one is how you miss it.
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
@@ -362,7 +377,17 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     const savedPosition = useGameStore.getState().mapProgress.characterPositions[map.id];
     const start = savedPosition ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
 
-    const spawn = isMaskWalkable(walkableMask, start.row, start.col) ? start : findFirstWalkableTile(walkableMask);
+    const isStartWalkable = isMaskWalkable(walkableMask, start.row, start.col);
+    const spawn = isStartWalkable ? start : findFirstWalkableTile(walkableMask);
+
+    if (import.meta.env.DEV && !isStartWalkable && spawn) {
+      // Without this a misconfigured `defaultPlayerPosition` is invisible: the player is
+      // silently relocated across the map. A stale *saved* tile is expected after a map edit.
+      const source = savedPosition ? 'saved position' : 'configured defaultPlayerPosition';
+      console.warn(
+        `[${map.id}] ${source} (${start.row}, ${start.col}) is not walkable; spawning at (${spawn.row}, ${spawn.col}) instead.`,
+      );
+    }
 
     if (!spawn) {
       console.error('❌ No walkable tiles found in map!');
@@ -842,9 +867,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       <div className="tilemap-container">
         <MapInfoPanel
           displayMapName={displayMapName}
-          debug={debug}
-          charPosition={charPosition}
-          status={debugInfo}
           onLeave={returnView || canLeaveMap ? handleLeaveMap : undefined}
         />
         <div
@@ -884,9 +906,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               positionRef={movement.characterRef}
               tileSize={tileSize}
               displayScale={scale}
+              characterBodyHeightTiles={map.characterBodyHeightTiles}
+              characterFootOffsetTiles={map.characterFootOffsetTiles}
               spriteState={movement.spriteState}
             />
           )}
+
+          {debug && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
       </div>
 

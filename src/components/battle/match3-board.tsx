@@ -1,4 +1,4 @@
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import {
   boardAtom,
@@ -8,20 +8,18 @@ import {
   damageEnemyAtom,
   healPartyAtom,
   removeMatchedOrbsAtom,
-  battleStateAtom,
   partyAtom,
-  reduceSkillCooldownAtom,
+  deadOrbColorClassesAtom,
   incrementTurnAtom,
-  addScoreAtom,
-  recordMaxComboAtom,
-  addGuardAtom,
+  applyMatchResolutionAtom,
   pendingVictoryAtom,
   commitPendingVictoryAtom,
 } from '~/stores/battle-atoms';
-import type { Orb, BattleState } from '~/types/battle';
+import type { Orb } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
+import type { SkillCooldownReduction } from '~/lib/battle-system';
 import {
   calculateMatchDamage,
   calculateComboMultiplier,
@@ -43,7 +41,7 @@ import {
   BOMB_REFILL_CHANCE,
   CASCADE_BOMB_CHANCE_MULTIPLIER,
   MAX_CHAIN_BOMB_SPAWNS,
-} from '~/constants/game';
+} from '~/constants/board';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
@@ -60,12 +58,20 @@ function getComboGlow(combo: number): string {
   return 'rgba(255, 200, 60, 0.9)'; // gold (x2)
 }
 
-function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSelect }: OrbComponentProps) {
+function OrbComponent({
+  orb,
+  isSelected,
+  isHighlighted,
+  isInvalidSwap,
+  isNew,
+  isExploding,
+  onSelect,
+}: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
 
   useEffect(() => {
-    if (orb.isHighlighted) {
+    if (isHighlighted) {
       // Show particle explosion
       setShowParticles(true);
 
@@ -78,11 +84,11 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
       setIsDisappearing(false);
       setShowParticles(false);
     }
-  }, [orb.isHighlighted]);
+  }, [isHighlighted]);
 
   return (
     <button
-      onClick={onSelect}
+      onClick={() => onSelect(orb.row, orb.col)}
       className={cn(
         `orb-${orb.type}`,
         'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11 xl:h-8 xl:w-8 2xl:h-14 2xl:w-14',
@@ -92,7 +98,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
         isExploding && 'orb-exploding',
-        orb.isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
+        isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
         // Wildcard bomb orbs get a distinct dark sheen and a pulsing white ring
         orb.isBomb && !isExploding && 'animate-pulse ring-2 ring-white/90 brightness-75',
         isDisappearing && !isExploding && 'scale-0 rotate-180 opacity-0',
@@ -175,18 +181,15 @@ interface Match3BoardProps {
 export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const board = useAtomValue(boardAtom);
   const selectedOrb = useAtomValue(selectedOrbAtom);
-  const party = useAtomValue(partyAtom);
+  const deadColorClasses = useAtomValue(deadOrbColorClassesAtom);
+  const store = useStore();
   const selectOrb = useSetAtom(selectOrbAtom);
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
-  const reduceSkillCooldown = useSetAtom(reduceSkillCooldownAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
-  const addScore = useSetAtom(addScoreAtom);
-  const recordMaxCombo = useSetAtom(recordMaxComboAtom);
-  const addGuard = useSetAtom(addGuardAtom);
-  const setBattleState = useSetAtom(battleStateAtom);
+  const applyMatchResolution = useSetAtom(applyMatchResolutionAtom);
   const pendingVictory = useAtomValue(pendingVictoryAtom);
   const commitPendingVictory = useSetAtom(commitPendingVictoryAtom);
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
@@ -231,6 +234,9 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
   // Check for matches, resolve bomb explosions, and apply combat effects
   useEffect(() => {
+    // Read the party on demand rather than subscribing: the board must not re-render on every
+    // cooldown tick, and the live value here is never staler than a render-time closure would be.
+    const party = store.get(partyAtom);
     // Wildcard-aware line matches, then expand any matched bombs into 3x3 blasts.
     const lineMatches = findLineMatches(board);
     const matches = expandBombExplosions(board, lineMatches);
@@ -267,7 +273,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // The exploded orbs are added to the damage/score count via matches.size.
     const matchSizeBonus = (matches.size - 3) * MATCH_SIZE_BONUS_MULTIPLIER;
     const totalScore = BASE_MATCH_SCORE + matchSizeBonus;
-    addScore(totalScore);
 
     // Clear any existing timer
     if (processingTimerRef.current) {
@@ -291,12 +296,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // The primary (first-seen) color drives the party-wide pulse + health-bar flash.
     const primaryMatchedType = matchedTypes[0] ?? null;
-    if (primaryMatchedType) {
-      setBattleState((prev: BattleState) => ({
-        ...prev,
-        lastMatchedType: primaryMatchedType,
-      }));
-    }
 
     // Cascade combo multiplier: initial match is level 0 (1x), cascades escalate.
     const cascadeLevel = cascadeLevelRef.current;
@@ -324,6 +323,9 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     // Collect the damage/heal each living character applies, then resolve them together
     // after the highlight delay so the hitstop + match sound fire once for the whole move.
     const pendingEffects: Array<{ amount: number; isHeal: boolean; characterId?: string }> = [];
+    // Synchronous state changes are collected here and committed as one write below.
+    const cooldownReductions: SkillCooldownReduction[] = [];
+    let guardGain = 0;
     for (const matchedType of matchedTypes) {
       const matchingCharacter = party.find((char) => char.color === matchedType);
       const isCharacterDead = matchingCharacter ? matchingCharacter.currentHp <= 0 : false;
@@ -351,17 +353,16 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
       // Reduce the matching character's skill cooldown based on orbs matched.
       if (matchingCharacter) {
-        reduceSkillCooldown(matchingCharacter.id, matches.size * COOLDOWN_REDUCTION_PER_ORB);
+        cooldownReductions.push({ characterId: matchingCharacter.id, amount: matches.size * COOLDOWN_REDUCTION_PER_ORB });
       }
 
       // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
       // Charge scales with match size and the party's SPD-derived Guard Charge Rate.
       if (isGrayMatch) {
-        addGuard(
+        guardGain +=
           matches.size *
-            GUARD_CHARGE_PER_ORB *
-            (calculateGuardChargeRate(party) + getPartyPassiveModifiers(party).guardChargeRateBonus),
-        );
+          GUARD_CHARGE_PER_ORB *
+          (calculateGuardChargeRate(party) + getPartyPassiveModifiers(party).guardChargeRateBonus);
       }
 
       // Healer's default action heals the most damaged ally instead of dealing damage.
@@ -372,17 +373,27 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       });
     }
 
+    // Score, pulse colour, cooldowns, Guard and the deepest chain this battle (chain length =
+    // level + 1) land in one state write instead of five (see applyMatchResolutionAtom).
+    applyMatchResolution({
+      scoreDelta: totalScore,
+      primaryMatchedType,
+      cooldownReductions,
+      guardGain,
+      combo: cascadeLevel + 1,
+    });
+
     // Show highlight for a moment, then resolve every matched color's effect together.
     setTimeout(() => {
-      let didDamage = false;
+      // Every damaging color lands as one batched hit so a single `lastDamage` event carries them all.
+      const hits = pendingEffects
+        .filter((effect) => !effect.isHeal)
+        .map((effect) => ({ amount: effect.amount, characterId: effect.characterId }));
+      const didDamage = hits.length > 0;
       for (const effect of pendingEffects) {
-        if (effect.isHeal) {
-          healParty({ amount: effect.amount, source: 'match' });
-        } else {
-          damageEnemy({ amount: effect.amount, characterId: effect.characterId });
-          didDamage = true;
-        }
+        if (effect.isHeal) healParty({ amount: effect.amount, source: 'match' });
       }
+      if (didDamage) damageEnemy({ hits });
 
       if (pendingEffects.length > 0) {
         // Freeze-frame once on the moment damage lands (skip on heal-only moves).
@@ -397,8 +408,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     // Advance the cascade chain so the next refill-driven match scores higher.
     cascadeLevelRef.current = cascadeLevel + 1;
-    // Track the deepest chain this battle for the victory rating (chain length = level + 1).
-    recordMaxCombo(cascadeLevel + 1);
 
     // Remove matched orbs after animation - this will trigger a new board state
     // which will cause this effect to run again and check for new (cascade) matches
@@ -460,11 +469,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     }
   };
 
-  // Determine which orb colors belong to dead characters
-  const deadColorClasses = party
-    .filter((char) => char.currentHp <= 0 && char.color !== 'gray')
-    .map((char) => `dead-${char.color}`);
-
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center">
       <div className="match-badge-slot">
@@ -486,10 +490,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                 {row.map((orb) => (
                   <OrbComponent
                     key={orb.id}
-                    orb={{
-                      ...orb,
-                      isHighlighted: highlightedMatches.has(orb.id),
-                    }}
+                    orb={orb}
+                    isHighlighted={highlightedMatches.has(orb.id)}
                     isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
                     isInvalidSwap={
                       invalidSwap !== null &&
@@ -498,7 +500,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                     }
                     isNew={newOrbIds.has(orb.id)}
                     isExploding={explodingOrbs.has(orb.id)}
-                    onSelect={() => handleOrbClick(orb.row, orb.col)}
+                    onSelect={handleOrbClick}
                   />
                 ))}
               </div>

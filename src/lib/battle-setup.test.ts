@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { createBattleState, generateEnemyStandbyDelays } from './battle-system';
+import {
+  createBattleState,
+  generateEnemyStandbyDelays,
+  resolveCountdownRingAnchor,
+  tickPartySkillCooldowns,
+  reducePartySkillCooldowns,
+} from './battle-system';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
+import { BOARD_ROWS, BOARD_COLS, OPENING_MAX_MATCHES, OPENING_MAX_RUN_LENGTH } from '~/constants/board';
+import { countLineRuns, longestLineRun, isBoardPlayable } from './match-3';
 
 /**
  * Deterministic `[0, 1)` source that walks a fixed list of values, wrapping around.
@@ -95,10 +103,24 @@ describe('createBattleState', () => {
 
   it('should initialize the board with an 8x6 grid', () => {
     const state = createBattleState(party, enemies);
-    expect(state.board).toHaveLength(8);
+    expect(state.board).toHaveLength(BOARD_ROWS);
     for (const row of state.board) {
-      expect(row).toHaveLength(6);
+      expect(row).toHaveLength(BOARD_COLS);
     }
+  });
+
+  it('should deal a playable opening board within the opening caps', () => {
+    for (let i = 0; i < 25; i++) {
+      const state = createBattleState(party, enemies);
+      expect(isBoardPlayable(state.board)).toBe(true);
+      expect(countLineRuns(state.board)).toBeLessThanOrEqual(OPENING_MAX_MATCHES);
+      expect(longestLineRun(state.board)).toBeLessThanOrEqual(OPENING_MAX_RUN_LENGTH);
+    }
+  });
+
+  it('should start with no reshuffle event', () => {
+    const state = createBattleState(party, enemies);
+    expect(state.lastReshuffle).toBeNull();
   });
 
   it('should reset combat metadata', () => {
@@ -164,5 +186,116 @@ describe('generateEnemyStandbyDelays', () => {
     const a = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
     const b = generateEnemyStandbyDelays(ids, seededRng([0.1, 0.7, 0.3, 0.9, 0.5]));
     expect(a).toEqual(b);
+  });
+});
+
+describe('resolveCountdownRingAnchor', () => {
+  const interval = 4000;
+
+  it('a fresh cycle is a full ring over the interval', () => {
+    expect(resolveCountdownRingAnchor(interval, interval)).toEqual({ durationMs: interval, elapsedMs: 0 });
+  });
+
+  it('mid-cycle keeps the sweep length and offsets by the time already spent', () => {
+    expect(resolveCountdownRingAnchor(interval, 3000)).toEqual({ durationMs: interval, elapsedMs: 1000 });
+    expect(resolveCountdownRingAnchor(interval, 0)).toEqual({ durationMs: interval, elapsedMs: interval });
+  });
+
+  it('a stagger push moves the fill back by exactly push / interval, regardless of when it lands', () => {
+    const push = 200;
+    for (const elapsed of [300, 1000, 3900]) {
+      const before = resolveCountdownRingAnchor(interval, interval - elapsed);
+      const after = resolveCountdownRingAnchor(interval, interval - elapsed + push);
+      const fillBefore = 1 - before.elapsedMs / before.durationMs;
+      const fillAfter = 1 - after.elapsedMs / after.durationMs;
+      expect(fillAfter - fillBefore).toBeCloseTo(push / interval, 6);
+    }
+  });
+
+  it('more than a full interval remaining shows a full ring that still empties at release', () => {
+    expect(resolveCountdownRingAnchor(interval, 4150)).toEqual({ durationMs: 4150, elapsedMs: 0 });
+    // A push landing right after the cycle opens clamps at full rather than overfilling.
+    const early = resolveCountdownRingAnchor(interval, interval - 100 + 200);
+    expect(1 - early.elapsedMs / early.durationMs).toBe(1);
+  });
+
+  it('never produces a negative offset from a release already in the past', () => {
+    expect(resolveCountdownRingAnchor(interval, -50)).toEqual({ durationMs: interval, elapsedMs: interval });
+  });
+});
+
+describe('tickPartySkillCooldowns', () => {
+  const party = [
+    createTestCharacter({ id: 'ready', skillCooldown: 0 }),
+    createTestCharacter({ id: 'running', skillCooldown: 12.5 }),
+    createTestCharacter({ id: 'dead', currentHp: 0, skillCooldown: 8 }),
+    createTestCharacter({ id: 'almost', skillCooldown: 0.05 }),
+  ];
+
+  it('returns the same array reference when no living member has a running cooldown', () => {
+    const idle = [party[0], party[2]];
+    expect(tickPartySkillCooldowns(idle, 0.1)).toBe(idle);
+    expect(tickPartySkillCooldowns([], 0.1)).toEqual([]);
+  });
+
+  it('decrements only running cooldowns and keeps untouched members by reference', () => {
+    const next = tickPartySkillCooldowns(party, 0.1);
+    expect(next).not.toBe(party);
+    expect(next[0]).toBe(party[0]);
+    expect(next[1]).not.toBe(party[1]);
+    expect(next[1].skillCooldown).toBeCloseTo(12.4, 10);
+    expect(next[2]).toBe(party[2]);
+  });
+
+  it('floors at 0 when the delta overshoots the remaining cooldown', () => {
+    const next = tickPartySkillCooldowns(party, 0.1);
+    expect(next[3].skillCooldown).toBe(0);
+  });
+
+  it('does not mutate the input party', () => {
+    tickPartySkillCooldowns(party, 0.1);
+    expect(party[1].skillCooldown).toBe(12.5);
+    expect(party[3].skillCooldown).toBe(0.05);
+  });
+});
+
+describe('reducePartySkillCooldowns', () => {
+  const party = [
+    createTestCharacter({ id: 'ready', skillCooldown: 0 }),
+    createTestCharacter({ id: 'running', skillCooldown: 12.5 }),
+    createTestCharacter({ id: 'dead', currentHp: 0, skillCooldown: 8 }),
+    createTestCharacter({ id: 'almost', skillCooldown: 0.5 }),
+  ];
+
+  it('returns the same array reference when nothing applies', () => {
+    expect(reducePartySkillCooldowns(party, [])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'ready', amount: 1 }])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'dead', amount: 1 }])).toBe(party);
+    expect(reducePartySkillCooldowns(party, [{ characterId: 'nobody', amount: 1 }])).toBe(party);
+  });
+
+  it('reduces only the targeted living heroes and keeps the others by reference', () => {
+    const next = reducePartySkillCooldowns(party, [
+      { characterId: 'running', amount: 0.9 },
+      { characterId: 'almost', amount: 0.9 },
+    ]);
+    expect(next).not.toBe(party);
+    expect(next[0]).toBe(party[0]);
+    expect(next[1].skillCooldown).toBeCloseTo(11.6, 10);
+    expect(next[2]).toBe(party[2]);
+    expect(next[3].skillCooldown).toBe(0);
+  });
+
+  it('stacks repeated reductions for the same hero', () => {
+    const next = reducePartySkillCooldowns(party, [
+      { characterId: 'running', amount: 1 },
+      { characterId: 'running', amount: 2 },
+    ]);
+    expect(next[1].skillCooldown).toBeCloseTo(9.5, 10);
+  });
+
+  it('does not mutate the input party', () => {
+    reducePartySkillCooldowns(party, [{ characterId: 'running', amount: 1 }]);
+    expect(party[1].skillCooldown).toBe(12.5);
   });
 });
