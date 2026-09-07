@@ -173,6 +173,13 @@ export default function AudioLicensesDialogContent() {
             https://freesound.org/people/13712885766/sounds/789599/
           </a>
         </p>
+
+        <p>
+          Running Up The Stairs.wav (runningUpStairs) by RutgerMuller — License: Creative Commons 0&nbsp;
+          <a href="https://freesound.org/people/RutgerMuller/sounds/51163/">
+            https://freesound.org/people/RutgerMuller/sounds/51163/
+          </a>
+        </p>
       </div>
     </>
   );

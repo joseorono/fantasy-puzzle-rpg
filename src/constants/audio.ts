@@ -26,6 +26,7 @@ export enum SoundNames {
   rhodesmasChime = 'rhodesmasChime',
   saveChime = 'saveChime',
   loadChime = 'loadChime',
+  runningUpStairs = 'runningUpStairs',
 }
 
 export const soundFiles = {
@@ -58,6 +59,7 @@ export const soundFiles = {
   [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
   [SoundNames.saveChime]: '/assets/audio/ui/chime-saved-1.mp3',
   [SoundNames.loadChime]: '/assets/audio/ui/chimes-saved.mp3',
+  [SoundNames.runningUpStairs]: '/assets/audio/ui/running-up-the-stairs.wav',
 };
 
 // Background sounds for the town hub (randomly selected on entry)
