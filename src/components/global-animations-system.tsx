@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useRef, useState, useEffect } from 'react';
 import { auxSleepFor } from '~/lib/utils';
 import { isReducedMotion } from '~/lib/reduced-motion';
-import { type GlobalAnimationType } from '~/constants/animation-system';
+import { ANIMATION_CONFIG, type GlobalAnimationType } from '~/constants/animation-system';
+import { soundService } from '~/services/sound-service';
 import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
 
 // Re-export for convenience
@@ -22,6 +23,10 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
   const trigger = useCallback(async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
+    // Sound is not motion: a paired SFX plays whether or not the visuals are skipped below.
+    const sound = ANIMATION_CONFIG[type].sound;
+    if (sound) soundService.playSound(sound.name, sound.volume);
+
     // Reduced motion skips the flourish outright: the CSS override ends the animation in ~1ms, so
     // waiting out its full duration would leave the player staring at a still screen for a beat.
     if (isReducedMotion()) {

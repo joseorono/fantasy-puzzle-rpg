@@ -92,3 +92,40 @@
   40% { background-color: rgba(0, 0, 0, 0.95); }
   100% { background-color: rgba(0, 0, 0, 0); }
 }
+
+/* ---- Stairs Ascent (applied to #game-screen; darkens its overlay child) ----
+   Camera climbs up and forward: the scene drifts down and zooms in, with a footstep bob per
+   stride, while the overlay fades to black so the route change lands under cover.
+   Both animations are 2.8s so they end on the same frame (see ANIMATION_CONFIG duration). */
+#game-screen.anim-stairs-ascent {
+  animation: global-stairs-ascent-climb 2.8s ease-in-out;
+  will-change: transform;
+}
+
+#game-screen.anim-stairs-ascent .global-animations-overlay {
+  background-color: rgba(0, 0, 0, 0);
+  animation: global-stairs-ascent-darken 2.8s ease-in;
+}
+
+@keyframes global-stairs-ascent-climb {
+  0% { transform: translateY(0) scale(1); }
+  8% { transform: translateY(-0.4%) scale(1.005); }
+  17% { transform: translateY(0.42%) scale(1.01); }
+  25% { transform: translateY(0.02%) scale(1.015); }
+  33% { transform: translateY(0.83%) scale(1.02); }
+  42% { transform: translateY(0.45%) scale(1.025); }
+  50% { transform: translateY(1.25%) scale(1.03); }
+  58% { transform: translateY(0.85%) scale(1.035); }
+  67% { transform: translateY(1.67%) scale(1.04); }
+  75% { transform: translateY(1.27%) scale(1.045); }
+  83% { transform: translateY(2.08%) scale(1.05); }
+  92% { transform: translateY(1.7%) scale(1.055); }
+  100% { transform: translateY(2.5%) scale(1.06); }
+}
+
+@keyframes global-stairs-ascent-darken {
+  0% { background-color: rgba(0, 0, 0, 0); }
+  35% { background-color: rgba(0, 0, 0, 0); }
+  75% { background-color: rgba(0, 0, 0, 1); }
+  100% { background-color: rgba(0, 0, 0, 1); }
+}

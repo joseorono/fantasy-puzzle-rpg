@@ -1,10 +1,11 @@
 import { useGlobalAnimation, type GlobalAnimationType } from '~/components/global-animations-system';
+import { ANIMATION_CONFIG } from '~/constants/animation-system';
 
 export default function GlobalAnimationTest() {
   const { trigger, triggerSequence } = useGlobalAnimation();
   const buttonClass = 'px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors capitalize';
 
-  const animations: GlobalAnimationType[] = ['screen-shake', 'fade-in-and-out', 'view-transition-circle'];
+  const animations = Object.keys(ANIMATION_CONFIG) as GlobalAnimationType[];
 
   const handleCombo = () => triggerSequence(animations, () => console.log('All animations done!'));
 
