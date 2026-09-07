@@ -174,6 +174,7 @@ export interface SkillCooldownReduction {
  * @returns The same array when nothing changed, otherwise a new array with updated members
  */
 export function reducePartySkillCooldowns(
+  party: CharacterData[],
   reductions: ReadonlyArray<SkillCooldownReduction>,
 ): CharacterData[] {
   let next: CharacterData[] | null = null;
