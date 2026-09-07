@@ -193,7 +193,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
         </div>
         <div className="relative h-2 rounded-sm border border-[#5c3e23] bg-[#120a05] sm:h-2.5">
           <div
-            className={cn('h-full transition-all duration-300', colors.cooldown, isSkillReady && 'animate-pulse')}
+            className={cn('h-full transition-all duration-300 ease-linear', colors.cooldown, isSkillReady && 'animate-pulse')}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
