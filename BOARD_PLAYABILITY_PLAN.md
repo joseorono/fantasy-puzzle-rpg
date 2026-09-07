@@ -275,7 +275,25 @@ Expected budget: `hasAnyLineMatch` < 1 µs; worst-case `findPossibleMove` ≈ 5�
 
 | bench | before (ops/s) | after (ops/s) | Δ |
 |---|---|---|---|
-| _to be pasted from `npm run bench-cli`_ | | | |
+| `isValidSwap` valid / invalid | 1.3 / 1.1 µs | 0.15 / 0.2 µs | ~8× / ~5× faster |
+| `hasMatchAtPosition` (7,2) | 0.8 µs | 0.14 µs | ~5× faster |
+| `findLineMatches` settled / with 4-run | 0.7 / 0.8 µs | 0.7 / 0.8 µs | parity |
+| `swapOrbs` | 0.34 µs | 0.24 µs | 1.4× faster, no shared-orb mutation |
+| `removeMatchedOrbsAndRefill` 3-orb / row / column | 7.1 / 8.4 / 9.8 µs | 4.2 / 4.7 / 5.2 µs | ~1.7× faster *with* the playability check inside |
+| opening board 8×6 (once per battle) | 3.3 µs | 13 µs | rejection-sampled deal; ~2 fills + scans |
+| `hasAnyLineMatch` settled / with run | — | 0.55 / 0.12 µs | new |
+| `findPossibleMove` row 0 / row 7 / dead (68 windows) | — | 0.15 / 0.85 / 2.3 µs | new |
+| `isBoardPlayable` with move / dead | — | 0.57 / 2.6 µs | new |
+| `ensurePlayableBoard` fast path (move) / (pending match) | — | 1.5 / 0.2 µs | new; what every refill pays |
+| `ensurePlayableBoard` reroll path / forced reshuffle | — | 24 / 16 µs | new; dead boards only |
+| `reshuffleBoard` dead / dead + pinned bomb | — | 16.5 / 19 µs | new |
+| `fillBoardWithoutMatches` / `plantMove` | — | 35 / 1.2 µs | new; opening fallback only |
+| refill on a dead board (repair path) | — | 22 µs | new |
+
+Means per call from `npm run bench-cli` (Vitest 3.2, same machine, before = commit `23c3695` code, after = this change). Two findings:
+
+- Under vite-node an imported constant is read through a getter, so a hot loop that compares against `MIN_MATCH_LENGTH` per cell benchmarks ~2.6× slower than the same loop with a literal. Production builds inline the constant, so `match-3.ts` and `board-generation.ts` alias it once at module scope (`RUN_LENGTH`) purely so the benches reflect production.
+- A settled full random 8×6 five-color board with no legal move is rare enough that a 500-second sampling search found none. Deadlocks in play come from partially refilled boards, which is exactly where the reroll path operates; `plantMove` is tested on ten constructed dead boards instead.
 
 ## 11. Verification
 

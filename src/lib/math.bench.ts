@@ -11,6 +11,7 @@ import {
   calculatePercentage,
   createSeededRandom,
 } from './math';
+import { BENCH_OPTIONS } from './bench-options';
 
 describe('randIntInRange', () => {
   bench('randIntInRange(1, 100)', () => {
@@ -101,7 +102,11 @@ describe('calculatePercentage', () => {
 describe('createSeededRandom', () => {
   const rng = createSeededRandom(1);
 
-  bench('next value', () => {
-    rng();
-  });
+  bench(
+    'next value',
+    () => {
+      rng();
+    },
+    BENCH_OPTIONS,
+  );
 });

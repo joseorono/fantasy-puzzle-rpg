@@ -60,12 +60,20 @@ function getComboGlow(combo: number): string {
   return 'rgba(255, 200, 60, 0.9)'; // gold (x2)
 }
 
-function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSelect }: OrbComponentProps) {
+function OrbComponent({
+  orb,
+  isSelected,
+  isHighlighted,
+  isInvalidSwap,
+  isNew,
+  isExploding,
+  onSelect,
+}: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
 
   useEffect(() => {
-    if (orb.isHighlighted) {
+    if (isHighlighted) {
       // Show particle explosion
       setShowParticles(true);
 
@@ -78,11 +86,11 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
       setIsDisappearing(false);
       setShowParticles(false);
     }
-  }, [orb.isHighlighted]);
+  }, [isHighlighted]);
 
   return (
     <button
-      onClick={onSelect}
+      onClick={() => onSelect(orb.row, orb.col)}
       className={cn(
         `orb-${orb.type}`,
         'relative mx-2 h-6 w-6 rounded-full transition-all duration-200 sm:h-8 sm:w-8 md:h-11 md:w-11 xl:h-8 xl:w-8 2xl:h-14 2xl:w-14',
@@ -92,7 +100,7 @@ function OrbComponent({ orb, isSelected, isInvalidSwap, isNew, isExploding, onSe
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
         isExploding && 'orb-exploding',
-        orb.isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
+        isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
         // Wildcard bomb orbs get a distinct dark sheen and a pulsing white ring
         orb.isBomb && !isExploding && 'animate-pulse ring-2 ring-white/90 brightness-75',
         isDisappearing && !isExploding && 'scale-0 rotate-180 opacity-0',
@@ -486,10 +494,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                 {row.map((orb) => (
                   <OrbComponent
                     key={orb.id}
-                    orb={{
-                      ...orb,
-                      isHighlighted: highlightedMatches.has(orb.id),
-                    }}
+                    orb={orb}
+                    isHighlighted={highlightedMatches.has(orb.id)}
                     isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
                     isInvalidSwap={
                       invalidSwap !== null &&
@@ -498,7 +504,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                     }
                     isNew={newOrbIds.has(orb.id)}
                     isExploding={explodingOrbs.has(orb.id)}
-                    onSelect={() => handleOrbClick(orb.row, orb.col)}
+                    onSelect={handleOrbClick}
                   />
                 ))}
               </div>

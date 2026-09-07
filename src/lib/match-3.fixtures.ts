@@ -95,6 +95,9 @@ export const LATE_MOVE_GRID: CellToken[][] = withRow(DEADLOCKED_GRID, 7, [
 /** `EARLY_MOVE_GRID` with the gap filled: row 0 opens with a 4-run of blue. */
 export const MATCH_GRID: CellToken[][] = withCell(EARLY_MOVE_GRID, 0, 2, 'blue');
 
+/** `MATCH_GRID` with a wildcard inside the run: row 0 is blue, blue, *, blue — a matched bomb. */
+export const BOMB_RUN_GRID: CellToken[][] = withCell(MATCH_GRID, 0, 2, '*');
+
 export const EARLY_MOVE: OrbSwap = { from: { row: 0, col: 2 }, to: { row: 0, col: 3 } };
 export const LATE_MOVE: OrbSwap = { from: { row: 7, col: 2 }, to: { row: 7, col: 3 } };
 

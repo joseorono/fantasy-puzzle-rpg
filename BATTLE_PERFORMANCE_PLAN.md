@@ -31,6 +31,8 @@ The single biggest issue. `battleStateAtom` (`src/stores/battle-atoms.ts:52`) is
 
 **Fix:** track whether any character actually changed in the map; if none did, `return` without `set` (mirror the guard pattern `tickGuardDecayAtom` already uses at `:479`).
 
+**Measured (2.3b probe, dev build):** with no player input the board commits **31–33 times per 3 s**, ~3.8 ms each after 2.3b, all through `Match3Board`'s `partyAtom` subscription that only feeds `deadColorClasses`. Even with every orb cached, that is ~125 ms of board rendering per 3 s of idle. This item, plus reading dead colors through a narrower selector, is worth more than everything inside the orbs combined.
+
 ### 1.2 Merge the two tick writes into one
 
 - [ ] Done
@@ -133,23 +135,23 @@ Reduced Motion re-checked with `data-reduced-motion` set: `animation-duration` s
 
 ### 2.3b Stop cloning every orb per render 🟡
 
-- [ ] Done
+- [x] Done — `BOARD_SCAN_AND_RENDER_PLAN.md` §5: the board passes its own `orb` object, an `isHighlighted` prop and the shared `onSelect(row, col)` handler; `orb.tsx` deleted with it. Idle board commit −22% in the dev build (§9).
 
 `match3-board.tsx:487-492` builds `orb={{ ...orb, isHighlighted }}` — a fresh object for all 48 orbs on every render, which defeats React Compiler memoization of unchanged orbs. **Fix:** pass `orb={orb}` plus a separate `isHighlighted` boolean prop (adjust the orb props type and the highlight `useEffect` at `:67-81` to key on the prop).
 
 ### 2.4 Cheaper board scans (pure lib, zero visual change) 🟡
 
-- [ ] Done
+- [x] Done — `BOARD_SCAN_AND_RENDER_PLAN.md` §4 and §9 (one bullet refuted by measurement, see below).
 
 - [x] `hasMatchAtPosition` (`match-3.ts:186`) runs `findLineMatches` over the **whole board** to answer one cell; `swapOrbsAtom` calls it twice per swap (`battle-atoms.ts:99-100`). Replace with a localized check of the two swapped cells' rows/columns (≤ ~14 cells vs 2×48 + allocation). → **Done** in `BOARD_PLAYABILITY_PLAN.md`: `hasMatchAtPosition` is a localized window check and `isValidSwap` no longer copies the board or allocates a `Set` (measured ~7× faster in-process).
-- [ ] `expandBombExplosions` (`match-3.ts:121`) scans all 48 cells even when the board has no bombs — early-return when no matched orb is a bomb.
-- [ ] `findLineMatches` allocates a fresh column array per column (`:102-103`) — index directly instead.
+- [x] `expandBombExplosions` (`match-3.ts:121`) scans all 48 cells even when the board has no bombs — early-return when no matched orb is a bomb. → **Done**: seeds the bomb queue first and returns the input set untouched when no matched orb is a bomb (~1.4× faster on the common path).
+- [x] `findLineMatches` allocates a fresh column array per column (`:102-103`) — index directly instead. → **Refuted by measurement, kept as is**: in a same-process A/B the fresh copy scans in 0.7 µs, index math in 2.3 µs and reused scratch arrays (`length = 0`) in 3.0–3.4 µs — V8 deoptimizes the reuse; young-generation allocation of six tiny arrays is the cheapest option.
 
 All behavior is locked by `src/lib/match-3.test.ts`; JSDoc per house rules.
 
 ### 2.5 Delete dead code 🟢
 
-- [ ] Done
+- [x] Done — `src/components/battle/orb.tsx` deleted (it was also the only other reader of the removed `Orb.isHighlighted` field).
 
 `src/components/battle/orb.tsx` exports an `OrbComponent` nothing imports (the board uses its own inline one at `match3-board.tsx:63`). Remove it.
 
@@ -307,3 +309,12 @@ A toggle that disables the purely decorative layers for low-end machines: floati
 - [ ] Chrome Performance panel with **6× CPU throttle**: record 30 s of Battle Demo (idle + a cascade + a skill cast) before/after; compare scripting/rendering/painting totals and dropped frames.
 - [ ] Memory: heap + AudioBuffer footprint before/after Phase 4 (Performance monitor → JS heap).
 - [ ] Visual pass: side-by-side of orb shine, glows, bars, skill burst at normal speed to confirm the 👁 substitutions read the same.
+
+### Measurement notes (learned while doing 1.3, 1.5, 2.2, 2.3b, 2.4 and the playability work)
+
+- **Separate bench runs drift; compare in one process.** Running the same `*.bench.ts` twice gave up to 2× different means for allocation-heavy functions (`findLineMatches` read 0.7 µs in one run and 2.3 µs in the next, unchanged code) because heap state and JIT tiering differ per run. The only stable before/after method was a **same-process A/B**: load the pre-change file as a second module (`git show <commit>:src/lib/x.ts > src/lib/legacy-x.tmp.ts`), bench legacy and current side by side in one throwaway `zz-compare.bench.ts`, delete both afterwards. Every table in `BOARD_PLAYABILITY_PLAN.md` and `BOARD_SCAN_AND_RENDER_PLAN.md` was produced this way.
+- **Use `BENCH_OPTIONS`** (`src/lib/bench-options.ts`: 1.5 s window, 5 000 iteration floor, warmup) on every `bench()`. Vitest's 500 ms default gave ±1–5 % error; the shared options give ±0.2–1 %, enough to resolve 0.1 µs deltas.
+- **Imported constants are getters under vite-node.** A hot loop that compares against an imported constant per cell benchmarks ~2.6× slower than the same loop with a literal, because the SSR transform exposes module exports through getters. Production builds inline the constant, so this is a bench artifact — but a big one. Hot lib loops alias the constant once at module scope (`const RUN_LENGTH = MIN_MATCH_LENGTH` in `match-3.ts` and `board-generation.ts`) purely so the benches reflect production.
+- **Allocation is not the enemy in V8; reuse can be.** Six tiny per-line arrays in `findLineMatches` cost 0.7 µs; walking the board by index math cost 2.3 µs; reusing a scratch array cleared with `length = 0` cost 3.0–3.4 µs (deoptimized). Measure before removing an allocation.
+- **Render cost is measured, not asserted.** A minimal `__REACT_DEVTOOLS_GLOBAL_HOOK__` injected with Playwright's `addInitScript` makes React's dev build call `onCommitFiberRoot`; walking the fiber tree and summing `actualDuration` for the fibers that rendered in that commit gives per-commit cost per component. Dev builds include StrictMode double-rendering, so treat the numbers as relative before/after, never absolute. The harness lives in the session scratchpad, not the repo.
+- **The React Compiler caches JSX, it does not skip components.** Passing stable references (the board's own `orb`, a boolean, the shared handler) makes an unchanged `OrbComponent` hit its memo cache and return the same element, but the function still runs every commit. In the dev build that floor is ~20 µs per orb, which is why 2.3b bought 22 %, not 80 %; the rest belongs to 1.1.

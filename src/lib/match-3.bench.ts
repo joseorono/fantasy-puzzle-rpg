@@ -1,6 +1,7 @@
 import { bench, describe } from 'vitest';
 import {
   findLineMatches,
+  expandBombExplosions,
   hasMatchAtPosition,
   hasAnyLineMatch,
   countLineRuns,
@@ -10,8 +11,17 @@ import {
   isBoardPlayable,
 } from './match-3';
 import { createOpeningBoard, removeMatchedOrbsAndRefill } from './board-generation';
-import { makeBoard, DEADLOCKED_GRID, EARLY_MOVE_GRID, LATE_MOVE_GRID, MATCH_GRID, LATE_MOVE } from './match-3.fixtures';
+import {
+  makeBoard,
+  DEADLOCKED_GRID,
+  EARLY_MOVE_GRID,
+  LATE_MOVE_GRID,
+  MATCH_GRID,
+  BOMB_RUN_GRID,
+  LATE_MOVE,
+} from './match-3.fixtures';
 import { createSeededRandom } from './math';
+import { BENCH_OPTIONS } from './bench-options';
 
 // Fixtures are built once. Bench labels are stable across the playability rewrite so the
 // before/after table in BOARD_PLAYABILITY_PLAN.md lines up.
@@ -19,6 +29,7 @@ const settled = makeBoard(LATE_MOVE_GRID);
 const early = makeBoard(EARLY_MOVE_GRID);
 const dead = makeBoard(DEADLOCKED_GRID);
 const withRun = makeBoard(MATCH_GRID);
+const withBombRun = makeBoard(BOMB_RUN_GRID);
 
 const THREE_ORB_MATCH = new Set(['0-0', '0-1', '0-2']);
 const ROW_CLEAR = new Set(settled[3].map((orb) => orb.id));
@@ -27,93 +38,214 @@ const COLUMN_CLEAR = new Set(settled.map((row) => row[5].id));
 const rng = createSeededRandom(1);
 
 describe('createInitialBoard', () => {
-  bench('opening board 8x6', () => {
-    createOpeningBoard(undefined, undefined, rng);
-  });
+  bench(
+    'opening board 8x6',
+    () => {
+      createOpeningBoard(undefined, undefined, rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('findLineMatches', () => {
-  bench('settled board (LATE_MOVE)', () => {
-    findLineMatches(settled);
-  });
+  bench(
+    'settled board (LATE_MOVE)',
+    () => {
+      findLineMatches(settled);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('board with a 4-run (MATCH_GRID)', () => {
-    findLineMatches(withRun);
-  });
+  bench(
+    'board with a 4-run (MATCH_GRID)',
+    () => {
+      findLineMatches(withRun);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('hasAnyLineMatch', () => {
-  bench('settled board (LATE_MOVE)', () => {
-    hasAnyLineMatch(settled);
-  });
+  bench(
+    'settled board (LATE_MOVE)',
+    () => {
+      hasAnyLineMatch(settled);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('board with a 4-run (MATCH_GRID)', () => {
-    hasAnyLineMatch(withRun);
-  });
+  bench(
+    'board with a 4-run (MATCH_GRID)',
+    () => {
+      hasAnyLineMatch(withRun);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('countLineRuns', () => {
-  bench('settled board (LATE_MOVE)', () => {
-    countLineRuns(settled);
-  });
+  bench(
+    'settled board (LATE_MOVE)',
+    () => {
+      countLineRuns(settled);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('hasMatchAtPosition', () => {
-  bench('cell (7,2) on settled board', () => {
-    hasMatchAtPosition(settled, 7, 2);
-  });
+  bench(
+    'cell (7,2) on settled board',
+    () => {
+      hasMatchAtPosition(settled, 7, 2);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('isValidSwap', () => {
-  bench('valid swap (7,2)↔(7,3)', () => {
-    isValidSwap(settled, LATE_MOVE.from, LATE_MOVE.to);
-  });
+  bench(
+    'valid swap (7,2)↔(7,3)',
+    () => {
+      isValidSwap(settled, LATE_MOVE.from, LATE_MOVE.to);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('invalid swap (0,0)↔(0,1) on DEADLOCKED', () => {
-    isValidSwap(dead, { row: 0, col: 0 }, { row: 0, col: 1 });
-  });
+  bench(
+    'invalid swap (0,0)↔(0,1) on DEADLOCKED',
+    () => {
+      isValidSwap(dead, { row: 0, col: 0 }, { row: 0, col: 1 });
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('swapOrbs', () => {
-  bench('adjacent swap', () => {
-    swapOrbs(settled, LATE_MOVE.from, LATE_MOVE.to);
-  });
+  bench(
+    'adjacent swap',
+    () => {
+      swapOrbs(settled, LATE_MOVE.from, LATE_MOVE.to);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('findPossibleMove', () => {
-  bench('early hit (EARLY_MOVE, row 0)', () => {
-    findPossibleMove(early);
-  });
+  bench(
+    'early hit (EARLY_MOVE, row 0)',
+    () => {
+      findPossibleMove(early);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('late hit (LATE_MOVE, row 7)', () => {
-    findPossibleMove(settled);
-  });
+  bench(
+    'late hit (LATE_MOVE, row 7)',
+    () => {
+      findPossibleMove(settled);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('dead board (full 68-window scan)', () => {
-    findPossibleMove(dead);
-  });
+  bench(
+    'dead board (full 68-window scan)',
+    () => {
+      findPossibleMove(dead);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('isBoardPlayable', () => {
-  bench('board with a move (EARLY_MOVE)', () => {
-    isBoardPlayable(early);
-  });
+  bench(
+    'board with a move (EARLY_MOVE)',
+    () => {
+      isBoardPlayable(early);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('dead board', () => {
-    isBoardPlayable(dead);
-  });
+  bench(
+    'dead board',
+    () => {
+      isBoardPlayable(dead);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('removeMatchedOrbsAndRefill', () => {
-  bench('3-orb match (row 0, cols 0-2)', () => {
-    removeMatchedOrbsAndRefill(settled, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '3-orb match (row 0, cols 0-2)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('6-orb row clear (row 3)', () => {
-    removeMatchedOrbsAndRefill(settled, ROW_CLEAR, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '6-orb row clear (row 3)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, ROW_CLEAR, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('8-orb column clear (col 5)', () => {
-    removeMatchedOrbsAndRefill(settled, COLUMN_CLEAR, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '8-orb column clear (col 5)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, COLUMN_CLEAR, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
+});
+
+describe('findLineMatches (worst case)', () => {
+  bench(
+    'dead board (no early exit anywhere)',
+    () => {
+      findLineMatches(dead);
+    },
+    BENCH_OPTIONS,
+  );
+});
+
+describe('expandBombExplosions', () => {
+  const lineMatches = findLineMatches(withRun);
+  const bombLineMatches = findLineMatches(withBombRun);
+
+  bench(
+    'no matched bomb (MATCH_GRID)',
+    () => {
+      expandBombExplosions(withRun, lineMatches);
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
+    'matched bomb (BOMB_RUN_GRID, 3x3 blast)',
+    () => {
+      expandBombExplosions(withBombRun, bombLineMatches);
+    },
+    BENCH_OPTIONS,
+  );
+});
+
+describe('board effect scan', () => {
+  bench(
+    'findLineMatches + expandBombExplosions, settled board',
+    () => {
+      expandBombExplosions(settled, findLineMatches(settled));
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
+    'findLineMatches + expandBombExplosions, board with a 4-run',
+    () => {
+      expandBombExplosions(withRun, findLineMatches(withRun));
+    },
+    BENCH_OPTIONS,
+  );
 });

@@ -125,6 +125,16 @@ describe('findLineMatches', () => {
     const matched = findLineMatches(board);
     expect(matched).toEqual(new Set(['0-0', '1-0', '2-0']));
   });
+
+  it('finds a run that lives only in the last column', () => {
+    const board = makeBoard([
+      ['blue', 'green', 'purple'],
+      ['green', 'blue', 'purple'],
+      ['blue', 'green', 'purple'],
+      ['green', 'blue', 'yellow'],
+    ]);
+    expect(findLineMatches(board)).toEqual(new Set(['0-2', '1-2', '2-2']));
+  });
 });
 
 describe('countLineRuns / longestLineRun', () => {
@@ -161,6 +171,19 @@ describe('expandBombExplosions', () => {
     const seed = new Set(['0-0', '0-1', '0-2']);
     const destroyed = expandBombExplosions(board, seed);
     expect(destroyed).toEqual(seed);
+  });
+
+  it('returns the input set itself when no matched orb is a bomb, and a new set otherwise', () => {
+    const plain = makeBoard([['blue', 'blue', 'blue', '*']]);
+    const seed = new Set(['0-0', '0-1', '0-2']);
+    expect(expandBombExplosions(plain, seed)).toBe(seed);
+
+    const withBomb = makeBoard([['blue', 'blue', '*', 'green']]);
+    const bombSeed = new Set(['0-0', '0-1', '0-2']);
+    const destroyed = expandBombExplosions(withBomb, bombSeed);
+    expect(destroyed).not.toBe(bombSeed);
+    expect(destroyed).toEqual(new Set(['0-0', '0-1', '0-2', '0-3']));
+    expect(bombSeed.size).toBe(3);
   });
 
   it('explodes the full 3x3 area around a matched center bomb', () => {

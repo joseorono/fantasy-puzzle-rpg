@@ -8,8 +8,6 @@ export interface Orb {
   type: OrbType;
   row: number;
   col: number;
-  isMatched?: boolean;
-  isHighlighted?: boolean;
   /** Wildcard tile: matches with any color and explodes a 3x3 area when matched. */
   isBomb?: boolean;
 }

@@ -19,6 +19,7 @@ import {
   MATCH_GRID,
 } from './match-3.fixtures';
 import { createSeededRandom } from './math';
+import { BENCH_OPTIONS } from './bench-options';
 import type { GridPosition } from '~/types/geometry';
 
 const early = makeBoard(EARLY_MOVE_GRID);
@@ -39,87 +40,155 @@ const COLUMN_CLEAR = new Set(settled.map((row) => row[5].id));
 const rng = createSeededRandom(1);
 
 describe('nextOrbId', () => {
-  bench('next id', () => {
-    nextOrbId();
-  });
+  bench(
+    'next id',
+    () => {
+      nextOrbId();
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('getRandomOrbType', () => {
-  bench('seeded draw', () => {
-    getRandomOrbType(rng);
-  });
+  bench(
+    'seeded draw',
+    () => {
+      getRandomOrbType(rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('fillBoardRandom', () => {
-  bench('8x6', () => {
-    fillBoardRandom(undefined, undefined, rng);
-  });
+  bench(
+    '8x6',
+    () => {
+      fillBoardRandom(undefined, undefined, rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('fillBoardWithoutMatches', () => {
-  bench('8x6', () => {
-    fillBoardWithoutMatches(undefined, undefined, rng);
-  });
+  bench(
+    '8x6',
+    () => {
+      fillBoardWithoutMatches(undefined, undefined, rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('plantMove', () => {
-  bench('dead board', () => {
-    plantMove(dead, rng);
-  });
+  bench(
+    'dead board',
+    () => {
+      plantMove(dead, rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('createOpeningBoard', () => {
-  bench('8x6 (rejection-sampled deal)', () => {
-    createOpeningBoard(undefined, undefined, rng);
-  });
+  bench(
+    '8x6 (rejection-sampled deal)',
+    () => {
+      createOpeningBoard(undefined, undefined, rng);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('8x6 forced settled fallback (maxAttempts = 0)', () => {
-    createOpeningBoard(undefined, undefined, rng, 0);
-  });
+  bench(
+    '8x6 forced settled fallback (maxAttempts = 0)',
+    () => {
+      createOpeningBoard(undefined, undefined, rng, 0);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('reshuffleBoard', () => {
-  bench('dead board', () => {
-    reshuffleBoard(dead, rng);
-  });
+  bench(
+    'dead board',
+    () => {
+      reshuffleBoard(dead, rng);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('dead board with a pinned bomb', () => {
-    reshuffleBoard(deadWithBomb, rng);
-  });
+  bench(
+    'dead board with a pinned bomb',
+    () => {
+      reshuffleBoard(deadWithBomb, rng);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('ensurePlayableBoard', () => {
-  bench('fast path: board with a move', () => {
-    ensurePlayableBoard(early, TOP_ROW_SPAWNS, rng);
-  });
+  bench(
+    'fast path: board with a move',
+    () => {
+      ensurePlayableBoard(early, TOP_ROW_SPAWNS, rng);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('fast path: pending match', () => {
-    ensurePlayableBoard(withRun, TOP_ROW_SPAWNS, rng);
-  });
+  bench(
+    'fast path: pending match',
+    () => {
+      ensurePlayableBoard(withRun, TOP_ROW_SPAWNS, rng);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('dead board, 3 spawned (reroll path)', () => {
-    ensurePlayableBoard(dead, TOP_ROW_SPAWNS, rng);
-  });
+  bench(
+    'dead board, 3 spawned (reroll path)',
+    () => {
+      ensurePlayableBoard(dead, TOP_ROW_SPAWNS, rng);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('dead board, forced reshuffle (maxRerolls = 0)', () => {
-    ensurePlayableBoard(dead, TOP_ROW_SPAWNS, rng, 0);
-  });
+  bench(
+    'dead board, forced reshuffle (maxRerolls = 0)',
+    () => {
+      ensurePlayableBoard(dead, TOP_ROW_SPAWNS, rng, 0);
+    },
+    BENCH_OPTIONS,
+  );
 });
 
 describe('removeMatchedOrbsAndRefill', () => {
-  bench('3-orb match (row 0, cols 0-2)', () => {
-    removeMatchedOrbsAndRefill(settled, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '3-orb match (row 0, cols 0-2)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('6-orb row clear (row 3)', () => {
-    removeMatchedOrbsAndRefill(settled, ROW_CLEAR, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '6-orb row clear (row 3)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, ROW_CLEAR, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('8-orb column clear (col 5)', () => {
-    removeMatchedOrbsAndRefill(settled, COLUMN_CLEAR, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '8-orb column clear (col 5)',
+    () => {
+      removeMatchedOrbsAndRefill(settled, COLUMN_CLEAR, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench('3-orb match on a dead board (repair path)', () => {
-    removeMatchedOrbsAndRefill(dead, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
-  });
+  bench(
+    '3-orb match on a dead board (repair path)',
+    () => {
+      removeMatchedOrbsAndRefill(dead, THREE_ORB_MATCH, { bombRefillChance: 0, rng });
+    },
+    BENCH_OPTIONS,
+  );
 });
