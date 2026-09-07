@@ -18,6 +18,8 @@ interface MapCharacterSpriteProps {
   tileSize: number;
   /** CSS scale the canvas is displayed at. */
   displayScale: number;
+  /** Overrides how many tiles tall the character renders. Falls back to `CHARACTER_HEIGHT_TILES`. */
+  characterHeightTiles?: number;
   /** Current animation state from `useCharacterSprite`. */
   spriteState: SpriteState;
 }
@@ -34,12 +36,14 @@ export default function MapCharacterSprite({
   positionRef,
   tileSize,
   displayScale,
+  characterHeightTiles,
   spriteState,
 }: MapCharacterSpriteProps) {
   const { mode, facing, frameIndex } = spriteState;
   const { x, y } = getSpriteFrameOrigin(mode, facing, frameIndex);
 
-  const scale = ((tileSize * CHARACTER_HEIGHT_TILES) / SPRITE_FRAME_SIZE_PX) * displayScale;
+  const heightTiles = characterHeightTiles ?? CHARACTER_HEIGHT_TILES;
+  const scale = ((tileSize * heightTiles) / SPRITE_FRAME_SIZE_PX) * displayScale;
 
   return (
     <div

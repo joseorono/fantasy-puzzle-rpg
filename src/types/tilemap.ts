@@ -58,4 +58,11 @@ export interface TiledMapConfig {
   defaultPlayerPosition: Position;
   /** When true, shows debug overlays (controls, character position, status). Defaults to false. */
   debug?: boolean;
+  /**
+   * How many tiles tall the character renders, overriding the global
+   * `CHARACTER_HEIGHT_TILES`. Maps whose art uses a different tile scale than
+   * the 16px baseline (e.g. 32px tiles) must set this so the shared character
+   * sprite stays a consistent pixel size across maps.
+   */
+  characterHeightTiles?: number;
 }

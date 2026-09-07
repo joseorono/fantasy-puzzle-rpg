@@ -884,6 +884,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               positionRef={movement.characterRef}
               tileSize={tileSize}
               displayScale={scale}
+              characterHeightTiles={map.characterHeightTiles}
               spriteState={movement.spriteState}
             />
           )}
