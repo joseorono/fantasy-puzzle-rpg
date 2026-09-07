@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useStore } from 'jotai';
 import { lastSkillActivationAtom, partyAtom } from '~/stores/battle-atoms';
 import { CHARACTER_ICONS, SKILL_BURST_COLORS, SKILL_BURST_DURATION_MS } from '~/constants/party';
 import type { CharacterClass } from '~/types/rpg-elements';
 
 export function SkillBurstOverlay() {
   const lastSkillActivation = useAtomValue(lastSkillActivationAtom);
-  const party = useAtomValue(partyAtom);
+  const store = useStore();
   const [visible, setVisible] = useState(false);
   const [displayData, setDisplayData] = useState<{
     skillName: string;
@@ -17,7 +17,7 @@ export function SkillBurstOverlay() {
   useEffect(() => {
     if (!lastSkillActivation) return;
 
-    const character = party.find((c) => c.id === lastSkillActivation.characterId);
+    const character = store.get(partyAtom).find((c) => c.id === lastSkillActivation.characterId);
     if (!character) return;
 
     setDisplayData({
@@ -32,7 +32,7 @@ export function SkillBurstOverlay() {
     }, SKILL_BURST_DURATION_MS);
 
     return () => clearTimeout(timer);
-  }, [lastSkillActivation]);
+  }, [lastSkillActivation, store]);
 
   if (!visible || !displayData) return null;
 

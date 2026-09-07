@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
-import { createBattleState, generateEnemyStandbyDelays, resolveCountdownRingAnchor } from './battle-system';
+import {
+  createBattleState,
+  generateEnemyStandbyDelays,
+  resolveCountdownRingAnchor,
+  tickPartySkillCooldowns,
+} from './battle-system';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
 import { BOARD_ROWS, BOARD_COLS, OPENING_MAX_MATCHES, OPENING_MAX_RUN_LENGTH } from '~/constants/board';
 import { countLineRuns, longestLineRun, isBoardPlayable } from './match-3';
@@ -215,5 +220,40 @@ describe('resolveCountdownRingAnchor', () => {
 
   it('never produces a negative offset from a release already in the past', () => {
     expect(resolveCountdownRingAnchor(interval, -50)).toEqual({ durationMs: interval, elapsedMs: interval });
+  });
+});
+
+describe('tickPartySkillCooldowns', () => {
+  const party = [
+    createTestCharacter({ id: 'ready', skillCooldown: 0 }),
+    createTestCharacter({ id: 'running', skillCooldown: 12.5 }),
+    createTestCharacter({ id: 'dead', currentHp: 0, skillCooldown: 8 }),
+    createTestCharacter({ id: 'almost', skillCooldown: 0.05 }),
+  ];
+
+  it('returns the same array reference when no living member has a running cooldown', () => {
+    const idle = [party[0], party[2]];
+    expect(tickPartySkillCooldowns(idle, 0.1)).toBe(idle);
+    expect(tickPartySkillCooldowns([], 0.1)).toEqual([]);
+  });
+
+  it('decrements only running cooldowns and keeps untouched members by reference', () => {
+    const next = tickPartySkillCooldowns(party, 0.1);
+    expect(next).not.toBe(party);
+    expect(next[0]).toBe(party[0]);
+    expect(next[1]).not.toBe(party[1]);
+    expect(next[1].skillCooldown).toBeCloseTo(12.4, 10);
+    expect(next[2]).toBe(party[2]);
+  });
+
+  it('floors at 0 when the delta overshoots the remaining cooldown', () => {
+    const next = tickPartySkillCooldowns(party, 0.1);
+    expect(next[3].skillCooldown).toBe(0);
+  });
+
+  it('does not mutate the input party', () => {
+    tickPartySkillCooldowns(party, 0.1);
+    expect(party[1].skillCooldown).toBe(12.5);
+    expect(party[3].skillCooldown).toBe(0.05);
   });
 });

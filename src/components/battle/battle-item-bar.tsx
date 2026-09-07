@@ -10,12 +10,10 @@ import {
   fillPartyUltimateAtom,
   recordItemUsedAtom,
   gameStatusAtom,
-  partyAtom,
+  itemCooldownMsAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
-import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
-import { getPartyPassiveModifiers } from '~/lib/skill-system';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
 import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -34,14 +32,13 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
-  const party = useAtomValue(partyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
   const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
+  const cooldownDuration = useAtomValue(itemCooldownMsAtom);
 
   // 0 while items are ready, otherwise the absolute timestamp the shared cooldown ends at.
   const [cooldownEndsAt, setCooldownEndsAt] = useState(0);

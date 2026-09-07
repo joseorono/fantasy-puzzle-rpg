@@ -138,6 +138,27 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
 }
 
 /**
+ * Advances every living member's skill cooldown by `deltaSeconds`, flooring at 0.
+ * Copy-on-first-change: members that are dead or already ready are left untouched (same
+ * object), and when nobody changed the **input array itself** is returned, so a caller can
+ * skip its state write with a reference compare. The battle loop calls this 10x/s for the
+ * whole fight, most of it with every cooldown already at 0.
+ * @param party - The current battle party
+ * @param deltaSeconds - Elapsed time to subtract from each running cooldown
+ * @returns The same array when no cooldown moved, otherwise a new array with updated members
+ */
+export function tickPartySkillCooldowns(party: CharacterData[], deltaSeconds: number): CharacterData[] {
+  let next: CharacterData[] | null = null;
+  for (let i = 0; i < party.length; i++) {
+    const char = party[i];
+    if (char.currentHp <= 0 || char.skillCooldown <= 0) continue;
+    next ??= party.slice();
+    next[i] = { ...char, skillCooldown: Math.max(0, char.skillCooldown - deltaSeconds) };
+  }
+  return next ?? party;
+}
+
+/**
  * Returns the ID of the next living enemy after the current one, wrapping around
  * the encounter order. Useful for auto-selecting a new target when the current
  * enemy dies.

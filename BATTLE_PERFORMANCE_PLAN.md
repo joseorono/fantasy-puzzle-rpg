@@ -25,13 +25,45 @@ The single biggest issue. `battleStateAtom` (`src/stores/battle-atoms.ts:52`) is
 
 ### 1.1 Dirty-check the cooldown tick
 
-- [ ] Done
+- [x] Done
 
 `tickSkillCooldownsAtom` (`src/stores/battle-atoms.ts:450-463`) runs every 100 ms (`battle-screen.tsx:78-84`, `BATTLE_TICK_INTERVAL_MS` in `src/constants/battle.ts:56`). Its `.map` returns the same char objects when nothing changed, but **always allocates a new array and unconditionally `set`s a new state** — so `partyAtom` changes identity 10×/sec for the entire battle, even with all cooldowns at 0. Everything subscribed to `partyAtom` re-renders at 10 Hz: `Match3Board` (48 orbs), `PartyDisplay` (4 sprites + NumberFlows), `BattleItemBar`, `SkillBurstOverlay`, and `useEnemyAttackTimers` → `BattleScreen` itself.
 
 **Fix:** track whether any character actually changed in the map; if none did, `return` without `set` (mirror the guard pattern `tickGuardDecayAtom` already uses at `:479`).
 
 **Measured (2.3b probe, dev build):** with no player input the board commits **31–33 times per 3 s**, ~3.8 ms each after 2.3b, all through `Match3Board`'s `partyAtom` subscription that only feeds `deadColorClasses`. Even with every orb cached, that is ~125 ms of board rendering per 3 s of idle. This item, plus reading dead colors through a narrower selector, is worth more than everything inside the orbs combined.
+
+**Implemented, together with the narrow selectors this section, §1.5 and §2.2 pointed at.** The tick logic is now a pure `tickPartySkillCooldowns` in `src/lib/battle-system.ts` (copy-on-first-change; returns the **input array** when no cooldown moved) and `tickSkillCooldownsAtom` skips its `set` on reference equality. Same predicate, same `Math.max(0, cd − delta)`, same cadence.
+
+The dirty check alone turned out to be a partial fix: `createBattleState` starts every hero on full cooldown (12–52 s with the starter party), and a *single* running cooldown defeats the guard, so idle-with-nothing-running is the only state it helps. The `partyAtom` subscribers that never needed the whole party were therefore moved off it:
+
+- `Match3Board` reads `deadOrbColorClassesAtom` — the space-joined `dead-<color>` string it used to build inline. Jotai only notifies dependents when a derived value fails `Object.is` (`jotai/esm/vanilla/internals.mjs`, `setAtomStateValueOrPromise`), so a primitive selector sits out every tick. The cascade effect reads the party on demand via `useStore().get(partyAtom)`.
+- `BattleItemBar` reads `itemCooldownMsAtom` (a number) instead of recomputing `calculateItemCooldownInMs` from `party` on every render.
+- `useEnemyAttackTimers` and `SkillBurstOverlay` read `partyAtom` through the store inside their effects (the §1.5 fix that was deferred to here).
+- `PartyDisplay` keeps its subscription — it draws the cooldown bars and must move while a cooldown runs.
+
+**Measured in-browser** (dev build, Playwright + DevTools hook, idle 3 s, guard 0, per-component render count / summed `actualDuration`, StrictMode included — relative numbers):
+
+| state | commits | total render | Match3Board | PartyDisplay | BattleItemBar |
+| --- | --- | --- | --- | --- | --- |
+| A cooldowns running (battle start) | 66 → **39** | 256 → **78 ms** | 33× / 129 ms → **4× / 14 ms** | 34× / 40 ms → 38× / 46 ms | 33× → **4×** |
+| B all cooldowns 0 | 68 → **8** | 237 → **28 ms** | 33× / 129 ms → **3× / 10 ms** | 38× / 17 ms → **8× / 5 ms** | 33× → **3×** |
+| C one cooldown running | 68 → **38** | 258 → **43 ms** | 33× / 140 ms → **2× / 7 ms** | 38× / 22 ms → 38× / 24 ms | 33× → **2×** |
+
+What remains is legitimate: enemy attacks and damage-number timers (state B), plus the `PartyDisplay` tick while a cooldown runs (A/C). One cascade went from 101 → 27 commits and ~241 → ~61 ms of board render. Dead-hero `dead-<color>` classes were verified to apply and clear on the board container.
+
+**Measured in-process** (same-process A/B per the measurement notes, `BENCH_OPTIONS`; the `git show HEAD` copy of the atoms as the legacy module; store rows drive a vanilla `createStore()` with the battle UI's 14 derived atoms mounted, plus the 2 new selectors for the current version):
+
+| per tick | legacy | current |
+| --- | --- | --- |
+| pure reducer, idle | 0.13 µs | 0.13 µs |
+| pure reducer, one / all running | 0.21 / 0.33 µs | 0.19 / 0.35 µs |
+| **through the store, idle** | **51.1 µs** | **1.2 µs (42×)** |
+| through the store, one / all running | 50.8 / 50.0 µs | 57.4 / 57.9 µs |
+
+The reducer itself is a wash — four tiny allocations cost nothing in V8 (see the notes below) — so the entire idle win is skipping Jotai's write + propagation. Running-state store ticks cost ~7 µs more because `itemCooldownMsAtom` and `deadOrbColorClassesAtom` now recompute on each party change; those 7 µs replace a ~4 ms `Match3Board` render and an item-bar render per tick. Permanent benches: `src/lib/battle-system.bench.ts` (pure) and `src/lib/battle-atoms.bench.ts` (through the store). Tests: `tickPartySkillCooldowns` in `src/lib/battle-setup.test.ts`, the atoms and both selectors in `src/lib/battle-atoms.test.ts` (798 tests pass).
+
+⚠️ Seen in the probe, not chased: `BattleTopBar` and `SkillBurstOverlay` register as rendered on every commit that touches the screen (39× in state A) although their inputs are stable, and the pre-change probe showed **two** commits per tick. Whether the probe's `actualStartTime` test also counts bailed-out fibers on the update path was not verified — worth checking with the `PerformedWork` flag before treating it as a compiler-memoization miss.
 
 ### 1.2 Merge the two tick writes into one
 
@@ -45,7 +77,7 @@ The single biggest issue. `battleStateAtom` (`src/stores/battle-atoms.ts:52`) is
 
 `tickGuardDecayAtom` (`:477-492`) recomputes `calculateGuardDecayResistance(party) * getPartyPassiveModifiers(party).guardDecayResistanceMultiplier` every 100 ms while guard > 0. The party composition it depends on only changes on death/revival. **Fix:** cache the factor keyed on the `party` array reference (module-level WeakMap or recompute-on-reference-change inside the tick atom).
 
-**Implemented — but not on the array reference.** A reference key would have hit ~0% of the time: `tickSkillCooldownsAtom` runs immediately before the decay tick in the same interval callback (`battle-screen.tsx:80-81`) and unconditionally allocates a fresh `party` array, so the reference is always new. This only becomes a viable key once **1.1** lands, and even then it would miss whenever a cooldown is mid-countdown.
+**Implemented — but not on the array reference.** A reference key would have hit ~0% of the time: `tickSkillCooldownsAtom` runs immediately before the decay tick in the same interval callback (`battle-screen.tsx:80-81`) and unconditionally allocates a fresh `party` array, so the reference is always new. This only becomes a viable key once **1.1** lands, and even then it would miss whenever a cooldown is mid-countdown. (1.1 has landed: the reference now survives only while *every* living hero is at 0, so the value key stays.)
 
 The cache is keyed on the **values the factor actually depends on**, checked in an allocation-free pass over the ≤4 members:
 
@@ -75,6 +107,8 @@ The payoff is in the consumer, not the hook: `enemyTimers` is a prop from `Battl
 ⚠️ **Adjacent finding — the hook itself forces the 10 Hz re-render of `BattleScreen`.** `useEnemyAttackTimers` calls `useAtomValue(partyAtom)` (`:73`) purely to keep `partyRef` current for the stagger effect, which reads it inside a callback. That subscription is what re-renders the whole battle screen on every cooldown tick. Note that `enemiesAtom` does **not** have this problem: the tick replaces only `state.party`, so the derived enemies array keeps its identity and Jotai skips the notify.
 
 Fix (not applied — changes subscription semantics, worth doing with 1.1): drop the `partyAtom` subscription and read the party on demand via `useAtomCallback` or `useStore().get(partyAtom)` inside the stagger effect. Even after 1.1 lands, `party` still changes identity whenever any cooldown is counting down — which is most of a fight — so 1.1 alone does not fix this.
+
+**Applied with 1.1:** the hook now calls `useStore().get(partyAtom)` inside the stagger effect; `partyRef` is gone.
 
 **Verify:** React DevTools Profiler on an idle battle — after 1.1/1.2, there should be **zero** re-renders between player actions and enemy attacks (except guard-decay ticks while guard > 0). All existing Vitest suites pass (`npm run test-cli`).
 
@@ -126,6 +160,8 @@ Styles in `src/styles/floating-particles.css`. Count held at 20 — 👁 the opt
 Reduced Motion re-checked with `data-reduced-motion` set: `animation-duration` stays `6.578s` (not collapsed to `1ms`).
 
 ⚠️ Same adjacent finding as 1.5: the bar subscribes to `partyAtom` (`:32`) only to derive `cooldownDuration`, so it still re-renders at 10 Hz from the cooldown tick. That is now the bar's *only* remaining render churn, and it belongs with 1.1.
+
+**Applied with 1.1:** the bar reads `itemCooldownMsAtom` instead.
 
 ### 2.3 Orb keys — verified, no change needed ✅
 
@@ -317,4 +353,5 @@ A toggle that disables the purely decorative layers for low-end machines: floati
 - **Imported constants are getters under vite-node.** A hot loop that compares against an imported constant per cell benchmarks ~2.6× slower than the same loop with a literal, because the SSR transform exposes module exports through getters. Production builds inline the constant, so this is a bench artifact — but a big one. Hot lib loops alias the constant once at module scope (`const RUN_LENGTH = MIN_MATCH_LENGTH` in `match-3.ts` and `board-generation.ts`) purely so the benches reflect production.
 - **Allocation is not the enemy in V8; reuse can be.** Six tiny per-line arrays in `findLineMatches` cost 0.7 µs; walking the board by index math cost 2.3 µs; reusing a scratch array cleared with `length = 0` cost 3.0–3.4 µs (deoptimized). Measure before removing an allocation.
 - **Render cost is measured, not asserted.** A minimal `__REACT_DEVTOOLS_GLOBAL_HOOK__` injected with Playwright's `addInitScript` makes React's dev build call `onCommitFiberRoot`; walking the fiber tree and summing `actualDuration` for the fibers that rendered in that commit gives per-commit cost per component. Dev builds include StrictMode double-rendering, so treat the numbers as relative before/after, never absolute. The harness lives in the session scratchpad, not the repo.
+- **Jotai runs without React, so the store's own cost is benchable.** `createStore()` (`jotai`) gives `get`/`set`/`sub` with no Provider; mounting the same derived atoms the UI subscribes to makes each `store.set` pay the real dependency walk and `Object.is` checks. Benching the pure reducer *and* the atom in the same file (1.1) separated the two: the reducer was a wash, the store write was 50 µs per idle tick. Tests get the same benefit — `store.sub` listeners fire exactly when a `useAtomValue` subscriber would re-render.
 - **The React Compiler caches JSX, it does not skip components.** Passing stable references (the board's own `orb`, a boolean, the shared handler) makes an unchanged `OrbComponent` hit its memo cache and return the same element, but the function still runs every commit. In the dev build that floor is ~20 µs per orb, which is why 2.3b bought 22 %, not 80 %; the rest belongs to 1.1.

@@ -1,4 +1,4 @@
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import {
   boardAtom,
@@ -10,6 +10,7 @@ import {
   removeMatchedOrbsAtom,
   battleStateAtom,
   partyAtom,
+  deadOrbColorClassesAtom,
   reduceSkillCooldownAtom,
   incrementTurnAtom,
   addScoreAtom,
@@ -183,7 +184,8 @@ interface Match3BoardProps {
 export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const board = useAtomValue(boardAtom);
   const selectedOrb = useAtomValue(selectedOrbAtom);
-  const party = useAtomValue(partyAtom);
+  const deadColorClasses = useAtomValue(deadOrbColorClassesAtom);
+  const store = useStore();
   const selectOrb = useSetAtom(selectOrbAtom);
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
@@ -239,6 +241,9 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
   // Check for matches, resolve bomb explosions, and apply combat effects
   useEffect(() => {
+    // Read the party on demand rather than subscribing: the board must not re-render on every
+    // cooldown tick, and the live value here is never staler than a render-time closure would be.
+    const party = store.get(partyAtom);
     // Wildcard-aware line matches, then expand any matched bombs into 3x3 blasts.
     const lineMatches = findLineMatches(board);
     const matches = expandBombExplosions(board, lineMatches);
@@ -467,11 +472,6 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       }
     }
   };
-
-  // Determine which orb colors belong to dead characters
-  const deadColorClasses = party
-    .filter((char) => char.currentHp <= 0 && char.color !== 'gray')
-    .map((char) => `dead-${char.color}`);
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center">

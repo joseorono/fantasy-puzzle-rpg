@@ -10,6 +10,7 @@ import { GUARD_MAX, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import {
   calculateGuardDecayResistance,
+  calculateItemCooldownInMs,
   calculatePartyHpPercentage,
   calculateSkillDamage,
   resolveGuardedDamage,
@@ -32,7 +33,7 @@ import {
   healAndReviveAllPartyMembers,
   isPartyDefeated,
 } from '~/lib/party-system';
-import { getNextLivingEnemyId, createBattleState } from '~/lib/battle-system';
+import { getNextLivingEnemyId, createBattleState, tickPartySkillCooldowns } from '~/lib/battle-system';
 import { swapOrbs, isValidSwap } from '~/lib/match-3';
 import { removeMatchedOrbsAndRefill } from '~/lib/board-generation';
 import type { BattleRatingResult } from '~/lib/battle-rating';
@@ -61,6 +62,24 @@ export const currentMatchesAtom = atom((get) => get(battleStateAtom).currentMatc
 export const partyHealthPercentageAtom = atom((get) => {
   const party = get(partyAtom);
   return calculatePartyHpPercentage(party);
+});
+
+// Narrow party selectors. `partyAtom` changes identity on every cooldown tick while any skill is
+// counting down; these derive primitives from it, and Jotai only notifies dependents when a derived
+// value fails `Object.is`, so their subscribers sit out the ticks entirely.
+
+// Space-joined `dead-<color>` classes for the board (dead heroes' orbs are drawn inert). Gray has no hero.
+export const deadOrbColorClassesAtom = atom((get) =>
+  get(partyAtom)
+    .filter((char) => char.currentHp <= 0 && char.color !== 'gray')
+    .map((char) => `dead-${char.color}`)
+    .join(' '),
+);
+
+// Shared battle-item cooldown (ms), from the party's collective SPD plus passive bonuses.
+export const itemCooldownMsAtom = atom((get) => {
+  const party = get(partyAtom);
+  return calculateItemCooldownInMs(party, getPartyPassiveModifiers(party).itemCooldownSpdBonus);
 });
 
 // Derived atoms for the party Guard meter
@@ -446,18 +465,14 @@ export const fillPartyUltimateAtom = atom(null, (get, set, amount: number) => {
   set(battleStateAtom, { ...currentState, party });
 });
 
-// Atom to tick skill cooldowns each frame
+// Atom to tick skill cooldowns each frame. Writes nothing when no cooldown is running, so the
+// idle battle screen is not re-rendered 10x/s (the reducer returns the same array in that case).
 export const tickSkillCooldownsAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);
   if (currentState.gameStatus !== 'playing') return;
 
-  const party = currentState.party.map((char) => {
-    if (char.currentHp <= 0 || char.skillCooldown <= 0) return char;
-    return {
-      ...char,
-      skillCooldown: Math.max(0, char.skillCooldown - deltaSeconds),
-    };
-  });
+  const party = tickPartySkillCooldowns(currentState.party, deltaSeconds);
+  if (party === currentState.party) return;
 
   set(battleStateAtom, { ...currentState, party });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import {
   damagePartyAtom,
   enemiesAtom,
@@ -94,7 +94,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const enemyStandbyMs = useAtomValue(enemyStandbyMsAtom);
   const standbyEnemyIds = useAtomValue(standbyEnemyIdsAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
-  const party = useAtomValue(partyAtom);
+  const store = useStore();
   const damageParty = useSetAtom(damagePartyAtom);
   const endStandby = useSetAtom(endEnemyStandbyAtom);
   const flagMaxFlinch = useSetAtom(flagMaxFlinchAtom);
@@ -105,8 +105,6 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   // Latest values, read inside timer/stagger callbacks without widening effect deps.
   const enemiesRef = useRef(enemies);
   enemiesRef.current = enemies;
-  const partyRef = useRef(party);
-  partyRef.current = party;
   const standbyIdsRef = useRef(standbyEnemyIds);
   standbyIdsRef.current = standbyEnemyIds;
 
@@ -256,8 +254,11 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     // Attacker passives and the skill bonus scale each hit's raw push; both are applied BEFORE
     // the per-cycle clamp (inside resolveStaggerHits), so the anti-stunlock cap stays authoritative.
     const skillMultiplier = lastDamage.source === 'skill' ? SKILL_STAGGER_MULTIPLIER : 1;
+    // Read on demand: subscribing to `partyAtom` here would re-render the whole battle screen on
+    // every cooldown tick, and the stagger only needs the attacker's passives at hit time.
+    const party = store.get(partyAtom);
     const hits = rawHits.map((hit) => {
-      const attacker = hit.characterId ? partyRef.current.find((c) => c.id === hit.characterId) : undefined;
+      const attacker = hit.characterId ? party.find((c) => c.id === hit.characterId) : undefined;
       const passiveMultiplier = attacker ? getCharacterPassiveModifiers(attacker).staggerPushMultiplier : 1;
       return { amount: hit.amount, multiplier: passiveMultiplier * skillMultiplier };
     });
