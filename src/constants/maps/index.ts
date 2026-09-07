@@ -1,6 +1,7 @@
 import type { MapDefinition, MapId } from '~/types/map';
 import { MAP_00 } from './map-00/config';
 import { MAP_01 } from './map-01/config';
+import { MAP_00_APPRENTICE_FORGE } from './map-00-apprentice-forge/config';
 
 /**
  * Every playable map, keyed by id. This is the only place maps are enumerated:
@@ -10,6 +11,7 @@ import { MAP_01 } from './map-01/config';
 export const MAP_REGISTRY: Record<MapId, MapDefinition> = {
   'map-00': MAP_00,
   'map-01': MAP_01,
+  'map-00-apprentice-forge': MAP_00_APPRENTICE_FORGE,
 };
 
 /** Map used when a navigation arrives without one. */
