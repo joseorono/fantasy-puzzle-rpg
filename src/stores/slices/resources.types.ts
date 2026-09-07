@@ -4,7 +4,7 @@ import type { BaseSlice } from '../../types/store';
 /**
  * Resources state
  */
-export interface ResourcesState extends Resources {}
+export type ResourcesState = Resources;
 
 /**
  * Resources slice actions

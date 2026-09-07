@@ -1,6 +1,6 @@
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ToffecCloseButton } from '~/components/ui-custom/toffec-close-button';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { FancyBorderPixelButton } from '~/components/ui/fancy-border-pixel-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
@@ -67,52 +67,52 @@ export default function TestView() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <FrostyRpgIcon name="herb" size={32} />
-                <FrostyRpgIcon name="berries" size={32} />
-                <FrostyRpgIcon name="mushroom" size={32} />
-                <FrostyRpgIcon name="feather" size={32} />
-                <FrostyRpgIcon name="blueCrystal" size={32} />
-                <FrostyRpgIcon name="redCrystal" size={32} />
-                <FrostyRpgIcon name="purpleCrystal" size={32} />
+                <FrostyRpgIcon name="twigs" size={32} />
+                <FrostyRpgIcon name="blueFlower" size={32} />
+                <FrostyRpgIcon name="purpleHerb" size={32} />
+                <FrostyRpgIcon name="sprout" size={32} />
+                <FrostyRpgIcon name="stone" size={32} />
+                <FrostyRpgIcon name="root" size={32} />
                 <FrostyRpgIcon name="coinPurse" size={32} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <FrostyRpgIcon name="bookRed" size={32} />
-                <FrostyRpgIcon name="silverKey" size={32} />
+                <FrostyRpgIcon name="candle" size={32} />
+                <FrostyRpgIcon name="ruby" size={32} />
                 <FrostyRpgIcon name="skull" size={32} />
-                <FrostyRpgIcon name="compass" size={32} />
-                <FrostyRpgIcon name="ring" size={32} />
-                <FrostyRpgIcon name="bomb" size={32} />
-                <FrostyRpgIcon name="coins" size={32} />
-                <FrostyRpgIcon name="chalice" size={32} />
+                <FrostyRpgIcon name="greenOre" size={32} />
+                <FrostyRpgIcon name="oreNuggets" size={32} />
+                <FrostyRpgIcon name="feather" size={32} />
+                <FrostyRpgIcon name="fairyDust" size={32} />
+                <FrostyRpgIcon name="fishFin" size={32} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <FrostyRpgIcon name="shortSword" size={32} />
-                <FrostyRpgIcon name="flameSword" size={32} />
-                <FrostyRpgIcon name="battleAxe" size={32} />
-                <FrostyRpgIcon name="longbow" size={32} />
-                <FrostyRpgIcon name="mageStaff" size={32} />
-                <FrostyRpgIcon name="ironArmor" size={32} />
-                <FrostyRpgIcon name="steelHelm" size={32} />
-                <FrostyRpgIcon name="shield" size={32} />
+                <FrostyRpgIcon name="copperSword" size={32} />
+                <FrostyRpgIcon name="venomSword" size={32} />
+                <FrostyRpgIcon name="ashBow" size={32} />
+                <FrostyRpgIcon name="crimsonBow" size={32} />
+                <FrostyRpgIcon name="spikedMace" size={32} />
+                <FrostyRpgIcon name="furCoat" size={32} />
+                <FrostyRpgIcon name="plateArmor" size={32} />
+                <FrostyRpgIcon name="goldArmor" size={32} />
               </div>
             </div>
           </Franuka05aFrame>
         </div>
-        {/* ToffecCloseButton variants */}
+        {/* ToffecSquareButton variants */}
         <div className="mt-6">
           <Franuka05aFrame>
             <div className="flex flex-col gap-6 p-4">
-              <h2 className="text-xl font-bold">ToffecCloseButton</h2>
+              <h2 className="text-xl font-bold">ToffecSquareButton</h2>
 
               {/* With background */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">With background (hasBg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg />
-                  <ToffecCloseButton variant="medieval2" hasBg />
-                  <ToffecCloseButton variant="medieval3" hasBg />
-                  <ToffecCloseButton variant="fairy2" hasBg />
-                  <ToffecCloseButton variant="fairy3" hasBg />
+                  <ToffecSquareButton variant="medieval1" hasBg />
+                  <ToffecSquareButton variant="medieval2" hasBg />
+                  <ToffecSquareButton variant="medieval3" hasBg />
+                  <ToffecSquareButton variant="fairy2" hasBg />
+                  <ToffecSquareButton variant="fairy3" hasBg />
                 </div>
               </div>
 
@@ -120,10 +120,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">No background (hasBg=false)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval4" hasBg={false} />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} />
-                  <ToffecCloseButton variant="medieval6" hasBg={false} />
-                  <ToffecCloseButton variant="fairy1" hasBg={false} />
+                  <ToffecSquareButton variant="medieval4" hasBg={false} />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} />
+                  <ToffecSquareButton variant="medieval6" hasBg={false} />
+                  <ToffecSquareButton variant="fairy1" hasBg={false} />
                 </div>
               </div>
 
@@ -131,10 +131,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Sizes (medieval1 with bg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg size="sm" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="default" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="lg" />
-                  <ToffecCloseButton variant="medieval1" hasBg size="xl" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="sm" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="default" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="lg" />
+                  <ToffecSquareButton variant="medieval1" hasBg size="xl" />
                 </div>
               </div>
 
@@ -142,10 +142,10 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Sizes (medieval5 no bg)</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="sm" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="default" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="lg" />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} size="xl" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="sm" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="default" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="lg" />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} size="xl" />
                 </div>
               </div>
 
@@ -153,14 +153,84 @@ export default function TestView() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs opacity-70">Disabled</p>
                 <div className="flex items-center gap-4">
-                  <ToffecCloseButton variant="medieval1" hasBg disabled />
-                  <ToffecCloseButton variant="fairy3" hasBg disabled />
-                  <ToffecCloseButton variant="medieval5" hasBg={false} disabled />
+                  <ToffecSquareButton variant="medieval1" hasBg disabled />
+                  <ToffecSquareButton variant="fairy3" hasBg disabled />
+                  <ToffecSquareButton variant="medieval5" hasBg={false} disabled />
                 </div>
               </div>
             </div>
           </Franuka05aFrame>
         </div>
+
+        {/* ToffecButton variants */}
+        <div className="mt-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-6 p-4">
+              <h2 className="text-xl font-bold">ToffecButton</h2>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Variants</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="tan">Tan</ToffecButton>
+                  <ToffecButton variant="mauve">Mauve</ToffecButton>
+                  <ToffecButton variant="indigolay-red">Indigolay Red</ToffecButton>
+                  <ToffecButton variant="orange">Orange</ToffecButton>
+                  <ToffecButton variant="cream">Cream</ToffecButton>
+                  <ToffecButton variant="gray">Gray</ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Sizes</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="orange" size="xs">
+                    XS
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="sm">
+                    Small
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="default">
+                    Default
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="lg">
+                    Large
+                  </ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Circle sizes</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="cream" size="circle" aria-label="Circle default">
+                    ●
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="circle-sm" aria-label="Circle small">
+                    ●
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="circle-lg" aria-label="Circle large">
+                    ●
+                  </ToffecButton>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Disabled</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <ToffecButton variant="tan" disabled>
+                    Tan
+                  </ToffecButton>
+                  <ToffecButton variant="orange" size="sm" disabled>
+                    Small
+                  </ToffecButton>
+                  <ToffecButton variant="cream" size="xs" disabled>
+                    Disabled
+                  </ToffecButton>
+                </div>
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
+
         {/* FranukaSlider variants */}
         <div className="mt-6">
           <Franuka05aFrame>

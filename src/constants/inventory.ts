@@ -3,9 +3,9 @@
  */
 
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
+import { CRAFTING_FEE } from '~/constants/blacksmith';
 
 export const MAX_AMOUNT_PER_ITEM = 99;
-export const CRAFTING_FEE = 100;
 
 /*
  * Items
@@ -21,8 +21,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 0,
     forClass: 'warrior',
+    comboBonus: 0.01,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 2 },
-    iconName: 'ironSword',
+    iconName: 'steelSword',
   },
   {
     id: 'iron-short-bow',
@@ -33,8 +34,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 3,
     forClass: 'rogue',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 2, silver: 0, iron: 2 },
-    iconName: 'shortBow',
+    iconName: 'leafBow',
   },
   {
     id: 'iron-staff',
@@ -45,8 +47,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 1,
     forClass: 'mage',
+    comboBonus: 0.01,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 3, silver: 0, iron: 3 },
-    iconName: 'ironStaff',
+    iconName: 'frostAxe',
   },
   {
     id: 'iron-armor',
@@ -57,7 +60,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 10,
     spd: -2,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 3 },
-    iconName: 'ironArmor',
+    iconName: 'furCoat',
   },
 
   // --- Bronze Tier ---
@@ -70,8 +73,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 3,
     spd: 0,
     forClass: 'warrior',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
-    iconName: 'shortSword',
+    iconName: 'copperSword',
   },
   {
     id: 'bronze-recurve-bow',
@@ -82,8 +86,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 5,
     forClass: 'rogue',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 4, silver: 0, iron: 6 },
-    iconName: 'recurveBow',
+    iconName: 'vineBow',
   },
   {
     id: 'bronze-staff',
@@ -94,8 +99,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 2,
     forClass: 'mage',
+    comboBonus: 0.015,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 5, silver: 0, iron: 8 },
-    iconName: 'woodStaff',
+    iconName: 'rubyAxe',
   },
   {
     id: 'bronze-armor',
@@ -106,7 +112,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 15,
     spd: -3,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 0, iron: 10 },
-    iconName: 'chainmail',
+    iconName: 'paddedArmor',
   },
 
   // --- Silver Tier ---
@@ -119,8 +125,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 4,
     forClass: 'warrior',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 6, iron: 4 },
-    iconName: 'longSword',
+    iconName: 'bronzeSword',
   },
   {
     id: 'silver-longbow',
@@ -131,8 +138,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 0,
     spd: 8,
     forClass: 'rogue',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 5, iron: 3 },
-    iconName: 'longbow',
+    iconName: 'crimsonBow',
   },
   {
     id: 'silver-staff',
@@ -143,8 +151,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 5,
     forClass: 'mage',
+    comboBonus: 0.02,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 7, iron: 4 },
-    iconName: 'mageStaff',
+    iconName: 'spikedMace',
   },
   {
     id: 'silver-armor',
@@ -155,7 +164,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 22,
     spd: -1,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 0, silver: 10, iron: 5 },
-    iconName: 'steelArmor',
+    iconName: 'silverArmor',
   },
 
   // --- Steel Tier ---
@@ -168,8 +177,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 4,
     spd: 1,
     forClass: 'warrior',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 4, iron: 0 },
-    iconName: 'broadsword',
+    iconName: 'steelSword',
   },
   {
     id: 'steel-composite-bow',
@@ -180,8 +190,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: 10,
     forClass: 'rogue',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 6, silver: 4, iron: 0 },
-    iconName: 'compositeBow',
+    iconName: 'roseBow',
   },
   {
     id: 'steel-staff',
@@ -192,8 +203,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 4,
     forClass: 'mage',
+    comboBonus: 0.025,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 8, silver: 5, iron: 0 },
-    iconName: 'crystalStaff',
+    iconName: 'warAxe',
   },
   {
     id: 'steel-armor',
@@ -204,7 +216,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 30,
     spd: 0,
     cost: { coins: CRAFTING_FEE, gold: 0, copper: 10, silver: 6, iron: 0 },
-    iconName: 'plateArmor',
+    iconName: 'blueCoat',
   },
 
   // --- Gold Tier ---
@@ -217,8 +229,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 6,
     spd: -4,
     forClass: 'warrior',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
-    iconName: 'flameSword',
+    iconName: 'venomSword',
   },
   {
     id: 'golden-war-bow',
@@ -229,8 +242,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 2,
     spd: 12,
     forClass: 'rogue',
+    comboBonus: 0.04,
     cost: { coins: CRAFTING_FEE, gold: 3, copper: 0, silver: 5, iron: 0 },
-    iconName: 'warBow',
+    iconName: 'fairyBow',
   },
   {
     id: 'golden-scepter',
@@ -241,8 +255,9 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 5,
     spd: 6,
     forClass: 'mage',
+    comboBonus: 0.03,
     cost: { coins: CRAFTING_FEE, gold: 4, copper: 0, silver: 6, iron: 0 },
-    iconName: 'scepter',
+    iconName: 'jadeAxe',
   },
   {
     id: 'golden-plate-armor',
@@ -253,7 +268,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 40,
     spd: -5,
     cost: { coins: CRAFTING_FEE, gold: 6, copper: 0, silver: 8, iron: 0 },
-    iconName: 'goldArmor',
+    iconName: 'leatherRobe',
   },
 
   // --- Legendary & Joke Tier ---
@@ -266,7 +281,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 45,
     spd: 0,
     cost: { coins: CRAFTING_FEE, gold: 8, copper: 0, silver: 12, iron: 0 },
-    iconName: 'goldArmor',
+    iconName: 'leatherRobe',
   },
   {
     id: 'gold-armor',
@@ -277,7 +292,7 @@ export const EquipmentItems: EquipmentItemData[] = [
     vit: 1,
     spd: -5,
     cost: { coins: CRAFTING_FEE, gold: 10, copper: 0, silver: 0, iron: 0 },
-    iconName: 'goldArmor',
+    iconName: 'leatherRobe',
   },
 ];
 
@@ -317,7 +332,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'clear-row' },
     icon: '➡️',
-    iconName: 'arrow',
+    iconName: 'woodStaff',
   },
   {
     id: 'column-clear',
@@ -329,7 +344,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'clear-column' },
     icon: '⬇️',
-    iconName: 'bolt',
+    iconName: 'crystalStaff',
   },
   {
     id: 'energy-potion',
@@ -341,7 +356,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     usableOutOfBattle: false,
     action: { type: 'fill-ultimate', amount: 0.3 },
     icon: '⚡',
-    iconName: 'yellowPotion',
+    iconName: 'largeBluePotion',
   },
 ];
 

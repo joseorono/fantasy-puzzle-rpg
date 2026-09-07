@@ -8,6 +8,7 @@ const toffecButtonVariants = cva(
       variant: {
         tan: 'toffec-button--tan',
         mauve: 'toffec-button--mauve',
+        'indigolay-red': 'toffec-button--indigolay-red',
         orange: 'toffec-button--orange',
         cream: 'toffec-button--cream',
         gray: 'toffec-button--gray',
@@ -15,6 +16,7 @@ const toffecButtonVariants = cva(
       size: {
         default: 'toffec-button--pill px-6 py-3 min-h-12 text-sm',
         sm: 'toffec-button--pill px-4 py-2 min-h-10 text-xs',
+        xs: 'toffec-button--pill px-3 py-1 min-h-8 text-[0.65rem]',
         lg: 'toffec-button--pill px-8 py-4 min-h-14 text-base',
         circle: 'toffec-button--circle w-12 h-12 min-w-12 min-h-12 text-base',
         'circle-sm': 'toffec-button--circle w-10 h-10 min-w-10 min-h-10 text-sm',
@@ -36,4 +38,5 @@ export function ToffecButton({ className, variant, size, ...props }: ToffecButto
   return <button className={cn(toffecButtonVariants({ variant, size, className }))} {...props} />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { toffecButtonVariants };

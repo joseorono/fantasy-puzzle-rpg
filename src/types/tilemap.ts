@@ -26,6 +26,10 @@ export interface TilemapTileset {
   tilecount: number;
   tileheight: number;
   tilewidth: number;
+  source?: string;
+  tiledversion?: string;
+  type?: string;
+  version?: string;
 }
 
 export interface TilemapData {
@@ -54,4 +58,19 @@ export interface TiledMapConfig {
   defaultPlayerPosition: Position;
   /** When true, shows debug overlays (controls, character position, status). Defaults to false. */
   debug?: boolean;
+  /**
+   * How many tiles tall the character's *visible body* renders, overriding the global
+   * `CHARACTER_BODY_HEIGHT_TILES`. Maps whose art uses a different tile scale than the
+   * 16px baseline (e.g. 32px tiles) must set this so the shared character sprite stays
+   * a consistent pixel size across maps. It also sets the body's width, and with it the
+   * collision footprint: `bodyWidthTiles = bodyHeightTiles * 32/48`.
+   */
+  characterBodyHeightTiles?: number;
+
+  /**
+   * How far below its collision point the sprite is drawn, in tiles, overriding the
+   * global `CHARACTER_FOOT_OFFSET_TILES`. Render-only. Set it to 0 to pin a map to the
+   * pre-offset look.
+   */
+  characterFootOffsetTiles?: number;
 }

@@ -1,7 +1,7 @@
 export default function GraphicsLicensesDialogContent() {
   return (
     <>
-      <div className="text-large flex flex-col justify-center gap-2 overflow-y-auto">
+      <div className="text-large flex flex-col justify-center gap-2">
         <h2 className="text-2xl" id="graphics-assets-licences-and-credits-">
           Graphics Assets - Licences and Credits
         </h2>
@@ -63,6 +63,14 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Pixel RPG UI MEGA PACK (4 in 1), by Indigolay — bars, frames, icons, checkboxes,
+          tabs, cursors, skill icons and most other Indigolay graphics bought from them&nbsp;
+          <a href="https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1">
+            https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1
+          </a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack
@@ -71,6 +79,30 @@ export default function GraphicsLicensesDialogContent() {
         <p>
           Golden UI - Bigger Than Ever edition, CC-BY-SA 3.0, by Buch.
           <a href="https://opengameart.org/users/buch">https://opengameart.org/users/buch</a>
+        </p>
+
+        <p>
+          LPC Revised Character Spritesheet, CC-BY-SA 3.0 / GPL 3.0, by wulax, Stephen
+          Challener (Redshrike), and Johannes Sjölund&nbsp;
+          <a href="https://opengameart.org/content/lpc-revised-character-spritesheet">
+            https://opengameart.org/content/lpc-revised-character-spritesheet
+          </a>
+        </p>
+
+        <p>
+          Liberated Pixel Cup (LPC) Base Assets, CC-BY-SA 3.0 / GPL 3.0, by Stephen
+          &quot;Redshrike&quot; Challener and contributors&nbsp;
+          <a href="https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles">
+            https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+          </a>
+        </p>
+
+        <p>
+          LPC Revised Run and Jump, CC-BY-SA 3.0 / GPL 3.0, by wulax and Johannes
+          Sjölund&nbsp;
+          <a href="https://opengameart.org/content/lpc-revised-run-and-jump">
+            https://opengameart.org/content/lpc-revised-run-and-jump
+          </a>
         </p>
       </div>
     </>

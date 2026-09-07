@@ -1,34 +1,20 @@
+/**
+ * Detects whether the app is running inside the Electron shell.
+ * Reads the flag published by the preload bridge; the user-agent check is a
+ * fallback for the case where the bridge failed to load.
+ */
 export const isElectron = (): boolean => {
-  try {
-    // Renderer process with nodeIntegration
-    if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process?.type === 'renderer') {
-      return true;
-    }
+  if (typeof window === 'undefined') return false;
 
-    // Main process
-    if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
-      return true;
-    }
+  if (window.electron?.isElectron === true) return true;
 
-    // Detect via user agent (works when nodeIntegration is false)
-    if (
-      typeof navigator !== 'undefined' &&
-      typeof navigator.userAgent === 'string' &&
-      navigator.userAgent.toLowerCase().includes('electron')
-    ) {
-      return true;
-    }
-  } catch {
-    // If any reference errors occur, we're probably not in Electron
-    return false;
-  }
-
-  return false;
+  return typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
 };
 
+/**
+ * The Electron runtime version, or null when running in a browser.
+ * Comes from the preload bridge — `process` does not exist in a sandboxed renderer.
+ */
 export const getElectronVersion = (): string | null => {
-  if (isElectron()) {
-    return process.versions?.electron || 'unknown';
-  }
-  return null;
+  return window.electron?.electronVersion ?? null;
 };

@@ -5,9 +5,25 @@
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { EquipmentItemData } from '~/types/inventory';
 import type { InventoryItem } from '~/lib/inventory';
+import type { RarityTier } from '~/constants/rarity';
+import { DEFAULT_RARITY } from '~/constants/rarity';
 import { EquipmentItems } from '~/constants/inventory';
+import { getRarityMultiplier, scaleStat } from '~/lib/rarity';
 
 export type EquipmentSlot = 'weapon' | 'armor';
+
+/** An owned equipment item paired with its rolled rarity (one inventory stack). */
+export interface EquipmentInstance {
+  item: EquipmentItemData;
+  rarity: RarityTier;
+}
+
+/** An owned equipment stack with how many copies are free (not equipped). */
+export interface OwnedEquipmentInstance extends EquipmentInstance {
+  quantity: number;
+  /** Copies not currently equipped by any party member — safe to modify/scrap. */
+  available: number;
+}
 
 /**
  * Determine the equipment slot for an item by its ID.
@@ -55,7 +71,25 @@ export function canEquip(character: CharacterData, item: EquipmentItemData): boo
 }
 
 /**
- * Calculate the total stat bonuses from a character's equipped items.
+ * Get an equipment item's stats scaled by its rolled rarity. Positive stats are
+ * multiplied (and rounded); penalties are left untouched (see `scaleStat`).
+ * @param item Equipment item definition.
+ * @param rarity Rolled rarity tier (defaults to common when undefined).
+ * @returns The rarity-scaled POW/VIT/SPD.
+ */
+export function getScaledEquipmentStats(item: EquipmentItemData, rarity: RarityTier | undefined): CoreRPGStats {
+  const multiplier = getRarityMultiplier(rarity);
+  return {
+    pow: scaleStat(item.pow, multiplier),
+    vit: scaleStat(item.vit, multiplier),
+    spd: scaleStat(item.spd, multiplier),
+  };
+}
+
+/**
+ * Calculate the total stat bonuses from a character's equipped items, including
+ * the rarity multiplier of each equipped piece. Called once at battle init via
+ * `getPartyWithEffectiveStats`, so the scaling is never recomputed per frame.
  */
 export function getEquipmentBonuses(character: CharacterData): CoreRPGStats {
   const bonuses: CoreRPGStats = { pow: 0, vit: 0, spd: 0 };
@@ -63,22 +97,43 @@ export function getEquipmentBonuses(character: CharacterData): CoreRPGStats {
   if (character.equippedWeaponId) {
     const weapon = findEquipmentItem(character.equippedWeaponId);
     if (weapon) {
-      bonuses.pow += weapon.pow;
-      bonuses.vit += weapon.vit;
-      bonuses.spd += weapon.spd;
+      const stats = getScaledEquipmentStats(weapon, character.equippedWeaponRarity);
+      bonuses.pow += stats.pow;
+      bonuses.vit += stats.vit;
+      bonuses.spd += stats.spd;
     }
   }
 
   if (character.equippedArmorId) {
     const armor = findEquipmentItem(character.equippedArmorId);
     if (armor) {
-      bonuses.pow += armor.pow;
-      bonuses.vit += armor.vit;
-      bonuses.spd += armor.spd;
+      const stats = getScaledEquipmentStats(armor, character.equippedArmorRarity);
+      bonuses.pow += stats.pow;
+      bonuses.vit += stats.vit;
+      bonuses.spd += stats.spd;
     }
   }
 
   return bonuses;
+}
+
+/**
+ * Calculate the total cascade combo bonus from a character's equipped items.
+ * Combines the (very low) comboBonus of the equipped weapon and armor.
+ * @param character Character data
+ * @returns Summed combo bonus (0 when nothing relevant is equipped)
+ */
+export function getEquipmentComboBonus(character: CharacterData): number {
+  let comboBonus = 0;
+
+  if (character.equippedWeaponId) {
+    comboBonus += findEquipmentItem(character.equippedWeaponId)?.comboBonus ?? 0;
+  }
+  if (character.equippedArmorId) {
+    comboBonus += findEquipmentItem(character.equippedArmorId)?.comboBonus ?? 0;
+  }
+
+  return comboBonus;
 }
 
 /**
@@ -125,33 +180,79 @@ export function getPartyWithEffectiveStats(party: CharacterData[]): CharacterDat
 }
 
 /**
- * Get available equipment items for a given slot and character,
- * respecting class restrictions and deducting equipped counts from inventory quantity.
+ * Get available equipment instances for a given slot and character, respecting
+ * class restrictions and deducting equipped counts from inventory quantity.
+ *
+ * Because rarity is part of the inventory stack key, this returns one entry per
+ * owned (item, rarity) combination — a Common and a Rare copy of the same item
+ * are distinct, independently-equippable choices.
  */
 export function getAvailableEquipmentForSlot(
   slot: EquipmentSlot,
   character: CharacterData,
   party: CharacterData[],
   inventory: InventoryItem[],
-): EquipmentItemData[] {
-  return EquipmentItems.filter((item) => {
-    // Must be for the correct slot
-    if (getEquipmentSlot(item.id) !== slot) return false;
+): EquipmentInstance[] {
+  const instances: EquipmentInstance[] = [];
 
-    // Must be equippable by this character (class check)
-    if (!canEquip(character, item)) return false;
+  for (const inv of inventory) {
+    const item = findEquipmentItem(inv.itemId);
+    if (!item) continue;
 
-    // Must have available quantity in inventory
-    const ownedQty = inventory.find((inv) => inv.itemId === item.id)?.quantity ?? 0;
-    if (ownedQty <= 0) return false;
+    // Must be for the correct slot and equippable by this character (class check)
+    if (getEquipmentSlot(item.id) !== slot) continue;
+    if (!canEquip(character, item)) continue;
 
-    // Count how many of this item are equipped by OTHER party members
+    const rarity = inv.rarity ?? DEFAULT_RARITY;
+
+    // Count how many of this exact (item, rarity) are equipped by OTHER members
     const equippedByOthers = party.filter((member) => {
       if (member.id === character.id) return false;
-      return member.equippedWeaponId === item.id || member.equippedArmorId === item.id;
+      const weaponMatch = member.equippedWeaponId === item.id && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
+      const armorMatch = member.equippedArmorId === item.id && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
+      return weaponMatch || armorMatch;
     }).length;
 
-    // Available = owned - equipped by others
-    return ownedQty - equippedByOthers > 0;
-  });
+    // Available = owned of this stack - equipped by others of the same stack
+    if (inv.quantity - equippedByOthers > 0) {
+      instances.push({ item, rarity });
+    }
+  }
+
+  return instances;
+}
+
+/**
+ * Count how many party members have a specific (itemId, rarity) instance equipped
+ * in either slot.
+ */
+export function countEquippedInstances(party: CharacterData[], itemId: string, rarity: RarityTier): number {
+  return party.reduce((count, member) => {
+    const weaponMatch = member.equippedWeaponId === itemId && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
+    const armorMatch = member.equippedArmorId === itemId && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
+    return count + (weaponMatch ? 1 : 0) + (armorMatch ? 1 : 0);
+  }, 0);
+}
+
+/**
+ * List every owned equipment stack as an instance, annotated with how many copies
+ * are free to modify or scrap (`available = quantity - equipped copies`). Used by
+ * the blacksmith's upgrade/salvage UI so equipped gear can't be over-consumed.
+ */
+export function getOwnedEquipmentInstances(
+  inventory: InventoryItem[],
+  party: CharacterData[],
+): OwnedEquipmentInstance[] {
+  const instances: OwnedEquipmentInstance[] = [];
+
+  for (const inv of inventory) {
+    const item = findEquipmentItem(inv.itemId);
+    if (!item) continue;
+
+    const rarity = inv.rarity ?? DEFAULT_RARITY;
+    const equipped = countEquippedInstances(party, item.id, rarity);
+    instances.push({ item, rarity, quantity: inv.quantity, available: inv.quantity - equipped });
+  }
+
+  return instances;
 }

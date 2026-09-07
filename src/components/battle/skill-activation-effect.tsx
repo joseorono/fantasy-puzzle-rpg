@@ -43,11 +43,11 @@ export function SkillActivationEffect() {
         <span className="pixel-font text-xs font-bold text-amber-300 drop-shadow-lg sm:text-sm">
           {displayData.skillName}
         </span>
-        <DamageDisplay
-          amount={displayData.amount}
-          type={displayData.isHeal ? 'heal' : 'critical'}
-          className="text-3xl md:text-4xl"
-        />
+        {/* Damage skills show their number erupting off the target enemy, so only heals
+            render a number here — the caster keeps the skill-name callout in both cases. */}
+        {displayData.isHeal && (
+          <DamageDisplay amount={displayData.amount} type="heal" className="text-3xl md:text-4xl" />
+        )}
       </div>
     </div>
   );

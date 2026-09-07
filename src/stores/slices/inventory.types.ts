@@ -1,4 +1,5 @@
 import type { InventoryItem } from '~/lib/inventory';
+import type { RarityTier } from '~/constants/rarity';
 import type { BaseSlice } from '../../types/store';
 
 /**
@@ -12,8 +13,8 @@ export interface InventoryState {
  * Inventory slice actions
  */
 export interface InventoryActions {
-  addItem: (itemId: string, quantity?: number) => void;
-  removeItem: (itemId: string, quantity?: number) => void;
+  addItem: (itemId: string, quantity?: number, rarity?: RarityTier) => void;
+  removeItem: (itemId: string, quantity?: number, rarity?: RarityTier) => void;
   setInventory: (items: InventoryItem[]) => void;
   clearInventory: () => void;
 }

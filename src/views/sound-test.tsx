@@ -3,7 +3,7 @@ import { useAtom } from 'jotai';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
-import { masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
+import { isMutedAtom, masterVolumeAtom, musicVolumeAtom, sfxVolumeAtom } from '~/stores/pause-menu-atoms';
 import { Slider as EightBitSlider } from '~/components/ui/8bit/slider';
 
 interface LabeledSliderProps {
@@ -35,7 +35,7 @@ function LabeledSlider({ label, value, min = 0, max = 1, step = 0.01, onChange }
 }
 
 export default function SoundTestView() {
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [isAudioLoaded, setIsAudioLoaded] = useState<boolean>(soundService.audioLoaded === true);
   const [isPreloading, setIsPreloading] = useState<boolean>(false);
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
@@ -45,11 +45,6 @@ export default function SoundTestView() {
   const [playVariance, setPlayVariance] = useState<number>(0);
 
   useEffect(() => {
-    try {
-      setIsMuted(soundService.isMuted());
-    } catch {
-      // isMuted() can throw if AudioContext isn't ready yet
-    }
     // Do NOT auto-preload here to respect user gesture requirements for AudioContext
     setIsAudioLoaded(soundService.audioLoaded === true);
   }, []);
@@ -84,14 +79,9 @@ export default function SoundTestView() {
   };
 
   const handleToggleMute = () => {
-    const currentlyMuted = soundService.isMuted();
-    if (currentlyMuted === true) {
-      soundService.unmuteAll();
-      setIsMuted(false);
-    } else {
-      soundService.muteAll();
-      setIsMuted(true);
-    }
+    const nextMuted = isMuted !== true;
+    setIsMuted(nextMuted);
+    soundService.setMuted(nextMuted);
   };
 
   const soundNameList = Object.values(SoundNames);
@@ -104,15 +94,31 @@ export default function SoundTestView() {
         <ToffecButton variant="gray" onClick={handlePreload} disabled={isPreloading || isAudioLoaded}>
           {isPreloading ? 'Preloading…' : isAudioLoaded ? 'Audio Loaded' : 'Preload Audio'}
         </ToffecButton>
-        <ToffecButton variant="gray" onClick={handleToggleMute}>{isMuted ? 'Unmute All' : 'Mute All'}</ToffecButton>
+        <ToffecButton variant="gray" onClick={handleToggleMute}>
+          {isMuted ? 'Unmute All' : 'Mute All'}
+        </ToffecButton>
         <div className="rounded bg-neutral-200 px-2 py-1 text-sm text-neutral-800">
           Loaded: {isAudioLoaded ? 'yes' : 'no'}
         </div>
       </div>
 
       <div className="max-w-xl space-y-3">
-        <LabeledSlider label="Master Volume" value={masterVolume} min={0} max={100} step={1} onChange={handleMasterChange} />
-        <LabeledSlider label="Music Volume" value={musicVolume} min={0} max={100} step={1} onChange={handleMusicChange} />
+        <LabeledSlider
+          label="Master Volume"
+          value={masterVolume}
+          min={0}
+          max={100}
+          step={1}
+          onChange={handleMasterChange}
+        />
+        <LabeledSlider
+          label="Music Volume"
+          value={musicVolume}
+          min={0}
+          max={100}
+          step={1}
+          onChange={handleMusicChange}
+        />
         <LabeledSlider label="SFX Volume" value={sfxVolume} min={0} max={100} step={1} onChange={handleSfxChange} />
         <LabeledSlider label="Play Volume" value={playVolume} onChange={setPlayVolume} />
         <LabeledSlider label="Play Variance" value={playVariance} onChange={setPlayVariance} />

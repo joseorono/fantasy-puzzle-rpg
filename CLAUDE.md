@@ -75,6 +75,7 @@ src/
 - Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
 - Avoid enums; use maps instead
 - Use `cn()` from `~/lib/utils` for conditional class merging (clsx + tailwind-merge)
+- Avoid long comments if possible, if you need long comments to justify something it's praobably a hack and needs to be addressed. Don't hesitate to ask the users for input.
 
 ## React Patterns
 
@@ -151,3 +152,16 @@ src/
 - The `main` branch is the primary branch
 - Documentation for game systems lives in `docs/`
 - Do not run build or dev commands to test your code, I will do that for you.
+
+## Pull Request Descriptions
+
+When asked to write or update a PR title/description, follow the house style established in [PR #25](https://github.com/joseorono/fantasy-puzzle-rpg/pull/25):
+
+- **Title**: `V<version> — <comma-separated summary of the main themes>` — a version prefix, an em-dash, then the headline features. Example: `V2.3 — Enemy stagger & rebalance, arcade victory ratings + loot bonus, QoL, patches`.
+- **Lead**: open the body with a one–two sentence summary of the batch that states the organizing principle (e.g., "Grouped by system.").
+- **Group by system/theme**: each group is an emoji-prefixed `##` heading (e.g., `## ⭐ Arcade victory rating & loot bonus`, `## ⚖️ Balance`, `## 📄 Documentation`, `## 🩹 Bug fixes`, `## 🧹 Housekeeping`).
+- **Within a section**: unordered lists only. No bold lead paragraph restating how things behaved before — go straight into bullets. Use one level of nesting (`###` subsections with their own bullets) when a section covers several related systems.
+- **Keep it short**: one to two lines per bullet. State what changed and where, not the history of what it replaced. A whole description should stay scannable — if a section runs past ~150 words, it is describing the past instead of the change.
+- **Bug fixes**: name the root cause in a clause, not a paragraph — "…because `lastMatchedType` was never reset". No walkthroughs of library internals or of the reasoning that proved the diagnosis.
+- **Formatting**: bold key mechanics/terms; use inline `code` for files, functions, atoms, and constants, and name where tunables live (e.g., "all tunables in `src/constants/battle.ts`").
+- **Keep**: file paths, component/constant/atom names, test counts, and numeric values (speeds, breakpoints, sizes) — these are what a reviewer acts on. **Cut**: prior-behavior narration, repeated explanations of the same mechanism, and self-congratulatory framing.

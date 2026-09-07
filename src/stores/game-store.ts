@@ -13,7 +13,19 @@ import type { MapProgressSlice } from './slices/map-progress.types';
 import { createMapProgressSlice } from './slices/map-progress';
 import type { FloorLootProgressSlice } from './slices/floor-loot-progress.types';
 import { createFloorLootProgressSlice } from './slices/floor-loot-progress';
+import type { CraftingSlice } from './slices/crafting.types';
+import { createCraftingSlice } from './slices/crafting';
+import type { DungeonProgressSlice } from './slices/dungeon-progress.types';
+import { createDungeonProgressSlice, createInitialDungeonProgressState } from './slices/dungeon-progress';
+import { createInitialInventoryState } from './slices/inventory';
+import { createInitialMapProgressState } from './slices/map-progress';
+import { createInitialFloorLootProgressState } from './slices/floor-loot-progress';
 import { GAME_STORE_NAME } from '~/constants/game';
+import { INITIAL_RESOURCES_STATE } from '~/constants/resources';
+import { INITIAL_PARTY } from '~/constants/party';
+import { INITIAL_ROUTER_STATE } from '~/constants/routing';
+import { sanitizeLoadedParty } from '~/lib/save-game';
+import type { SaveGame } from '~/types/save-game';
 
 /**
  * Root game store interface combining all slices
@@ -25,13 +37,16 @@ export type GameStore = {
   router: RouterSlice['router'];
   mapProgress: MapProgressSlice['mapProgress'];
   floorLootProgress: FloorLootProgressSlice['floorLootProgress'];
+  crafting: CraftingSlice['crafting'];
+  dungeonProgress: DungeonProgressSlice['dungeonProgress'];
   actions: ResourcesSlice['actions'] &
     PartySlice['actions'] &
     InventorySlice['actions'] &
     RouterSlice['actions'] &
     MapProgressSlice['actions'] &
-    FloorLootProgressSlice['actions'];
-  reset?: () => void;
+    FloorLootProgressSlice['actions'] &
+    CraftingSlice['actions'] &
+    DungeonProgressSlice['actions'];
 };
 
 /**
@@ -41,11 +56,13 @@ export const useGameStore = create<GameStore>()(
   devtools(
     immer((set, get) => {
       const resourcesSlice = createResourcesSlice(set);
-      const partySlice = createPartySlice(set);
+      const partySlice = createPartySlice(set, get);
       const inventorySlice = createInventorySlice(set);
       const routerSlice = createRouterSlice(set);
       const mapProgressSlice = createMapProgressSlice(set, get);
       const floorLootProgressSlice = createFloorLootProgressSlice(set, get);
+      const craftingSlice = createCraftingSlice(set);
+      const dungeonProgressSlice = createDungeonProgressSlice(set, get);
       return {
         ...resourcesSlice,
         ...partySlice,
@@ -53,6 +70,8 @@ export const useGameStore = create<GameStore>()(
         ...routerSlice,
         ...mapProgressSlice,
         ...floorLootProgressSlice,
+        ...craftingSlice,
+        ...dungeonProgressSlice,
         actions: {
           ...resourcesSlice.actions,
           ...partySlice.actions,
@@ -60,6 +79,8 @@ export const useGameStore = create<GameStore>()(
           ...routerSlice.actions,
           ...mapProgressSlice.actions,
           ...floorLootProgressSlice.actions,
+          ...craftingSlice.actions,
+          ...dungeonProgressSlice.actions,
         },
       };
     }),
@@ -69,6 +90,56 @@ export const useGameStore = create<GameStore>()(
     },
   ),
 );
+
+/**
+ * Overwrites every persistent slice with the contents of a save file.
+ *
+ * The router is deliberately left alone — it isn't saved, and the caller navigates
+ * afterwards. The payload is cloned because the atom holds it too, and immer freezes
+ * whatever lands in the store; derived party fields are recomputed rather than trusted.
+ * @param save A validated save envelope.
+ */
+export function hydrateGameFromSave(save: SaveGame): void {
+  const state = structuredClone(save.state);
+  useGameStore.setState(
+    {
+      resources: state.resources,
+      party: { members: sanitizeLoadedParty(state.party.members) },
+      inventory: state.inventory,
+      mapProgress: state.mapProgress,
+      floorLootProgress: state.floorLootProgress,
+      crafting: state.crafting,
+      dungeonProgress: state.dungeonProgress,
+    },
+    false,
+    'save/hydrate',
+  );
+}
+
+/**
+ * Wipes all progress back to a fresh game, router included.
+ *
+ * Shared starting constants are cloned so the store never freezes the module-level
+ * originals that `battle-atoms` and the slice initializers also read.
+ */
+export function resetGameState(): void {
+  useGameStore.setState(
+    {
+      resources: { ...INITIAL_RESOURCES_STATE },
+      party: { members: structuredClone(INITIAL_PARTY) },
+      inventory: { items: createInitialInventoryState() },
+      // Rebuilt shallowly rather than deep-cloned: `viewData['town-hub']` holds an
+      // `onLeaveCallback` function, which `structuredClone` refuses to copy.
+      router: { ...INITIAL_ROUTER_STATE, viewData: { ...INITIAL_ROUTER_STATE.viewData } },
+      mapProgress: createInitialMapProgressState(),
+      floorLootProgress: createInitialFloorLootProgressState(),
+      crafting: { pity: 0 },
+      dungeonProgress: createInitialDungeonProgressState(),
+    },
+    false,
+    'save/reset',
+  );
+}
 
 /**
  * Selector hooks for easy access to store slices
@@ -132,3 +203,19 @@ export const useMapProgressActions = () => useGameStore((state) => state.actions
 export const useFloorLootProgressState = () => useGameStore((state) => state.floorLootProgress);
 export const useFloorLootProgressActions = () => useGameStore((state) => state.actions.floorLootProgress);
 
+/**
+ * Selector hooks for crafting slice
+ */
+export const useCraftingState = () => useGameStore((state) => state.crafting);
+export const useCraftingActions = () => useGameStore((state) => state.actions.crafting);
+
+/**
+ * Get the current crafting pity counter
+ */
+export const useCraftingPity = () => useGameStore((state) => state.crafting.pity);
+
+/**
+ * Selector hooks for dungeon progress slice
+ */
+export const useDungeonProgressState = () => useGameStore((state) => state.dungeonProgress);
+export const useDungeonProgressActions = () => useGameStore((state) => state.actions.dungeonProgress);

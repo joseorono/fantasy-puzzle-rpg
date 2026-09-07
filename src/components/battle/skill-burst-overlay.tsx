@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useStore } from 'jotai';
 import { lastSkillActivationAtom, partyAtom } from '~/stores/battle-atoms';
 import { CHARACTER_ICONS, SKILL_BURST_COLORS, SKILL_BURST_DURATION_MS } from '~/constants/party';
 import type { CharacterClass } from '~/types/rpg-elements';
 
 export function SkillBurstOverlay() {
   const lastSkillActivation = useAtomValue(lastSkillActivationAtom);
-  const party = useAtomValue(partyAtom);
+  const store = useStore();
   const [visible, setVisible] = useState(false);
   const [displayData, setDisplayData] = useState<{
     skillName: string;
@@ -17,7 +17,7 @@ export function SkillBurstOverlay() {
   useEffect(() => {
     if (!lastSkillActivation) return;
 
-    const character = party.find((c) => c.id === lastSkillActivation.characterId);
+    const character = store.get(partyAtom).find((c) => c.id === lastSkillActivation.characterId);
     if (!character) return;
 
     setDisplayData({
@@ -32,7 +32,7 @@ export function SkillBurstOverlay() {
     }, SKILL_BURST_DURATION_MS);
 
     return () => clearTimeout(timer);
-  }, [lastSkillActivation]);
+  }, [lastSkillActivation, store]);
 
   if (!visible || !displayData) return null;
 
@@ -58,11 +58,11 @@ export function SkillBurstOverlay() {
         </div>
       </div>
 
-      {/* Skill name text */}
-      <div className="absolute inset-0 flex items-end justify-center pb-[20%]">
-        <span className="skill-burst-text pixel-font text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-2xl md:text-3xl">
-          {displayData.skillName}
-        </span>
+      {/* Skill name on a ribbon banner (reuses the title-sign artwork). */}
+      <div className="absolute inset-0 flex items-end justify-center pb-[16%]">
+        <div className="skill-burst-text title-sign title-sign--large title-sign--text-gold">
+          <span className="title-sign__text pixel-font">{displayData.skillName}</span>
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <title>Current floor</title>
+  <!-- Gold arrowhead marking the party's position. Dark outline, lit upper
+       half over a darker lower half, mirroring the indigolay bevel. -->
+  <polygon points="3,3 13,8 3,13" fill="#2a1a0e" />
+  <polygon points="4,5 11,8 4,8" fill="#f0cf87" />
+  <polygon points="4,8 11,8 4,11" fill="#c9932f" />
+</svg>

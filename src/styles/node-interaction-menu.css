@@ -1,5 +1,27 @@
 /* ─── Node Interaction Menu ──────────────────────────────────────────── */
 
+@keyframes nim-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes nim-pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+}
+
 .nim {
   background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
@@ -12,6 +34,12 @@
     0 8px 20px rgba(0, 0, 0, 0.8),
     0 2px 0 #2a1a0e;
   pointer-events: auto;
+  animation: nim-pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.nim--leaving {
+  animation: nim-pop-out 0.18s cubic-bezier(0.4, 0, 1, 1) forwards !important;
 }
 
 /* ─── Arrow pointer ─────────────────────────────────────────────────── */
@@ -55,7 +83,7 @@
 
 .nim-title {
   font-size: 0.75rem;
-  color: #ffd700;
+  color: #e0e0e0;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
@@ -124,6 +152,13 @@
   display: flex;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+/* Tooltip trigger wrapper (e.g. the dungeon Randomize button) — behave as a flex
+   row item so the button inside sizes like its unwrapped siblings. */
+.nim-btn-tooltip {
+  display: flex;
+  flex: 1;
 }
 
 .nim-btn {

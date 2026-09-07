@@ -22,6 +22,16 @@ export function isPartyFullyHealed(party: CharacterData[]): boolean {
   return party.every((member) => member.currentHp === member.maxHp);
 }
 
+/**
+ * Fully heal a single party member to their max HP, leaving other members untouched.
+ * @param party - Array of party members
+ * @param characterId - ID of the member to fully heal
+ * @returns New party array with the targeted member at full HP
+ */
+export function fullyHealMember(party: CharacterData[], characterId: string): CharacterData[] {
+  return party.map((member) => (member.id === characterId ? { ...member, currentHp: member.maxHp } : member));
+}
+
 export function damageAllPartyMembers(
   party: CharacterData[],
   damage: number,
@@ -34,6 +44,22 @@ export function damageAllPartyMembers(
     ...member,
     currentHp: Math.max(minHp, member.currentHp - damage),
   }));
+}
+
+/**
+ * Copies post-battle HP back onto the persistent (store) party, matched by id.
+ * Battle members carry an equipment-adjusted maxHp, so each member's currentHp is clamped to
+ * the store member's base maxHp. Members with no matching battle member are left untouched.
+ * @param storeParty - The persistent party from the store
+ * @param battleParty - The party from the finished battle (post-combat HP)
+ * @returns New party array with currentHp synced from the battle
+ */
+export function applyHpFromBattle(storeParty: CharacterData[], battleParty: CharacterData[]): CharacterData[] {
+  return storeParty.map((member) => {
+    const battleMember = battleParty.find((b) => b.id === member.id);
+    if (!battleMember) return member;
+    return { ...member, currentHp: Math.min(battleMember.currentHp, member.maxHp) };
+  });
 }
 
 /**
@@ -125,6 +151,36 @@ export function healAndReviveAllPartyMembers(
       return { ...char, currentHp: Math.min(reviveAmount, char.maxHp) };
     }
     return char;
+  });
+}
+
+/**
+ * Heals every party member by a percentage of their own max HP, clamped to max HP.
+ * Living members gain `ceil(maxHp * healPercent)`. Dead members are revived: to
+ * `ceil(maxHp * revivePercent)` when `revivePercent` is provided, otherwise to 1 HP.
+ *
+ * Percentage-based counterpart to {@link healAndReviveAllPartyMembers} (which takes
+ * flat amounts). Used by the dungeon between-floor Rest.
+ * @param party - Array of party members
+ * @param healPercent - Fraction of max HP to restore to each living member (0–1)
+ * @param revivePercent - Optional fraction of max HP to revive dead members with; omit for 1 HP
+ * @returns New party array with living members healed and dead members revived
+ */
+export function healAllByMaxHpPercent(
+  party: CharacterData[],
+  healPercent: number,
+  revivePercent?: number,
+): CharacterData[] {
+  return party.map((member) => {
+    if (member.currentHp > 0) {
+      const amount = Math.ceil(member.maxHp * healPercent);
+      return { ...member, currentHp: additionWithMax(member.currentHp, amount, member.maxHp) };
+    }
+    if (revivePercent !== undefined && revivePercent > 0) {
+      const amount = Math.ceil(member.maxHp * revivePercent);
+      return { ...member, currentHp: Math.min(amount, member.maxHp) };
+    }
+    return { ...member, currentHp: 1 };
   });
 }
 

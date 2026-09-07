@@ -1,0 +1,101 @@
+/*
+  Save indicator — the small disk badge that blinks while a save is written.
+
+  Sits above everything the player can interact with (pause menu 60, dialogue 1001,
+  tooltips 1100) but below the click-tracker FX at 9999, and never takes pointer
+  events so it can't swallow a click in the corner it occupies.
+*/
+
+.save-indicator-layer {
+  position: fixed;
+  /* Sit inside the ever-present window frame (see --frame-thickness in frames.css),
+     otherwise the badge hides under the decorative border. */
+  inset: var(--frame-thickness, 0px);
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.save-indicator {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  background: linear-gradient(135deg, rgba(42, 24, 16, 0.94) 0%, rgba(26, 16, 8, 0.94) 100%);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.25),
+    0 4px 10px rgba(0, 0, 0, 0.55);
+  animation: save-indicator-in 0.28s ease-out;
+}
+
+/* Resting state is fully visible on purpose: `motion-hold` cancels these animations
+   outright under reduced motion, so the badge must not depend on one to be seen. */
+.save-indicator--exiting {
+  animation: save-indicator-out 0.35s ease-in both;
+}
+
+/* The source art isn't square, so contain it rather than letting the box stretch it. */
+.save-indicator__icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  animation: save-indicator-pulse 0.9s ease-in-out infinite;
+}
+
+.save-indicator__label {
+  font-size: 0.55rem;
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+}
+
+@keyframes save-indicator-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes save-indicator-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* The "working" blink — a brightness/opacity throb rather than a hard on/off, which
+   reads as activity without strobing. */
+@keyframes save-indicator-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.55;
+    filter: brightness(1.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .save-indicator {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .save-indicator__icon {
+    width: 18px;
+    height: 18px;
+  }
+}

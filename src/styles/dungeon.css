@@ -1,0 +1,578 @@
+/* ==========================================
+   DUNGEON VIEW — atmospheric run screen
+   Layout skeleton comes from Tailwind utilities on the view; this file carries the
+   visual polish (indigolay board panels, warm parchment palette). No bright #ffd700.
+   ========================================== */
+
+.dungeon {
+  position: relative;
+  color: #e8dcc8;
+}
+
+/* ─── Background + scrim (layered like the town's .bg-town) ───────────── */
+
+.dungeon-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dungeon-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(20, 12, 8, 0.78) 0%, rgba(20, 12, 8, 0.5) 40%, rgba(20, 12, 8, 0.88) 100%);
+}
+
+/* Every direct content row sits above the background layers. */
+.dungeon > .dungeon-topbar,
+.dungeon > .dungeon-layout,
+.dungeon > .dungeon-party,
+.dungeon > .dungeon-footer {
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Resources (floated top-right, out of flow like the town) ────────── */
+
+.dungeon-resources-bar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+.dungeon-resources-bar .pause-menu-resources-bar {
+  margin-top: 0;
+  border-top: none;
+  background: transparent;
+  padding: 0;
+}
+
+/* ─── Top bar ────────────────────────────────────────────────────────── */
+
+.dungeon-topbar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid rgba(212, 165, 116, 0.45);
+  background: linear-gradient(180deg, rgba(42, 24, 16, 0.9), rgba(42, 24, 16, 0.35));
+}
+
+.dungeon-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Keep the bitmap-font title on one line (its glyphs are inline-blocks that
+   would otherwise wrap when squeezed). */
+.dungeon-topbar__left .bf-text {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Party HP chip on chip-currency.png, 9-sliced so the circular well and right cap
+   keep their shape while only the flat bar stretches (the battle .btb-badge stretches
+   the whole art, which would turn the well into an ellipse at this width).
+   Widths are the slices at the render scale, 28/68 — rounding them distorts the
+   well, which spans all three horizontal bands. */
+.dungeon-hp-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 28px;
+  flex-shrink: 0;
+  border-style: solid;
+  border-width: 3.7px 4.1px 3.7px 26.4px;
+  border-image-source: url('/assets/hud/chip-currency.png');
+  border-image-slice: 9 10 9 64 fill;
+  border-image-repeat: stretch;
+}
+
+/* The well is part of the left border box, so the icon needs a negative left to
+   reach into it. Offsets track the well's disc centre (33.5, 33.5 of 68), which sits
+   just above the art's midpoint — hence 49.3% rather than 50%. */
+.dungeon-hp-chip__icon {
+  position: absolute;
+  left: -19.6px;
+  top: 49.3%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* Padding both sides: the content box starts flush against the well, so without a
+   left gap the digits collide with it. */
+.dungeon-hp-chip__value {
+  padding: 0 0.45rem 0 0.4rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: #f5e6c8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Main layout ────────────────────────────────────────────────────── */
+
+.dungeon-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* ─── Left: floor track (indigolay board panel) ──────────────────────── */
+
+.dungeon-track {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 0.875rem;
+  color: #e0e0e0;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.6)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  background-position: center, center;
+  border: 2px solid #5c3a1e;
+  border-radius: 12px;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(212, 165, 116, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.dungeon-track__title {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.7));
+  border-bottom: 2px solid #d4a574;
+}
+
+.dungeon-track__list {
+  display: flex;
+  flex-direction: column; /* Floor 1 at the top, deepest floor at the bottom */
+  gap: 0.35rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.dungeon-floor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-left: 3px solid rgba(212, 165, 116, 0.4);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(212, 165, 116, 0.06);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Holds the per-state marker SVG. Fixed width so every floor name starts at the
+   same x regardless of which marker is showing. */
+.dungeon-floor__mark {
+  width: 1.1rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dungeon-floor__mark-icon {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The SVGs are drawn on a 16px grid with crispEdges; this keeps the browser
+     from smoothing them when the rem size lands on a fractional pixel. */
+  image-rendering: pixelated;
+}
+
+/* Name + optional rating stars, stacked to the right of the mark. */
+.dungeon-floor__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Per-floor combat rating: a compact row of small stars under the floor name. */
+.dungeon-floor__rating {
+  display: inline-flex;
+  gap: 0.08rem;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+.dungeon-floor__star {
+  width: 0.62rem;
+  height: 0.62rem;
+}
+
+.dungeon-floor--completed {
+  color: #9a8f7e;
+  border-left-color: rgba(157, 176, 106, 0.6); /* olive "done" accent */
+}
+/* Cleared floors recede — the marker's olive is baked into the SVG, so this only
+   pulls it back rather than recoloring it. */
+.dungeon-floor--completed .dungeon-floor__mark-icon {
+  opacity: 0.75;
+}
+
+.dungeon-floor--current {
+  color: #f5ecd8;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(212, 165, 116, 0.06));
+  border-color: rgba(212, 165, 116, 0.5);
+  border-left-color: #d4a574;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.22),
+    0 0 8px rgba(212, 165, 116, 0.18);
+}
+/* The active floor's arrowhead runs larger and picks up the gold glow. */
+.dungeon-floor--current .dungeon-floor__mark {
+  width: 1.35rem;
+}
+
+.dungeon-floor--current .dungeon-floor__mark-icon {
+  filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.5));
+}
+
+.dungeon-floor--locked {
+  color: #6b5f50;
+  border-left-color: rgba(80, 66, 50, 0.55);
+  opacity: 0.8;
+}
+.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 0.7;
+}
+
+/* Boss floors flag danger in the track until cleared. */
+.dungeon-floor--boss:not(.dungeon-floor--completed) {
+  border-left-color: rgba(192, 88, 62, 0.75);
+}
+/* The helm carries its own ember red, so it stays at full strength even though
+   the rest of a locked row is dimmed. */
+.dungeon-floor--boss.dungeon-floor--locked .dungeon-floor__mark-icon {
+  opacity: 1;
+}
+
+/* ─── Right: stage / action card ─────────────────────────────────────── */
+
+.dungeon-stage {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The action card shares the game-over / confirm-panel pixel-art language: a chunky
+   triple border over the board texture, a diamond medallion, and a gradient divider.
+   Boss floors swap the gold accents for warning red. */
+.dungeon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  color: #e0e0e0;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  border: 4px solid #5c3a1e;
+  outline: 3px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 0 22px rgba(200, 135, 46, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.78),
+    0 2px 0 #2a1a0e;
+  overflow: hidden;
+  text-align: center;
+  animation: dungeon-card-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dungeon-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Boss floor: red frame accent. */
+.dungeon-card--boss {
+  border-color: #6b2a1a;
+  box-shadow:
+    inset 0 0 0 2px #b0552e,
+    0 0 22px rgba(192, 88, 62, 0.28),
+    0 12px 32px rgba(0, 0, 0, 0.78),
+    0 2px 0 #2a1a0e;
+}
+
+.dungeon-card__banner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(180deg, rgba(200, 135, 46, 0.16) 0%, transparent 100%);
+}
+
+.dungeon-card--boss .dungeon-card__banner {
+  background: linear-gradient(180deg, rgba(192, 88, 62, 0.22) 0%, transparent 100%);
+}
+
+.dungeon-card--complete .dungeon-card__banner {
+  background: linear-gradient(180deg, rgba(212, 165, 116, 0.26) 0%, transparent 100%);
+}
+
+/* Overall dungeon rank on the cleared card: a compact framed row — "Dungeon Rank"
+   label on the left, averaged stars + rank word on the right. */
+.dungeon-rank {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.55rem;
+  background: rgba(246, 196, 83, 0.08);
+  border: 1px solid rgba(246, 196, 83, 0.4);
+  border-radius: 6px;
+}
+.dungeon-rank__label {
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  color: #cbb98f;
+}
+.dungeon-rank__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.dungeon-rank .dungeon-floor__star {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+.dungeon-rank__word {
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: #f6c453;
+}
+
+/* Rotated pixel-art diamond holding the event icon. */
+.dungeon-card__medallion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  transform: rotate(45deg);
+  background: #0e0a06;
+  border: 3px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 2px #8b6914,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.dungeon-card__medallion > * {
+  transform: rotate(-45deg);
+}
+
+.dungeon-card__medallion img {
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.8));
+}
+
+.dungeon-card--boss .dungeon-card__medallion {
+  border-color: #6b2a1a;
+  box-shadow:
+    inset 0 0 0 2px #b0552e,
+    0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.dungeon-card__banner-title {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* Right-hand banner slot (holds the BOSS tag, empty otherwise). Mirrors the
+   medallion's width so the title stays centred across the full banner. */
+.dungeon-card__banner-side {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 42px;
+}
+
+.dungeon-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.dungeon-card__boss-tag {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  font-size: 0.55rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #f0e4cf;
+  background: rgba(192, 88, 62, 0.9);
+  border: 1px solid rgba(240, 210, 180, 0.5);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-card__replay {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.5rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f3e2c9;
+  background: rgba(42, 26, 14, 0.68);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 999px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+.dungeon-card__desc {
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: #d8cbb4;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.dungeon-card__action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.25rem 1.25rem 1.1rem;
+}
+
+/* ─── Party status strip ─────────────────────────────────────────────── */
+
+.dungeon-party {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.7rem 1rem 0.5rem;
+}
+
+/* Red panel with an ornate brass frame, imitating the UI_Btn_Red art in pure CSS:
+   dark outer edge -> gold band -> dark red liner -> red gradient face. */
+.dungeon-party .pause-menu-party-bar {
+  display: flex;
+  width: min(100%, 980px);
+  gap: 0.65rem;
+  padding: 0.75rem;
+  background-repeat: repeat;
+  background-size: 30px 30px;
+  border: 3px solid #c9a24a;
+  border-radius: 12px;
+  outline: 2px solid #2a1a0e;
+  outline-offset: -1px;
+  box-shadow:
+    inset 0 0 0 2px #3d2817,
+    inset 0 2px 0 rgba(255, 220, 170, 0.15),
+    inset 0 -3px 6px rgba(20, 12, 6, 0.65),
+    0 0 0 1px #3a2410,
+    0 6px 16px rgba(0, 0, 0, 0.72);
+  align-items: center;
+  overflow-x: auto;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+
+.dungeon-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  border-top: 2px solid rgba(212, 165, 116, 0.45);
+  background: linear-gradient(0deg, rgba(42, 24, 16, 0.9), rgba(42, 24, 16, 0.35));
+}
+
+/* Each footer button sits in a slot div (the tooltip trigger); the slot carries the
+   keyboard-selection ring so the cursor corners inside stay the button's own size. */
+.dungeon-footer__slot {
+  display: inline-flex;
+  border-radius: 999px;
+}
+
+/* Keyboard-selected footer action — the parchment gold the footer border and the
+   current-floor rail already use, lifted into a soft ring. No new hue. */
+.dungeon-footer__slot--selected {
+  box-shadow:
+    0 0 0 1px rgba(212, 165, 116, 0.45),
+    0 0 10px rgba(212, 165, 116, 0.25);
+}
+
+/* flex-basis 100% drops the hint onto its own line under the button row. Same quiet
+   parchment tone as .rewards-key-hint, so it never competes with the buttons. */
+.dungeon-key-hint {
+  flex-basis: 100%;
+  margin-top: 0.15rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  color: rgba(196, 178, 149, 0.75);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.dungeon--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .dungeon-layout {
+    flex-direction: column;
+  }
+
+  .dungeon-track {
+    width: 100%;
+    max-height: 30%;
+  }
+}

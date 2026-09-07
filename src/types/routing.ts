@@ -1,4 +1,6 @@
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
+import type { MapId } from './map';
 
 /**
  * Available views in the game
@@ -6,12 +8,12 @@ import type { LootTable } from './loot';
 export type ViewType =
   | 'town-hub'
   | 'battle-demo'
-  | 'map-demo'
-  | 'map-demo-2'
+  | 'map'
   | 'dialogue-demo'
   | 'inventory'
   | 'debug'
-  | 'battle-rewards';
+  | 'battle-rewards'
+  | 'dungeon';
 
 /**
  * Data for town hub view
@@ -36,42 +38,56 @@ export interface BattleViewData {
   enemyId: string;
   location?: string;
   canFlee?: boolean;
+  /** Background image URL for the battle panels; falls back to the default art. */
+  bgImage?: string;
 }
 
 /**
- * Data for map demo view
+ * Data for the dungeon view. The full dungeon object is passed by reference (authored
+ * dungeons are module constants; generated/randomized ones are one-off objects), so a run
+ * needs no registry lookup and future multi-dungeon locations can hand off any definition.
+ * `isReplay` is computed at entry from completion state.
  */
-export interface MapDemoViewData {
-  // No specific data needed for demo
+export interface DungeonViewData {
+  dungeon: DungeonDefinition;
+  isReplay: boolean;
+  /**
+   * Surface to return to when the run ends, finished or abandoned. Captured automatically by
+   * `goToDungeon` from the launching view; callers may override it. Needed because a run's
+   * battle round-trip (dungeon → battle → rewards → goBack) lands back on the dungeon with
+   * `previousView` cleared, so `goBack()` on the way out would no-op.
+   */
+  returnView?: ViewType;
 }
 
 /**
- * Data for map demo 2 view
+ * Data for the map view. `mapId` selects the definition from `MAP_REGISTRY`, so every map
+ * shares this one view rather than each getting its own.
+ *
+ * `returnView` works exactly like `DungeonViewData.returnView`: a battle round-trip
+ * (map → battle → rewards → goBack) lands back on the map with `previousView` cleared, so
+ * the map keeps its own record of where it was entered from. Without it the way out
+ * disappears the first time you fight something.
  */
-export interface MapDemo2ViewData {
-  // No specific data needed for demo
+export interface MapViewData {
+  mapId: MapId;
+  returnView?: ViewType;
 }
 
 /**
- * Data for dialogue demo view
+ * Data for dialogue demo view (no specific data needed for demo)
  */
-export interface DialogueDemoViewData {
-  // No specific data needed for demo
-}
+export type DialogueDemoViewData = object;
 
 /**
- * Data for inventory view
+ * Data for inventory view (no specific data needed for now)
  */
-export interface InventoryViewData {
-  // No specific data needed for now
-}
+export type InventoryViewData = object;
 
 /**
- * Data for debug view
+ * Data for debug view (no specific data needed)
  */
-export interface DebugViewData {
-  // No specific data needed
-}
+export type DebugViewData = object;
 
 /**
  * Data for battle rewards view
@@ -79,6 +95,8 @@ export interface DebugViewData {
 export interface BattleRewardsViewData {
   lootTable: LootTable;
   expReward: number;
+  /** Battle-rating loot bonus already applied to the resources (for the "×N LOOT" badge). */
+  lootMultiplier?: number;
 }
 
 /**
@@ -87,12 +105,12 @@ export interface BattleRewardsViewData {
 export interface ViewDataMap {
   'town-hub': TownHubViewData;
   'battle-demo': BattleViewData;
-  'map-demo': MapDemoViewData;
-  'map-demo-2': MapDemo2ViewData;
+  map: MapViewData;
   'dialogue-demo': DialogueDemoViewData;
   inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
+  dungeon: DungeonViewData;
 }
 
 /**
@@ -100,12 +118,12 @@ export interface ViewDataMap {
  */
 export type RouteStatus = TownHubViewData &
   BattleViewData &
-  MapDemoViewData &
-  MapDemo2ViewData &
+  MapViewData &
   DialogueDemoViewData &
   InventoryViewData &
   DebugViewData &
-  BattleRewardsViewData;
+  BattleRewardsViewData &
+  DungeonViewData;
 
 /**
  * Router state

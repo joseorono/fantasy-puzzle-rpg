@@ -22,6 +22,11 @@ export enum SoundNames {
   startMenuMusic = 'startMenuMusic',
   bossFight = 'bossFight',
   fightMusicLoop = 'fightMusicLoop',
+  levelUp = 'levelUp',
+  rhodesmasChime = 'rhodesmasChime',
+  saveChime = 'saveChime',
+  loadChime = 'loadChime',
+  runningUpStairs = 'runningUpStairs',
 }
 
 export const soundFiles = {
@@ -44,15 +49,47 @@ export const soundFiles = {
   [SoundNames.metalSharpening]: '/assets/audio/bg-noise/metal-sharpening.wav',
   [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.wav',
   [SoundNames.uncork]: '/assets/audio/ui/uncork.wav',
-  [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.wav',
-  [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.wav',
-  [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.wav',
-  [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.wav',
+  // Music is Ogg Vorbis: these four were 80.65 MB as WAV, 7.00 MB encoded.
+  // Regenerate with `npm run assets:audio-write` (scripts/convert-audio.mjs).
+  [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.ogg',
+  [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.ogg',
+  [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.ogg',
+  [SoundNames.fightMusicLoop]: '/assets/audio/ui/fight-music-loop.ogg',
+  [SoundNames.levelUp]: '/assets/audio/ui/levelup.ogg',
+  [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
+  [SoundNames.saveChime]: '/assets/audio/ui/chime-saved-1.mp3',
+  [SoundNames.loadChime]: '/assets/audio/ui/chimes-saved.mp3',
+  [SoundNames.runningUpStairs]: '/assets/audio/ui/running-up-the-stairs.wav',
 };
 
 // Background sounds for the town hub (randomly selected on entry)
 export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
 
+/**
+ * SFX gains for the town hub and its sub-locations.
+ *
+ * `mechanical-click.wav` is mastered at -0.4 dBFS peak — roughly 20 dB hotter than the rest of
+ * the UI set — so it needs a far lower gain than its nominal peers to sit at the same perceived
+ * level. `transaction` replaces the `playSound` default of 1.0 that the sub-locations were
+ * relying on implicitly.
+ */
+export const TOWN_SFX_VOLUME = {
+  /** Clicking a plank on the hub signpost. */
+  locationSelect: 0.1,
+  /** Ambient one-shot when the hub is entered or returned to. */
+  hubAmbience: 0.15,
+  /** Buying, crafting, upgrading, salvaging and resting inside a sub-location. */
+  transaction: 0.4,
+  /** Tick as the keyboard cursor moves between planks, heroes or shop rows. */
+  navTick: 0.35,
+} as const;
+
 // Volume range for match-3 sounds (scaled by match size)
 export const MIN_MATCH_SOUND_VOLUME = 0.6;
 export const MAX_MATCH_SOUND_VOLUME = 1;
+
+/**
+ * Sound played when wildcard bomb orbs explode. Set to `null` to disable.
+ * Temporary: reuses the uncork SFX until a dedicated explosion sound exists.
+ */
+export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;

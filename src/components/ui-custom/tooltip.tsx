@@ -15,6 +15,7 @@ import {
 
 import "~/components/ui/8bit/styles/retro.css";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const tooltipVariants = cva("", {
   variants: {
     font: {

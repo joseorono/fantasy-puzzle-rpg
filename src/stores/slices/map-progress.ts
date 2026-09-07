@@ -1,18 +1,20 @@
-import type { MapProgressSlice, MapNodeType } from './map-progress.types';
+import type { MapProgressSlice, MapProgressState, MapNodeType } from './map-progress.types';
+import type { SliceSet, SliceGet } from '~/types/store';
 
 /**
- * Initial map progress state
+ * Fresh map progress — nothing completed, nobody placed. A factory (not a shared
+ * constant) so init and reset each get their own object and progress can never
+ * leak across a reset.
  */
-const INITIAL_MAP_PROGRESS_STATE = {
+export const createInitialMapProgressState = (): MapProgressState => ({
   battlesCompleted: {},
   bossesCompleted: {},
   dungeonsCompleted: {},
   townsVisited: {},
   treasuresFound: {},
   mysteriesSolved: {},
-  shopsVisited: {},
-  characterPosition: null,
-};
+  characterPositions: {},
+});
 
 /**
  * Create the map progress slice
@@ -20,8 +22,11 @@ const INITIAL_MAP_PROGRESS_STATE = {
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => ({
-  mapProgress: INITIAL_MAP_PROGRESS_STATE,
+export const createMapProgressSlice = (
+  set: SliceSet<MapProgressSlice>,
+  get: SliceGet<MapProgressSlice>,
+): MapProgressSlice => ({
+  mapProgress: createInitialMapProgressState(),
 
   actions: {
     mapProgress: {
@@ -73,10 +78,10 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
         }
       },
 
-      setCharacterPosition: (position) =>
+      setCharacterPosition: (mapId, position) =>
         set(
           (state: MapProgressSlice) => {
-            state.mapProgress.characterPosition = position;
+            state.mapProgress.characterPositions[mapId] = position;
           },
           false,
           'mapProgress/setCharacterPosition',
@@ -85,21 +90,11 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
       resetProgress: () =>
         set(
           (state: MapProgressSlice) => {
-            state.mapProgress = INITIAL_MAP_PROGRESS_STATE;
+            state.mapProgress = createInitialMapProgressState();
           },
           false,
           'mapProgress/resetProgress',
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: MapProgressSlice) => {
-        state.mapProgress = INITIAL_MAP_PROGRESS_STATE;
-      },
-      false,
-      'mapProgress/reset',
-    ),
 });
-

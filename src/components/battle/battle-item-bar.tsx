@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
@@ -8,60 +8,73 @@ import {
   clearBoardRowAtom,
   clearBoardColumnAtom,
   fillPartyUltimateAtom,
+  recordItemUsedAtom,
   gameStatusAtom,
-  partyAtom,
+  itemCooldownMsAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
 import { getItemQuantity } from '~/lib/inventory';
-import { calculateItemCooldownInMs } from '~/lib/rpg-calculations';
-import { BOARD_ROWS, BOARD_COLS } from '~/constants/game';
+import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
+import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import type { ConsumableItemData } from '~/types';
 
-export function BattleItemBar() {
+interface BattleItemBarProps {
+  isBattlePaused: boolean;
+}
+
+// The consumable registry is static, so the battle-usable subset is resolved once at module load
+// rather than refiltered on every render of the bar.
+const BATTLE_ITEMS = ConsumableItems.filter((item) => item.usableInBattle && item.action);
+
+export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
-  const party = useAtomValue(partyAtom);
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
   const fillUltimate = useSetAtom(fillPartyUltimateAtom);
+  const recordItemUsed = useSetAtom(recordItemUsedAtom);
 
-  const cooldownDuration = calculateItemCooldownInMs(party);
+  const cooldownDuration = useAtomValue(itemCooldownMsAtom);
 
-  const [cooldownProgress, setCooldownProgress] = useState(1); // 1 = ready, 0 = just started
-  const cooldownEndRef = useRef<number>(0);
-  const rafRef = useRef<number>(0);
+  // 0 while items are ready, otherwise the absolute timestamp the shared cooldown ends at.
+  const [cooldownEndsAt, setCooldownEndsAt] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const secondsLeftRef = useRef(0);
 
-  const animateCooldown = useCallback(() => {
-    const now = Date.now();
-    const end = cooldownEndRef.current;
-    const remaining = end - now;
+  const isOnCooldown = cooldownEndsAt > 0;
 
-    if (remaining <= 0) {
-      setCooldownProgress(1);
-      return;
+  /**
+   * The sweeping wedge is drawn by CSS, so React is left with only two jobs: move the "Ns" label
+   * when the whole second changes, and retire the overlay when the cooldown ends. The label is
+   * polled rather than scheduled on second boundaries so a throttled tab can't desync it, and
+   * guarded against repeat values so the poll itself never causes a render.
+   */
+  useEffect(() => {
+    if (cooldownEndsAt === 0) return;
+
+    function syncLabel() {
+      const next = Math.max(1, Math.ceil((cooldownEndsAt - Date.now()) / 1000));
+      if (next === secondsLeftRef.current) return;
+      secondsLeftRef.current = next;
+      setSecondsLeft(next);
     }
 
-    const progress = 1 - remaining / cooldownDuration;
-    setCooldownProgress(progress);
-    rafRef.current = requestAnimationFrame(animateCooldown);
-  }, [cooldownDuration]);
+    syncLabel();
+    const label = setInterval(syncLabel, ITEM_COOLDOWN_LABEL_TICK_MS);
+    const finish = setTimeout(() => setCooldownEndsAt(0), Math.max(0, cooldownEndsAt - Date.now()));
 
-  useEffect(() => {
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearInterval(label);
+      clearTimeout(finish);
     };
-  }, []);
-
-  const isOnCooldown = cooldownProgress < 1;
-
-  const battleItems = ConsumableItems.filter((item) => item.usableInBattle && item.action);
+  }, [cooldownEndsAt]);
 
   const handleUseItem = (item: ConsumableItemData) => {
-    if (gameStatus !== 'playing' || isOnCooldown) return;
+    if (gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown) return;
 
     const quantity = getItemQuantity(inventory, item.id);
     if (quantity <= 0 || !item.action) return;
@@ -82,22 +95,19 @@ export function BattleItemBar() {
     }
 
     inventoryActions.removeItem(item.id);
+    // Count this consumption for the victory rating (items used is a penalty).
+    recordItemUsed();
 
     // Start shared cooldown
-    cooldownEndRef.current = Date.now() + cooldownDuration;
-    setCooldownProgress(0);
-    rafRef.current = requestAnimationFrame(animateCooldown);
+    setCooldownEndsAt(Date.now() + cooldownDuration);
   };
-
-  // Angle in degrees for the transparent (revealed) portion
-  const revealAngle = cooldownProgress * 360;
 
   return (
     <div id="battle-item-bar" className="mt-2 flex items-center justify-center gap-1.5 sm:gap-2">
-      {battleItems.map((item) => {
+      {BATTLE_ITEMS.map((item) => {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
-        const isDisabled = isEmpty || gameStatus !== 'playing' || isOnCooldown;
+        const isDisabled = isEmpty || gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown;
 
         return (
           <ToffecBeigeCornersWrapper key={item.id}>
@@ -107,7 +117,7 @@ export function BattleItemBar() {
                   onClick={() => handleUseItem(item)}
                   disabled={isDisabled}
                   className={`battle-item-slot relative flex flex-col items-center justify-center overflow-hidden rounded px-2 py-1 transition-all sm:px-3 sm:py-1.5 ${
-                    isEmpty || gameStatus !== 'playing'
+                    isEmpty || gameStatus !== 'playing' || isBattlePaused === true
                       ? 'cursor-not-allowed opacity-40'
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   }`}
@@ -121,18 +131,22 @@ export function BattleItemBar() {
                 <NarikWoodBitFont text={String(quantity)} size={1} />
               </div>
 
-              {/* Cooldown pie overlay */}
+              {/* Cooldown pie overlay & countdown text */}
               {isOnCooldown && !isEmpty && (
-                <div
-                  className="pointer-events-none absolute inset-0 rounded"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent ${revealAngle}deg, rgba(0, 0, 0, 0.65) ${revealAngle}deg)`,
-                  }}
-                />
+                <>
+                  <div
+                    key={cooldownEndsAt}
+                    className="battle-item-cooldown-pie motion-exempt pointer-events-none absolute inset-0 rounded"
+                    style={{ animationDuration: `${cooldownDuration}ms` }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                    {secondsLeft}s
+                  </div>
+                </>
               )}
             </button>
               </TooltipTrigger>
-              <TooltipContent>{item.name}: {item.description}</TooltipContent>
+              <TooltipContent className="battle-item-tooltip">{item.name}: {item.description}</TooltipContent>
             </Tooltip>
           </ToffecBeigeCornersWrapper>
         );

@@ -115,17 +115,22 @@ Using Jotai atoms for reactive state:
 ✅ Orb falling/gravity animations
 ✅ Particle effects for matches
 ✅ Win/lose conditions
-✅ Game over modal with restart
-✅ Enemy attack timer
+✅ Game over modal with restart & dungeon return
+✅ Enemy attack timers with radial countdown and telegraphs
 ✅ Floating damage numbers
 ✅ Health bar animations
+✅ Party Guard defense meter (gray orb charge + block mitigation)
+✅ Cascade combo damage multiplier & visual callouts
+✅ Wildcard bomb special tiles with 3×3 explosions & chain detonation
+✅ Enemy stagger / flinch delay mechanic with anti-stunlock budget
+✅ Active hero skills (Ultimates) with burst overlays & cooldowns
+✅ Consumable battle item bar with SPD-scaled shared cooldown
+✅ Hitstop freeze-frame on impact
+✅ Arcade victory star rating (1–5 stars) and rating-scaled loot bonus
+✅ Background battle music and sound effects
 
 ## Future Enhancements
-- Actual pixel art sprites for characters and enemies
-- Sound effects and background music
-- Character-specific special abilities
-- Healing mechanics
-- Multiple enemy types with different attack patterns
-- Level progression and difficulty scaling
-- Equipment and stat upgrades
-- Save/load game state
+- Animated pixel art character & enemy attack sprites
+- Status effects (Poison, Burn, Stun, Shield)
+- Elemental damage matchups
+- Boss encounter phases and dynamic transformations
