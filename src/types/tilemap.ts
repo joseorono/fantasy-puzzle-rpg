@@ -26,6 +26,10 @@ export interface TilemapTileset {
   tilecount: number;
   tileheight: number;
   tilewidth: number;
+  source?: string;
+  tiledversion?: string;
+  type?: string;
+  version?: string;
 }
 
 export interface TilemapData {
