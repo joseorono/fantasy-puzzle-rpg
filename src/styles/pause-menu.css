@@ -1360,6 +1360,8 @@
 }
 
 .pause-menu-option-description {
+  color: #fff1d6; /* Beige claro / crema */
+  text-shadow: 1px 1px 0px #3a1e05;
   margin: 0;
   padding: 0 0.25rem;
   max-width: 48ch;
@@ -1369,11 +1371,22 @@
 }
 
 .pause-menu-option-note {
+  font-style: italic;
   margin: 0;
   padding: 0 0.25rem;
   font-size: 0.55rem;
   line-height: 1.7;
-  color: #8f6f4f;
+  text-align: center;
+
+  /* Color claro de alto contraste (Crema/Marfil) */
+  color: #eacc8f;
+
+  /* Sombra/borde en 4 direcciones para delinear el pixel art */
+  text-shadow:
+    1px 1px 0px #1a0d02,
+    -1px -1px 0px #1a0d02,
+    1px -1px 0px #1a0d02,
+    -1px 1px 0px #1a0d02;
 }
 
 .pause-menu-mute-toggle__icon {
