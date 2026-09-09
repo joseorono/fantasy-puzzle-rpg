@@ -274,7 +274,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
             sliding. Easier on the eyes if motion makes you queasy — the trade-off is that combat loses most of its
             juice.
           </p>
-          <p className="pause-menu-option-note">Off by default. Flip it any time — your choice is remembered.</p>
+          <p className="pause-menu-option-note">Off by default. <br/> Flip it any time — your choice is remembered.</p>
         </div>
       </div>
     </>
