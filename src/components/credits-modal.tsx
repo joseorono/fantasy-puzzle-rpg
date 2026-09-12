@@ -23,8 +23,8 @@ type CreditsSection = 'menu' | 'graphics' | 'audio';
 
 const SECTION_TITLES: Record<CreditsSection, string> = {
   menu: 'Credits',
-  graphics: 'Graphics Credits',
-  audio: 'Audio Credits',
+  graphics: 'Credits - Graphics',
+  audio: 'Credits - Audio',
 };
 
 /**
