@@ -210,7 +210,6 @@ export default function Inn({
 
         {/* Heal everyone affordable in one tap */}
         <div className="inn-actions">
-          <span className="town-key-hint pixel-font">← → pick a hero · ↑ ↓ reach Heal All · Enter to heal</span>
           <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(HEAL_ALL_ID)}>
             <ToffecButton
               variant="cream"
@@ -223,6 +222,11 @@ export default function Inn({
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>
+        <span className="inn-key-hint town-key-hint pixel-font">
+          <kbd>←</kbd>
+          <kbd>→</kbd> pick a hero · <kbd>↑</kbd>
+          <kbd>↓</kbd> reach Heal All · <kbd>Enter</kbd> to heal
+        </span>
       </div>
     </TownLocationLayout>
   );
