@@ -14,7 +14,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
-import { NarikHeading } from '~/components/typography/narik-heading';
+import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
 import { cn } from '~/lib/utils';
 
 type OptionRowId = 'master' | 'music' | 'sfx' | 'mute' | 'reduced-motion';
@@ -192,7 +192,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
 
   return (
     <>
-      <NarikHeading as="h2" text="Options" />
+      <PauseMenuTabHeader text="Options" hint="Adjust the volume and accessibility settings." />
       <div className="pause-menu-options-list">
         <div className={rowClass('master')}>
           <div className="pause-menu-option-header">
