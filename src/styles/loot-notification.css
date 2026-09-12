@@ -76,7 +76,8 @@
   margin: 0.625rem 0 0;
 }
 
-.loot-notification__dismiss {
+.loot-notification__dismiss,
+.town-help-panel__dismiss {
   display: block;
   width: 100%;
   margin-top: 0.5rem;
@@ -96,7 +97,8 @@
     text-shadow 0.2s ease;
 }
 
-.loot-notification__dismiss:hover {
+.loot-notification__dismiss:hover,
+.town-help-panel__dismiss:hover {
   color: #fff;
   text-shadow:
     0 0 10px rgba(255, 215, 0, 0.9),
