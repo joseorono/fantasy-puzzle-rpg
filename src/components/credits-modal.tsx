@@ -94,7 +94,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
         </div>
 
         {/* Divider */}
-        <IndigolayDivider variant="victory" />
+        <IndigolayDivider variant="victory" className="my-0"/>
 
         {/* Content — only the active section is rendered */}
         <div className="start-menu-modal-body credits-modal-body">
