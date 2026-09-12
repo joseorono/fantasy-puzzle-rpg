@@ -1360,7 +1360,8 @@
 .town-help-panel__dismiss {
   margin: 1rem 0 0;
   text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: #e0a94a;
+  text-shadow: 0 0 8px rgba(224, 169, 74, 0.45);
 }
