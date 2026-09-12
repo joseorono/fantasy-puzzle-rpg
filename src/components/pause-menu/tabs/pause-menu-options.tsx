@@ -15,6 +15,7 @@ import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { cn } from '~/lib/utils';
 
 type OptionRowId = 'master' | 'music' | 'sfx' | 'mute' | 'reduced-motion';
@@ -184,9 +185,17 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
   function sliderHint(id: OptionRowId) {
     if (!keyboardActive || !selection.isSelected(id)) return null;
     return (
-      <span className="pause-menu-inline-hint pixel-font">
-        {isEditing && editingRowId === id ? '← → adjust · Enter done' : 'Enter to adjust'}
-      </span>
+      <KeyHintPill
+        className="pause-menu-inline-hint"
+        items={
+          isEditing && editingRowId === id
+            ? [
+                { keys: ['←', '→'], label: 'adjust' },
+                { keys: ['Enter'], label: 'done' },
+              ]
+            : [{ keys: ['Enter'], label: 'to adjust' }]
+        }
+      />
     );
   }
 

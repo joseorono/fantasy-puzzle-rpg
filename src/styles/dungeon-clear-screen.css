@@ -203,14 +203,10 @@
   animation: brs-continue-pulse 1.5s ease-in-out infinite;
 }
 
-/* Same quiet parchment tone as the other key hints, under the Continue button. */
+/* Centers the hint pill under the Continue button. The look is KeyHintPill's. */
 .dcs-key-hint {
   align-self: center;
   margin-top: 0.3rem;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
 /* Reduced motion is handled globally in styles/reduced-motion.css; the reveal timeline itself is

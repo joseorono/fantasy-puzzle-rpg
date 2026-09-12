@@ -221,15 +221,13 @@
   min-width: 120px;
 }
 
-/* Same quiet parchment tone as the other key hints; sits under the action row. */
+/* Centers the hint pill under the action row. Block-level so the auto margins can
+   center it — the pill itself is inline-flex. The look is KeyHintPill's. */
 .confirm-panel__key-hint {
-  margin: -0.2rem 0 0;
+  display: flex;
+  width: fit-content;
+  margin: -0.2rem auto 0;
   padding: 0 1.25rem 1rem;
-  text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
 @media (max-width: 480px) {

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -126,9 +127,14 @@ export function ConfirmPanel({
           </ToffecBeigeCornersWrapper>
         </div>
 
-        {/* Spelled out, not ← →: Press Start 2P has no left/right arrow glyphs
-            (it does have ↑ ↓), so they render as missing-glyph boxes. */}
-        <p className="confirm-panel__key-hint pixel-font">Arrows choose · Enter confirm · Esc cancel</p>
+        <KeyHintPill
+          className="confirm-panel__key-hint"
+          items={[
+            { keys: ['←', '→'], label: 'choose' },
+            { keys: ['Enter'], label: 'confirm' },
+            { keys: ['Esc'], label: 'cancel' },
+          ]}
+        />
       </div>
     </div>
   );

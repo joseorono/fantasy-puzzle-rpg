@@ -1288,15 +1288,7 @@
 
 /* ── Keyboard support ──────────────────────────────────────────── */
 
-/* Contextual key hint, same quiet parchment tone as .rewards-key-hint on the reward screens
-   so hints read the same everywhere and never compete with the control beside them. */
-.town-key-hint {
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
-}
-
+/* The hint pill trails the tab row without stretching. The look is KeyHintPill's. */
 .blacksmith-tabs .town-key-hint {
   margin-left: auto;
   align-self: center;

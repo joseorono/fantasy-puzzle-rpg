@@ -1370,8 +1370,7 @@
   color: #b38a63;
 }
 
-.pause-menu-option-note,
-.rewards-key-hint {
+.pause-menu-option-note {
   font-style: italic;
   margin: 0;
   padding: 0 0.25rem;
@@ -1468,13 +1467,9 @@
 }
 
 /* Contextual key hint sitting inline with a control — a slider row's header, the item
-   category tabs. Same quiet parchment tone as the shell hint, so it never competes. */
+   category tabs. Layout only: the look is KeyHintPill's. */
 .pause-menu-inline-hint {
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
   white-space: nowrap;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
 /* The category row is a flex row of tabs; the hint trails it without stretching. */
@@ -1483,14 +1478,8 @@
   margin-left: auto;
 }
 
-/* Zone-aware key hint pinned under the menu body — same quiet parchment tone as
-   the rewards/dungeon hints. */
+/* Zone-aware key hint pinned under the menu body. Layout only: the look is KeyHintPill's. */
 .pause-menu-key-hint {
   align-self: center;
   padding: 0.35rem 0 0.15rem;
-  text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }

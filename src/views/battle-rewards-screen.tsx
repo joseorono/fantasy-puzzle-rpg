@@ -36,6 +36,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 import { ExperienceBar } from '~/components/ui/experience-bar';
 import { soundService } from '~/services/sound-service';
@@ -431,7 +432,10 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
       </div>
 
       <div className="rewards-actions">
-        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to continue' : 'Enter to skip'}</span>
+        <KeyHintPill
+          className="rewards-key-hint"
+          items={[{ keys: ['Enter'], label: isRevealComplete ? 'to continue' : 'to skip' }]}
+        />
         <ToffecButton variant="cream" onClick={handleContinue}>
           Continue
         </ToffecButton>
@@ -536,7 +540,10 @@ function ExpBarFillingUp({ expReward, earnedResources, onFinish }: ExpBarFilling
       <RewardsResourcesPanel earnedResources={earnedResources} skip={skipRequested} />
 
       <div className="rewards-actions">
-        <span className="rewards-key-hint pixel-font">{isRevealComplete ? 'Enter to finish' : 'Enter to skip'}</span>
+        <KeyHintPill
+          className="rewards-key-hint"
+          items={[{ keys: ['Enter'], label: isRevealComplete ? 'to finish' : 'to skip' }]}
+        />
         <ToffecButton variant="cream" onClick={handleContinue}>
           Finish
         </ToffecButton>

@@ -51,6 +51,7 @@ import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -614,9 +615,15 @@ export default function DungeonView() {
           </TooltipContent>
         </Tooltip>
 
-        <span className="dungeon-key-hint pixel-font">
-          Arrow Keys / WASD to select · Enter to act · Esc for the menu
-        </span>
+        <div className="dungeon-key-hint">
+          <KeyHintPill
+            items={[
+              { keys: ['↑', '↓', '←', '→'], label: 'or WASD to select' },
+              { keys: ['Enter'], label: 'to act' },
+              { keys: ['Esc'], label: 'for the menu' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Inline overlays */}

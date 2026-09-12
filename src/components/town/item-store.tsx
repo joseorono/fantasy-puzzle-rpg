@@ -5,6 +5,7 @@ import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { ConsumableItems } from '~/constants/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford, createResources } from '~/lib/resources';
 import { getSellPrice } from '~/lib/crafting';
@@ -149,9 +150,14 @@ export default function ItemStore({
           <IndigolayTab size="default" isActive={selectedTab === 'sell'} onClick={() => switchTab('sell')}>
             Sell
           </IndigolayTab>
-          <span className="town-key-hint pixel-font">
-            ← → switch tab · ↑ ↓ pick an item · Enter to {selectedTab === 'buy' ? 'buy' : 'sell'}
-          </span>
+          <KeyHintPill
+            className="town-key-hint"
+            items={[
+              { keys: ['←', '→'], label: 'switch tab' },
+              { keys: ['↑', '↓'], label: 'pick an item' },
+              { keys: ['Enter'], label: `to ${selectedTab === 'buy' ? 'buy' : 'sell'}` },
+            ]}
+          />
         </div>
 
         <div className="store-info">

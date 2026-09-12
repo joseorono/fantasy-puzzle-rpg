@@ -18,6 +18,7 @@ import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
@@ -234,7 +235,9 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
             {cat.label}
           </IndigolayTab>
         ))}
-        {keyboardActive && <span className="pause-menu-inline-hint pixel-font">← → switch</span>}
+        {keyboardActive && (
+          <KeyHintPill className="pause-menu-inline-hint" items={[{ keys: ['←', '→'], label: 'switch' }]} />
+        )}
       </div>
       <div className="pause-menu-items-layout">
         <div className="pause-menu-item-list">
