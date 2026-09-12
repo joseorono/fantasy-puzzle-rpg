@@ -1,0 +1,38 @@
+/* Reusable "press these keys" hint pill — dark rounded bar with per-key chips.
+   Rendered by KeyHintPill (src/components/ui-custom/key-hint-pill.tsx).
+   Placement is the caller's job (pass a layout class via `className`). */
+.key-hint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.55rem;
+  color: #e0c9a6;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 999px;
+}
+
+.key-hint-pill__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.key-hint-pill__sep {
+  color: rgba(224, 201, 166, 0.5);
+}
+
+.key-hint-pill__key {
+  display: inline-block;
+  padding: 0.05rem 0.3rem;
+  font-family: inherit;
+  color: #f5e6c8;
+  background: rgba(212, 165, 116, 0.15);
+  border: 1px solid rgba(212, 165, 116, 0.45);
+  border-radius: 4px;
+}
+
+.key-hint-pill__label {
+  margin-left: 0.15rem;
+}

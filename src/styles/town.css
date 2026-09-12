@@ -1302,28 +1302,10 @@
   align-self: center;
 }
 
-/* The inn hint gets its own centered pill row under the Heal All button, with the
-   keys as chips — same badge language as .town-header-badge. */
+/* Pins the KeyHintPill to the bottom of the inn panel and centers it. The pill's
+   own look lives in ui-custom/styles/key-hint-pill.css. */
 .inn-key-hint {
-  display: block;
-  width: fit-content;
   margin: auto auto 0;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.55rem;
-  color: #e0c9a6;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(212, 165, 116, 0.35);
-  border-radius: 999px;
-}
-
-.inn-key-hint kbd {
-  display: inline-block;
-  padding: 0.05rem 0.3rem;
-  font-family: inherit;
-  color: #f5e6c8;
-  background: rgba(212, 165, 116, 0.15);
-  border: 1px solid rgba(212, 165, 116, 0.45);
-  border-radius: 4px;
 }
 
 /* The cursor-corner wrapper defaults to `width: fit-content` (cursor.css); the signpost planks

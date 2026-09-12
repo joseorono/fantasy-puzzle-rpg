@@ -465,6 +465,8 @@
 
 @import './components/ui-custom/styles/indigolay-tab.css';
 
+@import './components/ui-custom/styles/key-hint-pill.css';
+
 @import './components/skill-sprite-icons/styles/indigolay-skill-icon.css';
 
 @import './components/ui-custom/styles/level-tag.css';

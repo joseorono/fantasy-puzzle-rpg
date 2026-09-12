@@ -7,6 +7,7 @@ import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
@@ -222,11 +223,14 @@ export default function Inn({
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>
-        <span className="inn-key-hint town-key-hint pixel-font">
-          <kbd>←</kbd>
-          <kbd>→</kbd> pick a hero · <kbd>↑</kbd>
-          <kbd>↓</kbd> reach Heal All · <kbd>Enter</kbd> to heal
-        </span>
+        <KeyHintPill
+          className="inn-key-hint"
+          items={[
+            { keys: ['←', '→'], label: 'pick a hero' },
+            { keys: ['↑', '↓'], label: 'reach Heal All' },
+            { keys: ['Enter'], label: 'to heal' },
+          ]}
+        />
       </div>
     </TownLocationLayout>
   );
