@@ -1370,7 +1370,8 @@
   color: #b38a63;
 }
 
-.pause-menu-option-note {
+.pause-menu-option-note,
+.rewards-key-hint {
   font-style: italic;
   margin: 0;
   padding: 0 0.25rem;
@@ -1443,6 +1444,27 @@
   box-shadow:
     0 0 0 2px rgba(212, 165, 116, 0.85),
     0 0 14px rgba(212, 165, 116, 0.35);
+}
+
+/* Shared tab header (PauseMenuTabHeader): heading and descriptive hint on one
+   bottom-aligned row. Same baseline offsets as .save-load-menu__header in
+   save-load.css — both boxes keep different empty space under their letters. */
+.pause-menu-tab-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.pause-menu-tab-header__title {
+  display: inline-flex;
+  margin-bottom: -6px;
+}
+
+.pause-menu-tab-header__hint {
+  margin: 0 0 6px;
+  font-size: 0.6rem;
+  color: #f4f3f1;
 }
 
 /* Contextual key hint sitting inline with a control — a slider row's header, the item
