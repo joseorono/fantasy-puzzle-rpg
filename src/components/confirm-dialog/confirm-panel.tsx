@@ -128,6 +128,7 @@ export function ConfirmPanel({
         </div>
 
         <KeyHintPill
+          size="sm"
           className="confirm-panel__key-hint"
           items={[
             { keys: ['←', '→'], label: 'choose' },

@@ -36,3 +36,23 @@
 .key-hint-pill__label {
   margin-left: 0.15rem;
 }
+
+/* Compact variant for tight surfaces (confirm dialogs, inline row hints). */
+.key-hint-pill--sm {
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.45rem;
+}
+
+.key-hint-pill--sm .key-hint-pill__item {
+  gap: 0.15rem;
+}
+
+.key-hint-pill--sm .key-hint-pill__key {
+  padding: 0.02rem 0.22rem;
+  border-radius: 3px;
+}
+
+.key-hint-pill--sm .key-hint-pill__label {
+  margin-left: 0.1rem;
+}
