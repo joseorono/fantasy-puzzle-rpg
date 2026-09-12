@@ -210,7 +210,7 @@
   justify-content: center;
   gap: 1rem;
   flex-shrink: 0;
-  padding: 0.5rem 1.25rem 1.25rem;
+  padding: 0.5rem 1.25rem;
 }
 
 .confirm-panel--danger .confirm-panel__actions {
@@ -226,8 +226,9 @@
 .confirm-panel__key-hint {
   display: flex;
   width: fit-content;
-  margin: -0.2rem auto 0;
+  margin: 0.2rem auto 0.3rem;
   padding: 0 1.25rem 1rem;
+  
 }
 
 @media (max-width: 480px) {
