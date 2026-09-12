@@ -33,7 +33,7 @@ interface ConfirmPanelProps {
 /**
  * Generic confirmation modal — a pixel-art panel in the game-over / map-menu visual
  * language: a chunky triple border over the board texture, an optional diamond icon
- * medallion, a gradient divider, a flexible body, and Cancel / Confirm actions.
+ * medallion, a gradient divider, a flexible body, and Confirm / Cancel actions.
  * Backdrop and the corner close button both cancel. Compose it for plain text
  * confirms (`ConfirmDialog`) and richer ones (e.g. `SalvageConfirmDialog`).
  *
@@ -55,10 +55,8 @@ export function ConfirmPanel({
   const isDanger = variant === 'danger';
   const body = children ?? (message ? <p className="confirm-panel__message pixel-font">{message}</p> : null);
 
-  // The danger variant renders its actions row-reversed, so the keyboard row is built in
-  // the order the player SEES — ←/→ must stay spatially truthful, not DOM-truthful.
-  const visualOrder = isDanger ? (['confirm', 'cancel'] as const) : (['cancel', 'confirm'] as const);
-  const selection = useKeyboardSelection([visualOrder.map((id) => ({ id }))], {
+  // Confirm always leads — ←/→ navigate the row in visual order.
+  const selection = useKeyboardSelection([[{ id: 'confirm' }, { id: 'cancel' }]], {
     onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
   });
 
@@ -115,14 +113,14 @@ export function ConfirmPanel({
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 
         <div className="confirm-panel__actions">
-          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('cancel')}>
-            <ToffecButton variant="cream" size="xs" onClick={onCancel}>
-              {cancelLabel}
-            </ToffecButton>
-          </ToffecBeigeCornersWrapper>
           <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('confirm')}>
             <ToffecButton variant={isDanger ? 'indigolay-red' : 'tan'} size="xs" onClick={onConfirm}>
               {confirmLabel}
+            </ToffecButton>
+          </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('cancel')}>
+            <ToffecButton variant="cream" size="xs" onClick={onCancel}>
+              {cancelLabel}
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>

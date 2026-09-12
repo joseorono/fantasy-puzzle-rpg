@@ -213,10 +213,6 @@
   padding: 0.5rem 1.25rem;
 }
 
-.confirm-panel--danger .confirm-panel__actions {
-  flex-direction: row-reverse;
-}
-
 .confirm-panel__actions button {
   min-width: 120px;
 }
