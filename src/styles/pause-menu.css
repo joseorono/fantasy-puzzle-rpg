@@ -1370,25 +1370,6 @@
   color: #b38a63;
 }
 
-.pause-menu-option-note {
-  font-style: italic;
-  margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.55rem;
-  line-height: 1.7;
-  text-align: center;
-
-  /* Color claro de alto contraste (Crema/Marfil) */
-  color: #eacc8f;
-
-  /* Sombra/borde en 4 direcciones para delinear el pixel art */
-  text-shadow:
-    1px 1px 0px #1a0d02,
-    -1px -1px 0px #1a0d02,
-    1px -1px 0px #1a0d02,
-    -1px 1px 0px #1a0d02;
-}
-
 .pause-menu-mute-toggle__icon {
   width: 2rem;
   height: 2rem;

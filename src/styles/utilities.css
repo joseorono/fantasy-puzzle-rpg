@@ -352,3 +352,20 @@ img[src*='indigolay-'],
   pointer-events: none;
   z-index: 2;
 }
+
+/* Small centered cream/marfil text with a 4-direction pixel-art outline
+   (text-shadow in all four diagonals). Reusable; pair with a semantic
+   class and Tailwind utilities for variant styling (e.g. italic). */
+.pixel-outlined-text {
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.55rem;
+  line-height: 1.7;
+  text-align: center;
+  color: #eacc8f;
+  text-shadow:
+    1px 1px 0px #1a0d02,
+    -1px -1px 0px #1a0d02,
+    1px -1px 0px #1a0d02,
+    -1px 1px 0px #1a0d02;
+}
