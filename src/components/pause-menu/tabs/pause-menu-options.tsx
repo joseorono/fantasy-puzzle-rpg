@@ -31,9 +31,15 @@ interface PauseMenuOptionsProps {
   keyboardActive?: boolean;
   /** Fired when ← should hand the keyboard back to the host's own nav (the pause sidebar). */
   onExitToSidebar?: () => void;
+  /** Header description, when the host wants one. Omitted where the host already titles the pane. */
+  headerHint?: string;
 }
 
-export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: PauseMenuOptionsProps) {
+export function PauseMenuOptions({
+  keyboardActive = false,
+  onExitToSidebar,
+  headerHint,
+}: PauseMenuOptionsProps) {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
   const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
   const [sfxVolume, setSfxVolume] = useAtom(sfxVolumeAtom);
@@ -201,7 +207,7 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
 
   return (
     <>
-      <PauseMenuTabHeader text="Options" hint="Adjust the volume and accessibility settings." />
+      <PauseMenuTabHeader text="Options" hint={headerHint} />
       <div className="pause-menu-options-list">
         <div className={rowClass('master')}>
           <div className="pause-menu-option-header">
