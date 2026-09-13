@@ -6,10 +6,12 @@ import {
   selectEnemyAtom,
   lastDamageAtom,
   lastMaxFlinchAtom,
+  isTrainingBattleAtom,
 } from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
+import { TrainingDummyReadout } from '~/components/battle/training-dummy-readout';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 import type { EnemyData } from '~/types/rpg-elements';
@@ -17,11 +19,13 @@ import type { EnemyData } from '~/types/rpg-elements';
 interface EnemySpriteProps {
   enemy: EnemyData;
   isSelected: boolean;
+  isBattlePaused: boolean;
   onSelect: () => void;
 }
 
-function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
+function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySpriteProps) {
   const isDead = enemy.currentHp <= 0;
+  const isTraining = useAtomValue(isTrainingBattleAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
   const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
   const [showDamage, setShowDamage] = useState(false);
@@ -36,8 +40,7 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
   // or every living enemy (enemyIds); matches only ever set enemyId.
   useEffect(() => {
     const isHit =
-      lastDamage?.target === 'enemy' &&
-      (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
+      lastDamage?.target === 'enemy' && (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
     if (isHit) {
       setDamageAmount(lastDamage.amount);
       setIsSkillHit(lastDamage.source === 'skill');
@@ -121,9 +124,7 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
             <DamageDisplay
               amount={damageAmount}
               type={isSkillHit || damageAmount > 20 ? 'critical' : 'damage'}
-              className={
-                isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
-              }
+              className={isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'}
             />
           </div>
         )}
@@ -161,18 +162,29 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
         {enemy.name}
       </div>
 
-      {/* HP bar */}
-      <BattleHpBar
-        currentHp={enemy.currentHp}
-        maxHp={enemy.maxHp}
-        thresholdColors={ENEMY_HP_THRESHOLD_BG}
-        className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
-      />
+      {/* HP bar — or, for a dummy that cannot die, the damage readout in its place */}
+      {isTraining ? (
+        <TrainingDummyReadout
+          isBattlePaused={isBattlePaused}
+          className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
+        />
+      ) : (
+        <BattleHpBar
+          currentHp={enemy.currentHp}
+          maxHp={enemy.maxHp}
+          thresholdColors={ENEMY_HP_THRESHOLD_BG}
+          className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
+        />
+      )}
     </div>
   );
 }
 
-export function EnemyDisplay() {
+interface EnemyDisplayProps {
+  isBattlePaused: boolean;
+}
+
+export function EnemyDisplay({ isBattlePaused }: EnemyDisplayProps) {
   const enemies = useAtomValue(enemiesAtom);
   const selectedEnemyId = useAtomValue(selectedEnemyIdAtom);
   const selectEnemy = useSetAtom(selectEnemyAtom);
@@ -187,6 +199,7 @@ export function EnemyDisplay() {
               key={enemy.id}
               enemy={enemy}
               isSelected={enemy.id === selectedEnemyId}
+              isBattlePaused={isBattlePaused}
               onSelect={() => selectEnemy(enemy.id)}
             />
           ))}

@@ -1,5 +1,5 @@
 import { atom, type Atom } from 'jotai';
-import type { BattleState, BattleStatus } from '~/types/battle';
+import type { BattleMode, BattleState, BattleStatus } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData, OrbType } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
@@ -130,31 +130,25 @@ export const selectOrbAtom = atom(null, (get, set, position: GridPosition | null
 });
 
 // Atom to swap orbs (with match validation)
-export const swapOrbsAtom = atom(
-  null,
-  (get, set, from: GridPosition, to: GridPosition) => {
-    const currentState = get(battleStateAtom);
+export const swapOrbsAtom = atom(null, (get, set, from: GridPosition, to: GridPosition) => {
+  const currentState = get(battleStateAtom);
 
-    // Invalid swap: don't update state at all - keep the selection
-    if (!isValidSwap(currentState.board, from, to)) return false;
+  // Invalid swap: don't update state at all - keep the selection
+  if (!isValidSwap(currentState.board, from, to)) return false;
 
-    set(battleStateAtom, {
-      ...currentState,
-      board: swapOrbs(currentState.board, from, to),
-      selectedOrb: null,
-    });
-    return true;
-  },
-);
+  set(battleStateAtom, {
+    ...currentState,
+    board: swapOrbs(currentState.board, from, to),
+    selectedOrb: null,
+  });
+  return true;
+});
 
 // Atom to check if a swap would be valid (for preview)
-export const checkSwapValidityAtom = atom(
-  null,
-  (get, _set, from: GridPosition, to: GridPosition): boolean => {
-    const currentState = get(battleStateAtom);
-    return isValidSwap(currentState.board, from, to);
-  },
-);
+export const checkSwapValidityAtom = atom(null, (get, _set, from: GridPosition, to: GridPosition): boolean => {
+  const currentState = get(battleStateAtom);
+  return isValidSwap(currentState.board, from, to);
+});
 
 // Atom to damage party (targets random living hero)
 export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEnemyId?: string) => {
@@ -166,9 +160,7 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
 
   // The Guard meter mitigates incoming damage before it reaches a hero. The attacking
   // enemy's guardBreak only scales how hard the hit drains the bar, not the mitigation.
-  const attacker = attackerEnemyId
-    ? currentState.enemies.find((e) => e.id === attackerEnemyId)
-    : undefined;
+  const attacker = attackerEnemyId ? currentState.enemies.find((e) => e.id === attackerEnemyId) : undefined;
   const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
     damage,
     currentState.guard,
@@ -249,6 +241,7 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { 
     enemies,
     selectedEnemyId: newSelectedId,
     pendingVictory: allDead,
+    totalDamageDealt: (currentState.totalDamageDealt ?? 0) + finalDamage,
     lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId, hits: finalHits },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
   });
@@ -260,8 +253,8 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { 
  */
 export const setupBattleAtom = atom(
   null,
-  (_get, set, params: { enemies: EnemyData[]; party: CharacterData[] }) => {
-    set(battleStateAtom, createBattleState(params.party, params.enemies));
+  (_get, set, params: { enemies: EnemyData[]; party: CharacterData[]; mode?: BattleMode }) => {
+    set(battleStateAtom, createBattleState(params.party, params.enemies, { mode: params.mode }));
   },
 );
 
@@ -269,7 +262,16 @@ export const setupBattleAtom = atom(
 export const resetBattleAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
   // Re-use the current encounter's enemies so a mid-battle reset replays the same fight
-  set(battleStateAtom, createBattleState(initialParty, currentState.enemies));
+  set(battleStateAtom, createBattleState(initialParty, currentState.enemies, { mode: currentState.mode }));
+});
+
+// Ends a fight the player walks out of. Only the training leave path calls it; every "is the
+// battle over" check already treats any non-'playing' status as finished, so the next entry
+// re-arms through `ensureFreshBattleAtom` exactly as it does after a win.
+export const abandonBattleAtom = atom(null, (get, set) => {
+  const currentState = get(battleStateAtom);
+  if (currentState.gameStatus !== 'playing') return;
+  set(battleStateAtom, { ...currentState, gameStatus: 'abandoned', pendingVictory: false });
 });
 
 /**
@@ -281,7 +283,7 @@ export const resetBattleAtom = atom(null, (get, set) => {
 export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[]) => {
   const state = get(battleStateAtom);
   if (state.gameStatus === 'playing') return;
-  set(battleStateAtom, createBattleState(party, state.enemies));
+  set(battleStateAtom, createBattleState(party, state.enemies, { mode: state.mode }));
 });
 
 // Atom to remove matched orbs and refill board.
@@ -317,36 +319,33 @@ export const removeMatchedOrbsAtom = atom(
 );
 
 // Atom to heal the most damaged party member (revives dead members first)
-export const healPartyAtom = atom(
-  null,
-  (get, set, params: { amount: number; source: 'match' | 'potion' }) => {
-    const currentState = get(battleStateAtom);
-    const { amount, source } = params;
+export const healPartyAtom = atom(null, (get, set, params: { amount: number; source: 'match' | 'potion' }) => {
+  const currentState = get(battleStateAtom);
+  const { amount, source } = params;
 
-    // Dead members take priority — revive the healer first, else the first one found
-    const dead = getDeadMembers(currentState.party);
-    if (dead.length > 0) {
-      const target = dead.find((char) => char.class === 'healer') ?? dead[0];
-      // Healer match: double healing. Potion: 1 HP + potion amount.
-      const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
-      const party = healPartyMember(currentState.party, target.id, reviveAmount);
-      set(battleStateAtom, { ...currentState, party });
-      return;
-    }
+  // Dead members take priority — revive the healer first, else the first one found
+  const dead = getDeadMembers(currentState.party);
+  if (dead.length > 0) {
+    const target = dead.find((char) => char.class === 'healer') ?? dead[0];
+    // Healer match: double healing. Potion: 1 HP + potion amount.
+    const reviveAmount = source === 'match' ? amount * 2 : 1 + amount;
+    const party = healPartyMember(currentState.party, target.id, reviveAmount);
+    set(battleStateAtom, { ...currentState, party });
+    return;
+  }
 
-    // Otherwise heal the most damaged living member
-    const healable = getHealableMembers(currentState.party);
-    if (healable.length === 0) return;
+  // Otherwise heal the most damaged living member
+  const healable = getHealableMembers(currentState.party);
+  if (healable.length === 0) return;
 
-    const targetHero = healable[0];
-    const party = healPartyMember(currentState.party, targetHero.id, amount);
+  const targetHero = healable[0];
+  const party = healPartyMember(currentState.party, targetHero.id, amount);
 
-    set(battleStateAtom, {
-      ...currentState,
-      party,
-    });
-  },
-);
+  set(battleStateAtom, {
+    ...currentState,
+    party,
+  });
+});
 
 // Atom to clear an entire row of orbs
 export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
@@ -394,6 +393,10 @@ export const commitPendingVictoryAtom = atom(null, (get, set) => {
 // board/HP/match change (see BattleTopBar).
 export const turnAtom = atom((get) => get(battleStateAtom).turn);
 export const scoreAtom = atom((get) => get(battleStateAtom).score);
+// `?? 'standard'` guards any pre-existing state object without the field.
+export const battleModeAtom = atom((get) => get(battleStateAtom).mode ?? 'standard');
+export const isTrainingBattleAtom = atom((get) => get(battleModeAtom) === 'training');
+export const totalDamageDealtAtom = atom((get) => get(battleStateAtom).totalDamageDealt ?? 0);
 export const lastDamageAtom = atom((get) => get(battleStateAtom).lastDamage);
 export const lastMatchedTypeAtom = atom((get) => get(battleStateAtom).lastMatchedType);
 export const lastSkillActivationAtom = atom((get) => get(battleStateAtom).lastSkillActivation);
@@ -595,8 +598,7 @@ function guardDecayFactorInputsMatch(party: CharacterData[]): boolean {
 function resolveGuardDecayFactor(party: CharacterData[]): number {
   if (!guardDecayFactorInputsMatch(party)) {
     guardDecayFactor =
-      calculateGuardDecayResistance(party) *
-      getPartyPassiveModifiers(party).guardDecayResistanceMultiplier;
+      calculateGuardDecayResistance(party) * getPartyPassiveModifiers(party).guardDecayResistanceMultiplier;
     guardDecayFactorParty = party;
   }
   return guardDecayFactor;
@@ -609,11 +611,7 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
 
   set(battleStateAtom, {
     ...currentState,
-    guard: decayGuard(
-      currentState.guard,
-      deltaSeconds,
-      resolveGuardDecayFactor(currentState.party),
-    ),
+    guard: decayGuard(currentState.guard, deltaSeconds, resolveGuardDecayFactor(currentState.party)),
   });
 });
 
@@ -665,8 +663,12 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const skillStats = resolveActiveSkillStats(skill, getSkillLevel(character, skill.id));
   const passives = getCharacterPassiveModifiers(character);
   const amount = Math.round(
-    calculateSkillDamage(BASE_SKILL_DAMAGE, character.stats.pow, skillStats.baseDamageMultiplier, skillStats.flatDamageBonus) *
-      passives.skillDamageMultiplier,
+    calculateSkillDamage(
+      BASE_SKILL_DAMAGE,
+      character.stats.pow,
+      skillStats.baseDamageMultiplier,
+      skillStats.flatDamageBonus,
+    ) * passives.skillDamageMultiplier,
   );
 
   let party = currentState.party;
@@ -727,19 +729,20 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
 
   // Put skill back on cooldown
   party = party.map((char) =>
-    char.id === characterId
-      ? { ...char, skillCooldown: resolveCharacterCooldown(char) }
-      : char,
+    char.id === characterId ? { ...char, skillCooldown: resolveCharacterCooldown(char) } : char,
   );
 
   // Drive the enemy hit reaction (flinch + number) through the shared lastDamage channel.
   // Heals are left out — they keep flowing through the party-side feedback.
   const timestamp = Date.now();
   let lastDamage = currentState.lastDamage;
+  let damageDealt = 0;
   if (skill.target === 'enemy') {
     lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, characterId, source: 'skill' };
+    damageDealt = amount;
   } else if (skill.target === 'allEnemy') {
     lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, characterId, source: 'skill' };
+    damageDealt = amount * hitEnemyIds.length;
   }
 
   set(battleStateAtom, {
@@ -748,6 +751,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     enemies,
     selectedEnemyId,
     gameStatus,
+    totalDamageDealt: (currentState.totalDamageDealt ?? 0) + damageDealt,
     // Passive skillGuardRestore: the Ultimate also pushes the shared Guard meter back up.
     guard: Math.min(GUARD_MAX, currentState.guard + passives.skillGuardRestore),
     // A skill kill wins immediately: there's no in-flight cascade to preserve and no guaranteed

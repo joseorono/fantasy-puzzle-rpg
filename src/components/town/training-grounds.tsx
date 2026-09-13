@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSetAtom } from 'jotai';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import {
   useParty,
@@ -7,7 +8,11 @@ import {
   useResourcesActions,
   useRespecCount,
   useProgressFlagsActions,
+  useRouterActions,
+  useViewData,
 } from '~/stores/game-store';
+import { setupBattleAtom } from '~/stores/battle-atoms';
+import { TRAINING_DUMMY } from '~/constants/enemies/training';
 import { getRefundableStatPoints } from '~/lib/leveling-system';
 import { canAfford } from '~/lib/resources';
 import { chunk, cn } from '~/lib/utils';
@@ -25,13 +30,14 @@ import { TownLocationLayout } from './town-location-layout';
 import { RespecEditor } from './respec-editor';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
+import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { PartyMemberCard } from '~/components/party/party-member-card';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { SkillsPanel } from '~/components/skills/skills-panel';
 
-type TrainingTab = 'retrain' | 'skills';
+type TrainingTab = 'retrain' | 'skills' | 'spar';
 type TrainingZone = 'tabs' | 'content';
 /** Within the Retrain tab: the hero row, or the editor open under it. */
 type RetrainFocus = 'heroes' | 'editor';
@@ -39,7 +45,14 @@ type RetrainFocus = 'heroes' | 'editor';
 const TRAINING_TABS: readonly { id: TrainingTab; label: string }[] = [
   { id: 'retrain', label: 'Retrain' },
   { id: 'skills', label: 'Skills' },
+  { id: 'spar', label: 'Spar' },
 ];
+
+const TAB_KEY_HINTS: Record<TrainingTab, { vertical: string; enter: string }> = {
+  retrain: { vertical: 'hero / stats', enter: 'to retrain' },
+  skills: { vertical: 'browse', enter: 'to select' },
+  spar: { vertical: 'focus', enter: 'to spar' },
+};
 
 interface TrainingGroundsProps {
   backgroundImage: string;
@@ -54,6 +67,9 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
   const respecCount = useRespecCount();
   const progressFlagsActions = useProgressFlagsActions();
   const confirm = useConfirm();
+  const routerActions = useRouterActions();
+  const townHubData = useViewData('town-hub');
+  const setupBattle = useSetAtom(setupBattleAtom);
 
   const [tab, setTab] = useState<TrainingTab>('retrain');
   const [zone, setZone] = useState<TrainingZone>('tabs');
@@ -134,6 +150,19 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
     closeEditor();
   }
 
+  // A reward-free fight on the normal board. The dummy goes into the battle atoms first (as the
+  // map does), and the hub is told to reopen on this location when the fight hands control back.
+  function handleStartSparring() {
+    soundService.playSound(SoundNames.mechanicalClick, TOWN_SFX_VOLUME.locationSelect, 0.1);
+    setupBattle({ enemies: [TRAINING_DUMMY], party, mode: 'training' });
+    if (townHubData) routerActions.setViewData('town-hub', { ...townHubData, initialLocation: 'training-grounds' });
+    routerActions.goToBattleDemo({
+      enemyId: TRAINING_DUMMY.id,
+      location: 'Training Grounds',
+      bgImage: backgroundImage,
+    });
+  }
+
   // Tabs and the hero row are handled here; the editor and the skills panel bind their own keys
   // while they own the cursor, so this listener steps aside for them.
   useWindowKeyDown((event) => {
@@ -152,6 +181,17 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
         event.preventDefault();
         if (event.repeat) return;
         enterContent();
+      }
+      return;
+    }
+
+    if (tab === 'spar') {
+      if (direction === 'up') {
+        event.preventDefault();
+        returnToTabs();
+      } else if (isConfirmKey(event.key)) {
+        event.preventDefault();
+        if (!event.repeat) handleStartSparring();
       }
       return;
     }
@@ -196,13 +236,13 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
             className="town-key-hint"
             items={[
               { keys: ['←', '→'], label: 'switch tab' },
-              { keys: ['↑', '↓'], label: tab === 'retrain' ? 'hero / stats' : 'browse' },
-              { keys: ['Enter'], label: tab === 'retrain' ? 'to retrain' : 'to select' },
+              { keys: ['↑', '↓'], label: TAB_KEY_HINTS[tab].vertical },
+              { keys: ['Enter'], label: TAB_KEY_HINTS[tab].enter },
             ]}
           />
         </div>
 
-        {tab === 'retrain' ? (
+        {tab === 'retrain' && (
           <div className="training-retrain">
             <div className="town-section-header town-section-header--inn">
               <h2>
@@ -263,9 +303,32 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
               />
             )}
           </div>
-        ) : (
+        )}
+
+        {tab === 'skills' && (
           <div className="training-skills">
             <SkillsPanel keyboardActive={isSkillsKeyboardActive} onExitLeft={returnToTabs} />
+          </div>
+        )}
+
+        {tab === 'spar' && (
+          <div className="training-spar">
+            <div className="town-section-header town-section-header--inn">
+              <h2>
+                <NarikWoodBitFont text="SPARRING" size={1.2} />
+              </h2>
+            </div>
+            <p className="town-section-subtitle">
+              Hit the dummy as hard as you like. Nothing is lost and nothing is gained: it never hits back, items are
+              not used up, and you can leave from the pause menu at any time.
+            </p>
+            <div className="training-spar__actions">
+              <ToffecBeigeCornersWrapper forceDisplay={zone === 'content'}>
+                <ToffecButton variant="cream" size="xs" onClick={handleStartSparring}>
+                  Start sparring
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
+            </div>
           </div>
         )}
       </div>

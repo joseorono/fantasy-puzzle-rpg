@@ -1127,6 +1127,18 @@
   overflow-y: auto;
 }
 
+.training-spar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.training-spar__actions {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
 /* The skills panel sizes itself like the pause menu's tab body: a clipped flex column. */
 .training-skills {
   display: flex;

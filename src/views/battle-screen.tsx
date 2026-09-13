@@ -14,8 +14,10 @@ import {
   gameStatusAtom,
   battleTickAtom,
   ensureFreshBattleAtom,
+  isTrainingBattleAtom,
+  abandonBattleAtom,
 } from '~/stores/battle-atoms';
-import { useParty, useViewData } from '~/stores/game-store';
+import { useParty, useRouterActions, useViewData } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
 import { SkillBurstOverlay } from '~/components/battle/skill-burst-overlay';
 import { soundService } from '~/services/sound-service';
@@ -31,6 +33,9 @@ export default function BattleScreen() {
   const battleTick = useSetAtom(battleTickAtom);
   const party = useParty();
   const ensureFreshBattle = useSetAtom(ensureFreshBattleAtom);
+  const isTraining = useAtomValue(isTrainingBattleAtom);
+  const abandonBattle = useSetAtom(abandonBattleAtom);
+  const { goBack } = useRouterActions();
   const [isBattlePaused, setIsBattlePaused] = useState(false);
 
   // Background can be overridden per-encounter (e.g. dungeon/floor art) via view data.
@@ -44,6 +49,14 @@ export default function BattleScreen() {
 
   function resumeBattle() {
     setIsBattlePaused(false);
+  }
+
+  // Training only: nothing to bank (HP is not synced, items were not consumed), so mark the fight
+  // over and return to where it was launched from. Marking it first is what lets the next entry
+  // re-arm instead of resuming this dummy fight.
+  function leaveTraining() {
+    abandonBattle();
+    goBack();
   }
 
   // On entering the battle view onto an already-finished fight, re-arm a fresh battle
@@ -129,7 +142,7 @@ export default function BattleScreen() {
                 backgroundPosition: 'center',
               }}
             >
-              <EnemyDisplay />
+              <EnemyDisplay isBattlePaused={isBattlePaused} />
             </div>
           </div>
 
@@ -153,7 +166,9 @@ export default function BattleScreen() {
           </div>
         </div>
 
-        {isBattlePaused === true && <BattlePauseOverlay onResume={resumeBattle} />}
+        {isBattlePaused === true && (
+          <BattlePauseOverlay onResume={resumeBattle} onLeave={isTraining ? leaveTraining : undefined} />
+        )}
       </div>
 
       {/* Floating particles effect */}

@@ -35,6 +35,7 @@ export default function GameScreen() {
           innCost={townHubData!.innCost}
           itemsForSell={townHubData!.itemsForSell}
           onLeaveCallback={townHubData!.onLeaveCallback}
+          initialLocation={townHubData!.initialLocation}
         />
       );
 

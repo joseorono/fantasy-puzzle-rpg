@@ -12,7 +12,7 @@ import { getRandomElement } from '~/lib/utils';
 import { pickAllSubLocationBackgrounds, pickTownHubBackground } from '~/constants/town-backgrounds';
 import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
-import { useResources } from '~/stores/game-store';
+import { useResources, useRouterActions, useViewData } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 import { getNavDirection, isCancelKey, isConfirmKey, isHelpKey } from '~/constants/keyboard';
@@ -31,12 +31,24 @@ interface TownHubProps {
   innCost: Resources;
   itemsForSell: ItemStoreParams;
   onLeaveCallback: () => void;
+  /** Open straight into this sub-location (see `TownHubViewData.initialLocation`). */
+  initialLocation?: Exclude<townLocations, 'town-hub'>;
 }
 
-export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
+export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallback, initialLocation }: TownHubProps) {
   // townName is currently passed through for the upcoming TownNameDisplay component
   void townName;
-  const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
+  const [currentLocation, setCurrentLocation] = useState<townLocations>(initialLocation ?? 'town-hub');
+  const townHubData = useViewData('town-hub');
+  const routerActions = useRouterActions();
+
+  // Consume-once: the redirect served its purpose on mount, so clear it before anything else
+  // (leaving town, entering from the map) can see it. Mount-only by design.
+  useEffect(() => {
+    if (!townHubData?.initialLocation) return;
+    routerActions.setViewData('town-hub', { ...townHubData, initialLocation: undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [townHubBackground] = useState(pickTownHubBackground);
   // Pick a background per sub-location once per hub visit so each stays consistent

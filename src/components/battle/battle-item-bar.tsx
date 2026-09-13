@@ -10,6 +10,7 @@ import {
   fillPartyUltimateAtom,
   recordItemUsedAtom,
   gameStatusAtom,
+  isTrainingBattleAtom,
   itemCooldownMsAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
@@ -32,6 +33,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
   const inventory = useInventory();
   const inventoryActions = useInventoryActions();
   const gameStatus = useAtomValue(gameStatusAtom);
+  const isTraining = useAtomValue(isTrainingBattleAtom);
   const healParty = useSetAtom(healPartyAtom);
   const clearRow = useSetAtom(clearBoardRowAtom);
   const clearColumn = useSetAtom(clearBoardColumnAtom);
@@ -94,7 +96,8 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
         break;
     }
 
-    inventoryActions.removeItem(item.id);
+    // Sparring is free: the player practices with what they own and keeps it.
+    if (!isTraining) inventoryActions.removeItem(item.id);
     // Count this consumption for the victory rating (items used is a penalty).
     recordItemUsed();
 
@@ -122,31 +125,33 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   }`}
                 >
-              {item.iconName ? (
-                <FrostyRpgIcon name={item.iconName} size={32} />
-              ) : (
-                <span className="text-lg sm:text-xl">{item.icon}</span>
-              )}
-              <div className={isEmpty ? 'opacity-50' : ''}>
-                <NarikWoodBitFont text={String(quantity)} size={1} />
-              </div>
-
-              {/* Cooldown pie overlay & countdown text */}
-              {isOnCooldown && !isEmpty && (
-                <>
-                  <div
-                    key={cooldownEndsAt}
-                    className="battle-item-cooldown-pie motion-exempt pointer-events-none absolute inset-0 rounded"
-                    style={{ animationDuration: `${cooldownDuration}ms` }}
-                  />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center pixel-font text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
-                    {secondsLeft}s
+                  {item.iconName ? (
+                    <FrostyRpgIcon name={item.iconName} size={32} />
+                  ) : (
+                    <span className="text-lg sm:text-xl">{item.icon}</span>
+                  )}
+                  <div className={isEmpty ? 'opacity-50' : ''}>
+                    <NarikWoodBitFont text={String(quantity)} size={1} />
                   </div>
-                </>
-              )}
-            </button>
+
+                  {/* Cooldown pie overlay & countdown text */}
+                  {isOnCooldown && !isEmpty && (
+                    <>
+                      <div
+                        key={cooldownEndsAt}
+                        className="battle-item-cooldown-pie motion-exempt pointer-events-none absolute inset-0 rounded"
+                        style={{ animationDuration: `${cooldownDuration}ms` }}
+                      />
+                      <div className="pixel-font pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                        {secondsLeft}s
+                      </div>
+                    </>
+                  )}
+                </button>
               </TooltipTrigger>
-              <TooltipContent className="battle-item-tooltip">{item.name}: {item.description}</TooltipContent>
+              <TooltipContent className="battle-item-tooltip">
+                {item.name}: {item.description}
+              </TooltipContent>
             </Tooltip>
           </ToffecBeigeCornersWrapper>
         );

@@ -1,6 +1,7 @@
 import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
 import type { MapId } from './map';
+import type { townLocations } from './map-node';
 
 /**
  * Available views in the game
@@ -29,6 +30,12 @@ export interface TownHubViewData {
   };
   itemsForSell: string[];
   onLeaveCallback: () => void;
+  /**
+   * Sub-location to open on the next hub mount instead of the signpost — consumed once by
+   * `TownHub`, so a later visit from the map starts at the signpost again. Set by a location
+   * that sends the player on a round-trip (the Training Grounds' sparring fight).
+   */
+  initialLocation?: Exclude<townLocations, 'town-hub'>;
 }
 
 /**
