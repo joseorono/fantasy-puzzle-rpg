@@ -9,7 +9,7 @@ import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
 import { getSelectedSkill, getSkillLevel, resolveActiveSkillStats } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
-import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PartyMemberCard } from '~/components/party/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
@@ -82,7 +82,7 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
     <>
       <PauseMenuTabHeader text="Stats" hint="Review each hero's stats and active skill." />
       <div className="pause-menu-stats-layout">
-        <div className="pause-menu-party-roster">
+        <div className="party-roster">
           {party.map((member) => (
             <PartyMemberCard
               key={member.id}

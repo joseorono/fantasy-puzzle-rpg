@@ -8,7 +8,7 @@ import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
-import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PartyMemberCard } from '~/components/party/party-member-card';
 import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
 import {
@@ -201,8 +201,8 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
       <PauseMenuTabHeader text="Equip" hint="Choose a hero, then swap their weapon and armor." />
       <div className="pause-menu-equip-layout">
         <div className="pause-menu-equip-top-section">
-          <div className="pause-menu-party-roster">
-            <div className="pause-menu-party-roster-list">
+          <div className="party-roster">
+            <div className="party-roster-list">
               {party.map((member) => (
                 <PartyMemberCard
                   key={member.id}

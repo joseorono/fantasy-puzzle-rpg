@@ -483,8 +483,8 @@
 
 @import './styles/lists.css';
 
-/* Skills tab — must load after the component styles it overrides (skill icon, lists, town cost chips). */
-@import './styles/pause-menu-skills.css';
+/* Skills panel — must load after the component styles it overrides (skill icon, lists, town cost chips). */
+@import './styles/skills.css';
 
 @import './styles/save-indicator.css';
 

@@ -449,7 +449,8 @@
 }
 
 .pause-menu-content--equip,
-.pause-menu-content--items {
+.pause-menu-content--items,
+.pause-menu-content--skills {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -837,7 +838,7 @@
 }
 
 /* Party roster (right side of stats/equip) */
-.pause-menu-party-roster {
+.party-roster {
   width: 230px;
   flex-shrink: 0;
   display: flex;
@@ -846,7 +847,7 @@
 }
 
 /* Content-height wrapper so cards keep their natural size inside a full-height roster */
-.pause-menu-party-roster-list {
+.party-roster-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;

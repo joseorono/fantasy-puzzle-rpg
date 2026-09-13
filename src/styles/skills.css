@@ -1,5 +1,5 @@
 /* ============================================================================
-   Pause menu — Skills tab
+   Skills panel — the pause menu's Skills tab today, the Training Grounds later.
    IndigoLay skill-book treatment: framed icon slots over the dark menu board,
    a parchment detail panel below. Warm parchment palette (#d4a574 family) for
    anything on the parchment itself; #ffd700 is allowed only as a metal accent on
@@ -13,21 +13,14 @@
    are also written at two-class specificity as a second line of defense.
    ========================================================================== */
 
-.pause-menu-content--skills {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.pause-menu-skills-layout {
+.skills-layout {
   display: flex;
   gap: 1rem;
   flex: 1;
   min-height: 0;
 }
 
-.pause-menu-skills-main {
+.skills-main {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -39,13 +32,13 @@
 
 /* ── Section headers ──────────────────────────────────────────────────────── */
 
-.pause-menu-skills-section {
+.skills-section {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
 
-.pause-menu-skills-section-label {
+.skills-section-label {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,7 +50,7 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
-.pause-menu-skills-section-label .info-icon {
+.skills-section-label .info-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,11 +62,11 @@
   transition: opacity 0.15s ease;
 }
 
-.pause-menu-skills-section-label .info-icon:hover {
+.skills-section-label .info-icon:hover {
   opacity: 1;
 }
 
-.pause-menu-skills-section-label .info-icon__img {
+.skills-section-label .info-icon__img {
   display: block;
   width: 100%;
   height: auto;
@@ -83,7 +76,7 @@
    Slots read left→right in tier order, joined by engraved connector notches
    (the quiet tier treatment — position is the tier, no badge art). */
 
-.pause-menu-skills-row {
+.skills-row {
   display: flex;
   align-items: center;
   gap: 18px;
@@ -97,27 +90,27 @@
   animation: skill-slot-pop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
 }
 
-.pause-menu-skills-row .skill-slot-wrapper:nth-child(2) {
+.skills-row .skill-slot-wrapper:nth-child(2) {
   animation-delay: 50ms;
 }
-.pause-menu-skills-row .skill-slot-wrapper:nth-child(3) {
+.skills-row .skill-slot-wrapper:nth-child(3) {
   animation-delay: 100ms;
 }
-.pause-menu-skills-row .skill-slot-wrapper:nth-child(4) {
+.skills-row .skill-slot-wrapper:nth-child(4) {
   animation-delay: 150ms;
 }
 
 /* The passive row's cascade starts after the active row's. */
-.pause-menu-skills-row--passive .skill-slot-wrapper {
+.skills-row--passive .skill-slot-wrapper {
   animation-delay: 90ms;
 }
-.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(2) {
+.skills-row--passive .skill-slot-wrapper:nth-child(2) {
   animation-delay: 140ms;
 }
-.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(3) {
+.skills-row--passive .skill-slot-wrapper:nth-child(3) {
   animation-delay: 190ms;
 }
-.pause-menu-skills-row--passive .skill-slot-wrapper:nth-child(4) {
+.skills-row--passive .skill-slot-wrapper:nth-child(4) {
   animation-delay: 240ms;
 }
 
@@ -134,7 +127,7 @@
 
 /* Engraved connector notch between consecutive slots: a light rule with a dark
    underline, carved-into-the-board look in the house border tones. */
-.pause-menu-skills-row .skill-slot-wrapper + .skill-slot-wrapper::before {
+.skills-row .skill-slot-wrapper + .skill-slot-wrapper::before {
   content: '';
   position: absolute;
   left: -18px;

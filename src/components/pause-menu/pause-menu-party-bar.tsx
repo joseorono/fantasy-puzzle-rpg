@@ -1,5 +1,5 @@
 import { useParty } from '~/stores/game-store';
-import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PartyMemberCard } from '~/components/party/party-member-card';
 
 export function PauseMenuPartyBar() {
   const party = useParty();
