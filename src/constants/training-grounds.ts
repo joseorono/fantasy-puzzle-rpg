@@ -2,7 +2,7 @@
  * Training Grounds tunables
  *
  * The respec fee climbs with every respec the save has already paid for
- * (`progressFlags.respecCount`), so a retrain stays repeatable but never free.
+ * (`progressFlags.respecCount`), so a respec stays repeatable but never free.
  * The curve is computed from the two constants below; rebalancing means editing
  * a number here, never a call site.
  */

@@ -37,7 +37,7 @@ export const TOWN_HELP_ENTRIES: readonly TownHelpEntry[] = [
   {
     location: 'training-grounds',
     title: 'Training Grounds',
-    description: "Retrain a hero's stat points for a coin fee that climbs with each respec, or manage skills.",
+    description: "Respec a hero's stat points for a coin fee that climbs with each respec, or manage skills.",
     iconName: 'warAxe',
   },
 ];

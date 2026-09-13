@@ -32,8 +32,8 @@ export const MARQUEE_HELP_TEXT: Readonly<{ [K in MarqueeTextTypes]: readonly str
     clickLeaveToTownHub,
   ],
   'training-grounds': [
-    'Retrain moves the stat points you chose at level-up; random growth stays put.',
-    'Each retrain costs more coins than the last.',
+    'Respec moves the stat points you chose at level-up; random growth stays put.',
+    'Each respec costs more coins than the last.',
     'Lowering Vitality lowers Max HP — HP above the new maximum is lost.',
     'Left/Right switch tabs, Up/Down and Enter pick a hero, Left/Right move points, Esc to leave.',
     clickLeaveToTownHub,

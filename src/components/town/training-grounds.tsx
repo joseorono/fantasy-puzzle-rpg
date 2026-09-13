@@ -31,25 +31,26 @@ import { RespecEditor } from './respec-editor';
 import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { PartyMemberCard } from '~/components/party/party-member-card';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { SkillsPanel } from '~/components/skills/skills-panel';
 
-type TrainingTab = 'retrain' | 'skills' | 'spar';
+type TrainingTab = 'respec' | 'skills' | 'spar';
 type TrainingZone = 'tabs' | 'content';
-/** Within the Retrain tab: the hero row, or the editor open under it. */
-type RetrainFocus = 'heroes' | 'editor';
+/** Within the Respec tab: the hero row, or the editor open under it. */
+type RespecFocus = 'heroes' | 'editor';
 
 const TRAINING_TABS: readonly { id: TrainingTab; label: string }[] = [
-  { id: 'retrain', label: 'Retrain' },
   { id: 'skills', label: 'Skills' },
+  { id: 'respec', label: 'Respec' },
   { id: 'spar', label: 'Spar' },
 ];
 
 const TAB_KEY_HINTS: Record<TrainingTab, { vertical: string; enter: string }> = {
-  retrain: { vertical: 'hero / stats', enter: 'to retrain' },
+  respec: { vertical: 'hero / stats', enter: 'to respec' },
   skills: { vertical: 'browse', enter: 'to select' },
   spar: { vertical: 'focus', enter: 'to spar' },
 };
@@ -71,9 +72,9 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
   const townHubData = useViewData('town-hub');
   const setupBattle = useSetAtom(setupBattleAtom);
 
-  const [tab, setTab] = useState<TrainingTab>('retrain');
+  const [tab, setTab] = useState<TrainingTab>(TRAINING_TABS[0].id);
   const [zone, setZone] = useState<TrainingZone>('tabs');
-  const [retrainFocus, setRetrainFocus] = useState<RetrainFocus>('heroes');
+  const [respecFocus, setRespecFocus] = useState<RespecFocus>('heroes');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const cost = getRespecCost(respecCount);
@@ -81,17 +82,17 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
   const playNavTick = () => soundService.playSound(SoundNames.clickChangeTab, TOWN_SFX_VOLUME.navTick, 0.1, 0.05);
 
   // A level-1 hero has nothing to move; an unaffordable fee locks the card like the Inn does.
-  const isRetrainDisabled = (member: CharacterData) => getRefundableStatPoints(member) === 0 || !isAffordable;
+  const isRespecDisabled = (member: CharacterData) => getRefundableStatPoints(member) === 0 || !isAffordable;
 
   const heroRows: KeyboardSelectableItem[][] = chunk(party, INN_HERO_COLUMNS).map((row) =>
-    row.map((member) => ({ id: member.id, disabled: isRetrainDisabled(member) })),
+    row.map((member) => ({ id: member.id, disabled: isRespecDisabled(member) })),
   );
   const heroSelection = useKeyboardSelection(heroRows, { onMove: playNavTick });
 
   const editingMember = party.find((member) => member.id === editingId) ?? null;
   const isSkillsKeyboardActive = zone === 'content' && tab === 'skills';
   const isEditorKeyboardActive =
-    zone === 'content' && tab === 'retrain' && retrainFocus === 'editor' && editingMember !== null;
+    zone === 'content' && tab === 'respec' && respecFocus === 'editor' && editingMember !== null;
 
   function switchTab(next: TrainingTab, viaKeyboard = false) {
     if (next !== tab) {
@@ -99,48 +100,48 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       setTab(next);
     }
     heroSelection.clear();
-    setRetrainFocus('heroes');
+    setRespecFocus('heroes');
     setZone(viaKeyboard ? 'tabs' : 'content');
   }
 
   function enterContent() {
     setZone('content');
-    if (tab !== 'retrain') return;
+    if (tab !== 'respec') return;
     const firstEnabled = heroRows.flat().find((item) => !item.disabled) ?? heroRows.flat()[0];
     if (firstEnabled) heroSelection.select(firstEnabled.id);
   }
 
   function returnToTabs() {
     heroSelection.clear();
-    setRetrainFocus('heroes');
+    setRespecFocus('heroes');
     setZone('tabs');
   }
 
   function openEditor(member: CharacterData, viaKeyboard: boolean) {
-    if (isRetrainDisabled(member)) return;
+    if (isRespecDisabled(member)) return;
     setEditingId(member.id);
     setZone('content');
-    setRetrainFocus(viaKeyboard ? 'editor' : 'heroes');
+    setRespecFocus(viaKeyboard ? 'editor' : 'heroes');
     if (!viaKeyboard) heroSelection.clear();
   }
 
   function closeEditor() {
     const closedId = editingId;
     setEditingId(null);
-    setRetrainFocus('heroes');
-    if (closedId && retrainFocus === 'editor') heroSelection.select(closedId);
+    setRespecFocus('heroes');
+    if (closedId && respecFocus === 'editor') heroSelection.select(closedId);
   }
 
   function focusHeroes() {
-    setRetrainFocus('heroes');
+    setRespecFocus('heroes');
     if (editingId) heroSelection.select(editingId);
   }
 
   async function handleRespec(member: CharacterData, newStats: CoreRPGStats) {
     const confirmed = await confirm({
-      title: `Retrain ${member.name}?`,
+      title: `Respec ${member.name}?`,
       message: `Costs ${cost.coins} coins. HP above the new maximum is lost.`,
-      confirmLabel: 'Retrain',
+      confirmLabel: 'Respec',
     });
     if (!confirmed || !canAfford(resources, cost)) return;
     soundService.playSound(SoundNames.clickCoin, TOWN_SFX_VOLUME.transaction);
@@ -201,7 +202,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       if (direction === 'up' && (heroSelection.position === null || heroSelection.position.rowIndex === 0)) {
         returnToTabs();
       } else if (direction === 'down' && editingMember && heroSelection.position?.rowIndex === heroRows.length - 1) {
-        setRetrainFocus('editor');
+        setRespecFocus('editor');
       } else {
         heroSelection.move(direction);
       }
@@ -242,14 +243,14 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
           />
         </div>
 
-        {tab === 'retrain' && (
-          <div className="training-retrain">
+        {tab === 'respec' && (
+          <div className="training-respec">
             <div className="town-section-header town-section-header--inn">
               <h2>
-                <NarikWoodBitFont text="RETRAIN" size={1.2} />
+                <NarikWoodBitFont text="RESPEC" size={1.2} />
               </h2>
               <div className="town-header-badge">
-                <span className="town-header-badge__label">Next retrain</span>
+                <span className="town-header-badge__label">Next respec</span>
                 <span className="town-header-badge__value town-header-badge__value--coins">{cost.coins} coins</span>
               </div>
             </div>
@@ -260,15 +261,15 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => {
                 const refundable = getRefundableStatPoints(member);
-                const isDisabled = isRetrainDisabled(member);
+                const isDisabled = isRespecDisabled(member);
                 const isEditing = member.id === editingId;
                 return (
                   <div key={member.id} className="inn-hero-cell">
                     <ToffecBeigeCornersWrapper
                       className={cn(isDisabled && 'cannot-afford')}
                       forceDisplay={
-                        (zone === 'content' && retrainFocus === 'heroes' && heroSelection.isSelected(member.id)) ||
-                        (isEditing && retrainFocus === 'editor')
+                        (zone === 'content' && respecFocus === 'heroes' && heroSelection.isSelected(member.id)) ||
+                        (isEditing && respecFocus === 'editor')
                       }
                     >
                       <PartyMemberCard
@@ -282,7 +283,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
                       <div className="inn-hero-heal inn-hero-heal--full">Nothing to move</div>
                     ) : (
                       <div className={cn('inn-hero-heal', !isAffordable && 'inn-hero-heal--locked')}>
-                        {refundable} pts · {isAffordable ? 'Retrain' : 'Need'} {cost.coins}
+                        {refundable} pts · {isAffordable ? 'Respec' : 'Need'} {cost.coins}
                         <FrostyRpgIcon name="coinPurse" size={14} />
                       </div>
                     )}
@@ -318,16 +319,32 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
                 <NarikWoodBitFont text="SPARRING" size={1.2} />
               </h2>
             </div>
-            <p className="town-section-subtitle">
-              Hit the dummy as hard as you like. Nothing is lost and nothing is gained: it never hits back, items are
-              not used up, and you can leave from the pause menu at any time.
-            </p>
-            <div className="training-spar__actions">
-              <ToffecBeigeCornersWrapper forceDisplay={zone === 'content'}>
-                <ToffecButton variant="cream" size="xs" onClick={handleStartSparring}>
-                  Start sparring
-                </ToffecButton>
-              </ToffecBeigeCornersWrapper>
+            <div className="training-spar__card">
+              <div className="training-spar__dummy">
+                <div className="training-spar__dummy-frame">
+                  <img
+                    src={TRAINING_DUMMY.sprite}
+                    alt={TRAINING_DUMMY.name}
+                    className="training-spar__dummy-sprite pixel-art"
+                  />
+                </div>
+                <span className="training-spar__dummy-name pixel-font">{TRAINING_DUMMY.name}</span>
+              </div>
+              <div className="training-spar__details">
+                <IndigoLayStyledLists variant="chevron">
+                  <IndigolayStyledListItem>Never hits back — no HP at stake</IndigolayStyledListItem>
+                  <IndigolayStyledListItem>Items and ultimates work, nothing is used up</IndigolayStyledListItem>
+                  <IndigolayStyledListItem>Live damage and DPS readout</IndigolayStyledListItem>
+                  <IndigolayStyledListItem>Leave any time from the pause menu</IndigolayStyledListItem>
+                </IndigoLayStyledLists>
+                <div className="training-spar__actions">
+                  <ToffecBeigeCornersWrapper forceDisplay={zone === 'content'}>
+                    <ToffecButton variant="cream" size="xs" onClick={handleStartSparring}>
+                      Start sparring
+                    </ToffecButton>
+                  </ToffecBeigeCornersWrapper>
+                </div>
+              </div>
             </div>
           </div>
         )}

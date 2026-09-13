@@ -206,7 +206,7 @@ floor[s]        = stats[s] - allocated[s]
 ```
 
 - `getAllocatedStats` / `getRespecFloor` / `getRefundableStatPoints` in `src/lib/leveling-system.ts` compute the above; the refundable total equals `STAT_POINTS_PER_LEVEL × (level − 1)`.
-- `respecStats(character, newStats)` returns a new character with `maxHp` recomputed and `currentHp` clamped down to it. A VIT drop costs HP; a VIT rise never heals, so retraining cannot replace the Inn. Requests below a floor or with a different point total are rejected unchanged.
+- `respecStats(character, newStats)` returns a new character with `maxHp` recomputed and `currentHp` clamped down to it. A VIT drop costs HP; a VIT rise never heals, so respecing cannot replace the Inn. Requests below a floor or with a different point total are rejected unchanged.
 - The Training Grounds charges `getRespecCost(respecCount)` coins (`src/constants/training-grounds.ts`), rising with `progressFlags.respecCount`.
 
 ## Future Enhancements

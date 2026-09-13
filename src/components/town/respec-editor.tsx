@@ -132,14 +132,14 @@ export function RespecEditor({
 
           {willLoseHp && (
             <p className="training-editor__hp-warning pixel-font">
-              Current HP will drop to {previewMaxHp} — retraining never heals.
+              Current HP will drop to {previewMaxHp} — respecing never heals.
             </p>
           )}
 
           <div className="training-editor__actions">
             <ToffecBeigeCornersWrapper forceDisplay={keyboardActive && selectedAction === 'confirm'}>
               <ToffecButton variant="cream" size="xs" onClick={handleConfirm} disabled={!canConfirm}>
-                {isAffordable ? 'Retrain' : 'Not Enough Coins'}
+                {isAffordable ? 'Respec' : 'Not Enough Coins'}
               </ToffecButton>
             </ToffecBeigeCornersWrapper>
             <ToffecBeigeCornersWrapper forceDisplay={keyboardActive && selectedAction === 'reset'}>
