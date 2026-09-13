@@ -18,7 +18,7 @@ The game store is built with Zustand and uses a slice-based architecture for mod
 src/stores/
 ├── slices/
 │   ├── resources.ts / resources.types.ts           # Currency & material bars (coins, gold, silver, iron, copper)
-│   ├── party.ts / party.types.ts                   # Hero party members, current HP, stats, and unlocked skill IDs
+│   ├── party.ts / party.types.ts                   # Hero party members, current HP, stats, unlocked skill IDs, and respecs
 │   ├── inventory.ts / inventory.types.ts           # Equipment and consumable items, rarity-keyed stacks
 │   ├── router.ts / router.types.ts                 # Type-safe view router and navigation history
 │   ├── map-progress.ts / map-progress.types.ts     # Completed nodes and character map positions

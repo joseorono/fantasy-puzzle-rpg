@@ -7,7 +7,7 @@ import type { DungeonDefinition } from './dungeon';
 // ─── General Map Types ────────────────────────────────────────────────
 
 // Valid sublocations of any town
-export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store';
+export type townLocations = 'town-hub' | 'blacksmith' | 'inn' | 'item-store' | 'training-grounds';
 
 // ─── Interactive Map Nodes ────────────────────────────────────────────
 
@@ -80,4 +80,3 @@ export interface FloorLootSpot {
   /** Whether this loot has been collected (runtime state, not persisted here) */
   isCollected?: boolean;
 }
-

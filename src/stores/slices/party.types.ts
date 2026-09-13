@@ -1,4 +1,4 @@
-import type { CharacterData } from '~/types/rpg-elements';
+import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { RarityTier } from '~/constants/rarity';
 import type { BaseSlice } from '../../types/store';
 import type { EquipmentSlot } from '~/lib/equipment-system';
@@ -28,6 +28,8 @@ export interface PartyActions {
   unlockPassiveForCharacter: (characterId: string, passiveId: string) => void;
   upgradeSkillForCharacter: (characterId: string, skillId: string) => void;
   upgradePassiveForCharacter: (characterId: string, passiveId: string) => void;
+  /** Re-spend a hero's allocated stat points; see `respecStats` for what is refundable. */
+  respecCharacter: (characterId: string, newStats: CoreRPGStats) => void;
 }
 
 /**

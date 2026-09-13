@@ -9,7 +9,12 @@ import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { LevelTag } from '~/components/ui-custom/level-tag';
-import { SNAPPY_SPIN_TIMING, SNAPPY_TRANSFORM_TIMING, SNAPPY_OPACITY_TIMING, INTEGER_FORMAT } from '~/constants/number-flow';
+import {
+  SNAPPY_SPIN_TIMING,
+  SNAPPY_TRANSFORM_TIMING,
+  SNAPPY_OPACITY_TIMING,
+  INTEGER_FORMAT,
+} from '~/constants/number-flow';
 
 const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
 type RespecAction = 'confirm' | 'reset' | 'back';
@@ -32,7 +37,14 @@ interface RespecEditorProps {
  * the player moves points rather than starting from zero; the floor under each stat is the
  * base-plus-random-growth share that a respec never touches. Mount it keyed by hero id.
  */
-export function RespecEditor({ character, isAffordable, keyboardActive, onConfirm, onBack, onExitUp }: RespecEditorProps) {
+export function RespecEditor({
+  character,
+  isAffordable,
+  keyboardActive,
+  onConfirm,
+  onBack,
+  onExitUp,
+}: RespecEditorProps) {
   const allocated = getAllocatedStats(character);
   const floor = getRespecFloor(character);
   const refundable = allocated.pow + allocated.vit + allocated.spd;
@@ -62,11 +74,7 @@ export function RespecEditor({ character, isAffordable, keyboardActive, onConfir
   const keyboard = useStatAllocationKeyboard<RespecAction>({
     allocation,
     stats: STAT_ORDER,
-    actions: [
-      { id: 'confirm', disabled: !canConfirm },
-      { id: 'reset', disabled: !hasPendingChanges },
-      { id: 'back' },
-    ],
+    actions: [{ id: 'confirm', disabled: !canConfirm }, { id: 'reset', disabled: !hasPendingChanges }, { id: 'back' }],
     onActivate: (action) => {
       if (action === 'confirm') handleConfirm();
       else if (action === 'reset') handleReset();

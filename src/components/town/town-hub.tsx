@@ -4,6 +4,7 @@ import type { townLocations } from '~/types/map-node';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';
+import TrainingGrounds from './training-grounds';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_HUB_BG_SOUNDS, TOWN_SFX_VOLUME } from '~/constants/audio';
@@ -24,9 +25,6 @@ import { TownHelpPanel } from './town-help-panel';
 
 /** The signpost planks, top to bottom — the keyboard ring and the click handlers share these ids. */
 const PLANK_IDS = ['blacksmith', 'inn', 'item-store', 'training-grounds'] as const;
-
-/** Planks with no destination yet — they render and take the cursor, but selecting them no-ops. */
-const UNIMPLEMENTED_PLANK_IDS: readonly string[] = ['training-grounds'];
 
 interface TownHubProps {
   townName: string;
@@ -139,8 +137,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
       if (selectedId === null) return;
       if (selectedId === 'back') handleLeaveTown();
       else if (selectedId === 'help') setIsHelpOpen(true);
-      else if (!UNIMPLEMENTED_PLANK_IDS.includes(selectedId))
-        handleGoToPlace(selectedId as Exclude<townLocations, 'town-hub'>);
+      else handleGoToPlace(selectedId as Exclude<townLocations, 'town-hub'>);
     }
   }, isHubActive);
 
@@ -167,6 +164,13 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
         <ItemStore
           backgroundImage={subLocationBackgrounds['item-store']}
           itemsForSell={itemsForSell}
+          onLeaveCallback={handleReturnToHub}
+        />
+      );
+    case 'training-grounds':
+      return (
+        <TrainingGrounds
+          backgroundImage={subLocationBackgrounds['training-grounds']}
           onLeaveCallback={handleReturnToHub}
         />
       );
@@ -214,7 +218,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
             <ToffecBeigeCornersWrapper
               forceDisplay={zone === 'planks' && plankSelection.isSelected('training-grounds')}
             >
-              <div className="plank-option cursor-pointer">
+              <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('training-grounds')}>
                 <NarikWoodBitFont text="TRAINING GROUNDS" size={1} />
               </div>
             </ToffecBeigeCornersWrapper>

@@ -3,7 +3,7 @@ import type { CharacterData } from '~/types/rpg-elements';
 import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
 import { createResources } from '~/lib/resources';
-import { cn } from '~/lib/utils';
+import { chunk, cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
@@ -19,13 +19,6 @@ import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { INN_HERO_COLUMNS } from '~/constants/game';
-
-/** Splits the party into the rows the hero grid actually renders, so ←/→ stay spatially truthful. */
-function chunk<T>(items: readonly T[], size: number): T[][] {
-  const rows: T[][] = [];
-  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size));
-  return rows;
-}
 
 const HEAL_ALL_ID = 'heal-all';
 
@@ -169,9 +162,7 @@ export default function Inn({
               </span>
             </div>
           </div>
-          <p className="town-section-subtitle">
-            Click a wounded hero to heal them, or heal everyone at once below
-          </p>
+          <p className="town-section-subtitle">Click a wounded hero to heal them, or heal everyone at once below</p>
           <div className="party-members-list">
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => {

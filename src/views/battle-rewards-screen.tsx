@@ -19,6 +19,7 @@ import {
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
 import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
+import { STAT_POINTS_PER_LEVEL } from '~/constants/party';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
@@ -93,7 +94,7 @@ export function BattleRewardsScreen() {
 
     // Generate random potential stats for current character if needed
     if (currentPending && currentPending.pendingLevelUps > 0 && !randomPotentialStats) {
-      const totalPoints = currentPending.pendingLevelUps * 2;
+      const totalPoints = currentPending.pendingLevelUps * STAT_POINTS_PER_LEVEL;
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
@@ -158,7 +159,7 @@ export function BattleRewardsScreen() {
           }
 
           const totalLevelUps = currentPending.pendingLevelUps;
-          const totalPoints = totalLevelUps * 2;
+          const totalPoints = totalLevelUps * STAT_POINTS_PER_LEVEL;
 
           const charCopy: CharacterData = {
             ...currentPending.character,

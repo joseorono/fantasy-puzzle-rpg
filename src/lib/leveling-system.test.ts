@@ -339,7 +339,9 @@ describe('respec', () => {
         levels,
       );
 
-      expect(levelingSystem.getRefundableStatPoints(character, template())).toBe((character.level - 1) * STAT_POINTS_PER_LEVEL);
+      expect(levelingSystem.getRefundableStatPoints(character, template())).toBe(
+        (character.level - 1) * STAT_POINTS_PER_LEVEL,
+      );
     });
 
     it('clamps at zero when a stat sits below its template', () => {

@@ -1,7 +1,8 @@
 .town,
 .blacksmith,
 .item-store,
-.inn {
+.inn,
+.training-grounds {
   height: 100%;
   width: 100%;
   position: relative;
@@ -15,7 +16,8 @@
 .bg-shop,
 .bg-blacksmith,
 .bg-item-store,
-.bg-inn {
+.bg-inn,
+.bg-training-grounds {
   width: 100%;
   height: 100%;
   background-size: cover;
@@ -159,7 +161,8 @@
   overflow-y: hidden;
 }
 
-.item-store .shop-container {
+.item-store .shop-container,
+.training-grounds .shop-container {
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
@@ -1103,6 +1106,103 @@
   display: flex;
   justify-content: center;
   padding: 0.5rem;
+}
+
+/* ── Training Grounds ──────────────────────────────────────────── */
+
+.training-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.training-retrain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* The skills panel sizes itself like the pause menu's tab body: a clipped flex column. */
+.training-skills {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Stat cards on the left, the derived-stat preview on the right, under a rule that separates
+   the editor from the hero row. The rows themselves are .stat-allocation-row (level-up-screen.css). */
+.training-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.3);
+}
+
+.training-editor__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.training-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.training-editor__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.training-editor__name {
+  font-size: 0.75rem;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Same pending-gold as the level-up screen's not-yet-committed values. */
+.training-editor__points {
+  font-size: 0.65rem;
+  color: #e9be76;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.training-editor__hp-warning {
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: #fb923c;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.training-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.training-editor__side {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .training-editor {
+    grid-template-columns: 1fr;
+  }
 }
 
 .heal-button {

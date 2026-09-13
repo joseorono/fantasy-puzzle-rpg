@@ -24,7 +24,8 @@ export const TOWN_HELP_ENTRIES: readonly TownHelpEntry[] = [
   {
     location: 'inn',
     title: 'Inn',
-    description: "Rest to restore your heroes' HP. Wounded heroes cost coins to heal — the more hurt, the more it costs.",
+    description:
+      "Rest to restore your heroes' HP. Wounded heroes cost coins to heal — the more hurt, the more it costs.",
     iconName: 'chalice',
   },
   {
@@ -32,5 +33,11 @@ export const TOWN_HELP_ENTRIES: readonly TownHelpEntry[] = [
     title: 'Item Shop',
     description: "Buy consumables for battle, or sell the ones you're not using for half their value.",
     iconName: 'smallPotion',
+  },
+  {
+    location: 'training-grounds',
+    title: 'Training Grounds',
+    description: "Retrain a hero's stat points for a coin fee that climbs with each respec, or manage skills.",
+    iconName: 'warAxe',
   },
 ];
