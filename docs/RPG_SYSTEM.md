@@ -195,6 +195,20 @@ Refer to the source file for the complete and up-to-date type definitions.
 - **Leveling System (`src/lib/leveling-system.ts`)**: Characters earn EXP from battle victories, level up, and allocate stat points (POW, VIT, SPD) via the Level-Up screen.
 - **Skill System (`src/lib/skill-system.ts`)**: Active skills (Ultimates) unlock as characters level up; Passive skills with closed-set modifiers are purchased with resources in the pause menu Skills tab.
 
+### Respec (Training Grounds)
+
+Each level-up grants `STAT_POINTS_PER_LEVEL` (2) points the player allocates by hand plus the same number rolled at random from `potentialStats`. Only the hand-allocated share is refundable. Characters store stat totals, so the refund is derived per stat against the hero's level-1 entry in `INITIAL_PARTY`:
+
+```
+randomGained[s] = INITIAL.potentialStats[s] - potentialStats[s]
+allocated[s]    = max(0, stats[s] - INITIAL.stats[s] - randomGained[s])
+floor[s]        = stats[s] - allocated[s]
+```
+
+- `getAllocatedStats` / `getRespecFloor` / `getRefundableStatPoints` in `src/lib/leveling-system.ts` compute the above; the refundable total equals `STAT_POINTS_PER_LEVEL × (level − 1)`.
+- `respecStats(character, newStats)` returns a new character with `maxHp` recomputed and `currentHp` clamped down to it. A VIT drop costs HP; a VIT rise never heals, so retraining cannot replace the Inn. Requests below a floor or with a different point total are rejected unchanged.
+- The Training Grounds charges `getRespecCost(respecCount)` coins (`src/constants/training-grounds.ts`), rising with `progressFlags.respecCount`.
+
 ## Future Enhancements
 
 - Status effects (Poison, Burn, Stun, Shield)
