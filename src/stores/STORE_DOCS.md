@@ -24,6 +24,7 @@ src/stores/
 │   ├── map-progress.ts / map-progress.types.ts     # Completed nodes and character map positions
 │   ├── floor-loot-progress.ts / .types.ts          # Floor loot pickup collection state
 │   ├── crafting.ts / crafting.types.ts             # Crafting pity counters and bad-luck protection
+│   ├── progress-flags.ts / .types.ts               # Save-lifetime scalars & flags too small for their own slice
 │   └── dungeon-progress.ts / .types.ts             # Dungeon completion records and replay tracking
 ├── game-store.ts                                   # Main Zustand store assembly
 ├── battle-atoms.ts                                 # Jotai atoms for combat & match-3 board

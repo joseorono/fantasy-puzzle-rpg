@@ -20,8 +20,8 @@ size budget.
 Defined and validated in `src/types/save-game.ts`. `savedAt` is epoch milliseconds, never
 a `Date`, so the file stays plain JSON. A full mid-game save is roughly 4–8 KB.
 
-`state` carries the seven persistent Zustand slices: `resources`, `party`, `inventory`,
-`mapProgress`, `floorLootProgress`, `crafting`, `dungeonProgress`.
+`state` carries the eight persistent Zustand slices: `resources`, `party`, `inventory`,
+`mapProgress`, `floorLootProgress`, `crafting`, `progressFlags`, `dungeonProgress`.
 
 **The router slice is deliberately not saved.** Its `viewData` holds an `onLeaveCallback`
 function and a by-reference `DungeonDefinition`, neither of which survives JSON. That's why
@@ -84,7 +84,7 @@ with unbounded hours.
 
 Two store-level functions in `src/stores/game-store.ts`:
 
-- `hydrateGameFromSave(save)` — overwrites the seven slices in one `setState`, leaving the
+- `hydrateGameFromSave(save)` — overwrites the eight slices in one `setState`, leaving the
   router alone.
 - `resetGameState()` — a true new game, router included, cloning the shared starting
   constants so the store never freezes the module-level originals.
