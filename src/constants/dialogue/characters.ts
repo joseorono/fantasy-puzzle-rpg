@@ -8,7 +8,8 @@ export type DialogueCharacterId =
   | 'narrator'
   | 'mystery'
   | 'blacksmith'
-  | 'shopkeeper';
+  | 'shopkeeper'
+  | 'trainer';
 
 export const INNKEEPER_CHAR: DialogueCharacter = {
   id: 'innkeeper',
@@ -63,6 +64,14 @@ export const SHOPKEEPER_CHAR: DialogueCharacter = {
   side: 'left',
 };
 
+/** Placeholder portrait: only two exist, and the witch keeps the trainer distinct from the other three NPCs. */
+export const TRAINER_CHAR: DialogueCharacter = {
+  id: 'trainer',
+  name: 'Drill Master',
+  portrait: '/assets/portraits/Witch_03.png',
+  side: 'left',
+};
+
 export const CharacterList: DialogueCharacterId[] = [
   'innkeeper',
   'witch',
@@ -72,4 +81,5 @@ export const CharacterList: DialogueCharacterId[] = [
   'mystery',
   'blacksmith',
   'shopkeeper',
+  'trainer',
 ];
