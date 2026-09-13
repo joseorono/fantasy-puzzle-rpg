@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as levelingSystem from './leveling-system';
 import { calculateMaxHp } from './rpg-calculations';
 import { calculateLevelUpsForParty } from './battle-rewards';
-import { MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { INITIAL_PARTY, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE, STAT_POINTS_PER_LEVEL } from '~/constants/party';
 import { EXP_BASE, EXP_CURVE_POWER } from '~/constants/progression';
 import type { CharacterData, CoreRPGStats } from '~/types';
 
@@ -300,6 +300,123 @@ describe('levelUp', () => {
     const result = levelingSystem.levelUp(character, chosenStats, null, 1);
 
     expect(result).toBe(character);
+  });
+});
+
+describe('respec', () => {
+  /** The fixture's own level-1 values, so tests never depend on INITIAL_PARTY numbers. */
+  const template = (): levelingSystem.StatTemplate => {
+    const fresh = createTestCharacter();
+    return { stats: fresh.stats, potentialStats: fresh.potentialStats };
+  };
+
+  /** One level-up with a known split: chosen POW+VIT, random POW+SPD. Stats land at 12/5/6. */
+  const createLeveledCharacter = (): CharacterData => {
+    const character = createTestCharacter();
+    levelingSystem.levelUp(character, { pow: 1, vit: 1, spd: 0 }, { pow: 1, vit: 0, spd: 1 }, 1);
+    return character;
+  };
+
+  describe('getAllocatedStats', () => {
+    it('is zero for a fresh hero', () => {
+      expect(levelingSystem.getAllocatedStats(createTestCharacter(), template())).toEqual({ pow: 0, vit: 0, spd: 0 });
+    });
+
+    it('counts only the chosen points, not the random growth', () => {
+      const allocated = levelingSystem.getAllocatedStats(createLeveledCharacter(), template());
+
+      expect(allocated).toEqual({ pow: 1, vit: 1, spd: 0 });
+    });
+
+    it('sums to STAT_POINTS_PER_LEVEL per level gained', () => {
+      const character = createTestCharacter();
+      const levels = 3;
+      levelingSystem.levelUp(
+        character,
+        { pow: 2, vit: 2, spd: 2 },
+        // Rolled on a copy, as the rewards screen does — levelUp drains the real pool itself.
+        levelingSystem.getRandomPotentialStats({ ...character.potentialStats }, levels * STAT_POINTS_PER_LEVEL),
+        levels,
+      );
+
+      expect(levelingSystem.getRefundableStatPoints(character, template())).toBe((character.level - 1) * STAT_POINTS_PER_LEVEL);
+    });
+
+    it('clamps at zero when a stat sits below its template', () => {
+      const character = createTestCharacter({ stats: { pow: 3, vit: 4, spd: 5 } });
+
+      expect(levelingSystem.getAllocatedStats(character, template()).pow).toBe(0);
+    });
+
+    it('looks the template up in INITIAL_PARTY by id', () => {
+      const warrior: CharacterData = {
+        ...INITIAL_PARTY[0],
+        stats: { ...INITIAL_PARTY[0].stats },
+        potentialStats: { ...INITIAL_PARTY[0].potentialStats },
+      };
+      levelingSystem.levelUp(warrior, { pow: 2, vit: 0, spd: 0 }, null, 1);
+
+      expect(levelingSystem.getAllocatedStats(warrior)).toEqual({ pow: 2, vit: 0, spd: 0 });
+    });
+
+    it('refunds nothing for a hero with no template', () => {
+      expect(levelingSystem.getAllocatedStats(createLeveledCharacter())).toEqual({ pow: 0, vit: 0, spd: 0 });
+    });
+  });
+
+  describe('getRespecFloor', () => {
+    it('is the current stats minus the allocated share', () => {
+      expect(levelingSystem.getRespecFloor(createLeveledCharacter(), template())).toEqual({ pow: 11, vit: 4, spd: 6 });
+    });
+  });
+
+  describe('respecStats', () => {
+    it('returns a new character with the moved points and leaves the input untouched', () => {
+      const character = createLeveledCharacter();
+      const result = levelingSystem.respecStats(character, { pow: 11, vit: 4, spd: 8 }, template());
+
+      expect(result).not.toBe(character);
+      expect(result.stats).toEqual({ pow: 11, vit: 4, spd: 8 });
+      expect(character.stats).toEqual({ pow: 12, vit: 5, spd: 6 });
+    });
+
+    it('does not touch potentialStats', () => {
+      const character = createLeveledCharacter();
+      const result = levelingSystem.respecStats(character, { pow: 11, vit: 4, spd: 8 }, template());
+
+      expect(result.potentialStats).toEqual(character.potentialStats);
+    });
+
+    it('recomputes maxHp and clamps currentHp down when VIT drops', () => {
+      const character = createLeveledCharacter();
+      character.currentHp = character.maxHp; // 125 at VIT 5
+      const result = levelingSystem.respecStats(character, { pow: 12, vit: 4, spd: 7 }, template());
+
+      expect(result.maxHp).toBe(calculateMaxHp(character.baseHp, 4, character.vitHpMultiplier));
+      expect(result.currentHp).toBe(result.maxHp);
+    });
+
+    it('never heals when VIT rises', () => {
+      const character = createLeveledCharacter();
+      character.currentHp = 50;
+      const result = levelingSystem.respecStats(character, { pow: 11, vit: 6, spd: 6 }, template());
+
+      expect(result.maxHp).toBeGreaterThan(character.maxHp);
+      expect(result.currentHp).toBe(50);
+    });
+
+    it('rejects a stat below its floor', () => {
+      const character = createLeveledCharacter();
+
+      expect(levelingSystem.respecStats(character, { pow: 10, vit: 5, spd: 8 }, template())).toBe(character);
+    });
+
+    it('rejects a different point total', () => {
+      const character = createLeveledCharacter();
+
+      expect(levelingSystem.respecStats(character, { pow: 12, vit: 5, spd: 7 }, template())).toBe(character);
+      expect(levelingSystem.respecStats(character, { pow: 11, vit: 5, spd: 6 }, template())).toBe(character);
+    });
   });
 });
 
