@@ -216,6 +216,38 @@
   width: 100%;
 }
 
+/* ── Town hub dialogue box ─────────────────────────────────────── */
+
+/* At or below this height the hub uses the same compact box the sub-locations always
+   get, so the dialogue keeps its footprint small when vertical room is tight. Native
+   CSS cannot reference a var() inside a media condition, so the @media rule below must
+   use the same literal value (900px) — keep them in sync. */
+:root {
+  --town-hub-compact-dialogue-max-height: 900px;
+}
+
+/* Mirrors the .shop-bottom compact sizing above, scoped to the hub. */
+@media (max-height: 900px) {
+  .town .dialogue-container .dialogue-box {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .town .dialogue-container .dialogue-box__speaker {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .town .dialogue-container .dialogue-box__text {
+    min-height: unset;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .town .dialogue-container .dialogue-box__footer {
+    margin-top: 0.25rem;
+  }
+}
+
 .shop-header {
   display: flex;
   justify-content: space-between;
@@ -401,8 +433,8 @@
   align-items: center;
   gap: 0rem;
   padding: 0.5rem;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.55), rgba(26, 16, 8, 0.55)),
-    url('/assets/bg/looping/bg-board.png');
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.55), rgba(26, 16, 8, 0.55)), url('/assets/bg/looping/bg-board.png');
   border: 2px solid #d4a574;
   border-radius: 8px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -890,7 +922,8 @@
 .melt-group {
   flex: 1;
   padding: 15px;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
   border-radius: 4px;
 }
 
@@ -955,7 +988,6 @@
   flex: 1;
   min-height: 0;
 }
-
 
 .inn-info h2 {
   margin: 0;
@@ -1362,4 +1394,3 @@
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.8);
 }
-

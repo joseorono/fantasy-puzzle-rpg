@@ -23,7 +23,10 @@ import { WoodDiscButton } from '~/components/ui-custom/wood-disc-button';
 import { TownHelpPanel } from './town-help-panel';
 
 /** The signpost planks, top to bottom — the keyboard ring and the click handlers share these ids. */
-const PLANK_IDS = ['blacksmith', 'inn', 'item-store'] as const;
+const PLANK_IDS = ['blacksmith', 'inn', 'item-store', 'training-grounds'] as const;
+
+/** Planks with no destination yet — they render and take the cursor, but selecting them no-ops. */
+const UNIMPLEMENTED_PLANK_IDS: readonly string[] = ['training-grounds'];
 
 interface TownHubProps {
   townName: string;
@@ -136,7 +139,8 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
       if (selectedId === null) return;
       if (selectedId === 'back') handleLeaveTown();
       else if (selectedId === 'help') setIsHelpOpen(true);
-      else handleGoToPlace(selectedId as Exclude<townLocations, 'town-hub'>);
+      else if (!UNIMPLEMENTED_PLANK_IDS.includes(selectedId))
+        handleGoToPlace(selectedId as Exclude<townLocations, 'town-hub'>);
     }
   }, isHubActive);
 
@@ -187,7 +191,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
               <WoodDiscButton glyph="help" onClick={() => setIsHelpOpen(true)} aria-label="About the town" />
             </ToffecBeigeCornersWrapper>
           </div>
-          <div className="relative mx-[200px] flex flex-col items-end gap-4">
+          <div id="town-locations" className="relative mx-[200px] flex flex-col items-end gap-4">
             <div className="bg-post"></div>
             <ToffecBeigeCornersWrapper
               className="mt-2"
@@ -205,6 +209,13 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'planks' && plankSelection.isSelected('item-store')}>
               <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
                 <NarikWoodBitFont text="ITEM SHOP" size={1} />
+              </div>
+            </ToffecBeigeCornersWrapper>
+            <ToffecBeigeCornersWrapper
+              forceDisplay={zone === 'planks' && plankSelection.isSelected('training-grounds')}
+            >
+              <div className="plank-option cursor-pointer">
+                <NarikWoodBitFont text="TRAINING GROUNDS" size={1} />
               </div>
             </ToffecBeigeCornersWrapper>
           </div>
