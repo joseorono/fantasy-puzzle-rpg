@@ -293,8 +293,12 @@
   border: 1px solid rgba(212, 165, 116, 0.3);
 }
 
+/* Wraps so the trailing hint pill drops to its own line instead of pushing the panel
+   wide — the pill is inline-flex and never shrinks, and a location with several tabs
+   runs out of room long before the viewport does. */
 .blacksmith-tabs {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
@@ -1118,6 +1122,10 @@
   min-height: 0;
 }
 
+/* Scrolls vertically once the editor opens. The inline padding is what the keyboard
+   cursor corners overhang into (they sit 2px outside their cell): without it the
+   forced `overflow-x: auto` that comes with `overflow-y` turns those 2px into a
+   horizontal scrollbar. The negative margin keeps the content aligned with the tabs. */
 .training-respec {
   display: flex;
   flex-direction: column;
@@ -1125,6 +1133,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  margin-inline: -4px;
+  padding-inline: 4px;
 }
 
 .training-spar {
