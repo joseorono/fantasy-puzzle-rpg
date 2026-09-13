@@ -61,24 +61,6 @@ a[href]:hover,
   }
 }
 
-/* Held-interaction glow.
-   The same breath as `cursor-pulse`, but drawn as a box-shadow around the
-   element instead of a filter over it — for surfaces too large to filter, where
-   `brightness()` would wash out the content (e.g. every tile of the map canvas).
-   Pairs with `:active`, so no JS state or re-render is involved. */
-.cursor-hold-glow:active {
-  animation: cursor-hold-glow 1s ease-in-out infinite;
-}
-
-@keyframes cursor-hold-glow {
-  0%, 100% {
-    box-shadow: 0 0 var(--cursor-glow-radius) var(--cursor-glow);
-  }
-  50% {
-    box-shadow: 0 0 var(--cursor-glow-radius-strong) var(--cursor-glow-strong);
-  }
-}
-
 /*
 =========================================================
     Cursor Corners — Base

@@ -36,12 +36,14 @@
   z-index: 3;
 }
 
+/* Sized off --leave-btn-width so a scope can shrink it (the map does) without
+   re-stating the art; height keeps back-button.png's native 80:86 ratio. */
 .leave-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 80px;
-  height: 86px;
+  top: var(--leave-btn-offset, 16px);
+  left: var(--leave-btn-offset, 16px);
+  width: var(--leave-btn-width, 80px);
+  aspect-ratio: 80 / 86;
   background-image: url('/assets/menu/back-button.png');
   background-size: cover;
   background-position: center;

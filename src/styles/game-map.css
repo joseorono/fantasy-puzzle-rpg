@@ -1,7 +1,7 @@
 /*
   Map screen. The map is a fixed-aspect canvas inside the ever-present window
-  frame, so it is always letterboxed on one axis; the letterbox is the same dark
-  ground as the frame, and a thin ring hugs the canvas itself.
+  frame, so it is always letterboxed on one axis; the letterbox is a tiled board
+  texture, and a thin ring hugs the canvas itself.
 
   Tunables. --map-viewport-inset must stay >= --map-frame-width: .game-map clips
   at its padding box, and the frame ring is painted outside the canvas.
@@ -10,6 +10,17 @@
   --map-viewport-inset: 0.5rem;
   --map-frame-width: 3px;
   --map-frame-color: #8a6a3f;
+
+  /* Letterbox ground. The board tile is the same texture the dialogue nameplate and
+     rewards panels use, at an integer texel scale so it stays crisp; the tint knocks
+     it back so it reads as the surface the map sits on, not as content. */
+  --map-letterbox-tile: url('/assets/bg/looping/bg-board-2.png');
+  --map-letterbox-scale: 32px;
+  --map-letterbox-tint: rgba(10, 6, 4, 0.35);
+
+  /* Back button, smaller here than in town — the map wants its canvas. */
+  --map-leave-btn-width: 44px;
+  --map-leave-btn-offset: 10px;
 }
 
 .game-map {
@@ -25,6 +36,19 @@
   /* Positioning context for .leave-btn — keep it here, not on
      .tilemap-container, or the back button re-anchors onto the map. */
   position: relative;
+
+  /* Overrides the flat .game-view fill: tile over the tint over the base colour, so a
+     failed image request still lands on the old dark ground rather than on nothing. */
+  background-color: #0f0a06;
+  background-image: linear-gradient(var(--map-letterbox-tint), var(--map-letterbox-tint)),
+    var(--map-letterbox-tile);
+  background-size:
+    auto,
+    var(--map-letterbox-scale) var(--map-letterbox-scale);
+  background-repeat: no-repeat, repeat;
+
+  --leave-btn-width: var(--map-leave-btn-width);
+  --leave-btn-offset: var(--map-leave-btn-offset);
 }
 
 .tilemap-container {
@@ -37,9 +61,7 @@
 /*
   The frame ring is an `outline`, never a `border`: it hugs the canvas exactly
   with square corners while costing no layout space, so `useCanvasMetrics` keeps
-  measuring the canvas itself. Not a box-shadow either — `.cursor-hold-glow`
-  animates box-shadow while the pointer is held, which would blank the ring on
-  every step.
+  measuring the canvas itself.
 */
 .tilemap-container canvas {
   display: block;

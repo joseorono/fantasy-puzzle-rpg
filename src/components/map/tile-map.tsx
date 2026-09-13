@@ -882,7 +882,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
         >
           <canvas
             ref={canvasRef}
-            className="cursor-hold-glow"
             {...movement.pointerHandlers}
             style={{
               background: '#87CEEB',
