@@ -48,11 +48,6 @@ export default function GameScreen() {
     case 'dialogue-demo':
       return <DialogueTestView />;
 
-    case 'inventory':
-      // TODO: Implement inventory view
-
-      return <div>Inventory View - Coming Soon</div>;
-
     case 'debug':
       return <DebugView />;
 

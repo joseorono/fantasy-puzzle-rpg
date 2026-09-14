@@ -11,7 +11,6 @@ export type ViewType =
   | 'battle-demo'
   | 'map'
   | 'dialogue-demo'
-  | 'inventory'
   | 'debug'
   | 'battle-rewards'
   | 'dungeon';
@@ -87,11 +86,6 @@ export interface MapViewData {
 export type DialogueDemoViewData = object;
 
 /**
- * Data for inventory view (no specific data needed for now)
- */
-export type InventoryViewData = object;
-
-/**
  * Data for debug view (no specific data needed)
  */
 export type DebugViewData = object;
@@ -114,7 +108,6 @@ export interface ViewDataMap {
   'battle-demo': BattleViewData;
   map: MapViewData;
   'dialogue-demo': DialogueDemoViewData;
-  inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
   dungeon: DungeonViewData;
@@ -127,7 +120,6 @@ export type RouteStatus = TownHubViewData &
   BattleViewData &
   MapViewData &
   DialogueDemoViewData &
-  InventoryViewData &
   DebugViewData &
   BattleRewardsViewData &
   DungeonViewData;

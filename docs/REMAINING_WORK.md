@@ -36,7 +36,7 @@ Audit of open work as of 2026-09-13, based on the many planning docs already in 
 
 ## UI/UX & accessibility
 
-- [ ] **Implement the real Inventory view** — `src/game-screen.tsx:52` still returns a placeholder (`<div>Inventory View - Coming Soon</div>`) with an explicit `// TODO: Implement inventory view`. Routing (`goToInventory()`) and view-data types already exist, and there's a dev-only `inventory-test.tsx` to reference. **This is the single concrete unfinished view in the app.**
+- [x] ~~Implement the real Inventory view~~ — misnomer, there will never be a standalone Inventory view; inventory management lives in the pause menu (`pause-menu-items.tsx`). Removed the vestigial `'inventory'` route entirely: the `game-screen.tsx` placeholder, `goToInventory()` (router action, slice, and `lib/routing.ts` function), `InventoryViewData`/`ViewDataMap['inventory']`, and the stale references in `CLAUDE.md`, `docs/ROUTING.md`, `docs/ROUTING_QUICK_REFERENCE.md`. The dev-only `inventory-test.tsx` debug page was kept — it exercises the inventory slice directly and isn't tied to the deleted route.
 
 ## Electron packaging
 

@@ -33,11 +33,6 @@ export interface RouterSlice {
       goToDialogueDemo: (data?: ViewDataMap['dialogue-demo']) => void;
 
       /**
-       * Navigate to inventory
-       */
-      goToInventory: (data?: ViewDataMap['inventory']) => void;
-
-      /**
        * Navigate to debug view
        */
       goToDebug: (data?: ViewDataMap['debug']) => void;
