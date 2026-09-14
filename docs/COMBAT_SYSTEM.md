@@ -39,6 +39,10 @@ The battle screen now features a fully functional combat system with enemy attac
   if that still fails the board is reshuffled — same colors, bombs stay put, moved orbs replay their fall-in —
   and a "No moves! Reshuffle!" callout fires (`lastReshuffle`). Refills never avoid matches, so cascades are
   unchanged.
+- **Hint**: once a settled board sits idle for `BOARD_HINT_DELAY_MS` (`src/constants/battle.ts`), `useBoardHint`
+  highlights one legal swap from `findPossibleMove` — both orbs get a muted pulsing ring (`ORB_HINT_CLASSES`,
+  `src/constants/ui.ts`), distinct from the white selection ring. Selecting an orb keeps the hint; the next valid
+  swap, a pause, or the post-kill combo finish clears it.
 - **Opening board**: `createOpeningBoard` deals a random board and keeps it only if it has at most
   `OPENING_MAX_MATCHES` (2) pre-made runs, none of bomb-spawning length (`OPENING_MAX_RUN_LENGTH`), and a legal
   move or a match — a small free opening cascade stays possible, a runaway one does not. All board knobs live in

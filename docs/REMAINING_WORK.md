@@ -13,7 +13,7 @@ Audit of open work as of 2026-09-13, based on the many planning docs already in 
 - [ ] **Wave/endless "Horde" mode.**
 - [ ] **Telegraphed mid-battle wind-ups** — only the always-on stagger mechanic shipped; the actual charge-up/interrupt variant isn't built.
 - [ ] **Batched dungeon end-of-run rewards** — currently every fight interrupts with a full rewards screen instead of accumulating into one end-of-run tally; dungeon loot tables also only drop resources/coins, never gear.
-- [ ] **Board "hint" affordance** — `findPossibleMove()` already exists in `src/lib/match-3.ts` but has zero UI consumers, so surfacing it is a cheap follow-up.
+- [x] **Board "hint" affordance** — done: `useBoardHint` (`src/hooks/use-board-hint.ts`) calls `findPossibleMove()` after `BOARD_HINT_DELAY_MS` of idle on a settled board and both orbs of the swap get the muted `ORB_HINT_CLASSES` ring (`src/constants/battle.ts`, `src/constants/ui.ts`).
 
 ## Progression & economy
 

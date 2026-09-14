@@ -27,6 +27,8 @@ export interface OrbComponentProps {
   /** True while this orb is part of a resolving match (glow + ping, then the disappear spin). */
   isHighlighted: boolean;
   isInvalidSwap: boolean;
+  /** True when this orb is half of the idle-hint swap (muted pulsing ring). */
+  isHint: boolean;
   isNew: boolean;
   /** True when this orb was destroyed by a bomb blast (plays the explosion animation). */
   isExploding: boolean;

@@ -12,6 +12,7 @@ import {
   findPossibleMove,
   hasPossibleMove,
   isBoardPlayable,
+  swapContainsPosition,
 } from './match-3';
 import {
   makeBoard,
@@ -21,17 +22,21 @@ import {
   adjacentPairs,
   bruteForceIsValidSwap,
   bruteForceFindMove,
+  withCell,
+  withRow,
   DEADLOCKED_GRID,
   DEADLOCKED_CORNER_BOMB_GRID,
   EARLY_MOVE_GRID,
   LATE_MOVE_GRID,
+  VERTICAL_MOVE_GRID,
   MATCH_GRID,
   EARLY_MOVE,
   LATE_MOVE,
+  type CellToken,
 } from './match-3.fixtures';
 import { createSeededRandom } from './math';
 import { BOARD_ROWS, BOARD_COLS } from '~/constants/board';
-import type { Orb } from '~/types/battle';
+import type { Orb, OrbSwap } from '~/types/battle';
 
 // ============================================================================
 // Test helpers
@@ -49,6 +54,19 @@ function settledRandomBoards(count: number, bombs: number, seed: number): Orb[][
     if (findLineMatches(board).size === 0) boards.push(board);
   }
   return boards;
+}
+
+/** Every adjacent pair the reference implementation accepts, in scan order. */
+function bruteForceAllMoves(board: Orb[][]): OrbSwap[] {
+  return adjacentPairs(board.length, board[0].length).filter((pair) =>
+    bruteForceIsValidSwap(board, pair.from, pair.to),
+  );
+}
+
+/** Whether two swaps join the same two cells, in either direction. */
+function isSameSwap(a: OrbSwap, b: OrbSwap): boolean {
+  const same = (p: OrbSwap['from'], q: OrbSwap['to']) => p.row === q.row && p.col === q.col;
+  return (same(a.from, b.from) && same(a.to, b.to)) || (same(a.from, b.to) && same(a.to, b.from));
 }
 
 // ============================================================================
@@ -422,6 +440,150 @@ describe('findPossibleMove', () => {
         }
       }
     }
+  });
+
+  it('returns in-bounds moves that really form a line match when applied', () => {
+    for (const bombs of [0, 3]) {
+      for (const board of settledRandomBoards(PROPERTY_SAMPLES, bombs, 51 + bombs)) {
+        const found = findPossibleMove(board);
+        if (!found) continue;
+        for (const pos of [found.from, found.to]) {
+          expect(pos.row).toBeGreaterThanOrEqual(0);
+          expect(pos.row).toBeLessThan(BOARD_ROWS);
+          expect(pos.col).toBeGreaterThanOrEqual(0);
+          expect(pos.col).toBeLessThan(BOARD_COLS);
+        }
+        expect(hasAnyLineMatch(swapOrbs(board, found.from, found.to))).toBe(true);
+      }
+    }
+  });
+
+  it('does not mutate the board it scans', () => {
+    for (const grid of [EARLY_MOVE_GRID, LATE_MOVE_GRID, DEADLOCKED_GRID]) {
+      const board = makeBoard(grid);
+      const snapshot = structuredClone(board);
+      findPossibleMove(board);
+      expect(board).toEqual(snapshot);
+    }
+  });
+
+  it('finds a move that only exists vertically (column pass)', () => {
+    const board = makeBoard(VERTICAL_MOVE_GRID);
+    expect(findLineMatches(board).size).toBe(0);
+    const reference = bruteForceAllMoves(board);
+    expect(reference.length).toBeGreaterThan(0);
+    for (const move of reference) expect(move.from.col).toBe(move.to.col);
+
+    const found = findPossibleMove(board);
+    expect(found).not.toBeNull();
+    expect(found!.from.col).toBe(found!.to.col);
+    expect(bruteForceIsValidSwap(board, found!.from, found!.to)).toBe(true);
+  });
+
+  it('treats wildcard bombs as any color, both inside the window and as the swapped-in orb', () => {
+    // (a) bomb inside the window: blue, *, gray | blue → (0,2)↔(0,3)
+    const bombInWindow = withRow(DEADLOCKED_GRID, 0, ['blue', '*', 'gray', 'blue', 'yellow', 'blue']);
+    // (b) bomb as the swapped-in orb: green, green, gray | * → (0,2)↔(0,3)
+    const bombOutside = withRow(DEADLOCKED_GRID, 0, ['green', 'green', 'gray', '*', 'yellow', 'blue']);
+    const cases: Array<{ grid: CellToken[][]; control: CellToken[][] }> = [
+      { grid: bombInWindow, control: withCell(bombInWindow, 0, 1, 'purple') },
+      { grid: bombOutside, control: withCell(bombOutside, 0, 3, 'yellow') },
+    ];
+
+    for (const { grid, control } of cases) {
+      const board = makeBoard(grid);
+      expect(findLineMatches(board).size).toBe(0);
+      const found = findPossibleMove(board);
+      expect(found).not.toBeNull();
+      expect(bruteForceIsValidSwap(board, found!.from, found!.to)).toBe(true);
+
+      // Same board with the bomb replaced by a plain non-matching color is dead.
+      const controlBoard = makeBoard(control);
+      expect(findLineMatches(controlBoard).size).toBe(0);
+      expect(bruteForceFindMove(controlBoard)).toBeNull();
+      expect(hasPossibleMove(controlBoard)).toBe(false);
+    }
+  });
+
+  it('finds a move at every corner, skipping out-of-bounds neighbors', () => {
+    // 3×3 boards whose only move touches a corner cell; brute force confirms uniqueness.
+    const corners: Array<{ grid: CellToken[][]; move: OrbSwap }> = [
+      {
+        grid: [
+          ['gray', 'blue', 'blue'],
+          ['blue', 'green', 'purple'],
+          ['yellow', 'gray', 'green'],
+        ],
+        move: { from: { row: 0, col: 0 }, to: { row: 1, col: 0 } },
+      },
+      {
+        grid: [
+          ['blue', 'blue', 'gray'],
+          ['green', 'purple', 'blue'],
+          ['yellow', 'gray', 'green'],
+        ],
+        move: { from: { row: 0, col: 2 }, to: { row: 1, col: 2 } },
+      },
+      {
+        grid: [
+          ['blue', 'green', 'yellow'],
+          ['blue', 'purple', 'gray'],
+          ['gray', 'blue', 'green'],
+        ],
+        move: { from: { row: 2, col: 0 }, to: { row: 2, col: 1 } },
+      },
+      {
+        grid: [
+          ['green', 'yellow', 'blue'],
+          ['purple', 'gray', 'blue'],
+          ['yellow', 'blue', 'green'],
+        ],
+        move: { from: { row: 2, col: 2 }, to: { row: 2, col: 1 } },
+      },
+    ];
+
+    for (const { grid, move } of corners) {
+      const board = makeBoard(grid);
+      expect(findLineMatches(board).size).toBe(0);
+      const reference = bruteForceAllMoves(board);
+      expect(reference).toHaveLength(1);
+      expect(isSameSwap(reference[0], move)).toBe(true);
+
+      const found = findPossibleMove(board);
+      expect(found).not.toBeNull();
+      expect(isSameSwap(found!, move)).toBe(true);
+    }
+  });
+
+  it('agrees with brute force on boards narrower or shorter than a run', () => {
+    const rng = createSeededRandom(61);
+    for (const [rows, cols] of [
+      [8, 2],
+      [2, 8],
+      [3, 3],
+      [2, 2],
+    ]) {
+      for (let i = 0; i < 100; i++) {
+        const board = makeRandomBoard(rng, rows, cols);
+        if (findLineMatches(board).size > 0) continue;
+        const found = findPossibleMove(board);
+        expect(found === null).toBe(bruteForceFindMove(board) === null);
+        if (found) expect(bruteForceIsValidSwap(board, found.from, found.to)).toBe(true);
+      }
+    }
+    // Too small for any window in either direction: never a move, never a throw.
+    expect(findPossibleMove(makeRandomBoard(rng, 2, 2))).toBeNull();
+  });
+});
+
+describe('swapContainsPosition', () => {
+  it('is true for both endpoints and false for any other cell', () => {
+    const swap: OrbSwap = { from: { row: 2, col: 3 }, to: { row: 2, col: 4 } };
+    expect(swapContainsPosition(swap, 2, 3)).toBe(true);
+    expect(swapContainsPosition(swap, 2, 4)).toBe(true);
+    expect(swapContainsPosition(swap, 2, 5)).toBe(false);
+    expect(swapContainsPosition(swap, 3, 3)).toBe(false);
+    expect(swapContainsPosition(swap, 4, 2)).toBe(false);
   });
 });
 

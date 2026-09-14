@@ -19,6 +19,13 @@ export const ORB_GLOW_CLASSES: Record<OrbType, string> = {
   gray: 'shadow-[0_0_20px_rgba(156,163,175,0.5)]',
 };
 
+/**
+ * Pulsing ring on the two orbs of the idle hint — a muted, grayish cousin of the white
+ * selection ring (`ring-white`) so the two read differently at a glance. Timing lives in
+ * `BOARD_HINT_DELAY_MS`.
+ */
+export const ORB_HINT_CLASSES = 'animate-pulse ring-4 ring-stone-300/80';
+
 // ─── HP Threshold Colors ────────────────────────────────────────────
 // Maps from HpThreshold ('high' | 'medium' | 'low') to presentation values.
 // Used with getHpThreshold() from ~/lib/rpg-calculations.
