@@ -98,4 +98,3 @@ These describe work that's already shipped; keeping them around as if they're li
 - [x] `SAVE_SLOT_CARD_IMPROVEMENT_PLAN_AGY.md`, `_CLAUDE.md`, `_MIX.md` — deleted (the MIX version shipped; verified in `save-load.css`/`save-slot-card.tsx`).
 - [x] `docs/MENU_UI_PROMPT.md` — deleted (pre-implementation prompt; the real pause menu is built).
 - [x] `current-prompt.md` — deleted (one-off instruction for the bitmap font component, already implemented as `narik-redwood.tsx`).
-- [ ] `docs/SYSTEMS_TODO.md` — kept as-is; every item is checked, fine to keep as a changelog, just not an actionable TODO anymore.
