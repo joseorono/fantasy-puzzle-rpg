@@ -23,8 +23,8 @@ import {
 import { createSeededRandom } from './math';
 import { BENCH_OPTIONS } from './bench-options';
 
-// Fixtures are built once. Bench labels are stable across the playability rewrite so the
-// before/after table in BOARD_PLAYABILITY_PLAN.md lines up.
+// Fixtures are built once. Bench labels are stable across the playability rewrite so before
+// and after runs line up.
 const settled = makeBoard(LATE_MOVE_GRID);
 const early = makeBoard(EARLY_MOVE_GRID);
 const dead = makeBoard(DEADLOCKED_GRID);

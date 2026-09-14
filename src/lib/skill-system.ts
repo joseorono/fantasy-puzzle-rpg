@@ -413,8 +413,7 @@ export function getCharacterPassiveModifiers(character: CharacterData): Characte
 /**
  * Aggregate the whole party's unlocked passives into one flat party-wide record.
  * Deliberately counts every member, living or KO'd: the set is resolved once at
- * battle start and a build should not evaporate mid-fight (see
- * docs/ideas-proposals/SKILL_SYSTEM.md §6).
+ * battle start and a build should not evaporate mid-fight.
  * @param party - The party whose passives to aggregate
  * @returns Total party-wide modifiers, identity-valued where nothing applies
  */

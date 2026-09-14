@@ -6,7 +6,7 @@ doc — nothing here is committed work. It's grounded in the code as it exists t
 idea points at the real files and seams where it would plug in.
 
 > Companion to the per-system proposals in [`docs/ideas-proposals/`](./ideas-proposals)
-> and the build status in [`docs/SYSTEMS_TODO.md`](./SYSTEMS_TODO.md).
+> and the build status in [`docs/REMAINING_WORK.md`](./REMAINING_WORK.md).
 
 ---
 
@@ -16,13 +16,13 @@ Several foundational pillars have landed:
 
 1. ~~**No save/load.**~~ **Resolved:** 4-slot persistence (3 manual + 1 autosave) backed by
    isolated localStorage keys, Zod schema validation, migration hooks, disk save indicator badge,
-   and browser close/reload protection (`docs/SAVE_LOAD_SYSTEM.md`).
+   and browser close/reload protection (`src/stores/STORE_DOCS.md`).
 2. ~~**The match-3 board is "solved."**~~ **Resolved:** Cascades combo multiplier, wildcard bomb
    special tiles (3×3 blasts), the party Guard defense meter, and the enemy stagger/flinch system
    have significantly deepened the puzzle loop.
 3. ~~**No passives or skill choices.**~~ **Resolved:** Full active (Ultimates) and passive skill
    system across 4 tiers per class, Indigolay icon sprite sheets, and the pause-menu Skills tab
-   (`docs/ideas-proposals/SKILL_SYSTEM.md`).
+   (`src/lib/skill-system.ts`, `src/constants/skills/`).
 4. ~~**No dungeon system.**~~ **Resolved:** Multi-floor dungeon exploration with authored and
    procedurally randomized runs, room choices, and completion rewards.
 5. **Remaining high-leverage fun gap: No status-effect / element layer in combat.** Skills hit for raw
@@ -42,7 +42,7 @@ Everything below expands on these and the rest of the systems.
   skills in `src/constants/skills/` carry damage multipliers and passive hooks. We already
   have ice/fire/lightning/poison icon assets sitting unused.
 - ~~**Gray orbs are dead weight.**~~ **Resolved:** gray now charges the party Guard meter
-  (and deals tuned-down chip damage). See [GUARD_METER_PLAN.md](./GUARD_METER_PLAN.md).
+  (and deals tuned-down chip damage). See [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md).
 - **Skills resolve instantly with no animation beat.** A 650ms color flash (skill burst overlay)
   is the payoff for an ultimate. No complex animation sequencing.
 - **Enemies are HP sponges.** Attack on a timer, target random living member, die at 0 HP.

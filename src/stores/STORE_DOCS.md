@@ -7,7 +7,7 @@ The game store is built with Zustand and uses a slice-based architecture for mod
 - **Zustand (`src/stores/game-store.ts`)**: Primary global store managing the 8 core slices.
 - **Jotai (`src/stores/battle-atoms.ts`, `dungeon-atoms.ts`, `pause-menu-atoms.ts`)**: Ephemeral combat, dungeon run, and pause menu UI state.
 - **DevTools Integration**: Redux DevTools support for debugging (dev mode only).
-- **Persistence**: Explicit save slots (3 manual + autosave), not middleware — see `docs/SAVE_LOAD_SYSTEM.md`.
+- **Persistence**: Explicit save slots (3 manual + autosave), not middleware — see **Persistence & Save Hydration** below.
 - **Immer Middleware**: Simplified state updates with draft mutations.
 - **Type-Safe**: Full TypeScript support with slice-specific interfaces.
 - **Performance**: Direct imports and focused selector hooks.

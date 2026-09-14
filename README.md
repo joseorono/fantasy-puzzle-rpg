@@ -33,15 +33,13 @@ npm run build
 
 ## Documentation
 
-- [Save / Load System](./docs/SAVE_LOAD_SYSTEM.md) - Slot storage, Zod schema, and hooks
-- [Combat System](./docs/COMBAT_SYSTEM.md) - Game mechanics, stagger, and balance
+- [Combat System](./docs/COMBAT_SYSTEM.md) - Game mechanics, stagger, guard meter, and balance
 - [Battle Screen](./docs/BATTLE_SCREEN.md) - UI components and battle layout
 - [RPG System](./docs/RPG_SYSTEM.md) - POW/VIT/SPD stats and derived math
-- [Guard Meter](./docs/GUARD_METER_PLAN.md) - Gray orb defense mechanics
 - [Dialogue System](./docs/DIALOGUE_SYSTEM.md) - Dialogue scene orchestrator
 - [Routing Reference](./docs/ROUTING_QUICK_REFERENCE.md) - View navigation API
-- [Store Architecture](./src/stores/STORE_DOCS.md) - Zustand slices and Jotai atoms
-- [Systems Progress & TODO](./docs/SYSTEMS_TODO.md) - Current system implementation status
+- [Store Architecture](./src/stores/STORE_DOCS.md) - Zustand slices, Jotai atoms, and save-slot persistence
+- [Remaining Work](./docs/REMAINING_WORK.md) - Audited checklist of open work
 - [Audio Progress & TODO](./docs/SOUNDS_TODO.md) - SFX and music tracking
 
 ## Tech Stack

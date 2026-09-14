@@ -14,7 +14,7 @@ export const PREEMPTIVE_STRIKE_DAMAGE_BONUS = 0.25;
 // reduced by VIT, but hard-capped per attack cycle so you can slow an enemy yet never stunlock
 // it. Subtle-juice tuning: a single hard hit lands only a fraction of the per-cycle cap, so
 // stagger accumulates over a couple of hits and VIT visibly changes how fast you reach the
-// ceiling. Full design + math: docs/ideas-proposals/ENEMY_STAGGER.md.
+// ceiling. Full design + math: docs/COMBAT_SYSTEM.md.
 
 /**
  * Scales a full-strength, no-resist hit to this fraction of the enemy's attack interval, before
