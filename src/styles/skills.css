@@ -379,14 +379,14 @@
   /* Never let the scroll column squeeze the panel below its content — squeezed
      content paints over the parchment art's engraved inner border. */
   flex-shrink: 0;
-  padding: 0.7rem 0.9rem 0.8rem;
+  padding: 0.6rem 0.9rem;
   border: 20px solid transparent;
   border-image: url('/assets/skills/ui/indigolay-skill-panel-text-area.png') 30 fill / 20px stretch;
   image-rendering: auto;
   color: #33200f;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.4rem;
   animation: skill-detail-in 0.18s ease-out backwards;
 }
 
@@ -698,7 +698,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.2rem;
   border-top: 1px solid rgba(107, 67, 36, 0.28);
   box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.5);
 }
