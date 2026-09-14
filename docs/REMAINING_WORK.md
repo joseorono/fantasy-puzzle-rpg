@@ -68,7 +68,7 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 
 - [ ] `preloadAudios()` in `sound-service.ts` never settles its promise on a second call — hangs any `Promise.all` awaiting it.
 - [ ] `sound.resumeAll()` is called unguarded on every SFX playback.
-- [ ] Original `.wav` audio files (~81 MB) are still on disk even though the `.ogg` conversion tooling has already shipped — clean these up.
+- [x] Original `.wav` audio files (~81 MB) are still on disk even though the `.ogg` conversion tooling has already shipped — deleted `combatMusic.wav`, `epic-cinematic.wav`, `boss-fight.wav`, `fight-music-loop.wav` (`src/constants/audio.ts` already points to their `.ogg` replacements). Note: 13 other `.wav` files remain under `public/assets/audio/` (~3.7 MB total, mostly short UI SFX) — those are still referenced directly by `audio.ts` and were never converted, so they're intentionally untouched.
 
 ## Audio content gaps (`docs/SOUNDS_TODO.md`)
 
