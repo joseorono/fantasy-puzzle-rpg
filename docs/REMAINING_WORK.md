@@ -56,6 +56,35 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 - [x] Note: 3.3, 3.4, 3.5, 3.9 (bar-width→transform, skill-glow blur, filter/box-shadow crossfades, particle-burst caps) are explicitly **ruled out** in `PERFORMANCE_NEXT_STEPS.md` — real but below the noise floor, don't revisit these.
 - [x] Note: 4.1 (lazy-load music per scene) is deliberately deferred, not a bug.
 
+## Bundle size
+
+Measured 2026-09-14 with `npm run visualize-bundle:json` (`vite-bundle-visualizer`). Production JS is
+3415 KB rendered / 822 KB gzipped across three chunks, and the build warns on the 1220 KB main chunk.
+
+- [ ] **PixiJS is 34% of the JS payload and nothing renders with it.** `pixi.js` contributes 915 KB
+  rendered / 250 KB gzipped (279 modules); with its satellites (`earcut`, `ismobilejs`, `eventemitter3`)
+  it is 278 KB of the 822 KB gzipped total. The only Pixi import in `src/` is
+  `import { sound } from '@pixi/sound'` in `src/services/sound-service.ts` — `@pixi/sound` declares
+  `pixi.js` as a **peerDependency**, so the whole WebGL/WebGPU engine ships to play audio.
+- [ ] Two of the three output chunks exist only because of Pixi: `webworkerAll-*.js` (143 KB gzipped) is
+  97% Pixi and `browserAll-*.js` (26 KB gzipped) is 100% Pixi. Both would likely disappear with the
+  audio backend swapped.
+- [ ] **Candidate fix:** replace `@pixi/sound` with Howler (~10 KB gzipped) or plain Web Audio. The blast
+  radius is one file — `SoundService` is a singleton wrapper with a small surface (`preloadAudios`,
+  `playSound`, `startMusic`/`stopMusic`, volume and mute setters) — but it needs real playback testing
+  across music looping, fade-in, per-instance music volume, and the mute/autoplay-unlock paths.
+- [ ] Not yet checked: how much of the bundled Pixi is reachable at runtime versus dead weight Rollup
+  could not shake. The numbers above are bytes emitted, not bytes executed.
+- [ ] Main-chunk code splitting is untouched — no `manualChunks`, no dynamic `import()` for views. Worth
+  revisiting only after the Pixi question is settled, since it dominates everything else.
+- [x] `npm run visualize-bundle` fixed: it chained three full builds with `&` (a sequential separator
+  under `cmd.exe`, not a background operator) that all wrote to the same default temp file and clobbered
+  each other. Now one build per template with explicit `-o` paths, plus `:sunburst`, `:network` and
+  `:json` variants; output is gitignored.
+- [x] Repo disk footprint is measurable with `npm run size` (`scripts/measure-repo-size.mjs`): 45.4 MB of
+  source and assets excluding `node_modules`, of which `public/` is 39.5 MB (86.9%) and PNGs alone are
+  27.2 MB. Image optimization (4.5 above) is where the *download* win is, separate from the JS payload.
+
 ## Audio correctness bugs (separate from performance)
 
 - [x] `preloadAudios()` in `sound-service.ts` never settles its promise on a second call — hangs any `Promise.all` awaiting it. Fixed: re-entrant calls now share the in-flight promise. Root cause of a second, worse bug found while verifying: pixi's `loaded` callback fires **once per file**, so `audioLoaded` flipped true after the first decode — now counts completions before resolving.
@@ -76,6 +105,13 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 ## Testing / tech debt
 
 - [x] No other meaningful TODO/FIXME/XXX markers remain in `src/` — the inventory view above is the only real one.
+- [ ] **Flaky test: `match-3.test.ts` property test times out under full-suite load.**
+  `hasMatchAtPosition > agrees with greedy membership for every cell of a settled board after any swap`
+  (`src/lib/match-3.test.ts:276`) exceeds the default 5000 ms `testTimeout`. Measured 2026-09-14:
+  **fails in 2 of 3 full `vitest --run` passes** (868/869; the failing run clocked 5231 ms), but passes
+  **3 for 3 in isolation at ~1970 ms**. So it is load-dependent, not a bad assertion — the test only has
+  ~2.5× headroom over the budget and loses it to worker contention. Fix is a longer per-test
+  `testTimeout` or fewer `PROPERTY_SAMPLES`, not a logic change.
 
 ## Housekeeping — stale planning docs worth deleting or archiving
 
