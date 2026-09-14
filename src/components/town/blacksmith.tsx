@@ -375,7 +375,7 @@ export default function Blacksmith({
       onLeave={onLeaveCallback}
     >
       {/* Tab Navigation */}
-      <div className="blacksmith-tabs">
+      <div className="town-tabs">
         <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'craft'}>
           <IndigolayTab
             ref={(button) => {

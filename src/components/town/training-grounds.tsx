@@ -227,7 +227,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       onLeave={onLeaveCallback}
     >
       <div className="training-content">
-        <div className="blacksmith-tabs">
+        <div className="town-tabs">
           {TRAINING_TABS.map((entry) => (
             <IndigolayTab
               key={entry.id}

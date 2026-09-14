@@ -143,7 +143,7 @@ export default function ItemStore({
     >
       <div className="shop-content">
         {/* Buy / Sell tabs */}
-        <div className="blacksmith-tabs">
+        <div className="town-tabs">
           <IndigolayTab
             size="default"
             isActive={selectedTab === 'buy'}

@@ -293,10 +293,11 @@
   border: 1px solid rgba(212, 165, 116, 0.3);
 }
 
-/* Wraps so the trailing hint pill drops to its own line instead of pushing the panel
-   wide — the pill is inline-flex and never shrinks, and a location with several tabs
-   runs out of room long before the viewport does. */
-.blacksmith-tabs {
+/* The tab row every town location uses (blacksmith, item shop, training grounds), with
+   an optional KeyHintPill trailing it. Wraps so that pill drops to its own line instead
+   of pushing the panel wide: it is inline-flex and never shrinks, and a location with
+   several tabs runs out of room long before the viewport does. */
+.town-tabs {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -1523,7 +1524,7 @@
 /* ── Keyboard support ──────────────────────────────────────────── */
 
 /* The hint pill trails the tab row without stretching. The look is KeyHintPill's. */
-.blacksmith-tabs .town-key-hint {
+.town-tabs .town-key-hint {
   margin-left: auto;
   align-self: center;
 }
