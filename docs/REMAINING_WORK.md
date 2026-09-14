@@ -89,13 +89,13 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 
 These describe work that's already shipped; keeping them around as if they're live TODOs is misleading:
 
-- [ ] `docs/fixes-todo.md` — its one open item (board-generation deadlock detection) is done, implemented in `src/lib/board-generation.ts`.
-- [ ] `TRAINING_GROUNDS_PLAN.md`, `TRAINING_GROUNDS_PHASE2.md` — both phases shipped.
-- [ ] `docs/ideas-proposals/TRAINING_GROUNDS.md`, `SKILL_SYSTEM.md`, `SKILL_ROSTER.md`, `SKILL_MENU_UI.md`, `ENEMY_STAGGER.md`, `docs/GUARD_METER_PLAN.md` — all self-marked "implemented" and verified in code.
-- [ ] `docs/ideas-proposals/dungeons/*.md` — dungeon system is fully implemented.
-- [ ] `docs/ideas-proposals/progression.md`, `stats-and-leveling.md`, `loot-system.md`, `town-system.md`, `level-up-screen.md` — pre-implementation brainstorms; everything described now exists.
-- [ ] `BOARD_PLAYABILITY_PLAN.md`, `BOARD_SCAN_AND_RENDER_PLAN.md` — fully implemented; fine as historical record, no open items.
-- [ ] `SAVE_SLOT_CARD_IMPROVEMENT_PLAN_AGY.md`, `_CLAUDE.md`, `_MIX.md` — the MIX version shipped; verified in `save-load.css`/`save-slot-card.tsx`.
-- [ ] `docs/MENU_UI_PROMPT.md` — pre-implementation prompt; the real pause menu is built.
-- [ ] `current-prompt.md` — one-off instruction for the bitmap font component, already implemented (`narik-redwood.tsx`). Safe to delete.
-- [ ] `docs/SYSTEMS_TODO.md` — every item is checked; fine to keep as a changelog, just not an actionable TODO anymore.
+- [x] `docs/fixes-todo.md` — deleted (its one open item, board-generation deadlock detection, is done, implemented in `src/lib/board-generation.ts`).
+- [x] `TRAINING_GROUNDS_PLAN.md`, `TRAINING_GROUNDS_PHASE2.md` — deleted (both phases shipped).
+- [x] `docs/ideas-proposals/TRAINING_GROUNDS.md`, `SKILL_SYSTEM.md`, `SKILL_ROSTER.md`, `SKILL_MENU_UI.md`, `ENEMY_STAGGER.md`, `docs/GUARD_METER_PLAN.md` — deleted (all self-marked "implemented" and verified in code).
+- [x] `docs/ideas-proposals/dungeons/*.md` — deleted, directory removed (dungeon system is fully implemented).
+- [x] `docs/ideas-proposals/progression.md`, `stats-and-leveling.md`, `loot-system.md`, `town-system.md`, `level-up-screen.md` — deleted (pre-implementation brainstorms; everything described now exists).
+- [x] `BOARD_PLAYABILITY_PLAN.md`, `BOARD_SCAN_AND_RENDER_PLAN.md` — deleted (fully implemented, no open items).
+- [x] `SAVE_SLOT_CARD_IMPROVEMENT_PLAN_AGY.md`, `_CLAUDE.md`, `_MIX.md` — deleted (the MIX version shipped; verified in `save-load.css`/`save-slot-card.tsx`).
+- [x] `docs/MENU_UI_PROMPT.md` — deleted (pre-implementation prompt; the real pause menu is built).
+- [x] `current-prompt.md` — deleted (one-off instruction for the bitmap font component, already implemented as `narik-redwood.tsx`).
+- [ ] `docs/SYSTEMS_TODO.md` — kept as-is; every item is checked, fine to keep as a changelog, just not an actionable TODO anymore.
