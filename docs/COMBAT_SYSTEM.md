@@ -194,6 +194,15 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
    - Attack timer stops
    - Player can click "NEW GAME" to restart
 
+### Training mode (sparring)
+
+The Training Grounds launches a reward-free fight against `TRAINING_DUMMY` (`src/constants/enemies/training.ts`) with `setupBattleAtom({ ..., mode: 'training' })`. `BattleState.mode` is `'standard'` for every other fight. In training mode:
+
+- The dummy has unreachable HP and never attacks: `createBattleState` skips enemy standby (no preemptive bonus), and `useEnemyAttackTimers` runs no loop, so the top bar reads **SPARRING**.
+- `TrainingDummyReadout` replaces the enemy HP bar with total damage, DPS, and active time. `BattleState.totalDamageDealt` is tracked in every battle (matches and skills); the readout's clock is local and starts on the first hit.
+- Items work but are not removed from the inventory; skills work as normal.
+- The pause overlay gains a **Leave** button. Leaving sets `gameStatus: 'abandoned'` (`abandonBattleAtom`) and calls `goBack()`. Nothing is banked: party HP is only synced on victory and no rewards screen opens. `TownHubViewData.initialLocation` returns the player to the Training Grounds.
+
 ## Balance Notes
 
 ### Current Stats
