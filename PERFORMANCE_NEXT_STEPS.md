@@ -108,12 +108,12 @@ gain.
 RAM win) is deliberately out of scope: not worth the churn in the sound service while bosses and maps
 are being integrated.
 
-⚠️ That ruling does **not** cover Phase 4's correctness items, which are still open. `preloadAudios`
-(`src/services/sound-service.ts`) `return`s from inside its `Promise` executor when a preload is already
-in flight, resolving and rejecting nothing — so a second call never settles, and
-`loaderService.preloadEverything()` awaits it inside a `Promise.all`. 4.3's `sound.resumeAll()` calls
-are likewise unguarded. Separately, the `.wav` originals superseded by 4.2 are still on disk (~81 MB);
-PR #37 tracks that as a pre-merge follow-up.
+✅ Phase 4's correctness items are now closed. `preloadAudios` (`src/services/sound-service.ts`) no
+longer `return`s from inside its `Promise` executor: re-entrant callers share the in-flight promise, and
+because pixi's `loaded` callback fires once per file it now counts completions instead of resolving on
+the first decode. 4.3's `sound.resumeAll()` calls are replaced by a guard that only resumes a context
+suspended by the autoplay policy. Every `.wav` original is converted and deleted — `public/assets/audio/`
+is 7.89 MB of Ogg Vorbis and MP3 with no `.wav` left.
 
 **Disk space.** Not worth touching in pre-alpha — unused assets are expected at this stage.
 

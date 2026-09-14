@@ -60,7 +60,7 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 
 - [x] `preloadAudios()` in `sound-service.ts` never settles its promise on a second call — hangs any `Promise.all` awaiting it. Fixed: re-entrant calls now share the in-flight promise. Root cause of a second, worse bug found while verifying: pixi's `loaded` callback fires **once per file**, so `audioLoaded` flipped true after the first decode — now counts completions before resolving.
 - [x] `sound.resumeAll()` is called unguarded on every SFX playback. Replaced with a guard that only resumes an autoplay-suspended context and respects pixi's blur auto-pause.
-- [x] Original `.wav` audio files (~81 MB) are still on disk even though the `.ogg` conversion tooling has already shipped — deleted `combatMusic.wav`, `epic-cinematic.wav`, `boss-fight.wav`, `fight-music-loop.wav` (`src/constants/audio.ts` already points to their `.ogg` replacements). Note: 13 other `.wav` files remain under `public/assets/audio/` (~3.7 MB total, mostly short UI SFX) — those are still referenced directly by `audio.ts` and were never converted, so they're intentionally untouched.
+- [x] Original `.wav` audio files (~81 MB) are still on disk even though the `.ogg` conversion tooling has already shipped — deleted `combatMusic.wav`, `epic-cinematic.wav`, `boss-fight.wav`, `fight-music-loop.wav` (`src/constants/audio.ts` already points to their `.ogg` replacements). The remaining 13 SFX `.wav` files are now converted too: 3.66 MB became 0.40 MB of Ogg Vorbis and the originals are deleted. `public/assets/audio/` holds no `.wav` at all; the whole folder is 7.89 MB.
 
 ## Audio content gaps (`docs/SOUNDS_TODO.md`)
 
