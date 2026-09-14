@@ -20,11 +20,12 @@ export const ORB_GLOW_CLASSES: Record<OrbType, string> = {
 };
 
 /**
- * Pulsing ring on the two orbs of the idle hint — a muted, grayish cousin of the white
- * selection ring (`ring-white`) so the two read differently at a glance. Timing lives in
- * `BOARD_HINT_DELAY_MS`.
+ * Halo on the two orbs of the idle hint. Thinner and darker than the white `ring-4` selection
+ * ring, and it breathes on its own slow cycle rather than flashing the whole orb like
+ * `animate-pulse` does. Pace and weight live in `.orb-hint` (`src/styles/animations.css`); the
+ * idle wait before it appears is `BOARD_HINT_DELAY_MS`.
  */
-export const ORB_HINT_CLASSES = 'animate-pulse ring-4 ring-stone-300/80';
+export const ORB_HINT_CLASSES = 'orb-hint';
 
 // ─── HP Threshold Colors ────────────────────────────────────────────
 // Maps from HpThreshold ('high' | 'medium' | 'low') to presentation values.
