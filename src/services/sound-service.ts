@@ -27,6 +27,7 @@ class SoundService {
   public sfxVolume: number = 1; //between 0 and 1;
 
   private activeMusicInstances = new Map<SoundNames, { mediaInstance: { volume: number }; baseVolume: number }>();
+  private preloadPromise: Promise<boolean> | null = null;
 
   constructor() {
     if (!SoundService.instance) {
@@ -72,37 +73,64 @@ class SoundService {
     return sound.context.muted;
   }
 
-  async preloadAudios(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      console.log('audioLoaded => ', this.audioLoaded);
-      if (!this.shouldPreload()) {
-        console.log('sound service is already loaded');
-        return;
-      }
+  /**
+   * Loads every entry in `soundFiles`. Re-entrant: resolves immediately once loaded and
+   * shares the in-flight promise while loading. The pixi `loaded` callback fires once per
+   * file, so completions are counted before the batch is reported as loaded.
+   */
+  preloadAudios(): Promise<boolean> {
+    if (this.audioLoaded) return Promise.resolve(true);
+    if (this.preloadPromise) return this.preloadPromise;
+
+    this.preloadPromise = new Promise<boolean>((resolve, reject) => {
+      const soundsList: Record<string, string> = { ...soundFiles };
+      const total = Object.keys(soundsList).length;
+      let settledCount = 0;
+      let firstError: Error | null = null;
+
+      const finish = () => {
+        this.isPreloading = false;
+        if (firstError) {
+          this.preloadPromise = null;
+          reject(firstError);
+          return;
+        }
+        this.audioLoaded = true;
+        sound.context.volume = this.globalVolume;
+        console.log('sound service loaded successfully');
+        resolve(true);
+      };
+
       try {
         this.isPreloading = true;
-        const soundsList: Record<string, string> = {};
-        for (const [key, val] of Object.entries(soundFiles)) {
-          soundsList[key] = val;
-        }
         sound.add(soundsList, {
           preload: true,
-          loaded: () => {
-            this.audioLoaded = true;
-            this.isPreloading = false;
-            sound.context.volume = this.globalVolume;
-            console.log('sound service loaded successfully');
-            resolve(true);
+          loaded: (err) => {
+            if (err && !firstError) {
+              firstError = err;
+              console.error('error loading sound ==> ', err);
+            }
+            settledCount++;
+            if (settledCount === total) finish();
           },
         });
       } catch (error) {
         console.error('error loading sound service ==> ', error);
-        reject(false);
+        this.isPreloading = false;
+        this.preloadPromise = null;
+        reject(error instanceof Error ? error : new Error(String(error)));
       }
-      //  finally {
-      //   this.isPreloading = false;
-      // }
     });
+
+    return this.preloadPromise;
+  }
+
+  /** Resumes a context suspended by the browser's autoplay policy, without overriding an intentional pause. */
+  private ensureContextRunning() {
+    const ctx = sound.context;
+    if (!ctx.paused && ctx.audioContext.state === 'suspended') {
+      void ctx.audioContext.resume();
+    }
   }
 
   playSound(alias: SoundNames, volume: number = 1, volVariance: number = 0, spdVariance: number = 0) {
@@ -110,7 +138,7 @@ class SoundService {
     volVariance = betweenZeroAndOne(volVariance, 'volVariance');
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
 
-    sound.resumeAll();
+    this.ensureContextRunning();
     sound.play(alias, {
       volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
       speed: getRandomlyVariedValue(1, spdVariance),
@@ -118,15 +146,7 @@ class SoundService {
   }
 
   async asyncPlaySound(alias: SoundNames, volume: number = 1, volVariance: number = 0, spdVariance: number = 0) {
-    volume = betweenZeroAndOne(volume, 'volume');
-    volVariance = betweenZeroAndOne(volVariance, 'volVariance');
-    spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
-
-    sound.resumeAll();
-    sound.play(alias, {
-      volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
-      speed: getRandomlyVariedValue(1, spdVariance),
-    });
+    this.playSound(alias, volume, volVariance, spdVariance);
   }
 
   startMusic(alias: SoundNames, volume: number = 1, options?: MusicPlayOptions) {
