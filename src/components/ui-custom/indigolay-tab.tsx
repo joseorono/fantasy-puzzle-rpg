@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 
 const indigolayTabVariants = cva(
   'indigolay-tab inline-flex items-center justify-center border-none bg-transparent font-bold uppercase tracking-wide select-none outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none',
@@ -27,21 +28,46 @@ const indigolayTabVariants = cva(
   },
 );
 
-interface IndigolayTabProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof indigolayTabVariants> {
+interface IndigolayTabProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof indigolayTabVariants> {
   isActive?: boolean;
   ref?: React.Ref<HTMLButtonElement>;
+  /** One line on what the tab is for, shown on hover. Omit for a label that needs no explaining. */
+  tooltip?: React.ReactNode;
 }
 
-export function IndigolayTab({ className, glow, isActive, ref, size, state, type = 'button', ...props }: IndigolayTabProps) {
+export function IndigolayTab({
+  className,
+  glow,
+  isActive,
+  ref,
+  size,
+  state,
+  tooltip,
+  type = 'button',
+  ...props
+}: IndigolayTabProps) {
   const resolvedState = isActive === true ? 'active' : isActive === false ? 'inactive' : state;
 
-  return (
+  const tab = (
     <button
       ref={ref}
       type={type}
       className={cn(indigolayTabVariants({ glow, size, state: resolvedState, className }))}
       {...props}
     />
+  );
+
+  if (!tooltip) return tab;
+
+  // `asChild` so the trigger is the button itself: no extra element to disturb the tab row,
+  // and any ref the caller passed still reaches it.
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{tab}</TooltipTrigger>
+      <TooltipContent side="bottom">{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 

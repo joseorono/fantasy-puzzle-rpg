@@ -51,6 +51,14 @@ type BlacksmithZone = 'tabs' | 'content';
 
 const BLACKSMITH_TABS: readonly BlacksmithTab[] = ['craft', 'modify', 'exchange', 'melt'];
 
+/** What each tab is for, on hover. The rates themselves are on the tab's own cards. */
+const BLACKSMITH_TAB_TOOLTIPS: Record<BlacksmithTab, string> = {
+  craft: 'Forge new weapons and armor.',
+  modify: 'Upgrade gear a tier, or salvage it for materials.',
+  exchange: 'Trade spare bars up into rarer metals.',
+  melt: 'Melt coins down into gold bars.',
+};
+
 const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   sword: 'Swords',
   bow: 'Bows',
@@ -186,9 +194,7 @@ export default function Blacksmith({
   const craftRows: KeyboardSelectableItem[][] = [
     (Object.keys(EQUIPMENT_TYPE_FILTERS) as EquipmentType[]).map((type) => ({ id: `filter:${type}` })),
     ...filteredEquipment.map((item) => [{ id: `item:${item.id}` }]),
-    ...(selectedItem
-      ? [[{ id: 'action:craft', disabled: !canAfford(resources, selectedItem.cost) }]]
-      : []),
+    ...(selectedItem ? [[{ id: 'action:craft', disabled: !canAfford(resources, selectedItem.cost) }]] : []),
   ];
 
   const modifyRows: KeyboardSelectableItem[][] = [
@@ -196,7 +202,12 @@ export default function Blacksmith({
     ...(selectedModify
       ? [
           [
-            { id: 'action:upgrade', disabled: !canUpgradeRarity(selectedModify.rarity) || !canAfford(resources, getUpgradeCost(selectedModify.rarity)) },
+            {
+              id: 'action:upgrade',
+              disabled:
+                !canUpgradeRarity(selectedModify.rarity) ||
+                !canAfford(resources, getUpgradeCost(selectedModify.rarity)),
+            },
             { id: 'action:salvage' },
           ],
         ]
@@ -220,7 +231,14 @@ export default function Blacksmith({
     }),
   );
 
-  const contentRows = selectedTab === 'craft' ? craftRows : selectedTab === 'modify' ? modifyRows : selectedTab === 'exchange' ? exchangeRows : meltRows;
+  const contentRows =
+    selectedTab === 'craft'
+      ? craftRows
+      : selectedTab === 'modify'
+        ? modifyRows
+        : selectedTab === 'exchange'
+          ? exchangeRows
+          : meltRows;
 
   const contentSelection = useKeyboardSelection(contentRows, {
     onMove: (id) => {
@@ -366,6 +384,7 @@ export default function Blacksmith({
             size="default"
             isActive={selectedTab === 'craft'}
             onClick={() => handleTabClick('craft')}
+            tooltip={BLACKSMITH_TAB_TOOLTIPS.craft}
           >
             Craft
           </IndigolayTab>
@@ -378,6 +397,7 @@ export default function Blacksmith({
             size="default"
             isActive={selectedTab === 'modify'}
             onClick={() => handleTabClick('modify')}
+            tooltip={BLACKSMITH_TAB_TOOLTIPS.modify}
           >
             Modify
           </IndigolayTab>
@@ -390,6 +410,7 @@ export default function Blacksmith({
             size="default"
             isActive={selectedTab === 'exchange'}
             onClick={() => handleTabClick('exchange')}
+            tooltip={BLACKSMITH_TAB_TOOLTIPS.exchange}
           >
             Exchange
           </IndigolayTab>
@@ -402,6 +423,7 @@ export default function Blacksmith({
             size="default"
             isActive={selectedTab === 'melt'}
             onClick={() => handleTabClick('melt')}
+            tooltip={BLACKSMITH_TAB_TOOLTIPS.melt}
           >
             Melt
           </IndigolayTab>
@@ -469,26 +491,26 @@ export default function Blacksmith({
                     }`}
                     onClick={() => setSelectedItem(item)}
                   >
-                  <div className="equipment-item-icon">
-                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                  </div>
-                  <div className="equipment-item-content">
-                    <div className="equipment-item-header">
-                      <div className="equipment-item-name">{item.name}</div>
-                      <div className="equipment-item-cost">
-                        {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
-                        {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
-                        {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
-                        {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+                    <div className="equipment-item-icon">
+                      {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                    </div>
+                    <div className="equipment-item-content">
+                      <div className="equipment-item-header">
+                        <div className="equipment-item-name">{item.name}</div>
+                        <div className="equipment-item-cost">
+                          {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                          {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                          {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                          {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+                        </div>
+                      </div>
+                      <div className="equipment-item-stats">
+                        <span className="stat-badge">POW: {item.pow}</span>
+                        <span className="stat-badge">VIT: {item.vit}</span>
+                        <span className="stat-badge">SPD: {item.spd}</span>
+                        {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
                       </div>
                     </div>
-                    <div className="equipment-item-stats">
-                      <span className="stat-badge">POW: {item.pow}</span>
-                      <span className="stat-badge">VIT: {item.vit}</span>
-                      <span className="stat-badge">SPD: {item.spd}</span>
-                      {item.forClass && <span className="stat-badge">For: {item.forClass}</span>}
-                    </div>
-                  </div>
                   </div>
                 </ToffecBeigeCornersWrapper>
               ))}
@@ -519,7 +541,9 @@ export default function Blacksmith({
                   </div>
 
                   <div className="craft-detail-actions">
-                    <ToffecBeigeCornersWrapper forceDisplay={zone === 'content' && contentSelection.isSelected('action:craft')}>
+                    <ToffecBeigeCornersWrapper
+                      forceDisplay={zone === 'content' && contentSelection.isSelected('action:craft')}
+                    >
                       <ToffecButton
                         className="craft-detail-buy-button"
                         variant="orange"
@@ -572,20 +596,20 @@ export default function Blacksmith({
                         className={cn('equipment-list-item', selectedModifyKey === key && 'selected')}
                         onClick={() => handleSelectModify(key)}
                       >
-                      <div className="equipment-item-icon">
-                        {inst.item.iconName ? <FrostyRpgIcon name={inst.item.iconName} size={24} /> : null}
-                      </div>
-                      <div className="equipment-item-content">
-                        <div className="equipment-item-header">
-                          <div className="equipment-item-name" style={{ color: getRarityColor(inst.rarity) }}>
-                            {inst.item.name}
-                            <span className="ml-1 text-[0.55rem] uppercase opacity-80">
-                              {getRarityLabel(inst.rarity)}
-                            </span>
-                          </div>
-                          <div className="equipment-item-cost">x{inst.available}</div>
+                        <div className="equipment-item-icon">
+                          {inst.item.iconName ? <FrostyRpgIcon name={inst.item.iconName} size={24} /> : null}
                         </div>
-                      </div>
+                        <div className="equipment-item-content">
+                          <div className="equipment-item-header">
+                            <div className="equipment-item-name" style={{ color: getRarityColor(inst.rarity) }}>
+                              {inst.item.name}
+                              <span className="ml-1 text-[0.55rem] uppercase opacity-80">
+                                {getRarityLabel(inst.rarity)}
+                              </span>
+                            </div>
+                            <div className="equipment-item-cost">x{inst.available}</div>
+                          </div>
+                        </div>
                       </div>
                     </ToffecBeigeCornersWrapper>
                   );
@@ -642,7 +666,10 @@ export default function Blacksmith({
                       key={tier.from}
                       // Third tier only appears where there's vertical headroom.
                       className={cn('exchange-button', tierIndex === 2 && 'exchange-button--tall-only')}
-                      forceDisplay={zone === 'content' && contentSelection.isSelected(`exchange:${config.fromResource}:${tier.from}`)}
+                      forceDisplay={
+                        zone === 'content' &&
+                        contentSelection.isSelected(`exchange:${config.fromResource}:${tier.from}`)
+                      }
                     >
                       <ToffecButton
                         variant="orange"
@@ -695,7 +722,9 @@ export default function Blacksmith({
                     <ToffecBeigeCornersWrapper
                       key={tier.coins}
                       className="melt-button"
-                      forceDisplay={zone === 'content' && contentSelection.isSelected(`melt:${batch.label}:${tier.coins}`)}
+                      forceDisplay={
+                        zone === 'content' && contentSelection.isSelected(`melt:${batch.label}:${tier.coins}`)
+                      }
                     >
                       <ToffecButton
                         variant="orange"

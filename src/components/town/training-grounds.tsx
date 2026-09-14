@@ -43,10 +43,10 @@ type TrainingZone = 'tabs' | 'content';
 /** Within the Respec tab: the hero row, or the editor open under it. */
 type RespecFocus = 'heroes' | 'editor';
 
-const TRAINING_TABS: readonly { id: TrainingTab; label: string }[] = [
-  { id: 'skills', label: 'Skills' },
-  { id: 'respec', label: 'Respec' },
-  { id: 'spar', label: 'Spar' },
+const TRAINING_TABS: readonly { id: TrainingTab; label: string; tooltip: string }[] = [
+  { id: 'skills', label: 'Skills', tooltip: "Unlock and upgrade each hero's skills." },
+  { id: 'respec', label: 'Respec', tooltip: "Re-spend a hero's stat points for coins." },
+  { id: 'spar', label: 'Spar', tooltip: 'Practice on a dummy. No rewards, no risk.' },
 ];
 
 const TAB_KEY_HINTS: Record<TrainingTab, { vertical: string; enter: string }> = {
@@ -229,7 +229,13 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       <div className="training-content">
         <div className="blacksmith-tabs">
           {TRAINING_TABS.map((entry) => (
-            <IndigolayTab key={entry.id} size="default" isActive={tab === entry.id} onClick={() => switchTab(entry.id)}>
+            <IndigolayTab
+              key={entry.id}
+              size="default"
+              isActive={tab === entry.id}
+              onClick={() => switchTab(entry.id)}
+              tooltip={entry.tooltip}
+            >
               {entry.label}
             </IndigolayTab>
           ))}
