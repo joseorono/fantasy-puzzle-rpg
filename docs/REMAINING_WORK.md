@@ -4,20 +4,12 @@ Audit of open work as of 2026-09-13, based on the many planning docs already in 
 
 ## Combat depth (biggest gap)
 
-- [ ] **Status-effect engine** — no `activeEffects`/`StatusEffect` exists anywhere in `src/`. No poison/burn/stun/shield/buff despite icon art already existing for some of these. This is the keystone gap; several ideas below depend on it. See `docs/ideas-proposals/ORTHOGONAL_FEATURES.md`.
-- [ ] **Elemental weaknesses/resistances** — no `weakColor`/`resistColor` on `EnemyData`.
 - [ ] **Board hazards** — enemy-applied stone/cursed orbs.
 - [ ] **Boss phases** with real mechanic changes mid-fight.
 - [ ] **Active block/defend** input (distinct from the passive Guard meter already shipped).
 - [ ] **Momentum / "fever" meter.**
-- [ ] **2-skill loadout** per character (currently locked to a single active skill).
-- [ ] **Threat/taunt targeting** for enemies.
-- [ ] **Hero board-powers** — class-specific active board manipulation.
 - [ ] **Charms/accessory slot** with on-match procs.
 - [ ] **Enemy archetypes with real mechanics** — shielded/armored/splitter/summoner types.
-- [ ] **Elemental reaction system** (combining match colors for bonus effects).
-- [ ] **Front/back formation rows** for the party.
-- [ ] **Long-term passive perk board** (distinct from the already-shipped per-character skill passives).
 - [ ] **Wave/endless "Horde" mode.**
 - [ ] **Telegraphed mid-battle wind-ups** — only the always-on stagger mechanic shipped; the actual charge-up/interrupt variant isn't built.
 - [ ] **Batched dungeon end-of-run rewards** — currently every fight interrupts with a full rewards screen instead of accumulating into one end-of-run tally; dungeon loot tables also only drop resources/coins, never gear.
