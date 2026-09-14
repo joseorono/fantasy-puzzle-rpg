@@ -17,7 +17,7 @@ import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
+import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from '~/components/ui-custom/cost-badge';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
@@ -143,7 +143,7 @@ export default function ItemStore({
     >
       <div className="shop-content">
         {/* Buy / Sell tabs */}
-        <div className="town-tabs">
+        <IndigolayTabs rule className="town-tabs">
           <IndigolayTab
             size="default"
             isActive={selectedTab === 'buy'}
@@ -168,7 +168,7 @@ export default function ItemStore({
               { keys: ['Enter'], label: `to ${selectedTab === 'buy' ? 'buy' : 'sell'}` },
             ]}
           />
-        </div>
+        </IndigolayTabs>
 
         <div className="store-info">
           <div className="town-section-header town-section-header--items">

@@ -468,11 +468,9 @@
 
 /* ─── Items Tab ──────────────────────────────────────────────────────── */
 
+/* The Items tab's category filters: a tight IndigolayTabs row — see indigolay-tab.css. */
 .pause-menu-item-categories {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  --indigolay-tabs-gap: 0.35rem;
   margin-bottom: 0.08rem;
   padding: 0;
   padding-left: 0.35rem;
@@ -1452,12 +1450,6 @@
    category tabs. Layout only: the look is KeyHintPill's. */
 .pause-menu-inline-hint {
   white-space: nowrap;
-}
-
-/* The category row is a flex row of tabs; the hint trails it without stretching. */
-.pause-menu-item-categories .pause-menu-inline-hint {
-  align-self: center;
-  margin-left: auto;
 }
 
 /* Zone-aware key hint pinned under the menu body. Layout only: the look is KeyHintPill's. */

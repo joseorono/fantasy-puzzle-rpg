@@ -33,7 +33,7 @@ import { BLACKSMITH_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { SalvageConfirmDialog } from './salvage-confirm-dialog';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
+import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge, CostBadges } from '~/components/ui-custom/cost-badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
@@ -375,7 +375,7 @@ export default function Blacksmith({
       onLeave={onLeaveCallback}
     >
       {/* Tab Navigation */}
-      <div className="town-tabs">
+      <IndigolayTabs rule className="town-tabs">
         <ToffecBeigeCornersWrapper forceDisplay={zone === 'tabs' && isTabKeyboardActive && selectedTab === 'craft'}>
           <IndigolayTab
             ref={(button) => {
@@ -428,7 +428,7 @@ export default function Blacksmith({
             Melt
           </IndigolayTab>
         </ToffecBeigeCornersWrapper>
-      </div>
+      </IndigolayTabs>
 
       {/* Craft Tab */}
       {selectedTab === 'craft' && (
@@ -455,7 +455,7 @@ export default function Blacksmith({
           <p className="town-section-subtitle">Choose an equipment type to craft</p>
 
           {/* Equipment Type Filters */}
-          <div className="equipment-filters">
+          <IndigolayTabs className="equipment-filters">
             {(Object.entries(EQUIPMENT_TYPE_FILTERS) as Array<[EquipmentType, string]>).map(([type, label]) => (
               <ToffecBeigeCornersWrapper
                 key={type}
@@ -474,7 +474,7 @@ export default function Blacksmith({
                 </IndigolayTab>
               </ToffecBeigeCornersWrapper>
             ))}
-          </div>
+          </IndigolayTabs>
 
           {/* Master-Detail Workspace */}
           <div className="craft-workspace">

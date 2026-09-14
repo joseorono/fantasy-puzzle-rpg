@@ -28,7 +28,7 @@ import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-k
 import { useConfirm } from '~/hooks/use-confirm';
 import { TownLocationLayout } from './town-location-layout';
 import { RespecEditor } from './respec-editor';
-import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
+import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
@@ -54,6 +54,9 @@ const TAB_KEY_HINTS: Record<TrainingTab, { vertical: string; enter: string }> = 
   skills: { vertical: 'browse', enter: 'to select' },
   spar: { vertical: 'focus', enter: 'to spar' },
 };
+
+/** The Spar tab's only focusable, so its cursor follows the same keyboard-only rule as the rest. */
+const SPAR_START_ID = 'start-sparring';
 
 interface TrainingGroundsProps {
   backgroundImage: string;
@@ -88,6 +91,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
     row.map((member) => ({ id: member.id, disabled: isRespecDisabled(member) })),
   );
   const heroSelection = useKeyboardSelection(heroRows, { onMove: playNavTick });
+  const sparSelection = useKeyboardSelection([[{ id: SPAR_START_ID }]], { onMove: playNavTick });
 
   const editingMember = party.find((member) => member.id === editingId) ?? null;
   const isSkillsKeyboardActive = zone === 'content' && tab === 'skills';
@@ -100,12 +104,17 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       setTab(next);
     }
     heroSelection.clear();
+    sparSelection.clear();
     setRespecFocus('heroes');
     setZone(viaKeyboard ? 'tabs' : 'content');
   }
 
   function enterContent() {
     setZone('content');
+    if (tab === 'spar') {
+      sparSelection.select(SPAR_START_ID);
+      return;
+    }
     if (tab !== 'respec') return;
     const firstEnabled = heroRows.flat().find((item) => !item.disabled) ?? heroRows.flat()[0];
     if (firstEnabled) heroSelection.select(firstEnabled.id);
@@ -113,6 +122,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
 
   function returnToTabs() {
     heroSelection.clear();
+    sparSelection.clear();
     setRespecFocus('heroes');
     setZone('tabs');
   }
@@ -190,7 +200,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       if (direction === 'up') {
         event.preventDefault();
         returnToTabs();
-      } else if (isConfirmKey(event.key)) {
+      } else if (isConfirmKey(event.key) && sparSelection.isSelected(SPAR_START_ID)) {
         event.preventDefault();
         if (!event.repeat) handleStartSparring();
       }
@@ -227,7 +237,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
       onLeave={onLeaveCallback}
     >
       <div className="training-content">
-        <div className="town-tabs">
+        <IndigolayTabs rule className="town-tabs">
           {TRAINING_TABS.map((entry) => (
             <IndigolayTab
               key={entry.id}
@@ -247,7 +257,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
               { keys: ['Enter'], label: TAB_KEY_HINTS[tab].enter },
             ]}
           />
-        </div>
+        </IndigolayTabs>
 
         {tab === 'respec' && (
           <div className="training-respec">
@@ -344,7 +354,7 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
                   <IndigolayStyledListItem>Leave any time from the pause menu</IndigolayStyledListItem>
                 </IndigoLayStyledLists>
                 <div className="training-spar__actions">
-                  <ToffecBeigeCornersWrapper forceDisplay={zone === 'content'}>
+                  <ToffecBeigeCornersWrapper forceDisplay={sparSelection.isSelected(SPAR_START_ID)}>
                     <ToffecButton variant="cream" size="xs" onClick={handleStartSparring}>
                       Start sparring
                     </ToffecButton>

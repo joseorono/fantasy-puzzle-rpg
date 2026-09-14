@@ -71,5 +71,29 @@ export function IndigolayTab({
   );
 }
 
+const indigolayTabsVariants = cva('indigolay-tabs', {
+  variants: {
+    /** Underline the row to part it from the pane below. Primary rows yes, filter rows no. */
+    rule: {
+      true: 'indigolay-tabs--rule',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    rule: false,
+  },
+});
+
+interface IndigolayTabsProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof indigolayTabsVariants> {}
+
+/**
+ * A row of {@link IndigolayTab}s, optionally trailed by a `KeyHintPill`. Wraps, so a long
+ * hint drops to its own line instead of pushing the panel sideways. Spacing around the row
+ * belongs to the host: pass a `className` for margins, or set `--indigolay-tabs-gap`.
+ */
+export function IndigolayTabs({ className, rule, ...props }: IndigolayTabsProps) {
+  return <div className={cn(indigolayTabsVariants({ rule, className }))} {...props} />;
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
-export { indigolayTabVariants };
+export { indigolayTabVariants, indigolayTabsVariants };
