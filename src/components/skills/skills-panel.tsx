@@ -286,6 +286,7 @@ export function SkillsPanel({ keyboardActive = false, onExitLeft }: SkillsPanelP
 
         <div className="skills-main pixel-scrollbar">
           <div className="skills-section">
+            <GradientDivider variant="gold" className="my-1" />
             <div className="skills-section-label pixel-font">
               <span>Active</span>
               <Tooltip>
@@ -303,7 +304,6 @@ export function SkillsPanel({ keyboardActive = false, onExitLeft }: SkillsPanelP
                 </TooltipContent>
               </Tooltip>
             </div>
-            <GradientDivider variant="gold" className="my-1" />
             <div className="skills-row">
               {actives.map((skill, index) => {
                 const locked = !isSkillUnlocked(selected, skill.id);
@@ -347,6 +347,7 @@ export function SkillsPanel({ keyboardActive = false, onExitLeft }: SkillsPanelP
           </div>
 
           <div className="skills-section">
+            <GradientDivider variant="gold" className="my-1" />
             <div className="skills-section-label pixel-font">
               <span>Passive</span>
               <Tooltip>
@@ -364,7 +365,6 @@ export function SkillsPanel({ keyboardActive = false, onExitLeft }: SkillsPanelP
                 </TooltipContent>
               </Tooltip>
             </div>
-            <GradientDivider variant="gold" className="my-1" />
             <div className="skills-row skills-row--passive">
               {passives.map((passive, index) => {
                 const locked = !isPassiveUnlocked(selected, passive.id);
