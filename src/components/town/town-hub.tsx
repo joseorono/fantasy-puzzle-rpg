@@ -4,6 +4,7 @@ import type { townLocations } from '~/types/map-node';
 import Blacksmith from './blacksmith';
 import Inn from './inn';
 import ItemStore from './item-store';
+import TrainingGrounds from './training-grounds';
 import type { ItemStoreParams } from '~/types';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_HUB_BG_SOUNDS, TOWN_SFX_VOLUME } from '~/constants/audio';
@@ -11,7 +12,7 @@ import { getRandomElement } from '~/lib/utils';
 import { pickAllSubLocationBackgrounds, pickTownHubBackground } from '~/constants/town-backgrounds';
 import { TOWN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { TopBarResources } from './top-bar-resources';
-import { useResources } from '~/stores/game-store';
+import { useResources, useRouterActions, useViewData } from '~/stores/game-store';
 import { DialogueBox } from '~/components/dialogue/dialogue-box';
 import { NarikWoodBitFont } from '../bitmap-fonts/narik-wood';
 import { getNavDirection, isCancelKey, isConfirmKey, isHelpKey } from '~/constants/keyboard';
@@ -23,19 +24,31 @@ import { WoodDiscButton } from '~/components/ui-custom/wood-disc-button';
 import { TownHelpPanel } from './town-help-panel';
 
 /** The signpost planks, top to bottom — the keyboard ring and the click handlers share these ids. */
-const PLANK_IDS = ['blacksmith', 'inn', 'item-store'] as const;
+const PLANK_IDS = ['blacksmith', 'inn', 'item-store', 'training-grounds'] as const;
 
 interface TownHubProps {
   townName: string;
   innCost: Resources;
   itemsForSell: ItemStoreParams;
   onLeaveCallback: () => void;
+  /** Open straight into this sub-location (see `TownHubViewData.initialLocation`). */
+  initialLocation?: Exclude<townLocations, 'town-hub'>;
 }
 
-export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallback }: TownHubProps) {
+export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallback, initialLocation }: TownHubProps) {
   // townName is currently passed through for the upcoming TownNameDisplay component
   void townName;
-  const [currentLocation, setCurrentLocation] = useState<townLocations>('town-hub');
+  const [currentLocation, setCurrentLocation] = useState<townLocations>(initialLocation ?? 'town-hub');
+  const townHubData = useViewData('town-hub');
+  const routerActions = useRouterActions();
+
+  // Consume-once: the redirect served its purpose on mount, so clear it before anything else
+  // (leaving town, entering from the map) can see it. Mount-only by design.
+  useEffect(() => {
+    if (!townHubData?.initialLocation) return;
+    routerActions.setViewData('town-hub', { ...townHubData, initialLocation: undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [townHubBackground] = useState(pickTownHubBackground);
   // Pick a background per sub-location once per hub visit so each stays consistent
@@ -166,6 +179,13 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
           onLeaveCallback={handleReturnToHub}
         />
       );
+    case 'training-grounds':
+      return (
+        <TrainingGrounds
+          backgroundImage={subLocationBackgrounds['training-grounds']}
+          onLeaveCallback={handleReturnToHub}
+        />
+      );
   }
 
   return (
@@ -187,7 +207,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
               <WoodDiscButton glyph="help" onClick={() => setIsHelpOpen(true)} aria-label="About the town" />
             </ToffecBeigeCornersWrapper>
           </div>
-          <div className="relative mx-[200px] flex flex-col items-end gap-4">
+          <div id="town-locations" className="relative mx-[200px] flex flex-col items-end gap-4">
             <div className="bg-post"></div>
             <ToffecBeigeCornersWrapper
               className="mt-2"
@@ -205,6 +225,13 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
             <ToffecBeigeCornersWrapper forceDisplay={zone === 'planks' && plankSelection.isSelected('item-store')}>
               <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('item-store')}>
                 <NarikWoodBitFont text="ITEM SHOP" size={1} />
+              </div>
+            </ToffecBeigeCornersWrapper>
+            <ToffecBeigeCornersWrapper
+              forceDisplay={zone === 'planks' && plankSelection.isSelected('training-grounds')}
+            >
+              <div className="plank-option cursor-pointer" onClick={() => handleGoToPlace('training-grounds')}>
+                <NarikWoodBitFont text="TRAINING GROUNDS" size={1} />
               </div>
             </ToffecBeigeCornersWrapper>
           </div>

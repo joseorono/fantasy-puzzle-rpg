@@ -16,7 +16,6 @@ const {
   goToStore,
   goToInn,
   goToDialogue,
-  goToInventory,
   goToDebug,
   goBack,
   goBackTo,
@@ -58,9 +57,6 @@ goToDialogue({
   sceneId: 'intro-scene',
   onComplete: () => console.log('Dialogue finished'),
 });
-
-// Inventory
-goToInventory();
 
 // Debug
 goToDebug();
@@ -154,7 +150,6 @@ type ViewType =
   | 'battle-demo'
   | 'map'
   | 'dialogue-demo'
-  | 'inventory'
   | 'debug'
   | 'battle-rewards'
   | 'dungeon';

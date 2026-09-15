@@ -26,6 +26,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { cn } from '~/lib/utils';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 
 /** One rated floor line: its name and the stars earned in its combat. */
@@ -234,9 +235,10 @@ export function DungeonClearScreen({
             {continueLabel}
           </ToffecButton>
 
-          <span className="dcs-key-hint pixel-font">
-            {canContinue ? `Enter to ${continueLabel.toLowerCase()}` : 'Enter to skip'}
-          </span>
+          <KeyHintPill
+            className="dcs-key-hint"
+            items={[{ keys: ['Enter'], label: canContinue ? `to ${continueLabel.toLowerCase()}` : 'to skip' }]}
+          />
         </div>
       </IndigolayCornersWrapper>
     </div>

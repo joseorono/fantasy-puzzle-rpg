@@ -17,6 +17,11 @@ export const MAX_LEVEL = 99;
 // Safety cap on level-ups awarded from a single battle, guarding against a runaway
 // loop on bad data (used when building the rewards-screen EXP animation timeline).
 export const MAX_LEVEL_UPS_PER_BATTLE = 99;
+/**
+ * Stat points the player allocates by hand per level-up. Each level also rolls this many
+ * random points from `potentialStats`; only the hand-allocated share is refundable on a respec.
+ */
+export const STAT_POINTS_PER_LEVEL = 2;
 /** Hard cap on how many enemies a single battle encounter may contain. */
 export const MAX_ENEMIES_PER_BATTLE = 4;
 

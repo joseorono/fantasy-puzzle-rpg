@@ -5,14 +5,22 @@ export const TOWN_HUB_BG_IMAGES = ['/assets/bg/bg-town-1.jpg', '/assets/bg/bg-to
 
 export const BLACKSMITH_BG_IMAGES = ['/assets/bg/bg-blacksmith-1.jpg', '/assets/bg/bg-blacksmith-1-2.jpg'] as const;
 
-export const INN_BG_IMAGES = ['/assets/bg/desk-inn-1.jpg', '/assets/bg/desk-inn-2.jpg', '/assets/bg/desk-inn.jpg'] as const;
+export const INN_BG_IMAGES = [
+  '/assets/bg/desk-inn-1.jpg',
+  '/assets/bg/desk-inn-2.jpg',
+  '/assets/bg/desk-inn.jpg',
+] as const;
 
 export const ITEM_STORE_BG_IMAGES = ['/assets/bg/item-shop-bg1.jpg', '/assets/bg/item-shop-bg2.jpg'] as const;
+
+/** No yard art yet — borrows the town exteriors until a training-grounds background exists. */
+export const TRAINING_GROUNDS_BG_IMAGES = TOWN_HUB_BG_IMAGES;
 
 const SUB_LOCATION_BG_IMAGES: Record<Exclude<townLocations, 'town-hub'>, readonly string[]> = {
   blacksmith: BLACKSMITH_BG_IMAGES,
   inn: INN_BG_IMAGES,
   'item-store': ITEM_STORE_BG_IMAGES,
+  'training-grounds': TRAINING_GROUNDS_BG_IMAGES,
 };
 
 export function pickSubLocationBackground(place: Exclude<townLocations, 'town-hub'>): string {
@@ -33,6 +41,7 @@ export function pickAllSubLocationBackgrounds(): Record<Exclude<townLocations, '
     blacksmith: pickSubLocationBackground('blacksmith'),
     inn: pickSubLocationBackground('inn'),
     'item-store': pickSubLocationBackground('item-store'),
+    'training-grounds': pickSubLocationBackground('training-grounds'),
   };
 }
 

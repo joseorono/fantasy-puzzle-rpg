@@ -17,9 +17,9 @@ import type { SaveGame, SaveGameState } from '~/types/save-game';
  * and loads always resume on the map anyway.
  */
 function readPersistentState(): SaveGameState {
-  const { resources, party, inventory, mapProgress, floorLootProgress, crafting, dungeonProgress } =
+  const { resources, party, inventory, mapProgress, floorLootProgress, crafting, progressFlags, dungeonProgress } =
     useGameStore.getState();
-  return { resources, party, inventory, mapProgress, floorLootProgress, crafting, dungeonProgress };
+  return { resources, party, inventory, mapProgress, floorLootProgress, crafting, progressFlags, dungeonProgress };
 }
 
 /**

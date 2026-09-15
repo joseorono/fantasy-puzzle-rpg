@@ -14,7 +14,7 @@ export const PREEMPTIVE_STRIKE_DAMAGE_BONUS = 0.25;
 // reduced by VIT, but hard-capped per attack cycle so you can slow an enemy yet never stunlock
 // it. Subtle-juice tuning: a single hard hit lands only a fraction of the per-cycle cap, so
 // stagger accumulates over a couple of hits and VIT visibly changes how fast you reach the
-// ceiling. Full design + math: docs/ideas-proposals/ENEMY_STAGGER.md.
+// ceiling. Full design + math: docs/COMBAT_SYSTEM.md.
 
 /**
  * Scales a full-strength, no-resist hit to this fraction of the enemy's attack interval, before
@@ -52,6 +52,15 @@ export const SKILL_STAGGER_MULTIPLIER = 2.5;
 
 /** How long (ms) a centered battle callout ("Preemptive Strike!", "No moves! Reshuffle!") stays on screen. */
 export const BATTLE_CALLOUT_DURATION_MS = 1200;
+
+// ─── Board Hint ──────────────────────────────────────────────────────────────
+
+/**
+ * How long (ms) the board must sit idle — settled, unpaused, no pending victory — before one
+ * legal swap gets the muted hint ring. The hint stays until the next valid swap or a pause.
+ * `0` shows it as soon as the board settles. Ring styling lives in `ORB_HINT_CLASSES`.
+ */
+export const BOARD_HINT_DELAY_MS = 4000;
 
 /**
  * Notches drawn across the party HP and Guard bars. Purely visual — it does not

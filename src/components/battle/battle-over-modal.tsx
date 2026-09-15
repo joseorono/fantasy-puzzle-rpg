@@ -61,7 +61,8 @@ export function BattleOverModal() {
     handleContinue();
   });
 
-  if (gameStatus === 'playing') return null;
+  // Only a decided fight gets a card; a walked-out training fight ('abandoned') has nothing to show.
+  if (gameStatus !== 'won' && gameStatus !== 'lost') return null;
 
   const isVictory = gameStatus === 'won';
 
@@ -79,17 +80,11 @@ export function BattleOverModal() {
   }
 
   if (isVictory && victoryPhase === 'rating' && ratingRef.current) {
-    return (
-      <BattleRatingScreen
-        result={ratingRef.current}
-        onContinue={() => setVictoryPhase('summary')}
-      />
-    );
+    return <BattleRatingScreen result={ratingRef.current} onContinue={() => setVictoryPhase('summary')} />;
   }
 
   const victoryFlavor =
-    (ratingRef.current && VICTORY_FLAVOR_BY_STARS[ratingRef.current.stars]) ??
-    'You live to fight another day!';
+    (ratingRef.current && VICTORY_FLAVOR_BY_STARS[ratingRef.current.stars]) ?? 'You live to fight another day!';
 
   function handleContinue() {
     if (hasContinuedRef.current) return;

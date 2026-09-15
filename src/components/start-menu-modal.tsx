@@ -256,6 +256,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
             <div className="start-menu-modal-header">
               <ModalTitle
                 text={TAB_TITLES[activeTab as Exclude<ModalTab, 'main'>]}
+                size={1.4}
                 className="start-menu-modal-title"
               />
               <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={handleBackToMain} />

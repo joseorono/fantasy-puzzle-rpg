@@ -3,8 +3,8 @@ import { createResources } from '~/lib/resources';
 
 /**
  * Tier gates for both skill kinds, calibrated against the polynomial EXP curve
- * (`~/constants/progression`) for a ~level-30, ~3 hour campaign.
- * Full pacing table: docs/ideas-proposals/SKILL_ROSTER.md §1–§2.
+ * (`~/constants/progression`) for a ~level-30, ~3 hour campaign. The gates below are the
+ * pacing table.
  */
 
 /** Level floor for each Active tier (0–3). Tier 0 = starting skill, owned from level 1. */

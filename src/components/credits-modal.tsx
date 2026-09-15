@@ -23,8 +23,8 @@ type CreditsSection = 'menu' | 'graphics' | 'audio';
 
 const SECTION_TITLES: Record<CreditsSection, string> = {
   menu: 'Credits',
-  graphics: 'Graphics Credits',
-  audio: 'Audio Credits',
+  graphics: 'Credits - Graphics',
+  audio: 'Credits - Audio',
 };
 
 /**
@@ -94,7 +94,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
         </div>
 
         {/* Divider */}
-        <IndigolayDivider variant="victory" />
+        <IndigolayDivider variant="victory" className="my-0"/>
 
         {/* Content — only the active section is rendered */}
         <div className="start-menu-modal-body credits-modal-body">

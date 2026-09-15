@@ -38,77 +38,92 @@ Each character is color-coded to match their orbs:
 - **Score Tracking**: Real-time score display
 
 ### 🛠️ Tech Stack
-- **React** with TypeScript
-- **Tailwind CSS** for styling
-- **Jotai** for state management
-- **8bitcn** UI components (custom pixel art buttons)
+- **React 19** with TypeScript (strict mode), React Compiler
+- **Tailwind CSS 4** for styling; CSS in `src/styles/` for pixel art and complex effects
+- **Jotai** for battle/combat state exclusively (Zustand covers everything else)
+- **Radix UI** primitives (slider, tooltip) restyled pixel-art via `components/ui/8bit/`
 - **Lucide React** for icons
-- **Press Start 2P** font from Google Fonts
+- **Press Start 2P** font (see `src/index.css`)
 
 ## File Structure
 ```
 src/
 ├── components/
 │   └── battle/
-│       ├── enemy-display.tsx      # Top half - enemy and party health
-│       ├── party-display.tsx      # Bottom half - party sprites
-│       ├── match3-board.tsx       # Match-3 game board
-│       ├── game-over-modal.tsx    # Victory/defeat modal
-│       └── damage-number.tsx      # Floating damage indicators
+│       ├── enemy-display.tsx          # Enemy panel — supports multiple enemies, targeting
+│       ├── party-display.tsx          # Party sprites, HP, skill cooldowns
+│       ├── match3-board.tsx           # Match-3 game board
+│       ├── battle-top-bar.tsx         # Turn/score/mode header (incl. "SPARRING" in training mode)
+│       ├── battle-hp-bar.tsx          # Shared HP bar (party + enemy)
+│       ├── battle-item-bar.tsx        # Consumable battle items, SPD-scaled shared cooldown
+│       ├── battle-callout.tsx         # Combo/stagger/reshuffle/preemptive-strike callouts
+│       ├── battle-over-modal.tsx      # Victory/defeat modal
+│       ├── battle-pause-overlay.tsx   # Pause overlay (includes Leave button in training mode)
+│       ├── battle-rating-screen.tsx   # Arcade star-rating screen
+│       ├── damage-number.tsx          # Floating damage indicators
+│       ├── skill-activation-effect.tsx / skill-burst-overlay.tsx  # Ultimate skill VFX
+│       ├── preemptive-strike-indicator.tsx / board-reshuffle-indicator.tsx
+│       └── training-dummy-readout.tsx # Total damage/DPS readout, sparring mode only
 ├── stores/
-│   └── battle-store.ts            # Jotai atoms for battle state
+│   └── battle-atoms.ts                # Jotai atoms for battle state (see STORE_DOCS.md)
 ├── types/
-│   ├── rpg-elements.ts            # Core RPG types (characters, enemies, orbs)
-│   ├── battle.ts                  # Battle-specific types
-│   ├── components.ts              # Component prop types
-│   └── index.ts                   # Type re-exports
+│   ├── rpg-elements.ts                # Core RPG types (characters, enemies, orbs)
+│   ├── battle.ts                      # Battle-specific types
+│   ├── components.ts                  # Component prop types
+│   └── index.ts                       # Type re-exports
 ├── constants/
-│   ├── game.ts                    # Game configuration and initial data
-│   └── ui.ts                      # UI styling constants
+│   ├── board.ts                       # Board size, orb types, match/bomb rules
+│   ├── party.ts                       # INITIAL_PARTY, damage/scoring/leveling constants
+│   ├── enemies/                       # Enemy definitions, by world (e.g. `world-00/`)
+│   ├── training-grounds.ts            # Training dummy enemy, respec costs
+│   └── ui.ts                          # Orb color/glow classes, HP threshold colors
 ├── views/
-│   └── battle-screen.tsx          # Main battle screen layout
+│   └── battle-screen.tsx              # Main battle screen layout
 └── styles/
-    └── pixel-font.css             # Pixel art styling (now in index.css)
+    ├── battle-layout.css / battle-elements.css / battle-top-bar.css
+    └── battle-over-modal.css / battle-rating-screen.css / battle-rewards-screen.css
 ```
 
 ## State Management
-Using Jotai atoms for reactive state:
+Battle state lives entirely in Jotai (`src/stores/battle-atoms.ts`), backed by a single `battleStateAtom: BattleState`. Representative atoms (see `battle-atoms.ts` and `src/stores/STORE_DOCS.md` for the full list):
 - `battleStateAtom` - Main battle state
-- `partyAtom` - Party characters (CharacterData[])
-- `enemyAtom` - Enemy data (EnemyData)
-- `boardAtom` - Match-3 board (Orb[][])
-- `selectedOrbAtom` - Currently selected orb
-- `selectOrbAtom` - Action to select an orb
-- `swapOrbsAtom` - Action to swap orbs
-- `damagePartyAtom` - Action to damage party
-- `damageEnemyAtom` - Action to damage enemy
-- `resetBattleAtom` - Reset battle state
-- `gameStatusAtom` - Game status ('playing' | 'won' | 'lost')
-- `lastDamageAtom` - Last damage dealt
-- `lastMatchedTypeAtom` - Last matched orb type
+- `partyAtom` / `enemiesAtom` - Party and enemies (`enemies` is an array — battles support multiple simultaneous enemies)
+- `selectedEnemyIdAtom` / `selectEnemyAtom` - Targeting the active enemy
+- `boardAtom` / `selectedOrbAtom` / `selectOrbAtom` / `swapOrbsAtom` - Match-3 board and orb interaction
+- `guardAtom` / `addGuardAtom` / `tickGuardDecayAtom` - Party Guard meter
+- `damagePartyAtom` / `damageEnemyAtom` / `healPartyAtom` - Damage/heal resolution
+- `gameStatusAtom` / `pendingVictoryAtom` / `resetBattleAtom` / `abandonBattleAtom` - Battle lifecycle (`BattleStatus`: `'playing' | 'won' | 'lost' | 'abandoned'`)
+- `battleModeAtom` / `isTrainingBattleAtom` / `totalDamageDealtAtom` - Standard vs. training/sparring mode (see below)
+- `setupBattleAtom` - Initializes a battle, `mode: 'standard' | 'training'`
+- `lastDamageAtom` / `lastMatchedTypeAtom` / `lastSkillActivationAtom` - Last-event data driving callouts/VFX
+- `maxComboAtom` / `itemsUsedAtom` / `ultimateSkillsUsedAtom` / `battleStartedAtAtom` - Victory-rating inputs
+
+### Training / sparring mode
+`BattleMode` (`'standard' | 'training'`) drives a reward-free bout against `TRAINING_DUMMY` (`src/constants/enemies/training.ts`): no enemy standby/attacks, no item consumption, and the fight is leavable via `abandonBattleAtom`. `totalDamageDealtAtom` and `training-dummy-readout.tsx` replace the enemy HP bar with a damage/DPS/active-time readout.
 
 ## Type System
 
 ### Core RPG Types (`rpg-elements.ts`)
-- `OrbType` - Orb type identifiers ('blue' | 'green' | 'purple' | 'yellow' | 'gray')
-- `CharacterClass` - Character classes ('warrior' | 'rogue' | 'mage' | 'healer')
-- `BaseStats` - Shared stats for characters and enemies (id, name, HP)
-- `CharacterData` - Character-specific stats (extends BaseStats)
-- `EnemyData` - Enemy-specific stats (extends BaseStats)
+- `OrbType` - Orb type identifiers (`'blue' | 'green' | 'purple' | 'yellow' | 'gray'`)
+- `CharacterClass` - Character classes (`'warrior' | 'rogue' | 'mage' | 'healer'`)
+- `BaseStats` - Shared stats (id, name, HP, `stats: CoreRPGStats`, `vitHpMultiplier`)
+- `CharacterData` - Character-specific stats (extends `BaseStats`): level/EXP, equipped weapon/armor + rarity, unlocked skills/passives, skill cooldowns
+- `EnemyData` - Enemy-specific stats (extends `BaseStats`): sprite, attack interval/damage, loot table, EXP reward, optional `guardBreak` and `rarityBias`
 
 ### Battle Types (`battle.ts`)
-- `ActionTarget` - Target of actions ('party' | 'enemy')
-- `Orb` - Match-3 orb data (id, type, position)
-- `Match` - Match detection result
-- `BattleStatus` - Battle state ('playing' | 'won' | 'lost')
-- `BattleState` - Complete battle state
+- `ActionTarget` - Target of actions (`'party' | 'enemy'`)
+- `Orb` - Match-3 orb data (id, type, position, optional `isBomb` wildcard)
+- `Match` - Match detection result (orbs, type, count, multiplier)
+- `BattleStatus` - `'playing' | 'won' | 'lost' | 'abandoned'`
+- `BattleMode` - `'standard' | 'training'`
+- `BattleState` - Complete battle state: party, `enemies[]`, `selectedEnemyId`, board, guard, combo/rating tracking (`maxCombo`, `itemsUsed`, `ultimateSkillsUsed`, `totalDamageDealt`, `startedAt`), and event fields for callouts (`lastPreemptiveStrike`, `lastReshuffle`, `lastMaxFlinch`, `lastSkillActivation`)
 
 ## Customization
-- Modify `INITIAL_PARTY` in `constants/game.ts` to change party composition
-- Adjust `INITIAL_ENEMY` to change enemy stats
-- Update `BOARD_ROWS` and `BOARD_COLS` to change board size
-- Customize `ORB_TYPES` array to add/remove orb types
-- Update styling in `constants/ui.ts` for colors and effects
+- Modify `INITIAL_PARTY` in `constants/party.ts` to change party composition
+- Add/edit enemies under `constants/enemies/` (organized by world, e.g. `world-00/`)
+- Update `BOARD_ROWS`, `BOARD_COLS`, and `ORB_TYPES` in `constants/board.ts` to change board size/orb set
+- Tune bomb/cascade rules (`BOMB_MATCH_SPAWN_THRESHOLD`, `BOMB_REFILL_CHANCE`, etc.) in `constants/board.ts`
+- Update styling in `constants/ui.ts` for orb colors/glow and HP threshold colors
 
 ## Implemented Features
 ✅ Damage calculation and combat system
@@ -128,6 +143,8 @@ Using Jotai atoms for reactive state:
 ✅ Hitstop freeze-frame on impact
 ✅ Arcade victory star rating (1–5 stars) and rating-scaled loot bonus
 ✅ Background battle music and sound effects
+✅ Multi-enemy battles with per-enemy targeting and standby delays
+✅ Training Grounds sparring mode (reward-free, leavable fight vs. a training dummy)
 
 ## Future Enhancements
 - Animated pixel art character & enemy attack sprites

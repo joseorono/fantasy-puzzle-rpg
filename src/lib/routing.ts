@@ -161,13 +161,6 @@ export function goToDialogueDemo(currentState: RouterState, data?: ViewDataMap['
 }
 
 /**
- * Navigate to inventory
- */
-export function goToInventory(currentState: RouterState, data?: ViewDataMap['inventory']): NavigationResult {
-  return prepareNavigation(currentState, 'inventory', data ?? {});
-}
-
-/**
  * Navigate to debug view
  */
 export function goToDebug(currentState: RouterState, data?: ViewDataMap['debug']): NavigationResult {

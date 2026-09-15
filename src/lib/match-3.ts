@@ -427,6 +427,18 @@ export function findPossibleMove(board: Orb[][]): OrbSwap | null {
 }
 
 /**
+ * Whether a grid position is one of the two endpoints of a swap.
+ *
+ * @param swap - The swap to test against
+ * @param row - Row of the position
+ * @param col - Column of the position
+ * @returns True if the position is the swap's `from` or `to`
+ */
+export function swapContainsPosition(swap: OrbSwap, row: number, col: number): boolean {
+  return (swap.from.row === row && swap.from.col === col) || (swap.to.row === row && swap.to.col === col);
+}
+
+/**
  * Whether at least one adjacent swap on a settled board would create a line match.
  *
  * @param board - The game board containing orbs

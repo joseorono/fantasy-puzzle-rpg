@@ -39,6 +39,10 @@ The battle screen now features a fully functional combat system with enemy attac
   if that still fails the board is reshuffled — same colors, bombs stay put, moved orbs replay their fall-in —
   and a "No moves! Reshuffle!" callout fires (`lastReshuffle`). Refills never avoid matches, so cascades are
   unchanged.
+- **Hint**: once a settled board sits idle for `BOARD_HINT_DELAY_MS` (`src/constants/battle.ts`), `useBoardHint`
+  highlights one legal swap from `findPossibleMove` — both orbs get a muted pulsing ring (`ORB_HINT_CLASSES`,
+  `src/constants/ui.ts`), distinct from the white selection ring. Selecting an orb keeps the hint; the next valid
+  swap, a pause, or the post-kill combo finish clears it.
 - **Opening board**: `createOpeningBoard` deals a random board and keeps it only if it has at most
   `OPENING_MAX_MATCHES` (2) pre-made runs, none of bomb-spawning length (`OPENING_MAX_RUN_LENGTH`), and a legal
   move or a match — a small free opening cascade stays possible, a runaway one does not. All board knobs live in
@@ -193,6 +197,15 @@ For detailed RPG stat system documentation, see [RPG_SYSTEM.md](./RPG_SYSTEM.md)
    - When party HP = 0: Defeat modal appears
    - Attack timer stops
    - Player can click "NEW GAME" to restart
+
+### Training mode (sparring)
+
+The Training Grounds launches a reward-free fight against `TRAINING_DUMMY` (`src/constants/enemies/training.ts`) with `setupBattleAtom({ ..., mode: 'training' })`. `BattleState.mode` is `'standard'` for every other fight. In training mode:
+
+- The dummy has unreachable HP and never attacks: `createBattleState` skips enemy standby (no preemptive bonus), and `useEnemyAttackTimers` runs no loop, so the top bar reads **SPARRING**.
+- `TrainingDummyReadout` replaces the enemy HP bar with total damage, DPS, and active time. `BattleState.totalDamageDealt` is tracked in every battle (matches and skills); the readout's clock is local and starts on the first hit.
+- Items work but are not removed from the inventory; skills work as normal.
+- The pause overlay gains a **Leave** button. Leaving sets `gameStatus: 'abandoned'` (`abandonBattleAtom`) and calls `goBack()`. Nothing is banked: party HP is only synced on victory and no rewards screen opens. `TownHubViewData.initialLocation` returns the player to the Training Grounds.
 
 ## Balance Notes
 

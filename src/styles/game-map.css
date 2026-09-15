@@ -1,101 +1,79 @@
+/*
+  Map screen. The map is a fixed-aspect canvas inside the ever-present window
+  frame, so it is always letterboxed on one axis; the letterbox is a tiled board
+  texture, and a thin ring hugs the canvas itself.
+
+  Tunables. --map-viewport-inset must stay >= --map-frame-width: .game-map clips
+  at its padding box, and the frame ring is painted outside the canvas.
+*/
+:root {
+  --map-viewport-inset: 0.5rem;
+  --map-frame-width: 3px;
+  --map-frame-color: #8a6a3f;
+
+  /* Letterbox ground. The board tile is the same texture the dialogue nameplate and
+     rewards panels use, at an integer texel scale so it stays crisp; the tint knocks
+     it back so it reads as the surface the map sits on, not as content. */
+  --map-letterbox-tile: url('/assets/bg/looping/bg-board-2.png');
+  --map-letterbox-scale: 32px;
+  --map-letterbox-tint: rgba(10, 6, 4, 0.35);
+
+  /* Back button, smaller here than in town — the map wants its canvas. */
+  --map-leave-btn-width: 44px;
+  --map-leave-btn-offset: 10px;
+}
+
 .game-map {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f0f0f0;
-  height: 100vh;
-  width: 100vw;
+  /* 100% of the frame's viewport, not 100vw/100vh — the window frame already
+     insets this box by --frame-thickness on every side. */
+  height: 100%;
+  width: 100%;
+  padding: var(--map-viewport-inset);
   box-sizing: border-box;
   overflow: hidden;
+  /* Positioning context for .leave-btn — keep it here, not on
+     .tilemap-container, or the back button re-anchors onto the map. */
   position: relative;
-}
 
-/* Responsive layout: stack on mobile, side-by-side on desktop */
-@media (min-width: 1024px) {
-  .game-map {
-    flex-direction: row;
-    gap: 1.25rem;
-    padding: 1.25rem;
-  }
-}
+  /* Overrides the flat .game-view fill: tile over the tint over the base colour, so a
+     failed image request still lands on the old dark ground rather than on nothing. */
+  background-color: #0f0a06;
+  background-image: linear-gradient(var(--map-letterbox-tint), var(--map-letterbox-tint)),
+    var(--map-letterbox-tile);
+  background-size:
+    auto,
+    var(--map-letterbox-scale) var(--map-letterbox-scale);
+  background-repeat: no-repeat, repeat;
 
-.map-controls {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-  max-height: fit-content;
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .map-controls {
-    min-width: 200px;
-    max-width: 250px;
-    width: auto;
-  }
-}
-
-.map-controls h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
-  font-size: 1rem;
-}
-
-.map-controls label {
-  display: block;
-  margin: 0.5rem 0;
-  cursor: pointer;
-  user-select: none;
-  font-size: 0.875rem;
-}
-
-.map-controls input[type='checkbox'] {
-  margin-right: 0.5rem;
-  cursor: pointer;
+  --leave-btn-width: var(--map-leave-btn-width);
+  --leave-btn-offset: var(--map-leave-btn-offset);
 }
 
 .tilemap-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
   flex: 1;
   min-height: 0;
-  gap: 0.25rem;
 }
 
-.tilemap-container .map-title {
-  margin: 0;
-  font-size: 1rem;
-  text-align: center;
-  width: 100%;
-}
-
+/*
+  The frame ring is an `outline`, never a `border`: it hugs the canvas exactly
+  with square corners while costing no layout space, so `useCanvasMetrics` keeps
+  measuring the canvas itself.
+*/
 .tilemap-container canvas {
   display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 10rem);
-  object-fit: contain;
+  outline: var(--map-frame-width) solid var(--map-frame-color);
   /* Click-and-hold moves the character. Keep the custom gauntlet cursor with
      the interactive hotspot (matching buttons) rather than a native pointer.
      `touch-action: none` lets a touch drag steer instead of panning the page —
      the map never scrolls anyway. */
-  cursor: var(--cursor-gauntlet) 8 8, auto;
+  cursor:
+    var(--cursor-gauntlet) 8 8,
+    auto;
   touch-action: none;
-}
-
-@media (min-width: 1024px) {
-  .tilemap-container canvas {
-    max-height: calc(100vh - 8rem);
-  }
 }
 
 /* Debug readout, pinned to the top-right of the game frame (inside the window
@@ -120,4 +98,3 @@
   font-size: 0.7rem;
   line-height: 1.2;
 }
-

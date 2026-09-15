@@ -2,7 +2,7 @@
  * Pure functions for battle state construction and combat utilities.
  */
 
-import type { BattleState } from '~/types/battle';
+import type { BattleMode, BattleState } from '~/types/battle';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { resolveCharacterCooldown } from '~/lib/skill-system';
 import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
@@ -92,6 +92,7 @@ export function resolveCountdownRingAnchor(intervalMs: number, remainingMs: numb
  * and resets all combat state to initial values.
  * @param party - The party members (raw, without equipment bonuses applied)
  * @param enemies - The enemies for this encounter
+ * @param options - `mode: 'training'` skips enemy standby (no preemptive bonus on a target that never attacks)
  * @returns A ready-to-use BattleState
  * @example
  * ```ts
@@ -99,11 +100,17 @@ export function resolveCountdownRingAnchor(intervalMs: number, remainingMs: numb
  * set(battleStateAtom, state);
  * ```
  */
-export function createBattleState(party: CharacterData[], enemies: EnemyData[]): BattleState {
+export function createBattleState(
+  party: CharacterData[],
+  enemies: EnemyData[],
+  options: { mode?: BattleMode } = {},
+): BattleState {
+  const mode = options.mode ?? 'standard';
   const effectiveParty = getPartyWithEffectiveStats(party);
-  const enemyStandbyMs = generateEnemyStandbyDelays(enemies.map((e) => e.id));
+  const enemyStandbyMs = mode === 'training' ? {} : generateEnemyStandbyDelays(enemies.map((e) => e.id));
 
   return {
+    mode,
     // currentHp is intentionally carried over from the incoming party (already clamped to
     // the equipment-adjusted maxHp by getPartyWithEffectiveStats) so HP persists between
     // battles. Only combat-transient state (skill cooldowns) is (re)initialized here.
@@ -134,6 +141,7 @@ export function createBattleState(party: CharacterData[], enemies: EnemyData[]):
     maxCombo: 0,
     itemsUsed: 0,
     ultimateSkillsUsed: 0,
+    totalDamageDealt: 0,
   };
 }
 

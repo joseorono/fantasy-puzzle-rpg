@@ -1,11 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createStore } from 'jotai';
 import {
+  abandonBattleAtom,
+  activateSkillAtom,
   addGuardAtom,
   addScoreAtom,
   applyMatchResolutionAtom,
+  battleModeAtom,
   battleStateAtom,
   battleTickAtom,
+  damageEnemyAtom,
+  enemiesAtom,
+  ensureFreshBattleAtom,
+  gameStatusAtom,
+  standbyEnemyIdsAtom,
+  totalDamageDealtAtom,
   deadOrbColorClassesAtom,
   itemCooldownMsAtom,
   partyAtom,
@@ -19,6 +28,7 @@ import {
   type MatchResolution,
 } from '~/stores/battle-atoms';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
+import { TRAINING_DUMMY } from '~/constants/enemies/training';
 import { BATTLE_TICK_DELTA_SECONDS } from '~/constants/battle';
 import { calculateItemCooldownInMs } from './rpg-calculations';
 import { getPartyPassiveModifiers } from './skill-system';
@@ -357,5 +367,93 @@ describe('partyMemberAtom / partyMemberIdsAtom', () => {
 
     expect(listener).not.toHaveBeenCalled();
     expect(store.get(partyMemberAtom(id(2)))?.currentHp).toBe(0);
+  });
+});
+
+describe('training mode', () => {
+  function createTrainingStore() {
+    const store = createStore();
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: [TRAINING_DUMMY], mode: 'training' });
+    return store;
+  }
+
+  it('defaults to standard mode with enemies on standby', () => {
+    const store = createBattleStore();
+    expect(store.get(battleModeAtom)).toBe('standard');
+    expect(store.get(standbyEnemyIdsAtom).length).toBeGreaterThan(0);
+  });
+
+  it('skips enemy standby entirely, so no hit is ever preemptive', () => {
+    const store = createTrainingStore();
+    expect(store.get(battleModeAtom)).toBe('training');
+    expect(store.get(standbyEnemyIdsAtom)).toEqual([]);
+    expect(store.get(battleStateAtom).enemyStandbyMs).toEqual({});
+
+    store.set(damageEnemyAtom, 40);
+    expect(store.get(battleStateAtom).lastDamage?.amount).toBe(40);
+  });
+
+  it('abandons only a live fight and re-arms on the next entry', () => {
+    const store = createTrainingStore();
+    store.set(damageEnemyAtom, 10);
+
+    store.set(abandonBattleAtom);
+    expect(store.get(gameStatusAtom)).toBe('abandoned');
+
+    store.set(abandonBattleAtom);
+    expect(store.get(gameStatusAtom)).toBe('abandoned');
+
+    store.set(ensureFreshBattleAtom, INITIAL_PARTY);
+    expect(store.get(gameStatusAtom)).toBe('playing');
+    expect(store.get(battleModeAtom)).toBe('training');
+    expect(store.get(totalDamageDealtAtom)).toBe(0);
+  });
+
+  it('cannot win against the dummy', () => {
+    const store = createTrainingStore();
+    store.set(damageEnemyAtom, 1_000_000);
+    expect(store.get(gameStatusAtom)).toBe('playing');
+    expect(store.get(battleStateAtom).pendingVictory).toBe(false);
+  });
+});
+
+describe('totalDamageDealt', () => {
+  function enemyHpTotal(store: BattleStore) {
+    return store.get(enemiesAtom).reduce((sum, enemy) => sum + enemy.currentHp, 0);
+  }
+
+  it('starts at zero', () => {
+    expect(createBattleStore().get(totalDamageDealtAtom)).toBe(0);
+  });
+
+  it('accumulates match hits, a batched multi-hit only once', () => {
+    const store = createStore();
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: [TRAINING_DUMMY], mode: 'training' });
+
+    store.set(damageEnemyAtom, 25);
+    store.set(damageEnemyAtom, { hits: [{ amount: 10 }, { amount: 5 }] });
+
+    expect(store.get(totalDamageDealtAtom)).toBe(40);
+  });
+
+  it('records the landed amount, preemptive bonus included', () => {
+    const store = createBattleStore();
+    store.set(damageEnemyAtom, 20);
+
+    expect(store.get(totalDamageDealtAtom)).toBe(store.get(battleStateAtom).lastDamage?.amount);
+  });
+
+  it('counts every hero skill by the HP it actually removed, so heals add nothing', () => {
+    const store = createBattleStore([0, 0, 0, 0]);
+
+    for (const member of INITIAL_PARTY) {
+      const before = store.get(totalDamageDealtAtom);
+      const hpBefore = enemyHpTotal(store);
+      store.set(activateSkillAtom, member.id);
+      const removed = hpBefore - enemyHpTotal(store);
+
+      expect(store.get(totalDamageDealtAtom) - before).toBe(removed);
+    }
+    expect(store.get(totalDamageDealtAtom)).toBeGreaterThan(0);
   });
 });

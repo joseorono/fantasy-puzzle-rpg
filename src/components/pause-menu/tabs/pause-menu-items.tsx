@@ -17,8 +17,9 @@ import { getScaledEquipmentStats } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
-import { NarikHeading } from '~/components/typography/narik-heading';
-import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
+import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
+import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
 import type { ConsumableItemData, EquipmentItemData } from '~/types';
 import {
   SNAPPY_SPIN_TIMING,
@@ -217,8 +218,8 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
 
   return (
     <>
-      <NarikHeading as="h2" text="Items" />
-      <div className="pause-menu-item-categories">
+      <PauseMenuTabHeader text="Items" hint="Browse your packs — use consumables on the party." />
+      <IndigolayTabs className="pause-menu-item-categories">
         {CATEGORIES.map((cat) => (
           <IndigolayTab
             key={cat.id}
@@ -234,8 +235,10 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
             {cat.label}
           </IndigolayTab>
         ))}
-        {keyboardActive && <span className="pause-menu-inline-hint pixel-font">← → switch</span>}
-      </div>
+        {keyboardActive && (
+          <KeyHintPill className="pause-menu-inline-hint" items={[{ keys: ['←', '→'], label: 'switch' }]} />
+        )}
+      </IndigolayTabs>
       <div className="pause-menu-items-layout">
         <div className="pause-menu-item-list">
           {filteredInventory.length === 0 && <div className="pause-menu-empty">No items</div>}

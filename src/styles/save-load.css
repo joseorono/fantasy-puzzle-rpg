@@ -59,7 +59,7 @@
 .save-load-menu__hint {
   margin: 0 0 6px;
   font-size: 0.6rem;
-  color: #a08a6a;
+  color: #f4f3f1;
 }
 
 /* Shown in place of the slot list while saving is locked (inside a dungeon). */

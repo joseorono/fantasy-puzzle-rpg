@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai';
 import { Eye, Hourglass, Star, Swords } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
-import { turnAtom, scoreAtom, gameStatusAtom } from '~/stores/battle-atoms';
+import { turnAtom, scoreAtom, gameStatusAtom, isTrainingBattleAtom } from '~/stores/battle-atoms';
 import { isMutedAtom } from '~/stores/pause-menu-atoms';
 import { RadialCountdown } from '~/components/ui-custom/radial-countdown';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
@@ -29,6 +29,7 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
   const turn = useAtomValue(turnAtom);
   const score = useAtomValue(scoreAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
+  const isTraining = useAtomValue(isTrainingBattleAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
 
   function toggleMute() {
@@ -51,7 +52,7 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
           <span className="btb-threats-label pixel-font">INCOMING</span>
           <div className="btb-threats-pies">
             {visibleTimers.length === 0 ? (
-              <span className="btb-threats-clear pixel-font">CLEAR</span>
+              <span className="btb-threats-clear pixel-font">{isTraining ? 'SPARRING' : 'CLEAR'}</span>
             ) : (
               visibleTimers.map((timer) => {
                 // A stagger bumps `staggerPulse.nonce`; re-keying the wrapper on it remounts + replays

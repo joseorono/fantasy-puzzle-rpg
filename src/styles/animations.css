@@ -32,6 +32,39 @@
   animation: orb-glow 2s ease-in-out infinite;
 }
 
+/* Idle board hint: a warm parchment halo on the two orbs of a suggested swap. Only the halo
+   breathes — the orb itself never changes opacity, so it reads as a slow nudge rather than a
+   blink, and the trough stays visible so the hint never vanishes between beats. The idle wait
+   before it appears is BOARD_HINT_DELAY_MS. */
+@keyframes orb-hint-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(243, 223, 174, 0.75),
+      0 0 6px 2px rgba(243, 223, 174, 0.3),
+      0 0 12px 3px rgba(230, 180, 90, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 240, 200, 1),
+      0 0 11px 3px rgba(243, 223, 174, 0.55),
+      0 0 18px 5px rgba(230, 180, 90, 0.3);
+  }
+}
+
+.orb-hint {
+  animation: orb-hint-breathe var(--orb-hint-pace, 2s) ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-hint {
+    animation: none;
+    box-shadow:
+      0 0 0 2px rgba(243, 223, 174, 0.9),
+      0 0 10px 3px rgba(243, 223, 174, 0.4),
+      0 0 16px 4px rgba(230, 180, 90, 0.25);
+  }
+}
+
 /* Invalid swap shake animation */
 @keyframes shake {
   0%, 100% {

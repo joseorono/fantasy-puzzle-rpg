@@ -10,7 +10,6 @@ import {
   goToDungeon as libGoToDungeon,
   goToMap as libGoToMap,
   goToDialogueDemo as libGoToDialogueDemo,
-  goToInventory as libGoToInventory,
   goToDebug as libGoToDebug,
   goToBattleRewards as libGoToBattleRewards,
 } from '~/lib/routing';
@@ -71,17 +70,6 @@ export function createRouterSlice(set: SliceSet<RouterSlice>): RouterSlice {
         goToDialogueDemo: (data) => {
           set((state: RouterSlice) => {
             const result = libGoToDialogueDemo(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
-
-        goToInventory: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToInventory(state.router, data);
             if (result.success && result.nextState) {
               state.router = result.nextState;
             } else {

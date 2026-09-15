@@ -8,6 +8,7 @@ import {
   endEnemyStandbyAtom,
   flagMaxFlinchAtom,
   gameStatusAtom,
+  isTrainingBattleAtom,
   lastDamageAtom,
   standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
@@ -91,6 +92,8 @@ function timerListsMatch(next: EnemyAttackTimer[], prev: EnemyAttackTimer[]): bo
 export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAttackTimer[] {
   const enemies = useAtomValue(enemiesAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
+  // A training dummy never attacks: no loop, no rings, no zero-damage hits on the party.
+  const isTraining = useAtomValue(isTrainingBattleAtom);
   const enemyStandbyMs = useAtomValue(enemyStandbyMsAtom);
   const standbyEnemyIds = useAtomValue(standbyEnemyIdsAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
@@ -128,9 +131,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
 
   // Stable signature of the roster — changes only when an enemy joins/dies or an
   // interval changes, NOT when HP merely drops. This is (part of) the effect's trigger.
-  const rosterSignature = livingEnemies
-    .map((enemy) => `${enemy.id}:${calculateEnemyAttackInterval(enemy)}`)
-    .join('|');
+  const rosterSignature = livingEnemies.map((enemy) => `${enemy.id}:${calculateEnemyAttackInterval(enemy)}`).join('|');
 
   function bumpVersion(id: string) {
     setVersion((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
@@ -154,7 +155,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       timersRef.current.clear();
     }
 
-    if (gameStatus !== 'playing' || isBattlePaused === true) return clearTimers;
+    if (gameStatus !== 'playing' || isBattlePaused === true || isTraining) return clearTimers;
 
     // Opens a fresh attack cycle: a full ring over the interval, empty stagger budget, and the
     // scheduled shot (which self-reschedules and re-defers when a stagger extends the release).
@@ -174,7 +175,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
 
     function scheduleShot(id: string) {
       const delay = Math.max(0, (releaseAtRef.current.get(id) ?? performance.now()) - performance.now());
-      timersRef.current.set(id, setTimeout(() => fireShot(id), delay));
+      timersRef.current.set(
+        id,
+        setTimeout(() => fireShot(id), delay),
+      );
     }
 
     function fireShot(id: string) {
@@ -183,7 +187,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       // A stagger pushed the release past this wake-up — wait out the remaining delta (the only
       // extra work a stagger costs the timer, bounded by the per-cycle cap).
       if (now < target - 1) {
-        timersRef.current.set(id, setTimeout(() => fireShot(id), target - now));
+        timersRef.current.set(
+          id,
+          setTimeout(() => fireShot(id), target - now),
+        );
         return;
       }
       const enemy = enemiesRef.current.find((e) => e.id === id);
@@ -236,7 +243,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
 
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStatus, isBattlePaused, rosterSignature, enemyStandbyMs, damageParty, endStandby]);
+  }, [gameStatus, isBattlePaused, isTraining, rosterSignature, enemyStandbyMs, damageParty, endStandby]);
 
   // Stagger: on each new enemy-targeting hit, push the struck enemy's next attack back (capped),
   // and re-anchor its ring. Reads from `lastDamage` (which already carries the amount + which

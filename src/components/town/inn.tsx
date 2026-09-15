@@ -3,28 +3,22 @@ import type { CharacterData } from '~/types/rpg-elements';
 import { usePartyActions, useParty } from '~/stores/game-store';
 import { useResources, useResourcesActions } from '~/stores/game-store';
 import { createResources } from '~/lib/resources';
-import { cn } from '~/lib/utils';
+import { chunk, cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, TOWN_SFX_VOLUME } from '~/constants/audio';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { INN_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { INNKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { PartyMemberCard } from '~/components/pause-menu/party-member-card';
+import { PartyMemberCard } from '~/components/party/party-member-card';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { INN_HERO_COLUMNS } from '~/constants/game';
-
-/** Splits the party into the rows the hero grid actually renders, so ←/→ stay spatially truthful. */
-function chunk<T>(items: readonly T[], size: number): T[][] {
-  const rows: T[][] = [];
-  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size));
-  return rows;
-}
 
 const HEAL_ALL_ID = 'heal-all';
 
@@ -168,9 +162,7 @@ export default function Inn({
               </span>
             </div>
           </div>
-          <p className="town-section-subtitle">
-            Click a wounded hero to heal them, or heal everyone at once below
-          </p>
+          <p className="town-section-subtitle">Click a wounded hero to heal them, or heal everyone at once below</p>
           <div className="party-members-list">
             <div className="party-members-grid inn-party-members-grid">
               {party.map((member) => {
@@ -210,7 +202,6 @@ export default function Inn({
 
         {/* Heal everyone affordable in one tap */}
         <div className="inn-actions">
-          <span className="town-key-hint pixel-font">← → pick a hero · ↑ ↓ reach Heal All · Enter to heal</span>
           <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(HEAL_ALL_ID)}>
             <ToffecButton
               variant="cream"
@@ -223,6 +214,14 @@ export default function Inn({
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
         </div>
+        <KeyHintPill
+          className="inn-key-hint"
+          items={[
+            { keys: ['←', '→'], label: 'pick a hero' },
+            { keys: ['↑', '↓'], label: 'reach Heal All' },
+            { keys: ['Enter'], label: 'to heal' },
+          ]}
+        />
       </div>
     </TownLocationLayout>
   );

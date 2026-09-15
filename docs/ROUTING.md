@@ -22,7 +22,6 @@ A store-based routing system for the game that provides full control over naviga
 - `dungeon` - Multi-floor dungeon exploration view
 - `map` - Overworld map; `mapId` in the view data selects which one from `MAP_REGISTRY`
 - `dialogue-demo` - Dialogue test/demo view
-- `inventory` - Inventory management view
 - `debug` - Debug & feature testing dashboard
 
 ## Usage
@@ -127,7 +126,6 @@ Each view has a dedicated type-safe method:
 - `goToBattleDemo(data)` - Navigate to battle demo (data required)
 - `goToMap(data)` - Navigate to a map (`{ mapId }` required)
 - `goToDialogueDemo(data?)` - Navigate to dialogue demo
-- `goToInventory(data?)` - Navigate to inventory
 - `goToDebug(data?)` - Navigate to debug view
 
 ### Type-Safe Navigation Functions
@@ -299,7 +297,6 @@ The routing logic is separated into pure functions in `/src/lib/routing.ts`:
 - `goToBattleDemo(currentState, data)` - Navigate to battle demo
 - `goToMap(currentState, data)` - Navigate to a map; records the launching view as `returnView`
 - `goToDialogueDemo(currentState, data?)` - Navigate to dialogue demo
-- `goToInventory(currentState, data?)` - Navigate to inventory
 - `goToDebug(currentState, data?)` - Navigate to debug
 
 These functions are testable and don't mutate state directly.

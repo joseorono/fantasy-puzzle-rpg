@@ -405,7 +405,7 @@ export function decayGuard(guard: number, dt: number, decayResistance: number = 
  * enemy's next attack, before the per-cycle cap. Scaled by how hard the hit lands relative to
  * the enemy's max HP, and reduced by VIT on a diminishing (square-root) curve that never reaches
  * zero, so every enemy always flinches a little. Apply {@link clampStaggerToCycleBudget} to the
- * result to enforce the anti-stunlock cap. See docs/ideas-proposals/ENEMY_STAGGER.md.
+ * result to enforce the anti-stunlock cap. See docs/COMBAT_SYSTEM.md.
  * @param damage The damage dealt by the hit
  * @param enemyMaxHp The enemy's maximum HP (durability reference for "how hard")
  * @param vit The enemy's VIT stat (stagger resistance)

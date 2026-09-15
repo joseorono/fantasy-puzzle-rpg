@@ -882,12 +882,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
         >
           <canvas
             ref={canvasRef}
-            className="cursor-hold-glow"
             {...movement.pointerHandlers}
             style={{
-              // `outline` rather than `border`: it takes no layout space, so the
-              // measured scale and the sprite's origin stay exactly the canvas.
-              outline: '1px solid #ccc',
               background: '#87CEEB',
               imageRendering: 'pixelated',
               display: 'block',

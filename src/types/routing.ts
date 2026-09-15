@@ -1,6 +1,7 @@
 import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
 import type { MapId } from './map';
+import type { townLocations } from './map-node';
 
 /**
  * Available views in the game
@@ -10,7 +11,6 @@ export type ViewType =
   | 'battle-demo'
   | 'map'
   | 'dialogue-demo'
-  | 'inventory'
   | 'debug'
   | 'battle-rewards'
   | 'dungeon';
@@ -29,6 +29,12 @@ export interface TownHubViewData {
   };
   itemsForSell: string[];
   onLeaveCallback: () => void;
+  /**
+   * Sub-location to open on the next hub mount instead of the signpost — consumed once by
+   * `TownHub`, so a later visit from the map starts at the signpost again. Set by a location
+   * that sends the player on a round-trip (the Training Grounds' sparring fight).
+   */
+  initialLocation?: Exclude<townLocations, 'town-hub'>;
 }
 
 /**
@@ -80,11 +86,6 @@ export interface MapViewData {
 export type DialogueDemoViewData = object;
 
 /**
- * Data for inventory view (no specific data needed for now)
- */
-export type InventoryViewData = object;
-
-/**
  * Data for debug view (no specific data needed)
  */
 export type DebugViewData = object;
@@ -107,7 +108,6 @@ export interface ViewDataMap {
   'battle-demo': BattleViewData;
   map: MapViewData;
   'dialogue-demo': DialogueDemoViewData;
-  inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
   dungeon: DungeonViewData;
@@ -120,7 +120,6 @@ export type RouteStatus = TownHubViewData &
   BattleViewData &
   MapViewData &
   DialogueDemoViewData &
-  InventoryViewData &
   DebugViewData &
   BattleRewardsViewData &
   DungeonViewData;

@@ -57,7 +57,7 @@ const MUSIC_TIER = [
 ];
 
 /**
- * SFX: short one-shots. Individually small, ~3 MB together. Lower priority —
+ * SFX: short one-shots. Individually small, ~3.7 MB together. Lower priority —
  * they are latency-sensitive, though Vorbis decode is fast enough to be a
  * non-issue for clips this short.
  */
@@ -74,6 +74,7 @@ const SFX_TIER = [
   'ui/match.wav',
   'ui/beep.wav',
   'ui/mechanical-click.wav',
+  'ui/running-up-the-stairs.wav',
 ];
 
 /* ------------------------------------------------------------------ */

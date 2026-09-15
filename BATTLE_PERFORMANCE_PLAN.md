@@ -6,6 +6,10 @@
 
 Combat (the fight behind **Battle Demo**, but it applies to all battles) stutters on slightly older laptops, especially under load. Profiling the code found the battle screen does a large amount of continuous work even when idle: the whole battle subtree re-renders 10×/second, ~48 permanent blur filters sit on the board, several full-viewport layers repaint, and ~84 MB of WAV audio is decoded into RAM at startup.
 
+> **Note:** `BOARD_PLAYABILITY_PLAN.md` and `BOARD_SCAN_AND_RENDER_PLAN.md`, cited below for
+> measurements and §-references, were deleted once their work shipped. They are named here as
+> provenance only — the code they describe is current.
+
 **Hard constraints for every fix below:**
 
 - **No mechanics or formula changes.** Same tick cadence (100 ms), same damage, same cooldowns, same timings.

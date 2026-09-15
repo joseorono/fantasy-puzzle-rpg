@@ -1,7 +1,8 @@
 .town,
 .blacksmith,
 .item-store,
-.inn {
+.inn,
+.training-grounds {
   height: 100%;
   width: 100%;
   position: relative;
@@ -15,7 +16,8 @@
 .bg-shop,
 .bg-blacksmith,
 .bg-item-store,
-.bg-inn {
+.bg-inn,
+.bg-training-grounds {
   width: 100%;
   height: 100%;
   background-size: cover;
@@ -36,12 +38,14 @@
   z-index: 3;
 }
 
+/* Sized off --leave-btn-width so a scope can shrink it (the map does) without
+   re-stating the art; height keeps back-button.png's native 80:86 ratio. */
 .leave-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 80px;
-  height: 86px;
+  top: var(--leave-btn-offset, 16px);
+  left: var(--leave-btn-offset, 16px);
+  width: var(--leave-btn-width, 80px);
+  aspect-ratio: 80 / 86;
   background-image: url('/assets/menu/back-button.png');
   background-size: cover;
   background-position: center;
@@ -157,7 +161,8 @@
   overflow-y: hidden;
 }
 
-.item-store .shop-container {
+.item-store .shop-container,
+.training-grounds .shop-container {
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
@@ -214,6 +219,38 @@
   width: 100%;
 }
 
+/* ── Town hub dialogue box ─────────────────────────────────────── */
+
+/* At or below this height the hub uses the same compact box the sub-locations always
+   get, so the dialogue keeps its footprint small when vertical room is tight. Native
+   CSS cannot reference a var() inside a media condition, so the @media rule below must
+   use the same literal value (900px) — keep them in sync. */
+:root {
+  --town-hub-compact-dialogue-max-height: 900px;
+}
+
+/* Mirrors the .shop-bottom compact sizing above, scoped to the hub. */
+@media (max-height: 900px) {
+  .town .dialogue-container .dialogue-box {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .town .dialogue-container .dialogue-box__speaker {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .town .dialogue-container .dialogue-box__text {
+    min-height: unset;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .town .dialogue-container .dialogue-box__footer {
+    margin-top: 0.25rem;
+  }
+}
+
 .shop-header {
   display: flex;
   justify-content: space-between;
@@ -256,20 +293,15 @@
   border: 1px solid rgba(212, 165, 116, 0.3);
 }
 
-.blacksmith-tabs {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
+/* Spacing for the primary tab row every town location wears (blacksmith, item shop,
+   training grounds). The row itself is IndigolayTabs — see indigolay-tab.css. */
+.town-tabs {
   margin-bottom: 0.75rem;
-  border-bottom: 3px solid #d4a57466;
-  padding-bottom: 0.1rem;
 }
 
+/* The blacksmith's craft-type filters: a tighter IndigolayTabs row inside the pane. */
 .equipment-filters {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  --indigolay-tabs-gap: 0.5rem;
   margin-top: 0.2rem;
   margin-bottom: 0.08rem;
   padding-left: 0.35rem;
@@ -399,8 +431,8 @@
   align-items: center;
   gap: 0rem;
   padding: 0.5rem;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.55), rgba(26, 16, 8, 0.55)),
-    url('/assets/bg/looping/bg-board.png');
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.55), rgba(26, 16, 8, 0.55)), url('/assets/bg/looping/bg-board.png');
   border: 2px solid #d4a574;
   border-radius: 8px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -888,7 +920,8 @@
 .melt-group {
   flex: 1;
   padding: 15px;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
   border-radius: 4px;
 }
 
@@ -941,12 +974,18 @@
   pointer-events: none;
 }
 
+.inn .shop-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .inn-content {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
 }
-
 
 .inn-info h2 {
   margin: 0;
@@ -1062,6 +1101,199 @@
   display: flex;
   justify-content: center;
   padding: 0.5rem;
+}
+
+/* ── Training Grounds ──────────────────────────────────────────── */
+
+.training-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Scrolls vertically once the editor opens. The inline padding is what the keyboard
+   cursor corners overhang into (they sit 2px outside their cell): without it the
+   forced `overflow-x: auto` that comes with `overflow-y` turns those 2px into a
+   horizontal scrollbar. The negative margin keeps the content aligned with the tabs. */
+.training-respec {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-inline: -4px;
+  padding-inline: 4px;
+}
+
+.training-spar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* The dummy's own sprite beside the rules of the bout, in the same recessed card recipe
+   as the stat rows, so the tab reads as a poster rather than a paragraph. */
+.training-spar__card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(212, 165, 116, 0.22);
+  border-left: 3px solid rgba(212, 165, 116, 0.4);
+  border-radius: 6px;
+}
+
+.training-spar__dummy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.training-spar__dummy-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  padding: 0.5rem;
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 40%, rgba(212, 165, 116, 0.28), rgba(0, 0, 0, 0.5) 75%);
+  box-shadow:
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.training-spar__dummy-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: training-dummy-bob 2.4s ease-in-out infinite;
+}
+
+@keyframes training-dummy-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.training-spar__dummy-name {
+  font-size: 0.6rem;
+  color: #e3bb92;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.training-spar__details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.training-spar__actions {
+  display: flex;
+}
+
+@media (max-width: 640px) {
+  .training-spar__card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .training-spar__actions {
+    justify-content: center;
+  }
+}
+
+/* The skills panel sizes itself like the pause menu's tab body: a clipped flex column. */
+.training-skills {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Stat cards on the left, the derived-stat preview on the right, under a rule that separates
+   the editor from the hero row. The rows themselves are .stat-allocation-row (level-up-screen.css). */
+.training-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.3);
+}
+
+.training-editor__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.training-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.training-editor__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.training-editor__name {
+  font-size: 0.75rem;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Same pending-gold as the level-up screen's not-yet-committed values. */
+.training-editor__points {
+  font-size: 0.65rem;
+  color: #e9be76;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.training-editor__hp-warning {
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: #fb923c;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.training-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.training-editor__side {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .training-editor {
+    grid-template-columns: 1fr;
+  }
 }
 
 .heal-button {
@@ -1281,19 +1513,10 @@
 
 /* ── Keyboard support ──────────────────────────────────────────── */
 
-/* Contextual key hint, same quiet parchment tone as .rewards-key-hint on the reward screens
-   so hints read the same everywhere and never compete with the control beside them. */
-.town-key-hint {
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
-}
-
-.inn-actions .town-key-hint,
-.blacksmith-tabs .town-key-hint {
-  margin-left: auto;
-  align-self: center;
+/* Pins the KeyHintPill to the bottom of the inn panel and centers it. The pill's
+   own look lives in ui-custom/styles/key-hint-pill.css. */
+.inn-key-hint {
+  margin: auto auto 0;
 }
 
 /* The cursor-corner wrapper defaults to `width: fit-content` (cursor.css); the signpost planks
@@ -1355,12 +1578,4 @@
   font-size: 0.8rem;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.8);
-}
-
-.town-help-panel__dismiss {
-  margin: 1rem 0 0;
-  text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
 }
