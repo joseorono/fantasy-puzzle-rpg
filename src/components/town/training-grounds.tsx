@@ -324,15 +324,6 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
 
         {tab === 'skills' && (
           <div className="training-skills">
-            <div className="town-section-header town-section-header--inn">
-              <h2>
-                <NarikWoodBitFont text="SKILLS" size={1.2} />
-              </h2>
-            </div>
-            <p className="town-section-subtitle">
-              Pick a hero, then spend resources on their ultimates and passives.
-            </p>
-
             <SkillsPanel keyboardActive={isSkillsKeyboardActive} onExitLeft={returnToTabs} />
           </div>
         )}
@@ -344,9 +335,6 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
                 <NarikWoodBitFont text="SPARRING" size={1.2} />
               </h2>
             </div>
-            <p className="town-section-subtitle">
-              Test your party on a dummy that never fights back. Nothing is spent, nothing is earned.
-            </p>
             <div className="training-spar__card">
               <div className="training-spar__dummy">
                 <div className="training-spar__dummy-frame">
