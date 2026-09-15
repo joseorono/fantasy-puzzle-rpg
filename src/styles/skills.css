@@ -20,13 +20,6 @@
   min-height: 0;
 }
 
-/* Tighter, lower roster than the stats/equip tabs share: the offset drops the first
-   card past the Active label + divider so it lines up with the slot row beside it. */
-.skills-layout .party-roster {
-  gap: 0.35rem;
-  padding-top: 1.4rem;
-}
-
 /* A query container so the slot rows can adapt to the pane rather than the viewport:
    the pause menu's copy is a fixed width, the Training Grounds' is fluid. */
 .skills-main {
