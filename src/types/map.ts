@@ -7,7 +7,7 @@ import type { DialogueScene } from './dialogue';
  * MAP_REGISTRY, and a key in `MAP_ID_COVERAGE` (src/types/save-game.ts) so the
  * id validates in saves — TypeScript flags a half-added map at every end.
  */
-export type MapId = 'map-00' | 'map-01' | 'map-00-apprentice-forge';
+export type MapId = 'map-00' | 'map-01' | 'map-00-apprentice-forge' | 'map-01-fairy-forest';
 
 /**
  * A dialogue scene that fires when the player steps onto a tile.
