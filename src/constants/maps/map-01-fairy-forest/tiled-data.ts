@@ -3205,7 +3205,7 @@ export const newMap: TilemapData = {
     {
       firstgid: 1,
       columns: 78,
-      image: '..\/public\/assets\/tileset\/pc-fairy-forest.png',
+      image: '../public/assets/tileset/pc-fairy-forest.png',
       imageheight: 2048,
       imagewidth: 1248,
       margin: 0,
