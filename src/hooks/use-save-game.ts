@@ -65,7 +65,9 @@ export function useSaveGameActions() {
    *
    * Order matters: the in-memory dungeon run is cleared first so a stale run can't be
    * resumed after the store changes underneath it, and `isGameStarted` flips last so a
-   * load launched from the title screen swaps to gameplay already hydrated.
+   * load launched from the title screen swaps to gameplay already hydrated. The navigation
+   * resets the history: a load is a fresh timeline, so whatever the menu was opened over
+   * (a dungeon run, a dead battle after a defeat) must not be reachable with `goBack()`.
    */
   function loadSlot(slotId: SaveSlotId): void {
     const save = store.get(saveSlotAtoms[slotId]);
@@ -75,7 +77,7 @@ export function useSaveGameActions() {
     hydrateGameFromSave(save);
     store.set(basePlaytimeMsAtom, save.playtimeMs);
     store.set(sessionStartedAtAtom, Date.now());
-    useGameStore.getState().actions.router.goToMap({ mapId: save.currentMapId });
+    useGameStore.getState().actions.router.goToMap({ mapId: save.currentMapId }, { history: 'reset' });
     store.set(isGameStartedAtom, true);
     soundService.playSound(SoundNames.loadChime, 0.7);
   }

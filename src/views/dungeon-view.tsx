@@ -40,7 +40,6 @@ import {
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
 import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
-import { DEFAULT_VIEW } from '~/constants/routing';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
@@ -180,9 +179,7 @@ export default function DungeonView() {
   const { setInventory } = useInventoryActions();
   const resources = useResources();
   const { setResources } = useResourcesActions();
-  // A run returns to whichever surface launched it (map node, debug list, …). We can't use
-  // goBack(): the battle round-trip leaves the router's previousView null.
-  const { goToBattleDemo, goBackTo } = useRouterActions();
+  const { goToBattleDemo, goBack } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
   const { autosave } = useSaveGameActions();
 
@@ -345,8 +342,6 @@ export default function DungeonView() {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
 
-  const returnView = viewData.returnView ?? DEFAULT_VIEW;
-
   const floorBg = currentFloor ? getFloorBackground(dungeon, currentFloor) : dungeon.backgroundImage;
 
   const ratingSummary = summarizeFloorRatings(floorRatings);
@@ -411,7 +406,7 @@ export default function DungeonView() {
       setIsExiting(true);
       await triggerGlobalAnimation('stairs-ascent');
       resetRun();
-      goBackTo(returnView);
+      goBack();
     } finally {
       isLeavingRef.current = false;
     }
@@ -421,7 +416,7 @@ export default function DungeonView() {
     if (hasFinishedRef.current) return;
     hasFinishedRef.current = true;
     resetRun();
-    goBackTo(returnView);
+    goBack();
   }
 
   /** Finish, shared by the button and the keyboard: rated runs detour through the overlay. */

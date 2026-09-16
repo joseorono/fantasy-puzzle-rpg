@@ -94,7 +94,7 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 Not orthogonal by itself, but a **pacing enabler**. Dungeon combats *already* grant
 loot/EXP/level-up — each win routes through the shared `BattleRewardsScreen` and returns to the
 run (verified: the sample dungeon's `SWAMP_FROG`/`MOSS_GOLEM` carry `expReward` + resource loot
-tables; `goToBattleRewards` preserves `previousView: 'dungeon'`, so `goBack()` resumes the run via
+tables; `goToBattleRewards` replaces the battle in the history, so `goBack()` resumes the run via
 `resolveBattleWinAtom`). The open questions are *pacing and consistency*:
 
 - A full-screen loot → EXP → level-up flow **after every fight** interrupts the descent. Option:

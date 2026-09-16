@@ -6,14 +6,7 @@ import type { townLocations } from './map-node';
 /**
  * Available views in the game
  */
-export type ViewType =
-  | 'town-hub'
-  | 'battle-demo'
-  | 'map'
-  | 'dialogue-demo'
-  | 'debug'
-  | 'battle-rewards'
-  | 'dungeon';
+export type ViewType = 'town-hub' | 'battle-demo' | 'map' | 'dialogue-demo' | 'debug' | 'battle-rewards' | 'dungeon';
 
 /**
  * Data for town hub view
@@ -57,27 +50,14 @@ export interface BattleViewData {
 export interface DungeonViewData {
   dungeon: DungeonDefinition;
   isReplay: boolean;
-  /**
-   * Surface to return to when the run ends, finished or abandoned. Captured automatically by
-   * `goToDungeon` from the launching view; callers may override it. Needed because a run's
-   * battle round-trip (dungeon → battle → rewards → goBack) lands back on the dungeon with
-   * `previousView` cleared, so `goBack()` on the way out would no-op.
-   */
-  returnView?: ViewType;
 }
 
 /**
  * Data for the map view. `mapId` selects the definition from `MAP_REGISTRY`, so every map
  * shares this one view rather than each getting its own.
- *
- * `returnView` works exactly like `DungeonViewData.returnView`: a battle round-trip
- * (map → battle → rewards → goBack) lands back on the map with `previousView` cleared, so
- * the map keeps its own record of where it was entered from. Without it the way out
- * disappears the first time you fight something.
  */
 export interface MapViewData {
   mapId: MapId;
-  returnView?: ViewType;
 }
 
 /**
@@ -125,11 +105,35 @@ export type RouteStatus = TownHubViewData &
   DungeonViewData;
 
 /**
+ * What a navigation does with the view being left.
+ * - `push` (default): the current view and its data are stacked so `goBack()` returns to it.
+ * - `replace`: the current view is dropped; the stack is untouched. Used when a view stands in
+ *   for the one it replaces (battle rewards after the battle that produced them).
+ * - `reset`: the stack is emptied. Used when a flow starts a fresh timeline (loading a save).
+ */
+export type HistoryMode = 'push' | 'replace' | 'reset';
+
+/**
+ * Optional second argument of every `goToX` action
+ */
+export interface NavigationOptions {
+  history?: HistoryMode;
+}
+
+/**
+ * A stacked view together with the data it had when the player left it, so `goBack()` can
+ * restore the view exactly. Discriminated on `view`.
+ */
+export type HistoryEntry = { [V in ViewType]: { view: V; data?: ViewDataMap[V] } }[ViewType];
+
+/**
  * Router state
  */
 export interface RouterState {
   currentView: ViewType;
-  previousView: ViewType | null;
+  /** Views to return to, oldest first. `goBack()` pops the last one and restores its data. */
+  history: HistoryEntry[];
+  /** Live data per view: what the current view renders, plus the last-known data of the rest. */
   viewData: Partial<ViewDataMap>;
 }
 
