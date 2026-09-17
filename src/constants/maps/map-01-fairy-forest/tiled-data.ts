@@ -1,4 +1,5 @@
-import type { TilemapData } from '../../../types/tilemap';
+import type { TilemapData } from '~/types/tilemap';
+import { TILESET_FAIRY_FOREST } from '../tileset-data';
 
 export const newMap: TilemapData = {
   compressionlevel: -1,
@@ -3201,24 +3202,7 @@ export const newMap: TilemapData = {
   renderorder: 'right-down',
   tiledversion: '1.11.2',
   tileheight: 16,
-  tilesets: [
-    {
-      firstgid: 1,
-      columns: 78,
-      image: '../public/assets/tileset/pc-fairy-forest.png',
-      imageheight: 2048,
-      imagewidth: 1248,
-      margin: 0,
-      name: 'pc-fairy-forest',
-      spacing: 0,
-      tilecount: 9984,
-      tiledversion: '1.11.2',
-      tileheight: 16,
-      tilewidth: 16,
-      type: 'tileset',
-      version: '1.10',
-    },
-  ],
+  tilesets: [TILESET_FAIRY_FOREST],
   tilewidth: 16,
   type: 'map',
   version: '1.10',

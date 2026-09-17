@@ -1,5 +1,6 @@
 import type { MapDefinition } from '~/types/map';
 import { demoMap } from './tiled-data';
+import { TILESET_DEMO_MAP } from '../tileset-data';
 import { DEMO_MAP_NODES } from './nodes';
 import { DEMO_FLOOR_LOOT } from './floor-loot';
 import { MAP_00_DIALOGUE_SCENES, MAP_00_DIALOGUE_TRIGGERS } from './dialogue';
@@ -7,7 +8,7 @@ import { MAP_00_ENCOUNTERS } from './encounters';
 
 export const MAP_00: MapDefinition = {
   id: 'map-00',
-  tilesetImage: '/assets/tileset/demo-map.png',
+  tilesetImage: TILESET_DEMO_MAP.image,
   displayMapName: 'Overworld',
   walkableLayers: ['road'],
   visibleLayers: ['Capa de patrones 1', 'road', 'mountains', 'trees', 'signs'],
