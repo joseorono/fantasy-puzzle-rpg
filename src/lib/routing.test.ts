@@ -3,6 +3,7 @@ import {
   canGoBack,
   goToBattleDemo,
   goToBattleRewards,
+  goToDebug,
   goToDungeon,
   goToMap,
   goToTownHub,
@@ -118,6 +119,17 @@ describe('prepareNavigation', () => {
 
     expect(loaded.history).toEqual([]);
     expect(canGoBack(loaded)).toBe(false);
+  });
+
+  test('a DEBUG_MODE load reseeds one debug entry, leaving the map exitable', () => {
+    // Mirrors loadSlot(): reset onto debug, then push the map on top of it.
+    const inDungeon = step(goToDungeon(step(goToMap(stateAt('debug'), { mapId: 'map-00' })), dungeonData));
+    const loaded = step(goToMap(step(goToDebug(inDungeon, {}, { history: 'reset' })), { mapId: 'map-01' }));
+
+    expect(views(loaded)).toEqual(['debug']);
+    expect(canGoBack(loaded)).toBe(true);
+    // The pre-load dungeon must not be reachable, only the seeded debug entry.
+    expect(step(prepareGoBack(loaded)).currentView).toBe('debug');
   });
 
   test('trims the oldest entries past the history limit', () => {
