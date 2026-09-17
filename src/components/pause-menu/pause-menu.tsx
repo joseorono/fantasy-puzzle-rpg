@@ -13,24 +13,27 @@ export function PauseMenu() {
       <PauseMenuPartyBar />
       <div className="pause-menu-body">
         <PauseMenuSidebar />
-        <PauseMenuContent />
+        <div className="pause-menu-main">
+          <PauseMenuContent />
+          <div className="pause-menu-key-hint">
+            <KeyHintPill
+              items={
+              zone === 'sidebar'
+                ? [
+                    { keys: ['↑', '↓'], label: 'select' },
+                    { keys: ['Enter'], label: 'open' },
+                    { keys: ['Esc'], label: 'close' },
+                  ]
+                : [
+                    { keys: ['↑', '↓', '←', '→'], label: 'navigate' },
+                    { keys: ['Enter'], label: 'confirm' },
+                    { keys: ['Backspace', 'Esc'], label: 'back' },
+                  ]
+              }
+            />
+          </div>
+        </div>
       </div>
-      <KeyHintPill
-        className="pause-menu-key-hint"
-        items={
-          zone === 'sidebar'
-            ? [
-                { keys: ['↑', '↓'], label: 'select' },
-                { keys: ['Enter'], label: 'open' },
-                { keys: ['Esc'], label: 'close' },
-              ]
-            : [
-                { keys: ['↑', '↓', '←', '→'], label: 'navigate' },
-                { keys: ['Enter'], label: 'confirm' },
-                { keys: ['Backspace', 'Esc'], label: 'back' },
-              ]
-        }
-      />
     </div>
   );
 }

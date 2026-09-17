@@ -30,6 +30,7 @@
     "assets:audio-write": "node scripts/convert-audio.mjs --write",
     "assets:images": "node scripts/optimize-images.mjs",
     "assets:images-write": "node scripts/optimize-images.mjs --write",
+    "map:from-tiled": "node scripts/tiled-to-map.mjs",
     "size": "node scripts/measure-repo-size.mjs --by-ext",
     "size:all": "node scripts/measure-repo-size.mjs --all --by-ext",
     "check-updates": "ncu",

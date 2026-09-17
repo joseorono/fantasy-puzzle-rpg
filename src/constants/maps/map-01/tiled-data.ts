@@ -1,4 +1,5 @@
-﻿import type { TilemapData } from '../../../types/tilemap';
+import type { TilemapData } from '~/types/tilemap';
+import { TILESET_DEMO_MAP_2 } from '../tileset-data';
 
 export const newMap: TilemapData = {
   compressionlevel: -1,
@@ -588,21 +589,7 @@ export const newMap: TilemapData = {
   renderorder: 'right-down',
   tiledversion: '1.11.2',
   tileheight: 16,
-  tilesets: [
-    {
-      columns: 25,
-      firstgid: 1,
-      image: '/assets/tileset/demo-map.png',
-      imageheight: 400,
-      imagewidth: 400,
-      margin: 0,
-      name: 'Tiles',
-      spacing: 0,
-      tilecount: 625,
-      tileheight: 16,
-      tilewidth: 16,
-    },
-  ],
+  tilesets: [TILESET_DEMO_MAP_2],
   tilewidth: 16,
   type: 'map',
   version: '1.10',

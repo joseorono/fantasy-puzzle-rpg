@@ -26,7 +26,7 @@ export default function RouterTestView() {
       </div>
 
       <div className="mb-4">
-        <strong>Previous View:</strong> {router.previousView ?? 'None'}
+        <strong>History:</strong> {router.history.map((entry) => entry.view).join(' → ') || 'None'}
       </div>
 
       <div className="flex flex-wrap justify-center gap-2">
@@ -119,13 +119,20 @@ export default function RouterTestView() {
         </button>
 
         <button
+          className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
+          onClick={() => goToMap({ mapId: 'map-01-fairy-forest' })}
+        >
+          Fairy Forest
+        </button>
+
+        <button
           className={`rounded px-3 py-2 transition-colors ${
-            router.previousView
+            router.history.length > 0
               ? 'bg-gray-500 text-white hover:bg-gray-600'
               : 'cursor-not-allowed bg-gray-300 text-gray-500'
           }`}
           onClick={() => goBack()}
-          disabled={!router.previousView}
+          disabled={router.history.length === 0}
         >
           Go Back
         </button>

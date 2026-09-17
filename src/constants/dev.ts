@@ -12,9 +12,12 @@ import type { Resources } from '~/types/resources';
 export const SKIP_TO_DEBUG_VIEW = false;
 
 /**
- * When true, browser affordances the game normally suppresses stay available — currently
- * the right-click context menu, so "Inspect element" keeps working. Keep `false` for
- * normal play.
+ * When true, developer affordances the game normally suppresses stay available. Keep
+ * `false` for normal play. Currently:
+ *
+ * - the right-click context menu, so "Inspect element" keeps working
+ * - loading a save seeds the debug view behind the map, so the map's back button stays
+ *   visible and returns there instead of hiding (`loadSlot` in `use-save-game.ts`)
  */
 export const DEBUG_MODE = true;
 
@@ -30,6 +33,3 @@ export const DEBUG_RESOURCE_PAYLOAD: Resources = {
   silver: 25,
   iron: 50,
 };
-
-
-

@@ -3,7 +3,7 @@
 ## Import
 
 ```typescript
-import { useRouterActions, useCurrentView, useViewData } from '~/stores/game-store';
+import { useRouterActions, useCurrentView, useViewData, useRouterState } from '~/stores/game-store';
 ```
 
 ## Navigate to Views
@@ -11,62 +11,59 @@ import { useRouterActions, useCurrentView, useViewData } from '~/stores/game-sto
 ```typescript
 const {
   goToTownHub,
-  goToBattle,
+  goToBattleDemo,
   goToMap,
-  goToStore,
-  goToInn,
-  goToDialogue,
+  goToDungeon,
+  goToDialogueDemo,
   goToDebug,
+  goToBattleRewards,
   goBack,
   goBackTo,
 } = useRouterActions();
 
-// Town Hub
+// Town Hub (data required)
 goToTownHub({
-  innCost: { coins: 10, gold: 0, silver: 0, bronze: 0, copper: 0 },
-  itemsForSell: ['potion'],
+  ...DEFAULT_TOWN_HUB_DATA,
+  townName: 'Oakvale',
+  onLeaveCallback: () => goBack(),
 });
 
-// Battle (required data)
-goToBattle({
-  enemyId: 'moss-golem',
-  location: 'Forest',
-  canFlee: true,
-});
+// Battle (data required) — put the encounter into the battle atoms first
+goToBattleDemo({ enemyId: 'moss-golem', location: 'Forest', bgImage: '/assets/bg/forest.png' });
 
-// Map
-goToMap({
-  currentLocation: 'Town',
-  availableLocations: ['Forest', 'Cave'],
-});
+// Map — `mapId` selects the definition from MAP_REGISTRY
+goToMap({ mapId: 'map-00-apprentice-forge' });
 
-// Store (required data)
-goToStore({
-  itemsForSale: ['potion', 'sword'],
-  shopkeeper: 'merchant-npc',
-});
+// Dungeon run
+goToDungeon({ dungeon, isReplay: false });
 
-// Inn (required data)
-goToInn({
-  cost: { coins: 10, gold: 0, silver: 0, bronze: 0, copper: 0 },
-  innkeeper: 'innkeeper-npc',
-});
+// Rewards — launched from a battle it replaces the battle in the history
+goToBattleRewards({ lootTable, expReward: 120 });
 
-// Dialogue (required data)
-goToDialogue({
-  sceneId: 'intro-scene',
-  onComplete: () => console.log('Dialogue finished'),
-});
-
-// Debug
+// Demo / debug views
+goToDialogueDemo();
 goToDebug();
 
-// Go back
+// Back to the previous view, with the data it had when the player left it
 goBack();
 
-// Go back to specific view
-goBackTo('town-hub');
+// Unwind to the nearest occurrence of a view in the history (fails if it isn't there)
+goBackTo('map');
 ```
+
+## History Modes
+
+Every `goToX` accepts an optional second argument that controls what happens to the view being left:
+
+```typescript
+goToMap({ mapId }); // push (default): stack the current view so goBack() returns to it
+goToMap({ mapId }, { history: 'replace' }); // drop the current view, keep the stack
+goToMap({ mapId }, { history: 'reset' }); // empty the stack (loading a save)
+```
+
+Round-trips of any depth work by construction: town → battle → `goBack()` → town → `goBack()` → map.
+The only two places that need a mode are the save loader (`reset`) and the rewards screen, which
+applies `replace` itself when launched from a battle.
 
 ## Read Router State
 
@@ -77,89 +74,54 @@ const currentView = useCurrentView();
 // Full router state
 const router = useRouterState();
 // router.currentView
-// router.previousView
-// router.history
-// router.viewData
+// router.history   — [{ view, data }, …], oldest first
+// router.viewData  — live data per view
 
 // View-specific data
-const battleData = useViewData('battle');
+const battleData = useViewData('battle-demo');
 // battleData?.enemyId
-// battleData?.location
-// battleData?.canFlee
+// battleData?.bgImage
 ```
 
 ## Common Patterns
 
-### Pre-Navigation Setup
+### Round-trip that reopens where it started
 
 ```typescript
-const { goToBattle, setViewData } = useRouterActions();
-
-const prepareBattle = async () => {
-  // Load data
-  const enemy = await loadEnemy('dragon');
-  
-  // Navigate with data
-  goToBattle({
-    enemyId: enemy.id,
-    location: 'Castle',
-    canFlee: false,
-  });
-};
+// The Training Grounds: tell the hub where to reopen, then leave. The hub's own history
+// entry is stacked by goToBattleDemo and restored by the battle's goBack().
+setViewData('town-hub', { ...townHubData, initialLocation: 'training-grounds' });
+goToBattleDemo({ enemyId: TRAINING_DUMMY.id, location: 'Training Grounds' });
 ```
 
-### Conditional Navigation
+### Hide a dead back button
 
 ```typescript
-const { goToBattle, goToTownHub } = useRouterActions();
-const resources = useResources();
+import { canGoBack } from '~/lib/routing';
 
-const tryStartBattle = () => {
-  if (resources.coins >= 10) {
-    goToBattle({ enemyId: 'boss', location: 'Tower', canFlee: false });
-  } else {
-    goToTownHub();
-  }
-};
+const canLeave = useGameStore((state) => canGoBack(state.router));
+<BackButton onClick={canLeave ? goBack : undefined} />;
 ```
 
-### Navigation Chain
+### Update data without navigating
 
 ```typescript
-const { goToDialogue, goToBattle, goToTownHub } = useRouterActions();
-
-const startQuest = () => {
-  goToDialogue({
-    sceneId: 'quest-intro',
-    onComplete: () => {
-      goToBattle({
-        enemyId: 'quest-boss',
-        location: 'Dungeon',
-        canFlee: false,
-      });
-    },
-  });
-};
+const { setViewData } = useRouterActions();
+setViewData('town-hub', { ...townHubData, initialLocation: undefined });
+// For a view that is stacked (not on screen), its history snapshot is updated too.
 ```
 
 ## View Types
 
 ```typescript
-type ViewType =
-  | 'town-hub'
-  | 'battle-demo'
-  | 'map'
-  | 'dialogue-demo'
-  | 'debug'
-  | 'battle-rewards'
-  | 'dungeon';
+type ViewType = 'town-hub' | 'battle-demo' | 'map' | 'dialogue-demo' | 'debug' | 'battle-rewards' | 'dungeon';
 ```
 
 ## Notes
 
 - ✅ All navigation is type-safe
-- ✅ State persists to localStorage
-- ✅ History automatically tracked
+- ✅ Full history stack; `goBack()` restores the previous view's data
 - ✅ URL bar never changes
 - ✅ Can run async code before navigation
-- ⚠️ Some views require data (battle, store, inn, dialogue, battle-rewards)
+- ⚠️ The router is **not** saved; loads always resume on the map with an empty history
+- ⚠️ Some views require data (town-hub, battle-demo, map, dungeon, battle-rewards)

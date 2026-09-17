@@ -44,7 +44,8 @@ export function GameLoader() {
     const onLoaded = () => {
       setIsLoading(false);
       if (SKIP_TO_DEBUG_VIEW) {
-        goToDebug();
+        // The router already sits on debug; a plain push would stack debug under itself.
+        goToDebug({}, { history: 'reset' });
         setGameStarted(true);
       } else {
         setShowStartMenu(true);

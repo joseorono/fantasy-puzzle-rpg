@@ -1,5 +1,5 @@
 import type { RouterSlice } from './router.types';
-import type { ViewType } from '~/types/routing';
+import type { NavigationResult, ViewType } from '~/types/routing';
 import { INITIAL_ROUTER_STATE } from '~/constants/routing';
 import {
   prepareGoBack,
@@ -19,108 +19,45 @@ import type { SliceSet } from '~/types/store';
  * Creates the router slice for the game store
  */
 export function createRouterSlice(set: SliceSet<RouterSlice>): RouterSlice {
+  /** Applies a navigation result to the store, or reports why it was refused. */
+  function commit(navigate: (state: RouterSlice) => NavigationResult, failure: string) {
+    set((state: RouterSlice) => {
+      const result = navigate(state);
+      if (result.success && result.nextState) {
+        state.router = result.nextState;
+      } else {
+        console.warn(`${failure}: ${result.error}`);
+      }
+    });
+  }
+
   return {
     router: INITIAL_ROUTER_STATE,
     actions: {
       router: {
-        goToTownHub: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToTownHub(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToTownHub: (data, options) =>
+          commit((state) => libGoToTownHub(state.router, data, options), 'Navigation failed'),
 
-        goToBattleDemo: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToBattleDemo(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToBattleDemo: (data, options) =>
+          commit((state) => libGoToBattleDemo(state.router, data, options), 'Navigation failed'),
 
-        goToDungeon: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToDungeon(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToDungeon: (data, options) =>
+          commit((state) => libGoToDungeon(state.router, data, options), 'Navigation failed'),
 
-        goToMap: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToMap(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToMap: (data, options) => commit((state) => libGoToMap(state.router, data, options), 'Navigation failed'),
 
-        goToDialogueDemo: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToDialogueDemo(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToDialogueDemo: (data, options) =>
+          commit((state) => libGoToDialogueDemo(state.router, data, options), 'Navigation failed'),
 
-        goToDebug: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToDebug(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToDebug: (data, options) => commit((state) => libGoToDebug(state.router, data, options), 'Navigation failed'),
 
-        goToBattleRewards: (data) => {
-          set((state: RouterSlice) => {
-            const result = libGoToBattleRewards(state.router, data);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Navigation failed: ${result.error}`);
-            }
-          });
-        },
+        goToBattleRewards: (data, options) =>
+          commit((state) => libGoToBattleRewards(state.router, data, options), 'Navigation failed'),
 
-        goBack: () => {
-          set((state: RouterSlice) => {
-            const result = prepareGoBack(state.router);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Cannot go back: ${result.error}`);
-            }
-          });
-        },
+        goBack: () => commit((state) => prepareGoBack(state.router), 'Cannot go back'),
 
-        goBackTo: (view: ViewType) => {
-          set((state: RouterSlice) => {
-            const result = prepareGoBackTo(state.router, view);
-            if (result.success && result.nextState) {
-              state.router = result.nextState;
-            } else {
-              console.warn(`Cannot go back to ${view}: ${result.error}`);
-            }
-          });
-        },
+        goBackTo: (view: ViewType) =>
+          commit((state) => prepareGoBackTo(state.router, view), `Cannot go back to ${view}`),
 
         setViewData: (view, data) => {
           set((state: RouterSlice) => {
