@@ -8,7 +8,6 @@ import { HEALER_ACTIVES, HEALER_PASSIVES } from './healer';
 /**
  * Skill data assembly. One file per character in this folder; this index builds
  * the registries and per-class groupings the rest of the game consumes.
- * Roster reference: docs/ideas-proposals/SKILL_ROSTER.md.
  */
 
 export { packIcon, CLASS_SKILL_SHEET, classSheetIconCount } from './icons';

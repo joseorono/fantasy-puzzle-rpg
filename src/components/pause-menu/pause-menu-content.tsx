@@ -32,7 +32,13 @@ export function PauseMenuContent() {
       {activeTab === 'equip' && <PauseMenuEquip keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'skills' && <PauseMenuSkills keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'stats' && <PauseMenuStats keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
-      {activeTab === 'options' && <PauseMenuOptions keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
+      {activeTab === 'options' && (
+        <PauseMenuOptions
+          keyboardActive={keyboardActive}
+          onExitToSidebar={exitToSidebar}
+          headerHint="Adjust the volume and accessibility settings."
+        />
+      )}
       {activeTab === 'save' && <PauseMenuSave keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'load' && <PauseMenuLoad keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
     </div>

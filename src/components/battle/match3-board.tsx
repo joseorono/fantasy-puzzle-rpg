@@ -20,12 +20,9 @@ import type { GridPosition } from '~/types/geometry';
 import type { OrbType } from '~/types/rpg-elements';
 import type { OrbComponentProps } from '~/types/components';
 import type { SkillCooldownReduction } from '~/lib/battle-system';
-import {
-  calculateMatchDamage,
-  calculateComboMultiplier,
-  calculateGuardChargeRate,
-} from '~/lib/rpg-calculations';
-import { findLineMatches, expandBombExplosions } from '~/lib/match-3';
+import { calculateMatchDamage, calculateComboMultiplier, calculateGuardChargeRate } from '~/lib/rpg-calculations';
+import { findLineMatches, expandBombExplosions, swapContainsPosition } from '~/lib/match-3';
+import { useBoardHint } from '~/hooks/use-board-hint';
 import { getEquipmentComboBonus } from '~/lib/equipment-system';
 import { getCharacterPassiveModifiers, getPartyPassiveModifiers } from '~/lib/skill-system';
 import {
@@ -43,7 +40,7 @@ import {
   MAX_CHAIN_BOMB_SPAWNS,
 } from '~/constants/board';
 import { cn } from '~/lib/utils';
-import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES } from '~/constants/ui';
+import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES, ORB_HINT_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
 import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
@@ -63,6 +60,7 @@ function OrbComponent({
   isSelected,
   isHighlighted,
   isInvalidSwap,
+  isHint,
   isNew,
   isExploding,
   onSelect,
@@ -101,6 +99,8 @@ function OrbComponent({
         isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
         // Wildcard bomb orbs get a distinct dark sheen and a pulsing white ring
         orb.isBomb && !isExploding && 'animate-pulse ring-2 ring-white/90 brightness-75',
+        // Idle hint: muted ring on both orbs of a legal swap; the selection ring always wins
+        isHint && !isSelected && !isHighlighted && !isExploding && ORB_HINT_CLASSES,
         isDisappearing && !isExploding && 'scale-0 rotate-180 opacity-0',
         isInvalidSwap && 'shake ring-4 ring-red-500',
         isNew && 'fall-in',
@@ -210,6 +210,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const cascadeLevelRef = useRef(0);
   // Bombs spawned so far in the current cascade chain (anti-runaway budget)
   const chainBombsSpawnedRef = useRef(0);
+  const hintMove = useBoardHint(board, !isProcessingSwap && !isBattlePaused && !pendingVictory);
 
   // Track new orbs for animation
   useEffect(() => {
@@ -335,7 +336,10 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       // on top of the cascade level.
       const equipmentComboBonus = matchingCharacter ? getEquipmentComboBonus(matchingCharacter) : 0;
       const charPassives = matchingCharacter ? getCharacterPassiveModifiers(matchingCharacter) : null;
-      const comboMultiplier = calculateComboMultiplier(cascadeLevel, equipmentComboBonus + (charPassives?.cascadeBonus ?? 0));
+      const comboMultiplier = calculateComboMultiplier(
+        cascadeLevel,
+        equipmentComboBonus + (charPassives?.cascadeBonus ?? 0),
+      );
 
       // Gray is neutral (no character, no POW): it trades raw damage for Guard, so its chip
       // damage is scaled down by GRAY_MATCH_DAMAGE_MULTIPLIER.
@@ -344,16 +348,17 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
         calculateMatchDamage(matches.size, BASE_MATCH_DAMAGE, characterPow, comboMultiplier) *
           (charPassives?.matchDamageMultiplier ?? 1),
       );
-      const totalDamage = isGrayMatch
-        ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER)
-        : baseTotalDamage;
+      const totalDamage = isGrayMatch ? Math.floor(baseTotalDamage * GRAY_MATCH_DAMAGE_MULTIPLIER) : baseTotalDamage;
 
       // Dead characters perform no action, but gray still charges the party Guard meter.
       if (isCharacterDead) continue;
 
       // Reduce the matching character's skill cooldown based on orbs matched.
       if (matchingCharacter) {
-        cooldownReductions.push({ characterId: matchingCharacter.id, amount: matches.size * COOLDOWN_REDUCTION_PER_ORB });
+        cooldownReductions.push({
+          characterId: matchingCharacter.id,
+          amount: matches.size * COOLDOWN_REDUCTION_PER_ORB,
+        });
       }
 
       // Gray orbs charge the party-wide Guard meter instead of a hero's cooldown.
@@ -493,11 +498,8 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                     orb={orb}
                     isHighlighted={highlightedMatches.has(orb.id)}
                     isSelected={selectedOrb?.row === orb.row && selectedOrb?.col === orb.col}
-                    isInvalidSwap={
-                      invalidSwap !== null &&
-                      ((invalidSwap.from.row === orb.row && invalidSwap.from.col === orb.col) ||
-                        (invalidSwap.to.row === orb.row && invalidSwap.to.col === orb.col))
-                    }
+                    isInvalidSwap={invalidSwap !== null && swapContainsPosition(invalidSwap, orb.row, orb.col)}
+                    isHint={hintMove !== null && swapContainsPosition(hintMove, orb.row, orb.col)}
                     isNew={newOrbIds.has(orb.id)}
                     isExploding={explodingOrbs.has(orb.id)}
                     onSelect={handleOrbClick}

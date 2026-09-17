@@ -14,7 +14,8 @@ import {
   upgradeSkill as upgradeSkillLib,
   upgradePassive as upgradePassiveLib,
 } from '~/lib/skill-system';
-import type { CharacterData } from '~/types/rpg-elements';
+import { respecStats } from '~/lib/leveling-system';
+import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { RarityTier } from '~/constants/rarity';
 import type { EquipmentSlot } from '~/lib/equipment-system';
 import type { SliceSet, SliceGet } from '~/types/store';
@@ -167,6 +168,16 @@ export const createPartySlice = (set: SliceSet<PartySlice>, get: SliceGet<PartyS
           },
           false,
           'party/upgradePassiveForCharacter',
+        ),
+      respecCharacter: (characterId: string, newStats: CoreRPGStats) =>
+        set(
+          (state: PartySlice) => {
+            const index = state.party.members.findIndex((m) => m.id === characterId);
+            if (index === -1) return;
+            state.party.members[index] = respecStats(state.party.members[index], newStats);
+          },
+          false,
+          'party/respecCharacter',
         ),
     },
   },

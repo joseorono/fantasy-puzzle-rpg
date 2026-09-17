@@ -5,6 +5,7 @@ import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { ConsumableItems } from '~/constants/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { getItemsFromIds } from '~/lib/town';
 import { canAfford, createResources } from '~/lib/resources';
 import { getSellPrice } from '~/lib/crafting';
@@ -16,7 +17,7 @@ import { ITEM_SHOP_WELCOME_TEXT } from '~/constants/flavor-text/welcome-text';
 import { SHOPKEEPER_CHAR } from '~/constants/dialogue/characters';
 import { TownLocationLayout } from './town-location-layout';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { IndigolayTab } from '~/components/ui-custom/indigolay-tab';
+import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { CostBadge } from '~/components/ui-custom/cost-badge';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
@@ -142,17 +143,32 @@ export default function ItemStore({
     >
       <div className="shop-content">
         {/* Buy / Sell tabs */}
-        <div className="blacksmith-tabs">
-          <IndigolayTab size="default" isActive={selectedTab === 'buy'} onClick={() => switchTab('buy')}>
+        <IndigolayTabs rule className="town-tabs">
+          <IndigolayTab
+            size="default"
+            isActive={selectedTab === 'buy'}
+            onClick={() => switchTab('buy')}
+            tooltip="Buy consumables to use in battle."
+          >
             Buy
           </IndigolayTab>
-          <IndigolayTab size="default" isActive={selectedTab === 'sell'} onClick={() => switchTab('sell')}>
+          <IndigolayTab
+            size="default"
+            isActive={selectedTab === 'sell'}
+            onClick={() => switchTab('sell')}
+            tooltip="Sell consumables back for half their value."
+          >
             Sell
           </IndigolayTab>
-          <span className="town-key-hint pixel-font">
-            ← → switch tab · ↑ ↓ pick an item · Enter to {selectedTab === 'buy' ? 'buy' : 'sell'}
-          </span>
-        </div>
+          <KeyHintPill
+            className="town-key-hint"
+            items={[
+              { keys: ['←', '→'], label: 'switch tab' },
+              { keys: ['↑', '↓'], label: 'pick an item' },
+              { keys: ['Enter'], label: `to ${selectedTab === 'buy' ? 'buy' : 'sell'}` },
+            ]}
+          />
+        </IndigolayTabs>
 
         <div className="store-info">
           <div className="town-section-header town-section-header--items">
@@ -221,109 +237,109 @@ export default function ItemStore({
 
         {/* Buy List */}
         {selectedTab === 'buy' && (
-        <div className="equipment-list">
-          {itemsData.map((item) => {
-            const itemCount = getItemCount(item.id);
-            const canAffordItem = canAfford(resources, item.cost);
+          <div className="equipment-list">
+            {itemsData.map((item) => {
+              const itemCount = getItemCount(item.id);
+              const canAffordItem = canAfford(resources, item.cost);
 
-            return (
-              <div
-                key={item.id}
-                ref={(node) => {
-                  if (node) rowRefs.current.set(item.id, node);
-                  else rowRefs.current.delete(item.id);
-                }}
-                className={cn(
-                  'equipment-list-item',
-                  !canAffordItem && 'cannot-afford',
-                  selection.isSelected(item.id) && 'selected',
-                )}
-              >
-                <div className="equipment-item-icon">
-                  {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
-                </div>
-                <div className="equipment-item-content">
-                  <div className="equipment-item-header">
-                    <div className="equipment-item-name">
-                      {item.name}
-                      {itemCount > 0 && (
-                        <span className="owned-badge number-flow-container">
-                          Owned{' '}
-                          <NumberFlow
-                            value={itemCount}
-                            format={INTEGER_FORMAT}
-                            trend={1}
-                            spinTiming={SNAPPY_SPIN_TIMING}
-                            transformTiming={SNAPPY_TRANSFORM_TIMING}
-                            opacityTiming={SNAPPY_OPACITY_TIMING}
-                          />
-                        </span>
-                      )}
-                    </div>
-                    <div className="equipment-item-cost">
-                      {item.cost.coins > 0 && <CostBadge resource="coins" amount={item.cost.coins} />}
-                      {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
-                      {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
-                      {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
-                      {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
-                    </div>
+              return (
+                <div
+                  key={item.id}
+                  ref={(node) => {
+                    if (node) rowRefs.current.set(item.id, node);
+                    else rowRefs.current.delete(item.id);
+                  }}
+                  className={cn(
+                    'equipment-list-item',
+                    !canAffordItem && 'cannot-afford',
+                    selection.isSelected(item.id) && 'selected',
+                  )}
+                >
+                  <div className="equipment-item-icon">
+                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
                   </div>
-                  <div className="item-store-item-summary">
-                    <div className="equipment-item-description">{item.description}</div>
-                    <div className="item-actions">
-                      <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(item.id)}>
-                        <ToffecButton
-                          variant="orange"
-                          size="xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleBuyItem(item);
-                          }}
-                          disabled={!canAffordItem}
-                        >
-                          <span className="flex items-center gap-2">
-                            {canAffordItem ? (
-                              <>
-                                Buy for{' '}
-                                {item.cost.coins > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    {item.cost.coins} <FrostyRpgIcon name="coinPurse" size={18} />
-                                  </span>
-                                )}
-                                {item.cost.gold > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
-                                  </span>
-                                )}
-                                {item.cost.silver > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
-                                  </span>
-                                )}
-                                {item.cost.copper > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
-                                  </span>
-                                )}
-                                {item.cost.iron > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
-                                  </span>
-                                )}
-                              </>
-                            ) : (
-                              'Cannot Afford'
-                            )}
+                  <div className="equipment-item-content">
+                    <div className="equipment-item-header">
+                      <div className="equipment-item-name">
+                        {item.name}
+                        {itemCount > 0 && (
+                          <span className="owned-badge number-flow-container">
+                            Owned{' '}
+                            <NumberFlow
+                              value={itemCount}
+                              format={INTEGER_FORMAT}
+                              trend={1}
+                              spinTiming={SNAPPY_SPIN_TIMING}
+                              transformTiming={SNAPPY_TRANSFORM_TIMING}
+                              opacityTiming={SNAPPY_OPACITY_TIMING}
+                            />
                           </span>
-                        </ToffecButton>
-                      </ToffecBeigeCornersWrapper>
+                        )}
+                      </div>
+                      <div className="equipment-item-cost">
+                        {item.cost.coins > 0 && <CostBadge resource="coins" amount={item.cost.coins} />}
+                        {item.cost.gold > 0 && <CostBadge resource="gold" amount={item.cost.gold} />}
+                        {item.cost.silver > 0 && <CostBadge resource="silver" amount={item.cost.silver} />}
+                        {item.cost.copper > 0 && <CostBadge resource="copper" amount={item.cost.copper} />}
+                        {item.cost.iron > 0 && <CostBadge resource="iron" amount={item.cost.iron} />}
+                      </div>
+                    </div>
+                    <div className="item-store-item-summary">
+                      <div className="equipment-item-description">{item.description}</div>
+                      <div className="item-actions">
+                        <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected(item.id)}>
+                          <ToffecButton
+                            variant="orange"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBuyItem(item);
+                            }}
+                            disabled={!canAffordItem}
+                          >
+                            <span className="flex items-center gap-2">
+                              {canAffordItem ? (
+                                <>
+                                  Buy for{' '}
+                                  {item.cost.coins > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      {item.cost.coins} <FrostyRpgIcon name="coinPurse" size={18} />
+                                    </span>
+                                  )}
+                                  {item.cost.gold > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      {item.cost.gold} <FrostyRpgIcon name="goldBar" size={18} />
+                                    </span>
+                                  )}
+                                  {item.cost.silver > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      {item.cost.silver} <FrostyRpgIcon name="silverBar" size={18} />
+                                    </span>
+                                  )}
+                                  {item.cost.copper > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      {item.cost.copper} <FrostyRpgIcon name="copperBar" size={18} />
+                                    </span>
+                                  )}
+                                  {item.cost.iron > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      {item.cost.iron} <FrostyRpgIcon name="ironBar" size={18} />
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                'Cannot Afford'
+                              )}
+                            </span>
+                          </ToffecButton>
+                        </ToffecBeigeCornersWrapper>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </TownLocationLayout>

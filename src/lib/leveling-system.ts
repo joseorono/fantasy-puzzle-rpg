@@ -1,6 +1,6 @@
 import type { CharacterData, CoreRPGStats, StatType } from '~/types';
 import { calculateMaxHp } from './rpg-calculations';
-import { LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
+import { INITIAL_PARTY, LEVELING_UP_HEALS_CHARACTER, MAX_LEVEL, MAX_LEVEL_UPS_PER_BATTLE } from '~/constants/party';
 import { EXP_BASE, EXP_CURVE_POWER } from '~/constants/progression';
 /**
  * Leveling System
@@ -228,4 +228,100 @@ export function levelUp(
     character.currentHp = Math.min(initialMaxHp, character.maxHp);
   }
   return character;
+}
+
+// ─── Respec ──────────────────────────────────────────────────────────
+
+/** The level-1 values a hero's growth is measured against. */
+export type StatTemplate = Pick<CharacterData, 'stats' | 'potentialStats'>;
+
+const STAT_TYPES: readonly StatType[] = ['pow', 'vit', 'spd'];
+
+/** The hero's own entry in the starting roster, matched by id. */
+function findInitialTemplate(character: CharacterData): StatTemplate | undefined {
+  return INITIAL_PARTY.find((member) => member.id === character.id);
+}
+
+function sumStats(stats: CoreRPGStats): number {
+  return stats.pow + stats.vit + stats.spd;
+}
+
+/**
+ * Stat points the player has allocated by hand since level 1 — the refundable share of a
+ * hero's growth. Random growth is measured per stat by how far `potentialStats` has drained
+ * from the template, so it is excluded; whatever remains above the template was chosen.
+ *
+ * Clamped at 0 per stat so a retuned template can only shrink a refund, never invert it. A
+ * hero with no template (an id missing from `INITIAL_PARTY`) has nothing refundable.
+ *
+ * @param character - The hero to measure
+ * @param template - Level-1 reference; defaults to the hero's `INITIAL_PARTY` entry
+ * @returns Hand-allocated points per stat
+ */
+export function getAllocatedStats(
+  character: CharacterData,
+  template: StatTemplate | undefined = findInitialTemplate(character),
+): CoreRPGStats {
+  const allocated: CoreRPGStats = { pow: 0, vit: 0, spd: 0 };
+  if (!template) return allocated;
+  for (const stat of STAT_TYPES) {
+    const randomGained = template.potentialStats[stat] - character.potentialStats[stat];
+    allocated[stat] = Math.max(0, character.stats[stat] - template.stats[stat] - randomGained);
+  }
+  return allocated;
+}
+
+/**
+ * The lowest each stat can be respecced down to: the hero's current stats minus the
+ * hand-allocated share, i.e. base plus random growth, which is never refunded.
+ *
+ * @param character - The hero to measure
+ * @param template - Level-1 reference; defaults to the hero's `INITIAL_PARTY` entry
+ * @returns Per-stat floor for a respec
+ */
+export function getRespecFloor(character: CharacterData, template?: StatTemplate): CoreRPGStats {
+  const allocated = getAllocatedStats(character, template);
+  return {
+    pow: character.stats.pow - allocated.pow,
+    vit: character.stats.vit - allocated.vit,
+    spd: character.stats.spd - allocated.spd,
+  };
+}
+
+/**
+ * Total stat points a respec hands back to the player to re-spend.
+ *
+ * @param character - The hero to measure
+ * @param template - Level-1 reference; defaults to the hero's `INITIAL_PARTY` entry
+ * @returns Sum of {@link getAllocatedStats}
+ */
+export function getRefundableStatPoints(character: CharacterData, template?: StatTemplate): number {
+  return sumStats(getAllocatedStats(character, template));
+}
+
+/**
+ * Re-spends a hero's allocated points onto `newStats`, leaving the random-growth share in
+ * place. Returns a **new** character with `maxHp` recomputed and `currentHp` clamped to it:
+ * a VIT drop costs HP and a VIT rise never heals, so a respec can't stand in for the Inn.
+ *
+ * Returns the input object unchanged when `newStats` dips below any stat's floor or moves a
+ * different number of points than the hero has, so a bad request can't leak into the party.
+ *
+ * @param character - The hero to respec (not mutated)
+ * @param newStats - The full stat line to end up with
+ * @param template - Level-1 reference; defaults to the hero's `INITIAL_PARTY` entry
+ * @returns The respecced hero, or `character` itself when the request is invalid
+ */
+export function respecStats(character: CharacterData, newStats: CoreRPGStats, template?: StatTemplate): CharacterData {
+  if (sumStats(newStats) !== sumStats(character.stats)) return character;
+  const floor = getRespecFloor(character, template);
+  if (STAT_TYPES.some((stat) => newStats[stat] < floor[stat])) return character;
+
+  const maxHp = calculateMaxHp(character.baseHp, newStats.vit, character.vitHpMultiplier);
+  return {
+    ...character,
+    stats: { ...newStats },
+    maxHp,
+    currentHp: Math.min(character.currentHp, maxHp),
+  };
 }

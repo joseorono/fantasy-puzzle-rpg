@@ -14,7 +14,8 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection } from '~/hooks/use-keyboard-selection';
 import { FranukaSlider } from '~/components/ui-custom/franuka-slider';
 import { IndigolayCheckbox } from '~/components/ui-custom/indigolay-checkbox';
-import { NarikHeading } from '~/components/typography/narik-heading';
+import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { cn } from '~/lib/utils';
 
 type OptionRowId = 'master' | 'music' | 'sfx' | 'mute' | 'reduced-motion';
@@ -30,9 +31,15 @@ interface PauseMenuOptionsProps {
   keyboardActive?: boolean;
   /** Fired when ← should hand the keyboard back to the host's own nav (the pause sidebar). */
   onExitToSidebar?: () => void;
+  /** Header description, when the host wants one. Omitted where the host already titles the pane. */
+  headerHint?: string;
 }
 
-export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: PauseMenuOptionsProps) {
+export function PauseMenuOptions({
+  keyboardActive = false,
+  onExitToSidebar,
+  headerHint,
+}: PauseMenuOptionsProps) {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
   const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
   const [sfxVolume, setSfxVolume] = useAtom(sfxVolumeAtom);
@@ -184,15 +191,23 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
   function sliderHint(id: OptionRowId) {
     if (!keyboardActive || !selection.isSelected(id)) return null;
     return (
-      <span className="pause-menu-inline-hint pixel-font">
-        {isEditing && editingRowId === id ? '← → adjust · Enter done' : 'Enter to adjust'}
-      </span>
+      <KeyHintPill
+        className="pause-menu-inline-hint"
+        items={
+          isEditing && editingRowId === id
+            ? [
+                { keys: ['←', '→'], label: 'adjust' },
+                { keys: ['Enter'], label: 'done' },
+              ]
+            : [{ keys: ['Enter'], label: 'to adjust' }]
+        }
+      />
     );
   }
 
   return (
     <>
-      <NarikHeading as="h2" text="Options" />
+      <PauseMenuTabHeader text="Options" hint={headerHint} />
       <div className="pause-menu-options-list">
         <div className={rowClass('master')}>
           <div className="pause-menu-option-header">
@@ -274,7 +289,9 @@ export function PauseMenuOptions({ keyboardActive = false, onExitToSidebar }: Pa
             sliding. Easier on the eyes if motion makes you queasy — the trade-off is that combat loses most of its
             juice.
           </p>
-          <p className="pause-menu-option-note">Off by default. Flip it any time — your choice is remembered.</p>
+          <p className="pause-menu-option-note pixel-outlined-text italic">
+            Off by default. <br /> Flip it any time — your choice is remembered.
+          </p>
         </div>
       </div>
     </>

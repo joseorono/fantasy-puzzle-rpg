@@ -25,7 +25,11 @@ export interface Match {
   multiplier: number;
 }
 
-export type BattleStatus = 'playing' | 'won' | 'lost';
+/** `abandoned` is a fight the player walked out of — only training allows it. Over, like won/lost. */
+export type BattleStatus = 'playing' | 'won' | 'lost' | 'abandoned';
+
+/** `training`: a reward-free sparring fight — no standby, no attacks, no item consumption, leavable. */
+export type BattleMode = 'standard' | 'training';
 
 export interface SkillActivationEvent {
   characterId: string;
@@ -36,6 +40,7 @@ export interface SkillActivationEvent {
 }
 
 export interface BattleState {
+  mode: BattleMode;
   party: CharacterData[];
   enemies: EnemyData[];
   selectedEnemyId: string;
@@ -109,4 +114,6 @@ export interface BattleState {
   itemsUsed: number;
   /** Count of ultimate skills activated this battle; a capped bonus in the victory rating. */
   ultimateSkillsUsed: number;
+  /** Every point of damage landed on enemies this battle, matches and skills alike. */
+  totalDamageDealt: number;
 }

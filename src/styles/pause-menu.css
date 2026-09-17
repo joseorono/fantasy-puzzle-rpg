@@ -247,6 +247,16 @@
     linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
 }
 
+/* Right column of the body — holds the tab content and the key-hint pill so the
+   sidebar can stretch to the bottom edge of the menu. */
+.pause-menu-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ─── Sidebar ────────────────────────────────────────────────────────── */
 
 .pause-menu-sidebar {
@@ -446,10 +456,12 @@
   overflow-y: auto;
   padding: 1rem 1.25rem;
   min-width: 0;
+  min-height: 0;
 }
 
 .pause-menu-content--equip,
-.pause-menu-content--items {
+.pause-menu-content--items,
+.pause-menu-content--skills {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -467,11 +479,9 @@
 
 /* ─── Items Tab ──────────────────────────────────────────────────────── */
 
+/* The Items tab's category filters: a tight IndigolayTabs row — see indigolay-tab.css. */
 .pause-menu-item-categories {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  --indigolay-tabs-gap: 0.35rem;
   margin-bottom: 0.08rem;
   padding: 0;
   padding-left: 0.35rem;
@@ -837,7 +847,7 @@
 }
 
 /* Party roster (right side of stats/equip) */
-.pause-menu-party-roster {
+.party-roster {
   width: 230px;
   flex-shrink: 0;
   display: flex;
@@ -846,7 +856,7 @@
 }
 
 /* Content-height wrapper so cards keep their natural size inside a full-height roster */
-.pause-menu-party-roster-list {
+.party-roster-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -1360,20 +1370,14 @@
 }
 
 .pause-menu-option-description {
+  color: #fff1d6; /* Beige claro / crema */
+  text-shadow: 1px 1px 0px #3a1e05;
   margin: 0;
   padding: 0 0.25rem;
   max-width: 48ch;
   font-size: 0.6rem;
   line-height: 1.8;
   color: #b38a63;
-}
-
-.pause-menu-option-note {
-  margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.55rem;
-  line-height: 1.7;
-  color: #8f6f4f;
 }
 
 .pause-menu-mute-toggle__icon {
@@ -1432,30 +1436,39 @@
     0 0 14px rgba(212, 165, 116, 0.35);
 }
 
+/* Shared tab header (PauseMenuTabHeader): heading and descriptive hint on one
+   bottom-aligned row. Same baseline offsets as .save-load-menu__header in
+   save-load.css — both boxes keep different empty space under their letters. */
+.pause-menu-tab-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.pause-menu-tab-header__title {
+  display: inline-flex;
+  margin-bottom: -6px;
+}
+
+.pause-menu-tab-header__hint {
+  margin: 0 0 6px;
+  font-size: 0.6rem;
+  color: #f4f3f1;
+}
+
 /* Contextual key hint sitting inline with a control — a slider row's header, the item
-   category tabs. Same quiet parchment tone as the shell hint, so it never competes. */
+   category tabs. Layout only: the look is KeyHintPill's. */
 .pause-menu-inline-hint {
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
   white-space: nowrap;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
-/* The category row is a flex row of tabs; the hint trails it without stretching. */
-.pause-menu-item-categories .pause-menu-inline-hint {
-  align-self: center;
-  margin-left: auto;
-}
-
-/* Zone-aware key hint pinned under the menu body — same quiet parchment tone as
-   the rewards/dungeon hints. */
+/* Zone-aware key hint strip under the content column — carries the menu's own
+   gradient so it reads as part of the frame, not the board texture. */
 .pause-menu-key-hint {
-  align-self: center;
+  display: flex;
+  justify-content: center;
   padding: 0.35rem 0 0.15rem;
-  text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border-top: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
 }

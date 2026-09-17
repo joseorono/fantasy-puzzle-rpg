@@ -92,6 +92,17 @@ export const LATE_MOVE_GRID: CellToken[][] = withRow(DEADLOCKED_GRID, 7, [
   'purple',
 ]);
 
+/**
+ * Settled board whose only moves are vertical: column 0 opens blue, blue, gray, blue, so
+ * (2,0)↔(3,0) completes a run. The horizontal pass finds nothing; the column pass must.
+ */
+export const VERTICAL_MOVE_GRID: CellToken[][] = withCell(
+  withCell(withCell(withCell(DEADLOCKED_GRID, 0, 0, 'blue'), 1, 0, 'blue'), 2, 0, 'gray'),
+  3,
+  0,
+  'blue',
+);
+
 /** `EARLY_MOVE_GRID` with the gap filled: row 0 opens with a 4-run of blue. */
 export const MATCH_GRID: CellToken[][] = withCell(EARLY_MOVE_GRID, 0, 2, 'blue');
 

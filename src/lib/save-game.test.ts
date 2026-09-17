@@ -61,6 +61,7 @@ function makeGameState(): SaveGameState {
     },
     floorLootProgress: { 'map-00': { floor_loot_1: true } },
     crafting: { pity: 5 },
+    progressFlags: { respecCount: 2 },
     dungeonProgress: { completedDungeons: { 'easy-dungeon': true } },
   };
 }
@@ -134,6 +135,17 @@ describe('saveSlotSchema', () => {
     const save = JSON.parse(JSON.stringify(makeSave())) as { currentMapId: string };
     save.currentMapId = 'map-99';
     expect(saveSlotSchema.safeParse(save).success).toBe(false);
+  });
+
+  it('defaults progressFlags on saves written before the slice existed', () => {
+    const { progressFlags: _omitted, ...legacyState } = makeGameState();
+    const legacy = {
+      ...makeSave(),
+      state: legacyState,
+    };
+
+    const parsed = saveSlotSchema.parse(legacy);
+    expect(parsed?.state.progressFlags).toEqual({ respecCount: 0 });
   });
 });
 

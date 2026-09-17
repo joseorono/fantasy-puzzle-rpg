@@ -1,6 +1,7 @@
 import { useAtomValue, useStore } from 'jotai';
 import { RESET } from 'jotai/utils';
 import { SoundNames } from '~/constants/audio';
+import { DEBUG_MODE } from '~/constants/dev';
 import { DEFAULT_MAP_ID } from '~/constants/maps';
 import { SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
 import { buildSaveData, computePlaytimeMs, pickMostRecentSlot } from '~/lib/save-game';
@@ -17,9 +18,9 @@ import type { SaveGame, SaveGameState } from '~/types/save-game';
  * and loads always resume on the map anyway.
  */
 function readPersistentState(): SaveGameState {
-  const { resources, party, inventory, mapProgress, floorLootProgress, crafting, dungeonProgress } =
+  const { resources, party, inventory, mapProgress, floorLootProgress, crafting, progressFlags, dungeonProgress } =
     useGameStore.getState();
-  return { resources, party, inventory, mapProgress, floorLootProgress, crafting, dungeonProgress };
+  return { resources, party, inventory, mapProgress, floorLootProgress, crafting, progressFlags, dungeonProgress };
 }
 
 /**
@@ -66,6 +67,12 @@ export function useSaveGameActions() {
    * Order matters: the in-memory dungeon run is cleared first so a stale run can't be
    * resumed after the store changes underneath it, and `isGameStarted` flips last so a
    * load launched from the title screen swaps to gameplay already hydrated.
+   *
+   * The history always resets: a load is a fresh timeline, so whatever the menu was opened
+   * over (a dungeon run, a dead battle after a defeat) must not be reachable with `goBack()`.
+   * Under `DEBUG_MODE` it is then re-seeded with a single debug entry, which is what keeps
+   * the map's back button visible — it hides itself when `canGoBack()` is false. For players
+   * the map is the entry view with nothing behind it, so the button stays hidden.
    */
   function loadSlot(slotId: SaveSlotId): void {
     const save = store.get(saveSlotAtoms[slotId]);
@@ -75,7 +82,13 @@ export function useSaveGameActions() {
     hydrateGameFromSave(save);
     store.set(basePlaytimeMsAtom, save.playtimeMs);
     store.set(sessionStartedAtAtom, Date.now());
-    useGameStore.getState().actions.router.goToMap({ mapId: save.currentMapId });
+    const { goToDebug, goToMap } = useGameStore.getState().actions.router;
+    if (DEBUG_MODE) {
+      goToDebug({}, { history: 'reset' });
+      goToMap({ mapId: save.currentMapId });
+    } else {
+      goToMap({ mapId: save.currentMapId }, { history: 'reset' });
+    }
     store.set(isGameStartedAtom, true);
     soundService.playSound(SoundNames.loadChime, 0.7);
   }

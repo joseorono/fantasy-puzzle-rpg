@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
@@ -32,7 +33,7 @@ interface ConfirmPanelProps {
 /**
  * Generic confirmation modal — a pixel-art panel in the game-over / map-menu visual
  * language: a chunky triple border over the board texture, an optional diamond icon
- * medallion, a gradient divider, a flexible body, and Cancel / Confirm actions.
+ * medallion, a gradient divider, a flexible body, and Confirm / Cancel actions.
  * Backdrop and the corner close button both cancel. Compose it for plain text
  * confirms (`ConfirmDialog`) and richer ones (e.g. `SalvageConfirmDialog`).
  *
@@ -54,10 +55,8 @@ export function ConfirmPanel({
   const isDanger = variant === 'danger';
   const body = children ?? (message ? <p className="confirm-panel__message pixel-font">{message}</p> : null);
 
-  // The danger variant renders its actions row-reversed, so the keyboard row is built in
-  // the order the player SEES — ←/→ must stay spatially truthful, not DOM-truthful.
-  const visualOrder = isDanger ? (['confirm', 'cancel'] as const) : (['cancel', 'confirm'] as const);
-  const selection = useKeyboardSelection([visualOrder.map((id) => ({ id }))], {
+  // Confirm always leads — ←/→ navigate the row in visual order.
+  const selection = useKeyboardSelection([[{ id: 'confirm' }, { id: 'cancel' }]], {
     onMove: () => soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05),
   });
 
@@ -114,21 +113,27 @@ export function ConfirmPanel({
         {body ? <div className="confirm-panel__body">{body}</div> : null}
 
         <div className="confirm-panel__actions">
-          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('cancel')}>
-            <ToffecButton variant="cream" size="xs" onClick={onCancel}>
-              {cancelLabel}
-            </ToffecButton>
-          </ToffecBeigeCornersWrapper>
           <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('confirm')}>
             <ToffecButton variant={isDanger ? 'indigolay-red' : 'tan'} size="xs" onClick={onConfirm}>
               {confirmLabel}
             </ToffecButton>
           </ToffecBeigeCornersWrapper>
+          <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('cancel')}>
+            <ToffecButton variant="cream" size="xs" onClick={onCancel}>
+              {cancelLabel}
+            </ToffecButton>
+          </ToffecBeigeCornersWrapper>
         </div>
 
-        {/* Spelled out, not ← →: Press Start 2P has no left/right arrow glyphs
-            (it does have ↑ ↓), so they render as missing-glyph boxes. */}
-        <p className="confirm-panel__key-hint pixel-font">Arrows choose · Enter confirm · Esc cancel</p>
+        <KeyHintPill
+          size="sm"
+          className="confirm-panel__key-hint"
+          items={[
+            { keys: ['←', '→'], label: 'choose' },
+            { keys: ['Enter'], label: 'confirm' },
+            { keys: ['Esc'], label: 'cancel' },
+          ]}
+        />
       </div>
     </div>
   );

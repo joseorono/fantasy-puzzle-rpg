@@ -48,18 +48,18 @@ export function FloorLootNotification({
   }
 
   // Side-positioned floating popup outside the character (matching NodeInteractionMenu style & behavior)
-  const notificationWidth = 220;
+  const notificationMaxWidth = 220;
+  const notificationMinWidth = 120;
   const offset = 45;
 
   const tooltipLeft = characterPosition.x + offset;
-  const shouldFlipLeft =
-    typeof window !== 'undefined' && tooltipLeft + notificationWidth > window.innerWidth - 20;
+  const shouldFlipLeft = typeof window !== 'undefined' && tooltipLeft + notificationMaxWidth > window.innerWidth - 20;
 
   const finalLeft = shouldFlipLeft
-    ? Math.max(10, characterPosition.x - notificationWidth - offset)
+    ? Math.max(10, characterPosition.x - notificationMaxWidth - offset)
     : Math.min(
         tooltipLeft,
-        typeof window !== 'undefined' ? window.innerWidth - notificationWidth - 10 : tooltipLeft
+        typeof window !== 'undefined' ? window.innerWidth - notificationMaxWidth - 10 : tooltipLeft,
       );
 
   const finalTop =
@@ -75,7 +75,9 @@ export function FloorLootNotification({
       style={{
         left: `${finalLeft}px`,
         top: `${finalTop}px`,
-        width: `${notificationWidth}px`,
+        minWidth: `${notificationMinWidth}px`,
+        maxWidth: `${notificationMaxWidth}px`,
+        width: 'fit-content',
       }}
     >
       {/* Arrow pointer matching NodeInteractionMenu */}

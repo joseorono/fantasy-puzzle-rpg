@@ -1,25 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
+import { StatAllocationRow } from '~/components/level-up-screen/stat-allocation-row';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { LevelTag } from '~/components/ui-custom/level-tag';
-import { usePressAndHold } from '~/hooks/use-press-and-hold';
-import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { getNavDirection, isConfirmKey, KeyboardKeys } from '~/constants/keyboard';
-import { cn } from '~/lib/utils';
+import { useStatAllocation } from '~/hooks/use-stat-allocation';
+import { useStatAllocationKeyboard } from '~/hooks/use-stat-allocation-keyboard';
 import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
-import { INFO_ICON_SRC, STAT_METER_MAX } from '~/constants/ui';
-import { IndigoLayStyledLists, IndigolayStyledListItem } from '~/components/ui-custom/indigolay-styled-list';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -29,9 +24,7 @@ import {
 
 /** The three stat rows in the order they appear in the allocation panel. */
 const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
-const ALLOCATION_ACTIONS = ['confirm', 'reset'] as const;
-type AllocationAction = (typeof ALLOCATION_ACTIONS)[number];
-type AllocationZone = 'stats' | 'actions';
+type AllocationAction = 'confirm' | 'reset';
 
 interface LevelUpViewProps {
   character: CharacterData;
@@ -43,73 +36,19 @@ interface LevelUpViewProps {
 }
 
 export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm }: LevelUpViewProps) {
-  const [pendingAllocations, setPendingAllocations] = useState<CoreRPGStats>({
-    pow: 0,
-    vit: 0,
-    spd: 0,
-  });
-
-  const pointsSpent = pendingAllocations.pow + pendingAllocations.vit + pendingAllocations.spd;
-  const pointsRemaining = availablePoints - pointsSpent;
-  const hasPendingChanges = pointsSpent > 0;
-  const allPointsAllocated = pointsRemaining === 0;
+  const allocation = useStatAllocation(availablePoints);
+  const { pointsRemaining, hasPendingChanges, allPointsAllocated } = allocation;
 
   // Calculate preview stats
-  const previewStats = {
-    pow: character.stats.pow + pendingAllocations.pow,
-    vit: character.stats.vit + pendingAllocations.vit,
-    spd: character.stats.spd + pendingAllocations.spd,
-  };
-
-  // Mirror the latest allocation state into refs so the accelerating press-and-hold train (which
-  // fires from setTimeout callbacks) can guard itself without stale closures. Optimistically
-  // adjusted on each step and resynced to the committed state every render.
-  const pointsRemainingRef = useRef(pointsRemaining);
-  pointsRemainingRef.current = pointsRemaining;
-  const pendingRef = useRef(pendingAllocations);
-  pendingRef.current = pendingAllocations;
-
-  // Returns whether a point was actually allocated, so the hold train stops once points run out.
-  function handleIncreaseStat(stat: StatType): boolean {
-    if (pointsRemainingRef.current <= 0) return false;
-    pointsRemainingRef.current -= 1; // optimistic; resynced on next render
-    setPendingAllocations((prev) => {
-      const spent = prev.pow + prev.vit + prev.spd;
-      if (spent >= availablePoints) return prev; // hard cap — never overspend
-      return { ...prev, [stat]: prev[stat] + 1 };
-    });
-    return true;
-  }
-
-  // Returns whether a point was actually refunded, so the hold train stops at zero.
-  function handleDecreaseStat(stat: StatType): boolean {
-    if (pendingRef.current[stat] <= 0) return false;
-    pendingRef.current = { ...pendingRef.current, [stat]: pendingRef.current[stat] - 1 }; // optimistic
-    pointsRemainingRef.current += 1;
-    setPendingAllocations((prev) => {
-      if (prev[stat] <= 0) return prev;
-      return { ...prev, [stat]: prev[stat] - 1 };
-    });
-    return true;
-  }
-
-  // Press-and-hold bindings (accelerating auto-repeat) for each +/- button. onClick still handles
-  // the single step for a plain click / keyboard, so holds never double-count.
-  const holdIncrease = {
-    pow: usePressAndHold(() => handleIncreaseStat('pow')),
-    vit: usePressAndHold(() => handleIncreaseStat('vit')),
-    spd: usePressAndHold(() => handleIncreaseStat('spd')),
-  };
-  const holdDecrease = {
-    pow: usePressAndHold(() => handleDecreaseStat('pow')),
-    vit: usePressAndHold(() => handleDecreaseStat('vit')),
-    spd: usePressAndHold(() => handleDecreaseStat('spd')),
+  const previewStats: CoreRPGStats = {
+    pow: character.stats.pow + allocation.pending.pow,
+    vit: character.stats.vit + allocation.pending.vit,
+    spd: character.stats.spd + allocation.pending.spd,
   };
 
   function handleReset() {
-    setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
-    setSelectedAction(null);
-    setAllocationZone('stats');
+    allocation.reset();
+    keyboard.focusStats();
   }
 
   // Gated on allPointsAllocated to match the Confirm button's own `disabled`, so the keyboard
@@ -117,112 +56,24 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
   // parent's onConfirm already applies the level-up and advances to the next character.
   function handleConfirm() {
     if (!allPointsAllocated) return;
-    onConfirm(pendingAllocations);
-    setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
-  }
-
-  // Null until the keyboard is actually used, so the highlight never appears for mouse players.
-  const [selectedStatIndex, setSelectedStatIndex] = useState<number | null>(null);
-  const [allocationZone, setAllocationZone] = useState<AllocationZone>('stats');
-  const [selectedAction, setSelectedAction] = useState<AllocationAction | null>(null);
-
-  // Returning to the mouse drops the keyboard highlight, so hover and selection can't both show.
-  useEffect(() => {
-    function handlePointerMove() {
-      setSelectedStatIndex(null);
-      setSelectedAction(null);
-      setAllocationZone('stats');
-    }
-    window.addEventListener('pointermove', handlePointerMove);
-    return () => window.removeEventListener('pointermove', handlePointerMove);
-  }, []);
-
-  function getEnabledActions(): AllocationAction[] {
-    return ALLOCATION_ACTIONS.filter((action) => {
-      if (action === 'confirm') return allPointsAllocated;
-      return hasPendingChanges;
-    });
+    onConfirm(allocation.pending);
+    allocation.reset();
   }
 
   // Arrows/WASD pick a stat row and spend points on it. Once the stat rows are exhausted, the
   // same vertical navigation enters the Confirm/Reset action row without changing allocation.
-  useWindowKeyDown((event) => {
-    const direction = getNavDirection(event.key);
-
-    if (allocationZone === 'stats') {
-      if (direction === 'down' && selectedStatIndex === STAT_ORDER.length - 1) {
-        event.preventDefault();
-        setAllocationZone('actions');
-        setSelectedAction(getEnabledActions()[0] ?? null);
-        return;
-      }
-
-      if (direction === 'up' || direction === 'down') {
-        event.preventDefault();
-        const step = direction === 'down' ? 1 : -1;
-        setSelectedStatIndex((prev) => {
-          if (prev === null) return direction === 'down' ? 0 : STAT_ORDER.length - 1;
-          return (prev + step + STAT_ORDER.length) % STAT_ORDER.length;
-        });
-        return;
-      }
-
-      if (direction === 'left' || direction === 'right') {
-        event.preventDefault();
-        const statIndex = selectedStatIndex ?? 0;
-        if (selectedStatIndex === null) setSelectedStatIndex(statIndex);
-        const stat = STAT_ORDER[statIndex];
-        if (direction === 'right') handleIncreaseStat(stat);
-        else handleDecreaseStat(stat);
-        return;
-      }
-
-      if (isConfirmKey(event.key)) {
-        event.preventDefault();
-        handleConfirm();
-        return;
-      }
-    } else {
-      if (direction === 'up') {
-        event.preventDefault();
-        setAllocationZone('stats');
-        setSelectedStatIndex(STAT_ORDER.length - 1);
-        setSelectedAction(null);
-        return;
-      }
-
-      if (direction === 'down') {
-        event.preventDefault();
-        return;
-      }
-
-      if (direction === 'left' || direction === 'right') {
-        event.preventDefault();
-        const enabledActions = getEnabledActions();
-        if (enabledActions.length === 0) {
-          setSelectedAction(null);
-          return;
-        }
-        const currentIndex = selectedAction ? enabledActions.indexOf(selectedAction) : -1;
-        const step = direction === 'right' ? 1 : -1;
-        setSelectedAction(enabledActions[(currentIndex + step + enabledActions.length) % enabledActions.length]);
-        return;
-      }
-
-      if (isConfirmKey(event.key)) {
-        event.preventDefault();
-        if (event.repeat || selectedAction === null) return;
-        if (selectedAction === 'confirm') handleConfirm();
-        else handleReset();
-        return;
-      }
-    }
-
-    if (event.key === KeyboardKeys.Escape && hasPendingChanges) {
-      event.preventDefault();
-      handleReset();
-    }
+  const keyboard = useStatAllocationKeyboard<AllocationAction>({
+    allocation,
+    stats: STAT_ORDER,
+    actions: [
+      { id: 'confirm', disabled: !allPointsAllocated },
+      { id: 'reset', disabled: !hasPendingChanges },
+    ],
+    onActivate: (action) => (action === 'confirm' ? handleConfirm() : handleReset()),
+    onConfirmShortcut: handleConfirm,
+    onEscape: hasPendingChanges ? handleReset : undefined,
   });
+  const { selectedStatIndex, selectedAction } = keyboard;
 
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
@@ -339,9 +190,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">POW</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.pow}
-                  {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
+                  {potentialStatPoints.pow + allocation.pending.pow > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.pow + pendingAllocations.pow}
+                      value={potentialStatPoints.pow + allocation.pending.pow}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -356,9 +207,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">VIT</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.vit}
-                  {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
+                  {potentialStatPoints.vit + allocation.pending.vit > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.vit + pendingAllocations.vit}
+                      value={potentialStatPoints.vit + allocation.pending.vit}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -373,9 +224,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">SPD</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.spd}
-                  {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
+                  {potentialStatPoints.spd + allocation.pending.spd > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.spd + pendingAllocations.spd}
+                      value={potentialStatPoints.spd + allocation.pending.spd}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -407,243 +258,26 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
 
             {/* Stat cards share the panel's free height so the actions sit on the bottom padding line. */}
             <div className="stat-allocation-list">
-              {/* Power Stat */}
-              <div className={cn('stat-allocation-row pow', selectedStatIndex === 0 && 'stat-allocation-row--selected')}>
-                <div className="stat-header">
-                  <div className="stat-name-group">
-                    <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="info-icon" role="img" aria-label="About Power">
-                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <IndigoLayStyledLists variant="send">
-                          <IndigolayStyledListItem>
-                            {character.class === 'healer'
-                              ? 'Increases your healing output'
-                              : 'Increases your damage output'}
-                          </IndigolayStyledListItem>
-                        </IndigoLayStyledLists>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="stat-values pixel-font text-xs">
-                    <span className="stat-current">{character.stats.pow}</span>
-                    {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
-                      <>
-                        <span className="stat-arrow">
-                          <img
-                            className="stat-arrow-icon"
-                            src="/assets/icons/indigolay/Icon_arrow-right.png"
-                            alt="arrow"
-                          />
-                        </span>
-                        <span className="stat-preview number-flow-container">
-                          <NumberFlow
-                            value={previewStats.pow + potentialStatPoints.pow}
-                            format={INTEGER_FORMAT}
-                            trend={1}
-                            spinTiming={SNAPPY_SPIN_TIMING}
-                            transformTiming={SNAPPY_TRANSFORM_TIMING}
-                            opacityTiming={SNAPPY_OPACITY_TIMING}
-                          />
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <p className="stat-hint pixel-font text-xs">
-                  {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}
-                </p>
-                <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 0}>
-                    <ToffecSquareButton
-                      icon="minus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleDecreaseStat('pow')}
-                      {...holdDecrease.pow}
-                      disabled={pendingAllocations.pow === 0}
-                      aria-label="Decrease Power"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 0}>
-                    <ToffecSquareButton
-                      icon="plus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleIncreaseStat('pow')}
-                      {...holdIncrease.pow}
-                      disabled={pointsRemaining === 0}
-                      aria-label="Increase Power"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <IndigolayBar
-                    className="stat-meter"
-                    variant="orange"
-                    percentage={((previewStats.pow + potentialStatPoints.pow) / STAT_METER_MAX) * 100}
+              {STAT_ORDER.map((stat, index) => {
+                const preview = previewStats[stat] + potentialStatPoints[stat];
+                return (
+                  <StatAllocationRow
+                    key={stat}
+                    stat={stat}
+                    characterClass={character.class}
+                    currentValue={character.stats[stat]}
+                    previewValue={potentialStatPoints[stat] + allocation.pending[stat] > 0 ? preview : null}
+                    meterValue={preview}
+                    isSelected={selectedStatIndex === index}
+                    canIncrease={allocation.pointsRemaining > 0}
+                    canDecrease={allocation.pending[stat] > 0}
+                    onIncrease={() => allocation.increase(stat)}
+                    onDecrease={() => allocation.decrease(stat)}
+                    holdIncrease={allocation.holdIncrease[stat]}
+                    holdDecrease={allocation.holdDecrease[stat]}
                   />
-                </div>
-              </div>
-
-              {/* Vitality Stat */}
-              <div className={cn('stat-allocation-row vit', selectedStatIndex === 1 && 'stat-allocation-row--selected')}>
-                <div className="stat-header">
-                  <div className="stat-name-group">
-                    <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="info-icon" role="img" aria-label="About Vitality">
-                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <IndigoLayStyledLists variant="chevron">
-                          <IndigolayStyledListItem>
-                            Raises Maximum HP, scaled by this character&apos;s VIT multiplier
-                          </IndigolayStyledListItem>
-                          <IndigolayStyledListItem>Slows how fast the party Guard meter decays</IndigolayStyledListItem>
-                        </IndigoLayStyledLists>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="stat-values pixel-font text-xs">
-                    <span className="stat-current">{character.stats.vit}</span>
-                    {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
-                      <>
-                        <span className="stat-arrow">
-                          <img
-                            className="stat-arrow-icon"
-                            src="/assets/icons/indigolay/Icon_arrow-right.png"
-                            alt="arrow"
-                          />
-                        </span>
-                        <span className="stat-preview number-flow-container">
-                          <NumberFlow
-                            value={previewStats.vit + potentialStatPoints.vit}
-                            format={INTEGER_FORMAT}
-                            trend={1}
-                            spinTiming={SNAPPY_SPIN_TIMING}
-                            transformTiming={SNAPPY_TRANSFORM_TIMING}
-                            opacityTiming={SNAPPY_OPACITY_TIMING}
-                          />
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <p className="stat-hint pixel-font text-xs">Increases your Maximum HP, makes Guard last longer.</p>
-                <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 1}>
-                    <ToffecSquareButton
-                      icon="minus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleDecreaseStat('vit')}
-                      {...holdDecrease.vit}
-                      disabled={pendingAllocations.vit === 0}
-                      aria-label="Decrease Vitality"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 1}>
-                    <ToffecSquareButton
-                      icon="plus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleIncreaseStat('vit')}
-                      {...holdIncrease.vit}
-                      disabled={pointsRemaining === 0}
-                      aria-label="Increase Vitality"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <IndigolayBar
-                    className="stat-meter"
-                    variant="green"
-                    percentage={((previewStats.vit + potentialStatPoints.vit) / STAT_METER_MAX) * 100}
-                  />
-                </div>
-              </div>
-
-              {/* Speed Stat */}
-              <div className={cn('stat-allocation-row spd', selectedStatIndex === 2 && 'stat-allocation-row--selected')}>
-                <div className="stat-header">
-                  <div className="stat-name-group">
-                    <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="info-icon" role="img" aria-label="About Speed">
-                          <img className="info-icon__img" src={INFO_ICON_SRC} alt="" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <IndigoLayStyledLists variant="chevron">
-                          <IndigolayStyledListItem>Reduces ultimate skill cooldown</IndigolayStyledListItem>
-                          <IndigolayStyledListItem>Reduces item cooldowns in battle</IndigolayStyledListItem>
-                          <IndigolayStyledListItem>Charges the party Guard meter faster</IndigolayStyledListItem>
-                        </IndigoLayStyledLists>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="stat-values pixel-font text-xs">
-                    <span className="stat-current">{character.stats.spd}</span>
-                    {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
-                      <>
-                        <span className="stat-arrow">
-                          <img
-                            className="stat-arrow-icon"
-                            src="/assets/icons/indigolay/Icon_arrow-right.png"
-                            alt="arrow"
-                          />
-                        </span>
-                        <span className="stat-preview number-flow-container">
-                          <NumberFlow
-                            value={previewStats.spd + potentialStatPoints.spd}
-                            format={INTEGER_FORMAT}
-                            trend={1}
-                            spinTiming={SNAPPY_SPIN_TIMING}
-                            transformTiming={SNAPPY_TRANSFORM_TIMING}
-                            opacityTiming={SNAPPY_OPACITY_TIMING}
-                          />
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <p className="stat-hint pixel-font text-xs">
-                  Reduces skill &amp; item cooldowns, charges Guard faster.
-                </p>
-                <div className="stat-controls">
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 2}>
-                    <ToffecSquareButton
-                      icon="minus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleDecreaseStat('spd')}
-                      {...holdDecrease.spd}
-                      disabled={pendingAllocations.spd === 0}
-                      aria-label="Decrease Speed"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <ToffecBeigeCornersWrapper forceDisplay={selectedStatIndex === 2}>
-                    <ToffecSquareButton
-                      icon="plus"
-                      variant="fairy3"
-                      size="default"
-                      onClick={() => handleIncreaseStat('spd')}
-                      {...holdIncrease.spd}
-                      disabled={pointsRemaining === 0}
-                      aria-label="Increase Speed"
-                    />
-                  </ToffecBeigeCornersWrapper>
-                  <IndigolayBar
-                    className="stat-meter"
-                    variant="sky-blue"
-                    percentage={((previewStats.spd + potentialStatPoints.spd) / STAT_METER_MAX) * 100}
-                  />
-                </div>
-              </div>
+                );
+              })}
             </div>
 
             {/* Action Buttons */}

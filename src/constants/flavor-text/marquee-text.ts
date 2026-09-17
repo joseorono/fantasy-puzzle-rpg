@@ -1,4 +1,11 @@
-export type MarqueeTextTypes = 'blacksmith' | 'inn' | 'item-shop' | 'level-up' | 'world-map' | 'general';
+export type MarqueeTextTypes =
+  | 'blacksmith'
+  | 'inn'
+  | 'item-shop'
+  | 'training-grounds'
+  | 'level-up'
+  | 'world-map'
+  | 'general';
 
 const clickLeaveToTownHub = 'Click Leave to return to Town Hub.';
 
@@ -22,6 +29,13 @@ export const MARQUEE_HELP_TEXT: Readonly<{ [K in MarqueeTextTypes]: readonly str
     'Click Buy to add the item to your inventory.',
     "Check each item's description and cost.",
     'Left/Right switch tabs, Up/Down pick an item, Enter to trade, Esc to leave.',
+    clickLeaveToTownHub,
+  ],
+  'training-grounds': [
+    'Respec moves the stat points you chose at level-up; random growth stays put.',
+    'Each respec costs more coins than the last.',
+    'Lowering Vitality lowers Max HP — HP above the new maximum is lost.',
+    'Left/Right switch tabs, Up/Down and Enter pick a hero, Left/Right move points, Esc to leave.',
     clickLeaveToTownHub,
   ],
   'level-up': [

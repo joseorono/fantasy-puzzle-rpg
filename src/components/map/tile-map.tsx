@@ -33,7 +33,6 @@ import {
   useParty,
   useDungeonProgressActions,
   useDungeonProgressState,
-  useViewData,
 } from '~/stores/game-store';
 import { getDungeonById } from '~/lib/dungeon-system';
 import { canGoBack } from '~/lib/routing';
@@ -132,21 +131,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const currentInventory = useGameStore((state) => state.inventory);
 
   const routerActions = useRouterActions();
-  // Where this map was entered from, captured by `goToMap`. Preferred over `goBack()`
-  // because a battle round-trip (map → battle → rewards → goBack) leaves the router's
-  // previousView null, which would strand the player on the map.
-  const returnView = useViewData('map')?.returnView;
-  // Hide the back button rather than render a dead control: with no return view, `goBack()`
-  // only warns when there's no previous view either (e.g. the map opened as the entry view).
+  // Hide the back button rather than render a dead control: `goBack()` only warns when there is
+  // no history (e.g. the map opened as the entry view, or right after loading a save).
   const canLeaveMap = useGameStore((state) => canGoBack(state.router));
-
-  function handleLeaveMap() {
-    if (returnView) {
-      routerActions.goBackTo(returnView);
-      return;
-    }
-    routerActions.goBack();
-  }
   const { isDungeonCompleted } = useDungeonProgressActions();
   // Subscribed rather than read through the action: the action form is a get() call that
   // renders can cache, so completion changes wouldn't repaint the marker or the menu.
@@ -865,10 +852,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   return (
     <>
       <div className="tilemap-container">
-        <MapInfoPanel
-          displayMapName={displayMapName}
-          onLeave={returnView || canLeaveMap ? handleLeaveMap : undefined}
-        />
+        <MapInfoPanel displayMapName={displayMapName} onLeave={canLeaveMap ? routerActions.goBack : undefined} />
         <div
           ref={canvasContainerRef}
           style={{
@@ -882,12 +866,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
         >
           <canvas
             ref={canvasRef}
-            className="cursor-hold-glow"
             {...movement.pointerHandlers}
             style={{
-              // `outline` rather than `border`: it takes no layout space, so the
-              // measured scale and the sprite's origin stay exactly the canvas.
-              outline: '1px solid #ccc',
               background: '#87CEEB',
               imageRendering: 'pixelated',
               display: 'block',

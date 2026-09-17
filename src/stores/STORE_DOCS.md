@@ -7,7 +7,7 @@ The game store is built with Zustand and uses a slice-based architecture for mod
 - **Zustand (`src/stores/game-store.ts`)**: Primary global store managing the 8 core slices.
 - **Jotai (`src/stores/battle-atoms.ts`, `dungeon-atoms.ts`, `pause-menu-atoms.ts`)**: Ephemeral combat, dungeon run, and pause menu UI state.
 - **DevTools Integration**: Redux DevTools support for debugging (dev mode only).
-- **Persistence**: Explicit save slots (3 manual + autosave), not middleware — see `docs/SAVE_LOAD_SYSTEM.md`.
+- **Persistence**: Explicit save slots (3 manual + autosave), not middleware — see **Persistence & Save Hydration** below.
 - **Immer Middleware**: Simplified state updates with draft mutations.
 - **Type-Safe**: Full TypeScript support with slice-specific interfaces.
 - **Performance**: Direct imports and focused selector hooks.
@@ -18,12 +18,13 @@ The game store is built with Zustand and uses a slice-based architecture for mod
 src/stores/
 ├── slices/
 │   ├── resources.ts / resources.types.ts           # Currency & material bars (coins, gold, silver, iron, copper)
-│   ├── party.ts / party.types.ts                   # Hero party members, current HP, stats, and unlocked skill IDs
+│   ├── party.ts / party.types.ts                   # Hero party members, current HP, stats, unlocked skill IDs, and respecs
 │   ├── inventory.ts / inventory.types.ts           # Equipment and consumable items, rarity-keyed stacks
 │   ├── router.ts / router.types.ts                 # Type-safe view router and navigation history
 │   ├── map-progress.ts / map-progress.types.ts     # Completed nodes and character map positions
 │   ├── floor-loot-progress.ts / .types.ts          # Floor loot pickup collection state
 │   ├── crafting.ts / crafting.types.ts             # Crafting pity counters and bad-luck protection
+│   ├── progress-flags.ts / .types.ts               # Save-lifetime scalars & flags too small for their own slice
 │   └── dungeon-progress.ts / .types.ts             # Dungeon completion records and replay tracking
 ├── game-store.ts                                   # Main Zustand store assembly
 ├── battle-atoms.ts                                 # Jotai atoms for combat & match-3 board

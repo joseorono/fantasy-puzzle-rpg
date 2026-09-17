@@ -7,7 +7,7 @@ import { SoundNames } from '~/constants/audio';
  * Centralizes skill leveling for both kinds (Active and Passive). Validates the
  * upgrade gates, bumps the level in the party store, and plays the success
  * sting. No overlay — an upgrade is a minor boost, the slot flare is enough.
- * Resource costs are the caller's concern (see `PauseMenuSkills`).
+ * Resource costs are the caller's concern (see `SkillsPanel`).
  */
 export function useUpgradeSkill() {
   const party = useParty();

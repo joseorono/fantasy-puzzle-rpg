@@ -1,4 +1,5 @@
-import type { TilemapData } from '../../../types/tilemap';
+import type { TilemapData } from '~/types/tilemap';
+import { TILESET_FORGE } from '../tileset-data';
 
 export const newMap: TilemapData = {
   compressionlevel: -1,
@@ -336,24 +337,7 @@ export const newMap: TilemapData = {
   renderorder: 'right-down',
   tiledversion: '1.11.2',
   tileheight: 32,
-  tilesets: [
-    {
-      firstgid: 1,
-      columns: 25,
-      image: '..\/public\/assets\/tileset\/pc-forge-tileset.png',
-      imageheight: 800,
-      imagewidth: 800,
-      margin: 0,
-      name: 'pc-forge-tileset',
-      spacing: 0,
-      tilecount: 625,
-      tiledversion: '1.11.2',
-      tileheight: 32,
-      tilewidth: 32,
-      type: 'tileset',
-      version: '1.10',
-    },
-  ],
+  tilesets: [TILESET_FORGE],
   tilewidth: 32,
   type: 'map',
   version: '1.10',

@@ -95,7 +95,12 @@
 }
 .title-sign--text-dark {
   color: #3a2410;
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* .pixel-font's 2px dark shadow reads as a doubled glyph under the dark ink on
+   the light tan ribbon — kill it on the text itself (it overrides the parent). */
+.title-sign--text-dark .title-sign__text {
+  text-shadow: none;
 }
 
 /*

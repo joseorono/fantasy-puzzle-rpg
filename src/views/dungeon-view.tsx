@@ -40,7 +40,6 @@ import {
 import { applyLootTable } from '~/lib/loot';
 import { healAllByMaxHpPercent, isPartyFullyHealed } from '~/lib/party-system';
 import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants/dungeon';
-import { DEFAULT_VIEW } from '~/constants/routing';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
@@ -51,6 +50,7 @@ import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuPartyBar } from '~/components/pause-menu/pause-menu-party-bar';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
@@ -179,9 +179,7 @@ export default function DungeonView() {
   const { setInventory } = useInventoryActions();
   const resources = useResources();
   const { setResources } = useResourcesActions();
-  // A run returns to whichever surface launched it (map node, debug list, …). We can't use
-  // goBack(): the battle round-trip leaves the router's previousView null.
-  const { goToBattleDemo, goBackTo } = useRouterActions();
+  const { goToBattleDemo, goBack } = useRouterActions();
   const { markDungeonCompleted } = useDungeonProgressActions();
   const { autosave } = useSaveGameActions();
 
@@ -344,8 +342,6 @@ export default function DungeonView() {
     return <div className="game-view dungeon dungeon--error pixel-font">Error: dungeon not found.</div>;
   }
 
-  const returnView = viewData.returnView ?? DEFAULT_VIEW;
-
   const floorBg = currentFloor ? getFloorBackground(dungeon, currentFloor) : dungeon.backgroundImage;
 
   const ratingSummary = summarizeFloorRatings(floorRatings);
@@ -410,7 +406,7 @@ export default function DungeonView() {
       setIsExiting(true);
       await triggerGlobalAnimation('stairs-ascent');
       resetRun();
-      goBackTo(returnView);
+      goBack();
     } finally {
       isLeavingRef.current = false;
     }
@@ -420,7 +416,7 @@ export default function DungeonView() {
     if (hasFinishedRef.current) return;
     hasFinishedRef.current = true;
     resetRun();
-    goBackTo(returnView);
+    goBack();
   }
 
   /** Finish, shared by the button and the keyboard: rated runs detour through the overlay. */
@@ -614,9 +610,15 @@ export default function DungeonView() {
           </TooltipContent>
         </Tooltip>
 
-        <span className="dungeon-key-hint pixel-font">
-          Arrow Keys / WASD to select · Enter to act · Esc for the menu
-        </span>
+        <div className="dungeon-key-hint">
+          <KeyHintPill
+            items={[
+              { keys: ['↑', '↓', '←', '→'], label: 'or WASD to select' },
+              { keys: ['Enter'], label: 'to act' },
+              { keys: ['Esc'], label: 'for the menu' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Inline overlays */}

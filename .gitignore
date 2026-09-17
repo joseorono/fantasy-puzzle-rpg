@@ -21,6 +21,10 @@ release
 # Vitest coverage
 coverage
 
+# Bundle visualizer output (npm run visualize-bundle)
+bundle-stats*.html
+bundle-stats*.json
+
 # Optional npm cache directory
 .npm
 
@@ -60,6 +64,7 @@ current-prompt.md
 
 # Local agent tooling cache (skill registry, etc.)
 .atl/
+.playwright-mcp/
 
 # Scratch planning notes for the save-slot redesign (kept locally, not shipped)
 SAVE_SLOT_CARD_IMPROVEMENT_PLAN_*.md

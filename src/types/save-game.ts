@@ -8,6 +8,7 @@ import type { InventoryState } from '~/stores/slices/inventory.types';
 import type { MapProgressState } from '~/stores/slices/map-progress.types';
 import type { FloorLootProgressState } from '~/stores/slices/floor-loot-progress.types';
 import type { CraftingState } from '~/stores/slices/crafting.types';
+import type { ProgressFlagsState } from '~/stores/slices/progress-flags.types';
 import type { DungeonProgressState } from '~/stores/slices/dungeon-progress.types';
 
 const rarityTierSchema = z.enum(RARITY_TIERS);
@@ -17,6 +18,7 @@ const MAP_ID_COVERAGE = {
   'map-00': true,
   'map-01': true,
   'map-00-apprentice-forge': true,
+  'map-01-fairy-forest': true,
 } as const satisfies Record<MapId, true>;
 export const mapIdSchema = z.enum(Object.keys(MAP_ID_COVERAGE) as [MapId, ...MapId[]]);
 
@@ -57,7 +59,7 @@ export const savedCharacterSchema = z.object({
 }) satisfies z.ZodType<CharacterData>;
 
 /**
- * The seven persistent store slices. The router slice is deliberately absent: its viewData
+ * The eight persistent store slices. The router slice is deliberately absent: its viewData
  * holds functions and object references, and loads always resume on the map view anyway.
  * The `satisfies` clause is the drift alarm — a slice gaining a field breaks compilation
  * here until the schema learns about it. Unknown keys in old saves are stripped by Zod.
@@ -91,6 +93,9 @@ export const saveGameStateSchema = z.object({
   }),
   floorLootProgress: z.record(z.string(), z.record(z.string(), z.boolean())),
   crafting: z.object({ pity: z.number().int().min(0) }),
+  // Defaulted rather than required: saves written before this slice existed lack the key,
+  // and a required one would fail validation and read as an empty slot.
+  progressFlags: z.object({ respecCount: z.number().int().min(0) }).default({ respecCount: 0 }),
   dungeonProgress: z.object({ completedDungeons: z.record(z.string(), z.boolean()) }),
 }) satisfies z.ZodType<{
   resources: Resources;
@@ -99,6 +104,7 @@ export const saveGameStateSchema = z.object({
   mapProgress: MapProgressState;
   floorLootProgress: FloorLootProgressState;
   crafting: CraftingState;
+  progressFlags: ProgressFlagsState;
   dungeonProgress: DungeonProgressState;
 }>;
 

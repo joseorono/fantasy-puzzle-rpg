@@ -1,7 +1,7 @@
 /**
  * Types for the character skill system.
  *
- * Two kinds of skill exist (see docs/ideas-proposals/SKILL_SYSTEM.md §3):
+ * Two kinds of skill exist:
  * - Active skills ("Ultimates"): charge over time, one selected per character.
  *   Modelled by {@link SkillDefinition} — the historical name is kept because it
  *   is referenced across the codebase and is precisely the active-skill shape.

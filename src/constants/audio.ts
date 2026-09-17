@@ -29,28 +29,31 @@ export enum SoundNames {
   runningUpStairs = 'runningUpStairs',
 }
 
+/**
+ * Every asset that shipped as uncompressed WAV is now Ogg Vorbis: 84.31 MB became 7.40 MB
+ * across 17 files. Regenerate with `npm run assets:audio-write -- --tier all`
+ * (`scripts/convert-audio.mjs`), which also holds the source-file registry.
+ */
 export const soundFiles = {
   [SoundNames.bgNoiseMiner]: '/assets/audio/bg-noise/miner.mp3',
   [SoundNames.bgNoiseFarmer]: '/assets/audio/bg-noise/farmer.mp3',
   [SoundNames.bgNoiseForum]: '/assets/audio/bg-noise/forum.mp3',
   [SoundNames.clickChangeTab]: '/assets/audio/click-change-tab.mp3',
   [SoundNames.clickCoin]: '/assets/audio/click-coin.mp3',
-  [SoundNames.mechanicalClick]: '/assets/audio/ui/mechanical-click.wav',
-  [SoundNames.shimmeringSuccess]: '/assets/audio/ui/shimmering-success.wav',
-  [SoundNames.shimmeringSuccessShort]: '/assets/audio/ui/shimmering-success-short.wav',
-  [SoundNames.shimmeringSuccessShorter]: '/assets/audio/ui/shimmering-success-shorter.wav',
-  [SoundNames.match]: '/assets/audio/ui/match.wav',
+  [SoundNames.mechanicalClick]: '/assets/audio/ui/mechanical-click.ogg',
+  [SoundNames.shimmeringSuccess]: '/assets/audio/ui/shimmering-success.ogg',
+  [SoundNames.shimmeringSuccessShort]: '/assets/audio/ui/shimmering-success-short.ogg',
+  [SoundNames.shimmeringSuccessShorter]: '/assets/audio/ui/shimmering-success-shorter.ogg',
+  [SoundNames.match]: '/assets/audio/ui/match.ogg',
   [SoundNames.gameOver]: '/assets/audio/ui/game-over.mp3',
-  [SoundNames.beep]: '/assets/audio/ui/beep.wav',
+  [SoundNames.beep]: '/assets/audio/ui/beep.ogg',
   [SoundNames.wrong]: '/assets/audio/ui/wrong.mp3',
-  [SoundNames.bottleClink]: '/assets/audio/bg-noise/bottle-clink.wav',
-  [SoundNames.blacksmith]: '/assets/audio/bg-noise/blacksmith.wav',
-  [SoundNames.blacksmithShorter]: '/assets/audio/bg-noise/blacksmith-shorter.wav',
-  [SoundNames.metalSharpening]: '/assets/audio/bg-noise/metal-sharpening.wav',
-  [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.wav',
-  [SoundNames.uncork]: '/assets/audio/ui/uncork.wav',
-  // Music is Ogg Vorbis: these four were 80.65 MB as WAV, 7.00 MB encoded.
-  // Regenerate with `npm run assets:audio-write` (scripts/convert-audio.mjs).
+  [SoundNames.bottleClink]: '/assets/audio/bg-noise/bottle-clink.ogg',
+  [SoundNames.blacksmith]: '/assets/audio/bg-noise/blacksmith.ogg',
+  [SoundNames.blacksmithShorter]: '/assets/audio/bg-noise/blacksmith-shorter.ogg',
+  [SoundNames.metalSharpening]: '/assets/audio/bg-noise/metal-sharpening.ogg',
+  [SoundNames.jingle]: '/assets/audio/bg-noise/jingle.ogg',
+  [SoundNames.uncork]: '/assets/audio/ui/uncork.ogg',
   [SoundNames.combatMusic]: '/assets/audio/bg-noise/combatMusic.ogg',
   [SoundNames.startMenuMusic]: '/assets/audio/ui/epic-cinematic.ogg',
   [SoundNames.bossFight]: '/assets/audio/ui/boss-fight.ogg',
@@ -59,7 +62,7 @@ export const soundFiles = {
   [SoundNames.rhodesmasChime]: '/assets/audio/ui/rhodesmas-chime.mp3',
   [SoundNames.saveChime]: '/assets/audio/ui/chime-saved-1.mp3',
   [SoundNames.loadChime]: '/assets/audio/ui/chimes-saved.mp3',
-  [SoundNames.runningUpStairs]: '/assets/audio/ui/running-up-the-stairs.wav',
+  [SoundNames.runningUpStairs]: '/assets/audio/ui/running-up-the-stairs.ogg',
 };
 
 // Background sounds for the town hub (randomly selected on entry)
@@ -68,7 +71,7 @@ export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFa
 /**
  * SFX gains for the town hub and its sub-locations.
  *
- * `mechanical-click.wav` is mastered at -0.4 dBFS peak — roughly 20 dB hotter than the rest of
+ * `mechanical-click.ogg` is mastered at -0.4 dBFS peak — roughly 20 dB hotter than the rest of
  * the UI set — so it needs a far lower gain than its nominal peers to sit at the same perceived
  * level. `transaction` replaces the `playSound` default of 1.0 that the sub-locations were
  * relying on implicitly.

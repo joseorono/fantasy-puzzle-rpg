@@ -73,7 +73,7 @@ periodically enter a visible "charging" state for N seconds. Enough damage (or a
 - *Orthogonal axis:* a **race/priority** layer — burst the charger vs. keep tempo.
 - *Differential:* elevates burst builds and target-switching skill.
 - *Touches:* `use-enemy-attack-timers.ts`, one enemy state field, telegraph UI (standby ring art already exists).
-- *See also:* [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md) — the always-on, low-drama cousin (✅ shipped): every hit nudges this same attack timer back (VIT-resisted, hard-capped so it can't stunlock).
+- *See also:* [`COMBAT_SYSTEM.md`](../COMBAT_SYSTEM.md) — the always-on, low-drama cousin (✅ shipped): every hit nudges this same attack timer back (VIT-resisted, hard-capped so it can't stunlock).
 
 ### 4. Battle grade → loot/rarity bonus  🟢 · perf: **None** (end-of-battle)
 
@@ -94,7 +94,7 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 Not orthogonal by itself, but a **pacing enabler**. Dungeon combats *already* grant
 loot/EXP/level-up — each win routes through the shared `BattleRewardsScreen` and returns to the
 run (verified: the sample dungeon's `SWAMP_FROG`/`MOSS_GOLEM` carry `expReward` + resource loot
-tables; `goToBattleRewards` preserves `previousView: 'dungeon'`, so `goBack()` resumes the run via
+tables; `goToBattleRewards` replaces the battle in the history, so `goBack()` resumes the run via
 `resolveBattleWinAtom`). The open questions are *pacing and consistency*:
 
 - A full-screen loot → EXP → level-up flow **after every fight** interrupts the descent. Option:
@@ -290,7 +290,7 @@ for #6–#15.
 | 17 | Passive perk board | ⬜ | 🔴 | None | long-term progression |
 | 18 | Wave / Horde mode | ⬜ | 🔴 | Low–Med | endurance / run variety |
 
-*Also shipped (not a numbered idea above): **enemy stagger/flinch** — the always-on cousin of #3 (see [`ENEMY_STAGGER.md`](./ENEMY_STAGGER.md)).*
+*Also shipped (not a numbered idea above): **enemy stagger/flinch** — the always-on cousin of #3 (see [`COMBAT_SYSTEM.md`](../COMBAT_SYSTEM.md)).*
 
 ---
 

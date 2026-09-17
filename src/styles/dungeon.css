@@ -548,16 +548,12 @@
     0 0 10px rgba(212, 165, 116, 0.25);
 }
 
-/* flex-basis 100% drops the hint onto its own line under the button row. Same quiet
-   parchment tone as .rewards-key-hint, so it never competes with the buttons. */
+/* Full-width row under the footer buttons; the KeyHintPill centers inside it. */
 .dungeon-key-hint {
   flex-basis: 100%;
+  display: flex;
+  justify-content: center;
   margin-top: 0.15rem;
-  text-align: center;
-  font-size: 0.5rem;
-  letter-spacing: 0.04em;
-  color: rgba(196, 178, 149, 0.75);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
 .dungeon--error {

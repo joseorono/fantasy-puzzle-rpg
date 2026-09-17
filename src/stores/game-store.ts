@@ -15,6 +15,8 @@ import type { FloorLootProgressSlice } from './slices/floor-loot-progress.types'
 import { createFloorLootProgressSlice } from './slices/floor-loot-progress';
 import type { CraftingSlice } from './slices/crafting.types';
 import { createCraftingSlice } from './slices/crafting';
+import type { ProgressFlagsSlice } from './slices/progress-flags.types';
+import { createProgressFlagsSlice, createInitialProgressFlagsState } from './slices/progress-flags';
 import type { DungeonProgressSlice } from './slices/dungeon-progress.types';
 import { createDungeonProgressSlice, createInitialDungeonProgressState } from './slices/dungeon-progress';
 import { createInitialInventoryState } from './slices/inventory';
@@ -38,6 +40,7 @@ export type GameStore = {
   mapProgress: MapProgressSlice['mapProgress'];
   floorLootProgress: FloorLootProgressSlice['floorLootProgress'];
   crafting: CraftingSlice['crafting'];
+  progressFlags: ProgressFlagsSlice['progressFlags'];
   dungeonProgress: DungeonProgressSlice['dungeonProgress'];
   actions: ResourcesSlice['actions'] &
     PartySlice['actions'] &
@@ -46,6 +49,7 @@ export type GameStore = {
     MapProgressSlice['actions'] &
     FloorLootProgressSlice['actions'] &
     CraftingSlice['actions'] &
+    ProgressFlagsSlice['actions'] &
     DungeonProgressSlice['actions'];
 };
 
@@ -62,6 +66,7 @@ export const useGameStore = create<GameStore>()(
       const mapProgressSlice = createMapProgressSlice(set, get);
       const floorLootProgressSlice = createFloorLootProgressSlice(set, get);
       const craftingSlice = createCraftingSlice(set);
+      const progressFlagsSlice = createProgressFlagsSlice(set);
       const dungeonProgressSlice = createDungeonProgressSlice(set, get);
       return {
         ...resourcesSlice,
@@ -71,6 +76,7 @@ export const useGameStore = create<GameStore>()(
         ...mapProgressSlice,
         ...floorLootProgressSlice,
         ...craftingSlice,
+        ...progressFlagsSlice,
         ...dungeonProgressSlice,
         actions: {
           ...resourcesSlice.actions,
@@ -80,6 +86,7 @@ export const useGameStore = create<GameStore>()(
           ...mapProgressSlice.actions,
           ...floorLootProgressSlice.actions,
           ...craftingSlice.actions,
+          ...progressFlagsSlice.actions,
           ...dungeonProgressSlice.actions,
         },
       };
@@ -109,6 +116,7 @@ export function hydrateGameFromSave(save: SaveGame): void {
       mapProgress: state.mapProgress,
       floorLootProgress: state.floorLootProgress,
       crafting: state.crafting,
+      progressFlags: state.progressFlags,
       dungeonProgress: state.dungeonProgress,
     },
     false,
@@ -134,6 +142,7 @@ export function resetGameState(): void {
       mapProgress: createInitialMapProgressState(),
       floorLootProgress: createInitialFloorLootProgressState(),
       crafting: { pity: 0 },
+      progressFlags: createInitialProgressFlagsState(),
       dungeonProgress: createInitialDungeonProgressState(),
     },
     false,
@@ -213,6 +222,17 @@ export const useCraftingActions = () => useGameStore((state) => state.actions.cr
  * Get the current crafting pity counter
  */
 export const useCraftingPity = () => useGameStore((state) => state.crafting.pity);
+
+/**
+ * Selector hooks for progress flags slice
+ */
+export const useProgressFlagsState = () => useGameStore((state) => state.progressFlags);
+export const useProgressFlagsActions = () => useGameStore((state) => state.actions.progressFlags);
+
+/**
+ * Get how many times the player has respecced a hero
+ */
+export const useRespecCount = () => useGameStore((state) => state.progressFlags.respecCount);
 
 /**
  * Selector hooks for dungeon progress slice
