@@ -129,3 +129,258 @@
   75% { background-color: rgba(0, 0, 0, 1); }
   100% { background-color: rgba(0, 0, 0, 1); }
 }
+
+/* ======================================================================================
+   Cover transitions. Each one ends fully opaque and holds (`forwards`) so the route change
+   in the caller's continuation lands under it; the next view hard-cuts in from the cover.
+   Durations must match ANIMATION_CONFIG in constants/animation-system.ts.
+   ====================================================================================== */
+
+/* ---- Town Arrival (applied to #game-screen; darkens its overlay child) ----
+   Walking through the gate: a slow push-in, a warm bloom of daylight, then a fade to warm dark. */
+#game-screen.anim-town-arrival {
+  animation: global-town-arrival-approach 1.1s ease-in forwards;
+  will-change: transform;
+}
+
+#game-screen.anim-town-arrival .global-animations-overlay {
+  background-color: rgba(26, 18, 10, 0);
+  animation: global-town-arrival-bloom 1.1s ease-in forwards;
+}
+
+@keyframes global-town-arrival-approach {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-1.5%) scale(1.06);
+  }
+}
+
+@keyframes global-town-arrival-bloom {
+  0% {
+    background-color: rgba(255, 226, 170, 0);
+  }
+  30% {
+    background-color: rgba(255, 226, 170, 0.35);
+  }
+  50% {
+    background-color: rgba(255, 226, 170, 0);
+  }
+  100% {
+    background-color: rgb(26, 18, 10);
+  }
+}
+
+/* ---- Battle: Swirl (overlay) ----
+   Final Fantasy pinwheel: black blades spin and grow from the center, then the overlay fills. */
+.anim-battle-swirl {
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+  animation: global-battle-swirl-fill 1.2s ease-in forwards;
+}
+
+.anim-battle-swirl::before {
+  content: '';
+  position: absolute;
+  /* Oversized so the spinning square never exposes a corner of the viewport. */
+  inset: -60%;
+  background: repeating-conic-gradient(from 0deg, #000 0deg 22.5deg, transparent 22.5deg 45deg);
+  transform: rotate(0deg) scale(0);
+  animation: global-battle-swirl-spin 1.2s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  will-change: transform;
+}
+
+@keyframes global-battle-swirl-spin {
+  0% {
+    transform: rotate(0deg) scale(0);
+  }
+  100% {
+    transform: rotate(720deg) scale(1);
+  }
+}
+
+@keyframes global-battle-swirl-fill {
+  0%,
+  55% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 1);
+  }
+}
+
+/* ---- Battle: Flash Wipe (overlay) ----
+   Three white flashes, then the screen drains to black. */
+.anim-battle-flash-wipe {
+  animation: global-battle-flash-wipe 1s linear forwards;
+}
+
+@keyframes global-battle-flash-wipe {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  6% {
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+  14% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  22% {
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+  30% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  38% {
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+  48% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  60% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 1);
+  }
+}
+
+/* ---- Battle: Blinds (overlay) ----
+   Eight horizontal strips grow until they meet. One polygon with a fixed vertex count so the
+   clip-path interpolates; the closed shape is every strip collapsed to zero height. */
+.anim-battle-blinds {
+  background-color: #000;
+  animation: global-battle-blinds 0.9s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+  will-change: clip-path;
+}
+
+@keyframes global-battle-blinds {
+  0% {
+    clip-path: polygon(
+      0 0%,
+      100% 0%,
+      100% 0%,
+      0 0%,
+      0 12.5%,
+      100% 12.5%,
+      100% 12.5%,
+      0 12.5%,
+      0 25%,
+      100% 25%,
+      100% 25%,
+      0 25%,
+      0 37.5%,
+      100% 37.5%,
+      100% 37.5%,
+      0 37.5%,
+      0 50%,
+      100% 50%,
+      100% 50%,
+      0 50%,
+      0 62.5%,
+      100% 62.5%,
+      100% 62.5%,
+      0 62.5%,
+      0 75%,
+      100% 75%,
+      100% 75%,
+      0 75%,
+      0 87.5%,
+      100% 87.5%,
+      100% 87.5%,
+      0 87.5%
+    );
+  }
+  100% {
+    clip-path: polygon(
+      0 0%,
+      100% 0%,
+      100% 12.5%,
+      0 12.5%,
+      0 12.5%,
+      100% 12.5%,
+      100% 25%,
+      0 25%,
+      0 25%,
+      100% 25%,
+      100% 37.5%,
+      0 37.5%,
+      0 37.5%,
+      100% 37.5%,
+      100% 50%,
+      0 50%,
+      0 50%,
+      100% 50%,
+      100% 62.5%,
+      0 62.5%,
+      0 62.5%,
+      100% 62.5%,
+      100% 75%,
+      0 75%,
+      0 75%,
+      100% 75%,
+      100% 87.5%,
+      0 87.5%,
+      0 87.5%,
+      100% 87.5%,
+      100% 100%,
+      0 100%
+    );
+  }
+}
+
+/* ---- Battle: Zoom + Shake (applied to #game-screen; darkens its overlay child) ----
+   The scene rattles and lunges toward the player while it goes dark. */
+#game-screen.anim-battle-zoom-shake {
+  animation: global-battle-zoom-shake 0.9s ease-in forwards;
+  will-change: transform;
+}
+
+#game-screen.anim-battle-zoom-shake .global-animations-overlay {
+  background-color: rgba(0, 0, 0, 0);
+  animation: global-battle-zoom-shake-darken 0.9s ease-in forwards;
+}
+
+@keyframes global-battle-zoom-shake {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  10% {
+    transform: translate(-10px, 2px) scale(1.01);
+  }
+  20% {
+    transform: translate(10px, -2px) scale(1.02);
+  }
+  30% {
+    transform: translate(-8px, 3px) scale(1.03);
+  }
+  40% {
+    transform: translate(8px, -3px) scale(1.04);
+  }
+  50% {
+    transform: translate(-6px, 2px) scale(1.06);
+  }
+  60% {
+    transform: translate(6px, -2px) scale(1.08);
+  }
+  70% {
+    transform: translate(-4px, 1px) scale(1.1);
+  }
+  80% {
+    transform: translate(4px, -1px) scale(1.13);
+  }
+  100% {
+    transform: translate(0, 0) scale(1.18);
+  }
+}
+
+@keyframes global-battle-zoom-shake-darken {
+  0%,
+  45% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 1);
+  }
+}

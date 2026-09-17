@@ -4,6 +4,7 @@ import { isReducedMotion } from '~/lib/reduced-motion';
 import { ANIMATION_CONFIG, type GlobalAnimationType } from '~/constants/animation-system';
 import { soundService } from '~/services/sound-service';
 import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
+import { pickTransition } from '~/lib/view-transitions';
 
 // Re-export for convenience
 export type { GlobalAnimationType };
@@ -13,6 +14,8 @@ type OnEndCallback = () => void;
 interface GlobalAnimationContextValue {
   trigger: (type: GlobalAnimationType, onEnd?: OnEndCallback) => Promise<void>;
   triggerSequence: (sequence: GlobalAnimationType[], onEnd?: OnEndCallback) => Promise<void>;
+  /** Triggers a random member of `pool`, avoiding whichever member the previous pool draw played. */
+  triggerFromPool: (pool: readonly GlobalAnimationType[], onEnd?: OnEndCallback) => Promise<void>;
 }
 
 const GlobalAnimationContext = createContext<GlobalAnimationContextValue | null>(null);
@@ -20,6 +23,7 @@ const GlobalAnimationContext = createContext<GlobalAnimationContextValue | null>
 export function GlobalAnimationProvider({ children }: { children: React.ReactNode }) {
   const resolveRef = useRef<(() => void) | null>(null);
   const callbackRef = useRef<OnEndCallback | null>(null);
+  const lastPoolPickRef = useRef<GlobalAnimationType | null>(null);
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
   const trigger = useCallback(async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
@@ -55,13 +59,22 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
     [trigger],
   );
 
+  const triggerFromPool = useCallback(
+    async (pool: readonly GlobalAnimationType[], onEnd?: OnEndCallback) => {
+      const type = pickTransition(pool, lastPoolPickRef.current);
+      lastPoolPickRef.current = type;
+      await trigger(type, onEnd);
+    },
+    [trigger],
+  );
+
   const handleAnimationEnd = useCallback(() => {
     setAnimation(null);
     // Callbacks are now handled by the duration-based timing in trigger()
   }, []);
 
   return (
-    <GlobalAnimationContext.Provider value={{ trigger, triggerSequence }}>
+    <GlobalAnimationContext.Provider value={{ trigger, triggerSequence, triggerFromPool }}>
       {children}
       <GlobalAnimationsOverlay type={animation} onEnd={handleAnimationEnd} />
     </GlobalAnimationContext.Provider>
@@ -87,7 +100,9 @@ function GlobalAnimationsOverlay({ type, onEnd }: { type: GlobalAnimationType | 
     // Apply animation using strategy
     applyAnimation(type, el);
 
-    function handleEnd() {
+    function handleEnd(event: AnimationEvent) {
+      // `animationend` bubbles: a descendant's own animation ending must not cut this one short.
+      if (event.target !== event.currentTarget) return;
       if (type) removeAnimation(type, el);
       if (el) el.className = 'global-animations-overlay';
       onEnd();

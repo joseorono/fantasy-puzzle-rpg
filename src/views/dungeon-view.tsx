@@ -43,8 +43,10 @@ import { DUNGEON_FLOOR_MARK_ICONS, DUNGEON_REST_HEAL_PERCENT } from '~/constants
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
 import type { LootTable } from '~/types/loot';
 import type { DungeonEvent } from '~/types/dungeon';
+import type { EncounterDefinition } from '~/types/map-node';
 import { DialogueScene } from '~/components/dialogue';
 import { useGlobalAnimation } from '~/components/global-animations-system';
+import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { LootNotification } from '~/components/map/loot-notification';
 import { DungeonClearScreen } from '~/components/dungeon/dungeon-clear-screen';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
@@ -187,6 +189,7 @@ export default function DungeonView() {
   const confirm = useConfirm();
   const confirmRequest = useAtomValue(confirmDialogRequestAtom);
   const { trigger: triggerGlobalAnimation } = useGlobalAnimation();
+  const { enterBattle } = useViewTransitions();
 
   // ─── Local UI state ──────────────────────────────────────────────────
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneType | null>(null);
@@ -363,9 +366,7 @@ export default function DungeonView() {
       return;
     }
     if (currentEvent.type === 'combat') {
-      setupBattle({ enemies: currentEvent.encounter.enemies, party });
-      setPhase('awaiting-battle');
-      goToBattleDemo({ enemyId: currentFloor.id, location: dungeon!.id, bgImage: floorBg });
+      void startFloorBattle(currentEvent.encounter, currentFloor.id);
       return;
     }
     // chest
@@ -375,6 +376,14 @@ export default function DungeonView() {
     setCurrentLoot(result.rolledLoot);
     soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
     advanceEvent();
+  }
+
+  /** The 'awaiting-battle' phase locks the buttons and keyboard while the cover transition plays. */
+  async function startFloorBattle(encounter: EncounterDefinition, floorId: string) {
+    setupBattle({ enemies: encounter.enemies, party });
+    setPhase('awaiting-battle');
+    await enterBattle();
+    goToBattleDemo({ enemyId: floorId, location: dungeon!.id, bgImage: floorBg });
   }
 
   function handleDialogueComplete() {

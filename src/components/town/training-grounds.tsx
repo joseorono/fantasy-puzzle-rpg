@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSetAtom } from 'jotai';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import {
@@ -26,6 +26,7 @@ import { TRAINER_CHAR } from '~/constants/dialogue/characters';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
 import { useConfirm } from '~/hooks/use-confirm';
+import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { TownLocationLayout } from './town-location-layout';
 import { RespecEditor } from './respec-editor';
 import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
@@ -71,6 +72,9 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
   const respecCount = useRespecCount();
   const progressFlagsActions = useProgressFlagsActions();
   const confirm = useConfirm();
+  const { enterBattle } = useViewTransitions();
+  // Latched once sparring starts: the cover transition must not be re-triggered by a held Enter.
+  const isSparringRef = useRef(false);
   const routerActions = useRouterActions();
   const townHubData = useViewData('town-hub');
   const setupBattle = useSetAtom(setupBattleAtom);
@@ -163,10 +167,13 @@ export default function TrainingGrounds({ backgroundImage, onLeaveCallback }: Tr
 
   // A reward-free fight on the normal board. The dummy goes into the battle atoms first (as the
   // map does), and the hub is told to reopen on this location when the fight hands control back.
-  function handleStartSparring() {
+  async function handleStartSparring() {
+    if (isSparringRef.current) return;
+    isSparringRef.current = true;
     soundService.playSound(SoundNames.mechanicalClick, TOWN_SFX_VOLUME.locationSelect, 0.1);
     setupBattle({ enemies: [TRAINING_DUMMY], party, mode: 'training' });
     if (townHubData) routerActions.setViewData('town-hub', { ...townHubData, initialLocation: 'training-grounds' });
+    await enterBattle();
     routerActions.goToBattleDemo({
       enemyId: TRAINING_DUMMY.id,
       location: 'Training Grounds',
