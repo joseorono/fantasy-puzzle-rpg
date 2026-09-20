@@ -7,7 +7,8 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 
 What ships today is a **Flinch** mechanic: every hit on an enemy nudges its next attack back a little
 (VIT-resisted, hard-capped at 12% of the interval per cycle so the enemy *always* fires). The docs and
-code call this "stagger", and a "STAGGER!" callout pops when the per-cycle *flinch cap* is reached.
+code call this "stagger", and a "STAGGER!" callout pops when the per-cycle *flinch cap* is reached
+(that text will become "Flinched!" — see §G).
 
 What is missing is the actual **Poise** layer: a per-enemy `poise` multiplier, a posture-damage pool
 that fills from orb hits and active skills, and a **Break** that *cancels* the pending attack, opens a
@@ -21,8 +22,10 @@ Design decisions locked in:
 - Break = **cancel the pending attack + vulnerable stagger window** (bonus HP damage), then a fresh cycle.
 - Anti-stunlock = **immunity window after recovery + escalating max poise**, never above
   **150% of the original max poise**.
-- Lone hits (orbs *and* active skills) keep **delaying** the attack and moving the radial ring — the
-  existing Flinch stays as-is underneath Poise.
+- **Additive, not a replacement.** Flinch is untouched: every hit (orbs *and* active skills) still
+  delays the attack and moves the radial ring exactly as it does today. The *same hit* additionally deals
+  poise damage; a Break only happens once enough poise damage has accumulated — combos and hard hits
+  are what get you there.
 - Every tunable is a named constant in `src/constants/battle.ts` (new "Enemy Poise / Break" block).
 
 ## 2. Terminology
@@ -33,9 +36,10 @@ Design decisions locked in:
 | **Poise** | The enemy's posture pool. The `poise` stat is a multiplier on incoming poise damage. | ⬜ missing |
 | **Break / Stagger** | Pool depleted → pending attack cancelled → enemy vulnerable for a window → fresh cycle. | ⬜ missing |
 
-Rename note: once Poise lands, the shipped mechanic should be referred to as **Flinch** everywhere
-(constants can keep their `STAGGER_*` names to avoid churn, but the docs and the callout must
-disambiguate — see §G and §J).
+Naming note: no code identifiers get renamed — the `STAGGER_*` constants, `staggerPushMultiplier`,
+`staggerPulse` and `lastMaxFlinch` all stay. The only shipped *text* that changes is the callout: the
+flinch-cap pop becomes **"FLINCHED!"** and the new Break pop is **"STAGGERED!"**, so the on-screen
+vocabulary matches this doc. Every hit does both: it flinches the timer *and* deals poise damage.
 
 ## 3. Checklist by system
 
@@ -60,10 +64,11 @@ disambiguate — see §G and §J).
 - [x] Hero passives scale the push: `staggerPushMultiplier` (warrior/rogue, 1.5 → 2.0) —
       `src/constants/skills/warrior.ts:138`, `rogue.ts:138`, folded in `src/lib/skill-system.ts:408`.
 - [x] Tests — `src/lib/rpg-calculations.test.ts:405–528`.
-- [ ] Flinch must be **skipped while the enemy is broken** (there is no pending attack to push). Lands in
-      the stagger effect of `use-enemy-attack-timers.ts` (early `continue` when `isEnemyStaggered`).
+- [ ] While an enemy is broken there is no pending attack, so the push is a natural no-op — add an early
+      `continue` when `isEnemyStaggered` in the stagger effect of `use-enemy-attack-timers.ts` so it
+      doesn't touch a release timestamp that no longer exists. Flinch resumes unchanged on recovery.
 
-**Implementation notes.** Nothing to rebuild here. Note that the flinch budget (`staggerUsedRef`) is a
+**Implementation notes.** Nothing changes here. Note that the flinch budget (`staggerUsedRef`) is a
 `useRef` Map that resets on every `startCycle` and on hook rebuild — invisible to state, UI and tests.
 That is fine for a cosmetic nudge, but **Poise must not follow this pattern** (see §C).
 
@@ -97,6 +102,12 @@ definition *has* to change. Instancing is plain object spread (`createBattleStat
   - `isEnemyStaggered(state, now)`, `isPoiseImmune(state, now)`.
 - [ ] Poise damage reuses the existing `StaggerHit { amount, multiplier }` shape so the hit → multiplier
       plumbing (attacker passives, skill bonus) is shared with Flinch.
+- [ ] Combos and hard hits fill the pool by construction: `hit.amount` already carries the match-size
+      multiplier (`calculateMatchMultiplier`, `rpg-calculations.ts:183`) and the cascade multiplier
+      (`calculateComboMultiplier`, `:172`, tuned by `CASCADE_DAMAGE_BONUS_PER_LEVEL` / `MAX_COMBO_MULTIPLIER`),
+      so a 5-match at cascade 3 pushes poise far harder than a lone 3-match. Optional
+      `POISE_CASCADE_BONUS_PER_LEVEL` (default 0 = off) if combos should fill poise *faster than* they
+      deal HP damage — the cascade level is available in `match3-board.tsx` where hits are built (`:394–397`).
 - [ ] Apply poise in the **same state write** as HP damage so state never disagrees:
       `damageEnemyAtom` (`battle-atoms.ts:199`) and both enemy branches of `activateSkillAtom`
       (`battle-atoms.ts:684–718`).
@@ -172,9 +183,11 @@ same shape with a different reason.
       warm parchment / amber, no bright yellow. Optionally mark the escalated max.
 - [ ] **Staggered sprite state**: tint/tilt class in `src/styles/animations.css` with a
       `src/styles/reduced-motion.css` fallback; cleared on recovery.
-- [ ] **Callout**: repurpose the existing "STAGGER!" pop (`enemy-display.tsx:57–63`, `:133–140`, driven by
-      `lastMaxFlinchAtom`) for the real Break, driven by `lastPoiseBreak`. Demote the flinch-cap event to
-      ring shake only (drop the text) so two different things aren't both labelled "STAGGER!". Decision in §J.
+- [ ] **Callouts** (decided, see §J): the shipped flinch-cap pop (`enemy-display.tsx:57–63`, `:133–140`,
+      driven by `lastMaxFlinchAtom`) changes its text from "Stagger!" to **"Flinched!"** — text only,
+      same trigger, same animation. Break gets its **own** pop reading **"Staggered!"**, driven by
+      `lastPoiseBreak`, reusing the same `EnemySprite` pattern and the `stagger-callout` keyframes
+      (`animations.css:448`) at a bigger size / longer hold so it clearly outranks the flinch one.
 - [ ] **Break SFX** through `SoundService` — new `SoundNames` entry in `src/constants/audio.ts`.
 - [ ] **Recovery cue** (subtle: sprite un-tints, ring returns to `danger`, optional short SFX).
 - [ ] Vulnerable-window damage numbers use the `critical` style already used for skill hits
@@ -199,8 +212,9 @@ same shape with a different reason.
 
 ### I. Docs to update
 
-- [ ] `docs/COMBAT_SYSTEM.md:51–66` — split "Enemy Stagger (Flinch) System" into **Flinch** and
-      **Poise / Break**, with the formulas from §5 and both anti-stunlock caps.
+- [ ] `docs/COMBAT_SYSTEM.md:51–66` — leave the "Enemy Stagger (Flinch) System" section intact and add a
+      **Poise / Break** subsection right after it, with the formulas from §5 and a line stating both
+      anti-stunlock caps are independent.
 - [ ] `docs/RPG_SYSTEM.md:30` — VIT "stagger resistance" → "flinch resistance"; note `poise` is a separate
       per-enemy stat, not derived from VIT.
 - [ ] `docs/BATTLE_SCREEN.md:59,119,140` — component map (poise bar, callout wording), `BattleState`
@@ -233,7 +247,8 @@ Decisions to make before building:
       there is nothing to cancel yet, and the preemptive bonus already rewards hitting them.
 - [ ] Training dummy: never breaks (no attack to cancel) vs. breaks anyway so the feedback can be tuned in
       the Training Grounds. *Recommend: breaks anyway, readout shows the pool.*
-- [ ] Repurpose the "STAGGER!" callout for Break and drop the text on the flinch cap (see §G).
+- [x] Callout wording — **decided**: the existing flinch-cap text becomes "Flinched!", the new Break
+      callout reads "Staggered!" (see §G).
 - [ ] `POISE_REGEN_PER_SECOND` on or off at launch. *Recommend off* — escalation + immunity already stop
       chain-breaks; add regen only if long fights feel like a guaranteed break.
 
@@ -251,6 +266,7 @@ are starting points for playtesting, not final values.
 | `POISE_BREAK_IMMUNITY_MS` | `2000` | Poise damage ignored after recovery |
 | `POISE_MAX_GROWTH_PER_BREAK` | `0.25` | Each Break raises max poise by this fraction of the *original* max |
 | `POISE_MAX_GROWTH_CAP` | `1.5` | Max poise never exceeds **150%** of the original — hard cap |
+| `POISE_CASCADE_BONUS_PER_LEVEL` | `0` | Optional extra poise damage per cascade level, on top of what the combo multiplier already adds; `0` = off |
 | `POISE_REGEN_PER_SECOND` | `0` | Optional decay of accumulated poise damage when not hit (fraction of max per second); `0` = off |
 
 Existing Flinch constants stay as they are (`BASE_STAGGER_FRACTION`, `MAX_STAGGER_FRACTION_PER_CYCLE`,
@@ -259,8 +275,9 @@ Existing Flinch constants stay as they are (`BASE_STAGGER_FRACTION`, `MAX_STAGGE
 ## 5. Formulas
 
 ```
+on every hit             flinch push (unchanged — see COMBAT_SYSTEM.md)  AND  poiseDamage(hit) — both, always
 maxPoise(enemy)          = maxHp × POISE_POOL_HP_FRACTION
-poiseDamage(hit, enemy)  = hit.amount × (enemy.poise ?? 1) × hit.multiplier
+poiseDamage(hit, enemy)  = hit.amount × (enemy.poise ?? 1) × hit.multiplier × (1 + cascadeLevel × POISE_CASCADE_BONUS_PER_LEVEL)
                            hit.multiplier = passive staggerPushMultiplier × (POISE_SKILL_MULTIPLIER if source === 'skill')
 break                    when current − poiseDamage ≤ 0  AND  not staggered  AND  not immune
 escalatedMax(breakCount) = min(originalMax × (1 + breakCount × POISE_MAX_GROWTH_PER_BREAK),
