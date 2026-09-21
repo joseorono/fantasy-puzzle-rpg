@@ -273,7 +273,7 @@ export function PauseMenuOptions({
               alt=""
               draggable={false}
             />
-            <span className="pause-menu-option-label">Mute Audio</span>
+            <span className="pause-menu-option-label">{isMuted ? 'Unmute Audio' : 'Mute Audio'}</span>
           </button>
         </div>
 
