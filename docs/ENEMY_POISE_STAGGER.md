@@ -283,7 +283,7 @@ subscribing it to `enemyPoiseAtom` adds no new render cadence.
       direction (0.5 halves, 2 doubles); a batch resolves in order and breaks exactly once; no accumulation
       while staggered or immune (same reference back); escalation sequence 100% → 125% → 150% → 150% (cap
       holds for `breakCount ≥ 2`); `tickEnemyPoise` counts down, flips stagger → immunity, returns the same
-      reference when idle; regen off by default (and works when a rate is passed); `createEnemyPoiseState`
+      reference when idle; regen honours an explicit `0` and defaults to the shipped rate; `createEnemyPoiseState`
       seeds `current === max === originalMax`; vulnerable rounding; signature order/stability.
 - [x] `src/lib/poise-system.bench.ts`: `calculatePoiseDamage`; `applyPoiseHits` (1 hit / 4-hit batch / batch
       that breaks); `resolveEscalatedMaxPoise`; `tickEnemyPoise` with 4 enemies (idle → same reference; 2
@@ -343,8 +343,10 @@ Decisions:
       `TRAINING_DUMMY_POISE_HP_EQUIVALENT` so the sentinel HP doesn't make the pool unbreakable (§B).
 - [x] Callout wording — the existing flinch-cap text becomes "Flinched!", the new Break callout reads
       "Staggered!" (see §G).
-- [x] `POISE_REGEN_PER_SECOND` off at launch — escalation + immunity already stop chain-breaks; add regen
-      only if long fights feel like a guaranteed break.
+- [x] `POISE_REGEN_PER_SECOND` — shipped **on** at `0.01` (1% of max per second) after playtesting, so a
+      long fight doesn't accumulate toward a guaranteed Break; escalation + immunity remain the main guards.
+      Trade-off to watch: with regen on, a dented pool is never "idle", so `battleTickAtom` writes state on
+      every tick until the pool is full again (see the note in §4).
 
 ### K. Lib layout: files, tests, benches
 
@@ -408,7 +410,7 @@ are starting points for playtesting, not final values.
 | `POISE_MAX_GROWTH_PER_BREAK` | `0.25` | Each Break raises max poise by this fraction of the *original* max |
 | `POISE_MAX_GROWTH_CAP` | `1.5` | Max poise never exceeds **150%** of the original — hard cap |
 | `POISE_CASCADE_BONUS_PER_LEVEL` | `0` | Optional extra poise damage per cascade level, on top of what the combo multiplier already adds; `0` = off |
-| `POISE_REGEN_PER_SECOND` | `0` | Optional refill of the pool when not hit (fraction of max per second), applied by `tickEnemyPoise`; `0` = off |
+| `POISE_REGEN_PER_SECOND` | `0.01` | Refill of the pool while not Broken (fraction of max per second), applied by `tickEnemyPoise`; `0` = off. **Note:** any non-zero value means a dented pool is never idle, so `battleTickAtom` writes every tick until it refills |
 | `POISE_BREAK_CALLOUT_DURATION_MS` | `1300` | How long the "Staggered!" callout holds (the flinch one keeps its 900 ms) |
 
 Existing Flinch constants stay as they are (`BASE_STAGGER_FRACTION`, `MAX_STAGGER_FRACTION_PER_CYCLE`,

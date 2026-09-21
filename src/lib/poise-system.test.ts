@@ -229,10 +229,16 @@ describe('tickEnemyPoise', () => {
     expect(record.a.current).toBe(record.a.max);
   });
 
-  it('has regen off by default, so a dented pool stays dented', () => {
-    expect(POISE_REGEN_PER_SECOND).toBe(0);
+  it('leaves a dented pool exactly as it is when the rate is 0', () => {
     const record = { a: makeState({ current: 10 }) };
-    expect(tickEnemyPoise(record, 1)).toBe(record);
+    expect(tickEnemyPoise(record, 1, 0)).toBe(record);
+  });
+
+  // Asserts the default is wired through, not what it is tuned to, so retuning the constant
+  // (0 → 0.01 and back) never breaks this.
+  it('uses POISE_REGEN_PER_SECOND when no rate is passed', () => {
+    const record = { a: makeState({ current: 10 }) };
+    expect(tickEnemyPoise(record, 1)).toEqual(tickEnemyPoise(record, 1, POISE_REGEN_PER_SECOND));
   });
 
   it('regenerates toward max (never past it) when a rate is given', () => {
