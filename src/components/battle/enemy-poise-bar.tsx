@@ -5,7 +5,7 @@ import type { EnemyPoiseSummary } from '~/types/battle';
 
 interface EnemyPoiseBarProps {
   poise: EnemyPoiseSummary;
-  /** The enemy is still observing: poise damage does not apply yet, so the bar is dimmed. */
+  /** The enemy is still observing: its pool moves, but it cannot Break yet (hover copy only). */
   isStandby?: boolean;
   className?: string;
 }
@@ -32,7 +32,6 @@ export function EnemyPoiseBar({ poise, isStandby = false, className }: EnemyPois
       className={cn(
         'relative h-1 w-full border sm:h-1.5',
         isBroken ? POISE_BAR_CLASSES.broken : POISE_BAR_CLASSES.track,
-        isStandby && POISE_BAR_CLASSES.standby,
         className,
       )}
       role="meter"

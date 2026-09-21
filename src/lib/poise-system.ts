@@ -110,6 +110,18 @@ export interface PoiseHitResolution {
   didBreak: boolean;
 }
 
+/** Optional inputs to {@link applyPoiseHits}. */
+export interface ApplyPoiseHitsOptions {
+  /** Cascade depth of the match; 0 for the swap itself and for skills. */
+  cascadeLevel?: number;
+  /**
+   * False while the enemy has no pending attack to cancel (still on its opening standby). The
+   * pool still takes damage and the bar still moves — it just floors at 0 instead of Breaking, so
+   * the Break lands on the first hit after the enemy starts attacking.
+   */
+  canBreak?: boolean;
+}
+
 /**
  * Lands a batch of hits (every color of a multi-color match, in order) on an enemy's poise pool.
  * Ignored entirely — the input state comes back by reference — while the enemy is Broken or
@@ -119,16 +131,17 @@ export interface PoiseHitResolution {
  * @param state The enemy's poise state before the batch
  * @param hits The weighted hits (see `weighHitsByAttacker` in `~/lib/flinch-system`)
  * @param poiseMultiplier The enemy's `poise` stat (`enemy.poise ?? 1`)
- * @param cascadeLevel Cascade depth of the match; 0 for the swap itself and for skills
+ * @param options Cascade depth and whether a Break may fire; see {@link ApplyPoiseHitsOptions}
  * @returns The next state and whether the batch Broke the enemy
  */
 export function applyPoiseHits(
   state: EnemyPoiseState,
   hits: StaggerHit[],
   poiseMultiplier: number,
-  cascadeLevel: number = 0,
+  options: ApplyPoiseHitsOptions = {},
 ): PoiseHitResolution {
   if (isEnemyStaggered(state) || isPoiseImmune(state)) return { next: state, didBreak: false };
+  const { cascadeLevel = 0, canBreak = true } = options;
 
   let current = state.current;
   for (const hit of hits) {
@@ -137,6 +150,9 @@ export function applyPoiseHits(
   }
   if (current === state.current) return { next: state, didBreak: false };
   if (current > 0) return { next: { ...state, current }, didBreak: false };
+
+  // Nothing to cancel yet: bank the damage at an empty pool so the bar reads "one more hit".
+  if (!canBreak) return { next: { ...state, current: 0 }, didBreak: false };
 
   const breakCount = state.breakCount + 1;
   const max = resolveEscalatedMaxPoise(state.originalMax, breakCount);
@@ -290,14 +306,15 @@ export function poiseSummariesMatch(a: EnemyPoiseSummary, b: EnemyPoiseSummary):
  * @returns The title text
  */
 export function describeEnemyPoise(summary: EnemyPoiseSummary, isStandby: boolean = false): string {
-  if (isStandby) return 'Poise — counts once this enemy starts attacking';
   switch (summary.phase) {
     case 'broken':
       return 'Staggered! Bonus damage while the bar drains';
     case 'immune':
       return 'Recovering — poise damage is ignored while the bar rebuilds';
     default:
-      return `Poise ${summary.fillPercent}% — empty it to stagger this enemy`;
+      return isStandby
+        ? `Poise ${summary.fillPercent}% — it cannot be staggered until it starts attacking`
+        : `Poise ${summary.fillPercent}% — empty it to stagger this enemy`;
   }
 }
 

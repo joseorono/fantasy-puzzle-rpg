@@ -180,6 +180,31 @@ describe('applyPoiseHits', () => {
     expect(state.max).toBe(original * POISE_MAX_GROWTH_CAP);
   });
 
+  it('floors at 0 without Breaking when canBreak is false', () => {
+    const state = makeState();
+    const { next, didBreak } = applyPoiseHits(state, [{ amount: state.max * 5, multiplier: 1 }], 1, {
+      canBreak: false,
+    });
+    expect(didBreak).toBe(false);
+    expect(next.current).toBe(0);
+    expect(next.breakCount).toBe(0);
+    expect(next.max).toBe(state.max);
+    expect(isEnemyStaggered(next)).toBe(false);
+  });
+
+  it('still dents the pool normally when canBreak is false and the hits do not empty it', () => {
+    const state = makeState();
+    const { next } = applyPoiseHits(state, [{ amount: 30, multiplier: 1 }], 1, { canBreak: false });
+    expect(next.current).toBe(state.max - 30);
+  });
+
+  it('Breaks on the next hit once canBreak returns, from an already-empty pool', () => {
+    const emptied = applyPoiseHits(makeState(), [{ amount: 9999, multiplier: 1 }], 1, { canBreak: false }).next;
+    const { next, didBreak } = applyPoiseHits(emptied, [{ amount: 1, multiplier: 1 }], 1);
+    expect(didBreak).toBe(true);
+    expect(next.breakCount).toBe(1);
+  });
+
   it('does not mutate the input state', () => {
     const state = makeState();
     const snapshot = { ...state };

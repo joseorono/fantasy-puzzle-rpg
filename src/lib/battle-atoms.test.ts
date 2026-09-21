@@ -15,6 +15,7 @@ import {
   battleTickAtom,
   damageEnemyAtom,
   enemiesAtom,
+  endEnemyStandbyAtom,
   enemyPoiseAtom,
   enemyPoiseSummaryAtom,
   ensureFreshBattleAtom,
@@ -30,6 +31,7 @@ import {
   partyMemberIdsAtom,
   recordMaxComboAtom,
   reduceSkillCooldownAtom,
+  selectEnemyAtom,
   setupBattleAtom,
   tickGuardDecayAtom,
   tickSkillCooldownsAtom,
@@ -537,14 +539,38 @@ describe('enemy poise', () => {
     expect(selectedEnemy(store).currentHp).toBe(enemy.currentHp - 17);
   });
 
-  it('a standby target takes no poise damage', () => {
+  it('a standby target still takes poise damage, so the bar moves from the opening move', () => {
     const store = createBattleStore();
     expect(store.get(standbyEnemyIdsAtom)).toContain(store.get(battleStateAtom).selectedEnemyId);
     const before = selectedPoise(store);
 
     store.set(damageEnemyAtom, 25);
 
-    expect(selectedPoise(store)).toBe(before);
+    expect(selectedPoise(store).current).toBeLessThan(before.current);
+  });
+
+  it('a standby target cannot Break: the pool floors at 0 and waits for its first attack cycle', () => {
+    const store = createBattleStore();
+    // Target a frog, not the golem: emptying the golem's pool takes more damage than it has HP,
+    // and a killing blow deals no poise damage at all.
+    const id = store.get(enemiesAtom).find((enemy) => enemy.id !== store.get(battleStateAtom).selectedEnemyId)!.id;
+    store.set(selectEnemyAtom, id);
+    expect(store.get(standbyEnemyIdsAtom)).toContain(id);
+
+    store.set(damageEnemyAtom, breakingAmount(store));
+
+    const poise = selectedPoise(store);
+    expect(poise.current).toBe(0);
+    expect(poise.breakCount).toBe(0);
+    expect(isEnemyStaggered(poise)).toBe(false);
+    expect(store.get(lastPoiseBreakAtom)).toBeNull();
+
+    // Once it starts attacking, the very next hit Breaks it.
+    store.set(endEnemyStandbyAtom, id);
+    store.set(damageEnemyAtom, 1);
+
+    expect(isEnemyStaggered(selectedPoise(store))).toBe(true);
+    expect(store.get(lastPoiseBreakAtom)?.enemyIds).toEqual([id]);
   });
 
   it('a killing blow deals no poise damage', () => {

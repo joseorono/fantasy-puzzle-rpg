@@ -64,8 +64,6 @@ export const POISE_BAR_CLASSES = {
   brokenWindow: 'bg-[#f7e7c6]/80',
   /** Immune: the pool rebuilding in muted stone — hits do not dent it yet. */
   immune: 'bg-[#8a7f6e]',
-  /** Standby: the enemy is still observing, so poise damage does not apply yet. */
-  standby: 'opacity-40',
   /** Tick mark showing where the original max sits once the pool has escalated. */
   originalMaxMark: 'bg-[#8a6a42]',
 } as const;

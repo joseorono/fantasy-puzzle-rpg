@@ -13,11 +13,15 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 > "Staggered!" callout, sprite tint, neutral ring and Break SFX, plus the sibling docs.
 >
 > **Phase 3 (done)** — usability polish, §M: the poise bar now tells the whole Break story in three phases
-> (drain over the vulnerable window, rebuild over immunity), is dimmed on standby and explains itself on
+> (drain over the vulnerable window, rebuild over immunity) and explains itself on
 > hover; sprites stop re-rendering on regen ticks (`enemyPoiseSummaryAtom`); and the §J pause bug is fixed
-> for every attack timer. 992 tests pass across 37 files. Still open: the skill-kill `pendingVictory` note
-> in §J, the stretch hook test in §H (no React test environment), and the balance / feel calls listed at
-> the end of §M — chiefly that the **Moss Golem may never Break** at `poise` 0.5. **Next:** playtest.
+> for every attack timer.
+>
+> **Phase 4 (done)** — §N: the bar read as dead in play. Standby no longer suppresses poise damage (only the
+> Break is withheld) and the standby dim is gone. 996 tests pass across 37 files. Still open: the skill-kill
+> `pendingVictory` note in §J, the stretch hook test in §H (no React test environment), and the **Moss Golem
+> balance** measured in §N — a 3-match moves its bar 3.8% and regen refills that in under 4 s. **Next:** pick
+> the golem's `poise` and decide whether regen should pause after a hit.
 
 ## 1. Summary
 
@@ -165,7 +169,7 @@ definition *has* to change. Instancing is plain object spread (`createBattleStat
       `match3-board.tsx:394–397`.
 - [x] Apply poise in the **same state write** as HP damage so state never disagrees:
       `damageEnemyAtom` and both enemy branches of `activateSkillAtom` (`battle-atoms.ts`). Skipped on a
-      killing blow and on standby targets (`standbyEnemyIds`). Poise damage is computed from the **raw**
+      killing blow. A standby target's pool still moves; it just cannot Break yet. Poise damage is computed from the **raw**
       hits — the preemptive and vulnerable bonuses are HP-only. An all-enemy skill lands a different
       amount on Broken vs. unbroken targets, so `lastDamage.amountByEnemyId` carries the per-target values
       for the damage popup.
@@ -206,8 +210,8 @@ testable without fake timers. `battleTickAtom` already writes state every 100 ms
 - [x] Break on a dead enemy is impossible: HP write and poise write are one transaction, and poise is skipped
       when the resulting HP is `≤ 0`. The skill path sets `gameStatus: 'won'` directly at
       `battle-atoms.ts:700/717`; the hook's main effect already bails when `gameStatus !== 'playing'`.
-- [x] Standby enemies (`standbyEnemyIds`) take no poise damage at all until their first attack cycle
-      (decided, §J).
+- [x] Standby enemies (`standbyEnemyIds`) accumulate poise but cannot Break until their first attack cycle:
+      `applyPoiseHits` floors the pool at 0 instead (`canBreak: false`). See §J and §N.
 
 **Implementation notes.** The hook is already structured around absolute release timestamps and a
 self-rescheduling `setTimeout` per enemy; a Break is just "drop the release and skip this enemy while the
@@ -296,7 +300,7 @@ subscribing it to `enemyPoiseAtom` adds no new render cadence.
 - [x] `src/lib/battle-atoms.test.ts` (`describe('enemy poise')`, 12 tests, vanilla `createStore`):
       `damageEnemyAtom` and `activateSkillAtom` update `enemyPoise` in the same commit as HP (one listener
       call, matches the pure reducer); vulnerable-window bonus on both paths; the breaking hit gets no bonus;
-      no poise on a killing blow, a standby target, or while immune (HP still lands); `lastPoiseBreak`
+      no poise on a killing blow or while immune (HP still lands); a standby target dents but never Breaks; `lastPoiseBreak`
       published once; `battleTickAtom` stays silent while idle, counts the window down and flips to immunity,
       and `staggeredEnemySignatureAtom` only notifies on the flip; a fresh setup resets everything.
 - [x] `src/lib/battle-setup.test.ts`: `createBattleState` seeds `enemyPoise` for every enemy with
@@ -341,9 +345,9 @@ Decisions:
       `weighHitsByAttacker`. Update the copy in `src/components/skills/passive-descriptions.ts:42`.
 - [x] Separate `POISE_SKILL_MULTIPLIER` (not `SKILL_STAGGER_MULTIPLIER`) — different tuning axis: an ultimate
       that maxes the flinch shouldn't automatically break.
-- [x] Standby enemies take no poise damage until their first attack cycle — there is nothing to cancel yet,
-      and the preemptive bonus already rewards hitting them. (Simpler than "accumulate but don't Break",
-      which would spring a surprise Break on the first post-standby hit.)
+- [x] Standby enemies accumulate poise but cannot Break until their first attack cycle — there is nothing to
+      cancel yet. Phase 2 shipped the stricter "no poise damage at all"; **§N reverted that**, because a
+      standby window averaging ~3.7 s made the opening of every fight look broken.
 - [x] Training dummy breaks anyway (tick-owned windows work without the attack hook), so the feedback can be
       tuned in the Training Grounds; the readout shows the pool. Its `poise` is scaled against
       `TRAINING_DUMMY_POISE_HP_EQUIVALENT` so the sentinel HP doesn't make the pool unbreakable (§B).
@@ -414,7 +418,7 @@ doesn't explain what just happened. Fixed items are `[x]`; the rest are judgemen
 - [x] **The vulnerable window had no timer near the enemy.** Only the top-bar ring counted it down, far from
       where the player is looking. The broken-phase drain above is that timer, right under the sprite.
 - [x] **Standby enemies showed a full bar that could not be dented.** The bar is dimmed
-      (`POISE_BAR_CLASSES.standby`) while the enemy is in `standbyEnemyIds`, matching the gold eye ring.
+      while the enemy is in `standbyEnemyIds`. **Reverted in §N** — the dim was half of why the bar looked dead.
 - [x] **No label, no explanation.** There is no vertical room for a "POISE" caption under the enemy panel, so
       the bar carries a phase-aware `title` ("Poise 72% — empty it to stagger this enemy", "Staggered! Bonus
       damage while the bar drains", "Recovering — poise damage is ignored while the bar rebuilds") plus the
@@ -437,6 +441,35 @@ doesn't explain what just happened. Fixed items are `[x]`; the rest are judgemen
       `screen-shake` global animation or a stronger recoil on the breaking hit would sell the cancel harder.
       Cheap to add via `useGlobalAnimation` — held back until the balance pass says Breaks are frequent
       enough that the extra motion isn't fatiguing.
+
+### N. Phase 4 — the bar looked dead (bug fix)
+
+Reported from play: *"the stagger bar seems dim all the time, it doesn't react at all to the enemy getting
+hit, not even to a combo."* Two Phase 2/3 decisions of mine compounded into an opening dead zone, and a
+balance interaction hides the bar's movement afterwards.
+
+- [x] **Standby suppressed poise entirely.** Phase 2 skipped the poise write for any target in
+      `standbyEnemyIds`, and Phase 3 dimmed the bar to match. Standby is not brief: measured over 20 000
+      encounter rolls, the **longest standby in an encounter averages ~3.7 s and reached 8.1 s**, because
+      `generateEnemyStandbyDelays` pools three rolls and re-splits them, so one enemy can hold most of the
+      pool. Every opening match therefore did nothing to a greyed-out bar. Now the pool takes damage from
+      the first move and only the **Break** is withheld: `applyPoiseHits` floors `current` at 0 under
+      `canBreak: false`, so the Break lands on the first hit after the enemy starts attacking.
+- [x] **The standby dim is gone** (`POISE_BAR_CLASSES.standby` removed). The hover copy carries the rule
+      instead: "it cannot be staggered until it starts attacking".
+- [ ] **The Moss Golem's bar barely moves, and regen erases what is left.** Measured at the shipped values:
+
+      | | pool | a 3-match (12 dmg) | a strong 5-match (45 dmg) | regen | damage to Break |
+      |---|---|---|---|---|---|
+      | Moss Golem (`poise` 0.5) | 160 | 6.0 poise = **3.8%** | 22.5 poise = 14.1% | 1.6 poise/s | **320** vs 400 max HP |
+      | Swamp Frog (`poise` 1.6) | 27.2 | 19.2 poise = **70.6%** | 72.0 poise = 264.7% | 0.27 poise/s | 17 vs 68 max HP |
+
+      A 3-match moves the golem's bar 3.8%, under 3 px at the bar's rendered width, and
+      `POISE_REGEN_PER_SECOND` (0.01) refills that in under 4 s — so ordinary play sits near equilibrium and
+      the bar reads as frozen. The frog is fine. Two candidate fixes, both yours to pick: raise the golem's
+      `poise` toward ~0.75 (first Break near 53% HP), and/or hold regen off for a few seconds after a hit
+      rather than running it continuously. Note also that a standby golem *cannot* have its pool emptied at
+      all — 320 poise damage with the preemptive bonus is 400 HP, exactly lethal.
 
 ## 4. Proposed constants
 
@@ -467,7 +500,8 @@ on every hit             flinch push (unchanged — see COMBAT_SYSTEM.md)  AND  
 maxPoise(enemy)          = maxHp × POISE_POOL_HP_FRACTION
 poiseDamage(hit, enemy)  = hit.amount × (enemy.poise ?? 1) × hit.multiplier × (1 + cascadeLevel × POISE_CASCADE_BONUS_PER_LEVEL)
                            hit.multiplier = passive staggerPushMultiplier × (POISE_SKILL_MULTIPLIER if source === 'skill')
-poise applies            only when not staggered, not immune, not on standby, and the hit doesn't kill
+poise applies            only when not staggered, not immune, and the hit doesn't kill
+break allowed            only once the enemy is off standby (else the pool floors at 0 and waits)
 break                    when current − poiseDamage ≤ 0
 escalatedMax(breakCount) = min(originalMax × (1 + breakCount × POISE_MAX_GROWTH_PER_BREAK),
                                originalMax × POISE_MAX_GROWTH_CAP)          // ≤ 150% of original, always

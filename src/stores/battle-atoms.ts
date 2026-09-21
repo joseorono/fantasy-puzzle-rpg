@@ -269,14 +269,17 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | En
 
   const timestamp = Date.now();
 
-  // Poise damage from the raw hits (the bonuses above are HP-only). Skipped on a killing blow and
-  // on a standby target: there is no pending attack to cancel before its first cycle, and the
-  // preemptive bonus already rewards hitting it. `applyPoiseHits` itself no-ops while Broken/immune.
+  // Poise damage from the raw hits (the bonuses above are HP-only). Skipped only on a killing blow.
+  // A standby target still takes poise damage so the bar moves from the opening move, but cannot
+  // Break until it has an attack to cancel. `applyPoiseHits` itself no-ops while Broken/immune.
   let enemyPoise = currentState.enemyPoise;
   let lastPoiseBreak = currentState.lastPoiseBreak;
-  if (poiseBefore && damagedEnemy.currentHp > 0 && !isPreemptive) {
+  if (poiseBefore && damagedEnemy.currentHp > 0) {
     const poiseHits = weighHitsByAttacker(hits, currentState.party, POISE_SKILL_MULTIPLIER, 'match');
-    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, damagedEnemy.poise ?? 1, cascadeLevel);
+    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, damagedEnemy.poise ?? 1, {
+      cascadeLevel,
+      canBreak: !isPreemptive,
+    });
     if (next !== poiseBefore) enemyPoise = { ...enemyPoise, [selectedId]: next };
     if (didBreak) lastPoiseBreak = { enemyIds: [selectedId], timestamp };
   }
@@ -812,8 +815,10 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
 
   function landPoise(struck: EnemyData) {
     const poiseBefore = enemyPoise[struck.id];
-    if (!poiseBefore || struck.currentHp <= 0 || currentState.standbyEnemyIds.includes(struck.id)) return;
-    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, struck.poise ?? 1);
+    if (!poiseBefore || struck.currentHp <= 0) return;
+    // As in `damageEnemyAtom`: a standby target's pool still moves, it just cannot Break yet.
+    const canBreak = !currentState.standbyEnemyIds.includes(struck.id);
+    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, struck.poise ?? 1, { canBreak });
     if (next !== poiseBefore) enemyPoise = { ...enemyPoise, [struck.id]: next };
     if (didBreak) brokenEnemyIds.push(struck.id);
   }
