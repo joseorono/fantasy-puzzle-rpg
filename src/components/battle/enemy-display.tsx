@@ -52,7 +52,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
     }
   }, [lastDamage, enemy.id]);
 
-  // Pop a "STAGGER!" callout when this enemy maxes out its per-cycle flinch (further hits this
+  // Pop a "FLINCHED!" callout when this enemy maxes out its per-cycle flinch (further hits this
   // cycle no longer delay its attack). Fires once per cap-out; the timestamp re-arms it next cycle.
   useEffect(() => {
     if (lastMaxFlinch?.enemyId !== enemy.id) return;
@@ -129,13 +129,14 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           </div>
         )}
 
-        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle stagger cap. */}
+        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle flinch cap.
+            Distinct from the poise "Staggered!" break callout; see docs/ENEMY_POISE_STAGGER.md. */}
         {showStagger && !isDead && (
           <div
             key={`stagger-${staggerKey}`}
             className="stagger-callout pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
           >
-            Stagger!
+            Flinched!
           </div>
         )}
 

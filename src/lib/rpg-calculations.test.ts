@@ -2,14 +2,7 @@ import { expect, test, describe } from 'vitest';
 import * as rpg from './rpg-calculations';
 import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { createEmptyLootTable } from '~/types/loot';
-import {
-  GUARD_DECAY_RATE,
-  GUARD_MAX,
-  MAX_COMBO_MULTIPLIER,
-  MAX_STAGGER_FRACTION_PER_CYCLE,
-  POW_DAMAGE_PERCENT_PER_POINT,
-  SKILL_STAGGER_MULTIPLIER,
-} from '~/constants/battle';
+import { GUARD_DECAY_RATE, GUARD_MAX, MAX_COMBO_MULTIPLIER, POW_DAMAGE_PERCENT_PER_POINT } from '~/constants/battle';
 import { ENEMY_EXP_FLAT } from '~/constants/progression';
 
 // ============================================================================
@@ -402,133 +395,6 @@ describe('Speed Calculations', () => {
 });
 
 // ============================================================================
-// Stagger (Flinch) Calculations
-// ============================================================================
-
-describe('Stagger Calculations', () => {
-  test('calculateStaggerPushMs: any real hit produces a positive push (everyone flinches)', () => {
-    expect(rpg.calculateStaggerPushMs(50, 300, 50, 4000)).toBeGreaterThan(0);
-    // Even a tiny hit on a very tanky enemy still flinches a little.
-    expect(rpg.calculateStaggerPushMs(1, 9999, 999, 4000)).toBeGreaterThan(0);
-  });
-
-  test('calculateStaggerPushMs: zero/negative damage or interval yields no push', () => {
-    expect(rpg.calculateStaggerPushMs(0, 300, 50, 4000)).toBe(0);
-    expect(rpg.calculateStaggerPushMs(-10, 300, 50, 4000)).toBe(0);
-    expect(rpg.calculateStaggerPushMs(50, 300, 50, 0)).toBe(0);
-  });
-
-  test('calculateStaggerPushMs: higher VIT resists (smaller push), monotonically', () => {
-    const lowVit = rpg.calculateStaggerPushMs(50, 300, 10, 4000);
-    const midVit = rpg.calculateStaggerPushMs(50, 300, 50, 4000);
-    const highVit = rpg.calculateStaggerPushMs(50, 300, 100, 4000);
-    expect(midVit).toBeLessThan(lowVit);
-    expect(highVit).toBeLessThan(midVit);
-  });
-
-  test('calculateStaggerPushMs: scales with damage up to the reference, then plateaus', () => {
-    const small = rpg.calculateStaggerPushMs(10, 300, 50, 4000);
-    const bigger = rpg.calculateStaggerPushMs(40, 300, 50, 4000);
-    expect(bigger).toBeGreaterThan(small);
-    // reference = 300 * 0.15 = 45; hits at or above 45 all reach damageRatio = 1 and plateau.
-    const atReference = rpg.calculateStaggerPushMs(45, 300, 50, 4000);
-    const wayAbove = rpg.calculateStaggerPushMs(9999, 300, 50, 4000);
-    expect(wayAbove).toBeCloseTo(atReference, 5);
-  });
-
-  test('clampStaggerToCycleBudget: a single push never exceeds the per-cycle cap', () => {
-    // cap = 4000 * 0.12 = 480ms
-    expect(rpg.clampStaggerToCycleBudget(10_000, 4000, 0)).toBe(480);
-  });
-
-  test('clampStaggerToCycleBudget: respects budget already spent, then zeroes out', () => {
-    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 300)).toBe(180); // 480 cap - 300 used
-    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 480)).toBe(0);
-    expect(rpg.clampStaggerToCycleBudget(1000, 4000, 600)).toBe(0); // over-spent stays clamped
-  });
-
-  test('anti-stunlock: relentless huge hits can never push a cycle past the cap', () => {
-    const interval = 4000;
-    let used = 0;
-    for (let i = 0; i < 25; i++) {
-      const push = rpg.calculateStaggerPushMs(9999, 300, 50, interval);
-      used += rpg.clampStaggerToCycleBudget(push, interval, used);
-    }
-    expect(used).toBeLessThanOrEqual(interval * 0.12 + 1e-9);
-  });
-
-  // Demo roster stats (src/constants/enemies/world-00): the tankiest and frailest enemies.
-  const mossGolem = { maxHp: 400, vit: 70 };
-  const swampFrog = { maxHp: 68, vit: 16 };
-  const golemInterval = 4000;
-  const frogInterval = 2608;
-
-  test('resolveStaggerHits: an empty batch applies nothing and never maxes', () => {
-    expect(rpg.resolveStaggerHits([], mossGolem, golemInterval, 0)).toEqual({ appliedMs: 0, maxedFlinch: false });
-  });
-
-  test('resolveStaggerHits: a single hit matches the standalone push', () => {
-    const expected = rpg.calculateStaggerPushMs(13, mossGolem.maxHp, mossGolem.vit, golemInterval);
-    const { appliedMs } = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
-    expect(appliedMs).toBeCloseTo(expected, 6);
-  });
-
-  test('resolveStaggerHits: every hit in a batch counts (multi-color match regression)', () => {
-    const one = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
-    const two = rpg.resolveStaggerHits(
-      [
-        { amount: 13, multiplier: 1 },
-        { amount: 16, multiplier: 1 },
-      ],
-      mossGolem,
-      golemInterval,
-      0,
-    );
-    expect(two.appliedMs).toBeGreaterThan(one.appliedMs);
-    const separate =
-      rpg.calculateStaggerPushMs(13, mossGolem.maxHp, mossGolem.vit, golemInterval) +
-      rpg.calculateStaggerPushMs(16, mossGolem.maxHp, mossGolem.vit, golemInterval);
-    expect(two.appliedMs).toBeCloseTo(separate, 6);
-  });
-
-  test('resolveStaggerHits: per-hit multipliers scale the push before the clamp', () => {
-    const plain = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
-    const boosted = rpg.resolveStaggerHits([{ amount: 13, multiplier: 2 }], mossGolem, golemInterval, 0);
-    expect(boosted.appliedMs).toBeCloseTo(plain.appliedMs * 2, 6);
-  });
-
-  test('resolveStaggerHits: a batch never exceeds the remaining per-cycle budget', () => {
-    const capMs = golemInterval * MAX_STAGGER_FRACTION_PER_CYCLE;
-    const hits = Array.from({ length: 10 }, () => ({ amount: 9999, multiplier: 1 }));
-    const fresh = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 0);
-    expect(fresh.appliedMs).toBeCloseTo(capMs, 6);
-    const partlySpent = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 300);
-    expect(partlySpent.appliedMs).toBeCloseTo(capMs - 300, 6);
-  });
-
-  test('resolveStaggerHits: maxedFlinch fires once, on the batch that crosses the cap', () => {
-    const hits = Array.from({ length: 10 }, () => ({ amount: 9999, multiplier: 1 }));
-    const crossing = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, 0);
-    expect(crossing.maxedFlinch).toBe(true);
-    // Same cycle, budget already spent: nothing applies and the callout must not re-fire.
-    const followUp = rpg.resolveStaggerHits(hits, mossGolem, golemInterval, crossing.appliedMs);
-    expect(followUp).toEqual({ appliedMs: 0, maxedFlinch: false });
-    // A weak batch that stays under the cap never flags.
-    const weak = rpg.resolveStaggerHits([{ amount: 13, multiplier: 1 }], mossGolem, golemInterval, 0);
-    expect(weak.maxedFlinch).toBe(false);
-  });
-
-  test('SKILL_STAGGER_MULTIPLIER: one full-strength ultimate maxes the flinch on both demo enemies', () => {
-    const ultimate = [{ amount: 9999, multiplier: SKILL_STAGGER_MULTIPLIER }];
-    expect(rpg.resolveStaggerHits(ultimate, mossGolem, golemInterval, 0).maxedFlinch).toBe(true);
-    expect(rpg.resolveStaggerHits(ultimate, swampFrog, frogInterval, 0).maxedFlinch).toBe(true);
-    // Without the bonus the same hit only nudges the Golem (documents why the bonus exists).
-    const plain = [{ amount: 9999, multiplier: 1 }];
-    expect(rpg.resolveStaggerHits(plain, mossGolem, golemInterval, 0).maxedFlinch).toBe(false);
-  });
-});
-
-// ============================================================================
 // HP Threshold
 // ============================================================================
 
@@ -604,9 +470,7 @@ describe('Item Cooldown', () => {
     const zeroSpdParty = [{ ...mockCharacter, stats: { pow: 0, vit: 0, spd: 0 } }];
     // +10 effective SPD: floor(10000 / 1.1) = 9090
     expect(rpg.calculateItemCooldownInMs(zeroSpdParty, 10)).toBe(9090);
-    expect(rpg.calculateItemCooldownInMs(zeroSpdParty, 10)).toBeLessThan(
-      rpg.calculateItemCooldownInMs(zeroSpdParty),
-    );
+    expect(rpg.calculateItemCooldownInMs(zeroSpdParty, 10)).toBeLessThan(rpg.calculateItemCooldownInMs(zeroSpdParty));
   });
 });
 

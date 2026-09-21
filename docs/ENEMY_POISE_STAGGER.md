@@ -3,6 +3,11 @@
 Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = shipped and verified in code,
 `[ ]` = missing. Each section ends with implementation notes so this doubles as the build plan.
 
+> **Phase 1 (done)** — groundwork only, no behaviour change: the Flinch math is extracted into
+> `src/lib/flinch-system.ts` with its own test + bench, the shared `weighHitsByAttacker` helper is in
+> place (ready for the poise layer to call with its own multiplier), and the flinch-cap callout now
+> reads "Flinched!". 898 tests pass. **Phase 2** is the poise pool, Break and UI — §B–§G below.
+
 ## 1. Summary
 
 What ships today is a **Flinch** mechanic: every hit on an enemy nudges its next attack back a little
@@ -65,18 +70,19 @@ vocabulary matches this doc. Every hit does both: it flinches the timer *and* de
       `src/components/battle/battle-top-bar.tsx:58–70`.
 - [x] Hero passives scale the push: `staggerPushMultiplier` (warrior/rogue, 1.5 → 2.0) —
       `src/constants/skills/warrior.ts:138`, `rogue.ts:138`, folded in `src/lib/skill-system.ts:408`.
-- [x] Tests — `src/lib/rpg-calculations.test.ts:405–528`. Benches — `rpg-calculations.bench.ts:160–170`.
-- [ ] **Extract** the Flinch math into `src/lib/flinch-system.ts` (see §K): move `calculateStaggerPushMs`,
-      `clampStaggerToCycleBudget`, `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` verbatim from
-      `rpg-calculations.ts:399–487`. Identifiers unchanged. No re-export shim.
-- [ ] Add the shared helper `weighHitsByAttacker(hits, party, skillMultiplier, source)` → `StaggerHit[]` to
-      `flinch-system.ts` — the hit → `{ amount, multiplier }` mapping (attacker `staggerPushMultiplier`
-      passive × skill multiplier) that lives inline in the hook today (`use-enemy-attack-timers.ts:263–271`).
-      Both Flinch and Poise call it.
-- [ ] Repoint the three importers: `use-enemy-attack-timers.ts`, `rpg-calculations.test.ts`,
+- [x] **Extracted** into `src/lib/flinch-system.ts`: `calculateStaggerPushMs`, `clampStaggerToCycleBudget`,
+      `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` moved verbatim out of `rpg-calculations.ts`.
+      Identifiers unchanged, no re-export shim; the four `STAGGER_*` constant imports moved with them.
+- [x] Shared helper `weighHitsByAttacker(hits, party, skillMultiplier, source)` → `StaggerHit[]` in
+      `flinch-system.ts:124` — the hit → `{ amount, multiplier }` mapping (attacker `staggerPushMultiplier`
+      passive × skill multiplier) that used to sit inline in the hook. Only `source === 'skill'` applies
+      `skillMultiplier`, so Poise can pass `POISE_SKILL_MULTIPLIER` to the same helper.
+- [x] Importers repointed: `use-enemy-attack-timers.ts` (now calls `weighHitsByAttacker` instead of its
+      inline `.map`, dropping its `getCharacterPassiveModifiers` import), `rpg-calculations.test.ts`,
       `rpg-calculations.bench.ts`.
-- [ ] Move the `describe('Stagger Calculations')` block to `flinch-system.test.ts` and the two stagger
-      benches to `flinch-system.bench.ts` (assertions unchanged; add `resolveStaggerHits` + `weighHitsByAttacker`).
+- [x] Tests moved to `src/lib/flinch-system.test.ts` (14 moved, assertions unchanged, + 6 new for
+      `weighHitsByAttacker`); benches moved to `src/lib/flinch-system.bench.ts` (+ `resolveStaggerHits`
+      1-hit/4-hit and `weighHitsByAttacker`, now on shared `BENCH_OPTIONS`).
 - [ ] While an enemy is broken there is no pending attack, so the push is a natural no-op — add an early
       `continue` for staggered ids in the stagger effect of `use-enemy-attack-timers.ts` so it doesn't touch a
       release timestamp that no longer exists. Flinch resumes unchanged on recovery.
@@ -230,12 +236,12 @@ same shape with a different reason.
       `isEnemyStaggered(enemyPoise[enemy.id])` (`src/styles/animations.css`), with a
       `src/styles/reduced-motion.css:27–30` fallback; cleared on recovery (state-driven, so it un-tints when
       the tick zeroes the counter).
-- [ ] **Callouts** (decided, see §J): the shipped flinch-cap pop (`enemy-display.tsx:57–63`, `:133–140`,
-      driven by `lastMaxFlinchAtom`) changes its text from "Stagger!" to **"Flinched!"** — text only,
-      same trigger, same animation. Break gets its **own** pop reading **"Staggered!"**, driven by
-      `lastPoiseBreakAtom`, reusing the same `EnemySprite` pattern and the `stagger-callout` keyframes
-      (`animations.css:448`) with a `stagger-callout--break` modifier (bigger, held for
-      `POISE_BREAK_CALLOUT_DURATION_MS`) so it clearly outranks the flinch one.
+- [x] **Flinch callout renamed** (decided, see §J): the shipped flinch-cap pop in `enemy-display.tsx`
+      (driven by `lastMaxFlinchAtom`) now reads **"Flinched!"** — text only, same trigger, same animation.
+- [ ] **Break callout**: its **own** pop reading **"Staggered!"**, driven by `lastPoiseBreakAtom`, reusing
+      the same `EnemySprite` pattern and the `stagger-callout` keyframes (`animations.css:448`) with a
+      `stagger-callout--break` modifier (bigger, held for `POISE_BREAK_CALLOUT_DURATION_MS`) so it clearly
+      outranks the flinch one.
 - [ ] **Break SFX** through `SoundService` — new `SoundNames` entry in `src/constants/audio.ts`, played from
       the `EnemySprite` break effect.
 - [ ] **Recovery cue** (subtle: sprite un-tints, ring returns to `danger`, optional short SFX).
@@ -248,10 +254,11 @@ subscribing it to `enemyPoiseAtom` adds no new render cadence.
 
 ### H. Tests & benches
 
-- [ ] `src/lib/flinch-system.test.ts` — the moved `describe('Stagger Calculations')` block passes unchanged;
-      add `weighHitsByAttacker` (passive × skill multiplier, no attacker → 1).
-- [ ] `src/lib/flinch-system.bench.ts` — moved `calculateStaggerPushMs` / `clampStaggerToCycleBudget` benches;
-      add `resolveStaggerHits` (1 hit / 4-hit batch) and `weighHitsByAttacker`. `BENCH_OPTIONS`.
+- [x] `src/lib/flinch-system.test.ts` — the moved `describe('Stagger Calculations')` block passes unchanged;
+      `weighHitsByAttacker` covered (no passive → 1x, unknown/missing attacker → 1x, passive scales,
+      `skillMultiplier` only on `source: 'skill'`, per-hit attackers keep order, empty batch).
+- [x] `src/lib/flinch-system.bench.ts` — moved `calculateStaggerPushMs` / `clampStaggerToCycleBudget` benches
+      plus `resolveStaggerHits` (1 hit / 4-hit batch) and `weighHitsByAttacker`, on `BENCH_OPTIONS`.
 - [ ] `src/lib/poise-system.test.ts`: `calculateMaxPoise` scales with `maxHp`; `poise` multiplier direction
       (0.5 halves, 2 doubles); a batch resolves in order and breaks exactly once; no accumulation while
       staggered or immune (same reference back); escalation sequence 100% → 125% → 150% → 150% (cap holds
@@ -321,9 +328,9 @@ Pure logic only in `src/lib/`, JSDoc on every export, one `*.test.ts` and one `*
 
 | File | Status | Contents |
 |---|---|---|
-| `src/lib/flinch-system.ts` | [ ] extract | `calculateStaggerPushMs`, `clampStaggerToCycleBudget`, `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` (moved verbatim from `rpg-calculations.ts:399–487`) + new `weighHitsByAttacker` |
-| `src/lib/flinch-system.test.ts` | [ ] move | `describe('Stagger Calculations')` from `rpg-calculations.test.ts:405–528` + `weighHitsByAttacker` |
-| `src/lib/flinch-system.bench.ts` | [ ] move | stagger benches from `rpg-calculations.bench.ts:160–170` + `resolveStaggerHits`, `weighHitsByAttacker` |
+| `src/lib/flinch-system.ts` | [x] done | `calculateStaggerPushMs`, `clampStaggerToCycleBudget`, `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` (moved verbatim) + `AttackerHit`, `weighHitsByAttacker` |
+| `src/lib/flinch-system.test.ts` | [x] done | moved `describe('Stagger Calculations')` (14 tests) + `describe('weighHitsByAttacker')` (6 tests) |
+| `src/lib/flinch-system.bench.ts` | [x] done | moved stagger benches + `resolveStaggerHits` (1-hit / 4-hit) + `weighHitsByAttacker` (1-hit match / 4-hit skill), on `BENCH_OPTIONS` |
 | `src/lib/poise-system.ts` | [ ] new | `EnemyPoiseState`, `createEnemyPoiseState`, `calculateMaxPoise`, `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `isEnemyStaggered`, `isPoiseImmune`, `applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableHits` |
 | `src/lib/poise-system.test.ts` | [ ] new | see §H |
 | `src/lib/poise-system.bench.ts` | [ ] new | see §H |

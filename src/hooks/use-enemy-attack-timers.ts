@@ -12,8 +12,8 @@ import {
   lastDamageAtom,
   standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
-import { calculateEnemyAttackInterval, calculateEnemyDamage, resolveStaggerHits } from '~/lib/rpg-calculations';
-import { getCharacterPassiveModifiers } from '~/lib/skill-system';
+import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
+import { resolveStaggerHits, weighHitsByAttacker } from '~/lib/flinch-system';
 import { resolveCountdownRingAnchor } from '~/lib/battle-system';
 import { SKILL_STAGGER_MULTIPLIER } from '~/constants/battle';
 
@@ -79,7 +79,7 @@ function timerListsMatch(next: EnemyAttackTimer[], prev: EnemyAttackTimer[]): bo
  * self-rescheduling `setTimeout` anchored to an absolute release timestamp (`releaseAtRef`)
  * rather than a fixed `setInterval`, which lets a hit **stagger** it: hitting an enemy pushes its
  * next attack back a little (VIT-resisted, capped per cycle so it can never be stunlocked — see
- * {@link calculateStaggerPushMs} / {@link clampStaggerToCycleBudget}). The stagger is derived
+ * {@link resolveStaggerHits} in `~/lib/flinch-system`). The stagger is derived
  * from the shared {@link lastDamageAtom} channel, so it needs no extra battle state.
  *
  * Performance: no central loop and no polling. Still one timer per living enemy (<= 4); a stagger
@@ -260,15 +260,9 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     const rawHits = lastDamage.hits ?? [{ amount: lastDamage.amount, characterId: lastDamage.characterId }];
     // Attacker passives and the skill bonus scale each hit's raw push; both are applied BEFORE
     // the per-cycle clamp (inside resolveStaggerHits), so the anti-stunlock cap stays authoritative.
-    const skillMultiplier = lastDamage.source === 'skill' ? SKILL_STAGGER_MULTIPLIER : 1;
-    // Read on demand: subscribing to `partyAtom` here would re-render the whole battle screen on
-    // every cooldown tick, and the stagger only needs the attacker's passives at hit time.
-    const party = store.get(partyAtom);
-    const hits = rawHits.map((hit) => {
-      const attacker = hit.characterId ? party.find((c) => c.id === hit.characterId) : undefined;
-      const passiveMultiplier = attacker ? getCharacterPassiveModifiers(attacker).staggerPushMultiplier : 1;
-      return { amount: hit.amount, multiplier: passiveMultiplier * skillMultiplier };
-    });
+    // Read the party on demand: subscribing to `partyAtom` here would re-render the whole battle
+    // screen on every cooldown tick, and the stagger only needs the attacker's passives at hit time.
+    const hits = weighHitsByAttacker(rawHits, store.get(partyAtom), SKILL_STAGGER_MULTIPLIER, lastDamage.source);
 
     for (const id of ids) {
       // Skip enemies still observing (not attacking yet) or without a live attack cycle.

@@ -18,8 +18,6 @@ import {
   calculateCharacterCooldown,
   calculatePartyCollectiveSpd,
   calculateItemCooldownInMs,
-  calculateStaggerPushMs,
-  clampStaggerToCycleBudget,
   getHpThreshold,
   createStats,
   validateStats,
@@ -154,18 +152,6 @@ describe('Speed Calculations', () => {
 
   bench('calculateCharacterCooldown', () => {
     calculateCharacterCooldown(mockCharacter);
-  });
-});
-
-// ── Stagger Calculations ──
-
-describe('Stagger Calculations', () => {
-  bench('calculateStaggerPushMs', () => {
-    calculateStaggerPushMs(50, 300, 50, 4000);
-  });
-
-  bench('clampStaggerToCycleBudget', () => {
-    clampStaggerToCycleBudget(200, 4000, 100);
   });
 });
 
