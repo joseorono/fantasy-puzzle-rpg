@@ -2,18 +2,18 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
 import {
   enemiesAtom,
-  enemyPoiseStateAtom,
+  enemyPoiseViewAtom,
   selectedEnemyIdAtom,
   selectEnemyAtom,
   lastDamageAtom,
   lastMaxFlinchAtom,
   lastPoiseBreakAtom,
   isTrainingBattleAtom,
+  standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { POISE_BREAK_CALLOUT_DURATION_MS } from '~/constants/battle';
 import { POISE_BREAK_SOUND } from '~/constants/audio';
-import { isEnemyStaggered } from '~/lib/poise-system';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
@@ -36,9 +36,11 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
   const lastDamage = useAtomValue(lastDamageAtom);
   const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
   const lastPoiseBreak = useAtomValue(lastPoiseBreakAtom);
-  // This enemy's poise only; the per-enemy atom stays silent while other enemies' pools move.
-  const poise = useAtomValue(enemyPoiseStateAtom(enemy.id));
-  const isStaggered = poise ? isEnemyStaggered(poise) : false;
+  // This enemy's poise only, as integer percents: the cached view atom stays silent while other
+  // enemies' pools move and while regen nudges this one by less than a percent.
+  const poise = useAtomValue(enemyPoiseViewAtom(enemy.id));
+  const isStaggered = poise?.phase === 'broken';
+  const isStandby = useAtomValue(standbyEnemyIdsAtom).includes(enemy.id);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
@@ -229,8 +231,10 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
         />
       )}
 
-      {/* Poise bar — posture left before the next Break */}
-      {poise && !isDead && <EnemyPoiseBar poise={poise} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />}
+      {/* Poise bar — posture left before the next Break, then the Break and recovery windows */}
+      {poise && !isDead && (
+        <EnemyPoiseBar view={poise} isStandby={isStandby} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />
+      )}
     </div>
   );
 }

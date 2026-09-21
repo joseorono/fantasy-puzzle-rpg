@@ -250,3 +250,67 @@ export function resolveStaggeredEnemySignature(record: Record<string, EnemyPoise
   }
   return signature;
 }
+
+/** The three player-facing phases of a poise pool, in the order a Break walks through them. */
+export type EnemyPoisePhase = 'ready' | 'broken' | 'immune';
+
+/**
+ * What the enemy poise bar and the training readout draw. Every number is an integer percent, so
+ * a subscriber only re-renders when something *visible* moved — with regen on, the raw state
+ * changes on every tick for as long as a pool is dented.
+ */
+export interface EnemyPoiseView {
+  phase: EnemyPoisePhase;
+  /** Remaining poise, 0–100. Reads 100 while Broken or immune, since a Break refills the pool. */
+  fillPercent: number;
+  /** Remaining stagger window (Broken) or immunity window (immune), 0–100; 0 while ready. */
+  windowPercent: number;
+  /** Breaks suffered this battle. */
+  breakCount: number;
+  /** Where the original max sits on the escalated bar, 0–100, or null until the pool has escalated. */
+  originalMaxPercent: number | null;
+}
+
+function toPercent(value: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((100 * value) / max)));
+}
+
+/**
+ * Projects a poise state onto the numbers the bar draws (see {@link EnemyPoiseView}).
+ * @param state The enemy's poise state
+ * @returns The view; a fresh object every call — cache it with {@link poiseViewsMatch}
+ */
+export function resolveEnemyPoiseView(state: EnemyPoiseState): EnemyPoiseView {
+  const phase: EnemyPoisePhase = isEnemyStaggered(state) ? 'broken' : isPoiseImmune(state) ? 'immune' : 'ready';
+  const windowPercent =
+    phase === 'broken'
+      ? toPercent(state.staggerRemainingMs, POISE_BREAK_STAGGER_DURATION_MS)
+      : phase === 'immune'
+        ? toPercent(state.immuneRemainingMs, POISE_BREAK_IMMUNITY_MS)
+        : 0;
+  return {
+    phase,
+    fillPercent: toPercent(state.current, state.max),
+    windowPercent,
+    breakCount: state.breakCount,
+    originalMaxPercent: state.max > state.originalMax ? toPercent(state.originalMax, state.max) : null,
+  };
+}
+
+/**
+ * Field-by-field equality for two views, so a derived atom can hand back its previous value and
+ * stay silent when a tick moved the state but not the picture.
+ * @param a One view
+ * @param b The other
+ * @returns True when nothing drawn would differ
+ */
+export function poiseViewsMatch(a: EnemyPoiseView, b: EnemyPoiseView): boolean {
+  return (
+    a.phase === b.phase &&
+    a.fillPercent === b.fillPercent &&
+    a.windowPercent === b.windowPercent &&
+    a.breakCount === b.breakCount &&
+    a.originalMaxPercent === b.originalMaxPercent
+  );
+}

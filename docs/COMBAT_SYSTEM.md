@@ -72,8 +72,38 @@ Builds **on top of** Flinch — the same hit does both. Full design and checklis
 - **Break**: when the pool empties the enemy is **Staggered** for `POISE_BREAK_STAGGER_DURATION_MS` (2.5 s): its pending attack is **cancelled** (the attack-timer hook drops the cycle), it takes `× (1 + POISE_BREAK_DAMAGE_BONUS)` (+50%) HP damage — read from the pre-hit state, so the breaking hit itself gets no bonus — and the countdown ring turns neutral with a `ShieldOff` icon and counts the window down. Recovery opens a fresh full attack cycle.
 - **Anti-stunlock**: after recovery the enemy is **immune to poise damage** for `POISE_BREAK_IMMUNITY_MS` (2 s) — HP damage and Flinch still land — and its max poise escalates by `POISE_MAX_GROWTH_PER_BREAK` (25%) of the original per Break, hard-capped at `POISE_MAX_GROWTH_CAP` (150%). These caps are independent of the Flinch cap: `MAX_STAGGER_FRACTION_PER_CYCLE` bounds Flinch per attack cycle, immunity + escalation bound Breaks per battle.
 - **Rules**: no poise damage on a killing blow or on a standby (observing) target; Breaks work in Training mode (the windows are battle-state counters ticked by `battleTickAtom`, not hook timers).
-- **Visual Feedback**: thin amber poise bar under the enemy HP bar (`enemy-poise-bar.tsx`, empties for the Break window, tick mark at the original max once escalated), a larger "Staggered!" callout (`POISE_BREAK_CALLOUT_DURATION_MS`), a washed-out swaying sprite (`.enemy-staggered`), the neutral ring, and a Break SFX (`POISE_BREAK_SOUND`).
+- **Visual Feedback**: a thin poise bar under the enemy HP bar (`enemy-poise-bar.tsx`) with three phases — amber fill = poise left; on a Break a pale fill *drains* over the vulnerable window; on recovery a muted fill *rebuilds* over the immunity window, so ignored hits read as "not yet" — dimmed while the enemy is on standby, with a tick mark at the original max once escalated. Plus a larger "Staggered!" callout (`POISE_BREAK_CALLOUT_DURATION_MS`), a washed-out swaying sprite (`.enemy-staggered`), the neutral ring, and a Break SFX (`POISE_BREAK_SOUND`).
 - **Implementation**: Pure math in `src/lib/poise-system.ts` (`applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableHits`, `resolveEscalatedMaxPoise`…), state in `BattleState.enemyPoise` / `lastPoiseBreak`, applied by `damageEnemyAtom` / `activateSkillAtom` and ticked by `battleTickAtom` (`src/stores/battle-atoms.ts`), attack cancel in `src/hooks/use-enemy-attack-timers.ts` via `staggeredEnemySignatureAtom`, tunables in `src/constants/battle.ts`.
+
+### Line-clear items (Row Clear / Column Clear)
+Two battle consumables wipe a whole line of the board and **pay out like a match**. Full design and
+checklist: [LINE_CLEAR_ITEMS.md](./LINE_CLEAR_ITEMS.md).
+
+- **Targeting**: left-clicking the item **arms** it (`armedLineClearAtom`); the board then highlights the
+  row/column under the cursor and the next board click fires it. **Right-click fires immediately** at the
+  line `pickBestLine` scores highest (bombs `LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT` = 3 > a living hero's colour
+  = 1 > gray `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT` = 0.5 > a dead hero's colour = 0; ties broken at random).
+  Escape, a pause, a win/loss, or clicking the slot again disarms. On touch, a tap fires on that line.
+- **Deferred resolution**: firing only files a request (`pendingLineClearAtom`) naming the *line*, never the
+  orb ids. The board resolves it once it has settled, so a clear fired mid-cascade wipes whatever ended up
+  there. One request at a time — `fireLineClearAtom` refuses a second, so one cooldown buys one clear.
+- **Payout**: the cleared orbs (plus anything taken by a bomb blast — bombs in the line detonate and
+  chain, via `expandBombExplosions`) are grouped by colour with `groupOrbsByColor`, and each group is
+  resolved by the same `resolveMatchGroups` a match uses. So every living hero acts off **their own
+  colour's count**: damage (or a heal, for the healer), cooldown relief, and gray charges Guard. Damage
+  runs through `damageEnemyAtom`, so flinch, poise and the preemptive bonus all apply. Amounts are scaled
+  by `LINE_CLEAR_DAMAGE_MULTIPLIER` (1.0) — the power knob, since a 4-colour line pays out like four
+  matches at once.
+- **Cascades**: the clear is the opening move of a fresh chain (cascade level 0, `combo: 1`, so it can't
+  inflate `maxCombo`), increments `turn`, and the refill cascades normally from there.
+- **Cost**: Row Clear 300 coins (6 orbs), Column Clear 400 (8 orbs — `BOARD_ROWS` is 8 to `BOARD_COLS`' 6,
+  so a column is worth ~33% more). Both share the SPD-scaled item cooldown with every other battle item
+  and both count as an item used against the victory rating.
+- **Implementation**: pure helpers in `src/lib/line-clear.ts` and `src/lib/match-resolution.ts` (each with
+  its own test), state in `armedLineClearAtom` / `pendingLineClearAtom` / `lastItemFiredAtom` and
+  `fireLineClearAtom` (`src/stores/battle-atoms.ts` — deliberately outside `BattleState`, so aiming never
+  touches the battle or the save), resolution in `match3-board.tsx`, arming and auto-aim in
+  `battle-item-bar.tsx`, tunables in `src/constants/battle.ts`.
 
 ### Win/Lose Conditions
 

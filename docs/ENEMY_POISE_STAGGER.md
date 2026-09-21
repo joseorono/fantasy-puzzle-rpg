@@ -10,9 +10,14 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 > **Phase 2 (done)** — the poise pool, Break and UI (§B–§I): `src/lib/poise-system.ts` + test + bench,
 > `BattleState.enemyPoise` / `lastPoiseBreak`, poise applied in `damageEnemyAtom` / `activateSkillAtom`
 > and ticked by `battleTickAtom`, the attack cancel in `use-enemy-attack-timers.ts`, the poise bar,
-> "Staggered!" callout, sprite tint, neutral ring and Break SFX, plus the sibling docs. 944 tests pass
-> across 35 files. Still open: the two pre-existing bugs in §J and the stretch hook test in §H (no React
-> test environment is installed). **Next:** playtest the §4 defaults.
+> "Staggered!" callout, sprite tint, neutral ring and Break SFX, plus the sibling docs.
+>
+> **Phase 3 (done)** — usability polish, §M: the poise bar now tells the whole Break story in three phases
+> (drain over the vulnerable window, rebuild over immunity), is dimmed on standby and explains itself on
+> hover; sprites stop re-rendering on regen ticks (`enemyPoiseViewAtom`); and the §J pause bug is fixed
+> for every attack timer. 990 tests pass across 37 files. Still open: the skill-kill `pendingVictory` note
+> in §J, the stretch hook test in §H (no React test environment), and the balance / feel calls listed at
+> the end of §M — chiefly that the **Moss Golem may never Break** at `poise` 0.5. **Next:** playtest.
 
 ## 1. Summary
 
@@ -318,12 +323,13 @@ subscribing it to `enemyPoiseAtom` adds no new render cadence.
 
 Bugs to be aware of:
 
-- [ ] **Pause doesn't shift the attack release timestamp.** `releaseAtRef` is absolute `performance.now()`;
-      the pause branch only clears timeouts (`use-enemy-attack-timers.ts:153–158`), so on resume
-      `delay = max(0, release − now)` (`:177`) can be 0 and the enemy fires instantly while the CSS ring
-      was frozen. **Poise does not inherit this** — its windows are tick-owned counters and the tick loop
-      stops while paused. The bug remains open for the attack timer itself; fix once (shift all timestamps by
-      the paused duration) or store *remaining* ms on pause.
+- [x] **Pause doesn't shift the attack release timestamp** — fixed in Phase 3 (§M). `releaseAtRef` is
+      absolute `performance.now()`, and the pause branch only cleared timeouts, so on resume
+      `delay = max(0, release − now)` could be 0 and the enemy fired instantly while the CSS ring was
+      frozen. The hook now records `pausedAtRef` when a pause starts and, on resume, shifts every
+      `releaseAtRef` / `cycleStartRef` entry forward by the paused duration before re-arming, so each timer
+      resumes exactly where its frozen ring left off (standby waits included). Poise windows never had the
+      bug — they are tick-owned counters and the tick loop stops while paused.
 - [ ] **Skill kills bypass `pendingVictory`** (`activateSkillAtom` sets `gameStatus: 'won'` at
       `battle-atoms.ts:700/717`, `pendingVictory: false` at `:759`) while match kills defer. Poise is
       skipped on a killing blow, and the hook bails on `gameStatus !== 'playing'`, so no timer can be re-armed
@@ -394,6 +400,43 @@ one hit  ──►  lastDamage event (unchanged: amount, hits[], characterId, so
   poise windows are `BattleState` counters ticked by `battleTickAtom` (pause-safe, training-safe, testable).
 - **One event, two consumers**: nothing new is emitted for Flinch. Poise adds exactly one new event
   (`lastPoiseBreak`) and one derived string (`staggeredEnemySignatureAtom`) for the hook to react to.
+
+### M. Phase 3 — usability polish
+
+A read-through of the shipped feature from the player's seat, looking for moments where the screen
+doesn't explain what just happened. Fixed items are `[x]`; the rest are judgement calls left for playtesting.
+
+- [x] **Immunity was invisible.** After recovery the bar sat full and amber while hits were ignored for 2 s —
+      it read as "my hits stopped working". The bar now has three phases (`EnemyPoiseView.phase`):
+      **ready** (amber fill = poise left), **broken** (a pale fill drains over the vulnerable window), and
+      **immune** (a muted stone fill *rebuilds* over the immunity window). Shatter → drain → rebuild → ready
+      tells the whole story under the target. Colours in `POISE_BAR_CLASSES`.
+- [x] **The vulnerable window had no timer near the enemy.** Only the top-bar ring counted it down, far from
+      where the player is looking. The broken-phase drain above is that timer, right under the sprite.
+- [x] **Standby enemies showed a full bar that could not be dented.** The bar is dimmed
+      (`POISE_BAR_CLASSES.standby`) while the enemy is in `standbyEnemyIds`, matching the gold eye ring.
+- [x] **No label, no explanation.** There is no vertical room for a "POISE" caption under the enemy panel, so
+      the bar carries a phase-aware `title` ("Poise 72% — empty it to stagger this enemy", "Staggered! Bonus
+      damage while the bar drains", "Recovering — poise damage is ignored while the bar rebuilds") plus the
+      `meter` ARIA role. Training readout shows `IMMUNE` alongside `BROKEN`.
+- [x] **Per-tick re-renders with regen on.** Every dented pool changes state 10×/s, which re-rendered each
+      `EnemySprite` on every tick. `resolveEnemyPoiseView` projects the state onto integer percents and
+      `enemyPoiseViewAtom(id)` caches the last view (`poiseViewsMatch`), so the sprite only re-renders when a
+      percent actually flips — roughly once per second at 1%/s regen, and per tick only inside the two
+      windows where the bar is visibly moving.
+- [x] **Pause bug** (§J) — fixed as described there. Affected every attack timer, not just poise.
+- [ ] **Balance to playtest — the Moss Golem may never Break.** Pool = 400 × 0.4 = 160, at `poise` 0.5 that is
+      **320 damage** to Break, i.e. 80% of its 400 HP; in practice it dies first, so the feature is
+      invisible on the one enemy where a cancelled attack would matter most. `poise` ≈ 0.75 would put the
+      first Break around 53% HP. The Swamp Frog (27.2 pool ÷ 1.6 = 17 damage, 25% of its HP) Breaks about
+      once per fight, twice with escalation.
+- [ ] **Auto-target on Break?** Switching the selected enemy to the one that just Broke would push the player
+      to pile onto the vulnerable window, but it also yanks the target away mid-plan. Left off; worth an
+      A/B in the Training Grounds once there are multi-enemy fights that Break.
+- [ ] **Bigger Break impact.** The Break lands with the callout, a clang and the sprite tint; a one-off
+      `screen-shake` global animation or a stronger recoil on the breaking hit would sell the cancel harder.
+      Cheap to add via `useGlobalAnimation` — held back until the balance pass says Breaks are frequent
+      enough that the extra motion isn't fatiguing.
 
 ## 4. Proposed constants
 

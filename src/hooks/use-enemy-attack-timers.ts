@@ -145,6 +145,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const processedDamageRef = useRef<typeof lastDamage>(null);
   // Last list handed to the caller, reused whenever the new one is field-for-field identical.
   const lastTimersRef = useRef<EnemyAttackTimer[]>([]);
+  // When the current pause began, so resuming can shift every absolute timestamp forward by the
+  // time spent paused. Without this the release times keep ageing while the rings stand frozen,
+  // and an enemy paused near release fires the instant the battle resumes.
+  const pausedAtRef = useRef<number | null>(null);
 
   const livingEnemies = enemies.filter((enemy) => enemy.currentHp > 0);
 
@@ -165,6 +169,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     ringDurationRef.current = new Map();
     ringElapsedRef.current = new Map();
     staggerPulseRef.current = new Map();
+    pausedAtRef.current = null;
     setVersion({});
   }, [enemyStandbyMs]);
 
@@ -174,7 +179,21 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       timersRef.current.clear();
     }
 
-    if (gameStatus !== 'playing' || isBattlePaused === true || isTraining) return clearTimers;
+    if (gameStatus !== 'playing' || isBattlePaused === true || isTraining) {
+      // Remember when the pause started (only the first time through — a re-run while still
+      // paused must not move the mark).
+      if (isBattlePaused === true && pausedAtRef.current === null) pausedAtRef.current = performance.now();
+      return clearTimers;
+    }
+
+    // Resuming: push every release and cycle start forward by the time spent paused, so each
+    // timer picks up exactly where its frozen ring left off.
+    if (pausedAtRef.current !== null) {
+      const pausedMs = performance.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+      for (const [id, releaseAt] of releaseAtRef.current) releaseAtRef.current.set(id, releaseAt + pausedMs);
+      for (const [id, cycleStart] of cycleStartRef.current) cycleStartRef.current.set(id, cycleStart + pausedMs);
+    }
 
     // Opens a fresh attack cycle: a full ring over the interval, empty stagger budget, and the
     // scheduled shot (which self-reschedules and re-defers when a stagger extends the release).

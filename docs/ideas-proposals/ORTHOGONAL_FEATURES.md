@@ -170,7 +170,8 @@ convert 3 orbs to a chosen color, Warrior = spawn a bomb, Healer = convert orbs 
 
 - *Orthogonal axis:* turns each class into a distinct **board-manipulation identity**.
 - *Differential:* class choice reshapes *how you make matches*, not just whose damage lands.
-- *Touches:* a light skill-style system, board atoms (`clearRow`/`clearColumn`/`createBombOrb` already exist), UI.
+- *Touches:* a light skill-style system, board helpers (`createBombOrb`, and the line-clear pipeline from
+  [LINE_CLEAR_ITEMS.md](../LINE_CLEAR_ITEMS.md) — `resolveLineClearOrbs` / `fireLineClearAtom` — once it ships), UI.
 
 ### 11. Threat / taunt targeting  🟡 · perf: **Low**
 

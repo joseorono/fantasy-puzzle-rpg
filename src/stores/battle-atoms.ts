@@ -19,11 +19,14 @@ import { weighHitsByAttacker } from '~/lib/flinch-system';
 import {
   applyPoiseHits,
   isEnemyStaggered,
+  poiseViewsMatch,
+  resolveEnemyPoiseView,
   resolveStaggeredEnemySignature,
   resolveVulnerableDamage,
   resolveVulnerableHits,
   tickEnemyPoise,
   type EnemyPoiseState,
+  type EnemyPoiseView,
 } from '~/lib/poise-system';
 import {
   calculateGuardDecayResistance,
@@ -500,6 +503,26 @@ export function enemyPoiseStateAtom(enemyId: string): Atom<EnemyPoiseState | und
     enemyPoiseStateAtoms.set(enemyId, poiseAtom);
   }
   return poiseAtom;
+}
+
+// What the poise bar draws for one enemy, in integer percents, cached by id. With regen on, a
+// dented pool's raw state moves on every tick; this hands back the previous view whenever nothing
+// visible changed, so the sprite sits out those ticks and only re-renders when a percent flips.
+const enemyPoiseViewAtoms = new Map<string, Atom<EnemyPoiseView | undefined>>();
+export function enemyPoiseViewAtom(enemyId: string): Atom<EnemyPoiseView | undefined> {
+  let viewAtom = enemyPoiseViewAtoms.get(enemyId);
+  if (!viewAtom) {
+    let lastView: EnemyPoiseView | undefined;
+    viewAtom = atom((get) => {
+      const state = get(enemyPoiseStateAtom(enemyId));
+      if (!state) return (lastView = undefined);
+      const view = resolveEnemyPoiseView(state);
+      if (lastView && poiseViewsMatch(lastView, view)) return lastView;
+      return (lastView = view);
+    });
+    enemyPoiseViewAtoms.set(enemyId, viewAtom);
+  }
+  return viewAtom;
 }
 
 // Flags an enemy reaching its per-cycle stagger cap, so the "Flinched!" callout can replay.

@@ -16,6 +16,7 @@ import {
   damageEnemyAtom,
   enemiesAtom,
   enemyPoiseAtom,
+  enemyPoiseViewAtom,
   ensureFreshBattleAtom,
   gameStatusAtom,
   lastPoiseBreakAtom,
@@ -688,6 +689,38 @@ describe('enemy poise', () => {
     expect(store.get(lastPoiseBreakAtom)).toBeNull();
     expect(store.get(staggeredEnemySignatureAtom)).toBe('');
     for (const poise of Object.values(store.get(enemyPoiseAtom))) expect(poise.breakCount).toBe(0);
+  });
+
+  it('enemyPoiseViewAtom keeps its identity across a regen tick that moves nothing visible', () => {
+    const store = createArmedStore([0, 0, 0, 0]);
+    const id = store.get(battleStateAtom).selectedEnemyId;
+    patchSelectedPoise(store, { current: selectedPoise(store).max * 0.5 });
+    const viewAtom = enemyPoiseViewAtom(id);
+    const viewBefore = store.get(viewAtom);
+    const stateBefore = selectedPoise(store);
+    const listener = vi.fn();
+    store.sub(viewAtom, listener);
+
+    // One 100 ms tick at 1%/s regen moves the pool by 0.1% — the raw state changes, the picture doesn't.
+    store.set(battleTickAtom, BATTLE_TICK_DELTA_SECONDS);
+
+    expect(selectedPoise(store)).not.toBe(stateBefore);
+    expect(store.get(viewAtom)).toBe(viewBefore);
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('enemyPoiseViewAtom flips to broken on a Break and reports the window as a percent', () => {
+    const store = createArmedStore();
+    const id = store.get(battleStateAtom).selectedEnemyId;
+    const viewAtom = enemyPoiseViewAtom(id);
+    expect(store.get(viewAtom)?.phase).toBe('ready');
+
+    store.set(damageEnemyAtom, breakingAmount(store));
+
+    const view = store.get(viewAtom);
+    expect(view?.phase).toBe('broken');
+    expect(view?.windowPercent).toBe(100);
+    expect(view?.breakCount).toBe(1);
   });
 });
 
