@@ -7,8 +7,8 @@ import {
   resolveStaggeredEnemySignature,
   resolveVulnerableHits,
   tickEnemyPoise,
-  type EnemyPoiseState,
 } from './poise-system';
+import type { EnemyPoiseState } from '~/types/battle';
 import type { StaggerHit } from './flinch-system';
 import { BENCH_OPTIONS } from './bench-options';
 

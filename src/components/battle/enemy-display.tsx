@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
 import {
   enemiesAtom,
-  enemyPoiseViewAtom,
+  enemyPoiseSummaryAtom,
   selectedEnemyIdAtom,
   selectEnemyAtom,
   lastDamageAtom,
@@ -36,9 +36,9 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
   const lastDamage = useAtomValue(lastDamageAtom);
   const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
   const lastPoiseBreak = useAtomValue(lastPoiseBreakAtom);
-  // This enemy's poise only, as integer percents: the cached view atom stays silent while other
+  // This enemy's poise only, as integer percents: the cached summary atom stays silent while other
   // enemies' pools move and while regen nudges this one by less than a percent.
-  const poise = useAtomValue(enemyPoiseViewAtom(enemy.id));
+  const poise = useAtomValue(enemyPoiseSummaryAtom(enemy.id));
   const isStaggered = poise?.phase === 'broken';
   const isStandby = useAtomValue(standbyEnemyIdsAtom).includes(enemy.id);
   const [showDamage, setShowDamage] = useState(false);
@@ -233,7 +233,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
 
       {/* Poise bar — posture left before the next Break, then the Break and recovery windows */}
       {poise && !isDead && (
-        <EnemyPoiseBar view={poise} isStandby={isStandby} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />
+        <EnemyPoiseBar poise={poise} isStandby={isStandby} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />
       )}
     </div>
   );

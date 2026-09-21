@@ -4,6 +4,8 @@ import type {
   BattleMode,
   BattleState,
   BattleStatus,
+  EnemyPoiseState,
+  EnemyPoiseSummary,
   LineClearRequest,
   LineOrientation,
 } from '~/types/battle';
@@ -19,14 +21,12 @@ import { weighHitsByAttacker } from '~/lib/flinch-system';
 import {
   applyPoiseHits,
   isEnemyStaggered,
-  poiseViewsMatch,
-  resolveEnemyPoiseView,
+  poiseSummariesMatch,
   resolveStaggeredEnemySignature,
   resolveVulnerableDamage,
   resolveVulnerableHits,
+  summarizeEnemyPoise,
   tickEnemyPoise,
-  type EnemyPoiseState,
-  type EnemyPoiseView,
 } from '~/lib/poise-system';
 import {
   calculateGuardDecayResistance,
@@ -506,23 +506,23 @@ export function enemyPoiseStateAtom(enemyId: string): Atom<EnemyPoiseState | und
 }
 
 // What the poise bar draws for one enemy, in integer percents, cached by id. With regen on, a
-// dented pool's raw state moves on every tick; this hands back the previous view whenever nothing
-// visible changed, so the sprite sits out those ticks and only re-renders when a percent flips.
-const enemyPoiseViewAtoms = new Map<string, Atom<EnemyPoiseView | undefined>>();
-export function enemyPoiseViewAtom(enemyId: string): Atom<EnemyPoiseView | undefined> {
-  let viewAtom = enemyPoiseViewAtoms.get(enemyId);
-  if (!viewAtom) {
-    let lastView: EnemyPoiseView | undefined;
-    viewAtom = atom((get) => {
+// dented pool's raw state moves on every tick; this hands back the previous summary whenever
+// nothing visible changed, so the sprite sits out those ticks and only re-renders on a real flip.
+const enemyPoiseSummaryAtoms = new Map<string, Atom<EnemyPoiseSummary | undefined>>();
+export function enemyPoiseSummaryAtom(enemyId: string): Atom<EnemyPoiseSummary | undefined> {
+  let summaryAtom = enemyPoiseSummaryAtoms.get(enemyId);
+  if (!summaryAtom) {
+    let lastSummary: EnemyPoiseSummary | undefined;
+    summaryAtom = atom((get) => {
       const state = get(enemyPoiseStateAtom(enemyId));
-      if (!state) return (lastView = undefined);
-      const view = resolveEnemyPoiseView(state);
-      if (lastView && poiseViewsMatch(lastView, view)) return lastView;
-      return (lastView = view);
+      if (!state) return (lastSummary = undefined);
+      const summary = summarizeEnemyPoise(state);
+      if (lastSummary && poiseSummariesMatch(lastSummary, summary)) return lastSummary;
+      return (lastSummary = summary);
     });
-    enemyPoiseViewAtoms.set(enemyId, viewAtom);
+    enemyPoiseSummaryAtoms.set(enemyId, summaryAtom);
   }
-  return viewAtom;
+  return summaryAtom;
 }
 
 // Flags an enemy reaching its per-cycle stagger cap, so the "Flinched!" callout can replay.

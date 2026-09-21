@@ -14,8 +14,8 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 >
 > **Phase 3 (done)** — usability polish, §M: the poise bar now tells the whole Break story in three phases
 > (drain over the vulnerable window, rebuild over immunity), is dimmed on standby and explains itself on
-> hover; sprites stop re-rendering on regen ticks (`enemyPoiseViewAtom`); and the §J pause bug is fixed
-> for every attack timer. 990 tests pass across 37 files. Still open: the skill-kill `pendingVictory` note
+> hover; sprites stop re-rendering on regen ticks (`enemyPoiseSummaryAtom`); and the §J pause bug is fixed
+> for every attack timer. 992 tests pass across 37 files. Still open: the skill-kill `pendingVictory` note
 > in §J, the stretch hook test in §H (no React test environment), and the balance / feel calls listed at
 > the end of §M — chiefly that the **Moss Golem may never Break** at `poise` 0.5. **Next:** playtest.
 
@@ -365,7 +365,7 @@ Pure logic only in `src/lib/`, JSDoc on every export, one `*.test.ts` and one `*
 | `src/lib/flinch-system.ts` | [x] done | `calculateStaggerPushMs`, `clampStaggerToCycleBudget`, `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` (moved verbatim) + `AttackerHit`, `weighHitsByAttacker` |
 | `src/lib/flinch-system.test.ts` | [x] done | moved `describe('Stagger Calculations')` (14 tests) + `describe('weighHitsByAttacker')` (6 tests) |
 | `src/lib/flinch-system.bench.ts` | [x] done | moved stagger benches + `resolveStaggerHits` (1-hit / 4-hit) + `weighHitsByAttacker` (1-hit match / 4-hit skill), on `BENCH_OPTIONS` |
-| `src/lib/poise-system.ts` | [x] done | `EnemyPoiseState`, `createEnemyPoiseState`, `calculateMaxPoise`, `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `isEnemyStaggered`, `isPoiseImmune`, `applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableDamage`, `resolveVulnerableHits`, `resolveStaggeredEnemySignature` |
+| `src/lib/poise-system.ts` | [x] done | `EnemyPoiseState`, `createEnemyPoiseState`, `calculateMaxPoise`, `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `isEnemyStaggered`, `isPoiseImmune`, `applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableDamage`, `resolveVulnerableHits`, `resolveStaggeredEnemySignature`, `summarizeEnemyPoise`, `poiseSummariesMatch`, `describeEnemyPoise`, `formatEnemyPoise` |
 | `src/lib/poise-system.test.ts` | [x] done | 33 tests, see §H |
 | `src/lib/poise-system.bench.ts` | [x] done | `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `applyPoiseHits` ×3, `resolveVulnerableHits`, `tickEnemyPoise` idle / 2-staggered, `resolveStaggeredEnemySignature` — all ≈0.1–0.3 µs |
 
@@ -407,7 +407,7 @@ A read-through of the shipped feature from the player's seat, looking for moment
 doesn't explain what just happened. Fixed items are `[x]`; the rest are judgement calls left for playtesting.
 
 - [x] **Immunity was invisible.** After recovery the bar sat full and amber while hits were ignored for 2 s —
-      it read as "my hits stopped working". The bar now has three phases (`EnemyPoiseView.phase`):
+      it read as "my hits stopped working". The bar now has three phases (`EnemyPoiseSummary.phase`):
       **ready** (amber fill = poise left), **broken** (a pale fill drains over the vulnerable window), and
       **immune** (a muted stone fill *rebuilds* over the immunity window). Shatter → drain → rebuild → ready
       tells the whole story under the target. Colours in `POISE_BAR_CLASSES`.
@@ -420,8 +420,8 @@ doesn't explain what just happened. Fixed items are `[x]`; the rest are judgemen
       damage while the bar drains", "Recovering — poise damage is ignored while the bar rebuilds") plus the
       `meter` ARIA role. Training readout shows `IMMUNE` alongside `BROKEN`.
 - [x] **Per-tick re-renders with regen on.** Every dented pool changes state 10×/s, which re-rendered each
-      `EnemySprite` on every tick. `resolveEnemyPoiseView` projects the state onto integer percents and
-      `enemyPoiseViewAtom(id)` caches the last view (`poiseViewsMatch`), so the sprite only re-renders when a
+      `EnemySprite` on every tick. `summarizeEnemyPoise` projects the state onto integer percents and
+      `enemyPoiseSummaryAtom(id)` caches the last summary (`poiseSummariesMatch`), so the sprite only re-renders when a
       percent actually flips — roughly once per second at 1%/s regen, and per tick only inside the two
       windows where the bar is visibly moving.
 - [x] **Pause bug** (§J) — fixed as described there. Affected every attack timer, not just poise.

@@ -24,23 +24,8 @@ import {
   POISE_POOL_HP_FRACTION,
   POISE_REGEN_PER_SECOND,
 } from '~/constants/battle';
+import type { EnemyPoisePhase, EnemyPoiseState, EnemyPoiseSummary } from '~/types/battle';
 import type { StaggerHit } from './flinch-system';
-
-/** One enemy's posture pool and Break windows. Lives in `BattleState.enemyPoise`, keyed by enemy id. */
-export interface EnemyPoiseState {
-  /** Remaining poise; hits subtract from it. `<= 0` never persists — a Break refills it. */
-  current: number;
-  /** Current (possibly escalated) max poise. */
-  max: number;
-  /** Max poise at battle start; the escalation cap is relative to this. */
-  originalMax: number;
-  /** Breaks suffered this battle. Never resets mid-battle. */
-  breakCount: number;
-  /** `> 0` = Broken: attack cancelled, vulnerable. Counted down by the battle tick. */
-  staggerRemainingMs: number;
-  /** `> 0` = poise damage ignored (HP damage and Flinch still land). Counted down by the battle tick. */
-  immuneRemainingMs: number;
-}
 
 /** A hit that may be boosted by the vulnerable window; anything with an `amount`. */
 interface DamageHit {
@@ -251,37 +236,17 @@ export function resolveStaggeredEnemySignature(record: Record<string, EnemyPoise
   return signature;
 }
 
-/** The three player-facing phases of a poise pool, in the order a Break walks through them. */
-export type EnemyPoisePhase = 'ready' | 'broken' | 'immune';
-
-/**
- * What the enemy poise bar and the training readout draw. Every number is an integer percent, so
- * a subscriber only re-renders when something *visible* moved — with regen on, the raw state
- * changes on every tick for as long as a pool is dented.
- */
-export interface EnemyPoiseView {
-  phase: EnemyPoisePhase;
-  /** Remaining poise, 0–100. Reads 100 while Broken or immune, since a Break refills the pool. */
-  fillPercent: number;
-  /** Remaining stagger window (Broken) or immunity window (immune), 0–100; 0 while ready. */
-  windowPercent: number;
-  /** Breaks suffered this battle. */
-  breakCount: number;
-  /** Where the original max sits on the escalated bar, 0–100, or null until the pool has escalated. */
-  originalMaxPercent: number | null;
-}
-
 function toPercent(value: number, max: number): number {
   if (max <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((100 * value) / max)));
 }
 
 /**
- * Projects a poise state onto the numbers the bar draws (see {@link EnemyPoiseView}).
+ * Reduces a poise state to the integer percents the bar draws (see {@link EnemyPoiseSummary}).
  * @param state The enemy's poise state
- * @returns The view; a fresh object every call — cache it with {@link poiseViewsMatch}
+ * @returns The summary; a fresh object every call — cache it with {@link poiseSummariesMatch}
  */
-export function resolveEnemyPoiseView(state: EnemyPoiseState): EnemyPoiseView {
+export function summarizeEnemyPoise(state: EnemyPoiseState): EnemyPoiseSummary {
   const phase: EnemyPoisePhase = isEnemyStaggered(state) ? 'broken' : isPoiseImmune(state) ? 'immune' : 'ready';
   const windowPercent =
     phase === 'broken'
@@ -299,13 +264,13 @@ export function resolveEnemyPoiseView(state: EnemyPoiseState): EnemyPoiseView {
 }
 
 /**
- * Field-by-field equality for two views, so a derived atom can hand back its previous value and
- * stay silent when a tick moved the state but not the picture.
- * @param a One view
+ * Field-by-field equality for two summaries, so a derived atom can hand back its previous value
+ * and stay silent when a tick moved the state but not the picture.
+ * @param a One summary
  * @param b The other
  * @returns True when nothing drawn would differ
  */
-export function poiseViewsMatch(a: EnemyPoiseView, b: EnemyPoiseView): boolean {
+export function poiseSummariesMatch(a: EnemyPoiseSummary, b: EnemyPoiseSummary): boolean {
   return (
     a.phase === b.phase &&
     a.fillPercent === b.fillPercent &&
@@ -313,4 +278,37 @@ export function poiseViewsMatch(a: EnemyPoiseView, b: EnemyPoiseView): boolean {
     a.breakCount === b.breakCount &&
     a.originalMaxPercent === b.originalMaxPercent
   );
+}
+
+/**
+ * One line of player-facing copy for the poise bar's hover title. There is no vertical room for a
+ * caption under the enemy panel, so this is the only place the rules are spelled out: what the bar
+ * measures, that a Break is worth chasing, and that ignored hits during recovery are "not yet"
+ * rather than "not working".
+ * @param summary The enemy's poise summary
+ * @param isStandby True while the enemy is still observing, when poise damage does not apply yet
+ * @returns The title text
+ */
+export function describeEnemyPoise(summary: EnemyPoiseSummary, isStandby: boolean = false): string {
+  if (isStandby) return 'Poise — counts once this enemy starts attacking';
+  switch (summary.phase) {
+    case 'broken':
+      return 'Staggered! Bonus damage while the bar drains';
+    case 'immune':
+      return 'Recovering — poise damage is ignored while the bar rebuilds';
+    default:
+      return `Poise ${summary.fillPercent}% — empty it to stagger this enemy`;
+  }
+}
+
+/**
+ * Compact poise readout for the Training Grounds: the phase name while the pool is out of play,
+ * else the fill percent plus a `×n` Break tally once the pool has escalated.
+ * @param summary The enemy's poise summary
+ * @returns The readout text
+ */
+export function formatEnemyPoise(summary: EnemyPoiseSummary): string {
+  if (summary.phase === 'broken') return 'BROKEN';
+  if (summary.phase === 'immune') return 'IMMUNE';
+  return `${summary.fillPercent}%${summary.breakCount > 0 ? ` ×${summary.breakCount}` : ''}`;
 }

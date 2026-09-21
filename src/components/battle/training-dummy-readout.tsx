@@ -9,21 +9,15 @@ import {
   SNAPPY_OPACITY_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
-import type { EnemyPoiseView } from '~/lib/poise-system';
+import { formatEnemyPoise } from '~/lib/poise-system';
 import { cn } from '~/lib/utils';
+import type { EnemyPoiseSummary } from '~/types/battle';
 
 interface TrainingDummyReadoutProps {
   isBattlePaused: boolean;
   /** The dummy's poise, for tuning Break feel; omitted = row hidden. */
-  poise?: EnemyPoiseView;
+  poise?: EnemyPoiseSummary;
   className?: string;
-}
-
-/** `72%`, `72% ×2` once escalated, or the phase name while the pool is out of play. */
-function formatPoise(poise: EnemyPoiseView): string {
-  if (poise.phase === 'broken') return 'BROKEN';
-  if (poise.phase === 'immune') return 'IMMUNE';
-  return `${poise.fillPercent}%${poise.breakCount > 0 ? ` ×${poise.breakCount}` : ''}`;
 }
 
 function formatClock(ms: number): string {
@@ -92,7 +86,7 @@ export function TrainingDummyReadout({ isBattlePaused, poise, className }: Train
       {poise && (
         <div className="pixel-font flex items-center justify-between text-[7px] sm:text-[8px]">
           <span className="text-gray-400">POISE</span>
-          <span className="font-bold text-amber-200 tabular-nums">{formatPoise(poise)}</span>
+          <span className="font-bold text-amber-200 tabular-nums">{formatEnemyPoise(poise)}</span>
         </div>
       )}
     </div>

@@ -4,17 +4,19 @@ import {
   calculateMaxPoise,
   calculatePoiseDamage,
   createEnemyPoiseState,
+  describeEnemyPoise,
+  formatEnemyPoise,
   isEnemyStaggered,
   isPoiseImmune,
-  poiseViewsMatch,
-  resolveEnemyPoiseView,
+  poiseSummariesMatch,
   resolveEscalatedMaxPoise,
   resolveStaggeredEnemySignature,
   resolveVulnerableDamage,
   resolveVulnerableHits,
+  summarizeEnemyPoise,
   tickEnemyPoise,
-  type EnemyPoiseState,
 } from './poise-system';
+import type { EnemyPoiseState } from '~/types/battle';
 import {
   POISE_BREAK_DAMAGE_BONUS,
   POISE_BREAK_IMMUNITY_MS,
@@ -307,9 +309,9 @@ describe('resolveStaggeredEnemySignature', () => {
   });
 });
 
-describe('resolveEnemyPoiseView / poiseViewsMatch', () => {
+describe('summarizeEnemyPoise / poiseSummariesMatch', () => {
   it('reads a fresh pool as ready, full, no window, no escalation mark', () => {
-    expect(resolveEnemyPoiseView(makeState())).toEqual({
+    expect(summarizeEnemyPoise(makeState())).toEqual({
       phase: 'ready',
       fillPercent: 100,
       windowPercent: 0,
@@ -320,52 +322,69 @@ describe('resolveEnemyPoiseView / poiseViewsMatch', () => {
 
   it('rounds the remaining poise to an integer percent', () => {
     const state = makeState();
-    expect(resolveEnemyPoiseView({ ...state, current: state.max * 0.666 }).fillPercent).toBe(67);
-    expect(resolveEnemyPoiseView({ ...state, current: 0 }).fillPercent).toBe(0);
+    expect(summarizeEnemyPoise({ ...state, current: state.max * 0.666 }).fillPercent).toBe(67);
+    expect(summarizeEnemyPoise({ ...state, current: 0 }).fillPercent).toBe(0);
   });
 
   it('is broken while the stagger window runs, with the window as a percent of its full length', () => {
-    const view = resolveEnemyPoiseView(makeState({ staggerRemainingMs: POISE_BREAK_STAGGER_DURATION_MS / 4 }));
-    expect(view.phase).toBe('broken');
-    expect(view.windowPercent).toBe(25);
-    expect(view.fillPercent).toBe(100);
+    const summary = summarizeEnemyPoise(makeState({ staggerRemainingMs: POISE_BREAK_STAGGER_DURATION_MS / 4 }));
+    expect(summary.phase).toBe('broken');
+    expect(summary.windowPercent).toBe(25);
+    expect(summary.fillPercent).toBe(100);
   });
 
   it('is immune once the stagger ends, with the immunity window as a percent', () => {
-    const view = resolveEnemyPoiseView(makeState({ immuneRemainingMs: POISE_BREAK_IMMUNITY_MS / 2 }));
-    expect(view.phase).toBe('immune');
-    expect(view.windowPercent).toBe(50);
+    const summary = summarizeEnemyPoise(makeState({ immuneRemainingMs: POISE_BREAK_IMMUNITY_MS / 2 }));
+    expect(summary.phase).toBe('immune');
+    expect(summary.windowPercent).toBe(50);
   });
 
   it('marks where the original max sits once the pool has escalated', () => {
     const state = makeState();
     const broken = applyPoiseHits(state, [{ amount: state.max * 10, multiplier: 1 }], 1).next;
-    const view = resolveEnemyPoiseView(broken);
-    expect(view.breakCount).toBe(1);
-    expect(view.originalMaxPercent).toBe(Math.round((100 * state.originalMax) / broken.max));
+    const summary = summarizeEnemyPoise(broken);
+    expect(summary.breakCount).toBe(1);
+    expect(summary.originalMaxPercent).toBe(Math.round((100 * state.originalMax) / broken.max));
   });
 
   it('clamps out-of-range windows and a zero max instead of producing NaN', () => {
-    expect(resolveEnemyPoiseView(makeState({ max: 0, current: 0 })).fillPercent).toBe(0);
+    expect(summarizeEnemyPoise(makeState({ max: 0, current: 0 })).fillPercent).toBe(0);
     expect(
-      resolveEnemyPoiseView(makeState({ staggerRemainingMs: POISE_BREAK_STAGGER_DURATION_MS * 3 })).windowPercent,
+      summarizeEnemyPoise(makeState({ staggerRemainingMs: POISE_BREAK_STAGGER_DURATION_MS * 3 })).windowPercent,
     ).toBe(100);
   });
 
-  it('matches two views only when every drawn field agrees', () => {
-    const a = resolveEnemyPoiseView(makeState());
-    expect(poiseViewsMatch(a, resolveEnemyPoiseView(makeState()))).toBe(true);
-    expect(poiseViewsMatch(a, { ...a, fillPercent: 99 })).toBe(false);
-    expect(poiseViewsMatch(a, { ...a, phase: 'immune' })).toBe(false);
-    expect(poiseViewsMatch(a, { ...a, windowPercent: 1 })).toBe(false);
-    expect(poiseViewsMatch(a, { ...a, breakCount: 1 })).toBe(false);
-    expect(poiseViewsMatch(a, { ...a, originalMaxPercent: 80 })).toBe(false);
+  it('describes each phase for the bar title, with standby outranking the rest', () => {
+    const ready = summarizeEnemyPoise(makeState({ current: makeState().max * 0.72 }));
+    expect(describeEnemyPoise(ready)).toContain('72%');
+    expect(describeEnemyPoise(ready, true)).toContain('starts attacking');
+    expect(describeEnemyPoise(summarizeEnemyPoise(makeState({ staggerRemainingMs: 500 })))).toContain('Staggered');
+    expect(describeEnemyPoise(summarizeEnemyPoise(makeState({ immuneRemainingMs: 500 })))).toContain('ignored');
+  });
+
+  it('formats the training readout: percent, break tally, then phase names', () => {
+    expect(formatEnemyPoise(summarizeEnemyPoise(makeState()))).toBe('100%');
+    expect(formatEnemyPoise(summarizeEnemyPoise(makeState({ staggerRemainingMs: 1 })))).toBe('BROKEN');
+    expect(formatEnemyPoise(summarizeEnemyPoise(makeState({ immuneRemainingMs: 1 })))).toBe('IMMUNE');
+
+    const escalated = applyPoiseHits(makeState(), [{ amount: 9999, multiplier: 1 }], 1).next;
+    expect(formatEnemyPoise(summarizeEnemyPoise({ ...escalated, staggerRemainingMs: 0 }))).toBe('100% ×1');
+  });
+
+  it('matches two summaries only when every drawn field agrees', () => {
+    const a = summarizeEnemyPoise(makeState());
+    expect(poiseSummariesMatch(a, summarizeEnemyPoise(makeState()))).toBe(true);
+    expect(poiseSummariesMatch(a, { ...a, fillPercent: 99 })).toBe(false);
+    expect(poiseSummariesMatch(a, { ...a, phase: 'immune' })).toBe(false);
+    expect(poiseSummariesMatch(a, { ...a, windowPercent: 1 })).toBe(false);
+    expect(poiseSummariesMatch(a, { ...a, breakCount: 1 })).toBe(false);
+    expect(poiseSummariesMatch(a, { ...a, originalMaxPercent: 80 })).toBe(false);
   });
 
   it('does not change across a regen tick that moves the pool by less than a percent', () => {
     const state = makeState({ current: makeState().max * 0.5 });
     const ticked = tickEnemyPoise({ a: state }, 0.1, 0.01).a;
     expect(ticked).not.toBe(state);
-    expect(poiseViewsMatch(resolveEnemyPoiseView(state), resolveEnemyPoiseView(ticked))).toBe(true);
+    expect(poiseSummariesMatch(summarizeEnemyPoise(state), summarizeEnemyPoise(ticked))).toBe(true);
   });
 });

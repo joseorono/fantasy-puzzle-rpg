@@ -1,25 +1,13 @@
 import { POISE_BAR_CLASSES } from '~/constants/ui';
-import type { EnemyPoiseView } from '~/lib/poise-system';
+import { describeEnemyPoise } from '~/lib/poise-system';
 import { cn } from '~/lib/utils';
+import type { EnemyPoiseSummary } from '~/types/battle';
 
 interface EnemyPoiseBarProps {
-  view: EnemyPoiseView;
+  poise: EnemyPoiseSummary;
   /** The enemy is still observing: poise damage does not apply yet, so the bar is dimmed. */
   isStandby?: boolean;
   className?: string;
-}
-
-/** One-line explanation of the current phase, surfaced as a hover title (no space for a label). */
-function describePhase(view: EnemyPoiseView, isStandby: boolean): string {
-  if (isStandby) return 'Poise — counts once this enemy starts attacking';
-  switch (view.phase) {
-    case 'broken':
-      return 'Staggered! Bonus damage while the bar drains';
-    case 'immune':
-      return 'Recovering — poise damage is ignored while the bar rebuilds';
-    default:
-      return `Poise ${view.fillPercent}% — empty it to stagger this enemy`;
-  }
 }
 
 /**
@@ -29,10 +17,10 @@ function describePhase(view: EnemyPoiseView, isStandby: boolean): string {
  * target; **immune** — a muted fill rebuilds over the immunity window, so hits that do not dent it
  * read as "not yet" instead of "not working". A tick marks the original max once escalated.
  */
-export function EnemyPoiseBar({ view, isStandby = false, className }: EnemyPoiseBarProps) {
-  const isBroken = view.phase === 'broken';
-  const isImmune = view.phase === 'immune';
-  const widthPercent = isBroken ? view.windowPercent : isImmune ? 100 - view.windowPercent : view.fillPercent;
+export function EnemyPoiseBar({ poise, isStandby = false, className }: EnemyPoiseBarProps) {
+  const isBroken = poise.phase === 'broken';
+  const isImmune = poise.phase === 'immune';
+  const widthPercent = isBroken ? poise.windowPercent : isImmune ? 100 - poise.windowPercent : poise.fillPercent;
   const fillClass = isBroken
     ? POISE_BAR_CLASSES.brokenWindow
     : isImmune
@@ -51,8 +39,8 @@ export function EnemyPoiseBar({ view, isStandby = false, className }: EnemyPoise
       aria-label="Poise"
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={isBroken ? 0 : view.fillPercent}
-      title={describePhase(view, isStandby)}
+      aria-valuenow={isBroken ? 0 : poise.fillPercent}
+      title={describeEnemyPoise(poise, isStandby)}
     >
       {/* The window phases move every battle tick; a short linear transition smooths the steps. */}
       <div
@@ -63,10 +51,10 @@ export function EnemyPoiseBar({ view, isStandby = false, className }: EnemyPoise
         )}
         style={{ width: `${widthPercent}%` }}
       />
-      {view.originalMaxPercent !== null && !isBroken && (
+      {poise.originalMaxPercent !== null && !isBroken && (
         <div
           className={cn('pointer-events-none absolute top-0 bottom-0 w-px', POISE_BAR_CLASSES.originalMaxMark)}
-          style={{ left: `${view.originalMaxPercent}%` }}
+          style={{ left: `${poise.originalMaxPercent}%` }}
         />
       )}
     </div>

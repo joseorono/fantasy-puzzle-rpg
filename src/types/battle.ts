@@ -1,6 +1,5 @@
 import type { CharacterData, EnemyData, OrbType } from './rpg-elements';
 import type { GridPosition } from './geometry';
-import type { EnemyPoiseState } from '~/lib/poise-system';
 
 export type ActionTarget = 'party' | 'enemy';
 
@@ -58,6 +57,42 @@ export interface SkillActivationEvent {
   amount: number;
   isHeal: boolean;
   timestamp: number;
+}
+
+/** One enemy's posture pool and Break windows. Math lives in `~/lib/poise-system`. */
+export interface EnemyPoiseState {
+  /** Remaining poise; hits subtract from it. `<= 0` never persists — a Break refills it. */
+  current: number;
+  /** Current (possibly escalated) max poise. */
+  max: number;
+  /** Max poise at battle start; the escalation cap is relative to this. */
+  originalMax: number;
+  /** Breaks suffered this battle. Never resets mid-battle. */
+  breakCount: number;
+  /** `> 0` = Broken: attack cancelled, vulnerable. Counted down by the battle tick. */
+  staggerRemainingMs: number;
+  /** `> 0` = poise damage ignored (HP damage and Flinch still land). Counted down by the battle tick. */
+  immuneRemainingMs: number;
+}
+
+/** The three player-facing phases of a poise pool, in the order a Break walks through them. */
+export type EnemyPoisePhase = 'ready' | 'broken' | 'immune';
+
+/**
+ * A poise pool reduced to the integer percents the poise bar and the training readout draw, so a
+ * subscriber only re-renders when something *visible* moved — with regen on, the underlying state
+ * changes on every tick for as long as a pool is dented. Built by `summarizeEnemyPoise`.
+ */
+export interface EnemyPoiseSummary {
+  phase: EnemyPoisePhase;
+  /** Remaining poise, 0–100. Reads 100 while Broken or immune, since a Break refills the pool. */
+  fillPercent: number;
+  /** Remaining stagger window (Broken) or immunity window (immune), 0–100; 0 while ready. */
+  windowPercent: number;
+  /** Breaks suffered this battle. */
+  breakCount: number;
+  /** Where the original max sits on the escalated bar, 0–100, or null until the pool has escalated. */
+  originalMaxPercent: number | null;
 }
 
 export interface BattleState {
