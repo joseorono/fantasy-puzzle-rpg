@@ -9,10 +9,14 @@ import {
   SNAPPY_OPACITY_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
+import { calculatePercentage } from '~/lib/math';
+import { isEnemyStaggered, type EnemyPoiseState } from '~/lib/poise-system';
 import { cn } from '~/lib/utils';
 
 interface TrainingDummyReadoutProps {
   isBattlePaused: boolean;
+  /** The dummy's poise pool, for tuning Break feel; omitted = row hidden. */
+  poise?: EnemyPoiseState;
   className?: string;
 }
 
@@ -31,7 +35,7 @@ function formatClock(ms: number): string {
  * tick. It starts on the first hit, so the idle seconds before the first move don't count, and
  * only advances while the fight is live and unpaused.
  */
-export function TrainingDummyReadout({ isBattlePaused, className }: TrainingDummyReadoutProps) {
+export function TrainingDummyReadout({ isBattlePaused, poise, className }: TrainingDummyReadoutProps) {
   const totalDamage = useAtomValue(totalDamageDealtAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
   const startedAt = useAtomValue(battleStartedAtAtom);
@@ -79,6 +83,16 @@ export function TrainingDummyReadout({ isBattlePaused, className }: TrainingDumm
         <span className="text-gray-400">TIME</span>
         <span className="font-bold text-white tabular-nums">{formatClock(activeMs)}</span>
       </div>
+      {poise && (
+        <div className="pixel-font flex items-center justify-between text-[7px] sm:text-[8px]">
+          <span className="text-gray-400">POISE</span>
+          <span className="font-bold text-amber-200 tabular-nums">
+            {isEnemyStaggered(poise)
+              ? 'BROKEN'
+              : `${Math.round(calculatePercentage(poise.current, poise.max))}%${poise.breakCount > 0 ? ` ×${poise.breakCount}` : ''}`}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

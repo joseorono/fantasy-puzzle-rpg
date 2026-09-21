@@ -398,7 +398,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       for (const effect of pendingEffects) {
         if (effect.isHeal) healParty({ amount: effect.amount, source: 'match' });
       }
-      if (didDamage) damageEnemy({ hits });
+      if (didDamage) damageEnemy({ hits, cascadeLevel });
 
       if (pendingEffects.length > 0) {
         // Freeze-frame once on the moment damage lands (skip on heal-only moves).

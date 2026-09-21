@@ -1,5 +1,6 @@
 import type { CharacterData, EnemyData, OrbType } from './rpg-elements';
 import type { GridPosition } from './geometry';
+import type { EnemyPoiseState } from '~/lib/poise-system';
 
 export type ActionTarget = 'party' | 'enemy';
 
@@ -68,6 +69,11 @@ export interface BattleState {
     enemyIds?: string[];
     /** Individual hits folded into this event (a multi-color match). Absent = one hit of `amount`. */
     hits?: Array<{ amount: number; characterId?: string }>;
+    /**
+     * Per-target amounts when one event hit several enemies for different values (an all-enemy
+     * skill landing on a mix of staggered and unbroken targets). Falls back to `amount`.
+     */
+    amountByEnemyId?: Record<string, number>;
     /** What produced the hit. A missing value is treated as `'match'` by consumers. */
     source?: 'match' | 'skill' | 'enemy';
     /** Set when the incoming party hit was mitigated by Guard. */
@@ -106,6 +112,17 @@ export interface BattleState {
    * timestamp re-triggers the animation each time an enemy maxes out again on a later cycle.
    */
   lastMaxFlinch: { enemyId: string; timestamp: number } | null;
+  /**
+   * Per-enemy poise (posture) pool and Break windows, keyed by enemy id. Written in the same
+   * commit as HP damage; the stagger/immunity counters are ticked down by `battleTickAtom`.
+   * See `~/lib/poise-system` and docs/ENEMY_POISE_STAGGER.md.
+   */
+  enemyPoise: Record<string, EnemyPoiseState>;
+  /**
+   * Fires when one or more enemies Break (poise pool emptied → attack cancelled), so the per-enemy
+   * "Staggered!" callout can replay. An all-enemy skill can break several at once.
+   */
+  lastPoiseBreak: { enemyIds: string[]; timestamp: number } | null;
   /** `Date.now()` when the battle was created; drives the victory rating's clear-time criterion. */
   startedAt: number;
   /** Deepest cascade combo (chain length) reached this battle; feeds the victory rating. */

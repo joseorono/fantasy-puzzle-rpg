@@ -463,6 +463,29 @@
   white-space: nowrap;
 }
 
+/* Break callout — same pop, held longer (duration set inline from POISE_BREAK_CALLOUT_DURATION_MS)
+   and drawn in pale parchment so it visibly outranks the amber flinch pop. */
+.stagger-callout--break {
+  color: #f7e7c6;
+  text-shadow:
+    0 1px 0 #3a1d08,
+    0 0 8px rgba(247, 231, 198, 0.55);
+}
+
+/* Broken enemy — washed out and dazed for the whole stagger window. The tint is static (survives
+   reduced motion); only the slow sway is animation. Transform-only + filter, palette-safe. */
+@keyframes enemy-staggered-sway {
+  0% { transform: rotate(-5deg) translateY(1px); }
+  100% { transform: rotate(4deg) translateY(0); }
+}
+
+.enemy-staggered {
+  filter: saturate(0.55) brightness(0.85);
+  transform: rotate(-5deg);
+  animation: enemy-staggered-sway 0.7s ease-in-out infinite alternate;
+  transition: filter 0.2s ease-out;
+}
+
 /* Reduced motion (recoil, eruptions, shakes) is handled globally in styles/reduced-motion.css. */
 
 /* Ace Attorney-style skill burst overlay */

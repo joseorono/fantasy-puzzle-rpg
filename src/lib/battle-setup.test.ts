@@ -7,7 +7,7 @@ import {
   tickPartySkillCooldowns,
   reducePartySkillCooldowns,
 } from './battle-system';
-import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
+import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS, POISE_POOL_HP_FRACTION } from '~/constants/battle';
 import { BOARD_ROWS, BOARD_COLS, OPENING_MAX_MATCHES, OPENING_MAX_RUN_LENGTH } from '~/constants/board';
 import { countLineRuns, longestLineRun, isBoardPlayable } from './match-3';
 
@@ -140,6 +140,21 @@ describe('createBattleState', () => {
   it('should generate a standby delay for every enemy', () => {
     const state = createBattleState(party, enemies);
     expect(Object.keys(state.enemyStandbyMs).sort()).toEqual(['frog-1', 'frog-2']);
+  });
+
+  it('should seed a full poise pool for every enemy with no break event pending', () => {
+    const state = createBattleState(party, enemies);
+    expect(Object.keys(state.enemyPoise).sort()).toEqual(['frog-1', 'frog-2']);
+    for (const enemy of enemies) {
+      const poise = state.enemyPoise[enemy.id];
+      expect(poise.max).toBe(enemy.maxHp * POISE_POOL_HP_FRACTION);
+      expect(poise.current).toBe(poise.max);
+      expect(poise.originalMax).toBe(poise.max);
+      expect(poise.breakCount).toBe(0);
+      expect(poise.staggerRemainingMs).toBe(0);
+      expect(poise.immuneRemainingMs).toBe(0);
+    }
+    expect(state.lastPoiseBreak).toBeNull();
   });
 });
 

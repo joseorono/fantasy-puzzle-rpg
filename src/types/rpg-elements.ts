@@ -66,6 +66,11 @@ export interface EnemyData extends BaseStats {
   /** Drain multiplier on the party Guard meter per hit; default 1 (0.5 = barely erodes, 2+ = chews through). */
   guardBreak?: number;
   /**
+   * Multiplier on incoming poise (posture) damage; default 1. `0.5` = stoic, hard to stagger;
+   * `2` = glass jaw. The pool itself is derived from max HP — see `~/lib/poise-system`.
+   */
+  poise?: number;
+  /**
    * Luck bias applied to equipment-drop rarity rolls; default 0 (neutral odds).
    * Higher values skew this enemy's drops toward rarer tiers. See `rollRarity`.
    */

@@ -5,18 +5,23 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 
 > **Phase 1 (done)** — groundwork only, no behaviour change: the Flinch math is extracted into
 > `src/lib/flinch-system.ts` with its own test + bench, the shared `weighHitsByAttacker` helper is in
-> place (ready for the poise layer to call with its own multiplier), and the flinch-cap callout now
-> reads "Flinched!". 898 tests pass. **Phase 2** is the poise pool, Break and UI — §B–§G below.
+> place, and the flinch-cap callout reads "Flinched!".
+>
+> **Phase 2 (done)** — the poise pool, Break and UI (§B–§I): `src/lib/poise-system.ts` + test + bench,
+> `BattleState.enemyPoise` / `lastPoiseBreak`, poise applied in `damageEnemyAtom` / `activateSkillAtom`
+> and ticked by `battleTickAtom`, the attack cancel in `use-enemy-attack-timers.ts`, the poise bar,
+> "Staggered!" callout, sprite tint, neutral ring and Break SFX, plus the sibling docs. 944 tests pass
+> across 35 files. Still open: the two pre-existing bugs in §J and the stretch hook test in §H (no React
+> test environment is installed). **Next:** playtest the §4 defaults.
 
 ## 1. Summary
 
-What ships today is a **Flinch** mechanic: every hit on an enemy nudges its next attack back a little
-(VIT-resisted, hard-capped at 12% of the interval per cycle so the enemy *always* fires). The docs and
-code call this "stagger", and a "STAGGER!" callout pops when the per-cycle *flinch cap* is reached
-(that text will become "Flinched!" — see §G).
+The shipped **Flinch** mechanic nudges an enemy's next attack back a little on every hit (VIT-resisted,
+hard-capped at 12% of the interval per cycle so the enemy *always* fires). The code calls this
+"stagger", and a "Flinched!" callout pops when the per-cycle *flinch cap* is reached.
 
-What is missing is the actual **Poise** layer: a per-enemy `poise` multiplier, a posture-damage pool
-that fills from orb hits and active skills, and a **Break** that *cancels* the pending attack, opens a
+The **Poise** layer now sits on top of it: a per-enemy `poise` multiplier, a posture-damage pool that
+fills from orb hits and active skills, and a **Break** that *cancels* the pending attack, opens a
 vulnerable window, and then re-arms with anti-stunlock guards (post-break poise-damage immunity +
 escalating max poise, capped at 150% of the original).
 
@@ -39,9 +44,9 @@ Design decisions locked in:
 
 | Term | Meaning | Status |
 |---|---|---|
-| **Flinch** | Per-hit push-back of the enemy's next attack timer. Capped per cycle. | ✅ shipped (currently named "stagger" in code/docs) |
-| **Poise** | The enemy's posture pool. The `poise` stat is a multiplier on incoming poise damage. | ⬜ missing |
-| **Break / Stagger** | Pool depleted → pending attack cancelled → enemy vulnerable for a window → fresh cycle. | ⬜ missing |
+| **Flinch** | Per-hit push-back of the enemy's next attack timer. Capped per cycle. | ✅ shipped (named "stagger" in code identifiers) |
+| **Poise** | The enemy's posture pool. The `poise` stat is a multiplier on incoming poise damage. | ✅ shipped (`src/lib/poise-system.ts`) |
+| **Break / Stagger** | Pool depleted → pending attack cancelled → enemy vulnerable for a window → fresh cycle. | ✅ shipped |
 
 Naming note: no code identifiers get renamed — the `STAGGER_*` constants, `staggerPushMultiplier`,
 `staggerPulse` and `lastMaxFlinch` all stay. The only shipped *text* that changes is the callout: the
@@ -83,9 +88,10 @@ vocabulary matches this doc. Every hit does both: it flinches the timer *and* de
 - [x] Tests moved to `src/lib/flinch-system.test.ts` (14 moved, assertions unchanged, + 6 new for
       `weighHitsByAttacker`); benches moved to `src/lib/flinch-system.bench.ts` (+ `resolveStaggerHits`
       1-hit/4-hit and `weighHitsByAttacker`, now on shared `BENCH_OPTIONS`).
-- [ ] While an enemy is broken there is no pending attack, so the push is a natural no-op — add an early
-      `continue` for staggered ids in the stagger effect of `use-enemy-attack-timers.ts` so it doesn't touch a
-      release timestamp that no longer exists. Flinch resumes unchanged on recovery.
+- [x] While an enemy is broken there is no pending attack, so the push is a natural no-op — the flinch effect
+      in `use-enemy-attack-timers.ts` now `continue`s for ids in `staggeredIdsRef` (derived from
+      `staggeredEnemySignatureAtom`) so it never touches a release timestamp that no longer exists. Flinch
+      resumes unchanged on recovery.
 
 **Implementation notes.** The Flinch *behaviour* does not change; the extraction is a file move so the two
 systems sit side by side with the same test/bench discipline. Note that the flinch budget (`staggerUsedRef`)
@@ -94,13 +100,17 @@ That is fine for a cosmetic nudge, but **Poise must not follow this pattern** (s
 
 ### B. `poise` stat on enemies
 
-- [ ] `poise?: number` on `EnemyData` — `src/types/rpg-elements.ts:59`, next to `guardBreak?` with the same
+- [x] `poise?: number` on `EnemyData` — `src/types/rpg-elements.ts:59`, next to `guardBreak?` with the same
       JSDoc shape: default 1; `0.5` = stoic, `2` = glass jaw.
-- [ ] Author values in `src/constants/enemies/world-00/index.ts`: `MOSS_GOLEM` ≈ `0.5` (stone, hard to
+- [x] Author values in `src/constants/enemies/world-00/index.ts`: `MOSS_GOLEM` ≈ `0.5` (stone, hard to
       stagger), `SWAMP_FROG` ≈ `1.6` (squishy).
-- [ ] `TRAINING_DUMMY` (`src/constants/enemies/training.ts`) — `1`.
-- [ ] `EXP_PINATA_FROGS` (`src/constants/enemies/debug.ts`) spreads `SWAMP_FROG`, so it inherits — verify.
-- [ ] Optional: show `poise` on `training-dummy-readout.tsx` for tuning.
+- [x] `TRAINING_DUMMY` (`src/constants/enemies/training.ts`) — its HP is a `MAX_SAFE_INTEGER` sentinel, so a
+      poise of `1` would give it an unbreakable pool. Instead `poise = TRAINING_DUMMY_HP /
+      TRAINING_DUMMY_POISE_HP_EQUIVALENT` (400), so it Breaks exactly like a 400-HP enemy would.
+- [x] `EXP_PINATA_FROGS` (`src/constants/enemies/debug.ts`) spreads `SWAMP_FROG`, so it inherits `1.6` — verified
+      (moot in practice: 1 HP means every hit is a killing blow, which deals no poise damage).
+- [x] Optional: `training-dummy-readout.tsx` shows a `POISE` row — `NN%` (with `×breaks` once escalated) or
+      `BROKEN` — fed the dummy's state by `EnemySprite`.
 
 **Implementation notes.** Optional field with a `?? 1` fallback everywhere it's read, so no enemy
 definition *has* to change. Instancing is plain object spread (`createBattleState`,
@@ -108,9 +118,9 @@ definition *has* to change. Instancing is plain object spread (`createBattleStat
 
 ### C. Poise pool & posture-damage accumulation
 
-- [ ] Per-enemy poise state lives in **Jotai `BattleState`** (`src/types/battle.ts:42`), not in refs:
+- [x] Per-enemy poise state lives in **Jotai `BattleState`** (`src/types/battle.ts:42`), not in refs:
       `enemyPoise: Record<enemyId, EnemyPoiseState>`.
-- [ ] `EnemyPoiseState` (defined in `poise-system.ts`):
+- [x] `EnemyPoiseState` (defined in `poise-system.ts`):
       ```ts
       interface EnemyPoiseState {
         current: number;            // remaining poise; hits subtract from it
@@ -121,9 +131,9 @@ definition *has* to change. Instancing is plain object spread (`createBattleStat
         immuneRemainingMs: number;  // > 0 = poise damage ignored. Ticked down by battleTick.
       }
       ```
-- [ ] Initialised in `createBattleState` (`src/lib/battle-system.ts:103`) via `createEnemyPoiseState(enemy)`
+- [x] Initialised in `createBattleState` (`src/lib/battle-system.ts:103`) via `createEnemyPoiseState(enemy)`
       for each instanced enemy; reset naturally on `setupBattleAtom` / `resetBattleAtom`.
-- [ ] New pure module `src/lib/poise-system.ts` (JSDoc on every export):
+- [x] New pure module `src/lib/poise-system.ts` (JSDoc on every export):
   - `createEnemyPoiseState(enemy)` — `max = current = originalMax = calculateMaxPoise(enemy)`, counters 0.
   - `calculateMaxPoise(enemy)` — `maxHp × POISE_POOL_HP_FRACTION`.
   - `calculatePoiseDamage(amount, poiseMultiplier, hitMultiplier, cascadeLevel = 0)` —
@@ -139,24 +149,29 @@ definition *has* to change. Instancing is plain object spread (`createBattleStat
     the **same reference** when nothing changed (matches `battleTickAtom`'s early-return pattern).
   - `resolveVulnerableHits(hits, isStaggered)` — `× (1 + POISE_BREAK_DAMAGE_BONUS)`, rounded; mirror of the
     preemptive map in `damageEnemyAtom:213–216`.
-- [ ] Poise damage reuses the `StaggerHit { amount, multiplier }` shape and `weighHitsByAttacker` from
+- [x] Poise damage reuses the `StaggerHit { amount, multiplier }` shape and `weighHitsByAttacker` from
       `flinch-system.ts`, called with `POISE_SKILL_MULTIPLIER` instead of `SKILL_STAGGER_MULTIPLIER`.
-- [ ] Combos and hard hits fill the pool by construction: `hit.amount` already carries the match-size
+- [x] Combos and hard hits fill the pool by construction: `hit.amount` already carries the match-size
       multiplier (`calculateMatchMultiplier`, `rpg-calculations.ts:183`) and the cascade multiplier
       (`calculateComboMultiplier`, `:172`, tuned by `CASCADE_DAMAGE_BONUS_PER_LEVEL` / `MAX_COMBO_MULTIPLIER`),
       so a 5-match at cascade 3 pushes poise far harder than a lone 3-match. Optional
       `POISE_CASCADE_BONUS_PER_LEVEL` (default 0 = off) if combos should fill poise *faster than* they
       deal HP damage — the `{ hits }` payload gains an optional `cascadeLevel` from `cascadeLevelRef` in
       `match3-board.tsx:394–397`.
-- [ ] Apply poise in the **same state write** as HP damage so state never disagrees:
-      `damageEnemyAtom` (`battle-atoms.ts:199`) and both enemy branches of `activateSkillAtom`
-      (`battle-atoms.ts:684–718`). Skipped on a killing blow and on standby targets (`standbyEnemyIds`).
-- [ ] `battleTickAtom` (`battle-atoms.ts:622`) calls `tickEnemyPoise` and folds the result into its existing
+- [x] Apply poise in the **same state write** as HP damage so state never disagrees:
+      `damageEnemyAtom` and both enemy branches of `activateSkillAtom` (`battle-atoms.ts`). Skipped on a
+      killing blow and on standby targets (`standbyEnemyIds`). Poise damage is computed from the **raw**
+      hits — the preemptive and vulnerable bonuses are HP-only. An all-enemy skill lands a different
+      amount on Broken vs. unbroken targets, so `lastDamage.amountByEnemyId` carries the per-target values
+      for the damage popup.
+- [x] `battleTickAtom` (`battle-atoms.ts:622`) calls `tickEnemyPoise` and folds the result into its existing
       "nothing changed → return" check, so an idle poise record never causes a write.
-- [ ] Selectors: `enemyPoiseAtom` (record), `lastPoiseBreakAtom`, and `staggeredEnemySignatureAtom` — a
-      **string** (`ids with staggerRemainingMs > 0`, joined by `|`) so it compares by value and only changes on
-      a break or a recovery, never per tick (same trick as the hook's `rosterSignature`).
-- [ ] `src/lib/poise-system.test.ts` and `src/lib/poise-system.bench.ts` (see §H, §K).
+- [x] Selectors: `enemyPoiseAtom` (record), `lastPoiseBreakAtom`, `staggeredEnemySignatureAtom` — a
+      **string** (`ids with staggerRemainingMs > 0`, joined by `|`, built by `resolveStaggeredEnemySignature`)
+      so it compares by value and only changes on a break or a recovery, never per tick (same trick as the
+      hook's `rosterSignature`) — and `enemyPoiseStateAtom(enemyId)`, a cached per-enemy atom (like
+      `partyMemberAtom`) so each `EnemySprite` only re-renders when *its* pool moves.
+- [x] `src/lib/poise-system.test.ts` and `src/lib/poise-system.bench.ts` (see §H, §K).
 
 **Implementation notes.** The stagger and immunity windows are **remaining-ms counters ticked by
 `battleTickAtom`**, not absolute timestamps. The tick loop (`battle-screen.tsx:88–96`) is gated on
@@ -167,25 +182,26 @@ testable without fake timers. `battleTickAtom` already writes state every 100 ms
 
 ### D. Break: cancel attack + vulnerable window
 
-- [ ] On depletion (inside `applyPoiseHits`): `breakCount + 1`, `max = resolveEscalatedMaxPoise(…)`,
+- [x] On depletion (inside `applyPoiseHits`): `breakCount + 1`, `max = resolveEscalatedMaxPoise(…)`,
       `current = max`, `staggerRemainingMs = POISE_BREAK_STAGGER_DURATION_MS`. The atom publishes
-      `lastPoiseBreak: { enemyId, timestamp }` on `BattleState` (mirrors `lastMaxFlinch`, `src/types/battle.ts:108`).
-- [ ] **Cancel the pending attack** in `use-enemy-attack-timers.ts`: subscribe `staggeredEnemySignatureAtom`
+      `lastPoiseBreak: { enemyIds: string[], timestamp }` on `BattleState` — an array rather than
+      `lastMaxFlinch`'s single id, because an all-enemy skill can Break several enemies in one write.
+- [x] **Cancel the pending attack** in `use-enemy-attack-timers.ts`: subscribe `staggeredEnemySignatureAtom`
       and add it to the main effect's deps. In the roster loop, **before** the standby check, a staggered
       enemy gets its shot `clearTimeout`-ed and its `releaseAtRef` / `cycleStartRef` / `staggerUsedRef` entries
       deleted; ring duration = `POISE_BREAK_STAGGER_DURATION_MS`, ring elapsed = `duration − staggerRemainingMs`;
       `bumpVersion`; `continue`. The rebuild path already preserves running cycles for everyone else (`:229–240`).
-- [ ] **No recovery timeout in the hook.** When the tick zeroes the counter the signature changes, the effect
+- [x] **No recovery timeout in the hook.** When the tick zeroes the counter the signature changes, the effect
       re-runs, and the existing "no live cycle → `startCycle(id)`" branch (`:238–240`) opens a fresh full cycle.
-- [ ] **Vulnerable window**: `isEnemyStaggered` is read from the **pre-hit** state → `resolveVulnerableHits`
+- [x] **Vulnerable window**: `isEnemyStaggered` is read from the **pre-hit** state → `resolveVulnerableHits`
       before HP is subtracted, in `damageEnemyAtom` (next to the preemptive map, `:213–216`) and in both enemy
       branches of `activateSkillAtom`, which has no bonus hook today. The hit that *causes* a break never gets
       the bonus.
-- [ ] Recovery re-opens a **full fresh cycle** (`startCycle`), so the ring visibly restarts from full.
-- [ ] Break on a dead enemy is impossible: HP write and poise write are one transaction, and poise is skipped
+- [x] Recovery re-opens a **full fresh cycle** (`startCycle`), so the ring visibly restarts from full.
+- [x] Break on a dead enemy is impossible: HP write and poise write are one transaction, and poise is skipped
       when the resulting HP is `≤ 0`. The skill path sets `gameStatus: 'won'` directly at
       `battle-atoms.ts:700/717`; the hook's main effect already bails when `gameStatus !== 'playing'`.
-- [x] Standby enemies (`standbyEnemyIds`) — poise accumulates but no Break fires until the first attack cycle
+- [x] Standby enemies (`standbyEnemyIds`) take no poise damage at all until their first attack cycle
       (decided, §J).
 
 **Implementation notes.** The hook is already structured around absolute release timestamps and a
@@ -195,14 +211,15 @@ it reacts to `standbyEnemyIds`.
 
 ### E. Anti-stunlock: immunity + escalation (150% cap)
 
-- [ ] **Immunity** (poise damage only): when `tickEnemyPoise` brings `staggerRemainingMs` to 0 it sets
+- [x] **Immunity** (poise damage only): when `tickEnemyPoise` brings `staggerRemainingMs` to 0 it sets
       `immuneRemainingMs = POISE_BREAK_IMMUNITY_MS`; while `isPoiseImmune`, `applyPoiseHits` is a no-op.
       **HP damage and the Flinch push still land** — immunity only stops the pool from filling again.
-- [ ] **Escalation**: `max = min(originalMax × (1 + breakCount × POISE_MAX_GROWTH_PER_BREAK), originalMax × POISE_MAX_GROWTH_CAP)`
+- [x] **Escalation**: `max = min(originalMax × (1 + breakCount × POISE_MAX_GROWTH_PER_BREAK), originalMax × POISE_MAX_GROWTH_CAP)`
       with `POISE_MAX_GROWTH_CAP = 1.5` — the pool grows 100% → 125% → 150% → **150% (hard cap)**.
-- [ ] State the two caps are independent in `COMBAT_SYSTEM.md`: `MAX_STAGGER_FRACTION_PER_CYCLE` still
+- [x] State the two caps are independent in `COMBAT_SYSTEM.md`: `MAX_STAGGER_FRACTION_PER_CYCLE` still
       bounds Flinch per cycle; poise immunity + escalation bound Breaks per battle.
-- [ ] Optional visual: bar outline / tick mark showing the escalated max vs. original (see §G).
+- [x] Optional visual: once `max > originalMax` the poise bar draws a 1px tick at `originalMax / max`
+      (`POISE_BAR_CLASSES.originalMaxMark`).
 
 **Implementation notes.** Both guards are pure functions of `EnemyPoiseState` (+ `deltaSeconds` for the
 tick), so they belong in `poise-system.ts` and get unit-tested there. `breakCount` never resets mid-battle;
@@ -212,15 +229,15 @@ tick), so they belong in `poise-system.ts` and get unit-tested there. `breakCoun
 
 - [x] Ring steps back on Flinch (`resolveCountdownRingAnchor`, `EnemyAttackTimer.elapsedMs`).
 - [x] Ring shakes on Flinch (`EnemyAttackTimer.staggerPulse`).
-- [ ] `EnemyAttackTimer` (`use-enemy-attack-timers.ts:21`) gains `isStaggered: boolean`; while staggered
+- [x] `EnemyAttackTimer` (`use-enemy-attack-timers.ts:21`) gains `isStaggered: boolean`; while staggered
       `durationMs = POISE_BREAK_STAGGER_DURATION_MS`, `elapsedMs = duration − staggerRemainingMs`, and
       `cycleKey = \`stagger-${id}-${breakCount}\`` so the ring counts the *stagger window* down instead of the attack.
-- [ ] `timerListsMatch` (`:52–71`) compares `isStaggered` — it is the memo that keeps `BattleTopBar`
+- [x] `timerListsMatch` (`:52–71`) compares `isStaggered` — it is the memo that keeps `BattleTopBar`
       from re-rendering, so a missed field means a stale ring.
-- [ ] `BattleTopBar`: `tone={timer.isStaggered ? 'neutral' : timer.isStandby ? 'gold' : 'danger'}` — the
+- [x] `BattleTopBar`: `tone={timer.isStaggered ? 'neutral' : timer.isStandby ? 'gold' : 'danger'}` — the
       `neutral` tone already exists in `radial-countdown.tsx:12–16`; swap the `Swords` icon for lucide's
       `ShieldOff` while staggered.
-- [ ] Recovery: a new `cycleKey` (from `startCycle`'s `bumpVersion`) remounts the ring from full.
+- [x] Recovery: a new `cycleKey` (from `startCycle`'s `bumpVersion`) remounts the ring from full.
 
 **Implementation notes.** Reuse the standby pattern exactly: standby already renders a different tone
 (`gold`), icon (`Eye`) and `cycleKey` (`standby-<id>`) for a "not attacking yet" state. Stagger is the
@@ -228,25 +245,28 @@ same shape with a different reason.
 
 ### G. UI & feedback
 
-- [ ] **Poise bar**: new `src/components/battle/enemy-poise-bar.tsx` under the enemy HP bar in
+- [x] **Poise bar**: new `src/components/battle/enemy-poise-bar.tsx` under the enemy HP bar in
       `enemy-display.tsx` — thin, no label, fill = `current / max`; empties on Break, refills on recovery;
       colours in `POISE_BAR_CLASSES` (`src/constants/ui.ts`), warm parchment / amber, no bright yellow.
       Optionally mark the escalated max. The training dummy keeps its readout and shows the bar beneath it.
-- [ ] **Staggered sprite state**: `enemy-staggered` tint/tilt class on the sprite wrapper while
-      `isEnemyStaggered(enemyPoise[enemy.id])` (`src/styles/animations.css`), with a
-      `src/styles/reduced-motion.css:27–30` fallback; cleared on recovery (state-driven, so it un-tints when
-      the tick zeroes the counter).
+- [x] **Staggered sprite state**: `enemy-staggered` (desaturated, tilted, slow sway) on the sprite
+      **image itself** — not the wrapper, whose `animation` slot belongs to the recoil — while
+      `isEnemyStaggered(poise)` (`src/styles/animations.css`); `reduced-motion.css` drops the sway and keeps
+      the static tint/tilt. State-driven, so it clears when the tick zeroes the counter.
 - [x] **Flinch callout renamed** (decided, see §J): the shipped flinch-cap pop in `enemy-display.tsx`
       (driven by `lastMaxFlinchAtom`) now reads **"Flinched!"** — text only, same trigger, same animation.
-- [ ] **Break callout**: its **own** pop reading **"Staggered!"**, driven by `lastPoiseBreakAtom`, reusing
+- [x] **Break callout**: its **own** pop reading **"Staggered!"**, driven by `lastPoiseBreakAtom`, reusing
       the same `EnemySprite` pattern and the `stagger-callout` keyframes (`animations.css:448`) with a
       `stagger-callout--break` modifier (bigger, held for `POISE_BREAK_CALLOUT_DURATION_MS`) so it clearly
       outranks the flinch one.
-- [ ] **Break SFX** through `SoundService` — new `SoundNames` entry in `src/constants/audio.ts`, played from
+- [x] **Break SFX** through `SoundService` — `POISE_BREAK_SOUND` in `src/constants/audio.ts` (nullable, like
+      `BOMB_EXPLOSION_SOUND`; reuses `blacksmithShorter` until a dedicated shatter asset exists), played from
       the `EnemySprite` break effect.
-- [ ] **Recovery cue** (subtle: sprite un-tints, ring returns to `danger`, optional short SFX).
-- [ ] Vulnerable-window damage numbers use the `critical` style already used for skill hits
-      (`enemy-display.tsx:116–130`).
+- [x] **Recovery cue** (sprite un-tints, poise bar refills, ring returns to `danger` on the fresh cycle). No
+      recovery SFX for now.
+- [x] Vulnerable-window damage numbers use the `critical` style already used for skill hits — `EnemySprite`
+      reads `isStaggered` through a ref at hit time (so the breaking hit also reads as a crit) without
+      re-running the damage effect when the window opens or closes.
 
 **Implementation notes.** All per-enemy feedback already lives in `EnemySprite`; the ring lives in
 `BattleTopBar`. No new overlay host is needed. `EnemySprite` already re-renders on every `lastDamage`, so
@@ -259,35 +279,39 @@ subscribing it to `enemyPoiseAtom` adds no new render cadence.
       `skillMultiplier` only on `source: 'skill'`, per-hit attackers keep order, empty batch).
 - [x] `src/lib/flinch-system.bench.ts` — moved `calculateStaggerPushMs` / `clampStaggerToCycleBudget` benches
       plus `resolveStaggerHits` (1 hit / 4-hit batch) and `weighHitsByAttacker`, on `BENCH_OPTIONS`.
-- [ ] `src/lib/poise-system.test.ts`: `calculateMaxPoise` scales with `maxHp`; `poise` multiplier direction
-      (0.5 halves, 2 doubles); a batch resolves in order and breaks exactly once; no accumulation while
-      staggered or immune (same reference back); escalation sequence 100% → 125% → 150% → 150% (cap holds
-      for `breakCount ≥ 2`); `tickEnemyPoise` counts down, flips stagger → immunity, returns the same
-      reference when idle; regen off by default; `createEnemyPoiseState` seeds `current === max === originalMax`.
-- [ ] `src/lib/poise-system.bench.ts`: `calculatePoiseDamage`; `applyPoiseHits` (1 hit / 4-hit batch / batch
+- [x] `src/lib/poise-system.test.ts` (33 tests): `calculateMaxPoise` scales with `maxHp`; `poise` multiplier
+      direction (0.5 halves, 2 doubles); a batch resolves in order and breaks exactly once; no accumulation
+      while staggered or immune (same reference back); escalation sequence 100% → 125% → 150% → 150% (cap
+      holds for `breakCount ≥ 2`); `tickEnemyPoise` counts down, flips stagger → immunity, returns the same
+      reference when idle; regen off by default (and works when a rate is passed); `createEnemyPoiseState`
+      seeds `current === max === originalMax`; vulnerable rounding; signature order/stability.
+- [x] `src/lib/poise-system.bench.ts`: `calculatePoiseDamage`; `applyPoiseHits` (1 hit / 4-hit batch / batch
       that breaks); `resolveEscalatedMaxPoise`; `tickEnemyPoise` with 4 enemies (idle → same reference; 2
       staggered). `BENCH_OPTIONS`.
-- [ ] `src/lib/battle-atoms.test.ts` (vanilla `createStore`, existing style): `damageEnemyAtom` and
-      `activateSkillAtom` update `enemyPoise` in the same commit as HP; vulnerable-window bonus on both paths;
-      the breaking hit gets no bonus; no poise on a killing blow or a standby target; `lastPoiseBreak`
-      published once; `battleTickAtom` stays silent (`store.sub` listener) while poise is idle.
-- [ ] `src/lib/battle-setup.test.ts`: `createBattleState` seeds `enemyPoise` for every enemy with
+- [x] `src/lib/battle-atoms.test.ts` (`describe('enemy poise')`, 12 tests, vanilla `createStore`):
+      `damageEnemyAtom` and `activateSkillAtom` update `enemyPoise` in the same commit as HP (one listener
+      call, matches the pure reducer); vulnerable-window bonus on both paths; the breaking hit gets no bonus;
+      no poise on a killing blow, a standby target, or while immune (HP still lands); `lastPoiseBreak`
+      published once; `battleTickAtom` stays silent while idle, counts the window down and flips to immunity,
+      and `staggeredEnemySignatureAtom` only notifies on the flip; a fresh setup resets everything.
+- [x] `src/lib/battle-setup.test.ts`: `createBattleState` seeds `enemyPoise` for every enemy with
       `breakCount === 0` and both counters at 0.
 - [ ] Stretch: first-ever test for `useEnemyAttackTimers` — a staggered signature drops the shot timer and
-      a cleared signature re-arms a full cycle. There is no hook test today.
+      a cleared signature re-arms a full cycle. There is no hook test today, and no React test environment
+      (`jsdom` / `@testing-library/react`) is installed, so this needs a dev-dependency decision first.
 
 ### I. Docs to update
 
-- [ ] `docs/COMBAT_SYSTEM.md:51–66` — leave the "Enemy Stagger (Flinch) System" section intact and add a
+- [x] `docs/COMBAT_SYSTEM.md:51–66` — leave the "Enemy Stagger (Flinch) System" section intact and add a
       **Poise / Break** subsection right after it, with the formulas from §5 and a line stating both
       anti-stunlock caps are independent.
-- [ ] `docs/RPG_SYSTEM.md:30` — VIT "stagger resistance" → "flinch resistance"; note `poise` is a separate
+- [x] `docs/RPG_SYSTEM.md:30` — VIT "stagger resistance" → "flinch resistance"; note `poise` is a separate
       per-enemy stat, not derived from VIT.
-- [ ] `docs/BATTLE_SCREEN.md:59,119,140` — component map (poise bar, callout wording), `BattleState`
+- [x] `docs/BATTLE_SCREEN.md:59,119,140` — component map (poise bar, callout wording), `BattleState`
       fields (`enemyPoise`, `lastPoiseBreak`), feature list.
-- [ ] `docs/REMAINING_WORK.md:14` — the "telegraphed wind-ups / interrupt" item is partially covered by
+- [x] `docs/REMAINING_WORK.md:14` — the "telegraphed wind-ups / interrupt" item is partially covered by
       Break; reword.
-- [ ] `docs/ideas-proposals/ORTHOGONAL_FEATURES.md:65–76` (#3) and `docs/FEATURE_IDEAS_AND_GAPS.md:29` —
+- [x] `docs/ideas-proposals/ORTHOGONAL_FEATURES.md:65–76` (#3) and `docs/FEATURE_IDEAS_AND_GAPS.md:29` —
       mark the interrupt half as shipped once it is.
 
 ### J. Related bugs & open decisions
@@ -311,10 +335,12 @@ Decisions:
       `weighHitsByAttacker`. Update the copy in `src/components/skills/passive-descriptions.ts:42`.
 - [x] Separate `POISE_SKILL_MULTIPLIER` (not `SKILL_STAGGER_MULTIPLIER`) — different tuning axis: an ultimate
       that maxes the flinch shouldn't automatically break.
-- [x] Standby enemies accumulate poise but cannot Break until their first attack cycle — there is nothing to
-      cancel yet, and the preemptive bonus already rewards hitting them.
+- [x] Standby enemies take no poise damage until their first attack cycle — there is nothing to cancel yet,
+      and the preemptive bonus already rewards hitting them. (Simpler than "accumulate but don't Break",
+      which would spring a surprise Break on the first post-standby hit.)
 - [x] Training dummy breaks anyway (tick-owned windows work without the attack hook), so the feedback can be
-      tuned in the Training Grounds; the readout shows the pool.
+      tuned in the Training Grounds; the readout shows the pool. Its `poise` is scaled against
+      `TRAINING_DUMMY_POISE_HP_EQUIVALENT` so the sentinel HP doesn't make the pool unbreakable (§B).
 - [x] Callout wording — the existing flinch-cap text becomes "Flinched!", the new Break callout reads
       "Staggered!" (see §G).
 - [x] `POISE_REGEN_PER_SECOND` off at launch — escalation + immunity already stop chain-breaks; add regen
@@ -331,9 +357,9 @@ Pure logic only in `src/lib/`, JSDoc on every export, one `*.test.ts` and one `*
 | `src/lib/flinch-system.ts` | [x] done | `calculateStaggerPushMs`, `clampStaggerToCycleBudget`, `StaggerHit`, `StaggerResolution`, `resolveStaggerHits` (moved verbatim) + `AttackerHit`, `weighHitsByAttacker` |
 | `src/lib/flinch-system.test.ts` | [x] done | moved `describe('Stagger Calculations')` (14 tests) + `describe('weighHitsByAttacker')` (6 tests) |
 | `src/lib/flinch-system.bench.ts` | [x] done | moved stagger benches + `resolveStaggerHits` (1-hit / 4-hit) + `weighHitsByAttacker` (1-hit match / 4-hit skill), on `BENCH_OPTIONS` |
-| `src/lib/poise-system.ts` | [ ] new | `EnemyPoiseState`, `createEnemyPoiseState`, `calculateMaxPoise`, `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `isEnemyStaggered`, `isPoiseImmune`, `applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableHits` |
-| `src/lib/poise-system.test.ts` | [ ] new | see §H |
-| `src/lib/poise-system.bench.ts` | [ ] new | see §H |
+| `src/lib/poise-system.ts` | [x] done | `EnemyPoiseState`, `createEnemyPoiseState`, `calculateMaxPoise`, `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `isEnemyStaggered`, `isPoiseImmune`, `applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableDamage`, `resolveVulnerableHits`, `resolveStaggeredEnemySignature` |
+| `src/lib/poise-system.test.ts` | [x] done | 33 tests, see §H |
+| `src/lib/poise-system.bench.ts` | [x] done | `calculatePoiseDamage`, `resolveEscalatedMaxPoise`, `applyPoiseHits` ×3, `resolveVulnerableHits`, `tickEnemyPoise` idle / 2-staggered, `resolveStaggeredEnemySignature` — all ≈0.1–0.3 µs |
 
 `rpg-calculations.ts` keeps everything else (HP, damage, cooldown, Guard, thresholds). The three importers of
 the moved symbols (`use-enemy-attack-timers.ts`, `rpg-calculations.test.ts`, `rpg-calculations.bench.ts`) are
@@ -353,7 +379,7 @@ one hit  ──►  lastDamage event (unchanged: amount, hits[], characterId, so
            weighHitsByAttacker(hits, party, POISE_SKILL_MULTIPLIER, source)
            → applyPoiseHits → current −= poise damage
            ignored while broken or immune — HP damage and Flinch still land
-           current ≤ 0 → BREAK: staggerRemainingMs set, lastPoiseBreak published
+           current ≤ 0 → BREAK: staggerRemainingMs set, lastPoiseBreak { enemyIds } published
                           hook drops the attack cycle; "Staggered!"; vulnerable window (+HP damage)
            battleTick counts the window down → recovery → immuneRemainingMs set → hook opens a fresh cycle
 ```

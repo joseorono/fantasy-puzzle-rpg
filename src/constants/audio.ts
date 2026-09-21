@@ -96,3 +96,9 @@ export const MAX_MATCH_SOUND_VOLUME = 1;
  * Temporary: reuses the uncork SFX until a dedicated explosion sound exists.
  */
 export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;
+
+/**
+ * Sound played when an enemy Breaks (poise emptied, attack cancelled). Set to `null` to disable.
+ * Temporary: reuses the short blacksmith clang until a dedicated shatter SFX exists.
+ */
+export const POISE_BREAK_SOUND: SoundNames | null = SoundNames.blacksmithShorter;

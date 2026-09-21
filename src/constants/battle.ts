@@ -50,6 +50,55 @@ export const STAGGER_VIT_DIVISOR = 8;
  */
 export const SKILL_STAGGER_MULTIPLIER = 2.5;
 
+// ─── Enemy Poise / Break ─────────────────────────────────────────────────────
+// Builds on top of Flinch: the same hit that nudges the attack timer also deals "poise damage"
+// to a per-enemy posture pool. Emptying it Breaks the enemy — its pending attack is cancelled,
+// it stays vulnerable for a window, then re-arms behind two anti-stunlock guards (poise-damage
+// immunity + an escalating pool). Math in `~/lib/poise-system`; design in docs/ENEMY_POISE_STAGGER.md.
+
+/** Pool size as a fraction of max HP: a poise-1 enemy Breaks after taking this share of its HP as poise damage. */
+export const POISE_POOL_HP_FRACTION = 0.4;
+
+/**
+ * Multiplies the poise damage of skill (ultimate) hits. Deliberately separate from
+ * {@link SKILL_STAGGER_MULTIPLIER}: an ultimate that maxes the flinch should not automatically Break.
+ */
+export const POISE_SKILL_MULTIPLIER = 2.0;
+
+/** How long (ms) a Break lasts: the attack is cancelled and the enemy takes bonus damage for this window. */
+export const POISE_BREAK_STAGGER_DURATION_MS = 2500;
+
+/** Bonus HP damage on a staggered enemy, e.g. `0.5` = +50%. Mirrors {@link PREEMPTIVE_STRIKE_DAMAGE_BONUS}. */
+export const POISE_BREAK_DAMAGE_BONUS = 0.5;
+
+/**
+ * After a Break ends, the enemy ignores poise damage for this long (ms). HP damage and the Flinch
+ * push still land — this only stops the pool from filling again immediately.
+ */
+export const POISE_BREAK_IMMUNITY_MS = 2000;
+
+/** Each Break raises the enemy's max poise by this fraction of its ORIGINAL max. */
+export const POISE_MAX_GROWTH_PER_BREAK = 0.25;
+
+/** Hard cap on escalated max poise, as a multiple of the original: 1.5 = never above 150%. */
+export const POISE_MAX_GROWTH_CAP = 1.5;
+
+/**
+ * Extra poise damage per cascade level, on top of what the combo damage multiplier already adds
+ * (hit amounts carry it). `0` = combos fill poise exactly as fast as they deal HP damage.
+ */
+export const POISE_CASCADE_BONUS_PER_LEVEL = 0;
+
+/**
+ * Pool refill while not staggered, as a fraction of max per second. `0` = off; immunity and the
+ * escalation cap already stop chain-Breaks, so only enable this if long fights feel like a
+ * guaranteed Break.
+ */
+export const POISE_REGEN_PER_SECOND = 0;
+
+/** How long (ms) the "Staggered!" Break callout holds (the "Flinched!" one keeps its own 900 ms). */
+export const POISE_BREAK_CALLOUT_DURATION_MS = 1300;
+
 /** How long (ms) a centered battle callout ("Preemptive Strike!", "No moves! Reshuffle!") stays on screen. */
 export const BATTLE_CALLOUT_DURATION_MS = 1200;
 

@@ -7,6 +7,7 @@ import type { CharacterData, EnemyData } from '~/types/rpg-elements';
 import { resolveCharacterCooldown } from '~/lib/skill-system';
 import { getPartyWithEffectiveStats } from '~/lib/equipment-system';
 import { createOpeningBoard } from '~/lib/board-generation';
+import { createEnemyPoiseState } from '~/lib/poise-system';
 import { MIN_MATCH_SOUND_VOLUME, MAX_MATCH_SOUND_VOLUME } from '~/constants/audio';
 import { ENEMY_STANDBY_MIN_MS, ENEMY_STANDBY_MAX_MS } from '~/constants/battle';
 
@@ -125,6 +126,8 @@ export function createBattleState(
     lastPreemptiveStrike: null,
     lastReshuffle: null,
     lastMaxFlinch: null,
+    enemyPoise: Object.fromEntries(enemies.map((e) => [e.id, createEnemyPoiseState(e)])),
+    lastPoiseBreak: null,
     selectedEnemyId: enemies[0].id,
     board: createOpeningBoard(),
     selectedOrb: null,

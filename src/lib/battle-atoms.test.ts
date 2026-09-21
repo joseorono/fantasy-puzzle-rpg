@@ -11,8 +11,11 @@ import {
   battleTickAtom,
   damageEnemyAtom,
   enemiesAtom,
+  enemyPoiseAtom,
   ensureFreshBattleAtom,
   gameStatusAtom,
+  lastPoiseBreakAtom,
+  staggeredEnemySignatureAtom,
   standbyEnemyIdsAtom,
   totalDamageDealtAtom,
   deadOrbColorClassesAtom,
@@ -29,9 +32,16 @@ import {
 } from '~/stores/battle-atoms';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { TRAINING_DUMMY } from '~/constants/enemies/training';
-import { BATTLE_TICK_DELTA_SECONDS } from '~/constants/battle';
+import {
+  BATTLE_TICK_DELTA_SECONDS,
+  POISE_BREAK_IMMUNITY_MS,
+  POISE_BREAK_STAGGER_DURATION_MS,
+  POISE_SKILL_MULTIPLIER,
+} from '~/constants/battle';
 import { calculateItemCooldownInMs } from './rpg-calculations';
-import { getPartyPassiveModifiers } from './skill-system';
+import { getPartyPassiveModifiers, getSelectedSkill } from './skill-system';
+import { weighHitsByAttacker } from './flinch-system';
+import { applyPoiseHits, isEnemyStaggered, resolveVulnerableDamage } from './poise-system';
 
 /**
  * These run the battle atoms through Jotai's vanilla store (no React), so they exercise the
@@ -455,5 +465,224 @@ describe('totalDamageDealt', () => {
       expect(store.get(totalDamageDealtAtom) - before).toBe(removed);
     }
     expect(store.get(totalDamageDealtAtom)).toBeGreaterThan(0);
+  });
+});
+
+describe('enemy poise', () => {
+  /** A standard store with every enemy past standby, so hits count toward poise. */
+  function createArmedStore(cooldowns?: number[]) {
+    const store = createBattleStore(cooldowns);
+    store.set(battleStateAtom, { ...store.get(battleStateAtom), standbyEnemyIds: [] });
+    return store;
+  }
+
+  function selectedPoise(store: BattleStore) {
+    return store.get(enemyPoiseAtom)[store.get(battleStateAtom).selectedEnemyId];
+  }
+
+  function selectedEnemy(store: BattleStore) {
+    const state = store.get(battleStateAtom);
+    return state.enemies.find((e) => e.id === state.selectedEnemyId)!;
+  }
+
+  /** Overwrites the selected enemy's poise state in place. */
+  function patchSelectedPoise(store: BattleStore, patch: Partial<ReturnType<typeof selectedPoise>>) {
+    const state = store.get(battleStateAtom);
+    const id = state.selectedEnemyId;
+    store.set(battleStateAtom, {
+      ...state,
+      enemyPoise: { ...state.enemyPoise, [id]: { ...state.enemyPoise[id], ...patch } },
+    });
+  }
+
+  /** A hit that empties the selected enemy's pool in one go, regardless of its poise stat. */
+  function breakingAmount(store: BattleStore) {
+    return Math.ceil(selectedPoise(store).max / (selectedEnemy(store).poise ?? 1)) + 1;
+  }
+
+  it('seeds a full pool per enemy on setup', () => {
+    const store = createBattleStore();
+    for (const enemy of store.get(enemiesAtom)) {
+      const poise = store.get(enemyPoiseAtom)[enemy.id];
+      expect(poise.current).toBe(poise.max);
+      expect(poise.breakCount).toBe(0);
+    }
+    expect(store.get(lastPoiseBreakAtom)).toBeNull();
+    expect(store.get(staggeredEnemySignatureAtom)).toBe('');
+  });
+
+  it('damageEnemyAtom deals poise damage in the same write as HP, matching the pure reducer', () => {
+    const store = createArmedStore();
+    const before = selectedPoise(store);
+    const enemy = selectedEnemy(store);
+    const hits = [{ amount: 10, characterId: INITIAL_PARTY[0].id }, { amount: 7 }];
+    const expected = applyPoiseHits(
+      before,
+      weighHitsByAttacker(hits, store.get(partyAtom), POISE_SKILL_MULTIPLIER, 'match'),
+      enemy.poise ?? 1,
+    ).next;
+
+    const listener = vi.fn();
+    store.sub(battleStateAtom, listener);
+    store.set(damageEnemyAtom, { hits });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(selectedPoise(store)).toEqual(expected);
+    expect(selectedPoise(store).current).toBeLessThan(before.current);
+    expect(selectedEnemy(store).currentHp).toBe(enemy.currentHp - 17);
+  });
+
+  it('a standby target takes no poise damage', () => {
+    const store = createBattleStore();
+    expect(store.get(standbyEnemyIdsAtom)).toContain(store.get(battleStateAtom).selectedEnemyId);
+    const before = selectedPoise(store);
+
+    store.set(damageEnemyAtom, 25);
+
+    expect(selectedPoise(store)).toBe(before);
+  });
+
+  it('a killing blow deals no poise damage', () => {
+    const store = createArmedStore();
+    const state = store.get(battleStateAtom);
+    store.set(battleStateAtom, {
+      ...state,
+      enemies: state.enemies.map((e) => (e.id === state.selectedEnemyId ? { ...e, currentHp: 5 } : e)),
+    });
+    const id = state.selectedEnemyId;
+    const before = store.get(enemyPoiseAtom)[id];
+
+    store.set(damageEnemyAtom, 500);
+
+    expect(store.get(enemyPoiseAtom)[id]).toBe(before);
+  });
+
+  it('breaks when the pool empties: attack window opens, event published once, breaking hit gets no bonus', () => {
+    const store = createArmedStore();
+    const id = store.get(battleStateAtom).selectedEnemyId;
+    const amount = breakingAmount(store);
+
+    store.set(damageEnemyAtom, amount);
+
+    const poise = selectedPoise(store);
+    expect(isEnemyStaggered(poise)).toBe(true);
+    expect(poise.staggerRemainingMs).toBe(POISE_BREAK_STAGGER_DURATION_MS);
+    expect(poise.breakCount).toBe(1);
+    expect(poise.current).toBe(poise.max);
+    expect(store.get(lastPoiseBreakAtom)).toEqual({ enemyIds: [id], timestamp: expect.any(Number) });
+    expect(store.get(staggeredEnemySignatureAtom)).toBe(id);
+    // The hit that causes the Break lands at face value.
+    expect(store.get(battleStateAtom).lastDamage?.amount).toBe(amount);
+  });
+
+  it('hits during the window take the vulnerable bonus and leave the pool alone', () => {
+    const store = createArmedStore();
+    store.set(damageEnemyAtom, breakingAmount(store));
+    const brokenPoise = selectedPoise(store);
+    const breakEvent = store.get(lastPoiseBreakAtom);
+    const hpBefore = selectedEnemy(store).currentHp;
+
+    store.set(damageEnemyAtom, { hits: [{ amount: 10 }, { amount: 6 }] });
+
+    const landed = resolveVulnerableDamage(10, true) + resolveVulnerableDamage(6, true);
+    expect(store.get(battleStateAtom).lastDamage?.amount).toBe(landed);
+    expect(selectedEnemy(store).currentHp).toBe(hpBefore - landed);
+    expect(selectedPoise(store)).toBe(brokenPoise);
+    expect(store.get(lastPoiseBreakAtom)).toBe(breakEvent);
+  });
+
+  it('activateSkillAtom applies the vulnerable bonus and poise damage in one commit', () => {
+    const attacker = INITIAL_PARTY.find((member) => getSelectedSkill(member).target === 'enemy')!;
+    const ready = INITIAL_PARTY.map(() => 0);
+
+    // Baseline: what the skill removes from an unbroken target, and the poise it deals.
+    const plain = createArmedStore(ready);
+    const plainPoiseBefore = selectedPoise(plain);
+    const plainHpBefore = selectedEnemy(plain).currentHp;
+    plain.set(activateSkillAtom, attacker.id);
+    const baseDamage = plainHpBefore - selectedEnemy(plain).currentHp;
+    expect(baseDamage).toBeGreaterThan(0);
+    expect(selectedPoise(plain).current).toBeLessThan(plainPoiseBefore.current);
+
+    // Same skill on a Broken target: boosted HP damage, pool untouched.
+    const broken = createArmedStore(ready);
+    patchSelectedPoise(broken, { staggerRemainingMs: 1000 });
+    const brokenPoiseBefore = selectedPoise(broken);
+    const brokenHpBefore = selectedEnemy(broken).currentHp;
+    const listener = vi.fn();
+    broken.sub(battleStateAtom, listener);
+    broken.set(activateSkillAtom, attacker.id);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(brokenHpBefore - selectedEnemy(broken).currentHp).toBe(resolveVulnerableDamage(baseDamage, true));
+    expect(broken.get(battleStateAtom).lastDamage?.amount).toBe(resolveVulnerableDamage(baseDamage, true));
+    expect(selectedPoise(broken)).toBe(brokenPoiseBefore);
+  });
+
+  it('activateSkillAtom can break, publishing the struck id', () => {
+    const attacker = INITIAL_PARTY.find((member) => getSelectedSkill(member).target === 'enemy')!;
+    const store = createArmedStore(INITIAL_PARTY.map(() => 0));
+    const id = store.get(battleStateAtom).selectedEnemyId;
+    patchSelectedPoise(store, { current: 1 });
+
+    store.set(activateSkillAtom, attacker.id);
+
+    expect(isEnemyStaggered(selectedPoise(store))).toBe(true);
+    expect(store.get(lastPoiseBreakAtom)?.enemyIds).toEqual([id]);
+  });
+
+  it('battleTickAtom stays silent while every pool is idle', () => {
+    const store = createArmedStore([0, 0, 0, 0]);
+    const poiseBefore = store.get(enemyPoiseAtom);
+    const listener = vi.fn();
+    store.sub(battleStateAtom, listener);
+
+    store.set(battleTickAtom, BATTLE_TICK_DELTA_SECONDS);
+
+    expect(listener).not.toHaveBeenCalled();
+    expect(store.get(enemyPoiseAtom)).toBe(poiseBefore);
+  });
+
+  it('battleTickAtom counts the window down, flips to immunity, and only then changes the signature', () => {
+    const store = createArmedStore([0, 0, 0, 0]);
+    const id = store.get(battleStateAtom).selectedEnemyId;
+    patchSelectedPoise(store, { staggerRemainingMs: BATTLE_TICK_DELTA_SECONDS * 1000 * 2 });
+    const signatureListener = vi.fn();
+    store.sub(staggeredEnemySignatureAtom, signatureListener);
+    expect(store.get(staggeredEnemySignatureAtom)).toBe(id);
+
+    store.set(battleTickAtom, BATTLE_TICK_DELTA_SECONDS);
+    expect(selectedPoise(store).staggerRemainingMs).toBeCloseTo(BATTLE_TICK_DELTA_SECONDS * 1000, 6);
+    expect(signatureListener).not.toHaveBeenCalled();
+
+    store.set(battleTickAtom, BATTLE_TICK_DELTA_SECONDS);
+    expect(selectedPoise(store).staggerRemainingMs).toBe(0);
+    expect(selectedPoise(store).immuneRemainingMs).toBe(POISE_BREAK_IMMUNITY_MS);
+    expect(signatureListener).toHaveBeenCalledTimes(1);
+    expect(store.get(staggeredEnemySignatureAtom)).toBe('');
+  });
+
+  it('ignores poise damage while immune, but HP damage still lands', () => {
+    const store = createArmedStore();
+    patchSelectedPoise(store, { immuneRemainingMs: 500 });
+    const before = selectedPoise(store);
+    const hpBefore = selectedEnemy(store).currentHp;
+
+    store.set(damageEnemyAtom, 20);
+
+    expect(selectedPoise(store)).toBe(before);
+    expect(selectedEnemy(store).currentHp).toBe(hpBefore - 20);
+  });
+
+  it('a fresh setup resets pools and clears the break event', () => {
+    const store = createArmedStore();
+    store.set(damageEnemyAtom, breakingAmount(store));
+    expect(store.get(lastPoiseBreakAtom)).not.toBeNull();
+
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: INITIAL_ENEMIES });
+
+    expect(store.get(lastPoiseBreakAtom)).toBeNull();
+    expect(store.get(staggeredEnemySignatureAtom)).toBe('');
+    for (const poise of Object.values(store.get(enemyPoiseAtom))) expect(poise.breakCount).toBe(0);
   });
 });
