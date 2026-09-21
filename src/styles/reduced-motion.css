@@ -30,6 +30,11 @@ html[data-reduced-motion] .guard-block-popup {
   animation: none !important;
 }
 
+/* A Broken enemy keeps its static tint and tilt; only the sway goes. */
+html[data-reduced-motion] .enemy-staggered {
+  animation: none !important;
+}
+
 /* The hitstop freeze-frame is skipped in JS too (`triggerHitstop`); this covers a class that was
    already on the screen when the setting was flipped mid-battle. */
 html[data-reduced-motion] #game-screen.hitstop-freeze,
