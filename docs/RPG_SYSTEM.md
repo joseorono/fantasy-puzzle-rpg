@@ -27,9 +27,11 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
     meter bleeds, via `calculateGuardDecayResistance(party) = 1 / (1 + livingVit / GUARD_DECAY_VIT_DIVISOR)`.
     A diminishing (hyperbolic) curve that stays in `(0, 1]`, so VIT makes the shield last but never
     freezes it. Pairs with SPD's Guard Charge Rate: SPD builds the shield fast, VIT makes it last.
-  - **Stagger resistance** (enemies only) — VIT reduces how far each hit pushes back an enemy's next
-    attack, on a diminishing (sqrt) curve. See the Enemy Stagger section in
-    [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md).
+  - **Flinch resistance** (enemies only) — VIT reduces how far each hit pushes back an enemy's next
+    attack, on a diminishing (sqrt) curve. See the Enemy Stagger (Flinch) section in
+    [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md). Note that **poise** (how easily an enemy is Staggered
+    outright) is a separate per-enemy stat, `EnemyData.poise`, not derived from VIT — though the
+    poise *pool* scales with max HP, which VIT feeds.
 
 ### Speed (SPD)
 **Effect**: Reduces cooldowns and attack intervals

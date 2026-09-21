@@ -55,8 +55,9 @@ src/
 │       ├── match3-board.tsx           # Match-3 game board
 │       ├── battle-top-bar.tsx         # Turn/score/mode header (incl. "SPARRING" in training mode)
 │       ├── battle-hp-bar.tsx          # Shared HP bar (party + enemy)
+│       ├── enemy-poise-bar.tsx        # Thin enemy poise (posture) bar under the HP bar
 │       ├── battle-item-bar.tsx        # Consumable battle items, SPD-scaled shared cooldown
-│       ├── battle-callout.tsx         # Combo/stagger/reshuffle/preemptive-strike callouts
+│       ├── battle-callout.tsx         # Combo/reshuffle/preemptive-strike callouts ("Flinched!" / "Staggered!" live in enemy-display)
 │       ├── battle-over-modal.tsx      # Victory/defeat modal
 │       ├── battle-pause-overlay.tsx   # Pause overlay (includes Leave button in training mode)
 │       ├── battle-rating-screen.tsx   # Arcade star-rating screen
@@ -116,7 +117,7 @@ Battle state lives entirely in Jotai (`src/stores/battle-atoms.ts`), backed by a
 - `Match` - Match detection result (orbs, type, count, multiplier)
 - `BattleStatus` - `'playing' | 'won' | 'lost' | 'abandoned'`
 - `BattleMode` - `'standard' | 'training'`
-- `BattleState` - Complete battle state: party, `enemies[]`, `selectedEnemyId`, board, guard, combo/rating tracking (`maxCombo`, `itemsUsed`, `ultimateSkillsUsed`, `totalDamageDealt`, `startedAt`), and event fields for callouts (`lastPreemptiveStrike`, `lastReshuffle`, `lastMaxFlinch`, `lastSkillActivation`)
+- `BattleState` - Complete battle state: party, `enemies[]`, `selectedEnemyId`, board, guard, per-enemy poise pools (`enemyPoise`), combo/rating tracking (`maxCombo`, `itemsUsed`, `ultimateSkillsUsed`, `totalDamageDealt`, `startedAt`), and event fields for callouts (`lastPreemptiveStrike`, `lastReshuffle`, `lastMaxFlinch`, `lastPoiseBreak`, `lastSkillActivation`)
 
 ## Customization
 - Modify `INITIAL_PARTY` in `constants/party.ts` to change party composition
@@ -138,6 +139,7 @@ Battle state lives entirely in Jotai (`src/stores/battle-atoms.ts`), backed by a
 ✅ Cascade combo damage multiplier & visual callouts
 ✅ Wildcard bomb special tiles with 3×3 explosions & chain detonation
 ✅ Enemy stagger / flinch delay mechanic with anti-stunlock budget
+✅ Enemy poise pool & Break (attack cancelled, vulnerable window, immunity + capped escalation)
 ✅ Active hero skills (Ultimates) with burst overlays & cooldowns
 ✅ Consumable battle item bar with SPD-scaled shared cooldown
 ✅ Hitstop freeze-frame on impact

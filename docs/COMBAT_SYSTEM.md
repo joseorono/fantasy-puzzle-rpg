@@ -62,8 +62,18 @@ The battle screen now features a fully functional combat system with enemy attac
   - The budget resets to 0 whenever the enemy fires its attack.
 - **Visual Feedback**:
   - **Countdown Ring Nudge**: The timer ring (`RadialCountdown`) reads as time remaining until the attack, anchored by `resolveCountdownRingAnchor` (`src/lib/battle-system.ts`), so a push of `p` ms steps the fill back by `p / interval` wherever it lands in the cycle. The ring fill is exempt from the hitstop freeze so it stays in sync with the real release time.
-  - **"STAGGER!" Callout**: Pop of warm-amber "STAGGER!" text over the enemy sprite when a hit reaches the per-cycle cap.
-- **Implementation**: Pure formulas in `src/lib/rpg-calculations.ts` (`calculateStaggerPushMs`, `clampStaggerToCycleBudget`), timers in `src/hooks/use-enemy-attack-timers.ts`, and tunables in `src/constants/battle.ts`.
+  - **"Flinched!" Callout**: Pop of warm-amber "Flinched!" text over the enemy sprite when a hit reaches the per-cycle cap.
+- **Implementation**: Pure formulas in `src/lib/flinch-system.ts` (`calculateStaggerPushMs`, `clampStaggerToCycleBudget`, `resolveStaggerHits`, `weighHitsByAttacker`), timers in `src/hooks/use-enemy-attack-timers.ts`, and tunables in `src/constants/battle.ts`.
+
+### Enemy Poise / Break System
+Builds **on top of** Flinch — the same hit does both. Full design and checklist: [ENEMY_POISE_STAGGER.md](./ENEMY_POISE_STAGGER.md).
+- **Poise pool**: every enemy has a posture pool `maxPoise = maxHp × POISE_POOL_HP_FRACTION` (0.4). Each hit deals `poiseDamage = amount × (enemy.poise ?? 1) × hitMultiplier`, where `hitMultiplier` is the attacker's `staggerPushMultiplier` passive × `POISE_SKILL_MULTIPLIER` (2.0) for ultimates — the same `weighHitsByAttacker` the flinch uses, with its own skill constant. Hit amounts already carry the match-size and cascade multipliers, so combos and hard hits fill the pool faster by construction (`POISE_CASCADE_BONUS_PER_LEVEL` adds an optional extra, off by default).
+- **`poise` stat** (`EnemyData.poise`, default 1): a multiplier on incoming poise damage. `0.5` = stoic (Moss Golem), `1.6` = squishy (Swamp Frog).
+- **Break**: when the pool empties the enemy is **Staggered** for `POISE_BREAK_STAGGER_DURATION_MS` (2.5 s): its pending attack is **cancelled** (the attack-timer hook drops the cycle), it takes `× (1 + POISE_BREAK_DAMAGE_BONUS)` (+50%) HP damage — read from the pre-hit state, so the breaking hit itself gets no bonus — and the countdown ring turns neutral with a `ShieldOff` icon and counts the window down. Recovery opens a fresh full attack cycle.
+- **Anti-stunlock**: after recovery the enemy is **immune to poise damage** for `POISE_BREAK_IMMUNITY_MS` (2 s) — HP damage and Flinch still land — and its max poise escalates by `POISE_MAX_GROWTH_PER_BREAK` (25%) of the original per Break, hard-capped at `POISE_MAX_GROWTH_CAP` (150%). These caps are independent of the Flinch cap: `MAX_STAGGER_FRACTION_PER_CYCLE` bounds Flinch per attack cycle, immunity + escalation bound Breaks per battle.
+- **Rules**: no poise damage on a killing blow or on a standby (observing) target; Breaks work in Training mode (the windows are battle-state counters ticked by `battleTickAtom`, not hook timers).
+- **Visual Feedback**: thin amber poise bar under the enemy HP bar (`enemy-poise-bar.tsx`, empties for the Break window, tick mark at the original max once escalated), a larger "Staggered!" callout (`POISE_BREAK_CALLOUT_DURATION_MS`), a washed-out swaying sprite (`.enemy-staggered`), the neutral ring, and a Break SFX (`POISE_BREAK_SOUND`).
+- **Implementation**: Pure math in `src/lib/poise-system.ts` (`applyPoiseHits`, `tickEnemyPoise`, `resolveVulnerableHits`, `resolveEscalatedMaxPoise`…), state in `BattleState.enemyPoise` / `lastPoiseBreak`, applied by `damageEnemyAtom` / `activateSkillAtom` and ticked by `battleTickAtom` (`src/stores/battle-atoms.ts`), attack cancel in `src/hooks/use-enemy-attack-timers.ts` via `staggeredEnemySignatureAtom`, tunables in `src/constants/battle.ts`.
 
 ### Win/Lose Conditions
 

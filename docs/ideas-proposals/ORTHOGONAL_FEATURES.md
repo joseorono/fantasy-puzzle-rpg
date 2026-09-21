@@ -64,7 +64,7 @@ it **decays or resets when the party takes a hit**. Repurposes the vestigial `sc
 
 ### 3. Telegraphed heavy attacks (mid-battle wind-ups)  🟢–🟡 · perf: **Low–Med**
 
-- [ ] Implemented — *the always-on stagger cousin (see below) shipped; the telegraphed wind-up itself has not.*
+- [ ] Implemented — *the interrupt half shipped as the poise **Break** (a filled poise pool cancels the pending attack, see `docs/ENEMY_POISE_STAGGER.md`), alongside the always-on flinch (see below); the telegraphed wind-up state itself has not.*
 
 Extend the existing standby/preemptive concept from *opening only* to *recurring*: enemies
 periodically enter a visible "charging" state for N seconds. Enough damage (or a stun)

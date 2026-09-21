@@ -18,8 +18,8 @@ Several foundational pillars have landed:
    isolated localStorage keys, Zod schema validation, migration hooks, disk save indicator badge,
    and browser close/reload protection (`src/stores/STORE_DOCS.md`).
 2. ~~**The match-3 board is "solved."**~~ **Resolved:** Cascades combo multiplier, wildcard bomb
-   special tiles (3×3 blasts), the party Guard defense meter, and the enemy stagger/flinch system
-   have significantly deepened the puzzle loop.
+   special tiles (3×3 blasts), the party Guard defense meter, and the enemy flinch + poise/Break
+   system (hits delay the attack, enough of them cancel it) have significantly deepened the puzzle loop.
 3. ~~**No passives or skill choices.**~~ **Resolved:** Full active (Ultimates) and passive skill
    system across 4 tiers per class, Indigolay icon sprite sheets, and the pause-menu Skills tab
    (`src/lib/skill-system.ts`, `src/constants/skills/`).

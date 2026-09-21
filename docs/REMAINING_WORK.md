@@ -11,7 +11,7 @@ Audit of open work as of 2026-09-13, based on the many planning docs already in 
 - [ ] **Charms/accessory slot** with on-match procs.
 - [ ] **Enemy archetypes with real mechanics** — shielded/armored/splitter/summoner types.
 - [ ] **Wave/endless "Horde" mode.**
-- [ ] **Telegraphed mid-battle wind-ups** — only the always-on stagger mechanic shipped; the actual charge-up/interrupt variant isn't built.
+- [ ] **Telegraphed mid-battle wind-ups** — the always-on flinch and the poise **Break** (enough hits cancel the pending attack — see `docs/ENEMY_POISE_STAGGER.md`) shipped, which covers the *interrupt* half; the visible charge-up state itself isn't built.
 - [ ] **Batched dungeon end-of-run rewards** — currently every fight interrupts with a full rewards screen instead of accumulating into one end-of-run tally; dungeon loot tables also only drop resources/coins, never gear.
 - [x] **Board "hint" affordance** — done: `useBoardHint` (`src/hooks/use-board-hint.ts`) calls `findPossibleMove()` after `BOARD_HINT_DELAY_MS` of idle on a settled board and both orbs of the swap get the muted `ORB_HINT_CLASSES` ring (`src/constants/battle.ts`, `src/constants/ui.ts`).
 
