@@ -94,7 +94,7 @@ export const POISE_CASCADE_BONUS_PER_LEVEL = 0;
  * escalation cap already stop chain-Breaks, so only enable this if long fights feel like a
  * guaranteed Break.
  */
-export const POISE_REGEN_PER_SECOND = 0;
+export const POISE_REGEN_PER_SECOND = 0.01;
 
 /** How long (ms) the "Staggered!" Break callout holds (the "Flinched!" one keeps its own 900 ms). */
 export const POISE_BREAK_CALLOUT_DURATION_MS = 1300;
