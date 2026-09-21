@@ -1,5 +1,12 @@
 import { atom, type Atom } from 'jotai';
-import type { BattleMode, BattleState, BattleStatus } from '~/types/battle';
+import type {
+  ArmedLineClear,
+  BattleMode,
+  BattleState,
+  BattleStatus,
+  LineClearRequest,
+  LineOrientation,
+} from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData, OrbType } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
@@ -51,6 +58,7 @@ import {
   type SkillCooldownReduction,
 } from '~/lib/battle-system';
 import { swapOrbs, isValidSwap } from '~/lib/match-3';
+import { getLineCount } from '~/lib/line-clear';
 import { removeMatchedOrbsAndRefill } from '~/lib/board-generation';
 import type { BattleRatingResult } from '~/lib/battle-rating';
 
@@ -291,6 +299,7 @@ export const setupBattleAtom = atom(
   null,
   (_get, set, params: { enemies: EnemyData[]; party: CharacterData[]; mode?: BattleMode }) => {
     set(battleStateAtom, createBattleState(params.party, params.enemies, { mode: params.mode }));
+    set(resetLineClearAtom);
   },
 );
 
@@ -299,6 +308,7 @@ export const resetBattleAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
   // Re-use the current encounter's enemies so a mid-battle reset replays the same fight
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies, { mode: currentState.mode }));
+  set(resetLineClearAtom);
 });
 
 // Ends a fight the player walks out of. Only the training leave path calls it; every "is the
@@ -320,6 +330,7 @@ export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[
   const state = get(battleStateAtom);
   if (state.gameStatus === 'playing') return;
   set(battleStateAtom, createBattleState(party, state.enemies, { mode: state.mode }));
+  set(resetLineClearAtom);
 });
 
 // Atom to remove matched orbs and refill board.
@@ -383,34 +394,55 @@ export const healPartyAtom = atom(null, (get, set, params: { amount: number; sou
   });
 });
 
-// Atom to clear an entire row of orbs
-export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
-  const currentState = get(battleStateAtom);
-  const board = currentState.board;
+// ─── Line-clear items (Row Clear / Column Clear) ─────────────────────────────
+// Firing is split from resolving: the item bar (or the board, in aim mode) files a request, and the
+// board resolves it once it has settled. See docs/LINE_CLEAR_ITEMS.md.
 
-  const orbIds = new Set(board[row].map((orb) => orb.id));
-  const refill = removeMatchedOrbsAndRefill(board, orbIds);
+/**
+ * The line-clear item the player is currently aiming with, if any. Transient UI state: it lives
+ * outside `BattleState` so arming never touches the battle or the save.
+ */
+export const armedLineClearAtom = atom<ArmedLineClear | null>(null);
 
-  set(battleStateAtom, {
-    ...currentState,
-    board: refill.board,
-    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
-  });
-});
+/**
+ * A fired line clear waiting to resolve. The board picks it up as soon as it settles, resolves the
+ * payout, and clears it. Holds the line, not the orb ids — see {@link LineClearRequest}.
+ */
+export const pendingLineClearAtom = atom<LineClearRequest | null>(null);
 
-// Atom to clear an entire column of orbs
-export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
-  const currentState = get(battleStateAtom);
-  const board = currentState.board;
+/**
+ * Fires when an item is actually spent from the board rather than from its own button, so the item
+ * bar can decrement the stack and start the shared cooldown without the two components knowing
+ * about each other.
+ */
+export const lastItemFiredAtom = atom<{ itemId: string; timestamp: number } | null>(null);
 
-  const orbIds = new Set(board.map((row) => row[col].id));
-  const refill = removeMatchedOrbsAndRefill(board, orbIds);
+/**
+ * Commits an aimed line clear: files the request, announces the spend, and disarms. Refuses when the
+ * battle is over or a clear is already queued, so one cooldown can never buy two clears.
+ */
+export const fireLineClearAtom = atom(
+  null,
+  (get, set, params: { itemId: string; orientation: LineOrientation; index: number }): boolean => {
+    const currentState = get(battleStateAtom);
+    if (currentState.gameStatus !== 'playing') return false;
+    if (get(pendingLineClearAtom) !== null) return false;
 
-  set(battleStateAtom, {
-    ...currentState,
-    board: refill.board,
-    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
-  });
+    const { itemId, orientation, index } = params;
+    if (index < 0 || index >= getLineCount(currentState.board, orientation)) return false;
+
+    const timestamp = Date.now();
+    set(pendingLineClearAtom, { orientation, index, timestamp });
+    set(lastItemFiredAtom, { itemId, timestamp });
+    set(armedLineClearAtom, null);
+    return true;
+  },
+);
+
+/** Drops any armed or queued line clear. Called whenever an encounter is (re)armed. */
+export const resetLineClearAtom = atom(null, (_get, set) => {
+  set(armedLineClearAtom, null);
+  set(pendingLineClearAtom, null);
 });
 
 // Derived atom for game status

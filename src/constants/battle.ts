@@ -160,6 +160,29 @@ export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.35;
 /** Hard ceiling on the cascade combo multiplier, regardless of chain depth. */
 export const MAX_COMBO_MULTIPLIER = 2.0;
 
+/** Delay (ms) between a move resolving on screen and its damage/heals landing. Covers the orb glow. */
+export const MATCH_RESOLVE_DELAY_MS = 200;
+
+/** Delay (ms) before matched orbs are removed and the board refills. Covers the disappear animation. */
+export const MATCH_REMOVE_DELAY_MS = 600;
+
+// ─── Line-clear items (Row Clear / Column Clear) ─────────────────────────────
+// A line clear wipes a whole row or column and pays out like a match: the orbs are grouped by
+// colour and each living hero acts on their own colour's count. Design: docs/LINE_CLEAR_ITEMS.md.
+
+/**
+ * Scales the damage of every colour group in a line clear. THIS IS THE LINE-CLEAR POWER KNOB:
+ * a cleared line hands each present colour a full match's worth of damage, so a 4-colour row pays
+ * out like four matches at once. Lower it if the items outclass playing the board.
+ */
+export const LINE_CLEAR_DAMAGE_MULTIPLIER = 1.0;
+
+/** Weight of a wildcard bomb when the auto-aim scores a candidate line (it takes a 3x3 with it). */
+export const LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT = 3;
+
+/** Weight of a gray orb when the auto-aim scores a candidate line: Guard, not damage, so worth less. */
+export const LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT = 0.5;
+
 // ─── Guard Meter ─────────────────────────────────────────────────────────────
 // Gray orbs trade raw damage for a party-wide Guard meter. Three independent levers move it:
 // SPD sets how fast it charges, VIT how slowly it bleeds, and the enemy's `guardBreak` how much

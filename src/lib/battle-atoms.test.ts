@@ -6,6 +6,10 @@ import {
   addGuardAtom,
   addScoreAtom,
   applyMatchResolutionAtom,
+  armedLineClearAtom,
+  fireLineClearAtom,
+  lastItemFiredAtom,
+  pendingLineClearAtom,
   battleModeAtom,
   battleStateAtom,
   battleTickAtom,
@@ -684,5 +688,79 @@ describe('enemy poise', () => {
     expect(store.get(lastPoiseBreakAtom)).toBeNull();
     expect(store.get(staggeredEnemySignatureAtom)).toBe('');
     for (const poise of Object.values(store.get(enemyPoiseAtom))) expect(poise.breakCount).toBe(0);
+  });
+});
+
+describe('line-clear items', () => {
+  const FIRE = { itemId: 'row-clear', orientation: 'row' as const, index: 2 };
+
+  it('files the request, announces the spend and disarms in one go', () => {
+    const store = createBattleStore();
+    store.set(armedLineClearAtom, { itemId: 'row-clear', orientation: 'row' });
+
+    expect(store.set(fireLineClearAtom, FIRE)).toBe(true);
+
+    expect(store.get(pendingLineClearAtom)).toMatchObject({ orientation: 'row', index: 2 });
+    expect(store.get(lastItemFiredAtom)).toMatchObject({ itemId: 'row-clear' });
+    expect(store.get(armedLineClearAtom)).toBeNull();
+  });
+
+  it('names the line rather than the orbs, so the board resolves it against a settled board', () => {
+    const store = createBattleStore();
+    store.set(fireLineClearAtom, FIRE);
+
+    expect(store.get(pendingLineClearAtom)).not.toHaveProperty('orbIds');
+  });
+
+  it('refuses a second clear while one is still queued, so one cooldown buys one clear', () => {
+    const store = createBattleStore();
+    store.set(fireLineClearAtom, FIRE);
+    const queued = store.get(pendingLineClearAtom);
+    const spent = store.get(lastItemFiredAtom);
+
+    expect(store.set(fireLineClearAtom, { ...FIRE, index: 5 })).toBe(false);
+
+    expect(store.get(pendingLineClearAtom)).toBe(queued);
+    expect(store.get(lastItemFiredAtom)).toBe(spent);
+  });
+
+  it('refuses to fire once the battle is over', () => {
+    const store = createBattleStore();
+    store.set(battleStateAtom, { ...store.get(battleStateAtom), gameStatus: 'won' });
+
+    expect(store.set(fireLineClearAtom, FIRE)).toBe(false);
+    expect(store.get(pendingLineClearAtom)).toBeNull();
+    expect(store.get(lastItemFiredAtom)).toBeNull();
+  });
+
+  it('refuses a line that is not on the board', () => {
+    const store = createBattleStore();
+    const board = store.get(battleStateAtom).board;
+
+    expect(store.set(fireLineClearAtom, { ...FIRE, index: -1 })).toBe(false);
+    expect(store.set(fireLineClearAtom, { ...FIRE, index: board.length })).toBe(false);
+    expect(store.set(fireLineClearAtom, { ...FIRE, orientation: 'column', index: board[0].length })).toBe(false);
+    expect(store.get(pendingLineClearAtom)).toBeNull();
+  });
+
+  it('accepts the last row and the last column', () => {
+    const store = createBattleStore();
+    const board = store.get(battleStateAtom).board;
+
+    expect(store.set(fireLineClearAtom, { ...FIRE, index: board.length - 1 })).toBe(true);
+    store.set(pendingLineClearAtom, null);
+    expect(store.set(fireLineClearAtom, { ...FIRE, orientation: 'column', index: board[0].length - 1 })).toBe(true);
+  });
+
+  it('a fresh setup drops an armed or queued clear so it cannot leak into the next fight', () => {
+    const store = createBattleStore();
+    store.set(armedLineClearAtom, { itemId: 'row-clear', orientation: 'row' });
+    store.set(fireLineClearAtom, FIRE);
+    store.set(armedLineClearAtom, { itemId: 'column-clear', orientation: 'column' });
+
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: INITIAL_ENEMIES });
+
+    expect(store.get(pendingLineClearAtom)).toBeNull();
+    expect(store.get(armedLineClearAtom)).toBeNull();
   });
 });

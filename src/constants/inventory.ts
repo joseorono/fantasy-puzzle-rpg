@@ -330,7 +330,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
-    action: { type: 'clear-row' },
+    action: { type: 'clear-line', orientation: 'row' },
     icon: '➡️',
     iconName: 'woodStaff',
   },
@@ -339,10 +339,11 @@ export const ConsumableItems: ConsumableItemData[] = [
     name: 'Column Clear',
     type: 'consumable',
     description: 'Clears an entire column of orbs from the board.',
-    cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
+    // A column is 8 orbs to a row's 6, so it pays out ~33% more for ~33% more coin.
+    cost: { coins: 400, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
-    action: { type: 'clear-column' },
+    action: { type: 'clear-line', orientation: 'column' },
     icon: '⬇️',
     iconName: 'crystalStaff',
   },
@@ -359,4 +360,3 @@ export const ConsumableItems: ConsumableItemData[] = [
     iconName: 'largeBluePotion',
   },
 ];
-

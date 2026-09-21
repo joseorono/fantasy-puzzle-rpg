@@ -19,6 +19,26 @@ export interface OrbSwap {
   to: GridPosition;
 }
 
+/** Which axis a line-clear item wipes. */
+export type LineOrientation = 'row' | 'column';
+
+/** A line-clear item the player has armed and is aiming with. */
+export interface ArmedLineClear {
+  itemId: string;
+  orientation: LineOrientation;
+}
+
+/**
+ * A fired line clear waiting on the board. Deliberately carries only the line, not the orb ids:
+ * the board resolves it once it settles, so a clear fired mid-cascade never targets orbs that
+ * have since fallen away.
+ */
+export interface LineClearRequest {
+  orientation: LineOrientation;
+  index: number;
+  timestamp: number;
+}
+
 export interface Match {
   orbs: Orb[];
   type: OrbType;
