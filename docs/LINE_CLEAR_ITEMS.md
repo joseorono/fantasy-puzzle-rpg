@@ -8,15 +8,18 @@ before moving on.
 >
 > **Stages 1, 2 and 4 (done)** — the payoff, the targeting and the docs/balance pass. The items now
 > resolve through the same pipeline a match does (`resolveMatchGroups`), are aimed by hand or
-> auto-aimed with right-click, and Column Clear is priced at 400 to Row Clear's 300. 979 of 980 tests
-> pass across 37 files (the one red test, the `hasMatchAtPosition` property check in `match-3.test.ts`,
-> is a pre-existing timeout under parallel load — it passes on its own, and fails the same way with
-> this work's test files excluded).
+> auto-aimed with right-click, and Column Clear is priced at 400 to Row Clear's 300.
 >
-> **Next:** Stage 3 (presentation) — the icons, the sweep animation, the SFX and the callout. The
-> integration points are marked `TODO(line-clear stage 3)` in `match3-board.tsx`, `battle-item-bar.tsx`
-> and `src/constants/audio.ts`. Until then the clear borrows the ordinary match highlight and the bomb
-> explosion animation, and the two items still wear the placeholder staff sprites.
+> **Stage 3 (done)** — presentation. A streak crosses the chosen line, the orbs on it flash and pop
+> in its wake, the board jolts, a swish plays, then bomb blasts, the match badge, damage numbers,
+> hitstop and the match SFX land together, under a "ROW CLEAR!" / "COLUMN CLEAR!" callout. The two
+> items are drawn by their own pixel mini-board icons everywhere items appear (`ItemIcon`).
+>
+> **Next:** nothing scheduled. Playtest and tune: `LINE_CLEAR_DAMAGE_MULTIPLIER` for power,
+> `LINE_CLEAR_SWEEP_MS` / `LINE_CLEAR_ORB_STAGGER_MS` for pace, `LINE_CLEAR_SOUND` (still the
+> metal-sharpening placeholder) for the swish. The one red test in the full suite, the
+> `hasMatchAtPosition` property check in `match-3.test.ts`, is a pre-existing timeout under parallel
+> load — it passes on its own.
 
 ## 1. Diagnosis
 
@@ -86,8 +89,9 @@ gray = `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT` (0.5), dead-hero color = 0, bomb = `LI
   `damageMultiplier: LINE_CLEAR_DAMAGE_MULTIPLIER`.
 - **`src/lib/line-clear.ts`** (new) — `getLineOrbIds(board, orientation, index)`,
   `resolveLineClearOrbs(board, orientation, index)` (line ∪ bomb blasts), `groupOrbsByColor(board, ids)`,
-  `pickBestLine(board, orientation, party, rng?)`, plus `getLineCount` for range checks. JSDoc on every
-  export. A `lineClearOrder(board, ids, orientation)` helper for the sweep stagger is left to Stage 3.
+  `pickBestLine(board, orientation, party, rng?)`, plus `getLineCount` for range checks and
+  `getSweepDelays(board, ids, orientation, staggerMs)` for the per-orb pop timing along the streak.
+  JSDoc on every export.
 - **`src/stores/battle-atoms.ts`** —
   - `armedLineClearAtom: { itemId; orientation } | null` — transient aim state.
   - `pendingLineClearAtom: { orientation; index; timestamp } | null` — the request the board resolves.
@@ -95,6 +99,8 @@ gray = `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT` (0.5), dead-hero color = 0, bomb = `LI
     shared cooldown when the fire happens from the board (no sibling prop-drilling).
   - `fireLineClearAtom({ itemId, orientation, index })` — guards (`playing`, no request already pending),
     writes `pendingLineClear` + `lastItemFired`, clears `armedLineClear`, returns whether it fired.
+  - `lastLineClearAtom: { orientation; timestamp } | null` — set by the board when a clear actually
+    resolves (not when it is fired, which may be queued behind a cascade); drives the callout.
   - `clearBoardRowAtom` / `clearBoardColumnAtom` are deleted (only the item bar used them).
 - **`src/types/inventory.ts`** — `ConsumableAction` gets `{ type: 'clear-line'; orientation: 'row' | 'column' }`
   replacing the two separate variants (one code path in the bar).
@@ -105,27 +111,37 @@ gray = `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT` (0.5), dead-hero color = 0, bomb = `LI
     `applyMatchResolution`, land damage/heals + hitstop + SFX after the highlight delay, then
     `removeMatchedOrbs(ids, 0, BOMB_REFILL_CHANCE, MAX_CHAIN_BOMB_SPAWNS)` so the existing board effect
     takes over for cascades. The landing step is shared with the match path (one helper).
-  - Aim mode: `aimHover` local state fed by an `onHover` on `OrbComponent`; while armed, `handleOrbClick`
+  - Aim mode: `aimIndex` local state fed by an `onHover` on `OrbComponent`; while armed, `handleOrbClick`
     fires instead of selecting (ignored while `isProcessingSwap`).
-  - `OrbComponentProps` gains `isAimed`, `isLineClearing`, `lineClearDelayMs`, `onHover`.
-- **`src/components/battle/line-clear-sweep.tsx`** (new) — absolutely-positioned streak overlay inside the
-  board grid, sized by `index / BOARD_ROWS|COLS`; plays once per request timestamp.
+  - `OrbComponentProps` gains `isAimed`, `isDimmed`, `lineClearDelayMs`, `onHover`. An orb with a delay
+    plays `orb-line-clearing` on that `animation-delay` instead of the match ping/disappear.
+  - Timeline of a resolved clear: **t=0** streak + per-orb pops (line orbs only) + `board-shake` +
+    `lastLineClearAtom` + `LINE_CLEAR_SOUND`; **`LINE_CLEAR_SWEEP_MS`** blast orbs explode (+ bomb SFX),
+    match badge shows the full count, `landMatchEffects` (damage/heals, hitstop, match SFX);
+    **`MATCH_REMOVE_DELAY_MS`** orbs removed, the cascade effect takes over.
+- **`src/components/battle/line-clear-sweep.tsx`** (new) — streak overlay inside the board grid. Mirrors the
+  grid's padding so a band placed by `index / BOARD_ROWS|COLS` percentages lands on the orbs; keyed on the
+  clear's timestamp so it replays. **`line-clear-indicator.tsx`** (new) — the centered callout, mounted in
+  `battle-screen.tsx` beside the other `BattleCallout`s.
 - **`src/components/battle/battle-item-bar.tsx`** — `consumeItem(item)` helper (remove unless training,
   `recordItemUsed`, start cooldown); instant items call it directly; an effect on `lastItemFiredAtom`
   (guarded by the last handled timestamp) calls it for fired line clears. Left-click on a `clear-line` item
   toggles `armedLineClearAtom`; `onContextMenu` runs `pickBestLine` → `fireLineClearAtom`. Esc cancels
   arming before the pause toggle in `battle-screen.tsx`. Armed slot: pulsing amber ring + "Pick a row / column".
 - **`src/components/sprite-icons/line-clear-icons.tsx`** (new) — `RowClearIcon`, `ColumnClearIcon` inline SVGs
-  (`shape-rendering: crispEdges`). **`item-icon.tsx`** (new) — `ItemIcon` resolves
-  `ITEM_ICON_OVERRIDES[item.id]` → `FrostyRpgIcon` → emoji; used by the battle bar, `item-store.tsx`,
-  `pause-menu-items.tsx`. The two items get `iconName: null`.
-- **Styles** (`src/styles/animations.css`, `battle-elements.css`): `.orb-aimed`, `.board-aiming` (dim
-  non-line orbs, crosshair cursor), `@keyframes line-clear-pop` + `.orb-line-clearing`, `@keyframes line-sweep`,
-  `@keyframes board-shake`, `.battle-item-slot--armed`.
-- **Tunables** (`src/constants/battle.ts`, new "Line-clear items" block): `LINE_CLEAR_DAMAGE_MULTIPLIER`,
-  `LINE_CLEAR_SWEEP_MS`, `LINE_CLEAR_ORB_STAGGER_MS`, `LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT`,
-  `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT`. `LINE_CLEAR_SOUND` in `src/constants/audio.ts` (nullable, like
-  `BOMB_EXPLOSION_SOUND`; `SoundNames.metalSharpening` as the swish placeholder).
+  (`shape-rendering: crispEdges`): a 4×4 mini-board of muted orbs with the target line lit in amber and a
+  parchment streak through it. **`item-icon.tsx`** (new) — `ItemIcon` resolves `ITEM_ICON_OVERRIDES[item.id]`
+  → `FrostyRpgIcon` → a consumable's emoji → nothing; used by the battle bar, `item-store.tsx`,
+  `pause-menu-items.tsx`, `battle-rewards-screen.tsx` and `loot-notification.tsx`. The two items carry
+  `iconName: null`.
+- **Styles** (`src/styles/animations.css`): `@keyframes line-clear-pop` + `.orb-line-clearing`,
+  `.line-clear-streak` + `@keyframes line-sweep-x` / `line-sweep-y`, `@keyframes board-shake` + `.board-shake`.
+  Aim-mode highlighting and the armed slot ring are Tailwind utilities in the components. Reduced motion
+  needs no special casing: the global override collapses all of it, and the callout is a `BattleCallout`.
+- **Tunables** (`src/constants/battle.ts`, "Line-clear items" block): `LINE_CLEAR_DAMAGE_MULTIPLIER`,
+  `LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT`, `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT`, `LINE_CLEAR_SWEEP_MS` (350),
+  `LINE_CLEAR_ORB_STAGGER_MS` (40). `LINE_CLEAR_SOUND` + `LINE_CLEAR_SOUND_VOLUME` in `src/constants/audio.ts`
+  (nullable, like `BOMB_EXPLOSION_SOUND`; `SoundNames.metalSharpening` as the swish placeholder).
 
 ## 4. Checklist by stage
 
@@ -162,11 +178,17 @@ gray = `LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT` (0.5), dead-hero color = 0, bomb = `LI
 
 ### Stage 3 — Presentation (icon, sweep, sound, callout)
 
-- [ ] `RowClearIcon` / `ColumnClearIcon` + `ItemIcon` resolver wired into the bar, store, and pause menu.
-- [ ] `LineClearSweep` streak; `.orb-line-clearing` staggered flash→pop along the sweep direction; `board-shake`.
-- [ ] `triggerHitstop()` when damage lands; `LINE_CLEAR_SOUND` swish, then the match SFX.
-- [ ] `BattleCallout` "ROW CLEAR!" / "COLUMN CLEAR!" in warm amber.
-- [ ] Item copy, e.g. *"Wipe a row of your choice. Every orb counts — bombs go off. Right-click to auto-aim."*
+- [x] `RowClearIcon` / `ColumnClearIcon` + `ItemIcon` resolver wired into the bar, store, pause menu, rewards
+      screen and loot popup.
+- [x] `LineClearSweep` streak; `.orb-line-clearing` staggered flash→pop along the sweep direction
+      (`getSweepDelays`); `board-shake`.
+- [x] `triggerHitstop()` when damage lands (via the shared `landMatchEffects`); `LINE_CLEAR_SOUND` swish at
+      the start, the match SFX when the streak finishes.
+- [x] `BattleCallout` "ROW CLEAR!" / "COLUMN CLEAR!" in warm amber (`LineClearIndicator`, `lastLineClearAtom`).
+- [x] Item copy: *"Wipe a row of your choice. Every orb counts and bombs go off. Right-click to auto-aim."*
+      (the bar tooltip only adds the "Pick a row on the board." hint while armed, so the tip isn't said twice).
+- [x] Tests: `getSweepDelays` (row/column order, blast orb shares its neighbour's slot, empty set);
+      `resetLineClearAtom` drops `lastLineClearAtom`.
 - **Evaluate:** sweep readability at phone width, the reduced-motion path, SFX loudness vs `match`.
 
 ### Stage 4 — Docs & balance

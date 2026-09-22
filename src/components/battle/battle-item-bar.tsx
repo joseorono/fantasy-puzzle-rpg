@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { useInventory, useInventoryActions } from '~/stores/game-store';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import {
   healPartyAtom,
@@ -176,14 +176,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                       : 'cursor-pointer hover:scale-105 active:scale-95'
                   } ${isArmed ? 'scale-105 ring-2 ring-amber-300' : ''}`}
                 >
-                  {/* TODO(line-clear stage 3): the two line-clear items still borrow staff sprites.
-                      Swap this for the shared `ItemIcon` resolver + the pixel row/column glyphs.
-                      See docs/LINE_CLEAR_ITEMS.md §"Stage 3 — Presentation". */}
-                  {item.iconName ? (
-                    <FrostyRpgIcon name={item.iconName} size={32} />
-                  ) : (
-                    <span className="text-lg sm:text-xl">{item.icon}</span>
-                  )}
+                  <ItemIcon item={item} size={32} />
                   <div className={isEmpty ? 'opacity-50' : ''}>
                     <NarikWoodBitFont text={String(quantity)} size={1} />
                   </div>
@@ -205,13 +198,8 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
               </TooltipTrigger>
               <TooltipContent className="battle-item-tooltip">
                 {item.name}: {item.description}
-                {isLineClear && (
-                  <>
-                    {' '}
-                    {isArmed
-                      ? `Pick a ${item.action?.type === 'clear-line' ? item.action.orientation : 'line'} on the board.`
-                      : 'Right-click to auto-aim.'}
-                  </>
+                {isLineClear && isArmed && (
+                  <> Pick a {item.action?.type === 'clear-line' ? item.action.orientation : 'line'} on the board.</>
                 )}
               </TooltipContent>
             </Tooltip>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { ResourceChip } from '~/components/ui-custom/resource-chip';
 import { RESOURCE_DISPLAY_ORDER } from '~/constants/resources';
@@ -91,7 +91,7 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
           {loot.equipableItems.map((lootItem, idx) => (
             <div key={idx} className="loot-notification__entry">
               <span className="loot-notification__entry-icon">
-                {lootItem.item.iconName ? <FrostyRpgIcon name={lootItem.item.iconName} size={24} /> : null}
+                <ItemIcon item={lootItem.item} size={24} />
               </span>
               <span className="loot-notification__entry-name" style={{ color: getRarityColor(lootItem.rarity) }}>
                 {lootItem.item.name}
@@ -111,7 +111,7 @@ export function LootNotification({ loot, onClose }: LootNotificationProps) {
           {loot.consumableItems.map((lootItem, idx) => (
             <div key={idx} className="loot-notification__entry">
               <span className="loot-notification__entry-icon">
-                {lootItem.item.iconName ? <FrostyRpgIcon name={lootItem.item.iconName} size={24} /> : null}
+                <ItemIcon item={lootItem.item} size={24} />
               </span>
               <span className="loot-notification__entry-name">{lootItem.item.name}</span>
             </div>

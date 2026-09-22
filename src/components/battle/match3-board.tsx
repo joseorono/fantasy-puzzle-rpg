@@ -17,6 +17,7 @@ import {
   armedLineClearAtom,
   pendingLineClearAtom,
   fireLineClearAtom,
+  lastLineClearAtom,
 } from '~/stores/battle-atoms';
 import type { Orb } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
@@ -25,7 +26,7 @@ import type { OrbComponentProps } from '~/types/components';
 import { findLineMatches, expandBombExplosions, hasAnyLineMatch, swapContainsPosition } from '~/lib/match-3';
 import { useBoardHint } from '~/hooks/use-board-hint';
 import { resolveMatchGroups, type MatchEffect } from '~/lib/match-resolution';
-import { getLineOrbIds, groupOrbsByColor, resolveLineClearOrbs } from '~/lib/line-clear';
+import { getLineOrbIds, getSweepDelays, groupOrbsByColor, resolveLineClearOrbs } from '~/lib/line-clear';
 import { BASE_MATCH_SCORE, MATCH_SIZE_BONUS_MULTIPLIER } from '~/constants/party';
 import {
   BOMB_MATCH_SPAWN_THRESHOLD,
@@ -34,14 +35,21 @@ import {
   MAX_CHAIN_BOMB_SPAWNS,
   MIN_MATCH_LENGTH,
 } from '~/constants/board';
-import { LINE_CLEAR_DAMAGE_MULTIPLIER, MATCH_REMOVE_DELAY_MS, MATCH_RESOLVE_DELAY_MS } from '~/constants/battle';
+import {
+  LINE_CLEAR_DAMAGE_MULTIPLIER,
+  LINE_CLEAR_ORB_STAGGER_MS,
+  LINE_CLEAR_SWEEP_MS,
+  MATCH_REMOVE_DELAY_MS,
+  MATCH_RESOLVE_DELAY_MS,
+} from '~/constants/battle';
 import { cn } from '~/lib/utils';
 import { ORB_TYPE_CLASSES, ORB_GLOW_CLASSES, ORB_HINT_CLASSES } from '~/constants/ui';
 import { soundService } from '~/services/sound-service';
-import { SoundNames, BOMB_EXPLOSION_SOUND } from '~/constants/audio';
+import { SoundNames, BOMB_EXPLOSION_SOUND, LINE_CLEAR_SOUND, LINE_CLEAR_SOUND_VOLUME } from '~/constants/audio';
 import { getMatchSoundVolume } from '~/lib/battle-system';
 import { triggerHitstop } from '~/lib/animation-strategies';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
+import { LineClearSweep, type LineClearSweepEvent } from '~/components/battle/line-clear-sweep';
 
 /** Heat-scaled glow color for the cascade combo popup — hotter as the chain grows. */
 function getComboGlow(combo: number): string {
@@ -59,6 +67,7 @@ function OrbComponent({
   isHint,
   isNew,
   isExploding,
+  lineClearDelayMs,
   isAimed,
   isDimmed,
   onSelect,
@@ -66,9 +75,11 @@ function OrbComponent({
 }: OrbComponentProps) {
   const [isDisappearing, setIsDisappearing] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
+  // A line clear pops the orb on its own staggered timer instead of the match ping/disappear.
+  const isLineClearing = lineClearDelayMs !== null;
 
   useEffect(() => {
-    if (isHighlighted) {
+    if (isHighlighted && !isLineClearing) {
       // Show particle explosion
       setShowParticles(true);
 
@@ -81,7 +92,7 @@ function OrbComponent({
       setIsDisappearing(false);
       setShowParticles(false);
     }
-  }, [isHighlighted]);
+  }, [isHighlighted, isLineClearing]);
 
   return (
     <button
@@ -99,9 +110,11 @@ function OrbComponent({
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
         isExploding && 'orb-exploding',
-        isHighlighted && !isExploding && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
+        // Orbs on a cleared line flash and pop in the streak's wake (delay set inline below)
+        isLineClearing && !isExploding && 'orb-line-clearing',
+        isHighlighted && !isExploding && !isLineClearing && [ORB_GLOW_CLASSES[orb.type], 'animate-ping'],
         // Wildcard bomb orbs get a distinct dark sheen and a pulsing white ring
-        orb.isBomb && !isExploding && 'animate-pulse ring-2 ring-white/90 brightness-75',
+        orb.isBomb && !isExploding && !isLineClearing && 'animate-pulse ring-2 ring-white/90 brightness-75',
         // Idle hint: muted ring on both orbs of a legal swap; the selection ring always wins
         isHint && !isSelected && !isHighlighted && !isExploding && ORB_HINT_CLASSES,
         isDisappearing && !isExploding && 'scale-0 rotate-180 opacity-0',
@@ -110,6 +123,7 @@ function OrbComponent({
       )}
       style={{
         imageRendering: 'pixelated',
+        animationDelay: isLineClearing && !isExploding ? `${lineClearDelayMs}ms` : undefined,
       }}
     >
       {/* Shine effect */}
@@ -199,8 +213,13 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const fireLineClear = useSetAtom(fireLineClearAtom);
   const pendingLineClear = useAtomValue(pendingLineClearAtom);
   const setPendingLineClear = useSetAtom(pendingLineClearAtom);
+  const setLastLineClear = useSetAtom(lastLineClearAtom);
   // Line under the cursor while a line-clear item is armed (a row or a column index).
   const [aimIndex, setAimIndex] = useState<number | null>(null);
+  // The streak currently crossing the board (also jolts the board); null once the line is gone.
+  const [sweep, setSweep] = useState<LineClearSweepEvent | null>(null);
+  // Per-orb pop delay for the line being cleared, following the streak.
+  const [lineClearDelays, setLineClearDelays] = useState<Map<string, number>>(new Map());
   const [highlightedMatches, setHighlightedMatches] = useState<Set<string>>(new Set());
   const [explodingOrbs, setExplodingOrbs] = useState<Set<string>>(new Set());
   // Combo multiplier currently shown in the cascade popup (0 = hidden, >=2 = visible)
@@ -422,24 +441,21 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       if (!lineIds.has(id)) exploded.add(id);
     }
 
-    // TODO(line-clear stage 3): the clear currently borrows the match highlight and the bomb
-    // explosion animation. The sweep streak (LineClearSweep), the staggered per-orb pop, the board
-    // shake, LINE_CLEAR_SOUND and the "ROW CLEAR!" callout all hang off this point.
-    // See docs/LINE_CLEAR_ITEMS.md §"Stage 3 — Presentation".
-
     // A line clear is a player action: it locks the board and opens a fresh cascade chain.
     setIsProcessingSwap(true);
     cascadeLevelRef.current = 0;
     chainBombsSpawnedRef.current = 0;
     incrementTurn();
-    setHighlightedMatches(clearedIds);
-    setExplodingOrbs(exploded);
     setAimIndex(null);
 
-    const explosionSound = BOMB_EXPLOSION_SOUND;
-    if (exploded.size > 0 && explosionSound) {
-      soundService.playSound(explosionSound, 0.7, 0.1, 0.1);
-    }
+    // The streak, the staggered pops along the line, the board jolt, the callout and the swish all
+    // start now. Bomb blasts, the match badge and the payout wait for the streak to finish.
+    const timestamp = Date.now();
+    setLineClearDelays(getSweepDelays(board, lineIds, orientation, LINE_CLEAR_ORB_STAGGER_MS));
+    setSweep({ orientation, index, timestamp });
+    setLastLineClear({ orientation, timestamp });
+    const sweepSound = LINE_CLEAR_SOUND;
+    if (sweepSound) soundService.playSound(sweepSound, LINE_CLEAR_SOUND_VOLUME, 0.1, 0.05);
 
     // Read the party on demand, exactly as the match effect does, so the board never subscribes
     // to it. Cascade level 0: the clear itself is the opening move of its chain.
@@ -461,9 +477,19 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
 
     for (const timer of lineClearTimersRef.current) clearTimeout(timer);
     lineClearTimersRef.current = [
-      setTimeout(() => landMatchEffects(effects, 0, clearedIds.size), MATCH_RESOLVE_DELAY_MS),
+      // The streak has crossed the line: bombs it caught go off, the badge shows the full count,
+      // and the damage numbers land with the hitstop and match SFX.
+      setTimeout(() => {
+        setHighlightedMatches(clearedIds);
+        setExplodingOrbs(exploded);
+        const explosionSound = BOMB_EXPLOSION_SOUND;
+        if (exploded.size > 0 && explosionSound) soundService.playSound(explosionSound, 0.7, 0.1, 0.1);
+        landMatchEffects(effects, 0, clearedIds.size);
+      }, LINE_CLEAR_SWEEP_MS),
       // Removing the orbs changes the board, which hands control back to the match effect for cascades.
       setTimeout(() => {
+        setSweep(null);
+        setLineClearDelays(new Map());
         const spawned = removeMatchedOrbs(clearedIds, 0, BOMB_REFILL_CHANCE, MAX_CHAIN_BOMB_SPAWNS);
         chainBombsSpawnedRef.current += spawned;
       }, MATCH_REMOVE_DELAY_MS),
@@ -564,12 +590,14 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
           deadColorClasses,
           pendingVictory && 'pointer-events-none',
           armedLineClear && 'cursor-crosshair',
+          sweep && 'board-shake',
         )}
         onPointerLeave={() => setAimIndex(null)}
       >
         <Franuka05aFrame>
           {/* Board grid */}
-          <div className="flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
+          <div className="relative flex flex-col justify-around gap-2 p-2 sm:p-3 md:p-4">
+            <LineClearSweep sweep={sweep} />
             {board.map((row, rowIndex) => (
               <div key={rowIndex} className="flex flex-row sm:gap-1.5 md:gap-2 lg:gap-1 xl:gap-0 2xl:gap-1">
                 {row.map((orb) => {
@@ -586,6 +614,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
                       isHint={hintMove !== null && swapContainsPosition(hintMove, orb.row, orb.col)}
                       isNew={newOrbIds.has(orb.id)}
                       isExploding={explodingOrbs.has(orb.id)}
+                      lineClearDelayMs={lineClearDelays.get(orb.id) ?? null}
                       isAimed={isAimed}
                       isDimmed={aimedLine !== null && !isAimed}
                       onSelect={handleOrbClick}

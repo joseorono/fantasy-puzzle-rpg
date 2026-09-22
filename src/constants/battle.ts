@@ -183,6 +183,18 @@ export const LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT = 3;
 /** Weight of a gray orb when the auto-aim scores a candidate line: Guard, not damage, so worth less. */
 export const LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT = 0.5;
 
+/**
+ * How long (ms) the streak takes to cross the board. Damage, hitstop and the match SFX land when it
+ * finishes; the orbs are removed on `MATCH_REMOVE_DELAY_MS` as usual, so keep this below that.
+ */
+export const LINE_CLEAR_SWEEP_MS = 350;
+
+/**
+ * Gap (ms) between one orb popping and the next along the streak's direction. The longest line is
+ * `BOARD_ROWS` orbs, so the last pop must start before `LINE_CLEAR_SWEEP_MS` is up.
+ */
+export const LINE_CLEAR_ORB_STAGGER_MS = 40;
+
 // ─── Guard Meter ─────────────────────────────────────────────────────────────
 // Gray orbs trade raw damage for a party-wide Guard meter. Three independent levers move it:
 // SPD sets how fast it charges, VIT how slowly it bleeds, and the enemy's `guardBreak` how much

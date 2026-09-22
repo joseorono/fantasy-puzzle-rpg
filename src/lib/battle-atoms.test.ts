@@ -9,6 +9,7 @@ import {
   armedLineClearAtom,
   fireLineClearAtom,
   lastItemFiredAtom,
+  lastLineClearAtom,
   pendingLineClearAtom,
   battleModeAtom,
   battleStateAtom,
@@ -821,5 +822,14 @@ describe('line-clear items', () => {
 
     expect(store.get(pendingLineClearAtom)).toBeNull();
     expect(store.get(armedLineClearAtom)).toBeNull();
+  });
+
+  it('a fresh setup drops the last resolved clear so its callout cannot replay in the next fight', () => {
+    const store = createBattleStore();
+    store.set(lastLineClearAtom, { orientation: 'column', timestamp: 1 });
+
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: INITIAL_ENEMIES });
+
+    expect(store.get(lastLineClearAtom)).toBeNull();
   });
 });

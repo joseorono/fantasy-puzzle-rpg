@@ -76,6 +76,36 @@ export function groupOrbsByColor(board: Orb[][], orbIds: ReadonlySet<string>): M
   return Array.from(counts, ([type, matchSize]) => ({ type, matchSize }));
 }
 
+/**
+ * When each destroyed orb pops as the streak sweeps the line: left to right for a row, top to bottom
+ * for a column. An orb taken by a bomb blast sits beside the line, so it pops in the same slot as the
+ * line cell next to it rather than trailing behind.
+ *
+ * @param board - The game board containing orbs
+ * @param orbIds - Ids of the destroyed orbs
+ * @param orientation - Which way the streak travels
+ * @param staggerMs - Gap between one slot and the next
+ * @returns Delay in ms for every id in the set
+ */
+export function getSweepDelays(
+  board: Orb[][],
+  orbIds: ReadonlySet<string>,
+  orientation: LineOrientation,
+  staggerMs: number,
+): Map<string, number> {
+  const delays = new Map<string, number>();
+
+  for (const row of board) {
+    for (const orb of row) {
+      if (!orbIds.has(orb.id)) continue;
+      const slot = orientation === 'row' ? orb.col : orb.row;
+      delays.set(orb.id, slot * staggerMs);
+    }
+  }
+
+  return delays;
+}
+
 /** Value of everything a candidate line would destroy, weighing what the party can actually use. */
 function scoreLine(board: Orb[][], orbIds: ReadonlySet<string>, livingColors: ReadonlySet<OrbType>): number {
   let score = 0;

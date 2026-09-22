@@ -445,10 +445,17 @@ export const fireLineClearAtom = atom(
   },
 );
 
-/** Drops any armed or queued line clear. Called whenever an encounter is (re)armed. */
+/**
+ * The last line clear the board actually resolved (not merely fired — a queued request waits for
+ * the cascade). Drives the "ROW CLEAR!" / "COLUMN CLEAR!" callout; a new timestamp replays it.
+ */
+export const lastLineClearAtom = atom<{ orientation: LineOrientation; timestamp: number } | null>(null);
+
+/** Drops any armed, queued or just-resolved line clear. Called whenever an encounter is (re)armed. */
 export const resetLineClearAtom = atom(null, (_get, set) => {
   set(armedLineClearAtom, null);
   set(pendingLineClearAtom, null);
+  set(lastLineClearAtom, null);
 });
 
 // Derived atom for game status

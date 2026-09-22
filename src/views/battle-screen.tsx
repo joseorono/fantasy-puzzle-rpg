@@ -10,6 +10,7 @@ import { DamageNumber } from '~/components/battle/damage-number';
 import { FloatingParticles } from '~/components/effects/floating-particles';
 import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
 import { BoardReshuffleIndicator } from '~/components/battle/board-reshuffle-indicator';
+import { LineClearIndicator } from '~/components/battle/line-clear-indicator';
 import {
   gameStatusAtom,
   battleTickAtom,
@@ -127,6 +128,8 @@ export default function BattleScreen() {
         <PreemptiveStrikeIndicator />
         {/* Centered callout when a dead board had to be reshuffled. */}
         <BoardReshuffleIndicator />
+        {/* Centered callout as a Row/Column Clear resolves on the board. */}
+        <LineClearIndicator />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">

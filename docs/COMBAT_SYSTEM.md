@@ -99,11 +99,17 @@ checklist: [LINE_CLEAR_ITEMS.md](./LINE_CLEAR_ITEMS.md).
 - **Cost**: Row Clear 300 coins (6 orbs), Column Clear 400 (8 orbs — `BOARD_ROWS` is 8 to `BOARD_COLS`' 6,
   so a column is worth ~33% more). Both share the SPD-scaled item cooldown with every other battle item
   and both count as an item used against the victory rating.
+- **Presentation**: a streak (`LineClearSweep`) crosses the line over `LINE_CLEAR_SWEEP_MS` while the orbs
+  on it flash and pop one slot at a time (`getSweepDelays`, `LINE_CLEAR_ORB_STAGGER_MS`), the board jolts
+  (`board-shake`) and `LINE_CLEAR_SOUND` plays. When the streak finishes, bombs it caught blast, the match
+  badge shows the full count and the damage lands with the usual hitstop and match SFX. A centered
+  "ROW CLEAR!" / "COLUMN CLEAR!" callout (`LineClearIndicator`, driven by `lastLineClearAtom`) fires as
+  the clear resolves. The items are drawn by their own pixel mini-board icons through `ItemIcon`.
 - **Implementation**: pure helpers in `src/lib/line-clear.ts` and `src/lib/match-resolution.ts` (each with
-  its own test), state in `armedLineClearAtom` / `pendingLineClearAtom` / `lastItemFiredAtom` and
-  `fireLineClearAtom` (`src/stores/battle-atoms.ts` — deliberately outside `BattleState`, so aiming never
-  touches the battle or the save), resolution in `match3-board.tsx`, arming and auto-aim in
-  `battle-item-bar.tsx`, tunables in `src/constants/battle.ts`.
+  its own test), state in `armedLineClearAtom` / `pendingLineClearAtom` / `lastItemFiredAtom` /
+  `lastLineClearAtom` and `fireLineClearAtom` (`src/stores/battle-atoms.ts` — deliberately outside
+  `BattleState`, so aiming never touches the battle or the save), resolution in `match3-board.tsx`, arming
+  and auto-aim in `battle-item-bar.tsx`, tunables in `src/constants/battle.ts` and `src/constants/audio.ts`.
 
 ### Win/Lose Conditions
 

@@ -326,26 +326,28 @@ export const ConsumableItems: ConsumableItemData[] = [
     id: 'row-clear',
     name: 'Row Clear',
     type: 'consumable',
-    description: 'Clears an entire row of orbs from the board.',
+    description: 'Wipe a row of your choice. Every orb counts and bombs go off. Right-click to auto-aim.',
     cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
     action: { type: 'clear-line', orientation: 'row' },
     icon: '➡️',
-    iconName: 'woodStaff',
+    // Drawn by `RowClearIcon` (see `ItemIcon`): the sheet has no row/column glyph.
+    iconName: null,
   },
   {
     id: 'column-clear',
     name: 'Column Clear',
     type: 'consumable',
-    description: 'Clears an entire column of orbs from the board.',
+    description: 'Wipe a column of your choice. Every orb counts and bombs go off. Right-click to auto-aim.',
     // A column is 8 orbs to a row's 6, so it pays out ~33% more for ~33% more coin.
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
     action: { type: 'clear-line', orientation: 'column' },
     icon: '⬇️',
-    iconName: 'crystalStaff',
+    // Drawn by `ColumnClearIcon` (see `ItemIcon`): the sheet has no row/column glyph.
+    iconName: null,
   },
   {
     id: 'energy-potion',

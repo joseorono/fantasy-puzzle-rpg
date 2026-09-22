@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getLineCount, getLineOrbIds, groupOrbsByColor, pickBestLine, resolveLineClearOrbs } from './line-clear';
+import {
+  getLineCount,
+  getLineOrbIds,
+  getSweepDelays,
+  groupOrbsByColor,
+  pickBestLine,
+  resolveLineClearOrbs,
+} from './line-clear';
 import { makeBoard, type CellToken } from './match-3.fixtures';
 import { INITIAL_PARTY } from '~/constants/party';
 import { LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT, LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT } from '~/constants/battle';
@@ -176,5 +183,54 @@ describe('pickBestLine', () => {
       ['gray', 'gray', 'blue', 'gray'],
     ]);
     expect(pickBestLine(board, 'column', INITIAL_PARTY, keepFirst)).toBe(2);
+  });
+});
+
+describe('getSweepDelays', () => {
+  it('staggers a row left to right, one slot per column', () => {
+    const delays = getSweepDelays(BOARD, getLineOrbIds(BOARD, 'row', 2), 'row', 40);
+
+    expect(delays).toEqual(
+      new Map([
+        ['2-0', 0],
+        ['2-1', 40],
+        ['2-2', 80],
+        ['2-3', 120],
+      ]),
+    );
+  });
+
+  it('staggers a column top to bottom, one slot per row', () => {
+    const delays = getSweepDelays(BOARD, getLineOrbIds(BOARD, 'column', 1), 'column', 25);
+
+    expect(delays).toEqual(
+      new Map([
+        ['0-1', 0],
+        ['1-1', 25],
+        ['2-1', 50],
+        ['3-1', 75],
+      ]),
+    );
+  });
+
+  it('pops a blast orb in the same slot as the line cell beside it', () => {
+    const board = makeBoard([
+      ['blue', 'green', 'purple', 'yellow'],
+      ['gray', '*', 'blue', 'green'],
+      ['purple', 'purple', 'gray', 'blue'],
+      ['yellow', 'yellow', 'green', 'gray'],
+    ]);
+    const delays = getSweepDelays(board, resolveLineClearOrbs(board, 'row', 1), 'row', 40);
+
+    // The bomb at 1-1 takes its column neighbours 0-1 and 2-1 with it; they pop with it, not after.
+    expect(delays.get('0-1')).toBe(40);
+    expect(delays.get('1-1')).toBe(40);
+    expect(delays.get('2-1')).toBe(40);
+    expect(delays.get('2-2')).toBe(80);
+    expect(delays.size).toBe(resolveLineClearOrbs(board, 'row', 1).size);
+  });
+
+  it('returns nothing for an empty set', () => {
+    expect(getSweepDelays(BOARD, new Set(), 'row', 40).size).toBe(0);
   });
 });

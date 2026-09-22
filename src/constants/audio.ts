@@ -104,10 +104,10 @@ export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;
 export const POISE_BREAK_SOUND: SoundNames | null = SoundNames.blacksmithShorter;
 
 /**
- * Swish played as a Row/Column Clear sweeps the board. Set to `null` to disable.
- * Temporary: reuses the metal-sharpening SFX until a dedicated sweep sound exists.
- *
- * TODO(line-clear stage 3): not wired up yet — the board plays only the shared match SFX today.
- * See docs/LINE_CLEAR_ITEMS.md §"Stage 3 — Presentation".
+ * Swish played as a Row/Column Clear sweeps the board, ahead of the shared match SFX. Set to `null`
+ * to disable. Temporary: reuses the metal-sharpening SFX until a dedicated sweep sound exists.
  */
 export const LINE_CLEAR_SOUND: SoundNames | null = SoundNames.metalSharpening;
+
+/** SFX gain for `LINE_CLEAR_SOUND`; the match SFX that follows it plays at its usual size-scaled level. */
+export const LINE_CLEAR_SOUND_VOLUME = 0.5;
