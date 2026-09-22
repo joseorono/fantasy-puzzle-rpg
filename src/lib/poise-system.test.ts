@@ -3,6 +3,7 @@ import {
   applyPoiseHits,
   calculateMaxPoise,
   calculatePoiseDamage,
+  countEnemyBreaks,
   createEnemyPoiseState,
   describeEnemyPoise,
   formatEnemyPoise,
@@ -331,6 +332,32 @@ describe('resolveStaggeredEnemySignature', () => {
   it('is stable across a countdown tick that does not end the window', () => {
     const record = { a: makeState({ staggerRemainingMs: 1000 }) };
     expect(resolveStaggeredEnemySignature(tickEnemyPoise(record, 0.1))).toBe(resolveStaggeredEnemySignature(record));
+  });
+});
+
+describe('countEnemyBreaks', () => {
+  it('is zero for an empty record and for enemies nobody has broken', () => {
+    expect(countEnemyBreaks({})).toBe(0);
+    expect(countEnemyBreaks({ a: makeState(), b: makeState() })).toBe(0);
+  });
+
+  it('sums every enemy breakCount, dead ones included', () => {
+    const record = {
+      a: makeState({ breakCount: 2 }),
+      b: makeState(),
+      // A killed enemy keeps its entry, so its Breaks still count toward the battle total.
+      c: makeState({ breakCount: 1 }),
+    };
+    expect(countEnemyBreaks(record)).toBe(3);
+  });
+
+  it('rises by one each time a batch Breaks an enemy', () => {
+    const kill = [{ amount: 9999, multiplier: 1 }];
+    const first = applyPoiseHits(makeState(), kill, 1).next;
+    expect(countEnemyBreaks({ a: first })).toBe(1);
+    // Re-Break once the vulnerable + immunity windows are closed.
+    const second = applyPoiseHits({ ...first, staggerRemainingMs: 0, immuneRemainingMs: 0 }, kill, 1).next;
+    expect(countEnemyBreaks({ a: second })).toBe(2);
   });
 });
 

@@ -97,7 +97,7 @@ Battle state lives entirely in Jotai (`src/stores/battle-atoms.ts`), backed by a
 - `battleModeAtom` / `isTrainingBattleAtom` / `totalDamageDealtAtom` - Standard vs. training/sparring mode (see below)
 - `setupBattleAtom` - Initializes a battle, `mode: 'standard' | 'training'`
 - `lastDamageAtom` / `lastMatchedTypeAtom` / `lastSkillActivationAtom` - Last-event data driving callouts/VFX
-- `maxComboAtom` / `itemsUsedAtom` / `ultimateSkillsUsedAtom` / `battleStartedAtAtom` - Victory-rating inputs
+- `maxComboAtom` / `itemsUsedAtom` / `ultimateSkillsUsedAtom` / `enemiesBrokenAtom` / `battleStartedAtAtom` - Victory-rating inputs (`enemiesBrokenAtom` sums the per-enemy poise `breakCount`)
 
 ### Training / sparring mode
 `BattleMode` (`'standard' | 'training'`) drives a reward-free bout against `TRAINING_DUMMY` (`src/constants/enemies/training.ts`): no enemy standby/attacks, no item consumption, and the fight is leavable via `abandonBattleAtom`. `totalDamageDealtAtom` and `training-dummy-readout.tsx` replace the enemy HP bar with a damage/DPS/active-time readout.

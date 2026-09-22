@@ -18,10 +18,13 @@ Status checklist for the enemy **Flinch → Poise → Break** system. `[x]` = sh
 > for every attack timer.
 >
 > **Phase 4 (done)** — §N: the bar read as dead in play. Standby no longer suppresses poise damage (only the
-> Break is withheld) and the standby dim is gone. 996 tests pass across 37 files. Still open: the skill-kill
+> Break is withheld) and the standby dim is gone. Still open: the skill-kill
 > `pendingVictory` note in §J, the stretch hook test in §H (no React test environment), and the **Moss Golem
 > balance** measured in §N — a 3-match moves its bar 3.8% and regen refills that in under 4 s. **Next:** pick
 > the golem's `poise` and decide whether regen should pause after a hit.
+>
+> **Phase 5 (done)** — §O: Breaks now score on the victory rating as their own **STAGGERS** row. 1009 tests
+> pass across 37 files.
 
 ## 1. Summary
 
@@ -470,6 +473,27 @@ balance interaction hides the bar's movement afterwards.
       `poise` toward ~0.75 (first Break near 53% HP), and/or hold regen off for a few seconds after a hit
       rather than running it continuously. Note also that a standby golem *cannot* have its pool emptied at
       all — 320 poise damage with the preemptive bonus is 400 HP, exactly lethal.
+
+### O. Phase 5 — Breaks feed the victory rating
+
+Staggering an enemy was invisible on the results screen: a player who Broke three enemies scored exactly the
+same as one who ignored the mechanic. Breaks now earn their own **STAGGERS** row.
+
+- **Tally.** No new battle-state counter — `enemiesBrokenAtom` (`~/stores/battle-atoms`) sums the per-enemy
+  `breakCount` via `countEnemyBreaks` (`~/lib/poise-system`). Those counters never reset mid-battle, the
+  pools are seeded exactly once per battle by `createBattleState`, and an enemy's entry outlives its death,
+  so the sum is the exact battle total — including an all-enemy ultimate that Breaks several at once — with
+  nothing to keep in sync.
+- **Scoring.** `STAGGER_BONUS_PER_BREAK` (0.03) per Break, capped by `MAX_STAGGER_BONUS` (0.09 — three
+  Breaks max it), in `src/constants/battle-rating.ts`. Like the ultimate bonus it rides *outside*
+  `RATING_WEIGHTS`, so the skill ceiling is untouched: a fast, flawless blitz that kills before any Break
+  could land still earns 5★ on time + HP alone.
+- **Independent of the ultimate bonus** — its own constant, own cap, own row. The two are never pooled into
+  a shared "bonus", because they are different things the player did. Max combined lift is 0.24.
+- **Not scored:** flinch (the per-hit attack-timer push) — only full Breaks count.
+
+Caveat inherited from the Break rules (§D): a killing blow deals no poise damage, so the Break that would
+have come with the kill is not counted.
 
 ## 4. Proposed constants
 

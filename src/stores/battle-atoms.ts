@@ -20,6 +20,7 @@ import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import { weighHitsByAttacker } from '~/lib/flinch-system';
 import {
   applyPoiseHits,
+  countEnemyBreaks,
   isEnemyStaggered,
   poiseSummariesMatch,
   resolveStaggeredEnemySignature,
@@ -551,6 +552,9 @@ export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt 
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
 export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);
+// Breaks landed this battle, summed from the per-enemy `breakCount` pools rather than counted
+// separately — those never reset mid-battle and outlive the enemy, so they can't drift.
+export const enemiesBrokenAtom = atom((get) => countEnemyBreaks(get(enemyPoiseAtom)));
 
 // The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
 // so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing

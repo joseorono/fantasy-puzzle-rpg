@@ -15,6 +15,8 @@ import {
   ITEM_PENALTY_PER_USE,
   MAX_ULTIMATE_BONUS,
   ULTIMATE_BONUS_PER_USE,
+  MAX_STAGGER_BONUS,
+  STAGGER_BONUS_PER_BREAK,
 } from '~/constants/battle-rating';
 
 // A fast, flawless, no-item clear — everything maxed.
@@ -150,6 +152,53 @@ describe('computeBattleRating — ultimate reward', () => {
   });
 });
 
+describe('computeBattleRating — stagger reward', () => {
+  const base: BattleRatingInput = {
+    elapsedMs: 60_000,
+    score: 1_000,
+    maxCombo: 2,
+    hpRemainingPct: 0.5,
+    itemsUsed: 0,
+  };
+
+  test('breaking more enemies never lowers the rating, and raises it up to the cap', () => {
+    const none = computeBattleRating({ ...base, enemiesBroken: 0 }).normalized;
+    const some = computeBattleRating({ ...base, enemiesBroken: 2 }).normalized;
+    const capped = computeBattleRating({ ...base, enemiesBroken: 20 }).normalized;
+    expect(some).toBeGreaterThanOrEqual(none);
+    expect(capped).toBeGreaterThanOrEqual(some);
+    // Beyond the cap, the total lift equals MAX_STAGGER_BONUS.
+    expect(capped - none).toBeCloseTo(MAX_STAGGER_BONUS, 5);
+  });
+
+  test('the stagger bonus is capped', () => {
+    const capReached = Math.ceil(MAX_STAGGER_BONUS / STAGGER_BONUS_PER_BREAK);
+    const a = computeBattleRating({ ...base, enemiesBroken: capReached }).normalized;
+    const b = computeBattleRating({ ...base, enemiesBroken: capReached + 10 }).normalized;
+    expect(a).toBeCloseTo(b, 5);
+  });
+
+  test('staggers and ultimates are scored independently, each on its own cap', () => {
+    const none = computeBattleRating(base).normalized;
+    const both = computeBattleRating({ ...base, ultimateSkillsUsed: 20, enemiesBroken: 20 }).normalized;
+    // Neither bonus eats into the other: maxing both lifts by exactly the sum of the two caps.
+    expect(both - none).toBeCloseTo(MAX_ULTIMATE_BONUS + MAX_STAGGER_BONUS, 5);
+  });
+
+  test('a flawless clear still earns 5 stars without staggering anything', () => {
+    // Same contract as the ultimate bonus: the reward is additive, never required.
+    const result = computeBattleRating({
+      elapsedMs: 4_000,
+      score: 0,
+      maxCombo: 0,
+      hpRemainingPct: 1,
+      itemsUsed: 0,
+      enemiesBroken: 0,
+    });
+    expect(result.stars).toBe(5);
+  });
+});
+
 describe('computeBattleRating — RNG criteria are weighted low', () => {
   test('maxing only score+combo (RNG) with poor skill stats cannot reach 3 stars', () => {
     const rngOnly = computeBattleRating({
@@ -176,19 +225,27 @@ describe('computeBattleRating — penalty + breakdown', () => {
     expect(b.normalized).toBeCloseTo(1 - MAX_ITEM_PENALTY, 5);
   });
 
-  test('breakdown lists rows in display order; items is the only penalty, ultimates a positive reward', () => {
-    // A fixture with every optional row present (combo/ultimates/items all > 0).
-    const { criteria } = computeBattleRating({ ...perfectRun, itemsUsed: 2, ultimateSkillsUsed: 2 });
-    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'combo', 'score', 'ultimates', 'items']);
+  test('breakdown lists rows in display order; items is the only penalty, the bonuses positive', () => {
+    // A fixture with every optional row present (combo/ultimates/staggers/items all > 0).
+    const { criteria } = computeBattleRating({
+      ...perfectRun,
+      itemsUsed: 2,
+      ultimateSkillsUsed: 2,
+      enemiesBroken: 2,
+    });
+    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'combo', 'score', 'ultimates', 'staggers', 'items']);
     expect(criteria.filter((c) => c.isPenalty).map((c) => c.key)).toEqual(['items']);
     expect(criteria.filter((c) => c.isRngHeavy).map((c) => c.key)).toEqual(['combo', 'score']);
-    const ultimates = criteria.find((c) => c.key === 'ultimates')!;
-    expect(ultimates.isPenalty).toBe(false);
-    expect(ultimates.points).toBeGreaterThan(0);
-    expect(ultimates.displayValue).toBe('2');
+    for (const key of ['ultimates', 'staggers'] as const) {
+      const row = criteria.find((c) => c.key === key)!;
+      expect(row.isPenalty).toBe(false);
+      expect(row.points).toBeGreaterThan(0);
+    }
+    expect(criteria.find((c) => c.key === 'ultimates')!.displayValue).toBe('2');
+    expect(criteria.find((c) => c.key === 'staggers')!.displayValue).toBe('x2');
   });
 
-  test('zero-contribution rows (combo, ultimates, items) are omitted', () => {
+  test('zero-contribution rows (combo, ultimates, staggers, items) are omitted', () => {
     const { criteria } = computeBattleRating({
       elapsedMs: 40_000,
       score: 500,
@@ -196,6 +253,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
       hpRemainingPct: 0.8,
       itemsUsed: 0,
       ultimateSkillsUsed: 0,
+      enemiesBroken: 0,
     });
     expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'score']);
   });
@@ -208,10 +266,12 @@ describe('computeBattleRating — penalty + breakdown', () => {
       hpRemainingPct: 0.8,
       itemsUsed: 1,
       ultimateSkillsUsed: 1,
+      enemiesBroken: 1,
     });
     const keys = criteria.map((c) => c.key);
     expect(keys).toContain('combo');
     expect(keys).toContain('ultimates');
+    expect(keys).toContain('staggers');
     expect(keys).toContain('items');
   });
 
@@ -238,6 +298,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
       maxCombo: 4,
       hpRemainingPct: 0.88,
       itemsUsed: 3,
+      enemiesBroken: 2,
     });
     const byKey = Object.fromEntries(criteria.map((c) => [c.key, c.displayValue]));
     expect(byKey.time).toBe('0:42');
@@ -245,6 +306,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
     expect(byKey.combo).toBe('x4');
     expect(byKey.hp).toBe('88%');
     expect(byKey.items).toBe('3');
+    expect(byKey.staggers).toBe('x2');
   });
 });
 

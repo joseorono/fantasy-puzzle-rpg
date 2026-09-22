@@ -17,6 +17,7 @@ import {
   damageEnemyAtom,
   enemiesAtom,
   endEnemyStandbyAtom,
+  enemiesBrokenAtom,
   enemyPoiseAtom,
   enemyPoiseSummaryAtom,
   ensureFreshBattleAtom,
@@ -605,6 +606,25 @@ describe('enemy poise', () => {
     expect(store.get(staggeredEnemySignatureAtom)).toBe(id);
     // The hit that causes the Break lands at face value.
     expect(store.get(battleStateAtom).lastDamage?.amount).toBe(amount);
+  });
+
+  it('enemiesBrokenAtom tallies Breaks for the victory rating, and keeps counting a dead enemy', () => {
+    const store = createArmedStore();
+    expect(store.get(enemiesBrokenAtom)).toBe(0);
+
+    store.set(damageEnemyAtom, breakingAmount(store));
+    expect(store.get(enemiesBrokenAtom)).toBe(1);
+
+    // Re-Break once both windows have closed, nudging the pool to the brink first: emptying this
+    // enemy's escalated pool outright costs more HP than it has, and a killing blow deals no
+    // poise damage at all.
+    patchSelectedPoise(store, { staggerRemainingMs: 0, immuneRemainingMs: 0, current: 1 });
+    store.set(damageEnemyAtom, 10);
+    expect(store.get(enemiesBrokenAtom)).toBe(2);
+
+    // The rating is read at victory, so Breaks must survive the enemy dying.
+    store.set(damageEnemyAtom, selectedEnemy(store).currentHp);
+    expect(store.get(enemiesBrokenAtom)).toBe(2);
   });
 
   it('hits during the window take the vulnerable bonus and leave the pool alone', () => {

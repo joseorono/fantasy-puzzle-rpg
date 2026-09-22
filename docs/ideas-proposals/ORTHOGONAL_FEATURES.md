@@ -85,7 +85,7 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 - *Orthogonal axis:* a **mastery/style** reward layer over the win/lose binary.
 - *Differential:* incentivizes optimizing *how* you win; strong replay hook.
 - *Touches:* battle-end path, `lib/loot.ts`, `lib/rarity.ts`.
-- *Shipped instead:* a 1–5★ rating (clear time / HP / combo / score / items) → `LOOT_MULTIPLIER_BY_STARS` scaling money + resources, with the results screen and rewards badge. Feeding `rarityBias` is still open if we want grade-gated *rarity* too.
+- *Shipped instead:* a 1–5★ rating (clear time / HP / combo / score / ultimates / staggers / items) → `LOOT_MULTIPLIER_BY_STARS` scaling money + resources, with the results screen and rewards badge. Feeding `rarityBias` is still open if we want grade-gated *rarity* too.
 
 ### 5. Batch dungeon rewards into an end-of-run tally  🟢 · perf: **None**
 

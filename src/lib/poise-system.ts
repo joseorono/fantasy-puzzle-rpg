@@ -237,6 +237,19 @@ export function resolveVulnerableHits<T extends DamageHit>(hits: T[], isStaggere
 }
 
 /**
+ * Total Breaks landed across every enemy this battle. `breakCount` never resets mid-battle and an
+ * enemy's entry outlives its death, so the sum is the battle-wide tally the victory rating scores
+ * (see `~/lib/battle-rating`). Pools are seeded once per battle by `createBattleState`.
+ * @param record Poise state per enemy id
+ * @returns The summed `breakCount` (0 when nobody has been Broken)
+ */
+export function countEnemyBreaks(record: Record<string, EnemyPoiseState>): number {
+  let total = 0;
+  for (const id in record) total += record[id].breakCount;
+  return total;
+}
+
+/**
  * Ids of every Broken enemy joined into one string, so a subscriber compares it by value and is
  * only notified on a Break or a recovery — never on the per-tick countdown. Same trick as the
  * attack-timer hook's `rosterSignature`.
