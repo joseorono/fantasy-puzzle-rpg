@@ -30,6 +30,20 @@ html[data-reduced-motion] .guard-block-popup {
   animation: none !important;
 }
 
+/* Guard flashes whose base state is visible: collapsed to 1ms, the shimmer would sit at full opacity
+   for its whole class lifetime and the shatter would strobe for one frame. */
+html[data-reduced-motion] .guard-shimmer,
+html[data-reduced-motion] .guard-shatter {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+/* Hit flashes fade from full strength to nothing; collapsed to 1ms they strobe for a frame. The
+   damage number and enemy recoil still mark the hit. */
+html[data-reduced-motion] .impact-flash {
+  display: none;
+}
+
 /* A Broken enemy keeps its static tint and tilt; only the sway goes. */
 html[data-reduced-motion] .enemy-staggered {
   animation: none !important;

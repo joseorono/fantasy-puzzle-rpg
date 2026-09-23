@@ -197,7 +197,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           <div
             key={`flash-${animationKey}`}
             className={cn(
-              'pointer-events-none absolute inset-0 rounded-lg',
+              'impact-flash pointer-events-none absolute inset-0 rounded-lg',
               isSkillHit ? 'bg-red-500/55' : 'bg-red-500/40',
             )}
             style={{ animation: 'flash-fade 0.3s ease-out forwards' }}

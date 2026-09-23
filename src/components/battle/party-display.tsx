@@ -26,6 +26,7 @@ import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getSelectedSkill, resolveCharacterCooldown } from '~/lib/skill-system';
 import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { triggerHitstop } from '~/lib/animation-strategies';
+import { isReducedMotion } from '~/lib/reduced-motion';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -148,7 +149,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
 
         {/* Damage number animation with 8bitcn styling */}
         {showDamage && (
-          <div className="damage-number pointer-events-none absolute -top-8 left-1/2 z-30 -translate-x-1/2 sm:-top-10">
+          <div className="damage-number motion-hold pointer-events-none absolute -top-8 left-1/2 z-30 -translate-x-1/2 sm:-top-10">
             <DamageDisplay amount={damageAmount} type="damage" className="text-base sm:text-lg" />
           </div>
         )}
@@ -245,9 +246,10 @@ export function PartyDisplay() {
   const guardBlockKeyRef = useRef(0);
   const isGuardFull = guardPercentage >= 99.5;
 
-  // Trigger pulse animation when type changes
+  // Trigger pulse animation when type changes. Skipped under reduced motion: without the crossfade
+  // the colour swap is a hard blink on every match.
   useEffect(() => {
-    if (lastMatchedType) {
+    if (lastMatchedType && !isReducedMotion()) {
       setShowPulse(true);
       const timer = setTimeout(() => setShowPulse(false), 1000);
       return () => clearTimeout(timer);
