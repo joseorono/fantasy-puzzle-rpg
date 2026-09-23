@@ -61,19 +61,19 @@ Phases 1–2 of `BATTLE_PERFORMANCE_PLAN.md` are done and measured. Per `PERFORM
 Measured 2026-09-14 with `npm run visualize-bundle:json` (`vite-bundle-visualizer`). Production JS is
 3415 KB rendered / 822 KB gzipped across three chunks, and the build warns on the 1220 KB main chunk.
 
-- [ ] **PixiJS is 34% of the JS payload and nothing renders with it.** `pixi.js` contributes 915 KB
+- [x] **PixiJS is 34% of the JS payload and nothing renders with it.** `pixi.js` contributes 915 KB
   rendered / 250 KB gzipped (279 modules); with its satellites (`earcut`, `ismobilejs`, `eventemitter3`)
   it is 278 KB of the 822 KB gzipped total. The only Pixi import in `src/` is
   `import { sound } from '@pixi/sound'` in `src/services/sound-service.ts` — `@pixi/sound` declares
   `pixi.js` as a **peerDependency**, so the whole WebGL/WebGPU engine ships to play audio.
-- [ ] Two of the three output chunks exist only because of Pixi: `webworkerAll-*.js` (143 KB gzipped) is
+- [x] Two of the three output chunks exist only because of Pixi: `webworkerAll-*.js` (143 KB gzipped) is
   97% Pixi and `browserAll-*.js` (26 KB gzipped) is 100% Pixi. Both would likely disappear with the
   audio backend swapped.
-- [ ] **Candidate fix:** replace `@pixi/sound` with Howler (~10 KB gzipped) or plain Web Audio. The blast
+- [x] **Fixed with plain Web Audio, not Howler** (Howler's last release was Sep 2023) — analysis in `docs/AUDIO_ENGINE_MIGRATION.md`. Was: replace `@pixi/sound` with Howler (~10 KB gzipped) or plain Web Audio. The blast
   radius is one file — `SoundService` is a singleton wrapper with a small surface (`preloadAudios`,
   `playSound`, `startMusic`/`stopMusic`, volume and mute setters) — but it needs real playback testing
   across music looping, fade-in, per-instance music volume, and the mute/autoplay-unlock paths.
-- [ ] Not yet checked: how much of the bundled Pixi is reachable at runtime versus dead weight Rollup
+- [x] Moot now that Pixi is gone. Was: how much of the bundled Pixi is reachable at runtime versus dead weight Rollup
   could not shake. The numbers above are bytes emitted, not bytes executed.
 - [ ] Main-chunk code splitting is untouched — no `manualChunks`, no dynamic `import()` for views. Worth
   revisiting only after the Pixi question is settled, since it dominates everything else.

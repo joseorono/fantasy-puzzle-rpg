@@ -13,7 +13,7 @@ A cozy fantasy Match-3 RPG battle system with pixel art aesthetics, built with R
 - **Pause Menu & Options**: Full keyboard-navigable menu overlay with Items, Equip, Skills, Stats, Save, Load, and Audio options.
 - **Save / Load System**: 4 persistent slots (3 manual + 1 autosave) with Zod validation, disk save status indicator, and browser close guard.
 - **Dialogue System**: JRPG visual-novel style dialogue scenes with typewriter text, portraits, and fast-forward controls.
-- **Retro Aesthetic**: Pixel art styling with `@pixi/sound` audio, Press Start 2P font, and scanline/CRT visual effects.
+- **Retro Aesthetic**: Pixel art styling with Web Audio sound, Press Start 2P font, and scanline/CRT visual effects.
 
 ## Quick Start
 
@@ -48,7 +48,7 @@ npm run build
 - **Build**: Vite 7
 - **State**: Zustand (8 global store slices) + Jotai (combat, dungeon, and pause UI)
 - **Styling**: Tailwind CSS 4 + custom pixel art CSS stylesheets
-- **Audio**: @pixi/sound
+- **Audio**: native Web Audio API
 - **UI Primitives**: Radix UI, Lucide React, class-variance-authority (cva)
 - **Validation**: Zod
 - **Testing**: Vitest
