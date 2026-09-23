@@ -68,6 +68,7 @@ class SoundService {
   private graph: AudioGraph | null = null;
   private muted = false;
   private isPausedByBlur = false;
+  private isContextUnlocked = false;
   private buffers = new Map<SoundNames, AudioBuffer>();
   private bufferPromises = new Map<SoundNames, Promise<AudioBuffer>>();
   private sfxVoices = new Map<SoundNames, Voice[]>();
@@ -125,6 +126,7 @@ class SoundService {
   private getGraph(): AudioGraph {
     if (this.graph) return this.graph;
 
+    this.claimPlaybackAudioSession();
     const ctx = new AudioContext();
     const compressor = new DynamicsCompressorNode(ctx, MASTER_COMPRESSOR);
     const masterGain = new GainNode(ctx, { gain: this.muted ? 0 : this.globalVolume });
@@ -147,26 +149,51 @@ class SoundService {
   /**
    * Unlocks the context on the first user gesture (autoplay policy, iOS) and suspends it while
    * the window is blurred, restoring on focus — the same auto-pause `@pixi/sound` provided.
+   * Blur is ignored until unlocked so an early blur can never block the unlock.
    */
   private installContextLifecycle(ctx: AudioContext) {
-    const unlockEvents = ['pointerdown', 'touchend', 'keydown'] as const;
+    const unlockEvents = ['touchend', 'click', 'pointerdown', 'keydown'] as const;
+    this.isContextUnlocked = ctx.state === 'running';
     const unlock = () => {
-      if (this.isPausedByBlur) return;
+      if (this.isContextUnlocked) return;
+      this.playSilentBuffer(ctx);
       void ctx.resume().then(() => {
         if (ctx.state !== 'running') return;
+        this.isContextUnlocked = true;
         for (const eventName of unlockEvents) document.removeEventListener(eventName, unlock, true);
       });
     };
-    for (const eventName of unlockEvents) document.addEventListener(eventName, unlock, true);
+    if (!this.isContextUnlocked) {
+      for (const eventName of unlockEvents) document.addEventListener(eventName, unlock, true);
+    }
 
     window.addEventListener('blur', () => {
+      if (!this.isContextUnlocked) return;
       this.isPausedByBlur = true;
       void ctx.suspend();
     });
     window.addEventListener('focus', () => {
+      if (!this.isPausedByBlur) return;
       this.isPausedByBlur = false;
       void ctx.resume();
     });
+  }
+
+  /**
+   * Safari's Audio Session API (not yet in TS DOM types). `playback` makes Web Audio ignore the iOS
+   * silent switch, at the cost of pausing other apps' audio while the game plays. Must run before
+   * the `AudioContext` is created; a no-op in browsers without the API.
+   */
+  private claimPlaybackAudioSession() {
+    const { audioSession } = navigator as Navigator & { audioSession?: { type: string } };
+    if (audioSession) audioSession.type = 'playback';
+  }
+
+  /** iOS only starts a context whose first sound begins inside the gesture's call stack; a 1-sample buffer satisfies it. */
+  private playSilentBuffer(ctx: AudioContext) {
+    const source = new AudioBufferSourceNode(ctx, { buffer: ctx.createBuffer(1, 1, 22050) });
+    source.connect(ctx.destination);
+    source.start(0);
   }
 
   /** Smoothly moves an AudioParam to `value`, avoiding the zipper noise of an instant jump. */
@@ -251,10 +278,14 @@ class SoundService {
     return this.preloadPromise;
   }
 
-  /** Resumes a context suspended by the browser's autoplay policy, without overriding the blur auto-pause. */
+  /**
+   * Resumes a context suspended by the autoplay policy or interrupted by iOS (calls, Siri),
+   * without overriding the blur auto-pause.
+   */
   private ensureContextRunning() {
     const { ctx } = this.getGraph();
-    if (!this.isPausedByBlur && ctx.state === 'suspended') {
+    const state: string = ctx.state;
+    if (!this.isPausedByBlur && (state === 'suspended' || state === 'interrupted')) {
       void ctx.resume();
     }
   }

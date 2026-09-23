@@ -56,7 +56,8 @@ music: source → trackGain → musicBus → musicDuck → musicFilter ─┴→
 | `setMusicVolume` walks the instances | sets `musicBus.gain` (smoothed with `setTargetAtTime`). `baseVolume` stays on each track's own gain |
 | `context.volume` / `volumeAll` | `masterGain.gain` |
 | `muteAll` / `unmuteAll`, `context.muted` | a `muted` flag that ramps `masterGain` to 0 or back over ~30 ms (no click) |
-| `ensureContextRunning` (autoplay) | same guard, plus a capture-phase `pointerdown`/`touchend`/`keydown` unlock listener that removes itself once the context runs |
+| `ensureContextRunning` (autoplay) | same guard, also recovering iOS's `interrupted` state (calls, Siri). Plus a capture-phase `touchend`/`click`/`pointerdown`/`keydown` unlock that plays a 1-sample silent buffer inside the gesture (as pixi and Howler do) and removes itself once the context runs |
+| pixi ignores blur until unlocked | same: an early blur can't block the first-tap unlock |
 | `play()` on a not-yet-decoded sound queues it | **music** waits for its buffer (a `stopMusic` meanwhile cancels it — pixi would start the track after the stop); **SFX** are dropped, since a click arriving seconds late reads as a bug |
 | pixi master `DynamicsCompressor` (Web Audio defaults: −24 dB threshold, 30 knee, 12:1) | **kept with the same settings** (`MASTER_COMPRESSOR`), so the mix the game was balanced against is unchanged |
 | pixi blur auto-pause | `visibilitychange`/`blur` → `ctx.suspend()`, focus → `resume()`, unless the game muted it on purpose |
@@ -92,7 +93,7 @@ Tier 1 ships with the migration because it improves the current mix with no API 
 
 - **No HTML5 `<audio>` fallback.** Pixi and Howler keep one for browsers without Web Audio, but every browser we target has Web Audio.
 - Decoding all 27 files into PCM uses the same memory as Pixi does today (Pixi also decoded to AudioBuffers). Nothing is lost here.
-- iOS Safari's hardware mute switch silences Web Audio. That's the same as now.
+- iOS Safari's hardware mute switch silences Web Audio. Changed: the service sets `navigator.audioSession.type = 'playback'` (Safari-only, feature-checked) before creating the context, so game audio plays with the switch on. Trade-off accepted: it's an exclusive session, so it pauses the player's own music or podcast while the game plays.
 - A hand-rolled engine means we maintain it ourselves. This is limited because the code uses only standard, stable Web Audio APIs.
 
 ## 6. Files touched
