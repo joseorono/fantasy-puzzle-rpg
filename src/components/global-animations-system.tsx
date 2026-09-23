@@ -4,6 +4,7 @@ import { isReducedMotion } from '~/lib/reduced-motion';
 import { ANIMATION_CONFIG, type GlobalAnimationType } from '~/constants/animation-system';
 import { soundService } from '~/services/sound-service';
 import { getAnimationDuration, applyAnimation, removeAnimation } from '~/lib/animation-strategies';
+import { pickTransition } from '~/lib/view-transitions';
 
 // Re-export for convenience
 export type { GlobalAnimationType };
@@ -13,13 +14,14 @@ type OnEndCallback = () => void;
 interface GlobalAnimationContextValue {
   trigger: (type: GlobalAnimationType, onEnd?: OnEndCallback) => Promise<void>;
   triggerSequence: (sequence: GlobalAnimationType[], onEnd?: OnEndCallback) => Promise<void>;
+  /** Triggers a random member of `pool`, avoiding whichever member the previous pool draw played. */
+  triggerFromPool: (pool: readonly GlobalAnimationType[], onEnd?: OnEndCallback) => Promise<void>;
 }
 
 const GlobalAnimationContext = createContext<GlobalAnimationContextValue | null>(null);
 
 export function GlobalAnimationProvider({ children }: { children: React.ReactNode }) {
-  const resolveRef = useRef<(() => void) | null>(null);
-  const callbackRef = useRef<OnEndCallback | null>(null);
+  const lastPoolPickRef = useRef<GlobalAnimationType | null>(null);
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
   const trigger = useCallback(async (type: GlobalAnimationType, onEnd?: OnEndCallback) => {
@@ -34,15 +36,12 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
       return;
     }
 
-    callbackRef.current = onEnd || null;
+    // The timer owns the whole lifecycle: the class stays on until it fires, so a cover transition
+    // holds until `onEnd` has navigated underneath it, and the clear lands in the same commit.
     setAnimation(type);
-    // Wait for the animation duration
     await auxSleepFor(getAnimationDuration(type));
-    // Execute callback and resolve
-    callbackRef.current?.();
-    resolveRef.current?.();
-    callbackRef.current = null;
-    resolveRef.current = null;
+    onEnd?.();
+    setAnimation(null);
   }, []);
 
   const triggerSequence = useCallback(
@@ -55,15 +54,19 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
     [trigger],
   );
 
-  const handleAnimationEnd = useCallback(() => {
-    setAnimation(null);
-    // Callbacks are now handled by the duration-based timing in trigger()
-  }, []);
+  const triggerFromPool = useCallback(
+    async (pool: readonly GlobalAnimationType[], onEnd?: OnEndCallback) => {
+      const type = pickTransition(pool, lastPoolPickRef.current);
+      lastPoolPickRef.current = type;
+      await trigger(type, onEnd);
+    },
+    [trigger],
+  );
 
   return (
-    <GlobalAnimationContext.Provider value={{ trigger, triggerSequence }}>
+    <GlobalAnimationContext.Provider value={{ trigger, triggerSequence, triggerFromPool }}>
       {children}
-      <GlobalAnimationsOverlay type={animation} onEnd={handleAnimationEnd} />
+      <GlobalAnimationsOverlay type={animation} />
     </GlobalAnimationContext.Provider>
   );
 }
@@ -77,36 +80,16 @@ export function useGlobalAnimation() {
 
 // ------------------------------------------------------
 
-function GlobalAnimationsOverlay({ type, onEnd }: { type: GlobalAnimationType | null; onEnd: () => void }) {
+function GlobalAnimationsOverlay({ type }: { type: GlobalAnimationType | null }) {
   const ref = useRef<HTMLDivElement>(null);
 
+  // Cleanup runs on every type change and on unmount, so no class can outlive its trigger.
   useEffect(() => {
-    const el = ref.current;
     if (!type) return;
-
-    // Apply animation using strategy
+    const el = ref.current;
     applyAnimation(type, el);
-
-    function handleEnd() {
-      if (type) removeAnimation(type, el);
-      if (el) el.className = 'global-animations-overlay';
-      onEnd();
-    }
-
-    // Listen for animationend on both overlay and game-screen
-    const gameScreen = document.getElementById('game-screen');
-    const animationTargets = [el, gameScreen].filter(Boolean) as HTMLElement[];
-
-    animationTargets.forEach((target) => {
-      target.addEventListener('animationend', handleEnd);
-    });
-
-    return () => {
-      animationTargets.forEach((target) => {
-        target.removeEventListener('animationend', handleEnd);
-      });
-    };
-  }, [type, onEnd]);
+    return () => removeAnimation(type, el);
+  }, [type]);
 
   return <div ref={ref} className="global-animations-overlay" />;
 }

@@ -9,6 +9,7 @@ import {
   maxComboAtom,
   itemsUsedAtom,
   ultimateSkillsUsedAtom,
+  enemiesBrokenAtom,
   battleStartedAtAtom,
   lastBattleRatingAtom,
 } from '~/stores/battle-atoms';
@@ -37,6 +38,7 @@ export function BattleOverModal() {
   const maxCombo = useAtomValue(maxComboAtom);
   const itemsUsed = useAtomValue(itemsUsedAtom);
   const ultimateSkillsUsed = useAtomValue(ultimateSkillsUsedAtom);
+  const enemiesBroken = useAtomValue(enemiesBrokenAtom);
   const startedAt = useAtomValue(battleStartedAtAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
@@ -76,6 +78,7 @@ export function BattleOverModal() {
       hpRemainingPct: maxHpTotal > 0 ? currentHpTotal / maxHpTotal : 0,
       itemsUsed,
       ultimateSkillsUsed,
+      enemiesBroken,
     });
   }
 

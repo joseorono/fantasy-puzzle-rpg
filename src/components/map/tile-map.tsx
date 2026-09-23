@@ -15,6 +15,7 @@ import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
+import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
 import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
@@ -117,6 +118,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [closingNode, setClosingNode] = useState<{ node: InteractiveMapNode; position: Position } | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
+  // True while a cover transition plays before leaving the map: movement stays frozen underneath it.
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const { enterBattle, enterTown } = useViewTransitions();
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -319,7 +323,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // An event prompt is a decision, not scenery — walking away from one is how you miss it.
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
-    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen,
+    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning,
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);
@@ -413,14 +417,15 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     if (pendingFightNodeId) {
       const nodeId = pendingFightNodeId;
       setPendingFightNodeId(null);
-      startBattle(nodeId);
+      void startBattle(nodeId);
     }
   }
 
   /**
-   * Start a battle for the given encounter, setting up atoms and navigating.
+   * Start a battle for the given encounter: set up the atoms, play a cover transition with the
+   * map frozen, then navigate under it.
    */
-  function startBattle(nodeId: string) {
+  async function startBattle(nodeId: string) {
     const encounter = map.encounters?.[nodeId];
     if (!encounter) {
       console.warn('No encounter found for node:', nodeId);
@@ -428,7 +433,23 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     }
 
     setupBattle({ enemies: encounter.enemies, party: partyMembers });
+    setIsTransitioning(true);
+    await enterBattle();
     routerActions.goToBattleDemo({ enemyId: nodeId, location: displayMapName });
+  }
+
+  /** Walk into a town: checkpoint, cover transition with the map frozen, then the hub. */
+  async function walkIntoTown(node: InteractiveMapNode) {
+    mapProgressActions.completeNode(node.type, node.id);
+    // Reaching a town is a checkpoint — snapshot before the player starts spending.
+    autosave();
+    setIsTransitioning(true);
+    await enterTown();
+    routerActions.goToTownHub({
+      ...DEFAULT_TOWN_HUB_DATA,
+      townName: node.name,
+      onLeaveCallback: () => routerActions.goBack(),
+    });
   }
 
   // Node interaction handlers
@@ -452,7 +473,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     }
 
     // No dialogue — go straight to battle
-    startBattle(currentNode.id);
+    void startBattle(currentNode.id);
   }
 
   function handleNodeEnter() {
@@ -466,14 +487,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     setCurrentNode(null);
 
     if (enteredNode.type === 'Town') {
-      mapProgressActions.completeNode(enteredNode.type, enteredNode.id);
-      // Reaching a town is a checkpoint — snapshot before the player starts spending.
-      autosave();
-      routerActions.goToTownHub({
-        ...DEFAULT_TOWN_HUB_DATA,
-        townName: enteredNode.name,
-        onLeaveCallback: () => routerActions.goBack(),
-      });
+      void walkIntoTown(enteredNode);
       return;
     }
 

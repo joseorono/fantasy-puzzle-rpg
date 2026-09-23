@@ -1,4 +1,4 @@
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { EnemyDisplay } from '~/components/battle/enemy-display';
 import { BattlePauseOverlay } from '~/components/battle/battle-pause-overlay';
@@ -10,12 +10,14 @@ import { DamageNumber } from '~/components/battle/damage-number';
 import { FloatingParticles } from '~/components/effects/floating-particles';
 import { PreemptiveStrikeIndicator } from '~/components/battle/preemptive-strike-indicator';
 import { BoardReshuffleIndicator } from '~/components/battle/board-reshuffle-indicator';
+import { LineClearIndicator } from '~/components/battle/line-clear-indicator';
 import {
   gameStatusAtom,
   battleTickAtom,
   ensureFreshBattleAtom,
   isTrainingBattleAtom,
   abandonBattleAtom,
+  armedLineClearAtom,
 } from '~/stores/battle-atoms';
 import { useParty, useRouterActions, useViewData } from '~/stores/game-store';
 import { SkillActivationEffect } from '~/components/battle/skill-activation-effect';
@@ -36,6 +38,7 @@ export default function BattleScreen() {
   const isTraining = useAtomValue(isTrainingBattleAtom);
   const abandonBattle = useSetAtom(abandonBattleAtom);
   const { goBack } = useRouterActions();
+  const store = useStore();
   const [isBattlePaused, setIsBattlePaused] = useState(false);
 
   // Background can be overridden per-encounter (e.g. dungeon/floor art) via view data.
@@ -70,6 +73,15 @@ export default function BattleScreen() {
 
   useWindowKeyDown((event) => {
     if (event.key !== KeyboardKeys.Escape) return;
+
+    // Escape unwinds one level: it puts an aimed line-clear item away before it reaches the pause.
+    // Read through the store so arming never re-renders the battle screen.
+    if (store.get(armedLineClearAtom)) {
+      event.preventDefault();
+      store.set(armedLineClearAtom, null);
+      return;
+    }
+
     if (gameStatus !== 'playing' && isBattlePaused !== true) return;
 
     event.preventDefault();
@@ -116,6 +128,8 @@ export default function BattleScreen() {
         <PreemptiveStrikeIndicator />
         {/* Centered callout when a dead board had to be reshuffled. */}
         <BoardReshuffleIndicator />
+        {/* Centered callout as a Row/Column Clear resolves on the board. */}
+        <LineClearIndicator />
 
         {/* Main battle area - Split view */}
         <div className="battleContainer">

@@ -11,6 +11,13 @@ import { createEmptyLootTable } from '~/types/loot';
 export const TRAINING_DUMMY_HP = Number.MAX_SAFE_INTEGER;
 
 /**
+ * The poise pool is derived from max HP, which for the dummy is a sentinel. Its `poise`
+ * multiplier is scaled so it Breaks exactly like an enemy with this much HP would, so the
+ * Break feedback can be tuned in the Training Grounds.
+ */
+export const TRAINING_DUMMY_POISE_HP_EQUIVALENT = 400;
+
+/**
  * Never attacks (the timer hook skips training fights entirely), drops nothing, teaches nothing.
  * HP is left as a real number rather than special-casing the damage atoms: the hit path just
  * keeps chipping at a number that cannot reach zero, so every death/victory check stays as is.
@@ -28,6 +35,7 @@ export const TRAINING_DUMMY: EnemyData = {
   attackInterval: 0,
   attackDamage: 0,
   guardBreak: 0,
+  poise: TRAINING_DUMMY_HP / TRAINING_DUMMY_POISE_HP_EQUIVALENT,
   lootTable: createEmptyLootTable(),
   expReward: 0,
 };

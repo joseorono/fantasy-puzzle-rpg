@@ -1,16 +1,23 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   enemiesAtom,
+  enemyPoiseSummaryAtom,
   selectedEnemyIdAtom,
   selectEnemyAtom,
   lastDamageAtom,
   lastMaxFlinchAtom,
+  lastPoiseBreakAtom,
   isTrainingBattleAtom,
+  standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
+import { POISE_BREAK_CALLOUT_DURATION_MS } from '~/constants/battle';
+import { POISE_BREAK_SOUND } from '~/constants/audio';
 import { cn } from '~/lib/utils';
+import { soundService } from '~/services/sound-service';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
+import { EnemyPoiseBar } from '~/components/battle/enemy-poise-bar';
 import { TrainingDummyReadout } from '~/components/battle/training-dummy-readout';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
@@ -28,13 +35,26 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
   const isTraining = useAtomValue(isTrainingBattleAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
   const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
+  const lastPoiseBreak = useAtomValue(lastPoiseBreakAtom);
+  // This enemy's poise only, as integer percents: the cached summary atom stays silent while other
+  // enemies' pools move and while regen nudges this one by less than a percent.
+  const poise = useAtomValue(enemyPoiseSummaryAtom(enemy.id));
+  const isStaggered = poise?.phase === 'broken';
+  const isStandby = useAtomValue(standbyEnemyIdsAtom).includes(enemy.id);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
   const [isRecoiling, setIsRecoiling] = useState(false);
   const [isSkillHit, setIsSkillHit] = useState(false);
+  const [isVulnerableHit, setIsVulnerableHit] = useState(false);
   const [showStagger, setShowStagger] = useState(false);
   const [staggerKey, setStaggerKey] = useState(0);
+  const [showBreak, setShowBreak] = useState(false);
+  const [breakKey, setBreakKey] = useState(0);
+
+  // Read at hit time without re-running the damage effect when the window opens or closes.
+  const isStaggeredRef = useRef(isStaggered);
+  isStaggeredRef.current = isStaggered;
 
   // Show damage animation when this enemy is hit. Skills hit the selected enemy (enemyId)
   // or every living enemy (enemyIds); matches only ever set enemyId.
@@ -42,8 +62,10 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
     const isHit =
       lastDamage?.target === 'enemy' && (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
     if (isHit) {
-      setDamageAmount(lastDamage.amount);
+      setDamageAmount(lastDamage.amountByEnemyId?.[enemy.id] ?? lastDamage.amount);
       setIsSkillHit(lastDamage.source === 'skill');
+      // A hit landing while Broken (or the one that Breaks) reads as a crit.
+      setIsVulnerableHit(isStaggeredRef.current);
       setShowDamage(true);
       setIsRecoiling(true);
       setAnimationKey((prev) => prev + 1);
@@ -52,7 +74,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
     }
   }, [lastDamage, enemy.id]);
 
-  // Pop a "STAGGER!" callout when this enemy maxes out its per-cycle flinch (further hits this
+  // Pop a "FLINCHED!" callout when this enemy maxes out its per-cycle flinch (further hits this
   // cycle no longer delay its attack). Fires once per cap-out; the timestamp re-arms it next cycle.
   useEffect(() => {
     if (lastMaxFlinch?.enemyId !== enemy.id) return;
@@ -61,6 +83,17 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
     const timer = setTimeout(() => setShowStagger(false), 900);
     return () => clearTimeout(timer);
   }, [lastMaxFlinch, enemy.id]);
+
+  // Pop the "STAGGERED!" Break callout (and its clang) when this enemy's poise pool empties.
+  // Outranks the flinch pop: held longer, drawn bigger. The timestamp re-arms it on later Breaks.
+  useEffect(() => {
+    if (!lastPoiseBreak?.enemyIds.includes(enemy.id)) return;
+    setShowBreak(true);
+    setBreakKey((prev) => prev + 1);
+    if (POISE_BREAK_SOUND) soundService.playSound(POISE_BREAK_SOUND, 0.7, 0.1, 0.1);
+    const timer = setTimeout(() => setShowBreak(false), POISE_BREAK_CALLOUT_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [lastPoiseBreak, enemy.id]);
 
   function handleClick() {
     if (isDead) return;
@@ -89,10 +122,18 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
               'enemy-sprite-container',
             )}
           >
+            {/* The Broken tint/sway sits on the sprite itself (state-driven, clears when the tick ends
+                the window) so it never competes with the wrapper's recoil animation. */}
             {enemy.sprite.startsWith('/') ? (
-              <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
+              <img
+                src={enemy.sprite}
+                alt={enemy.name}
+                className={cn('enemy-sprite-image h-full w-full', isStaggered && !isDead && 'enemy-staggered')}
+              />
             ) : (
-              <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
+              <div className={cn('text-3xl sm:text-4xl md:text-5xl', isStaggered && !isDead && 'enemy-staggered')}>
+                {enemy.sprite}
+              </div>
             )}
 
             {/* Death indicator */}
@@ -123,19 +164,31 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           >
             <DamageDisplay
               amount={damageAmount}
-              type={isSkillHit || damageAmount > 20 ? 'critical' : 'damage'}
+              type={isSkillHit || isVulnerableHit || damageAmount > 20 ? 'critical' : 'damage'}
               className={isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'}
             />
           </div>
         )}
 
-        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle stagger cap. */}
+        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle flinch cap.
+            Distinct from the poise "Staggered!" break callout; see docs/ENEMY_POISE_STAGGER.md. */}
         {showStagger && !isDead && (
           <div
             key={`stagger-${staggerKey}`}
             className="stagger-callout pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
           >
-            Stagger!
+            Flinched!
+          </div>
+        )}
+
+        {/* Break callout — the enemy's poise pool just emptied and its attack was cancelled. */}
+        {showBreak && !isDead && (
+          <div
+            key={`break-${breakKey}`}
+            className="stagger-callout stagger-callout--break pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[11px] font-bold tracking-wide uppercase sm:text-[13px]"
+            style={{ animationDuration: `${POISE_BREAK_CALLOUT_DURATION_MS}ms` }}
+          >
+            Staggered!
           </div>
         )}
 
@@ -144,7 +197,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           <div
             key={`flash-${animationKey}`}
             className={cn(
-              'pointer-events-none absolute inset-0 rounded-lg',
+              'impact-flash pointer-events-none absolute inset-0 rounded-lg',
               isSkillHit ? 'bg-red-500/55' : 'bg-red-500/40',
             )}
             style={{ animation: 'flash-fade 0.3s ease-out forwards' }}
@@ -166,6 +219,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
       {isTraining ? (
         <TrainingDummyReadout
           isBattlePaused={isBattlePaused}
+          poise={poise}
           className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
         />
       ) : (
@@ -175,6 +229,11 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           thresholdColors={ENEMY_HP_THRESHOLD_BG}
           className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
         />
+      )}
+
+      {/* Poise bar — posture left before the next Break, then the Break and recovery windows */}
+      {poise && !isDead && (
+        <EnemyPoiseBar poise={poise} isStandby={isStandby} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />
       )}
     </div>
   );

@@ -41,7 +41,7 @@ const MODIFIER_FORMATTERS: Record<keyof Required<PassiveModifiers>, ModifierForm
   },
   staggerPushMultiplier: {
     label: 'Stagger push',
-    describe: (v) => `Stagger pushes ${pct(v)}% harder`,
+    describe: (v) => `Flinch and poise damage ${pct(v)}% harder`,
     short: (v) => `+${pct(v)}%`,
   },
   guardChargeRateBonus: {
@@ -88,7 +88,10 @@ export interface PassiveModifierChange {
  * Compares two modifier records of the same passive (adjacent levels) and
  * returns one labeled comparison per key whose value changes.
  */
-export function describePassiveModifierChange(current: PassiveModifiers, next: PassiveModifiers): PassiveModifierChange[] {
+export function describePassiveModifierChange(
+  current: PassiveModifiers,
+  next: PassiveModifiers,
+): PassiveModifierChange[] {
   const changes: PassiveModifierChange[] = [];
   for (const key of MODIFIER_KEYS) {
     const nextValue = next[key];

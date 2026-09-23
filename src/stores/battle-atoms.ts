@@ -1,13 +1,34 @@
 import { atom, type Atom } from 'jotai';
-import type { BattleMode, BattleState, BattleStatus } from '~/types/battle';
+import type {
+  ArmedLineClear,
+  BattleMode,
+  BattleState,
+  BattleStatus,
+  EnemyPoiseState,
+  EnemyPoiseSummary,
+  LineClearRequest,
+  LineOrientation,
+} from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
 import type { CharacterData, EnemyData, OrbType } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { BOMB_REFILL_CHANCE } from '~/constants/board';
-import { GUARD_MAX, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
+import { GUARD_MAX, POISE_SKILL_MULTIPLIER, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
+import { weighHitsByAttacker } from '~/lib/flinch-system';
+import {
+  applyPoiseHits,
+  countEnemyBreaks,
+  isEnemyStaggered,
+  poiseSummariesMatch,
+  resolveStaggeredEnemySignature,
+  resolveVulnerableDamage,
+  resolveVulnerableHits,
+  summarizeEnemyPoise,
+  tickEnemyPoise,
+} from '~/lib/poise-system';
 import {
   calculateGuardDecayResistance,
   calculateItemCooldownInMs,
@@ -41,6 +62,7 @@ import {
   type SkillCooldownReduction,
 } from '~/lib/battle-system';
 import { swapOrbs, isValidSwap } from '~/lib/match-3';
+import { getLineCount } from '~/lib/line-clear';
 import { removeMatchedOrbsAndRefill } from '~/lib/board-generation';
 import type { BattleRatingResult } from '~/lib/battle-rating';
 
@@ -193,13 +215,19 @@ export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEne
 
 type EnemyHit = { amount: number; characterId?: string };
 
+/** A batched match: every damaging color at once, plus the cascade depth it landed at (0 = the swap). */
+type EnemyHitBatch = { hits: EnemyHit[]; cascadeLevel?: number };
+
 // Atom to damage the selected enemy. A multi-color match lands all of its colors as ONE batched
 // call (`{ hits }`) so a single `lastDamage` event carries every hit: consumers that only see the
 // final commit (the stagger hook, the damage popup) would otherwise miss all but the last one.
-export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { hits: EnemyHit[] }) => {
+// The same hits also deal poise damage (see ~/lib/poise-system) in this same write, so HP and
+// poise can never disagree; a Break here is what the attack-timer hook reacts to.
+export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | EnemyHitBatch) => {
   const hits: EnemyHit[] =
     typeof hit === 'number' ? [{ amount: hit, characterId: undefined }] : 'hits' in hit ? hit.hits : [hit];
   if (hits.length === 0) return;
+  const cascadeLevel = typeof hit === 'object' && 'hits' in hit ? (hit.cascadeLevel ?? 0) : 0;
   const currentState = get(battleStateAtom);
 
   // The fight is already decided and the win is just waiting on the cascade to settle. Any
@@ -208,12 +236,17 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { 
   if (currentState.pendingVictory) return;
 
   const selectedId = currentState.selectedEnemyId;
+  const poiseBefore: EnemyPoiseState | undefined = currentState.enemyPoise[selectedId];
 
   // A hit on an enemy still observing (on standby) lands as a "preemptive strike" for bonus damage.
   const isPreemptive = (currentState.standbyEnemyIds ?? []).includes(selectedId);
-  const finalHits = isPreemptive
+  // A hit on a Broken enemy lands in its vulnerable window. Read from the PRE-hit state, so the
+  // hit that causes a Break never gets the bonus itself.
+  const isStaggered = poiseBefore ? isEnemyStaggered(poiseBefore) : false;
+  const preemptiveHits = isPreemptive
     ? hits.map((h) => ({ ...h, amount: Math.round(h.amount * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS)) }))
     : hits;
+  const finalHits = resolveVulnerableHits(preemptiveHits, isStaggered);
   const finalDamage = finalHits.reduce((sum, h) => sum + h.amount, 0);
   const characterId = finalHits[finalHits.length - 1].characterId;
 
@@ -236,6 +269,22 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { 
   const allDead = enemies.every((e) => e.currentHp <= 0);
 
   const timestamp = Date.now();
+
+  // Poise damage from the raw hits (the bonuses above are HP-only). Skipped only on a killing blow.
+  // A standby target still takes poise damage so the bar moves from the opening move, but cannot
+  // Break until it has an attack to cancel. `applyPoiseHits` itself no-ops while Broken/immune.
+  let enemyPoise = currentState.enemyPoise;
+  let lastPoiseBreak = currentState.lastPoiseBreak;
+  if (poiseBefore && damagedEnemy.currentHp > 0) {
+    const poiseHits = weighHitsByAttacker(hits, currentState.party, POISE_SKILL_MULTIPLIER, 'match');
+    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, damagedEnemy.poise ?? 1, {
+      cascadeLevel,
+      canBreak: !isPreemptive,
+    });
+    if (next !== poiseBefore) enemyPoise = { ...enemyPoise, [selectedId]: next };
+    if (didBreak) lastPoiseBreak = { enemyIds: [selectedId], timestamp };
+  }
+
   set(battleStateAtom, {
     ...currentState,
     enemies,
@@ -244,6 +293,8 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | { 
     totalDamageDealt: (currentState.totalDamageDealt ?? 0) + finalDamage,
     lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId, hits: finalHits },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
+    enemyPoise,
+    lastPoiseBreak,
   });
 });
 
@@ -255,6 +306,7 @@ export const setupBattleAtom = atom(
   null,
   (_get, set, params: { enemies: EnemyData[]; party: CharacterData[]; mode?: BattleMode }) => {
     set(battleStateAtom, createBattleState(params.party, params.enemies, { mode: params.mode }));
+    set(resetLineClearAtom);
   },
 );
 
@@ -263,6 +315,7 @@ export const resetBattleAtom = atom(null, (get, set) => {
   const currentState = get(battleStateAtom);
   // Re-use the current encounter's enemies so a mid-battle reset replays the same fight
   set(battleStateAtom, createBattleState(initialParty, currentState.enemies, { mode: currentState.mode }));
+  set(resetLineClearAtom);
 });
 
 // Ends a fight the player walks out of. Only the training leave path calls it; every "is the
@@ -284,6 +337,7 @@ export const ensureFreshBattleAtom = atom(null, (get, set, party: CharacterData[
   const state = get(battleStateAtom);
   if (state.gameStatus === 'playing') return;
   set(battleStateAtom, createBattleState(party, state.enemies, { mode: state.mode }));
+  set(resetLineClearAtom);
 });
 
 // Atom to remove matched orbs and refill board.
@@ -347,34 +401,62 @@ export const healPartyAtom = atom(null, (get, set, params: { amount: number; sou
   });
 });
 
-// Atom to clear an entire row of orbs
-export const clearBoardRowAtom = atom(null, (get, set, row: number) => {
-  const currentState = get(battleStateAtom);
-  const board = currentState.board;
+// ─── Line-clear items (Row Clear / Column Clear) ─────────────────────────────
+// Firing is split from resolving: the item bar (or the board, in aim mode) files a request, and the
+// board resolves it once it has settled. See docs/LINE_CLEAR_ITEMS.md.
 
-  const orbIds = new Set(board[row].map((orb) => orb.id));
-  const refill = removeMatchedOrbsAndRefill(board, orbIds);
+/**
+ * The line-clear item the player is currently aiming with, if any. Transient UI state: it lives
+ * outside `BattleState` so arming never touches the battle or the save.
+ */
+export const armedLineClearAtom = atom<ArmedLineClear | null>(null);
 
-  set(battleStateAtom, {
-    ...currentState,
-    board: refill.board,
-    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
-  });
-});
+/**
+ * A fired line clear waiting to resolve. The board picks it up as soon as it settles, resolves the
+ * payout, and clears it. Holds the line, not the orb ids — see {@link LineClearRequest}.
+ */
+export const pendingLineClearAtom = atom<LineClearRequest | null>(null);
 
-// Atom to clear an entire column of orbs
-export const clearBoardColumnAtom = atom(null, (get, set, col: number) => {
-  const currentState = get(battleStateAtom);
-  const board = currentState.board;
+/**
+ * Fires when an item is actually spent from the board rather than from its own button, so the item
+ * bar can decrement the stack and start the shared cooldown without the two components knowing
+ * about each other.
+ */
+export const lastItemFiredAtom = atom<{ itemId: string; timestamp: number } | null>(null);
 
-  const orbIds = new Set(board.map((row) => row[col].id));
-  const refill = removeMatchedOrbsAndRefill(board, orbIds);
+/**
+ * Commits an aimed line clear: files the request, announces the spend, and disarms. Refuses when the
+ * battle is over or a clear is already queued, so one cooldown can never buy two clears.
+ */
+export const fireLineClearAtom = atom(
+  null,
+  (get, set, params: { itemId: string; orientation: LineOrientation; index: number }): boolean => {
+    const currentState = get(battleStateAtom);
+    if (currentState.gameStatus !== 'playing') return false;
+    if (get(pendingLineClearAtom) !== null) return false;
 
-  set(battleStateAtom, {
-    ...currentState,
-    board: refill.board,
-    lastReshuffle: refill.wasReshuffled ? { timestamp: Date.now() } : currentState.lastReshuffle,
-  });
+    const { itemId, orientation, index } = params;
+    if (index < 0 || index >= getLineCount(currentState.board, orientation)) return false;
+
+    const timestamp = Date.now();
+    set(pendingLineClearAtom, { orientation, index, timestamp });
+    set(lastItemFiredAtom, { itemId, timestamp });
+    set(armedLineClearAtom, null);
+    return true;
+  },
+);
+
+/**
+ * The last line clear the board actually resolved (not merely fired — a queued request waits for
+ * the cascade). Drives the "ROW CLEAR!" / "COLUMN CLEAR!" callout; a new timestamp replays it.
+ */
+export const lastLineClearAtom = atom<{ orientation: LineOrientation; timestamp: number } | null>(null);
+
+/** Drops any armed, queued or just-resolved line clear. Called whenever an encounter is (re)armed. */
+export const resetLineClearAtom = atom(null, (_get, set) => {
+  set(armedLineClearAtom, null);
+  set(pendingLineClearAtom, null);
+  set(lastLineClearAtom, null);
 });
 
 // Derived atom for game status
@@ -409,10 +491,52 @@ export const standbyEnemyIdsAtom = atom((get) => get(battleStateAtom).standbyEne
 export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastPreemptiveStrike ?? null);
 // Centered "No moves! Reshuffle!" callout trigger (see BoardReshuffleIndicator).
 export const lastReshuffleAtom = atom((get) => get(battleStateAtom).lastReshuffle ?? null);
-// Per-enemy "STAGGER!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
+// Per-enemy "Flinched!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
 export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
 
-// Flags an enemy reaching its per-cycle stagger cap, so the "STAGGER!" callout can replay.
+// ─── Enemy Poise / Break (see ~/lib/poise-system) ────────────────────────────
+// Per-enemy poise pools and Break windows. `?? {}` guards any pre-existing state object without the field.
+export const enemyPoiseAtom = atom((get) => get(battleStateAtom).enemyPoise ?? {});
+// Per-enemy "Staggered!" callout trigger — fires when a hit empties an enemy's poise pool.
+export const lastPoiseBreakAtom = atom((get) => get(battleStateAtom).lastPoiseBreak ?? null);
+// Ids of every Broken enemy as one string, so the attack-timer hook is only notified on a Break or a
+// recovery — never on the per-tick countdown (a string compares by value; see `rosterSignature`).
+export const staggeredEnemySignatureAtom = atom((get) => resolveStaggeredEnemySignature(get(enemyPoiseAtom)));
+
+// One derived atom per enemy, cached by id. The tick and the damage path copy only the entries
+// they touch, so an enemy's atom keeps its value's identity — and stays silent — until *that*
+// enemy's pool or windows move.
+const enemyPoiseStateAtoms = new Map<string, Atom<EnemyPoiseState | undefined>>();
+export function enemyPoiseStateAtom(enemyId: string): Atom<EnemyPoiseState | undefined> {
+  let poiseAtom = enemyPoiseStateAtoms.get(enemyId);
+  if (!poiseAtom) {
+    poiseAtom = atom((get) => get(enemyPoiseAtom)[enemyId]);
+    enemyPoiseStateAtoms.set(enemyId, poiseAtom);
+  }
+  return poiseAtom;
+}
+
+// What the poise bar draws for one enemy, in integer percents, cached by id. With regen on, a
+// dented pool's raw state moves on every tick; this hands back the previous summary whenever
+// nothing visible changed, so the sprite sits out those ticks and only re-renders on a real flip.
+const enemyPoiseSummaryAtoms = new Map<string, Atom<EnemyPoiseSummary | undefined>>();
+export function enemyPoiseSummaryAtom(enemyId: string): Atom<EnemyPoiseSummary | undefined> {
+  let summaryAtom = enemyPoiseSummaryAtoms.get(enemyId);
+  if (!summaryAtom) {
+    let lastSummary: EnemyPoiseSummary | undefined;
+    summaryAtom = atom((get) => {
+      const state = get(enemyPoiseStateAtom(enemyId));
+      if (!state) return (lastSummary = undefined);
+      const summary = summarizeEnemyPoise(state);
+      if (lastSummary && poiseSummariesMatch(lastSummary, summary)) return lastSummary;
+      return (lastSummary = summary);
+    });
+    enemyPoiseSummaryAtoms.set(enemyId, summaryAtom);
+  }
+  return summaryAtom;
+}
+
+// Flags an enemy reaching its per-cycle stagger cap, so the "Flinched!" callout can replay.
 // Called by the attack-timer hook; the timestamp re-triggers the animation on later cycles.
 export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
   const currentState = get(battleStateAtom);
@@ -428,6 +552,9 @@ export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt 
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
 export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);
+// Breaks landed this battle, summed from the per-enemy `breakCount` pools rather than counted
+// separately — those never reset mid-battle and outlive the enemy, so they can't drift.
+export const enemiesBrokenAtom = atom((get) => countEnemyBreaks(get(enemyPoiseAtom)));
 
 // The most recent victory rating, published by the BattleOverModal the moment a win is confirmed,
 // so post-battle consumers (e.g. a dungeon run) can record it without recomputing — recomputing
@@ -615,10 +742,11 @@ export const tickGuardDecayAtom = atom(null, (get, set, deltaSeconds: number) =>
   });
 });
 
-// One write per battle tick: skill cooldowns and Guard decay together. Replaces the interval's
-// back-to-back `tickSkillCooldownsAtom` + `tickGuardDecayAtom` calls (two whole-state writes and
-// two commit passes whenever both had work). Same math; the decay factor is resolved against the
-// post-tick party exactly as the second write used to see it.
+// One write per battle tick: skill cooldowns, Guard decay and the enemy poise windows together.
+// Replaces the interval's back-to-back `tickSkillCooldownsAtom` + `tickGuardDecayAtom` calls (two
+// whole-state writes and two commit passes whenever both had work). Same math; the decay factor
+// is resolved against the post-tick party exactly as the second write used to see it. Each reducer
+// hands back its input by reference when idle, so a quiet battle never writes.
 export const battleTickAtom = atom(null, (get, set, deltaSeconds: number) => {
   const currentState = get(battleStateAtom);
   if (currentState.gameStatus !== 'playing') return;
@@ -628,9 +756,10 @@ export const battleTickAtom = atom(null, (get, set, deltaSeconds: number) => {
     currentState.guard > 0
       ? decayGuard(currentState.guard, deltaSeconds, resolveGuardDecayFactor(party))
       : currentState.guard;
-  if (party === currentState.party && guard === currentState.guard) return;
+  const enemyPoise = tickEnemyPoise(currentState.enemyPoise, deltaSeconds);
+  if (party === currentState.party && guard === currentState.guard && enemyPoise === currentState.enemyPoise) return;
 
-  set(battleStateAtom, { ...currentState, party, guard });
+  set(battleStateAtom, { ...currentState, party, guard, enemyPoise });
 });
 
 // Atom to increment turn counter
@@ -681,15 +810,42 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   const hitEnemyId = selectedEnemyId;
   const hitEnemyIds = enemies.filter((e) => e.currentHp > 0).map((e) => e.id);
 
+  // Poise side of an enemy-targeting skill (see damageEnemyAtom for the same rules on matches):
+  // the hit lands in the vulnerable window of a Broken target (read from the PRE-hit state), and
+  // deals poise damage unless it killed or the target is still on standby.
+  const poiseHits = weighHitsByAttacker([{ amount, characterId }], currentState.party, POISE_SKILL_MULTIPLIER, 'skill');
+  let enemyPoise = currentState.enemyPoise;
+  const brokenEnemyIds: string[] = [];
+  // Per-target HP damage, once the vulnerable bonus is applied; the popup reads its own entry.
+  const amountByEnemyId: Record<string, number> = {};
+
+  function isStaggeredTarget(enemyId: string): boolean {
+    const poise = enemyPoise[enemyId];
+    return poise ? isEnemyStaggered(poise) : false;
+  }
+
+  function landPoise(struck: EnemyData) {
+    const poiseBefore = enemyPoise[struck.id];
+    if (!poiseBefore || struck.currentHp <= 0) return;
+    // As in `damageEnemyAtom`: a standby target's pool still moves, it just cannot Break yet.
+    const canBreak = !currentState.standbyEnemyIds.includes(struck.id);
+    const { next, didBreak } = applyPoiseHits(poiseBefore, poiseHits, struck.poise ?? 1, { canBreak });
+    if (next !== poiseBefore) enemyPoise = { ...enemyPoise, [struck.id]: next };
+    if (didBreak) brokenEnemyIds.push(struck.id);
+  }
+
   if (skill.target === 'enemy') {
     // Damage the selected enemy
+    const landed = resolveVulnerableDamage(amount, isStaggeredTarget(selectedEnemyId));
+    amountByEnemyId[selectedEnemyId] = landed;
     enemies = enemies.map((e) => {
       if (e.id !== selectedEnemyId) return e;
-      return { ...e, currentHp: subtractionWithMin(e.currentHp, amount, 0) };
+      return { ...e, currentHp: subtractionWithMin(e.currentHp, landed, 0) };
     });
 
     // Check if selected enemy just died — auto-select next
     const damagedEnemy = enemies.find((e) => e.id === selectedEnemyId)!;
+    landPoise(damagedEnemy);
     if (damagedEnemy.currentHp <= 0) {
       const nextId = getNextLivingEnemyId(enemies, selectedEnemyId);
       if (nextId) selectedEnemyId = nextId;
@@ -700,10 +856,16 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       gameStatus = 'won';
     }
   } else if (skill.target === 'allEnemy') {
-    // Damage every living enemy
-    enemies = enemies.map((e) =>
-      e.currentHp <= 0 ? e : { ...e, currentHp: subtractionWithMin(e.currentHp, amount, 0) },
-    );
+    // Damage every living enemy, each by its own vulnerable-window amount
+    enemies = enemies.map((e) => {
+      if (e.currentHp <= 0) return e;
+      const landed = resolveVulnerableDamage(amount, isStaggeredTarget(e.id));
+      amountByEnemyId[e.id] = landed;
+      return { ...e, currentHp: subtractionWithMin(e.currentHp, landed, 0) };
+    });
+    for (const struck of enemies) {
+      if (hitEnemyIds.includes(struck.id)) landPoise(struck);
+    }
 
     // Re-select if the current target died
     const selectedEnemy = enemies.find((e) => e.id === selectedEnemyId);
@@ -738,11 +900,20 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   let lastDamage = currentState.lastDamage;
   let damageDealt = 0;
   if (skill.target === 'enemy') {
-    lastDamage = { amount, target: 'enemy', timestamp, enemyId: hitEnemyId, characterId, source: 'skill' };
-    damageDealt = amount;
+    const landed = amountByEnemyId[hitEnemyId];
+    lastDamage = { amount: landed, target: 'enemy', timestamp, enemyId: hitEnemyId, characterId, source: 'skill' };
+    damageDealt = landed;
   } else if (skill.target === 'allEnemy') {
-    lastDamage = { amount, target: 'enemy', timestamp, enemyIds: hitEnemyIds, characterId, source: 'skill' };
-    damageDealt = amount * hitEnemyIds.length;
+    lastDamage = {
+      amount,
+      target: 'enemy',
+      timestamp,
+      enemyIds: hitEnemyIds,
+      characterId,
+      source: 'skill',
+      amountByEnemyId,
+    };
+    damageDealt = hitEnemyIds.reduce((sum, id) => sum + amountByEnemyId[id], 0);
   }
 
   set(battleStateAtom, {
@@ -751,6 +922,8 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
     enemies,
     selectedEnemyId,
     gameStatus,
+    enemyPoise,
+    lastPoiseBreak: brokenEnemyIds.length > 0 ? { enemyIds: brokenEnemyIds, timestamp } : currentState.lastPoiseBreak,
     totalDamageDealt: (currentState.totalDamageDealt ?? 0) + damageDealt,
     // Passive skillGuardRestore: the Ultimate also pushes the shared Guard meter back up.
     guard: Math.min(GUARD_MAX, currentState.guard + passives.skillGuardRestore),

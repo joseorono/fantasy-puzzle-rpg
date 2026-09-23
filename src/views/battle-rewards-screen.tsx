@@ -26,7 +26,7 @@ import type { PendingLevelUp } from '~/lib/battle-rewards';
 import type { CharacterData, CoreRPGStats } from '~/types/rpg-elements';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { REWARDS_RESOURCE_REVEAL } from '~/constants/battle-rating';
@@ -405,7 +405,7 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
           {lootTable.equipableItems?.map((item, index) => (
             <li key={`equip-${index}`} className="item-entry">
               <div className="item-entry-icon">
-                {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
+                <ItemIcon item={item.item} size={32} />
               </div>
               <span className="item-name" style={{ color: getRarityColor(item.rarity) }}>
                 1x {item.item?.name || 'Equipment'}
@@ -421,7 +421,7 @@ function ItemRewardsScreen({ lootTable, lootMultiplier = 1, onFinish }: ItemRewa
           {lootTable.consumableItems?.map((item, index) => (
             <li key={`consumable-${index}`} className="item-entry">
               <div className="item-entry-icon">
-                {item.item.iconName ? <FrostyRpgIcon name={item.item.iconName} size={32} /> : null}
+                <ItemIcon item={item.item} size={32} />
               </div>
               <span className="item-name">
                 1x {item.item?.name || 'Consumable'}

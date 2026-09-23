@@ -4,6 +4,7 @@ import { useInventory, useInventoryActions, useResources, useResourcesActions } 
 import type { ItemStoreParams, ConsumableItemData } from '~/types';
 import { ConsumableItems } from '~/constants/inventory';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { getItemsFromIds } from '~/lib/town';
@@ -197,7 +198,7 @@ export default function ItemStore({
                   className={cn('equipment-list-item', selection.isSelected(item.id) && 'selected')}
                 >
                   <div className="equipment-item-icon">
-                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                    <ItemIcon item={item} size={24} />
                   </div>
                   <div className="equipment-item-content">
                     <div className="equipment-item-header">
@@ -256,7 +257,7 @@ export default function ItemStore({
                   )}
                 >
                   <div className="equipment-item-icon">
-                    {item.iconName ? <FrostyRpgIcon name={item.iconName} size={24} /> : null}
+                    <ItemIcon item={item} size={24} />
                   </div>
                   <div className="equipment-item-content">
                     <div className="equipment-item-header">

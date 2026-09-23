@@ -96,3 +96,18 @@ export const MAX_MATCH_SOUND_VOLUME = 1;
  * Temporary: reuses the uncork SFX until a dedicated explosion sound exists.
  */
 export const BOMB_EXPLOSION_SOUND: SoundNames | null = SoundNames.uncork;
+
+/**
+ * Sound played when an enemy Breaks (poise emptied, attack cancelled). Set to `null` to disable.
+ * Temporary: reuses the short blacksmith clang until a dedicated shatter SFX exists.
+ */
+export const POISE_BREAK_SOUND: SoundNames | null = SoundNames.blacksmithShorter;
+
+/**
+ * Swish played as a Row/Column Clear sweeps the board, ahead of the shared match SFX. Set to `null`
+ * to disable. Temporary: reuses the metal-sharpening SFX until a dedicated sweep sound exists.
+ */
+export const LINE_CLEAR_SOUND: SoundNames | null = SoundNames.metalSharpening;
+
+/** SFX gain for `LINE_CLEAR_SOUND`; the match SFX that follows it plays at its usual size-scaled level. */
+export const LINE_CLEAR_SOUND_VOLUME = 0.5;

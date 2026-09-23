@@ -5,13 +5,26 @@
  *
  * Design intent: the rating rewards *skill* (fast clears, keeping HP, not leaning on items) and
  * only lightly rewards RNG-dependent outcomes (raw match score and cascade combos depend on how
- * the board falls), so those carry small weights. Using ultimate skills grants a small capped
- * bonus — like the item penalty, it lives *outside* the weight sum, so it lifts an imperfect run
- * without cannibalizing the skill weights (a flawless no-ultimate clear still reaches 5★).
+ * the board falls), so those carry small weights. Two things the player *does* — using ultimate
+ * skills and staggering enemies — each grant their own small capped bonus. They are scored
+ * separately (own constant, own cap, own row) and, like the item penalty, live *outside* the
+ * weight sum, so they lift an imperfect run without cannibalizing the skill weights: a flawless
+ * clear that used neither still reaches 5★.
  */
 
 /** Rating criterion keys, in display order. */
-export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'ultimates' | 'items';
+export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'ultimates' | 'staggers' | 'items';
+
+/** Player-facing row labels, keyed by criterion. Copy lives here, not in the scoring logic. */
+export const RATING_CRITERION_LABELS: Record<RatingCriterionKey, string> = {
+  time: 'CLEAR TIME',
+  hp: 'HP REMAINING',
+  combo: 'MAX COMBO',
+  score: 'MATCH SCORE',
+  ultimates: 'ULTIMATES USED',
+  staggers: 'STAGGERS',
+  items: 'ITEMS USED',
+};
 
 /**
  * Weights of the positive criteria (must sum to 1). Skill criteria (time, HP) dominate and are
@@ -56,6 +69,19 @@ export const MAX_ITEM_PENALTY = 0.5;
 export const ULTIMATE_BONUS_PER_USE = 0.05;
 /** Cap on the total ultimate bonus, so it stays a nudge (a flawless run is already maxed). */
 export const MAX_ULTIMATE_BONUS = 0.15;
+
+// ─── Stagger (enemy Break) reward ────────────────────────────────────────────
+// Emptying an enemy's poise pool Breaks it (see `~/lib/poise-system` and docs/ENEMY_POISE_STAGGER.md).
+// These are the *rating* knobs for that, unrelated to the flinch `STAGGER_*` constants in
+// `~/constants/battle`. Scored independently of the ultimate bonus above — its own row, own cap.
+
+/** Normalized rating gained per enemy Break (a bonus, added outside the weight sum). */
+export const STAGGER_BONUS_PER_BREAK = 0.03;
+/**
+ * Cap on the total stagger bonus — three Breaks max it out. Kept under {@link MAX_ULTIMATE_BONUS}
+ * so that a run leaning on both bonuses can still only lift itself so far.
+ */
+export const MAX_STAGGER_BONUS = 0.09;
 
 // ─── Stars ───────────────────────────────────────────────────────────────────
 

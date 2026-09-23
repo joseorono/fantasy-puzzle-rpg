@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { Eye, Hourglass, Star, Swords } from 'lucide-react';
+import { Eye, Hourglass, ShieldOff, Star, Swords } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
 import { turnAtom, scoreAtom, gameStatusAtom, isTrainingBattleAtom } from '~/stores/battle-atoms';
 import { isMutedAtom } from '~/stores/pause-menu-atoms';
@@ -75,10 +75,17 @@ export function BattleTopBar({ enemyTimers, isBattlePaused, onPauseToggle }: Bat
                       cycleKey={timer.cycleKey}
                       paused={isPaused}
                       size="sm"
-                      tone={timer.isStandby ? 'gold' : 'danger'}
+                      tone={timer.isStaggered ? 'neutral' : timer.isStandby ? 'gold' : 'danger'}
                       className="btb-threat-pie"
                     >
-                      {timer.isStandby ? <Eye className="btb-threat-icon" /> : <Swords className="btb-threat-icon" />}
+                      {/* Broken: the ring counts the stagger window down, not an attack. */}
+                      {timer.isStaggered ? (
+                        <ShieldOff className="btb-threat-icon" />
+                      ) : timer.isStandby ? (
+                        <Eye className="btb-threat-icon" />
+                      ) : (
+                        <Swords className="btb-threat-icon" />
+                      )}
                     </RadialCountdown>
                   </div>
                 );

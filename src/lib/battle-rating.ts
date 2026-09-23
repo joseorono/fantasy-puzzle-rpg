@@ -4,10 +4,12 @@
  * live in `~/constants/battle-rating.ts`.
  *
  * Skill criteria (clear time, HP kept) dominate; RNG-heavy ones (match score, cascade combo) carry
- * small weights; using battle items applies a capped penalty.
+ * small weights; using battle items applies a capped penalty. Ultimates used and enemies staggered
+ * each grant their own independent capped bonus.
  */
 import {
   RATING_WEIGHTS,
+  RATING_CRITERION_LABELS,
   RNG_HEAVY_CRITERIA,
   TIME_FULL_MS,
   TIME_ZERO_MS,
@@ -17,6 +19,8 @@ import {
   MAX_ITEM_PENALTY,
   ULTIMATE_BONUS_PER_USE,
   MAX_ULTIMATE_BONUS,
+  STAGGER_BONUS_PER_BREAK,
+  MAX_STAGGER_BONUS,
   STAR_THRESHOLDS,
   RATING_POINTS_SCALE,
   LOOT_MULTIPLIER_BY_STARS,
@@ -37,6 +41,11 @@ export interface BattleRatingInput {
   itemsUsed: number;
   /** Number of ultimate skills used (capped bonus). Defaults to 0 when omitted. */
   ultimateSkillsUsed?: number;
+  /**
+   * Number of enemy Breaks (staggers) landed this battle, summed across every enemy — a capped
+   * bonus scored separately from the ultimates one. Defaults to 0 when omitted.
+   */
+  enemiesBroken?: number;
 }
 
 /** A single scored line on the results screen. */
@@ -115,7 +124,7 @@ function toPoints(weightedNormalized: number): number {
  * @returns A star count, total points, and the per-criterion breakdown for display.
  */
 export function computeBattleRating(input: BattleRatingInput): BattleRatingResult {
-  const { elapsedMs, score, maxCombo, hpRemainingPct, itemsUsed, ultimateSkillsUsed = 0 } = input;
+  const { elapsedMs, score, maxCombo, hpRemainingPct, itemsUsed, ultimateSkillsUsed = 0, enemiesBroken = 0 } = input;
 
   const subTime = normalizeTime(elapsedMs);
   const subHp = clamp01(hpRemainingPct);
@@ -135,7 +144,10 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
     Math.max(0, ultimateSkillsUsed) * ULTIMATE_BONUS_PER_USE,
     MAX_ULTIMATE_BONUS,
   );
-  const normalized = clamp01(positive + ultimateBonus - itemPenalty);
+  // Staggering enemies earns its own bonus on the same terms, capped independently of the
+  // ultimates one: the two are different plays and are never pooled.
+  const staggerBonus = Math.min(Math.max(0, enemiesBroken) * STAGGER_BONUS_PER_BREAK, MAX_STAGGER_BONUS);
+  const normalized = clamp01(positive + ultimateBonus + staggerBonus - itemPenalty);
 
   // 1 star for winning, +1 per cleared threshold.
   const stars = STAR_THRESHOLDS.reduce((count, threshold) => count + (normalized >= threshold ? 1 : 0), 1);
@@ -143,12 +155,13 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
   const isRng = (key: RatingCriterionKey) => RNG_HEAVY_CRITERIA.includes(key);
   const isFlawless = subHp >= 1;
 
-  // Rows are built in display order. Zero-contribution rows (combo/ultimates/items at 0) are
-  // omitted to keep the panel compact — they carry 0 points, so hiding them never shifts the total.
+  // Rows are built in display order. Zero-contribution rows (combo/ultimates/staggers/items at 0)
+  // are omitted to keep the panel compact — they carry 0 points, so hiding them never shifts the
+  // total. Labels come from RATING_CRITERION_LABELS so the copy stays with the tunables.
   const criteria: RatingCriterion[] = [
     {
       key: 'time',
-      label: 'CLEAR TIME',
+      label: RATING_CRITERION_LABELS.time,
       displayValue: formatClearTime(elapsedMs),
       points: toPoints(RATING_WEIGHTS.time * subTime),
       isPenalty: false,
@@ -157,7 +170,7 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
     },
     {
       key: 'hp',
-      label: 'HP REMAINING',
+      label: RATING_CRITERION_LABELS.hp,
       displayValue: `${Math.round(subHp * 100)}%`,
       points: toPoints(RATING_WEIGHTS.hp * subHp),
       isPenalty: false,
@@ -168,7 +181,7 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       ? [
           {
             key: 'combo' as const,
-            label: 'MAX COMBO',
+            label: RATING_CRITERION_LABELS.combo,
             displayValue: `x${Math.max(0, Math.floor(maxCombo))}`,
             points: toPoints(RATING_WEIGHTS.combo * subCombo),
             isPenalty: false,
@@ -179,7 +192,7 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       : []),
     {
       key: 'score',
-      label: 'MATCH SCORE',
+      label: RATING_CRITERION_LABELS.score,
       displayValue: formatThousands(score),
       points: toPoints(RATING_WEIGHTS.score * subScore),
       isPenalty: false,
@@ -190,9 +203,22 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       ? [
           {
             key: 'ultimates' as const,
-            label: 'ULTIMATES USED',
+            label: RATING_CRITERION_LABELS.ultimates,
             displayValue: `${Math.max(0, Math.floor(ultimateSkillsUsed))}`,
             points: toPoints(ultimateBonus),
+            isPenalty: false,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
+    ...(enemiesBroken > 0
+      ? [
+          {
+            key: 'staggers' as const,
+            label: RATING_CRITERION_LABELS.staggers,
+            displayValue: `x${Math.max(0, Math.floor(enemiesBroken))}`,
+            points: toPoints(staggerBonus),
             isPenalty: false,
             isRngHeavy: false,
             isFlawless: false,
@@ -203,7 +229,7 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       ? [
           {
             key: 'items' as const,
-            label: 'ITEMS USED',
+            label: RATING_CRITERION_LABELS.items,
             displayValue: `${Math.max(0, Math.floor(itemsUsed))}`,
             points: -toPoints(itemPenalty),
             isPenalty: true,

@@ -64,7 +64,7 @@ it **decays or resets when the party takes a hit**. Repurposes the vestigial `sc
 
 ### 3. Telegraphed heavy attacks (mid-battle wind-ups)  🟢–🟡 · perf: **Low–Med**
 
-- [ ] Implemented — *the always-on stagger cousin (see below) shipped; the telegraphed wind-up itself has not.*
+- [ ] Implemented — *the interrupt half shipped as the poise **Break** (a filled poise pool cancels the pending attack, see `docs/ENEMY_POISE_STAGGER.md`), alongside the always-on flinch (see below); the telegraphed wind-up state itself has not.*
 
 Extend the existing standby/preemptive concept from *opening only* to *recurring*: enemies
 periodically enter a visible "charging" state for N seconds. Enough damage (or a stun)
@@ -85,7 +85,7 @@ feeding `rarityBias` in `combineLootFromEnemies`.
 - *Orthogonal axis:* a **mastery/style** reward layer over the win/lose binary.
 - *Differential:* incentivizes optimizing *how* you win; strong replay hook.
 - *Touches:* battle-end path, `lib/loot.ts`, `lib/rarity.ts`.
-- *Shipped instead:* a 1–5★ rating (clear time / HP / combo / score / items) → `LOOT_MULTIPLIER_BY_STARS` scaling money + resources, with the results screen and rewards badge. Feeding `rarityBias` is still open if we want grade-gated *rarity* too.
+- *Shipped instead:* a 1–5★ rating (clear time / HP / combo / score / ultimates / staggers / items) → `LOOT_MULTIPLIER_BY_STARS` scaling money + resources, with the results screen and rewards badge. Feeding `rarityBias` is still open if we want grade-gated *rarity* too.
 
 ### 5. Batch dungeon rewards into an end-of-run tally  🟢 · perf: **None**
 
@@ -170,7 +170,8 @@ convert 3 orbs to a chosen color, Warrior = spawn a bomb, Healer = convert orbs 
 
 - *Orthogonal axis:* turns each class into a distinct **board-manipulation identity**.
 - *Differential:* class choice reshapes *how you make matches*, not just whose damage lands.
-- *Touches:* a light skill-style system, board atoms (`clearRow`/`clearColumn`/`createBombOrb` already exist), UI.
+- *Touches:* a light skill-style system, board helpers (`createBombOrb`, and the line-clear pipeline from
+  [LINE_CLEAR_ITEMS.md](../LINE_CLEAR_ITEMS.md) — `resolveLineClearOrbs` / `fireLineClearAtom` — once it ships), UI.
 
 ### 11. Threat / taunt targeting  🟡 · perf: **Low**
 

@@ -51,6 +51,23 @@ export const ENEMY_HP_THRESHOLD_BG: Record<HpThreshold, string> = {
   low: 'bg-red-700',
 };
 
+/**
+ * Enemy poise bar (under the HP bar). Warm parchment/amber to match the neutral countdown ring,
+ * no bright yellow; `broken` is the washed-out track while the enemy is staggered.
+ */
+export const POISE_BAR_CLASSES = {
+  track: 'border-[#4a3319] bg-[#1f1409]',
+  /** Ready: remaining poise. */
+  fill: 'bg-[#d4a574]',
+  broken: 'border-[#6b5a48] bg-[#2b2521]',
+  /** Broken: the pale vulnerable window draining out. */
+  brokenWindow: 'bg-[#f7e7c6]/80',
+  /** Immune: the pool rebuilding in muted stone — hits do not dent it yet. */
+  immune: 'bg-[#8a7f6e]',
+  /** Tick mark showing where the original max sits once the pool has escalated. */
+  originalMaxMark: 'bg-[#8a6a42]',
+} as const;
+
 /** Hex colors for inline-style HP bars (pause menu roster, etc.) */
 export const HP_THRESHOLD_HEX: Record<HpThreshold, string> = {
   high: '#4ade80',

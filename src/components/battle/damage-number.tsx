@@ -45,7 +45,7 @@ export function DamageNumber({ target }: DamageNumberProps) {
       <div
         key={`flash-${animationKey}`}
         className={cn(
-          'pointer-events-none absolute inset-0 z-10',
+          'impact-flash pointer-events-none absolute inset-0 z-10',
           target === 'enemy' ? 'bg-red-500/30' : 'bg-orange-500/30',
         )}
         style={{

@@ -36,7 +36,7 @@ export function SkillActivationEffect() {
   return (
     <div
       key={animationKey}
-      className="damage-number pointer-events-none absolute top-1/4 left-1/2 z-30 -translate-x-1/2"
+      className="damage-number motion-hold pointer-events-none absolute top-1/4 left-1/2 z-30 -translate-x-1/2"
       style={{ animation: 'damage-float 1.5s ease-out forwards' }}
     >
       <div className="flex flex-col items-center gap-1">

@@ -1,4 +1,5 @@
 import type { Resources } from './resources';
+import type { LineOrientation } from './battle';
 import type { CharacterClass } from './rpg-elements';
 import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ConsumableItemIds } from '~/constants/inventory';
@@ -29,8 +30,8 @@ export interface EquipmentItemData extends BaseItemData {
 
 export type ConsumableAction =
   | { type: 'heal'; amount: number }
-  | { type: 'clear-row' }
-  | { type: 'clear-column' }
+  /** Wipes one aimed row or column; every orb pays out like a match. See docs/LINE_CLEAR_ITEMS.md. */
+  | { type: 'clear-line'; orientation: LineOrientation }
   | { type: 'fill-ultimate'; amount: number };
 
 export interface ConsumableItemData extends BaseItemData {

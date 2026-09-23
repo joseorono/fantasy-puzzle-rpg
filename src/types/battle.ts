@@ -18,6 +18,26 @@ export interface OrbSwap {
   to: GridPosition;
 }
 
+/** Which axis a line-clear item wipes. */
+export type LineOrientation = 'row' | 'column';
+
+/** A line-clear item the player has armed and is aiming with. */
+export interface ArmedLineClear {
+  itemId: string;
+  orientation: LineOrientation;
+}
+
+/**
+ * A fired line clear waiting on the board. Deliberately carries only the line, not the orb ids:
+ * the board resolves it once it settles, so a clear fired mid-cascade never targets orbs that
+ * have since fallen away.
+ */
+export interface LineClearRequest {
+  orientation: LineOrientation;
+  index: number;
+  timestamp: number;
+}
+
 export interface Match {
   orbs: Orb[];
   type: OrbType;
@@ -37,6 +57,42 @@ export interface SkillActivationEvent {
   amount: number;
   isHeal: boolean;
   timestamp: number;
+}
+
+/** One enemy's posture pool and Break windows. Math lives in `~/lib/poise-system`. */
+export interface EnemyPoiseState {
+  /** Remaining poise; hits subtract from it. `<= 0` never persists — a Break refills it. */
+  current: number;
+  /** Current (possibly escalated) max poise. */
+  max: number;
+  /** Max poise at battle start; the escalation cap is relative to this. */
+  originalMax: number;
+  /** Breaks suffered this battle. Never resets mid-battle. */
+  breakCount: number;
+  /** `> 0` = Broken: attack cancelled, vulnerable. Counted down by the battle tick. */
+  staggerRemainingMs: number;
+  /** `> 0` = poise damage ignored (HP damage and Flinch still land). Counted down by the battle tick. */
+  immuneRemainingMs: number;
+}
+
+/** The three player-facing phases of a poise pool, in the order a Break walks through them. */
+export type EnemyPoisePhase = 'ready' | 'broken' | 'immune';
+
+/**
+ * A poise pool reduced to the integer percents the poise bar and the training readout draw, so a
+ * subscriber only re-renders when something *visible* moved — with regen on, the underlying state
+ * changes on every tick for as long as a pool is dented. Built by `summarizeEnemyPoise`.
+ */
+export interface EnemyPoiseSummary {
+  phase: EnemyPoisePhase;
+  /** Remaining poise, 0–100. Reads 100 while Broken or immune, since a Break refills the pool. */
+  fillPercent: number;
+  /** Remaining stagger window (Broken) or immunity window (immune), 0–100; 0 while ready. */
+  windowPercent: number;
+  /** Breaks suffered this battle. */
+  breakCount: number;
+  /** Where the original max sits on the escalated bar, 0–100, or null until the pool has escalated. */
+  originalMaxPercent: number | null;
 }
 
 export interface BattleState {
@@ -68,6 +124,11 @@ export interface BattleState {
     enemyIds?: string[];
     /** Individual hits folded into this event (a multi-color match). Absent = one hit of `amount`. */
     hits?: Array<{ amount: number; characterId?: string }>;
+    /**
+     * Per-target amounts when one event hit several enemies for different values (an all-enemy
+     * skill landing on a mix of staggered and unbroken targets). Falls back to `amount`.
+     */
+    amountByEnemyId?: Record<string, number>;
     /** What produced the hit. A missing value is treated as `'match'` by consumers. */
     source?: 'match' | 'skill' | 'enemy';
     /** Set when the incoming party hit was mitigated by Guard. */
@@ -106,6 +167,17 @@ export interface BattleState {
    * timestamp re-triggers the animation each time an enemy maxes out again on a later cycle.
    */
   lastMaxFlinch: { enemyId: string; timestamp: number } | null;
+  /**
+   * Per-enemy poise (posture) pool and Break windows, keyed by enemy id. Written in the same
+   * commit as HP damage; the stagger/immunity counters are ticked down by `battleTickAtom`.
+   * See `~/lib/poise-system` and docs/ENEMY_POISE_STAGGER.md.
+   */
+  enemyPoise: Record<string, EnemyPoiseState>;
+  /**
+   * Fires when one or more enemies Break (poise pool emptied → attack cancelled), so the per-enemy
+   * "Staggered!" callout can replay. An all-enemy skill can break several at once.
+   */
+  lastPoiseBreak: { enemyIds: string[]; timestamp: number } | null;
   /** `Date.now()` when the battle was created; drives the victory rating's clear-time criterion. */
   startedAt: number;
   /** Deepest cascade combo (chain length) reached this battle; feeds the victory rating. */

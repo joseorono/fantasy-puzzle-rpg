@@ -309,6 +309,93 @@
   z-index: 10;
 }
 
+/* ─── Line-clear items (Row Clear / Column Clear) ────────────────────────
+   A streak crosses the chosen line and every orb on it flashes and pops in its wake, one slot at a
+   time (`animation-delay` is set per orb from LINE_CLEAR_ORB_STAGGER_MS). Warm amber, no neon. */
+
+/* Orb on the line: a hot flash and a swell, then it collapses. Ends invisible, so under reduced
+   motion it simply vanishes — the payout still lands on its timer. */
+@keyframes line-clear-pop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 rgba(246, 196, 83, 0);
+  }
+  30% {
+    transform: scale(1.25);
+    filter: brightness(2.2) saturate(0.6);
+    box-shadow: 0 0 18px 8px rgba(246, 196, 83, 0.75);
+  }
+  100% {
+    transform: scale(0);
+    filter: brightness(1.6);
+    box-shadow: 0 0 0 14px rgba(224, 163, 58, 0);
+    opacity: 0;
+  }
+}
+
+.orb-line-clearing {
+  animation: line-clear-pop 0.32s ease-out forwards;
+  z-index: 10;
+}
+
+/* The streak: a bright core with an amber halo, travelling the full length of the line. The band
+   itself is sized and placed by LineClearSweep; only the motion lives here. */
+.line-clear-streak {
+  background: linear-gradient(
+    var(--streak-angle, 90deg),
+    rgba(246, 196, 83, 0) 0%,
+    rgba(246, 196, 83, 0.55) 35%,
+    rgba(255, 246, 224, 0.95) 50%,
+    rgba(246, 196, 83, 0.55) 65%,
+    rgba(246, 196, 83, 0) 100%
+  );
+  box-shadow: 0 0 16px 4px rgba(224, 163, 58, 0.45);
+  will-change: transform;
+}
+
+@keyframes line-sweep-x {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes line-sweep-y {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* The whole board jolts once as the streak lands. Transform-only, palette-safe. */
+@keyframes board-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 2px);
+  }
+  40% {
+    transform: translate(3px, -2px);
+  }
+  60% {
+    transform: translate(-2px, -1px);
+  }
+  80% {
+    transform: translate(2px, 1px);
+  }
+}
+
+.board-shake {
+  animation: board-shake 0.3s ease-out;
+}
+
 /* Smooth slide animation for orbs */
 @keyframes slide-down {
   from {
@@ -461,6 +548,29 @@
     0 1px 0 #3a1d08,
     0 0 6px rgba(246, 196, 83, 0.5);
   white-space: nowrap;
+}
+
+/* Break callout — same pop, held longer (duration set inline from POISE_BREAK_CALLOUT_DURATION_MS)
+   and drawn in pale parchment so it visibly outranks the amber flinch pop. */
+.stagger-callout--break {
+  color: #f7e7c6;
+  text-shadow:
+    0 1px 0 #3a1d08,
+    0 0 8px rgba(247, 231, 198, 0.55);
+}
+
+/* Broken enemy — washed out and dazed for the whole stagger window. The tint is static (survives
+   reduced motion); only the slow sway is animation. Transform-only + filter, palette-safe. */
+@keyframes enemy-staggered-sway {
+  0% { transform: rotate(-5deg) translateY(1px); }
+  100% { transform: rotate(4deg) translateY(0); }
+}
+
+.enemy-staggered {
+  filter: saturate(0.55) brightness(0.85);
+  transform: rotate(-5deg);
+  animation: enemy-staggered-sway 0.7s ease-in-out infinite alternate;
+  transition: filter 0.2s ease-out;
 }
 
 /* Reduced motion (recoil, eruptions, shakes) is handled globally in styles/reduced-motion.css. */

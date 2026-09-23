@@ -50,6 +50,55 @@ export const STAGGER_VIT_DIVISOR = 8;
  */
 export const SKILL_STAGGER_MULTIPLIER = 2.5;
 
+// ─── Enemy Poise / Break ─────────────────────────────────────────────────────
+// Builds on top of Flinch: the same hit that nudges the attack timer also deals "poise damage"
+// to a per-enemy posture pool. Emptying it Breaks the enemy — its pending attack is cancelled,
+// it stays vulnerable for a window, then re-arms behind two anti-stunlock guards (poise-damage
+// immunity + an escalating pool). Math in `~/lib/poise-system`; design in docs/ENEMY_POISE_STAGGER.md.
+
+/** Pool size as a fraction of max HP: a poise-1 enemy Breaks after taking this share of its HP as poise damage. */
+export const POISE_POOL_HP_FRACTION = 0.4;
+
+/**
+ * Multiplies the poise damage of skill (ultimate) hits. Deliberately separate from
+ * {@link SKILL_STAGGER_MULTIPLIER}: an ultimate that maxes the flinch should not automatically Break.
+ */
+export const POISE_SKILL_MULTIPLIER = 2.0;
+
+/** How long (ms) a Break lasts: the attack is cancelled and the enemy takes bonus damage for this window. */
+export const POISE_BREAK_STAGGER_DURATION_MS = 2500;
+
+/** Bonus HP damage on a staggered enemy, e.g. `0.5` = +50%. Mirrors {@link PREEMPTIVE_STRIKE_DAMAGE_BONUS}. */
+export const POISE_BREAK_DAMAGE_BONUS = 0.5;
+
+/**
+ * After a Break ends, the enemy ignores poise damage for this long (ms). HP damage and the Flinch
+ * push still land — this only stops the pool from filling again immediately.
+ */
+export const POISE_BREAK_IMMUNITY_MS = 2000;
+
+/** Each Break raises the enemy's max poise by this fraction of its ORIGINAL max. */
+export const POISE_MAX_GROWTH_PER_BREAK = 0.25;
+
+/** Hard cap on escalated max poise, as a multiple of the original: 1.5 = never above 150%. */
+export const POISE_MAX_GROWTH_CAP = 1.5;
+
+/**
+ * Extra poise damage per cascade level, on top of what the combo damage multiplier already adds
+ * (hit amounts carry it). `0` = combos fill poise exactly as fast as they deal HP damage.
+ */
+export const POISE_CASCADE_BONUS_PER_LEVEL = 0;
+
+/**
+ * Pool refill while not staggered, as a fraction of max per second. `0` = off; immunity and the
+ * escalation cap already stop chain-Breaks, so only enable this if long fights feel like a
+ * guaranteed Break.
+ */
+export const POISE_REGEN_PER_SECOND = 0.01;
+
+/** How long (ms) the "Staggered!" Break callout holds (the "Flinched!" one keeps its own 900 ms). */
+export const POISE_BREAK_CALLOUT_DURATION_MS = 1300;
+
 /** How long (ms) a centered battle callout ("Preemptive Strike!", "No moves! Reshuffle!") stays on screen. */
 export const BATTLE_CALLOUT_DURATION_MS = 1200;
 
@@ -110,6 +159,41 @@ export const CASCADE_DAMAGE_BONUS_PER_LEVEL = 0.35;
 
 /** Hard ceiling on the cascade combo multiplier, regardless of chain depth. */
 export const MAX_COMBO_MULTIPLIER = 2.0;
+
+/** Delay (ms) between a move resolving on screen and its damage/heals landing. Covers the orb glow. */
+export const MATCH_RESOLVE_DELAY_MS = 200;
+
+/** Delay (ms) before matched orbs are removed and the board refills. Covers the disappear animation. */
+export const MATCH_REMOVE_DELAY_MS = 600;
+
+// ─── Line-clear items (Row Clear / Column Clear) ─────────────────────────────
+// A line clear wipes a whole row or column and pays out like a match: the orbs are grouped by
+// colour and each living hero acts on their own colour's count. Design: docs/LINE_CLEAR_ITEMS.md.
+
+/**
+ * Scales the damage of every colour group in a line clear. THIS IS THE LINE-CLEAR POWER KNOB:
+ * a cleared line hands each present colour a full match's worth of damage, so a 4-colour row pays
+ * out like four matches at once. Lower it if the items outclass playing the board.
+ */
+export const LINE_CLEAR_DAMAGE_MULTIPLIER = 1.0;
+
+/** Weight of a wildcard bomb when the auto-aim scores a candidate line (it takes a 3x3 with it). */
+export const LINE_CLEAR_AUTO_PICK_BOMB_WEIGHT = 3;
+
+/** Weight of a gray orb when the auto-aim scores a candidate line: Guard, not damage, so worth less. */
+export const LINE_CLEAR_AUTO_PICK_GRAY_WEIGHT = 0.5;
+
+/**
+ * How long (ms) the streak takes to cross the board. Damage, hitstop and the match SFX land when it
+ * finishes; the orbs are removed on `MATCH_REMOVE_DELAY_MS` as usual, so keep this below that.
+ */
+export const LINE_CLEAR_SWEEP_MS = 350;
+
+/**
+ * Gap (ms) between one orb popping and the next along the streak's direction. The longest line is
+ * `BOARD_ROWS` orbs, so the last pop must start before `LINE_CLEAR_SWEEP_MS` is up.
+ */
+export const LINE_CLEAR_ORB_STAGGER_MS = 40;
 
 // ─── Guard Meter ─────────────────────────────────────────────────────────────
 // Gray orbs trade raw damage for a party-wide Guard meter. Three independent levers move it:

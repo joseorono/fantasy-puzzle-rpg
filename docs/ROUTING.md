@@ -116,6 +116,22 @@ const quickBattle = () => {
 };
 ```
 
+### Transition Before Navigating
+
+Cover transitions (`useViewTransitions` in `src/hooks/use-view-transitions.ts`) play a global animation that
+ends fully opaque and resolve on its configured `duration` (`ANIMATION_CONFIG` in
+`src/constants/animation-system.ts`). Navigate in the continuation so the route change lands under the cover;
+the destination hard-cuts in. Lock the caller's input for the wait (the map pauses movement, the dungeon
+flips to `awaiting-battle`, the training grounds latch a ref). Under reduced motion they resolve immediately.
+
+```typescript
+const { enterBattle, enterTown } = useViewTransitions();
+
+setupBattle({ enemies, party });
+await enterBattle(); // random pick from BATTLE_TRANSITION_ANIMATIONS, never the same twice in a row
+goToBattleDemo({ enemyId, location });
+```
+
 ## Navigation Methods
 
 ### Specific View Navigation

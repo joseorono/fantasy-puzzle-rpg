@@ -25,6 +25,7 @@ export const MOSS_GOLEM: EnemyData = {
   attackInterval: 4000, // Base interval (4 seconds)
   attackDamage: 24, // Base damage before POW modifier (30 after POW)
   guardBreak: 2.0, // Heavy slams chew through the party Guard meter
+  poise: 0.5, // Stone — takes half poise damage, hard to stagger
   lootTable: MOSS_GOLEM_LOOT,
   expReward: calculateEnemyExpReward(MOSS_GOLEM_MAX_HP), // 62
   rarityBias: 1, // Tanky elite — slightly better odds at rarer gear
@@ -52,6 +53,7 @@ export const SWAMP_FROG: EnemyData = {
   attackInterval: 3000, // Faster attacks (3 seconds)
   attackDamage: 10, // Low damage (11 after POW)
   guardBreak: 0.8, // Light taps erode the party Guard meter
+  poise: 1.6, // Squishy — staggers easily
   lootTable: SWAMP_FROG_LOOT,
   expReward: calculateEnemyExpReward(SWAMP_FROG_MAX_HP), // 21
 };

@@ -15,7 +15,7 @@ import type { BaseItemData } from '~/types/inventory';
 import type { RarityTier } from '~/constants/rarity';
 import { getScaledEquipmentStats } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
@@ -258,7 +258,7 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
                 onClick={() => setSelectedKey(key)}
               >
                 <span className="pause-menu-item-icon-slot">
-                  {itemData.iconName && <FrostyRpgIcon name={itemData.iconName} size={24} />}
+                  <ItemIcon item={itemData} size={24} />
                 </span>
                 <span
                   className="pause-menu-item-name"
@@ -284,15 +284,9 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
         <div className="pause-menu-item-detail">
           {selectedItem ? (
             <>
-              {selectedItem.iconName ? (
-                <div className="pause-menu-item-detail-icon">
-                  <FrostyRpgIcon name={selectedItem.iconName} size={48} />
-                </div>
-              ) : (
-                'icon' in selectedItem && (
-                  <div className="pause-menu-item-detail-icon">{(selectedItem as ConsumableItemData).icon}</div>
-                )
-              )}
+              <div className="pause-menu-item-detail-icon">
+                <ItemIcon item={selectedItem} size={48} />
+              </div>
               <div className="pause-menu-item-detail-name">{selectedItem.name}</div>
               {selectedIsEquipment && (
                 <div
