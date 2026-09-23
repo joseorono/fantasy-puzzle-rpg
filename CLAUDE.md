@@ -10,7 +10,7 @@ A fantasy match-3 puzzle RPG browser game built with React, TypeScript, and Vite
 - **Build**: Vite 7
 - **State**: Zustand (global game state with slices) + Jotai (battle/combat state only)
 - **Styling**: Tailwind CSS 4 + tailwindcss-animate
-- **Audio**: @pixi/sound
+- **Audio**: native Web Audio API (no library) — see `docs/AUDIO_ENGINE_MIGRATION.md`
 - **UI Primitives**: Radix UI (slider, tooltip), Lucide React (icons), class-variance-authority (cva)
 - **Validation**: Zod
 - **Testing**: Vitest + @vitest/ui
