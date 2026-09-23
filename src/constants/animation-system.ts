@@ -82,7 +82,7 @@ export const ANIMATION_CONFIG: Record<GlobalAnimationType, AnimationConfig> = {
     className: 'anim-battle-flash-wipe',
   },
   'battle-blinds': {
-    duration: 900,
+    duration: 600,
     strategy: 'overlay',
     className: 'anim-battle-blinds',
   },

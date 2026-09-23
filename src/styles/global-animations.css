@@ -250,86 +250,91 @@
 }
 
 /* ---- Battle: Blinds (overlay) ----
-   Eight horizontal strips grow until they meet. One polygon with a fixed vertex count so the
-   clip-path interpolates; the closed shape is every strip collapsed to zero height. */
+   Impact flash, then alternating strips slam in from opposite sides with a rebound. Strips move
+   by transform (compositor-only); the overlay turns solid at the end to seal strip seams. */
 .anim-battle-blinds {
-  background-color: #000;
-  animation: global-battle-blinds 0.9s cubic-bezier(0.6, 0, 0.4, 1) forwards;
-  will-change: clip-path;
+  overflow: hidden;
+  animation: global-battle-blinds-flash 0.6s linear forwards;
 }
 
-@keyframes global-battle-blinds {
+.anim-battle-blinds::before,
+.anim-battle-blinds::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-101%);
+  animation: global-battle-blinds-slam-left 0.55s forwards;
+  will-change: transform;
+}
+
+.anim-battle-blinds::before {
+  background: repeating-linear-gradient(to bottom, #000 0 12.5%, transparent 12.5% 25%);
+}
+
+.anim-battle-blinds::after {
+  background: repeating-linear-gradient(to bottom, transparent 0 12.5%, #000 12.5% 25%);
+  transform: translateX(101%);
+  animation-name: global-battle-blinds-slam-right;
+  animation-delay: 0.05s;
+  animation-fill-mode: both;
+}
+
+@keyframes global-battle-blinds-flash {
   0% {
-    clip-path: polygon(
-      0 0%,
-      100% 0%,
-      100% 0%,
-      0 0%,
-      0 12.5%,
-      100% 12.5%,
-      100% 12.5%,
-      0 12.5%,
-      0 25%,
-      100% 25%,
-      100% 25%,
-      0 25%,
-      0 37.5%,
-      100% 37.5%,
-      100% 37.5%,
-      0 37.5%,
-      0 50%,
-      100% 50%,
-      100% 50%,
-      0 50%,
-      0 62.5%,
-      100% 62.5%,
-      100% 62.5%,
-      0 62.5%,
-      0 75%,
-      100% 75%,
-      100% 75%,
-      0 75%,
-      0 87.5%,
-      100% 87.5%,
-      100% 87.5%,
-      0 87.5%
-    );
+    background-color: rgba(255, 255, 255, 0);
   }
+  5% {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  22% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  88% {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  92%,
   100% {
-    clip-path: polygon(
-      0 0%,
-      100% 0%,
-      100% 12.5%,
-      0 12.5%,
-      0 12.5%,
-      100% 12.5%,
-      100% 25%,
-      0 25%,
-      0 25%,
-      100% 25%,
-      100% 37.5%,
-      0 37.5%,
-      0 37.5%,
-      100% 37.5%,
-      100% 50%,
-      0 50%,
-      0 50%,
-      100% 50%,
-      100% 62.5%,
-      0 62.5%,
-      0 62.5%,
-      100% 62.5%,
-      100% 75%,
-      0 75%,
-      0 75%,
-      100% 75%,
-      100% 87.5%,
-      0 87.5%,
-      0 87.5%,
-      100% 87.5%,
-      100% 100%,
-      0 100%
-    );
+    background-color: rgba(0, 0, 0, 1);
+  }
+}
+
+@keyframes global-battle-blinds-slam-left {
+  0%,
+  10% {
+    transform: translateX(-101%);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  68% {
+    transform: translateX(0);
+    animation-timing-function: ease-out;
+  }
+  78% {
+    transform: translateX(-5%);
+    animation-timing-function: ease-in;
+  }
+  88%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes global-battle-blinds-slam-right {
+  0%,
+  10% {
+    transform: translateX(101%);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  68% {
+    transform: translateX(0);
+    animation-timing-function: ease-out;
+  }
+  78% {
+    transform: translateX(5%);
+    animation-timing-function: ease-in;
+  }
+  88%,
+  100% {
+    transform: translateX(0);
   }
 }
 
