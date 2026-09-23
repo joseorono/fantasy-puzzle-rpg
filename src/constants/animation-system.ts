@@ -23,7 +23,10 @@ export interface AnimationSound {
 }
 
 export interface AnimationConfig {
-  /** Must match the CSS animation duration: callers are resolved on this timer, not on `animationend`. */
+  /**
+   * Must match the CSS animation duration: this timer is the whole lifecycle. It resolves the
+   * caller and removes the class; `animationend` is never consulted.
+   */
   duration: number;
   strategy: AnimationStrategy;
   className: string;

@@ -1,9 +1,12 @@
 /* global-animations.css */
+/* Viewport-anchored like every other full-screen layer (pause menu, dialogue, modals), so it
+   stays on screen when #game-screen is scrolled. Sits one step under the window-frame chrome
+   (z-index 60 in frames.css) so the bezel stays visible through every transition. */
 .global-animations-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 59;
 }
 
 /* ---- Screen Shake (applied to #game-screen) ---- */

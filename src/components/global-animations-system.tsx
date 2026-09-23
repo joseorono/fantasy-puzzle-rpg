@@ -21,8 +21,6 @@ interface GlobalAnimationContextValue {
 const GlobalAnimationContext = createContext<GlobalAnimationContextValue | null>(null);
 
 export function GlobalAnimationProvider({ children }: { children: React.ReactNode }) {
-  const resolveRef = useRef<(() => void) | null>(null);
-  const callbackRef = useRef<OnEndCallback | null>(null);
   const lastPoolPickRef = useRef<GlobalAnimationType | null>(null);
   const [animation, setAnimation] = useState<GlobalAnimationType | null>(null);
 
@@ -38,15 +36,12 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
       return;
     }
 
-    callbackRef.current = onEnd || null;
+    // The timer owns the whole lifecycle: the class stays on until it fires, so a cover transition
+    // holds until `onEnd` has navigated underneath it, and the clear lands in the same commit.
     setAnimation(type);
-    // Wait for the animation duration
     await auxSleepFor(getAnimationDuration(type));
-    // Execute callback and resolve
-    callbackRef.current?.();
-    resolveRef.current?.();
-    callbackRef.current = null;
-    resolveRef.current = null;
+    onEnd?.();
+    setAnimation(null);
   }, []);
 
   const triggerSequence = useCallback(
@@ -68,15 +63,10 @@ export function GlobalAnimationProvider({ children }: { children: React.ReactNod
     [trigger],
   );
 
-  const handleAnimationEnd = useCallback(() => {
-    setAnimation(null);
-    // Callbacks are now handled by the duration-based timing in trigger()
-  }, []);
-
   return (
     <GlobalAnimationContext.Provider value={{ trigger, triggerSequence, triggerFromPool }}>
       {children}
-      <GlobalAnimationsOverlay type={animation} onEnd={handleAnimationEnd} />
+      <GlobalAnimationsOverlay type={animation} />
     </GlobalAnimationContext.Provider>
   );
 }
@@ -90,38 +80,16 @@ export function useGlobalAnimation() {
 
 // ------------------------------------------------------
 
-function GlobalAnimationsOverlay({ type, onEnd }: { type: GlobalAnimationType | null; onEnd: () => void }) {
+function GlobalAnimationsOverlay({ type }: { type: GlobalAnimationType | null }) {
   const ref = useRef<HTMLDivElement>(null);
 
+  // Cleanup runs on every type change and on unmount, so no class can outlive its trigger.
   useEffect(() => {
-    const el = ref.current;
     if (!type) return;
-
-    // Apply animation using strategy
+    const el = ref.current;
     applyAnimation(type, el);
-
-    function handleEnd(event: AnimationEvent) {
-      // `animationend` bubbles: a descendant's own animation ending must not cut this one short.
-      if (event.target !== event.currentTarget) return;
-      if (type) removeAnimation(type, el);
-      if (el) el.className = 'global-animations-overlay';
-      onEnd();
-    }
-
-    // Listen for animationend on both overlay and game-screen
-    const gameScreen = document.getElementById('game-screen');
-    const animationTargets = [el, gameScreen].filter(Boolean) as HTMLElement[];
-
-    animationTargets.forEach((target) => {
-      target.addEventListener('animationend', handleEnd);
-    });
-
-    return () => {
-      animationTargets.forEach((target) => {
-        target.removeEventListener('animationend', handleEnd);
-      });
-    };
-  }, [type, onEnd]);
+    return () => removeAnimation(type, el);
+  }, [type]);
 
   return <div ref={ref} className="global-animations-overlay" />;
 }
