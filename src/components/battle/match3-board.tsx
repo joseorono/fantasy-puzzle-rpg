@@ -210,6 +210,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const pendingVictory = useAtomValue(pendingVictoryAtom);
   const commitPendingVictory = useSetAtom(commitPendingVictoryAtom);
   const armedLineClear = useAtomValue(armedLineClearAtom);
+  const setArmedLineClear = useSetAtom(armedLineClearAtom);
   const fireLineClear = useSetAtom(fireLineClearAtom);
   const pendingLineClear = useAtomValue(pendingLineClearAtom);
   const setPendingLineClear = useSetAtom(pendingLineClearAtom);
@@ -568,6 +569,14 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     }
   };
 
+  /** Right-click on the board puts an aimed line-clear item away, like Escape. */
+  const handleBoardContextMenu = (event: React.MouseEvent) => {
+    if (!armedLineClear) return;
+    event.preventDefault();
+    setArmedLineClear(null);
+    setAimIndex(null);
+  };
+
   // The aimed line only reads as aimed while an item is actually armed: disarming (Escape, a pause,
   // the fire itself) must not leave the board dimmed around a stale hover.
   const aimedLine = armedLineClear ? aimIndex : null;
@@ -586,13 +595,14 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       {/* Board container */}
       <div
         className={cn(
-          'match3BoardContainer',
+          'match3BoardContainer relative',
           deadColorClasses,
           pendingVictory && 'pointer-events-none',
           armedLineClear && 'cursor-crosshair',
           sweep && 'board-shake',
         )}
         onPointerLeave={() => setAimIndex(null)}
+        onContextMenu={handleBoardContextMenu}
       >
         <Franuka05aFrame>
           {/* Board grid */}
@@ -626,6 +636,18 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
             ))}
           </div>
         </Franuka05aFrame>
+
+        {armedLineClear && (
+          <div className="aim-mode-hints pixel-font">
+            <span>
+              <kbd>Click</kbd> Pick {armedLineClear.orientation}
+            </span>
+            <span>
+              <kbd>Esc</kbd>
+              <kbd>R-Click</kbd> Cancel
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Cascade combo popup — prominent, lingering, overlaid on the board */}

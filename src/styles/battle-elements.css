@@ -52,6 +52,54 @@
   }
 }
 
+/* Item bar tooltip: name, description, then the control hints. */
+.battle-item-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.battle-item-tooltip__name {
+  color: #e8c48a;
+  font-weight: 700;
+}
+
+.battle-item-tooltip__desc {
+  line-height: 1.5;
+}
+
+/* Controls shown above the board while a line-clear item is armed. */
+.aim-mode-hints {
+  position: absolute;
+  bottom: 100%;
+  left: 10%;
+  right: 10%;
+  z-index: 10;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 0.35rem;
+  font-size: 0.5rem;
+  color: #e0c9a6;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+.aim-mode-hints > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.aim-mode-hints kbd {
+  padding: 0.1rem 0.3rem;
+  font-family: inherit;
+  color: #f5e6c8;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 165, 116, 0.55);
+  border-radius: 4px;
+}
+
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,
