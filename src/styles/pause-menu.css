@@ -176,6 +176,18 @@
   flex-shrink: 0;
 }
 
+/* EXP bar tooltip: current / needed, then what's left to the next level. */
+.exp-bar-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.exp-bar-tooltip__next {
+  color: #e8c48a;
+}
+
 .party-member-card__name {
   font-size: 0.65rem;
   font-weight: 700;
