@@ -997,31 +997,28 @@
   filter: brightness(1.1);
 }
 
-/* Stat preview */
-.pause-menu-equip-preview {
-  padding: 0.35rem 0.5rem;
-  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
-  border: 2px solid rgba(212, 165, 116, 0.85);
-  border-radius: 8px;
-  margin-top: 4px;
-  margin-bottom: 0;
-  flex-shrink: 0;
+/* Gear stat summary: effective stats with current gear. Chip + gold pill match level-up's .stat-chip / .stat-delta. */
+.gear-stats {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-}
-
-.pause-menu-equip-preview-title {
-  font-size: 0.7rem;
-  color: #f0dfc9;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   flex-shrink: 0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  margin-top: 4px;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(139, 105, 20, 0.5);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
-.pause-menu-equip-preview-grid {
+.gear-stats__title {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.gear-stats__grid {
   flex: 1;
   min-width: 0;
   display: grid;
@@ -1029,43 +1026,67 @@
   gap: 0.35rem;
 }
 
-.pause-menu-equip-preview-stat-group {
+.gear-stats__chip {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
   min-width: 0;
-  padding: 0.2rem 0.3rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(212, 165, 116, 0.25);
-  border-radius: 6px;
+  padding: 0.25rem 0.35rem;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-size: 50px 50px;
+  border: 1px solid #5c3a1e;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(212, 165, 116, 0.25);
 }
 
-.pause-menu-equip-preview-label {
-  font-size: 0.55rem;
-  font-weight: 700;
+.gear-stats__label {
+  font-size: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
 }
 
-.pause-menu-equip-stat-diff {
-  font-size: 0.55rem;
+.gear-stats__label--pow {
+  color: #e09a63;
+}
+
+.gear-stats__label--vit {
+  color: #a9c281;
+}
+
+.gear-stats__label--spd {
+  color: #8fb4d4;
+}
+
+.gear-stats__value {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #f7e3c4;
+}
+
+.gear-stats__bonus {
+  padding: 0.1rem 0.3rem;
+  font-size: 0.5rem;
   font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 3px;
 }
 
-.pause-menu-equip-stat-diff.positive {
-  color: #4caf50;
+/* Compound selector: .number-flow-container's `align-items: baseline` loads later at the same specificity. */
+.gear-stats__bonus.number-flow-container {
+  align-items: center;
 }
 
-.pause-menu-equip-stat-diff.negative {
-  color: #e53935;
+.gear-stats__bonus--up {
+  color: #e9be76;
+  border: 1px solid rgba(233, 190, 118, 0.22);
 }
 
-.pause-menu-equip-preview-total {
-  font-size: 0.8rem;
-  color: #f0dfc9;
-  font-weight: 700;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+.gear-stats__bonus--down {
+  color: #c9785f;
+  border: 1px solid rgba(201, 120, 95, 0.25);
 }
 
 /* Available items list */
