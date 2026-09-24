@@ -215,13 +215,7 @@
   padding-top: var(--btb-height);
 }
 #boardSection {
-    padding-top: 5.5rem;
-}
-
-@media (max-height: 780px) {
-  #boardSection {
-    padding-top: 4.5rem;
-  }
+  padding-top: calc(var(--btb-height) + 0.5rem);
 }
 
 .battleArea .enemySection {
