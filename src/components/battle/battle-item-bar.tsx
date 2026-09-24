@@ -197,8 +197,11 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                   )}
                 </button>
               </TooltipTrigger>
-              <TooltipContent size="compact" className="battle-item-tooltip">
-                <span className="battle-item-tooltip__name">{item.name}</span>
+              <TooltipContent className="battle-item-tooltip">
+                <div className="battle-item-tooltip__header">
+                  <ItemIcon item={item} size={32} />
+                  <span className="battle-item-tooltip__name pixel-font">{item.name}</span>
+                </div>
                 <span className="battle-item-tooltip__desc">{item.description}</span>
                 {lineOrientation && (
                   <KeyHintPill
