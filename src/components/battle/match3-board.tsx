@@ -105,7 +105,7 @@ function OrbComponent({
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
         // Aim mode: the line under the cursor lights up, everything else recedes.
-        isAimed && 'scale-110 ring-4 ring-amber-300 brightness-125',
+        isAimed && 'scale-110 ring-2 ring-amber-300 brightness-125',
         isDimmed && 'opacity-40 brightness-75',
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
@@ -638,13 +638,16 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
         </Franuka05aFrame>
 
         {armedLineClear && (
-          <div className="aim-mode-hints pixel-font">
-            <span>
-              <kbd>Click</kbd> Pick {armedLineClear.orientation}
+          <div className="aim-mode-hints" role="group" aria-label="Line clear controls">
+            <span className="aim-mode-hints__instruction">
+              <kbd>Click</kbd>
+              <span>Pick {armedLineClear.orientation}</span>
             </span>
-            <span>
+            <span className="aim-mode-hints__divider" aria-hidden="true" />
+            <span className="aim-mode-hints__instruction">
               <kbd>Esc</kbd>
-              <kbd>R-Click</kbd> Cancel
+              <kbd>R-Click</kbd>
+              <span>Cancel</span>
             </span>
           </div>
         )}

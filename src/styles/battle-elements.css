@@ -85,32 +85,55 @@
 /* Controls shown above the board while a line-clear item is armed. */
 .aim-mode-hints {
   position: absolute;
-  bottom: 100%;
-  left: 10%;
-  right: 10%;
+  bottom: calc(100% + 0.35rem);
+  left: 50%;
   z-index: 10;
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: calc(100vw - 1rem);
+  padding: 0.2rem 0.35rem;
+  transform: translateX(-50%);
+  border: 1px solid rgba(212, 165, 116, 0.62);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(40, 24, 15, 0.94), rgba(21, 13, 10, 0.94));
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.07);
+  color: #e9dcc6;
+  font-family: monospace;
   font-size: 0.5rem;
-  color: #e0c9a6;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  line-height: 1;
+  white-space: nowrap;
   pointer-events: none;
 }
 
-.aim-mode-hints > span {
+.aim-mode-hints__instruction {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.22rem;
 }
 
-.aim-mode-hints kbd {
-  padding: 0.1rem 0.3rem;
-  font-family: inherit;
-  color: #f5e6c8;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(212, 165, 116, 0.55);
-  border-radius: 4px;
+.aim-mode-hints__instruction kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 14px;
+  padding: 1px 4px;
+  border: 1px solid rgba(212, 165, 116, 0.45);
+  border-radius: 3px;
+  background: rgba(212, 165, 116, 0.14);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.12);
+  color: #ffdfa6;
+  font: inherit;
+  line-height: 1.2;
+}
+
+.aim-mode-hints__instruction > span {
+  color: #f2d2af;
+}
+
+.aim-mode-hints__divider {
+  width: 1px;
+  height: 0.75rem;
+  background: rgba(212, 165, 116, 0.35);
 }
 
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
