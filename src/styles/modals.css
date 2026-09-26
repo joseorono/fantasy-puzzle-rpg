@@ -272,8 +272,6 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem 1.25rem;
-  /* Inset the scroll container so its bar clears the frame edge and the golden corner stud. */
-  margin: 0 0.75rem 1rem 0;
 }
 
 /* Keep the long attribution URLs readable and on-theme inside the modal. */
