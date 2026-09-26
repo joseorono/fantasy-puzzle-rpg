@@ -209,6 +209,16 @@
   background: linear-gradient(180deg, #ffd700 0%, #c8872e 100%);
 }
 
+/* The options pane fits inside the panel — keep wheel scrolling possible but show
+   no bar (overflow:hidden would clip; this only hides the track). */
+.start-menu-modal-body--no-scrollbar {
+  scrollbar-width: none;
+}
+
+.start-menu-modal-body--no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ==========================================
    RESPONSIVE
    ========================================== */
