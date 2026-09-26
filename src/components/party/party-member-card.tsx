@@ -1,6 +1,7 @@
-import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
+import { CHARACTER_COLORS, CHARACTER_ICONS, MAX_LEVEL } from '~/constants/party';
 import { HP_THRESHOLD_BAR_VARIANT } from '~/constants/ui';
 import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { calculatePercentage } from '~/lib/math';
 import { getHpThreshold } from '~/lib/rpg-calculations';
 import { getExpThresholdForLevel } from '~/lib/leveling-system';
@@ -26,7 +27,9 @@ export function PartyMemberCard({
   const colors = CHARACTER_COLORS[member.class];
   const Icon = CHARACTER_ICONS[member.class];
   const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
-  const expPct = Math.round(calculatePercentage(member.currentLevelExp, getExpThresholdForLevel(member.level)));
+  const expThreshold = getExpThresholdForLevel(member.level);
+  const expPct = Math.round(calculatePercentage(member.currentLevelExp, expThreshold));
+  const isMaxLevel = member.level >= MAX_LEVEL;
   const isRoster = variant === 'roster';
   const isDead = member.currentHp <= 0;
 
@@ -51,7 +54,25 @@ export function PartyMemberCard({
           size="xs"
           percentage={hpPct}
         />
-        <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="xs" percentage={expPct} />
+        <Tooltip>
+          <TooltipTrigger>
+            <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="xs" percentage={expPct} />
+          </TooltipTrigger>
+          <TooltipContent size="compact" className="exp-bar-tooltip">
+            {isMaxLevel ? (
+              <span>Max level</span>
+            ) : (
+              <>
+                <span>
+                  EXP {member.currentLevelExp} / {expThreshold}
+                </span>
+                <span className="exp-bar-tooltip__next">
+                  {expThreshold - member.currentLevelExp} to Lv.{member.level + 1}
+                </span>
+              </>
+            )}
+          </TooltipContent>
+        </Tooltip>
         <div className="party-member-card__info-bar">
           <div className="party-member-card__name">{member.name}</div>
           <div className="party-member-card__detail">

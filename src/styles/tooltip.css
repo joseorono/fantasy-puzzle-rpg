@@ -59,11 +59,26 @@
   }
 }
 
+/* Compact variant (`size="compact"`) for small HUD hints: tighter text, padding and frame. */
+.tooltip-content.tooltip-content--compact {
+  font-size: 0.55rem;
+  line-height: 1.35;
+  padding: 0.35rem 0.55rem;
+  border-width: 2px;
+  border-radius: 8px;
+  max-width: 16rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tooltip-content {
     font-size: 0.6rem;
     padding: 0.5rem 0.625rem;
     max-width: 14rem;
+  }
+
+  .tooltip-content.tooltip-content--compact {
+    font-size: 0.5rem;
+    padding: 0.3rem 0.45rem;
   }
 }

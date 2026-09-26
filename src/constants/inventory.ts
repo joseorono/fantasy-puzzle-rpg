@@ -326,7 +326,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     id: 'row-clear',
     name: 'Row Clear',
     type: 'consumable',
-    description: 'Wipe a row of your choice. Every orb counts and bombs go off. Right-click to auto-aim.',
+    description: 'Wipe a row of your choice. Every orb counts and bombs go off.',
     cost: { coins: 300, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,
     usableOutOfBattle: false,
@@ -339,7 +339,7 @@ export const ConsumableItems: ConsumableItemData[] = [
     id: 'column-clear',
     name: 'Column Clear',
     type: 'consumable',
-    description: 'Wipe a column of your choice. Every orb counts and bombs go off. Right-click to auto-aim.',
+    description: 'Wipe a column of your choice. Every orb counts and bombs go off.',
     // A column is 8 orbs to a row's 6, so it pays out ~33% more for ~33% more coin.
     cost: { coins: 400, gold: 0, copper: 0, silver: 0, iron: 0 },
     usableInBattle: true,

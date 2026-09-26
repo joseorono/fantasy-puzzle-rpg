@@ -105,7 +105,7 @@ function OrbComponent({
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
         // Aim mode: the line under the cursor lights up, everything else recedes.
-        isAimed && 'scale-110 ring-4 ring-amber-300 brightness-125',
+        isAimed && 'scale-110 ring-2 ring-amber-300 brightness-125',
         isDimmed && 'opacity-40 brightness-75',
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
@@ -210,6 +210,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const pendingVictory = useAtomValue(pendingVictoryAtom);
   const commitPendingVictory = useSetAtom(commitPendingVictoryAtom);
   const armedLineClear = useAtomValue(armedLineClearAtom);
+  const setArmedLineClear = useSetAtom(armedLineClearAtom);
   const fireLineClear = useSetAtom(fireLineClearAtom);
   const pendingLineClear = useAtomValue(pendingLineClearAtom);
   const setPendingLineClear = useSetAtom(pendingLineClearAtom);
@@ -568,6 +569,14 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
     }
   };
 
+  /** Right-click on the board puts an aimed line-clear item away, like Escape. */
+  const handleBoardContextMenu = (event: React.MouseEvent) => {
+    if (!armedLineClear) return;
+    event.preventDefault();
+    setArmedLineClear(null);
+    setAimIndex(null);
+  };
+
   // The aimed line only reads as aimed while an item is actually armed: disarming (Escape, a pause,
   // the fire itself) must not leave the board dimmed around a stale hover.
   const aimedLine = armedLineClear ? aimIndex : null;
@@ -586,13 +595,14 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       {/* Board container */}
       <div
         className={cn(
-          'match3BoardContainer',
+          'match3BoardContainer relative',
           deadColorClasses,
           pendingVictory && 'pointer-events-none',
           armedLineClear && 'cursor-crosshair',
           sweep && 'board-shake',
         )}
         onPointerLeave={() => setAimIndex(null)}
+        onContextMenu={handleBoardContextMenu}
       >
         <Franuka05aFrame>
           {/* Board grid */}
@@ -626,6 +636,21 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
             ))}
           </div>
         </Franuka05aFrame>
+
+        {armedLineClear && (
+          <div className="aim-mode-hints" role="group" aria-label="Line clear controls">
+            <span className="aim-mode-hints__instruction">
+              <kbd>Click</kbd>
+              <span>Pick {armedLineClear.orientation}</span>
+            </span>
+            <span className="aim-mode-hints__divider" aria-hidden="true" />
+            <span className="aim-mode-hints__instruction">
+              <kbd>Esc</kbd>
+              <kbd>R-Click</kbd>
+              <span>Cancel</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Cascade combo popup — prominent, lingering, overlaid on the board */}

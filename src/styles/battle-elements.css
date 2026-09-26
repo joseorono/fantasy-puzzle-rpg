@@ -52,6 +52,90 @@
   }
 }
 
+/* Item bar tooltip: name, description, then the control hints. */
+.tooltip-content.battle-item-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  max-width: 280px;
+}
+
+.battle-item-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.battle-item-tooltip__name {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: #f2d2af;
+}
+
+.battle-item-tooltip__desc {
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow: 1px 1.5px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Controls shown above the board while a line-clear item is armed. */
+.aim-mode-hints {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  left: 50%;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: calc(100vw - 1rem);
+  padding: 0.2rem 0.35rem;
+  transform: translateX(-50%);
+  border: 1px solid rgba(212, 165, 116, 0.62);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(40, 24, 15, 0.94), rgba(21, 13, 10, 0.94));
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.07);
+  color: #e9dcc6;
+  font-family: monospace;
+  font-size: 0.5rem;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.aim-mode-hints__instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.aim-mode-hints__instruction kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 14px;
+  padding: 1px 4px;
+  border: 1px solid rgba(212, 165, 116, 0.45);
+  border-radius: 3px;
+  background: rgba(212, 165, 116, 0.14);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.12);
+  color: #ffdfa6;
+  font: inherit;
+  line-height: 1.2;
+}
+
+.aim-mode-hints__instruction > span {
+  color: #f2d2af;
+}
+
+.aim-mode-hints__divider {
+  width: 1px;
+  height: 0.75rem;
+  background: rgba(212, 165, 116, 0.35);
+}
+
 /* ─── Dead Character Orb Styles ──────────────────────────────────────
    When a character dies, their orb color on the board appears disabled.
    The match3BoardContainer receives a `dead-<color>` class per dead character,

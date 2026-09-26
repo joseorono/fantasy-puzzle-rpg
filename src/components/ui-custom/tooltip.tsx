@@ -22,9 +22,14 @@ export const tooltipVariants = cva("", {
       normal: "",
       retro: "retro",
     },
+    size: {
+      default: "",
+      compact: "tooltip-content--compact",
+    },
   },
   defaultVariants: {
     font: "normal",
+    size: "default",
   },
 });
 
@@ -36,9 +41,10 @@ function TooltipContent({
   className,
   children,
   font,
+  size,
   ...props
 }: BitTooltipContentProps) {
-  const color = tooltipVariants({ font });
+  const color = tooltipVariants({ font, size });
 
   return (
     <ShadcnTooltipContent
