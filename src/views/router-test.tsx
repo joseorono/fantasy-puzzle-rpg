@@ -126,6 +126,13 @@ export default function RouterTestView() {
         </button>
 
         <button
+          className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
+          onClick={() => goToMap({ mapId: 'map-02-castle-garden' })}
+        >
+          Castle Garden
+        </button>
+
+        <button
           className={`rounded px-3 py-2 transition-colors ${
             router.history.length > 0
               ? 'bg-gray-500 text-white hover:bg-gray-600'

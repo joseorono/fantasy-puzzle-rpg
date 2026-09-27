@@ -76,3 +76,18 @@ export const TILESET_FAIRY_FOREST: TilemapTileset = {
   tileheight: 16,
   tilewidth: 16,
 };
+
+/** 480×480 @ 16px — Castle Garden. */
+export const TILESET_CASTLE_GARDEN: TilemapTileset = {
+  columns: 30,
+  firstgid: 1,
+  image: '/assets/tileset/pc-garden-tileset.png',
+  imageheight: 480,
+  imagewidth: 480,
+  margin: 0,
+  name: 'pc-garden-tileset',
+  spacing: 0,
+  tilecount: 900,
+  tileheight: 16,
+  tilewidth: 16,
+};
