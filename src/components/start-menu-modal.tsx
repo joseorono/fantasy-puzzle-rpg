@@ -13,6 +13,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ModalTitle } from '~/components/typography/modal-title';
 import { CreditsModal } from '~/components/credits-modal';
+import { cn } from '~/lib/utils';
 
 interface StartMenuModalProps {
   onStartGame: () => void;
@@ -188,6 +189,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   });
 
   const isModalOpen = activeTab !== 'main';
+  // Settings/Options host the options pane — pointer-first there (no key hints, no visible scrollbar).
+  const isOptionsPane = activeTab === 'options' || activeTab === 'settings';
 
   return (
     <div className="main-menu">
@@ -266,8 +269,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
             <div className="start-menu-modal-divider" />
 
             {/* Content */}
-            <div className="start-menu-modal-body">
-              {activeTab === 'options' && <PauseMenuOptions keyboardActive />}
+            <div className={cn('start-menu-modal-body', isOptionsPane && 'start-menu-modal-body--no-scrollbar')}>
+              {activeTab === 'options' && <PauseMenuOptions keyboardActive hideKeyHints />}
               {/* No load confirmation here — there's no in-progress run to lose from the title. */}
               {activeTab === 'load' && (
                 <SaveLoadMenu
@@ -276,7 +279,7 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
                   onLoaded={() => soundService.stopMusic(SoundNames.startMenuMusic)}
                 />
               )}
-              {activeTab === 'settings' && <PauseMenuOptions keyboardActive />}
+              {activeTab === 'settings' && <PauseMenuOptions keyboardActive hideKeyHints />}
             </div>
           </div>
         </div>

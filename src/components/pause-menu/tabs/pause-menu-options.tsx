@@ -33,12 +33,18 @@ interface PauseMenuOptionsProps {
   onExitToSidebar?: () => void;
   /** Header description, when the host wants one. Omitted where the host already titles the pane. */
   headerHint?: string;
+  /**
+   * Pointer-first host (the start-menu settings): no key-hint pills, and the cursor
+   * only reveals once a nav key is pressed instead of on entry. Keyboard nav still works.
+   */
+  hideKeyHints?: boolean;
 }
 
 export function PauseMenuOptions({
   keyboardActive = false,
   onExitToSidebar,
   headerHint,
+  hideKeyHints = false,
 }: PauseMenuOptionsProps) {
   const [masterVolume, setMasterVolume] = useAtom(masterVolumeAtom);
   const [musicVolume, setMusicVolume] = useAtom(musicVolumeAtom);
@@ -57,12 +63,15 @@ export function PauseMenuOptions({
   const [editingRowId, setEditingRowId] = useState<OptionRowId | null>(null);
   const isEditing = editingRowId !== null && selection.selectedId === editingRowId;
 
-  // Entering the pane reveals the first row right away (not on the next keypress).
+  // Entering the pane reveals the first row right away (not on the next keypress) — unless
+  // the host is pointer-first, where the cursor waits for an actual nav key like every
+  // other menu on that surface.
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   useEffect(() => {
+    if (hideKeyHints) return;
     if (keyboardActive && selectionRef.current.selectedId === null) selectionRef.current.select('master');
-  }, [keyboardActive]);
+  }, [keyboardActive, hideKeyHints]);
 
   function handleMasterChange(value: number[]) {
     const vol = value[0];
@@ -189,7 +198,7 @@ export function PauseMenuOptions({
 
   /** Contextual key hint for the cursor's slider row — nothing for unselected rows. */
   function sliderHint(id: OptionRowId) {
-    if (!keyboardActive || !selection.isSelected(id)) return null;
+    if (hideKeyHints || !keyboardActive || !selection.isSelected(id)) return null;
     return (
       <KeyHintPill
         className="pause-menu-inline-hint"
