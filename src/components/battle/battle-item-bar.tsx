@@ -22,6 +22,7 @@ import { pickBestLine } from '~/lib/line-clear';
 import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import type { ConsumableItemData } from '~/types';
 
 interface BattleItemBarProps {
@@ -159,7 +160,7 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
         const quantity = getItemQuantity(inventory, item.id);
         const isEmpty = quantity <= 0;
         const isDisabled = isEmpty || gameStatus !== 'playing' || isBattlePaused === true || isOnCooldown;
-        const isLineClear = item.action?.type === 'clear-line';
+        const lineOrientation = item.action?.type === 'clear-line' ? item.action.orientation : null;
         const isArmed = armedLineClear?.itemId === item.id;
 
         return (
@@ -197,9 +198,26 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                 </button>
               </TooltipTrigger>
               <TooltipContent className="battle-item-tooltip">
-                {item.name}: {item.description}
-                {isLineClear && isArmed && (
-                  <> Pick a {item.action?.type === 'clear-line' ? item.action.orientation : 'line'} on the board.</>
+                <div className="battle-item-tooltip__header">
+                  <ItemIcon item={item} size={32} />
+                  <span className="battle-item-tooltip__name pixel-font">{item.name}</span>
+                </div>
+                <span className="battle-item-tooltip__desc">{item.description}</span>
+                {lineOrientation && (
+                  <KeyHintPill
+                    size="sm"
+                    items={
+                      isArmed
+                        ? [
+                            { keys: ['Click'], label: `Pick ${lineOrientation}` },
+                            { keys: ['Esc', 'R-Click'], label: 'Cancel' },
+                          ]
+                        : [
+                            { keys: ['Click'], label: 'Aim' },
+                            { keys: ['R-Click'], label: 'Auto-aim' },
+                          ]
+                    }
+                  />
                 )}
               </TooltipContent>
             </Tooltip>

@@ -96,8 +96,8 @@
   .match3BoardContainer .f05a-viewport .orb-purple,
   .match3BoardContainer .f05a-viewport .orb-yellow,
   .match3BoardContainer .f05a-viewport .orb-gray {
-    width: 40px !important;
-    height: 40px !important;
+    width: 32px !important;
+    height: 32px !important;
     margin-left: 0.25rem !important;
     margin-right: 0.25rem !important;
   }

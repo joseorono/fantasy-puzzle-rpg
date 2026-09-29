@@ -34,13 +34,6 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 
-// Warm parchment/gold stat palette — matches level-up-screen.css `.stat-name.*`
-const STAT_COLORS = {
-  pow: '#d48c46',
-  vit: '#e3bb92',
-  spd: '#d4a574',
-} as const;
-
 /** Stable keyboard id for an available-equipment instance. */
 function availId(instance: EquipmentInstance): string {
   return `avail:${instance.item.id}::${instance.rarity}`;
@@ -282,7 +275,7 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
               </div>
             )}
 
-            <EquipStatPreview bonuses={bonuses} effective={effective} />
+            <GearStatSummary bonuses={bonuses} effective={effective} />
           </div>
         </div>
       </div>
@@ -353,26 +346,25 @@ function EquipSlotRow({
   );
 }
 
-interface EquipStatPreviewProps {
+interface GearStatSummaryProps {
   bonuses: { pow: number; vit: number; spd: number };
   effective: { pow: number; vit: number; spd: number };
 }
 
-function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
+/** The hero's effective stats with their current gear, plus what that gear adds. */
+function GearStatSummary({ bonuses, effective }: GearStatSummaryProps) {
   const stats = ['pow', 'vit', 'spd'] as const;
 
   return (
-    <div className="pause-menu-equip-preview">
-      <span className="pause-menu-equip-preview-title">Stats</span>
-      <div className="pause-menu-equip-preview-grid">
+    <div className="gear-stats">
+      <span className="gear-stats__title">Stats</span>
+      <div className="gear-stats__grid">
         {stats.map((stat) => {
           const diff = bonuses[stat];
           return (
-            <div key={stat} className="pause-menu-equip-preview-stat-group">
-              <span className="pause-menu-equip-preview-label" style={{ color: STAT_COLORS[stat] }}>
-                {stat}
-              </span>
-              <span className="pause-menu-equip-preview-total number-flow-container">
+            <div key={stat} className="gear-stats__chip">
+              <span className={`gear-stats__label gear-stats__label--${stat}`}>{stat}</span>
+              <span className="gear-stats__value number-flow-container">
                 <NumberFlow
                   value={effective[stat]}
                   format={INTEGER_FORMAT}
@@ -383,7 +375,10 @@ function EquipStatPreview({ bonuses, effective }: EquipStatPreviewProps) {
               </span>
               {diff !== 0 && (
                 <span
-                  className={cn('pause-menu-equip-stat-diff number-flow-container', diff > 0 ? 'positive' : 'negative')}
+                  className={cn(
+                    'gear-stats__bonus number-flow-container',
+                    diff > 0 ? 'gear-stats__bonus--up' : 'gear-stats__bonus--down',
+                  )}
                 >
                   <NumberFlow
                     value={diff}
