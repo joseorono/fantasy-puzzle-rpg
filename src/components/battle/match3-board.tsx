@@ -105,7 +105,7 @@ function OrbComponent({
         'hover:scale-110 active:scale-95',
         ORB_TYPE_CLASSES[orb.type],
         // Aim mode: the line under the cursor lights up, everything else recedes.
-        isAimed && 'scale-110 ring-2 ring-amber-300 brightness-125',
+        isAimed && 'scale-110 ring-2 ring-[#f2f3f4] brightness-125',
         isDimmed && 'opacity-40 brightness-75',
         isSelected && 'scale-110 animate-pulse ring-4 ring-white',
         // Orbs caught in a bomb blast play the explosion animation instead of the normal ping
