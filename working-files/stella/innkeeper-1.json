@@ -1,0 +1,167 @@
+{
+  "Layers": [
+    {
+      "Name": "Base",
+      "Category": "Body",
+      "Part": "Slim Female",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "head",
+      "Category": "Head",
+      "Part": "Head02",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "back hair",
+      "Category": "Rear Hair",
+      "Part": "Hair08",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyes",
+      "Category": "Eyes",
+      "Part": "Eye05",
+      "Offsets": {
+        "Face": "-3, 6",
+        "Sv": "-3, 6",
+        "Walk": "-3, 6"
+      },
+      "Visible": true,
+      "LayerSettings": {
+        "ff0000ff": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": null
+        },
+        "ffff0000": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": null
+        },
+        "ff00ff00": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": "#FFB8860B"
+        }
+      }
+    },
+    {
+      "Name": "eyebrown right",
+      "Category": "Eyebrow-Right",
+      "Part": "Brow03",
+      "Offsets": {
+        "Walk": "-4, 0",
+        "Face": "-4, 0",
+        "Sv": "-4, 0"
+      },
+      "Visible": true,
+      "LayerSettings": {
+        "ff00ff00": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": null
+        },
+        "ffff0000": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": null
+        },
+        "ff0000ff": {
+          "Hue": 0,
+          "Saturation": 0,
+          "Lightness": 0,
+          "Color": null
+        }
+      }
+    },
+    {
+      "Name": "eyebrown left",
+      "Category": "Eyebrow-Left",
+      "Part": "Brow03",
+      "Offsets": {
+        "Walk": "-1, 1",
+        "Face": "-1, 1",
+        "Sv": "-1, 1"
+      },
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "front hair",
+      "Category": "Front Hair",
+      "Part": "Front04",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "Nose",
+      "Category": "Nose",
+      "Part": "Nose04",
+      "Offsets": {
+        "Walk": "-2, 5",
+        "Face": "-2, 5",
+        "Sv": "-2, 5"
+      },
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "mouth",
+      "Category": "Mouth",
+      "Part": "Mouth09",
+      "Offsets": {
+        "Walk": "0, 8",
+        "Face": "0, 8",
+        "Sv": "0, 8"
+      },
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "pants",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom02",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "tshirt",
+      "Category": "Clothing Top",
+      "Part": "Top08",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes03",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "hair detail",
+      "Category": "Accessory 1",
+      "Part": "Acc12",
+      "Offsets": {},
+      "Visible": true,
+      "LayerSettings": {}
+    }
+  ],
+  "BodyType": "Female Slim (Neutral Pose) (16x16)"
+}
