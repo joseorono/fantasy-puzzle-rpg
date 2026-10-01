@@ -175,6 +175,8 @@ interface CharacterSpriteSet {
   walk: string;
   /** Full-body portrait for the skill-burst cut-in. */
   face: string;
+  /** Head center on the portrait, as fractions of its width/height; small badges crop around it. */
+  faceFocus: { x: number; y: number };
   /** Battler motion played when the character casts its skill. */
   castMotion: StellaMotion;
 }
@@ -183,12 +185,14 @@ const WARRIOR_ART = {
   battler: '/assets/sprite/party-warrior-stella-side-view.png',
   walk: '/assets/sprite/party-warrior-stella-walk.png',
   face: '/assets/portraits/party-warrior-face.png',
+  faceFocus: { x: 0.55, y: 0.1 },
 };
 
 const MAGE_ART = {
   battler: '/assets/sprite/party-mage-stella-side-view.png',
   walk: '/assets/sprite/party-mage-stella-walk.png',
   face: '/assets/portraits/party-mage-face.png',
+  faceFocus: { x: 0.48, y: 0.16 },
 };
 
 export const CHARACTER_SPRITES: Record<CharacterClass, CharacterSpriteSet> = {
