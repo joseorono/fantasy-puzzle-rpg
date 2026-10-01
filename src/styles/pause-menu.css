@@ -146,7 +146,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 
 /* Name + class over a gold rule (GradientDivider's gold ramp, fading out to the right). */
@@ -154,7 +154,7 @@
   display: flex;
   align-items: baseline;
   gap: 0.3rem;
-  padding-bottom: 3px;
+  padding-bottom: 2px;
   border-bottom: 1px solid transparent;
   border-image: linear-gradient(90deg, #d4a574, #8b6914 60%, transparent) 1;
 }
@@ -198,6 +198,18 @@
 .party-member-card__exp-bar {
   flex: 1;
   min-width: 0;
+}
+
+/* The sm bar's channel is only 8px tall, so the HP readout overlaps the frame a touch;
+   a 4-way outline (instead of the default drop shadow) keeps it legible over both. */
+.party-member-card__hp-bar .indigolay-bar__label {
+  font-size: 0.5rem;
+  letter-spacing: -0.02em;
+  text-shadow:
+    1px 0 0 #1a0d02,
+    -1px 0 0 #1a0d02,
+    0 1px 0 #1a0d02,
+    0 -1px 0 #1a0d02;
 }
 
 /* EXP bar tooltip: current / needed, then what's left to the next level. */

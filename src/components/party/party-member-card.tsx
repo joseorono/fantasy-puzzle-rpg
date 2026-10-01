@@ -59,7 +59,7 @@ export function PartyMemberCard({
           <IndigolayBar
             className="party-member-card__hp-bar"
             variant={HP_THRESHOLD_BAR_VARIANT[getHpThreshold(hpPct)]}
-            size="default"
+            size="sm"
             percentage={hpPct}
             label={`${member.currentHp}/${member.maxHp}`}
           />
