@@ -1079,19 +1079,6 @@
   width: 100%;
 }
 
-/* Square the card off so the cursor corners hug it snugly. By default the icon is
-   shorter than the bars (bottom-left corner floats below it) and the info/exp bars
-   stop at 90–95% width (right corners float). Fill them to the card's box.
-   The icon rule needs 3 classes to outrank pause-menu.css, which loads later. */
-.inn-party-members-grid .party-member-card--bar .party-member-card__icon {
-  height: 86px;
-}
-
-.inn-party-members-grid .party-member-card__info-bar,
-.inn-party-members-grid .party-member-card__exp-bar {
-  width: 100%;
-}
-
 /* Injured-but-unaffordable card reads as locked, mirroring .equipment-list-item.cannot-afford. */
 .inn-party-members-grid .cannot-afford {
   opacity: 0.6;

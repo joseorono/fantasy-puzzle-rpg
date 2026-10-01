@@ -103,6 +103,7 @@ export const assetList: string[] = [
   '/assets/frame/franuka-05a/frame-loop-top.png',
   '/assets/frame/franuka-05a/frame-top-left-corner.png',
   '/assets/frame/franuka-05a/frame-top-right-corner.png',
+  '/assets/frame/indigolay/portrait-frame.png',
 
   // HUD
   '/assets/hud/bar-red.png',

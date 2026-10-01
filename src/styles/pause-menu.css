@@ -58,122 +58,136 @@
 .pause-menu-party-bar {
   display: flex;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   background:
     linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
-  border-bottom: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
+  /* Gold rule, same ramp as GradientDivider's gold variant. */
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent) 1;
   overflow-x: auto;
 }
 
+/* ─── Party Portrait Frame ───────────────────────────────────────────── */
+/* Indigolay HUD thumbnail (187×225). Its window is punched out, so the portrait and a
+   crimson backdrop sit underneath and the gold corners overlap them. Percentages below
+   are measured off the art. */
+
+.party-portrait-frame {
+  position: relative;
+  aspect-ratio: 187 / 225;
+  flex-shrink: 0;
+}
+
+.party-portrait-frame__window {
+  position: absolute;
+  left: 17.1%;
+  top: 4%;
+  width: 77%;
+  height: 67.1%;
+  background: radial-gradient(circle at 50% 40%, #5a1c22, #2e0b10);
+}
+
+.party-portrait-frame__window > img {
+  --face-zoom: 2.2;
+}
+
+.party-portrait-frame__art {
+  position: absolute;
+  inset: 0;
+  background: url('/assets/frame/indigolay/portrait-frame.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* Centred on the pennant's face (x 46–161, y 172–206 of the art). */
+.party-portrait-frame__level {
+  position: absolute;
+  left: 55.3%;
+  top: 83.5%;
+  transform: translate(-50%, -50%);
+  font-size: 0.45rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: #ffe9c2;
+  text-shadow: 1px 1px 0 #000;
+}
+
 /* ─── Party Member Card (reusable) ──────────────────────────────────── */
+/* Same dark-wood recipe as the rewards card, scaled down. */
 
 .party-member-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  background: transparent;
-  border-radius: 0;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  width: 100%;
+  --party-card-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 3px 8px rgba(0, 0, 0, 0.5);
   position: relative;
-  overflow: visible;
-  flex-shrink: 0;
-}
-
-.party-member-card--bar,
-.party-member-card--roster {
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: transparent;
-  display: flex;
-  flex: 1; /* Allow it to grow in flex containers */
-  min-width: 200px;
-}
-
-.party-member-card--roster {
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.party-member-card--roster:hover .party-member-card__info-bar {
-  filter: brightness(1.1);
-}
-
-.party-member-card--roster.active .party-member-card__info-bar {
-  border-color: rgba(212, 165, 116, 0.85);
-  box-shadow:
-    0 0 12px rgba(212, 165, 116, 0.7),
-    inset -2px -2px 0 rgba(0, 0, 0, 0.3),
-    inset 2px 2px 0 rgba(255, 255, 255, 0.1);
-}
-
-/* The bars are art-framed now, so only the icon takes the active border. */
-.party-member-card--roster.active .party-member-card__icon {
-  border-color: rgba(212, 165, 116, 0.85);
-}
-
-.party-member-card__icon {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin-right: -2px;
+  gap: 0.5rem;
+  flex: 1;
   flex-shrink: 0;
-  background: #6b5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
-  background-size: 64px;
-  border: 3px solid #a98559;
-  height: 86px; /* Taller than the bar stack; the column has slack below. */
-  width: 64px;
-  z-index: 4;
+  width: 100%;
+  min-width: 200px;
+  padding: 0.35rem 0.6rem 0.35rem 0.4rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  border: 2px solid #5c3a1e;
+  border-radius: 8px;
+  box-shadow: var(--party-card-shadow);
 }
 
-.party-member-card--bar .party-member-card__icon,
-.party-member-card--roster .party-member-card__icon {
-  width: 64px;
-  height: 70px;
-  border-width: 2px;
+.party-member-card__portrait {
+  width: 56px;
 }
 
-.party-member-card__bars {
+.party-member-card__body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-  overflow: visible;
-  height: 86px;
-  position: relative;
+  gap: 4px;
 }
 
-.party-member-card__info-bar {
-  background: #844e27 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
-  background-size: 64px;
-  border: 2px solid #a98559;
-  margin-top: -3px;
-  position: relative;
-  z-index: 1;
-  padding: 0.35rem 0.6rem;
+.party-member-card__name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff8dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Icon/tag column + bar. The column is fixed so the HP and EXP bars start together. */
+.party-member-card__stat-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  width: 90%;
-  border-radius: 4px 4px 10px;
-  height: 46px;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
 }
 
-/* Now an IndigolayBar (size xs = 14px); the frame comes from the art, so only
-   width/stacking live here. */
-.party-member-card__exp-bar {
-  width: 95%;
-  margin-top: -3px;
-  position: relative;
-  z-index: 2;
+.party-member-card__stat-icon,
+.party-member-card__stat-tag {
   flex-shrink: 0;
+  width: 18px;
+}
+
+.party-member-card__stat-icon {
+  height: 18px;
+}
+
+.party-member-card__stat-tag {
+  font-size: 0.35rem;
+  text-align: center;
+  color: #e8c48a;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.party-member-card__hp-bar,
+.party-member-card__exp-bar {
+  flex: 1;
+  min-width: 0;
 }
 
 /* EXP bar tooltip: current / needed, then what's left to the next level. */
@@ -188,65 +202,47 @@
   color: #e8c48a;
 }
 
-.party-member-card__name {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #fff8dc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+/* Roster: selectable. The active ring stays soft — a gold edge, not a bloom. */
+.party-member-card--roster {
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.party-member-card__detail {
-  font-size: 0.5rem;
-  color: #e8dcc8;
-  white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
-  letter-spacing: -0.8px;
-  word-spacing: -3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.party-member-card--roster:hover {
+  filter: brightness(1.08);
 }
 
-/* Also an IndigolayBar (size xs); colour comes from HP_THRESHOLD_BAR_VARIANT. */
-.party-member-card__hp-bar {
-  width: 100%;
-  margin-top: 0;
-  position: relative;
-  z-index: 3;
-  flex-shrink: 0;
+.party-member-card--roster.active {
+  border-color: #d4a574;
+  box-shadow:
+    var(--party-card-shadow),
+    0 0 8px rgba(212, 165, 116, 0.45);
 }
 
-/* Dead state styling */
-.party-member-card.dead .party-member-card__icon {
-  background: #4a4037;
-  border-color: #8b8680;
-  opacity: 0.7;
+/* The shared kb-cursor ring would replace the panel's own shadows; layer it on top instead. */
+.pause-menu .party-member-card.kb-cursor {
+  box-shadow:
+    var(--party-card-shadow),
+    0 0 0 1px rgba(212, 165, 116, 0.5),
+    0 0 10px rgba(212, 165, 116, 0.25);
 }
 
-.party-member-card.dead .party-member-card__info-bar {
-  background: #5a4a3a;
-  border-color: #8b8680;
+/* Dead: portrait and bars desaturate (a filter, since the bar fills are PNGs). */
+.party-member-card.dead .party-member-card__portrait,
+.party-member-card.dead .party-member-card__stat-icon {
+  filter: grayscale(1) brightness(0.7);
 }
 
-/* Grey the bars out with a filter rather than a background colour: the fill is a
-   PNG, and the `background` shorthand would reset background-image and blank it. */
 .party-member-card.dead .indigolay-bar {
-  filter: grayscale(1) brightness(0.72);
-}
-
-.party-member-card.dead .indigolay-bar__fill {
-  filter: grayscale(1) brightness(0.5);
+  --ib-filter: grayscale(1) brightness(0.6);
 }
 
 .party-member-card.dead .party-member-card__name {
   color: #9d9691;
-}
-
-.party-member-card.dead .party-member-card__detail {
-  color: #7a7570;
+  text-decoration: line-through;
 }
 
 /* ─── Body (sidebar + content) ───────────────────────────────────────── */
