@@ -1,0 +1,269 @@
+{
+  "Layers": [
+    {
+      "Name": "body",
+      "Category": "Body",
+      "Part": "Lean Male",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "top",
+      "Category": "Clothing Top",
+      "Part": "Top07_2",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ffff0000": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": null
+          },
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        },
+        "Walk": {
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        },
+        "Sv": {
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        }
+      }
+    },
+    {
+      "Name": "head",
+      "Category": "Head",
+      "Part": "Head01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "nose",
+      "Category": "Nose",
+      "Part": "Nose01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyes",
+      "Category": "Eyes",
+      "Part": "Eye06",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyebrows",
+      "Category": "Eyebrows",
+      "Part": "Brow04",
+      "Offsets": {
+        "Face": "0, -4",
+        "Sv": "0, -4",
+        "Walk": "0, -4"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "mouth",
+      "Category": "Mouth",
+      "Part": "Mouth06",
+      "Offsets": {
+        "Face": "0, 6",
+        "Sv": "0, 6",
+        "Walk": "0, 6"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "back hair",
+      "Category": "Rear Hair",
+      "Part": "Hair01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "front hair",
+      "Category": "Front Hair",
+      "Part": "Front04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "pant",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom07",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        },
+        "Walk": {
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        },
+        "Sv": {
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          },
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFFF00"
+          }
+        }
+      }
+    },
+    {
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes07",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "hat",
+      "Category": "Hat",
+      "Part": "Hat3",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF000000"
+          },
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF0E68C"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFFFD700"
+          },
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF000000"
+          }
+        },
+        "Sv": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF000000"
+          },
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF0E68C"
+          }
+        }
+      }
+    }
+  ],
+  "BodyType": "Male Lean",
+  "BodyTypeVariation": ""
+}
