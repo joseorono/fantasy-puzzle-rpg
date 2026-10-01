@@ -130,6 +130,7 @@
 
 .character-portrait-small {
   object-fit: cover;
+  object-position: top center;
   display: block;
 }
 
@@ -277,12 +278,15 @@
     inset 0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* Full-body art framed to its upper half: the height comes from the panel, the 4:5 frame sets the width. */
 .character-portrait-large {
-  width: 100%;
-  max-width: 400px;
+  width: auto;
+  max-width: min(100%, 400px);
+  aspect-ratio: 4 / 5;
   flex: 1;
   min-height: 0;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: top center;
   border-radius: 12px;
   border: 2px solid #5c3a1e;
   margin-bottom: 0.75rem;

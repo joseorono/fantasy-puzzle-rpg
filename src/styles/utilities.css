@@ -32,6 +32,34 @@ img[src*='indigolay-'],
   image-rendering: auto;
 }
 
+/* Zoomed portrait crop for full-body art: the frame clips, and the image scales from
+   its top edge so the head stays in view. Tune per frame with --portrait-zoom. */
+.portrait-zoom {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Children paint over their parent's inset box-shadow, so redraw the frame's inner ring on top of the image. */
+.portrait-zoom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--portrait-zoom-ring, none);
+  pointer-events: none;
+}
+
+.portrait-zoom > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: top center;
+  transform: scale(var(--portrait-zoom, 1.3));
+  transform-origin: top center;
+}
+
 /* Retro screen effect */
 .retro-screen {
   position: relative;

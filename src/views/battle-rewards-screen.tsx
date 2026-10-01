@@ -19,7 +19,7 @@ import {
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
 import { levelUp, getRandomPotentialStats, buildExpGainTimeline, getExpThresholdForLevel } from '~/lib/leveling-system';
-import { STAT_POINTS_PER_LEVEL } from '~/constants/party';
+import { CHARACTER_SPRITES, STAT_POINTS_PER_LEVEL } from '~/constants/party';
 import { useExpGainAnimation } from '~/hooks/use-exp-gain-animation';
 import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { PendingLevelUp } from '~/lib/battle-rewards';
@@ -590,7 +590,9 @@ function CharacterExpCard({ member, expReward, skip, onComplete }: CharacterExpC
     <div className="character-card">
       {/* Portrait carries the level on a hanging pennant tag in the top-left corner. */}
       <div className="reward-portrait">
-        <img src="/assets/portraits/Innkeeper_02.png" alt={member.name} className="character-portrait pixel-art" />
+        <div className="character-portrait portrait-zoom">
+          <img src={CHARACTER_SPRITES[member.class].face} alt={member.name} />
+        </div>
         <LevelTag level={level} />
       </div>
       <div className="character-info">
