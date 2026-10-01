@@ -20,6 +20,8 @@ interface PartyMemberCardProps {
   variant?: 'bar' | 'roster' | 'slim';
   /** Show the keyboard cursor ring (roster keyboard navigation rests on this card). */
   isKeyboardCursor?: boolean;
+  /** Show the EXP breakdown tooltip on hover. */
+  showTooltips?: boolean;
 }
 
 export function PartyMemberCard({
@@ -28,6 +30,7 @@ export function PartyMemberCard({
   onClick,
   variant = 'bar',
   isKeyboardCursor = false,
+  showTooltips = true,
 }: PartyMemberCardProps) {
   const hpPct = Math.round(calculatePercentage(member.currentHp, member.maxHp));
   const expThreshold = getExpThresholdForLevel(member.level);
@@ -60,6 +63,10 @@ export function PartyMemberCard({
     );
   }
 
+  const expBar = (
+    <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="sm" percentage={expPct} />
+  );
+
   return (
     <div className={cardClassName} onClick={onClick}>
       <PartyPortraitFrame
@@ -85,25 +92,27 @@ export function PartyMemberCard({
         </div>
         <div className="party-member-card__stat-row">
           <img src="/assets/icons/indigolay/icon-star.png" alt="EXP" className="party-member-card__stat-icon" />
-          <Tooltip>
-            <TooltipTrigger>
-              <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="sm" percentage={expPct} />
-            </TooltipTrigger>
-            <TooltipContent size="compact" className="exp-bar-tooltip">
-              {isMaxLevel ? (
-                <span>Max level</span>
-              ) : (
-                <>
-                  <span>
-                    EXP {member.currentLevelExp} / {expThreshold}
-                  </span>
-                  <span className="exp-bar-tooltip__next">
-                    {expThreshold - member.currentLevelExp} to Lv.{member.level + 1}
-                  </span>
-                </>
-              )}
-            </TooltipContent>
-          </Tooltip>
+          {showTooltips ? (
+            <Tooltip>
+              <TooltipTrigger>{expBar}</TooltipTrigger>
+              <TooltipContent size="compact" className="exp-bar-tooltip">
+                {isMaxLevel ? (
+                  <span>Max level</span>
+                ) : (
+                  <>
+                    <span>
+                      EXP {member.currentLevelExp} / {expThreshold}
+                    </span>
+                    <span className="exp-bar-tooltip__next">
+                      {expThreshold - member.currentLevelExp} to Lv.{member.level + 1}
+                    </span>
+                  </>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            expBar
+          )}
         </div>
       </div>
     </div>
