@@ -267,6 +267,24 @@
   text-decoration: line-through;
 }
 
+/* Slim roster card (Stats/Equip): the framed portrait and name/class, no bars — HP and EXP
+   already show in the party bar above. Name and class stack and get a little more size. */
+.party-member-card--slim .party-member-card__header {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.party-member-card--slim .party-member-card__name {
+  font-size: 0.75rem;
+}
+
+.party-member-card--slim .party-member-card__class {
+  font-size: 0.5rem;
+}
+
 /* ─── Body (sidebar + content) ───────────────────────────────────────── */
 
 .pause-menu-body {
@@ -708,68 +726,6 @@
   gap: 0.75rem;
 }
 
-.pause-menu-stats-hero {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.75rem;
-  /* The LevelTag hangs off the portrait's corner. */
-  overflow: visible;
-}
-
-/* Upper-half portrait, framed like the Level Up center portrait. */
-.pause-menu-stats-portrait {
-  position: relative;
-  flex-shrink: 0;
-  width: 104px;
-  aspect-ratio: 4 / 5;
-}
-
-.pause-menu-stats-portrait > img {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  object-position: top center;
-  border: 2px solid #5c3a1e;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 0 0 1px rgba(212, 165, 116, 0.68),
-    0 4px 8px rgba(0, 0, 0, 0.5);
-}
-
-.pause-menu-stats-identity {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.pause-menu-stats-identity__name {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #fff8dc;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pause-menu-stats-identity__class {
-  margin: 0.2rem 0 0.6rem;
-  font-size: 0.6rem;
-  color: #d4a574;
-  text-transform: capitalize;
-}
-
-.pause-menu-stats-identity .progress-section {
-  margin-bottom: 0.35rem;
-}
-
-.pause-menu-stats-identity .progress-section:last-child {
-  margin-bottom: 0;
-}
-
 /* Core stats beside the derived list; stacks when the content column gets narrow. */
 .pause-menu-stats-columns {
   display: grid;
@@ -835,29 +791,6 @@
   height: 16px;
   margin-right: 0.35rem;
   object-fit: contain;
-}
-
-/* Shared by the Equip tab's character header. */
-.pause-menu-stats-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.pause-menu-stats-name {
-  font-size: 1.1rem;
-  color: #fff;
-  font-weight: 700;
-}
-
-.pause-menu-stats-class {
-  font-size: 0.65rem;
-  color: #d4a574;
-  text-transform: capitalize;
 }
 
 /* ─── Skill selector (Stats + Equip) ─────────────────────────────── */
@@ -971,54 +904,76 @@
   flex: 1;
 }
 
-.pause-menu-equip-header {
+/* ─── Character header (Stats + Equip) ─────────────────────────────── */
+/* One line: class icon chip, name, class · level, over a gold rule that fades right. */
+
+.pause-menu-character-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  min-width: 0;
   margin-bottom: 0.5rem;
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
-  min-width: 0;
   white-space: nowrap;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, #d4a574, #8b6914 60%, transparent) 1;
 }
 
-.pause-menu-equip-header .pause-menu-stats-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-}
-
-.pause-menu-equip-header-line {
+/* Dark-wood chip, same recipe as the party card panel. */
+.pause-menu-character-header__icon {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  border: 1px solid #5c3a1e;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* Regular weight: the pixel font has no bold, so 700 is synthesized and smears the glyphs.
+   A crisp 1px shadow replaces .pixel-font's soft 2px offset for the same reason. */
+.pause-menu-character-header__name {
   min-width: 0;
-  white-space: nowrap;
-}
-
-.pause-menu-equip-header .pause-menu-stats-name {
-  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  font-weight: 400;
   line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fff8dc;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
-.pause-menu-equip-header .pause-menu-stats-class {
-  font-size: 0.55rem;
-  line-height: 1;
-}
-
-.pause-menu-equip-header-separator {
-  color: rgba(255, 255, 255, 0.35);
+.pause-menu-character-header__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   flex-shrink: 0;
   font-size: 0.55rem;
   line-height: 1;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
-.pause-menu-equip-header-level {
-  font-size: 0.55rem;
+.pause-menu-character-header__class {
   color: #d4a574;
   text-transform: capitalize;
-  flex-shrink: 0;
-  line-height: 1;
+}
+
+.pause-menu-character-header__sep {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.pause-menu-character-header__level {
+  color: #e8c48a;
 }
 
 .pause-menu-equip-tab > h2 {

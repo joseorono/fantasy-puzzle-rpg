@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParty, usePartyActions, useInventory } from '~/stores/game-store';
-import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -184,8 +183,6 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
 
   if (!selected) return null;
 
-  const colors = CHARACTER_COLORS[selected.class];
-  const Icon = CHARACTER_ICONS[selected.class];
   const bonuses = getEquipmentBonuses(selected);
   const effective = getEffectiveStats(selected);
 
@@ -210,13 +207,7 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
           </div>
 
           <div className="pause-menu-equip-main">
-            <PauseMenuCharacterHeader
-              name={selected.name}
-              classNameText={selected.class}
-              level={selected.level}
-              Icon={Icon}
-              colors={colors}
-            />
+            <PauseMenuCharacterHeader member={selected} />
 
             <div className="pause-menu-equip-slots">
               <EquipSlotRow

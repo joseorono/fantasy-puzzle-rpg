@@ -5,19 +5,15 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { CHARACTER_SPRITES, MAX_LEVEL } from '~/constants/party';
 import { getSelectedSkill } from '~/lib/skill-system';
-import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
-import { getExpThresholdForLevel } from '~/lib/leveling-system';
-import { calculatePercentage } from '~/lib/math';
+import { getEffectiveStats } from '~/lib/equipment-system';
 import { PartyMemberCard } from '~/components/party/party-member-card';
+import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
 import { SkillDetailPanel } from '~/components/skills/skill-detail-panel';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
-import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
-import { LevelTag } from '~/components/ui-custom/level-tag';
 import type { StatType } from '~/types/rpg-elements';
 import {
   SNAPPY_SPIN_TIMING,
@@ -79,9 +75,6 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
 
   const activeSkill = getSelectedSkill(selected);
   const effectiveStats = getEffectiveStats(selected);
-  const maxHp = getEffectiveMaxHp(selected);
-  const expThreshold = getExpThresholdForLevel(selected.level);
-  const isMaxLevel = selected.level >= MAX_LEVEL;
 
   return (
     <>
@@ -92,7 +85,7 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
             <PartyMemberCard
               key={member.id}
               member={member}
-              variant="roster"
+              variant="slim"
               isActive={member.id === selectedId}
               isKeyboardCursor={keyboardActive && member.id === selectedId}
               onClick={() => setSelectedId(member.id)}
@@ -101,39 +94,7 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
         </div>
 
         <div className="pause-menu-stats-main">
-          {/* Hero panel: the Level Up identity block (portrait, name, EXP/HP rows) at pause-menu scale. */}
-          <div className="character-info-panel pause-menu-stats-hero">
-            <div className="pause-menu-stats-portrait">
-              <img src={CHARACTER_SPRITES[selected.class].face} alt={selected.name} />
-              <LevelTag level={selected.level} />
-            </div>
-            <div className="pause-menu-stats-identity">
-              <div className="pause-menu-stats-identity__name pixel-font">{selected.name}</div>
-              <div className="pause-menu-stats-identity__class pixel-font">{selected.class}</div>
-              <div className="progress-section">
-                <div className="stat-label">
-                  <NarikWoodBitFont text="EXP" size={1} />
-                </div>
-                <IndigolayBar
-                  className="progress-section__bar"
-                  variant="yellow"
-                  percentage={isMaxLevel ? 100 : calculatePercentage(selected.currentLevelExp, expThreshold)}
-                  label={isMaxLevel ? 'MAX' : `${selected.currentLevelExp} / ${expThreshold}`}
-                />
-              </div>
-              <div className="progress-section">
-                <div className="stat-label">
-                  <NarikWoodBitFont text="HP" size={1} />
-                </div>
-                <IndigolayBar
-                  className="progress-section__bar"
-                  variant="red"
-                  percentage={calculatePercentage(selected.currentHp, maxHp)}
-                  label={`${selected.currentHp} / ${maxHp}`}
-                />
-              </div>
-            </div>
-          </div>
+          <PauseMenuCharacterHeader member={selected} />
 
           <div className="pause-menu-stats-columns">
             <div className="pause-menu-core-stats">
