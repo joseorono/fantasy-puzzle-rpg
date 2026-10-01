@@ -2,6 +2,7 @@ import type { CharacterData, CharacterClass } from '~/types/rpg-elements';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
+import type { StellaMotion } from './stella-sprites';
 
 // ─── RPG Configuration ───────────────────────────────────────────────
 
@@ -164,6 +165,39 @@ export const CHARACTER_ICONS = {
   healer: Heart,
 } as const;
 
+// ─── Character Sprites ───────────────────────────────────────────────
+// Healer and rogue clone the mage and warrior art until their own Stella exports exist.
+
+interface CharacterSpriteSet {
+  /** Stella side-view battler sheet. */
+  battler: string;
+  /** Stella walk sheet, reserved for the map integration. */
+  walk: string;
+  /** Full-body portrait for the skill-burst cut-in. */
+  face: string;
+  /** Battler motion played when the character casts its skill. */
+  castMotion: StellaMotion;
+}
+
+const WARRIOR_ART = {
+  battler: '/assets/sprite/party-warrior-stella-side-view.png',
+  walk: '/assets/sprite/party-warrior-stella-walk.png',
+  face: '/assets/portraits/party-warrior-face.png',
+};
+
+const MAGE_ART = {
+  battler: '/assets/sprite/party-mage-stella-side-view.png',
+  walk: '/assets/sprite/party-mage-stella-walk.png',
+  face: '/assets/portraits/party-mage-face.png',
+};
+
+export const CHARACTER_SPRITES: Record<CharacterClass, CharacterSpriteSet> = {
+  warrior: { ...WARRIOR_ART, castMotion: 'swing' },
+  rogue: { ...WARRIOR_ART, castMotion: 'missile' },
+  mage: { ...MAGE_ART, castMotion: 'spell' },
+  healer: { ...MAGE_ART, castMotion: 'chant' },
+};
+
 // ─── Character Colors ────────────────────────────────────────────────
 
 export const CHARACTER_COLORS = {
@@ -235,7 +269,7 @@ export const CHARACTER_BATTLE_COLORS = {
 
 // ─── Skill Burst Overlay ─────────────────────────────────────────────
 
-export const SKILL_BURST_DURATION_MS = 650;
+export const SKILL_BURST_DURATION_MS = 900;
 
 export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: string }> = {
   warrior: { bg: 'rgba(37, 99, 235, 0.85)', light: 'rgba(147, 197, 253, 0.5)' },

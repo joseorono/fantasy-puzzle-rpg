@@ -9,6 +9,8 @@ export const assetList: string[] = [
   '/assets/portraits/Innkeeper_02.png',
   '/assets/portraits/Witch_03.png',
   '/assets/portraits/innkeeper-2.png',
+  '/assets/portraits/party-mage-face.png',
+  '/assets/portraits/party-warrior-face.png',
 
   // Backgrounds
   '/assets/bg/battle/simple_battle_background-2.jpg',
@@ -173,6 +175,8 @@ export const assetList: string[] = [
 
   // Sprites
   '/assets/sprite/placeholder.png',
+  '/assets/sprite/party-mage-stella-side-view.png',
+  '/assets/sprite/party-warrior-stella-side-view.png',
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

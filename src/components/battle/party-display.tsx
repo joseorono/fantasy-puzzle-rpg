@@ -12,7 +12,9 @@ import type { CharacterSpriteProps } from '~/types/components';
 import { cn } from '~/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
-import { CHARACTER_ICONS, CHARACTER_BATTLE_COLORS } from '~/constants/party';
+import { CHARACTER_BATTLE_COLORS } from '~/constants/party';
+import { StellaBattlerSprite } from '~/components/battle/stella-battler-sprite';
+import { useBattlerMotion } from '~/hooks/use-battler-motion';
 import {
   HP_THRESHOLD_BG,
   HP_THRESHOLD_BAR_VARIANT,
@@ -43,7 +45,6 @@ function getPartyStatsIconOpacity(fillPercentage: number) {
 }
 
 function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
-  const Icon = CHARACTER_ICONS[character.class];
   const colors = CHARACTER_BATTLE_COLORS[character.class];
   const lastDamage = useAtomValue(lastDamageAtom);
   const maxCooldownSeconds = resolveCharacterCooldown(character);
@@ -54,6 +55,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [isActivating, setIsActivating] = useState(false);
+  const battlerMotion = useBattlerMotion(character, isActivating);
 
   function handleClick() {
     if (isDead || !isSkillReady || !onActivateSkill) return;
@@ -86,56 +88,38 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
     <div className="flex flex-col items-center gap-2">
       {/* Character sprite */}
       <div className="group relative">
-        {/* Glow effect when skill is ready */}
-        {isSkillReady && <div className={cn('absolute inset-0 animate-pulse rounded-lg blur-xl', colors.glow)} />}
+        {/* Soft rim glow when skill is ready */}
+        {isSkillReady && !isDead && (
+          <div className={cn('absolute inset-0 rounded-lg opacity-40 blur-lg', colors.glow)} />
+        )}
 
         {/* Character container */}
         <div
           onClick={handleClick}
           className={cn(
-            'relative h-16 w-14 rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-16 sm:border-3 md:h-22 md:w-18',
+            'party-battler-box relative h-21 w-18 rounded-lg border-2 transition-all duration-300 sm:h-26 sm:w-21 sm:border-3 md:h-29 md:w-24',
             isDead ? 'border-gray-500 bg-gray-600 opacity-50 grayscale' : colors.bg,
             !isDead && colors.border,
             !isDead && isSkillReady && 'animate-bounce cursor-pointer hover:scale-110',
             !isDead && !isSkillReady && 'cursor-default',
             isActivating && 'skill-activate',
           )}
-          style={{ imageRendering: 'pixelated' }}
         >
-          {/* Chibi character representation */}
-          <div className={cn('absolute inset-0 flex flex-col items-center justify-center p-1', isDead && 'opacity-40')}>
-            {/* Head */}
-            <div
-              className={cn(
-                'mb-0.5 h-5 w-5 rounded-full border sm:h-6 sm:w-6',
-                isDead ? 'border-gray-500 bg-gray-400' : 'border-amber-300 bg-amber-200',
-              )}
+          {/* Battler sprite, clipped to the box; feet planted on its bottom edge */}
+          <div className="party-battler-clip">
+            <StellaBattlerSprite
+              characterClass={character.class}
+              motion={battlerMotion.motion}
+              mode={battlerMotion.mode}
+              cycleMs={battlerMotion.cycleMs}
+              playId={battlerMotion.playId}
             />
-
-            {/* Body with icon */}
-            <div className="flex flex-1 items-center justify-center">
-              <Icon
-                className={cn('h-5 w-5 drop-shadow-lg sm:h-6 sm:w-6', isDead ? 'text-gray-400' : 'text-white')}
-                strokeWidth={3}
-              />
-            </div>
-
-            {/* Death indicator */}
-            {isDead && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <img
-                  src="/assets/icons/skull-frostyrabbid.png"
-                  alt="Dead"
-                  className="h-10 w-10 opacity-80 sm:h-12 sm:w-12"
-                />
-              </div>
-            )}
           </div>
 
           {/* Ready Skill Badge seated on top-right corner of the character frame */}
           {!isDead && isSkillReady && (
             <div className="pointer-events-none absolute -top-3 -right-3 z-20 flex items-center justify-center">
-              <div className="relative flex items-center justify-center rounded border-2 border-[#d4a574] p-0 overflow-hidden shadow-md">
+              <div className="relative flex items-center justify-center overflow-hidden rounded border-2 border-[#d4a574] p-0 shadow-md">
                 <SkillIcon
                   characterClass={character.class}
                   position={skill.icon}
@@ -180,21 +164,25 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
           {isSkillReady ? (
             <span
               className={cn(
-                'pixel-font text-[9px] font-extrabold uppercase tracking-wider drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] truncate max-w-[75px] sm:max-w-[85px] sm:text-[10px]',
+                'pixel-font max-w-[75px] truncate text-[9px] font-extrabold tracking-wider uppercase drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.95)] sm:max-w-[85px] sm:text-[10px]',
                 colors.text,
               )}
             >
               {skill.name}
             </span>
           ) : (
-            <span className="pixel-font text-[9px] font-medium text-[#b0a8a0] tracking-wider drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
+            <span className="pixel-font text-[9px] font-medium tracking-wider text-[#b0a8a0] drop-shadow-[0_1px_1px_rgba(0,0,0,0.95)] sm:text-[10px]">
               CD: <span className="font-bold text-[#f2d2af]">{Math.ceil(character.skillCooldown)}s</span>
             </span>
           )}
         </div>
         <div className="relative h-2 rounded-sm border border-[#5c3e23] bg-[#120a05] sm:h-2.5">
           <div
-            className={cn('h-full transition-all duration-300 ease-linear', colors.cooldown, isSkillReady && 'animate-pulse')}
+            className={cn(
+              'h-full transition-all duration-300 ease-linear',
+              colors.cooldown,
+              isSkillReady && 'animate-pulse',
+            )}
             style={{ width: `${cooldownPercentage}%` }}
           >
             {/* Shine effect */}
@@ -292,10 +280,13 @@ export function PartyDisplay() {
   };
 
   return (
-    <div id="party-display-root" className="relative flex h-full flex-col items-center justify-center gap-3 p-2 sm:gap-4 sm:p-3 md:gap-5 md:p-4">
+    <div
+      id="party-display-root"
+      className="relative flex h-full flex-col items-center justify-center gap-3 p-2 sm:gap-4 sm:p-3 md:gap-5 md:p-4"
+    >
       {/* Party members grid */}
       <div id="party-members-grid" className="relative flex items-center justify-center">
-        <div className="grid grid-cols-4 gap-2 xl:gap-7 sm:gap-3 md:gap-4 2xl:gap-12">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-3 xl:gap-5 2xl:gap-8">
           {partyMemberIds.split(',').map((characterId) => (
             <PartyMemberSlot key={characterId} characterId={characterId} onActivateSkill={activateSkill} />
           ))}
@@ -337,7 +328,7 @@ export function PartyDisplay() {
             </IndigolayBar>
             <span
               id="party-hp-percent"
-              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"
+              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end text-[9px] font-bold whitespace-nowrap text-white sm:text-[11px]"
             >
               <NumberFlow
                 value={Math.round(partyHealthPercentage)}
@@ -405,7 +396,7 @@ export function PartyDisplay() {
             </IndigolayBar>
             <span
               id="party-guard-percent"
-              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end whitespace-nowrap text-[9px] font-bold text-white sm:text-[11px]"
+              className="pixel-font inline-flex w-[3.25rem] shrink-0 items-center justify-end text-[9px] font-bold whitespace-nowrap text-white sm:text-[11px]"
             >
               <NumberFlow
                 value={Math.round(guardPercentage)}
