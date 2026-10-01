@@ -8,6 +8,9 @@ export const assetList: string[] = [
   // Portraits
   '/assets/portraits/Innkeeper_02.png',
   '/assets/portraits/Witch_03.png',
+  '/assets/portraits/innkeeper-2.png',
+  '/assets/portraits/party-mage-face.png',
+  '/assets/portraits/party-warrior-face.png',
 
   // Backgrounds
   '/assets/bg/battle/simple_battle_background-2.jpg',
@@ -100,6 +103,7 @@ export const assetList: string[] = [
   '/assets/frame/franuka-05a/frame-loop-top.png',
   '/assets/frame/franuka-05a/frame-top-left-corner.png',
   '/assets/frame/franuka-05a/frame-top-right-corner.png',
+  '/assets/frame/indigolay/portrait-frame.png',
 
   // HUD
   '/assets/hud/bar-red.png',
@@ -129,7 +133,9 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/Icon_trash.png',
   '/assets/icons/indigolay/icon-columns.png',
   '/assets/icons/indigolay/icon-hp.png',
+  '/assets/icons/indigolay/icon-star.png',
   '/assets/icons/indigolay/icon-mute.png',
+  '/assets/icons/indigolay/icon-sys-attack.png',
   '/assets/icons/indigolay/icon-sys-defense.png',
   '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
@@ -172,6 +178,8 @@ export const assetList: string[] = [
 
   // Sprites
   '/assets/sprite/placeholder.png',
+  '/assets/sprite/party-mage-stella-side-view.png',
+  '/assets/sprite/party-warrior-stella-side-view.png',
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

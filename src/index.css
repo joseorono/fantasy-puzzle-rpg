@@ -406,6 +406,8 @@
 
 @import './styles/battle-top-bar.css';
 
+@import './styles/party-sprites.css';
+
 @import './styles/radial-countdown.css';
 
 @import './styles/battle-over-modal.css';

@@ -21,6 +21,7 @@ import {
   SNAPPY_OPACITY_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
+import { CHARACTER_SPRITES } from '~/constants/party';
 
 /** The three stat rows in the order they appear in the allocation panel. */
 const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
@@ -118,11 +119,17 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           <div className="character-info-panel">
             <div className="character-identity">
               <div className="portrait-badge-wrap">
-                <img
-                  src="/assets/portraits/Innkeeper_02.png"
-                  alt={character.name}
-                  className="character-portrait-small pixel-art"
-                />
+                <div
+                  className="character-portrait-small portrait-face-crop"
+                  style={
+                    {
+                      '--face-x': CHARACTER_SPRITES[character.class].faceFocus.x,
+                      '--face-y': CHARACTER_SPRITES[character.class].faceFocus.y,
+                    } as React.CSSProperties
+                  }
+                >
+                  <img src={CHARACTER_SPRITES[character.class].face} alt={character.name} />
+                </div>
                 <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
@@ -180,9 +187,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           {/* Center Column - Character Display */}
           <div className="character-display-panel">
             <img
-              src="/assets/portraits/Innkeeper_02.png"
+              src={CHARACTER_SPRITES[character.class].face}
               alt={character.name}
-              className="character-portrait-large pixel-art"
+              className="character-portrait-large"
             />
 
             <div className="stat-chips">

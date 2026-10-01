@@ -5,6 +5,7 @@ import { createEmptyLootTable, createLootTable } from '~/types/loot';
 import { createResources } from './resources';
 import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
 import { BASE_MATCH_DAMAGE } from '~/constants/party';
+import { createInitialInventoryState } from '~/stores/slices/inventory';
 import type { EnemyData } from '~/types/rpg-elements';
 import type { ProbabilityNumber } from '~/types/number-types';
 import type { EquipmentItemData, ConsumableItemData } from '~/types/inventory';
@@ -279,6 +280,18 @@ describe('EXP piñata debug encounter', () => {
 
     expect(expReward).toBe(EXP_PINATA_TOTAL_EXP);
     expect(expReward).toBe(getTotalExpToReachLevel(EXP_PINATA_TARGET_LEVEL));
+  });
+
+  it('drops one of each starting item, guaranteed', () => {
+    const { lootTable: loot } = combineLootFromEnemies(EXP_PINATA_FROGS);
+    const droppedEntries = [...loot.equipableItems, ...loot.consumableItems];
+
+    expect(droppedEntries.map((entry) => entry.item.id).sort()).toEqual(
+      createInitialInventoryState()
+        .map((entry) => entry.itemId)
+        .sort(),
+    );
+    expect(droppedEntries.every((entry) => entry.probability === 1)).toBe(true);
   });
 
   it('is harmless enough to be a free win', () => {

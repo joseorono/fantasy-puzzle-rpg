@@ -585,7 +585,7 @@
     opacity: 1;
     transform: scale(1);
   }
-  75% {
+  78% {
     opacity: 1;
     transform: scale(1);
   }
@@ -644,8 +644,9 @@
   }
 }
 
+/* --skill-burst-ms is set on the overlay from SKILL_BURST_DURATION_MS. */
 .skill-burst-overlay {
-  animation: skill-burst-in 650ms ease-out forwards;
+  animation: skill-burst-in var(--skill-burst-ms, 900ms) ease-out forwards;
 }
 
 .skill-burst-lines {
@@ -655,7 +656,7 @@
   width: 200%;
   height: 200%;
   transform: translate(-50%, -50%);
-  animation: skill-burst-lines-spin 650ms linear forwards;
+  animation: skill-burst-lines-spin var(--skill-burst-ms, 900ms) linear forwards;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
@@ -734,10 +735,6 @@
   );
 }
 
-.skill-burst-icon {
-  animation: skill-burst-icon-pop 650ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
 .skill-burst-text {
-  animation: skill-burst-text-slide 650ms ease-out forwards;
+  animation: skill-burst-text-slide var(--skill-burst-ms, 900ms) ease-out forwards;
 }

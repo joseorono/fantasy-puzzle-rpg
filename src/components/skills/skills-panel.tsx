@@ -25,6 +25,7 @@ import { INFO_ICON_SRC } from '~/constants/ui';
 import { GradientDivider } from '~/components/dividers/gradient-divider';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import { ConfirmPanel } from '~/components/confirm-dialog/confirm-panel';
+import { ArrowRightIcon } from '~/components/ui-custom/arrow-right-icon';
 import { CostBadges } from '~/components/ui-custom/cost-badge';
 import { PartyMemberCard } from '~/components/party/party-member-card';
 import { SkillDecoIcon } from '~/components/skill-sprite-icons/skill-deco-icon';
@@ -435,22 +436,26 @@ export function SkillsPanel({ keyboardActive = false, onExitLeft }: SkillsPanelP
               {pendingAction.mode === 'upgrade' && (
                 <span className="skill-unlock-confirm__level">
                   {' '}
-                  · Lv {pendingLevel} → {pendingLevel + 1}
+                  · Lv {pendingLevel}
+                  <ArrowRightIcon />
+                  {pendingLevel + 1}
                 </span>
               )}
             </div>
             <div className="mx-auto w-fit">
               <IndigoLayStyledLists variant="chevron" compact>
-                {(pendingAction.mode === 'upgrade'
-                  ? getUpgradePreviewRows(pendingAction.selection, pendingLevel).map(
-                      (row) => `${row.label} ${row.from} → ${row.to}`,
-                    )
-                  : pendingAction.selection.kind === 'active'
-                    ? [pendingDef.description]
-                    : describePassiveModifiers(pendingAction.selection.passive.modifiers)
-                ).map((line) => (
-                  <IndigolayStyledListItem key={line}>{line}</IndigolayStyledListItem>
-                ))}
+                {pendingAction.mode === 'upgrade'
+                  ? getUpgradePreviewRows(pendingAction.selection, pendingLevel).map((row) => (
+                      <IndigolayStyledListItem key={`${row.label}-${row.from}`}>
+                        {row.label} {row.from}
+                        <ArrowRightIcon />
+                        {row.to}
+                      </IndigolayStyledListItem>
+                    ))
+                  : (pendingAction.selection.kind === 'active'
+                      ? [pendingDef.description]
+                      : describePassiveModifiers(pendingAction.selection.passive.modifiers)
+                    ).map((line) => <IndigolayStyledListItem key={line}>{line}</IndigolayStyledListItem>)}
               </IndigoLayStyledLists>
             </div>
             <div className="skill-unlock-confirm__cost">

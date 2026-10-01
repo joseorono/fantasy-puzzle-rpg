@@ -7,6 +7,7 @@ import {
   swapOrbsAtom,
   damageEnemyAtom,
   healPartyAtom,
+  triggerBattlerActionsAtom,
   removeMatchedOrbsAtom,
   partyAtom,
   deadOrbColorClassesAtom,
@@ -204,6 +205,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   const swapOrbs = useSetAtom(swapOrbsAtom);
   const damageEnemy = useSetAtom(damageEnemyAtom);
   const healParty = useSetAtom(healPartyAtom);
+  const triggerBattlerActions = useSetAtom(triggerBattlerActionsAtom);
   const removeMatchedOrbs = useSetAtom(removeMatchedOrbsAtom);
   const incrementTurn = useSetAtom(incrementTurnAtom);
   const applyMatchResolution = useSetAtom(applyMatchResolutionAtom);
@@ -258,6 +260,10 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
       if (effect.isHeal) healParty({ amount: effect.amount, source: 'match' });
     }
     if (didDamage) damageEnemy({ hits, cascadeLevel });
+
+    // Every hero whose colour landed (attackers and the healer alike) plays their action motion.
+    const actingIds = effects.flatMap((effect) => (effect.characterId ? [effect.characterId] : []));
+    if (actingIds.length > 0) triggerBattlerActions(actingIds);
 
     if (effects.length > 0) {
       // Freeze-frame once on the moment damage lands (skip on heal-only moves).

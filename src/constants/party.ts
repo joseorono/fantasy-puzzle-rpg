@@ -2,6 +2,7 @@ import type { CharacterData, CharacterClass } from '~/types/rpg-elements';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
 import { MOSS_GOLEM, SWAMP_FROG } from './enemies/world-00';
 import { Sword, Zap, Sparkles, Heart } from 'lucide-react';
+import type { StellaMotion } from './stella-sprites';
 
 // ─── RPG Configuration ───────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ export const MAX_ENEMIES_PER_BATTLE = 4;
 const partyBase: CharacterData[] = [
   {
     id: 'warrior',
-    name: 'Warrior',
+    name: 'Leon',
     class: 'warrior',
     color: 'blue',
     stats: {
@@ -59,7 +60,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'rogue',
-    name: 'Rogue',
+    name: 'Finn',
     class: 'rogue',
     color: 'green',
     stats: {
@@ -87,7 +88,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'mage',
-    name: 'Mage',
+    name: 'Mira',
     class: 'mage',
     color: 'purple',
     stats: {
@@ -115,7 +116,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'healer',
-    name: 'Healer',
+    name: 'Ivy',
     class: 'healer',
     color: 'yellow',
     stats: {
@@ -163,6 +164,46 @@ export const CHARACTER_ICONS = {
   mage: Sparkles,
   healer: Heart,
 } as const;
+
+// ─── Character Sprites ───────────────────────────────────────────────
+// Healer and rogue clone the mage and warrior art until their own Stella exports exist.
+
+interface CharacterSpriteSet {
+  /** Stella side-view battler sheet. */
+  battler: string;
+  /** Stella walk sheet, reserved for the map integration. */
+  walk: string;
+  /** Full-body portrait for the skill-burst cut-in. */
+  face: string;
+  /** Head center on the portrait, as fractions of its width/height; small badges crop around it. */
+  faceFocus: { x: number; y: number };
+  /** Battler motion played when the character's colour is matched (attack, or the healer's heal). */
+  actionMotion: StellaMotion;
+  /** Battler motion played when the character casts its skill. */
+  castMotion: StellaMotion;
+}
+
+const WARRIOR_ART = {
+  battler: '/assets/sprite/party-warrior-stella-side-view.png',
+  walk: '/assets/sprite/party-warrior-stella-walk.png',
+  face: '/assets/portraits/party-warrior-face.png',
+  faceFocus: { x: 0.55, y: 0.1 },
+};
+
+const MAGE_ART = {
+  battler: '/assets/sprite/party-mage-stella-side-view.png',
+  walk: '/assets/sprite/party-mage-stella-walk.png',
+  face: '/assets/portraits/party-mage-face.png',
+  faceFocus: { x: 0.48, y: 0.16 },
+};
+
+export const CHARACTER_SPRITES: Record<CharacterClass, CharacterSpriteSet> = {
+  warrior: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'swing' },
+  rogue: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'missile' },
+  mage: { ...MAGE_ART, actionMotion: 'skill', castMotion: 'spell' },
+  // Not `chant` for the cast: it barely moves on Stella sheets (see STELLA_SV_MOTIONS).
+  healer: { ...MAGE_ART, actionMotion: 'item', castMotion: 'spell' },
+};
 
 // ─── Character Colors ────────────────────────────────────────────────
 
@@ -235,7 +276,7 @@ export const CHARACTER_BATTLE_COLORS = {
 
 // ─── Skill Burst Overlay ─────────────────────────────────────────────
 
-export const SKILL_BURST_DURATION_MS = 650;
+export const SKILL_BURST_DURATION_MS = 900;
 
 export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: string }> = {
   warrior: { bg: 'rgba(37, 99, 235, 0.85)', light: 'rgba(147, 197, 253, 0.5)' },

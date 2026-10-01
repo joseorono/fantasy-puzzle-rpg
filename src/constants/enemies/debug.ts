@@ -2,6 +2,8 @@ import type { EnemyData } from '~/types/rpg-elements';
 import { createEmptyLootTable, createLootTable } from '~/types/loot';
 import { getTotalExpToReachLevel } from '~/lib/leveling-system';
 import { DEBUG_RESOURCE_PAYLOAD } from '~/constants/dev';
+import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
+import { createInitialInventoryState } from '~/stores/slices/inventory';
 import { SWAMP_FROG } from './world-00';
 
 /**
@@ -23,19 +25,27 @@ const EXP_PINATA_SHARE = Math.floor(EXP_PINATA_TOTAL_EXP / EXP_PINATA_FROG_COUNT
 /** Dies to any hit at all, so the demo is over in a couple of matches. */
 const EXP_PINATA_MAX_HP = 1;
 
+/** Ids of the items a new game starts with; the piñata drops one of each. */
+const STARTING_ITEM_IDS = new Set(createInitialInventoryState().map((entry) => entry.itemId));
+
 /**
- * The whole payload rides on one frog, since `combineLootFromEnemies` sums resources across every
- * enemy. Also displaces the Swamp Frog coins the spread below would otherwise inherit.
+ * The whole payload — one of each starting item plus the resource top-up — rides on one frog,
+ * since `combineLootFromEnemies` sums loot across every enemy. Also displaces the Swamp Frog
+ * coins the spread below would otherwise inherit.
  */
-const EXP_PINATA_LOOT = createLootTable([], [], { item: DEBUG_RESOURCE_PAYLOAD });
+const EXP_PINATA_LOOT = createLootTable(
+  EquipmentItems.filter((item) => STARTING_ITEM_IDS.has(item.id)).map((item) => ({ item })),
+  ConsumableItems.filter((item) => STARTING_ITEM_IDS.has(item.id)).map((item) => ({ item })),
+  { item: DEBUG_RESOURCE_PAYLOAD },
+);
 
 /**
  * Gilded Frogs — a Swamp Frog with the danger stripped out and the EXP cranked up, for
  * testing level-gated content (skill tiers, stat allocation) without grinding to it.
  *
  * Clearing all three awards exactly {@link EXP_PINATA_TOTAL_EXP}, which takes a level-1
- * party to {@link EXP_PINATA_TARGET_LEVEL}, plus one {@link DEBUG_RESOURCE_PAYLOAD} — the same
- * top-up the Skill Debug grant button hands out. They cannot realistically fight back: 1 damage
+ * party to {@link EXP_PINATA_TARGET_LEVEL}, plus one of each starting item and one {@link DEBUG_RESOURCE_PAYLOAD}
+ * — the same top-up the Skill Debug grant button hands out. They cannot realistically fight back: 1 damage
  * on a 60s interval they never live long enough to reach.
  */
 export const EXP_PINATA_FROGS: EnemyData[] = Array.from({ length: EXP_PINATA_FROG_COUNT }, (_, index) => ({
