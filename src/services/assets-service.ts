@@ -8,6 +8,7 @@ export const assetList: string[] = [
   // Portraits
   '/assets/portraits/Innkeeper_02.png',
   '/assets/portraits/Witch_03.png',
+  '/assets/portraits/innkeeper-2.png',
 
   // Backgrounds
   '/assets/bg/battle/simple_battle_background-2.jpg',

@@ -241,7 +241,7 @@ export default function TownHub({ townName, innCost, itemsForSell, onLeaveCallba
       {/* Portrait and Dialogue Section */}
       <div className="dialogue-container">
         <div className="dialogue-portraits">
-          <img src="/assets/portraits/Innkeeper_02.png" alt="Innkeeper" className="dialogue-portrait__image" />
+          <img src="/assets/portraits/innkeeper-2.png" alt="Innkeeper" className="dialogue-portrait__image" />
         </div>
         <DialogueBox speakerName="Innkeeper" text={dialogueText} isTyping={isTyping} showIndicator={false} />
       </div>

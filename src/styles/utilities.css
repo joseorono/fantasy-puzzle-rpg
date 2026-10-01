@@ -20,7 +20,10 @@
   CSS — `background-image`, and especially `border-image`, which IndigolayBar and
   .dungeon-hp-chip use — must opt out themselves: add `.indigolay-art`, or set
   `image-rendering: auto` in the component's own rule.
+
+  Portraits are painted art too, so they opt out the same way.
 */
+img[src*='/portraits/'],
 img[src*='/indigolay/'],
 img[src*='indigolay-'],
 .indigolay-art,

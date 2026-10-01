@@ -122,15 +122,21 @@
   align-items: flex-end;
   justify-content: center;
   flex-shrink: 0;
-  width: 200px;
-  padding: 1rem;
-  padding-bottom: 0;
+  width: auto;
+  padding: 0 1rem;
+  overflow: hidden;
   order: 2; /* portrait goes to the right */
 }
 
+/* The column sizes to the portrait; max-width undoes Tailwind preflight's img clamp.
+   --portrait-height is the display height, so any NPC art works; the negative margin
+   sinks the bottom 7% below the column's clipped edge. */
 .shop-portrait-sidebar .shop-portrait__image {
-  max-height: 280px;
+  --portrait-height: min(68vh, 640px);
+  height: var(--portrait-height);
   width: auto;
+  max-width: none;
+  margin-bottom: calc(var(--portrait-height) * -0.07);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
@@ -1438,9 +1444,14 @@
   margin-right: 3rem;
 }
 
+/* Same sizing as the shop sidebar; the negative margin tucks the legs behind the dialogue box. */
 .town .dialogue-portraits .dialogue-portrait__image {
-  max-height: 280px;
+  --portrait-height: min(72vh, 680px);
+  height: var(--portrait-height);
   width: auto;
+  max-width: none;
+  max-height: none;
+  margin-bottom: calc(var(--portrait-height) * -0.15);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
@@ -1452,7 +1463,7 @@
   }
 
   .town .dialogue-portraits .dialogue-portrait__image {
-    max-height: 150px;
+    --portrait-height: 240px;
   }
 }
 
@@ -1464,12 +1475,8 @@
 }
 
 @media (max-width: 900px) {
-  .shop-portrait-sidebar {
-    width: 140px;
-  }
-
   .shop-portrait-sidebar .shop-portrait__image {
-    max-height: 180px;
+    --portrait-height: min(50vh, 420px);
   }
 }
 
@@ -1502,7 +1509,7 @@
   }
 
   .shop-portrait-sidebar .shop-portrait__image {
-    max-height: 120px;
+    --portrait-height: 220px;
   }
 
   .shop-container {
