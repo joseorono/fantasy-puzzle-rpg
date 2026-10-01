@@ -1,6 +1,10 @@
 # Party Member Card + Pause-Menu Party Bar — Indigolay Redesign Plan
 
-**Status: design locked, not implemented.**
+**Status: implemented.** Deviations from the plan below:
+
+- **Bars:** kept the existing `IndigolayBar` (the user's call — it's already the indigolay bar art). No `IndigolayStatusBar`, no status-bar or potion assets. HP is an `sm` bar labeled `cur/max` with `icon-hp` beside it; EXP is an `xs` bar with a small "EXP" tag and the existing tooltip.
+- **Frame asset:** `portrait-frame.png` is the pack's `UI_Panel_Thumbnail.png` with its crimson window flood-filled to transparent (x 32–175, y 9–159), so the portrait sits *under* the gold corners. The crimson is redrawn as a CSS radial-gradient backdrop.
+- Inn overrides in `town.css` that targeted the old internals were removed.
 
 ## Context
 
