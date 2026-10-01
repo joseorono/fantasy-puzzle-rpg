@@ -50,22 +50,25 @@ export function PartyMemberCard({
         alt={member.name}
       />
       <div className="party-member-card__body">
-        <div className="party-member-card__name">{member.name}</div>
+        <div className="party-member-card__header">
+          <span className="party-member-card__name">{member.name}</span>
+          <span className="party-member-card__class">{member.class}</span>
+        </div>
         <div className="party-member-card__stat-row">
           <img src="/assets/icons/indigolay/icon-hp.png" alt="HP" className="party-member-card__stat-icon" />
           <IndigolayBar
             className="party-member-card__hp-bar"
             variant={HP_THRESHOLD_BAR_VARIANT[getHpThreshold(hpPct)]}
-            size="sm"
+            size="default"
             percentage={hpPct}
             label={`${member.currentHp}/${member.maxHp}`}
           />
         </div>
         <div className="party-member-card__stat-row">
-          <span className="party-member-card__stat-tag pixel-font">EXP</span>
+          <img src="/assets/icons/indigolay/icon-star.png" alt="EXP" className="party-member-card__stat-icon" />
           <Tooltip>
             <TooltipTrigger>
-              <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="xs" percentage={expPct} />
+              <IndigolayBar className="party-member-card__exp-bar" variant="yellow" size="sm" percentage={expPct} />
             </TooltipTrigger>
             <TooltipContent size="compact" className="exp-bar-tooltip">
               {isMaxLevel ? (

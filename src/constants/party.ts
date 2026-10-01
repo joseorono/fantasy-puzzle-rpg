@@ -32,7 +32,7 @@ export const MAX_ENEMIES_PER_BATTLE = 4;
 const partyBase: CharacterData[] = [
   {
     id: 'warrior',
-    name: 'Warrior',
+    name: 'Leon',
     class: 'warrior',
     color: 'blue',
     stats: {
@@ -60,7 +60,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'rogue',
-    name: 'Rogue',
+    name: 'Finn',
     class: 'rogue',
     color: 'green',
     stats: {
@@ -88,7 +88,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'mage',
-    name: 'Mage',
+    name: 'Mira',
     class: 'mage',
     color: 'purple',
     stats: {
@@ -116,7 +116,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'healer',
-    name: 'Healer',
+    name: 'Ivy',
     class: 'healer',
     color: 'yellow',
     stats: {
