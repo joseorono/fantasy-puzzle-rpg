@@ -53,6 +53,13 @@ export const STELLA_SV_MOTIONS: Record<StellaMotion, { col: number; row: number 
   dead: { col: 6, row: 5 },
 };
 
+/**
+ * Idle loop. Stella exports `wait` (and guard, damage, evade, escape, dying, abnormal, dead)
+ * as one pose repeated across all 3 frames, so a `wait` loop never visibly moves; `walk`
+ * is the standing, breathing cycle.
+ */
+export const STELLA_IDLE_MOTION: StellaMotion = 'walk';
+
 // Timing tunables (ms)
 /** Full wait/victory ping-pong cycle (0-1-2-1). */
 export const STELLA_IDLE_CYCLE_MS = 1040;

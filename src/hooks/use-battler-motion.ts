@@ -6,6 +6,7 @@ import {
   STELLA_DAMAGE_MS,
   STELLA_DYING_MS,
   STELLA_GUARD_HOLD_MS,
+  STELLA_IDLE_MOTION,
   type StellaMotion,
   type StellaPlayMode,
 } from '~/constants/stella-sprites';
@@ -65,5 +66,5 @@ export function useBattlerMotion(character: CharacterData, isActivating: boolean
   if (isActivating) return { motion: CHARACTER_SPRITES[character.class].castMotion, mode: 'once', playId };
   if (reaction) return { motion: reaction.motion, mode: 'once', playId };
   if (isSkillReady) return { motion: 'victory', mode: 'loop', playId };
-  return { motion: 'wait', mode: 'loop', playId };
+  return { motion: STELLA_IDLE_MOTION, mode: 'loop', playId };
 }
