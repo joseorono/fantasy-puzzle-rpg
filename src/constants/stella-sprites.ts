@@ -31,7 +31,20 @@ export const STELLA_SV_FRAMES_PER_MOTION = 3;
 export const STELLA_SV_SHEET_WIDTH_PX = 1152;
 export const STELLA_SV_SHEET_HEIGHT_PX = 768;
 
-/** `col` is the motion block's first column (0 / 3 / 6), `row` is 0–5. */
+/**
+ * `col` is the motion block's first column (0 / 3 / 6), `row` is 0–5.
+ *
+ * Not every motion actually animates. Measured on the warrior and mage exports:
+ *
+ * - Animated (3 distinct frames):
+ *   walk (standing/breathing cycle — use it for idle), victory, thrust, swing, missile,
+ *   skill, spell, item; chant and sleep move only slightly.
+ * - Static (one pose repeated across all 3 frames):
+ *   wait, guard, damage, evade, escape, dying, abnormal, dead.
+ *
+ * Static motions are fine as held poses (guard, damage flinch, dying → dead), but looping
+ * one looks frozen.
+ */
 export const STELLA_SV_MOTIONS: Record<StellaMotion, { col: number; row: number }> = {
   walk: { col: 0, row: 0 },
   wait: { col: 0, row: 1 },
@@ -53,15 +66,11 @@ export const STELLA_SV_MOTIONS: Record<StellaMotion, { col: number; row: number 
   dead: { col: 6, row: 5 },
 };
 
-/**
- * Idle loop. Stella exports `wait` (and guard, damage, evade, escape, dying, abnormal, dead)
- * as one pose repeated across all 3 frames, so a `wait` loop never visibly moves; `walk`
- * is the standing, breathing cycle.
- */
+/** Idle loop: `walk`, since `wait` is static in Stella exports (see STELLA_SV_MOTIONS). */
 export const STELLA_IDLE_MOTION: StellaMotion = 'walk';
 
 // Timing tunables (ms)
-/** Full wait/victory ping-pong cycle (0-1-2-1). */
+/** Full idle/victory ping-pong cycle (0-1-2-1). */
 export const STELLA_IDLE_CYCLE_MS = 1040;
 /** Per-frame time for one-shot motions; 3×150 = 450ms fits inside the 600ms skill-activate window. */
 export const STELLA_CAST_FRAME_MS = 150;
