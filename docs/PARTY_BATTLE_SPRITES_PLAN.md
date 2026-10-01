@@ -2,7 +2,11 @@
 
 Bring the new Stella character art into battle: real animated sprites in `#party-members-grid` and a portrait + battler skill-burst, with the infrastructure to art-swap all 4 party characters. For now the Healer clones the Mage and the Rogue clones the Warrior.
 
-**Status: design locked, not implemented.**
+**Status: implemented.** Deviations from the spec below:
+
+- The guard pose reacts to a mitigated hit **on that member** (`lastDamage.characterId`), not party-wide, since enemy hits target one hero; an unguarded hit plays the flinch.
+- No extra reduced-motion rule: the global collapse in `reduced-motion.css` (1 ms, single iteration) already leaves loops on frame 0 and one-shots on their final frame.
+- The grid sprite uses `--battler-scale` per breakpoint (0.7 / 0.85 / 0.95) instead of a `--battler-h`, and renders with `image-rendering: auto` because it's downscaled; the burst battler (2× / 3×) stays pixelated.
 
 ## Locked design decisions
 
