@@ -79,6 +79,21 @@
   }
 }
 
+/* Skill ready: a soft bob instead of Tailwind's animate-bounce, which jumps 25% of the box height. */
+@keyframes party-battler-ready-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--ready-bob-px, -4px));
+  }
+}
+
+.party-battler-box--ready {
+  animation: party-battler-ready-bob 1.2s ease-in-out infinite;
+}
+
 .party-battler-clip {
   position: absolute;
   inset: 0;

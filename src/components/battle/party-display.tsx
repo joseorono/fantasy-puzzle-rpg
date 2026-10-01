@@ -100,7 +100,7 @@ function CharacterSprite({ character, onActivateSkill }: CharacterSpriteProps) {
             'party-battler-box relative h-21 w-18 rounded-lg border-2 transition-all duration-300 sm:h-26 sm:w-21 sm:border-3 md:h-29 md:w-24',
             isDead ? 'border-gray-500 bg-gray-600 opacity-50 grayscale' : colors.bg,
             !isDead && colors.border,
-            !isDead && isSkillReady && 'animate-bounce cursor-pointer hover:scale-110',
+            !isDead && isSkillReady && 'party-battler-box--ready cursor-pointer hover:scale-110',
             !isDead && !isSkillReady && 'cursor-default',
             isActivating && 'skill-activate',
           )}
