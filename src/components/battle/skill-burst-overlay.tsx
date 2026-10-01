@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAtomValue, useStore } from 'jotai';
 import { lastSkillActivationAtom, partyAtom } from '~/stores/battle-atoms';
-import { CHARACTER_ICONS, SKILL_BURST_COLORS, SKILL_BURST_DURATION_MS } from '~/constants/party';
+import { CHARACTER_SPRITES, SKILL_BURST_COLORS, SKILL_BURST_DURATION_MS } from '~/constants/party';
+import { StellaBattlerSprite } from '~/components/battle/stella-battler-sprite';
 import type { CharacterClass } from '~/types/rpg-elements';
 
 export function SkillBurstOverlay() {
@@ -37,25 +38,30 @@ export function SkillBurstOverlay() {
   if (!visible || !displayData) return null;
 
   const colors = SKILL_BURST_COLORS[displayData.characterClass];
-  const Icon = CHARACTER_ICONS[displayData.characterClass];
+  const sprites = CHARACTER_SPRITES[displayData.characterClass];
 
   return (
     <div
       key={animationKey}
       className="skill-burst-overlay pointer-events-none fixed inset-0 z-40 overflow-hidden"
-      style={{ backgroundColor: colors.bg }}
+      style={
+        {
+          backgroundColor: colors.bg,
+          '--skill-burst-ms': `${SKILL_BURST_DURATION_MS}ms`,
+        } as React.CSSProperties
+      }
     >
       {/* Radial speed lines */}
-      <div
-        className="skill-burst-lines"
-        style={{ '--burst-color-light': colors.light } as React.CSSProperties}
-      />
+      <div className="skill-burst-lines" style={{ '--burst-color-light': colors.light } as React.CSSProperties} />
 
-      {/* Character icon */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="skill-burst-icon drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]">
-          <Icon className="h-24 w-24 text-white sm:h-32 sm:w-32 md:h-40 md:w-40" strokeWidth={2.5} />
-        </div>
+      {/* Full-body portrait cut-in on a diagonal band */}
+      <div className="skill-burst-cutin">
+        <img src={sprites.face} alt="" className="skill-burst-cutin__portrait" />
+      </div>
+
+      {/* Battler playing its cast motion, scaled up */}
+      <div className="skill-burst-battler">
+        <StellaBattlerSprite characterClass={displayData.characterClass} motion={sprites.castMotion} mode="once" />
       </div>
 
       {/* Skill name on a ribbon banner (reuses the title-sign artwork). */}

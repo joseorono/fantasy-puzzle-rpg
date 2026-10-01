@@ -1,0 +1,163 @@
+/* ─── Stella battler sprites ─────────────────────────────────────────
+   StellaBattlerSprite sets --stella-x/--stella-y (frame-0 origin, unitless sheet px),
+   --stella-cycle-ms and, optionally, --battler-scale. Frames advance in discrete steps;
+   the 3 frames of a motion sit side by side, 128px apart. */
+
+.stella-battler {
+  position: relative;
+  width: calc(128px * var(--battler-scale, 1));
+  height: calc(128px * var(--battler-scale, 1));
+  flex-shrink: 0;
+}
+
+.stella-battler__cell {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 64px);
+  width: 128px;
+  height: 128px;
+  background-repeat: no-repeat;
+  background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+  transform: scale(var(--battler-scale, 1));
+  transform-origin: bottom center;
+}
+
+/* 0-1-2-1 ping-pong */
+@keyframes stella-loop {
+  0%,
+  100% {
+    background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+  }
+  25%,
+  75% {
+    background-position: calc((var(--stella-x) + 128) * -1px) calc(var(--stella-y) * -1px);
+  }
+  50% {
+    background-position: calc((var(--stella-x) + 256) * -1px) calc(var(--stella-y) * -1px);
+  }
+}
+
+/* 0-1-2, then holds frame 2 */
+@keyframes stella-once {
+  0% {
+    background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+  }
+  33.333% {
+    background-position: calc((var(--stella-x) + 128) * -1px) calc(var(--stella-y) * -1px);
+  }
+  66.667%,
+  100% {
+    background-position: calc((var(--stella-x) + 256) * -1px) calc(var(--stella-y) * -1px);
+  }
+}
+
+.stella-battler--loop .stella-battler__cell {
+  animation: stella-loop var(--stella-cycle-ms) step-end infinite;
+}
+
+.stella-battler--once .stella-battler__cell {
+  animation: stella-once var(--stella-cycle-ms) step-end forwards;
+}
+
+/* ─── Party grid slot ────────────────────────────────────────────────
+   The frame overfills the box a little (its top rows are empty headroom), so the
+   character fills the slot; the box's sides crop the 128px frame by design. */
+
+.party-battler-box {
+  --battler-scale: 0.7;
+}
+
+@media (min-width: 640px) {
+  .party-battler-box {
+    --battler-scale: 0.85;
+  }
+}
+
+@media (min-width: 768px) {
+  .party-battler-box {
+    --battler-scale: 0.95;
+  }
+}
+
+.party-battler-clip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.375rem;
+}
+
+/* Downscaled, so nearest-neighbour would drop pixel rows (eyes, outlines); smooth instead. */
+.party-battler-clip .stella-battler__cell {
+  image-rendering: auto;
+}
+
+/* ─── Skill burst: portrait cut-in + battler ─────────────────────── */
+
+@keyframes skill-burst-cutin-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  17% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes skill-burst-battler-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Diagonal band from the left edge; the portrait's feet run off the bottom. */
+.skill-burst-cutin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(52vw, 640px);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.15));
+  clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  animation: skill-burst-cutin-slide var(--skill-burst-ms, 900ms) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.skill-burst-cutin__portrait {
+  position: absolute;
+  bottom: -10vh;
+  left: 6%;
+  height: clamp(320px, 78vh, 820px);
+  width: auto;
+  max-width: none;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.35));
+}
+
+.skill-burst-battler {
+  --battler-scale: 2;
+  position: absolute;
+  right: 10%;
+  bottom: 32%;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+  animation: skill-burst-battler-pop var(--skill-burst-ms, 900ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@media (min-width: 768px) {
+  .skill-burst-battler {
+    --battler-scale: 3;
+    right: 14%;
+  }
+}
