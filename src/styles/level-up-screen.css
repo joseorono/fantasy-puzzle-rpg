@@ -121,6 +121,8 @@
 }
 
 .portrait-badge-wrap .character-portrait-small {
+  /* Matches the wrap's inner ring, which the face crop would otherwise cover. */
+  --portrait-frame-ring: inset 0 0 0 1px rgba(212, 165, 116, 0.68);
   width: 100%;
   height: 100%;
   border: none;
@@ -129,8 +131,6 @@
 }
 
 .character-portrait-small {
-  object-fit: cover;
-  object-position: top center;
   display: block;
 }
 

@@ -119,11 +119,17 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           <div className="character-info-panel">
             <div className="character-identity">
               <div className="portrait-badge-wrap">
-                <img
-                  src={CHARACTER_SPRITES[character.class].face}
-                  alt={character.name}
-                  className="character-portrait-small"
-                />
+                <div
+                  className="character-portrait-small portrait-face-crop"
+                  style={
+                    {
+                      '--face-x': CHARACTER_SPRITES[character.class].faceFocus.x,
+                      '--face-y': CHARACTER_SPRITES[character.class].faceFocus.y,
+                    } as React.CSSProperties
+                  }
+                >
+                  <img src={CHARACTER_SPRITES[character.class].face} alt={character.name} />
+                </div>
                 <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
