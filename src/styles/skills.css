@@ -952,6 +952,16 @@
   color: #d4a574;
 }
 
+/* The from → to arrow sits beside the list's chevron bullets; keep it smaller and quieter
+   so the two don't read as a pair of arrows. */
+.skill-unlock-confirm .arrow-right-icon {
+  width: 0.9em;
+  height: 0.9em;
+  margin: 0 0.3em;
+  vertical-align: -0.1em;
+  opacity: 0.8;
+}
+
 .skill-unlock-confirm__cost {
   display: flex;
   align-items: center;

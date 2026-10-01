@@ -82,6 +82,16 @@ img[src*='indigolay-'],
     scale(var(--face-zoom, 2.5));
 }
 
+/* ArrowRightIcon: an inline "→" that tracks the surrounding font size. */
+.arrow-right-icon {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0 0.25em;
+  vertical-align: -0.2em;
+  object-fit: contain;
+}
+
 /* Retro screen effect */
 .retro-screen {
   position: relative;
