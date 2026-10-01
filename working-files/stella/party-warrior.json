@@ -10,6 +10,40 @@
       "LayerSettings": {}
     },
     {
+      "Name": "top",
+      "Category": "Clothing Top",
+      "Part": "Top06",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF0000CD"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF000080"
+          }
+        },
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF0000FF"
+          }
+        }
+      }
+    },
+    {
       "Name": "head",
       "Category": "Head",
       "Part": "Head03",
@@ -85,15 +119,6 @@
       "LayerSettings": {}
     },
     {
-      "Name": "top",
-      "Category": "Clothing Top",
-      "Part": "Top06",
-      "Offsets": {},
-      "Visible": true,
-      "UseSkinToneColoring": true,
-      "LayerSettings": {}
-    },
-    {
       "Name": "shoes",
       "Category": "Shoes",
       "Part": "Shoes06",
@@ -109,7 +134,32 @@
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
-      "LayerSettings": {}
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF0000FF"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF0000FF"
+          }
+        },
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF0000FF"
+          }
+        }
+      }
     }
   ],
   "BodyType": "Male Lean",

@@ -1,0 +1,226 @@
+{
+  "Layers": [
+    {
+      "Name": "body",
+      "Category": "Body",
+      "Part": "Slim Female",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "head",
+      "Category": "Head",
+      "Part": "Head02",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "nose",
+      "Category": "Nose",
+      "Part": "Nose04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyes",
+      "Category": "Eyes",
+      "Part": "Eye01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyebrows",
+      "Category": "Eyebrows",
+      "Part": "Brow01",
+      "Offsets": {
+        "Face": "0, -3",
+        "Sv": "0, -3",
+        "Walk": "0, -3"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        }
+      }
+    },
+    {
+      "Name": "mouth",
+      "Category": "Mouth",
+      "Part": "Mouth09",
+      "Offsets": {
+        "Face": "0, 4",
+        "Sv": "0, 4",
+        "Walk": "0, 4"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "back hair",
+      "Category": "Rear Hair",
+      "Part": "Hair05",
+      "Offsets": {
+        "Face": "1, 0",
+        "Sv": "1, 0",
+        "Walk": "1, 0"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        },
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        }
+      }
+    },
+    {
+      "Name": "front hair",
+      "Category": "Front Hair",
+      "Part": "Front06",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        },
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFF4A460"
+          }
+        }
+      }
+    },
+    {
+      "Name": "pant",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Walk": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Sv": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        }
+      }
+    },
+    {
+      "Name": "top",
+      "Category": "Clothing Top",
+      "Part": "Top05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Walk": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Sv": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        }
+      }
+    },
+    {
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes06",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    }
+  ],
+  "BodyType": "Female Slim",
+  "BodyTypeVariation": ""
+}
