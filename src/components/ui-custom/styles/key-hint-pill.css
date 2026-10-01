@@ -23,14 +23,28 @@
   color: rgba(224, 201, 166, 0.5);
 }
 
+/* Dark keycap a shade above the pill; the thicker bottom border reads as key depth. */
 .key-hint-pill__key {
-  display: inline-block;
-  padding: 0.05rem 0.3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.35em;
   font-family: inherit;
+  font-size: inherit;
+  line-height: 1;
   color: #f5e6c8;
-  background: rgba(212, 165, 116, 0.15);
-  border: 1px solid rgba(212, 165, 116, 0.45);
-  border-radius: 4px;
+  text-shadow: none;
+  background: rgba(212, 165, 116, 0.14);
+  border: 1px solid rgba(212, 165, 116, 0.3);
+  border-bottom: 2px solid rgba(212, 165, 116, 0.45);
+  border-radius: 6px;
+}
+
+.key-hint-pill__arrow {
+  width: 1em;
+  height: 1em;
 }
 
 .key-hint-pill__label {
@@ -49,8 +63,8 @@
 }
 
 .key-hint-pill--sm .key-hint-pill__key {
-  padding: 0.02rem 0.22rem;
-  border-radius: 3px;
+  border-bottom-width: 1px;
+  border-radius: 4px;
 }
 
 .key-hint-pill--sm .key-hint-pill__label {
