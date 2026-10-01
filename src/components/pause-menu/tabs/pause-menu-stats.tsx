@@ -5,14 +5,20 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
-import { calculateDamage, calculateSkillCooldown } from '~/lib/rpg-calculations';
-import { getSelectedSkill, getSkillLevel, resolveActiveSkillStats } from '~/lib/skill-system';
+import { CHARACTER_SPRITES, MAX_LEVEL } from '~/constants/party';
+import { getSelectedSkill } from '~/lib/skill-system';
 import { getEffectiveStats, getEffectiveMaxHp } from '~/lib/equipment-system';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
+import { calculatePercentage } from '~/lib/math';
 import { PartyMemberCard } from '~/components/party/party-member-card';
-import { PauseMenuCharacterHeader } from '~/components/pause-menu/pause-menu-character-header';
-import { SkillIcon } from '~/components/skill-sprite-icons/skill-icon';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
+import { SkillDetailPanel } from '~/components/skills/skill-detail-panel';
+import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
+import { LevelTag } from '~/components/ui-custom/level-tag';
+import type { StatType } from '~/types/rpg-elements';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
@@ -20,8 +26,12 @@ import {
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
 
-/** Matches the smallest generated sheet, so the pixel art renders 1:1 instead of downscaled. */
-const STATS_SKILL_ICON_SIZE = 32;
+/** Core stat rows, in display order, with their indigolay icons. */
+const CORE_STAT_ROWS: { stat: StatType; label: string; icon: string }[] = [
+  { stat: 'pow', label: 'POW', icon: '/assets/icons/indigolay/icon-sys-attack.png' },
+  { stat: 'vit', label: 'VIT', icon: '/assets/icons/indigolay/icon-hp.png' },
+  { stat: 'spd', label: 'SPD', icon: '/assets/icons/indigolay/Icon_clock-fill.png' },
+];
 
 interface PauseMenuStatsProps {
   /** The content zone owns the keyboard — arrows act on the roster. */
@@ -67,16 +77,11 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
   const selected = party.find((m) => m.id === selectedId) ?? party[0];
   if (!selected) return null;
 
-  const colors = CHARACTER_COLORS[selected.class];
-  const Icon = CHARACTER_ICONS[selected.class];
   const activeSkill = getSelectedSkill(selected);
-  const activeSkillStats = resolveActiveSkillStats(activeSkill, getSkillLevel(selected, activeSkill.id));
-
   const effectiveStats = getEffectiveStats(selected);
   const maxHp = getEffectiveMaxHp(selected);
-  const attackDmg = calculateDamage(10, effectiveStats.pow);
-  const cooldown =
-    calculateSkillCooldown(selected.maxCooldown, effectiveStats.spd) * activeSkillStats.cooldownMultiplier;
+  const expThreshold = getExpThresholdForLevel(selected.level);
+  const isMaxLevel = selected.level >= MAX_LEVEL;
 
   return (
     <>
@@ -96,117 +101,74 @@ export function PauseMenuStats({ keyboardActive = false, onExitToSidebar }: Paus
         </div>
 
         <div className="pause-menu-stats-main">
-          <PauseMenuCharacterHeader
-            name={selected.name}
-            classNameText={selected.class}
-            level={selected.level}
-            Icon={Icon}
-            colors={colors}
-          />
-
-          <div className="pause-menu-stats-grid">
-            <div className="pause-menu-stats-section">
-              <h3>Core Stats</h3>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">POW</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={effectiveStats.pow}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
-              </div>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">VIT</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={effectiveStats.vit}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
-              </div>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">SPD</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={effectiveStats.spd}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
-              </div>
+          {/* Hero panel: the Level Up identity block (portrait, name, EXP/HP rows) at pause-menu scale. */}
+          <div className="character-info-panel pause-menu-stats-hero">
+            <div className="pause-menu-stats-portrait">
+              <img src={CHARACTER_SPRITES[selected.class].face} alt={selected.name} />
+              <LevelTag level={selected.level} />
             </div>
-
-            <div className="pause-menu-stats-section">
-              <h3>Derived Stats</h3>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">HP</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={selected.currentHp}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                  {' / '}
-                  <NumberFlow
-                    value={maxHp}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
+            <div className="pause-menu-stats-identity">
+              <div className="pause-menu-stats-identity__name pixel-font">{selected.name}</div>
+              <div className="pause-menu-stats-identity__class pixel-font">{selected.class}</div>
+              <div className="progress-section">
+                <div className="stat-label">
+                  <NarikWoodBitFont text="EXP" size={1} />
+                </div>
+                <IndigolayBar
+                  className="progress-section__bar"
+                  variant="yellow"
+                  percentage={isMaxLevel ? 100 : calculatePercentage(selected.currentLevelExp, expThreshold)}
+                  label={isMaxLevel ? 'MAX' : `${selected.currentLevelExp} / ${expThreshold}`}
+                />
               </div>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">Attack</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={attackDmg}
-                    format={INTEGER_FORMAT}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
-              </div>
-              <div className="pause-menu-stat-row">
-                <span className="pause-menu-stat-label">Cooldown</span>
-                <span className="pause-menu-stat-value number-flow-container">
-                  <NumberFlow
-                    value={cooldown}
-                    format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
-                    suffix="s"
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
+              <div className="progress-section">
+                <div className="stat-label">
+                  <NarikWoodBitFont text="HP" size={1} />
+                </div>
+                <IndigolayBar
+                  className="progress-section__bar"
+                  variant="red"
+                  percentage={calculatePercentage(selected.currentHp, maxHp)}
+                  label={`${selected.currentHp} / ${maxHp}`}
+                />
               </div>
             </div>
           </div>
 
-          <div className="pause-menu-stats-skill">
-            <div className="pause-menu-stats-skill-name">
-              <SkillIcon
-                characterClass={selected.class}
-                position={activeSkill.icon}
-                size={STATS_SKILL_ICON_SIZE}
-                sheetSize={32}
-              />{' '}
-              {activeSkill.name}
+          <div className="pause-menu-stats-columns">
+            <div className="pause-menu-core-stats">
+              <h3 className="derived-stats-title">
+                <NarikWoodBitFont text="Core Stats" size={1} />
+              </h3>
+              <GradientDivider variant="gold" className="derived-stats-divider" />
+              {CORE_STAT_ROWS.map(({ stat, label, icon }) => {
+                const gearBonus = effectiveStats[stat] - selected.stats[stat];
+                return (
+                  <div key={stat} className={`stat-chip ${stat} pause-menu-core-stat pixel-font`}>
+                    <span className="stat-chip-label">
+                      <img src={icon} alt="" className="pause-menu-core-stat__icon" />
+                      {label}
+                    </span>
+                    <span className="stat-chip-value number-flow-container">
+                      <NumberFlow
+                        value={effectiveStats[stat]}
+                        format={INTEGER_FORMAT}
+                        spinTiming={SNAPPY_SPIN_TIMING}
+                        transformTiming={SNAPPY_TRANSFORM_TIMING}
+                        opacityTiming={SNAPPY_OPACITY_TIMING}
+                      />
+                      {gearBonus > 0 && <span className="bar-text-delta">+{gearBonus}</span>}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            <div className="pause-menu-stats-skill-desc">{activeSkill.description}</div>
+
+            {/* Effective stats as the "preview", so the green deltas read as what gear adds. */}
+            <DerivedStatsDisplay character={selected} previewStats={effectiveStats} />
           </div>
+
+          <SkillDetailPanel character={selected} selection={{ kind: 'active', skill: activeSkill }} variant="compact" />
         </div>
       </div>
     </>

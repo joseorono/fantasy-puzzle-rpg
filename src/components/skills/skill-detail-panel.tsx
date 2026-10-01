@@ -29,9 +29,13 @@ export type SkillSelection =
   | { kind: 'active'; skill: SkillDefinition }
   | { kind: 'passive'; passive: PassiveSkillDefinition };
 
-interface SkillDetailPanelProps {
+interface SkillDetailBaseProps {
   character: CharacterData;
   selection: SkillSelection;
+}
+
+interface SkillDetailFullProps extends SkillDetailBaseProps {
+  variant?: 'full';
   /** True while a battle is in progress — every action locks. */
   isInBattle: boolean;
   /** Which action button ('equip' | 'unlock' | 'upgrade') the keyboard cursor rests on, if any. */
@@ -40,6 +44,18 @@ interface SkillDetailPanelProps {
   onRequestUnlock: (selection: SkillSelection) => void;
   onRequestUpgrade: (selection: SkillSelection) => void;
 }
+
+/**
+ * Display-only summary (e.g. the pause menu's Stats tab): smaller deco icon, no tier line,
+ * current effects only — no upgrade preview, no action row.
+ */
+interface SkillDetailCompactProps extends SkillDetailBaseProps {
+  variant: 'compact';
+}
+
+type SkillDetailPanelProps = SkillDetailFullProps | SkillDetailCompactProps;
+
+const DECO_ICON_SIZE = { full: 72, compact: 48 } as const;
 
 /**
  * The parchment detail panel under the slot rows: featured icon on the gold deco
@@ -51,15 +67,9 @@ interface SkillDetailPanelProps {
  * failing gate in a tooltip over the disabled button. Dark-on-parchment text, no
  * pixel-font shadow (it smears at small sizes).
  */
-export function SkillDetailPanel({
-  character,
-  selection,
-  isInBattle,
-  keyboardSelectedActionId = null,
-  onEquip,
-  onRequestUnlock,
-  onRequestUpgrade,
-}: SkillDetailPanelProps) {
+export function SkillDetailPanel(props: SkillDetailPanelProps) {
+  const { character, selection } = props;
+  const isCompact = props.variant === 'compact';
   const resources = useResources();
   const isActive = selection.kind === 'active';
   const def = isActive ? selection.skill : selection.passive;
@@ -70,17 +80,24 @@ export function SkillDetailPanel({
   const tierLabel = getTierLabel(selection);
 
   return (
-    <div className="skill-detail" key={def.id}>
+    <div className={cn('skill-detail', isCompact && 'skill-detail--compact')} key={def.id}>
       <div className="skill-detail__header">
-        <SkillDecoIcon characterClass={def.class} position={def.icon} size={72} className="skill-detail__deco" />
+        <SkillDecoIcon
+          characterClass={def.class}
+          position={def.icon}
+          size={DECO_ICON_SIZE[isCompact ? 'compact' : 'full']}
+          className="skill-detail__deco"
+        />
         <div className="skill-detail__title-group">
           <div className="skill-detail__name">
             <NarikWoodBitFont text={def.name.toUpperCase()} size={1} />
           </div>
-          <div className="skill-detail__tier">
-            <span className="skill-detail__tier-badge">{tierLabel.badge}</span>
-            <span className="skill-detail__tier-meta">{tierLabel.meta}</span>
-          </div>
+          {!isCompact && (
+            <div className="skill-detail__tier">
+              <span className="skill-detail__tier-badge">{tierLabel.badge}</span>
+              <span className="skill-detail__tier-meta">{tierLabel.meta}</span>
+            </div>
+          )}
         </div>
         {owned && def.maxLevel > 1 && (
           <InfoTooltip label={`Level ${level} of ${def.maxLevel}${level >= def.maxLevel ? ' · Mastered' : ''}`}>
@@ -99,22 +116,24 @@ export function SkillDetailPanel({
         <div className={cn('skill-detail__stats', !isActive && 'skill-detail__stats--stack')}>
           <SkillEffects selection={selection} level={level} />
         </div>
-        {owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
+        {!isCompact && owned && level < def.maxLevel && <UpgradePreview selection={selection} level={level} />}
       </div>
 
-      <div className="skill-detail__footer">
-        {isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
-        <SkillDetailActions
-          character={character}
-          selection={selection}
-          resources={resources}
-          isInBattle={isInBattle}
-          keyboardSelectedActionId={keyboardSelectedActionId}
-          onEquip={onEquip}
-          onRequestUnlock={onRequestUnlock}
-          onRequestUpgrade={onRequestUpgrade}
-        />
-      </div>
+      {props.variant !== 'compact' && (
+        <div className="skill-detail__footer">
+          {props.isInBattle && <div className="skill-detail__battle-lock">Locked during battle</div>}
+          <SkillDetailActions
+            character={character}
+            selection={selection}
+            resources={resources}
+            isInBattle={props.isInBattle}
+            keyboardSelectedActionId={props.keyboardSelectedActionId ?? null}
+            onEquip={props.onEquip}
+            onRequestUnlock={props.onRequestUnlock}
+            onRequestUpgrade={props.onRequestUpgrade}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -390,6 +390,31 @@
   animation: skill-detail-in 0.18s ease-out backwards;
 }
 
+/* Compact summary (pause menu Stats tab): hugs its content, tighter parchment and type.
+   The tier line, upgrade preview and action row aren't rendered in this variant. */
+.skill-detail--compact {
+  min-height: 0;
+  padding: 0.2rem 0.5rem;
+  gap: 0.3rem;
+}
+
+.skill-detail--compact .skill-detail__header {
+  gap: 0.6rem;
+}
+
+.skill-detail--compact .skill-detail__description {
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.skill-detail--compact .skill-detail__stats {
+  padding: 0.3rem 0.6rem;
+}
+
+.skill-detail--compact .skill-detail__stat {
+  font-size: 0.65rem;
+}
+
 @keyframes skill-detail-in {
   from {
     opacity: 0;
