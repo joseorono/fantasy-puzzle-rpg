@@ -182,6 +182,7 @@ export default function Inn({
                       <PartyMemberCard
                         member={member}
                         variant="bar"
+                        showTooltips={false}
                         onClick={isFull ? undefined : () => handleHealMember(member)}
                       />
                     </ToffecBeigeCornersWrapper>
