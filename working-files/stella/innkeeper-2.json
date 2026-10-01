@@ -1,0 +1,194 @@
+{
+  "Layers": [
+    {
+      "Name": "head",
+      "Category": "Head",
+      "Part": "Head01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "body",
+      "Category": "Body",
+      "Part": "Slim Female",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "back hair",
+      "Category": "Rear Hair",
+      "Part": "Hair05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF800000"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        },
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        }
+      }
+    },
+    {
+      "Name": "nose",
+      "Category": "Nose",
+      "Part": "Nose04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyes",
+      "Category": "Eyes",
+      "Part": "Eye05",
+      "Offsets": {
+        "Face": "0, 0",
+        "Sv": "0, 0",
+        "Walk": "0, 0"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyebrown",
+      "Category": "Eyebrows",
+      "Part": "Brow03",
+      "Offsets": {
+        "Face": "0, -10",
+        "Sv": "0, -10",
+        "Walk": "0, -10"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        }
+      }
+    },
+    {
+      "Name": "mouth",
+      "Category": "Mouth",
+      "Part": "Mouth09",
+      "Offsets": {
+        "Face": "0, 4",
+        "Sv": "0, 4",
+        "Walk": "0, 4"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "front hair",
+      "Category": "Front Hair",
+      "Part": "Front01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        },
+        "Walk": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        },
+        "Sv": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF8B0000"
+          }
+        }
+      }
+    },
+    {
+      "Name": "tshirt",
+      "Category": "Clothing Top",
+      "Part": "Top01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "skirt",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "socks",
+      "Category": "Socks",
+      "Part": "Socks03",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "Layer#12",
+      "Category": "",
+      "Part": "",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    }
+  ],
+  "BodyType": "Female Slim",
+  "BodyTypeVariation": ""
+}
