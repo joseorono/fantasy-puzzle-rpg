@@ -177,6 +177,8 @@ interface CharacterSpriteSet {
   face: string;
   /** Head center on the portrait, as fractions of its width/height; small badges crop around it. */
   faceFocus: { x: number; y: number };
+  /** Battler motion played when the character's colour is matched (attack, or the healer's heal). */
+  actionMotion: StellaMotion;
   /** Battler motion played when the character casts its skill. */
   castMotion: StellaMotion;
 }
@@ -196,10 +198,11 @@ const MAGE_ART = {
 };
 
 export const CHARACTER_SPRITES: Record<CharacterClass, CharacterSpriteSet> = {
-  warrior: { ...WARRIOR_ART, castMotion: 'swing' },
-  rogue: { ...WARRIOR_ART, castMotion: 'missile' },
-  mage: { ...MAGE_ART, castMotion: 'spell' },
-  healer: { ...MAGE_ART, castMotion: 'chant' },
+  warrior: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'swing' },
+  rogue: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'missile' },
+  mage: { ...MAGE_ART, actionMotion: 'skill', castMotion: 'spell' },
+  // Not `chant` for the cast: it barely moves on Stella sheets (see STELLA_SV_MOTIONS).
+  healer: { ...MAGE_ART, actionMotion: 'item', castMotion: 'spell' },
 };
 
 // ─── Character Colors ────────────────────────────────────────────────

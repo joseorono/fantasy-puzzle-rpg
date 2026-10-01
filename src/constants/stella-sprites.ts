@@ -74,6 +74,11 @@ export const STELLA_IDLE_MOTION: StellaMotion = 'walk';
 export const STELLA_IDLE_CYCLE_MS = 1040;
 /** Per-frame time for one-shot motions; 3×150 = 450ms fits inside the 600ms skill-activate window. */
 export const STELLA_CAST_FRAME_MS = 150;
+/**
+ * How long a match action plays. Triggers that land while it's still playing (fast cascades)
+ * are ignored, so the motion always completes instead of twitching.
+ */
+export const STELLA_ACTION_MS = STELLA_CAST_FRAME_MS * STELLA_SV_FRAMES_PER_MOTION;
 /** How long the damage flinch holds before returning to idle. */
 export const STELLA_DAMAGE_MS = 500;
 /** Dying pre-roll before settling into the lying `dead` pose. */

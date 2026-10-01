@@ -1,4 +1,4 @@
-import { atom, type Atom } from 'jotai';
+import { atom, type Atom, type PrimitiveAtom } from 'jotai';
 import type {
   ArmedLineClear,
   BattleMode,
@@ -129,6 +129,28 @@ export function partyMemberAtom(characterId: string): Atom<CharacterData | undef
   }
   return memberAtom;
 }
+
+// Battler action counters, one per hero, cached by id: each landed move that matched a hero's
+// colour bumps that hero's count, and their sprite plays its action motion. Transient UI state —
+// deliberately outside `BattleState` and the save — and per-hero, so a move re-renders only the
+// slots of the heroes who acted.
+const battlerActionAtoms = new Map<string, PrimitiveAtom<number>>();
+export function battlerActionAtom(characterId: string): PrimitiveAtom<number> {
+  let actionAtom = battlerActionAtoms.get(characterId);
+  if (!actionAtom) {
+    actionAtom = atom(0);
+    battlerActionAtoms.set(characterId, actionAtom);
+  }
+  return actionAtom;
+}
+
+/** Bumps the action counter of each hero who acted in a move, once per hero however many groups they matched. */
+export const triggerBattlerActionsAtom = atom(null, (get, set, characterIds: readonly string[]) => {
+  for (const characterId of new Set(characterIds)) {
+    const actionAtom = battlerActionAtom(characterId);
+    set(actionAtom, get(actionAtom) + 1);
+  }
+});
 
 // Derived atoms for the party Guard meter
 export const guardAtom = atom((get) => get(battleStateAtom).guard);

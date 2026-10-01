@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createStore } from 'jotai';
 import {
+  battlerActionAtom,
+  triggerBattlerActionsAtom,
   abandonBattleAtom,
   activateSkillAtom,
   addGuardAtom,
@@ -386,6 +388,28 @@ describe('partyMemberAtom / partyMemberIdsAtom', () => {
 
     expect(listener).not.toHaveBeenCalled();
     expect(store.get(partyMemberAtom(id(2)))?.currentHp).toBe(0);
+  });
+});
+
+describe('triggerBattlerActionsAtom', () => {
+  it('bumps each acting hero once per move, however many groups they matched', () => {
+    const store = createStore();
+
+    store.set(triggerBattlerActionsAtom, ['warrior', 'mage', 'warrior']);
+
+    expect(store.get(battlerActionAtom('warrior'))).toBe(1);
+    expect(store.get(battlerActionAtom('mage'))).toBe(1);
+    expect(store.get(battlerActionAtom('rogue'))).toBe(0);
+  });
+
+  it('keeps counting across moves and returns the same atom per id', () => {
+    const store = createStore();
+
+    store.set(triggerBattlerActionsAtom, ['healer']);
+    store.set(triggerBattlerActionsAtom, ['healer']);
+
+    expect(store.get(battlerActionAtom('healer'))).toBe(2);
+    expect(battlerActionAtom('healer')).toBe(battlerActionAtom('healer'));
   });
 });
 

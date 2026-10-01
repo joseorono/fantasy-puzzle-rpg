@@ -24,8 +24,9 @@ interface StellaBattlerSpriteProps {
 }
 
 /**
- * One frame of a Stella side-view battler sheet, animated in CSS (`party-sprites.css`).
- * The frame is scaled from its bottom edge so the feet stay planted at any scale.
+ * One frame of a Stella side-view battler sheet, animated in CSS (`party-sprites.css`) by
+ * translating a 3-frame strip, so frame steps run on the compositor. The frame is scaled from
+ * its bottom edge so the feet stay planted at any scale.
  */
 export function StellaBattlerSprite({
   characterClass,
@@ -52,12 +53,14 @@ export function StellaBattlerSprite({
         } as React.CSSProperties
       }
     >
-      {/* Keyed so a motion change (or a replay) restarts the animation from frame 0. */}
-      <div
-        key={`${motion}-${playId}`}
-        className="stella-battler__cell"
-        style={{ backgroundImage: `url('${CHARACTER_SPRITES[characterClass].battler}')` }}
-      />
+      <div className="stella-battler__cell">
+        {/* Keyed so a motion change (or a replay) restarts the animation from frame 0. */}
+        <div
+          key={`${motion}-${playId}`}
+          className="stella-battler__strip"
+          style={{ backgroundImage: `url('${CHARACTER_SPRITES[characterClass].battler}')` }}
+        />
+      </div>
     </div>
   );
 }

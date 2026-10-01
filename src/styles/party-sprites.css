@@ -1,7 +1,11 @@
 /* ─── Stella battler sprites ─────────────────────────────────────────
-   StellaBattlerSprite sets --stella-x/--stella-y (frame-0 origin, unitless sheet px),
-   --stella-cycle-ms and, optionally, --battler-scale. Frames advance in discrete steps;
-   the 3 frames of a motion sit side by side, 128px apart. */
+   StellaBattlerSprite sets --stella-x/--stella-y (the motion's frame-0 origin, unitless sheet
+   px), --stella-cycle-ms and, optionally, --battler-scale.
+
+   Compositor-only: the cell clips a 384×128 strip holding the motion's 3 frames (picked once
+   by a static background-position), and the frames step by translating the strip. Keyframes
+   use literal values — no var() — so the browser can run them off the main thread, and the
+   sprites keep moving smoothly while cascades and React commits keep the main thread busy. */
 
 .stella-battler {
   position: relative;
@@ -16,46 +20,56 @@
   left: calc(50% - 64px);
   width: 128px;
   height: 128px;
-  background-repeat: no-repeat;
-  background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+  overflow: hidden;
   transform: scale(var(--battler-scale, 1));
   transform-origin: bottom center;
+}
+
+.stella-battler__strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 384px;
+  height: 128px;
+  background-repeat: no-repeat;
+  background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+  will-change: transform;
 }
 
 /* 0-1-2-1 ping-pong */
 @keyframes stella-loop {
   0%,
   100% {
-    background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(0);
   }
   25%,
   75% {
-    background-position: calc((var(--stella-x) + 128) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(-128px);
   }
   50% {
-    background-position: calc((var(--stella-x) + 256) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(-256px);
   }
 }
 
 /* 0-1-2, then holds frame 2 */
 @keyframes stella-once {
   0% {
-    background-position: calc(var(--stella-x) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(0);
   }
   33.333% {
-    background-position: calc((var(--stella-x) + 128) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(-128px);
   }
   66.667%,
   100% {
-    background-position: calc((var(--stella-x) + 256) * -1px) calc(var(--stella-y) * -1px);
+    transform: translateX(-256px);
   }
 }
 
-.stella-battler--loop .stella-battler__cell {
+.stella-battler--loop .stella-battler__strip {
   animation: stella-loop var(--stella-cycle-ms) step-end infinite;
 }
 
-.stella-battler--once .stella-battler__cell {
+.stella-battler--once .stella-battler__strip {
   animation: stella-once var(--stella-cycle-ms) step-end forwards;
 }
 
@@ -105,7 +119,7 @@
 }
 
 /* Downscaled, so nearest-neighbour would drop pixel rows (eyes, outlines); smooth instead. */
-.party-battler-clip .stella-battler__cell {
+.party-battler-clip .stella-battler__strip {
   image-rendering: auto;
 }
 
