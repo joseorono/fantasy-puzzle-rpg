@@ -51,6 +51,11 @@ export interface UseCharacterMovementOptions {
    * the pause.
    */
   isPaused?: boolean;
+  /**
+   * Holds the reading pose (turned to the camera, book open). Pair it with `isPaused`;
+   * reading doesn't stop movement by itself.
+   */
+  isReading?: boolean;
   /** Called when the character's logical tile changes (footsteps, loot checks, etc.). */
   onTileEnter?: (row: number, col: number) => void;
   /**
@@ -114,11 +119,12 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     collisionInsetPx = 0,
     onTileEnter,
     isPaused = false,
+    isReading = false,
   } = options;
 
   const multiKey = useMultiKeyDirection();
   const pointer = usePointerDirection();
-  const { spriteState, updateSprite } = useCharacterSprite();
+  const { spriteState, updateSprite, setReading } = useCharacterSprite();
 
   // Position lives in map pixels; the tile is always floor(position / tileSize).
   const pointRef = useRef<MovementPointState>({
@@ -179,6 +185,12 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     // Both helpers close over refs only, so their identity is not a meaningful dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaused]);
+
+  useEffect(() => {
+    setReading(isReading);
+    // `setReading` reads refs only, so its identity is not a meaningful dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReading]);
 
   /** Reports the current position to `onFrame`. */
   function emitFrame(dtSeconds: number, timestampMs: number, isPausedFrame: boolean, teleported: boolean): void {

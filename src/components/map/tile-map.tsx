@@ -10,6 +10,8 @@ import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
+import { MapMinimap } from './map-minimap';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
@@ -20,7 +22,7 @@ import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
 import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
-import { buildMarkerList } from '~/lib/map-draw';
+import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
 import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
 import { CHARACTER_BODY_HEIGHT_TILES, CHARACTER_FOOT_OFFSET_TILES } from '~/constants/character-sprite';
 import MapCharacterSprite from './map-character-sprite';
@@ -58,6 +60,7 @@ import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapProgressState } from '~/stores/slices/map-progress.types';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
+import { isMinimapKey } from '~/constants/keyboard';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -119,6 +122,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [closingNode, setClosingNode] = useState<{ node: InteractiveMapNode; position: Position } | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
+  const [isMinimapOpen, setIsMinimapOpen] = useState(false);
   // Where the character is on screen, kept current only while a popup points at it.
   const [popupAnchor, setPopupAnchor] = useState<Position | null>(null);
   // True while a cover transition plays before leaving the map: movement stays frozen underneath it.
@@ -288,11 +292,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const mapPixelSize = { width: mapData.width * tileSize, height: mapData.height * tileSize };
   const viewportLayout = stageSize ? computeViewportLayout(stageSize, mapPixelSize, zoom) : null;
 
-  const markers = buildMarkerList(map, tileSize, {
+  // Shared by the camera's markers and the overview's pins.
+  const markerStatus: MarkerStatus = {
     isNodeCompleted: (node) => isMapNodeCompleted(node, completedDungeons, mapProgressState),
     isFloorLootCollected: (lootId) => floorLootProgressState[map.id]?.[lootId] === true,
     isTriggerVisited: (row, col) => visitedTriggers.has(`${row},${col}`),
-  });
+  };
+  const markers = buildMarkerList(map, tileSize, markerStatus);
 
   const isPopupOpen = showNodeMenu || collectedFloorLoot !== null;
   // Drop the anchor once nothing points at it, so the next popup can't open at a stale spot.
@@ -339,7 +345,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // An event prompt is a decision, not scenery — walking away from one is how you miss it.
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
-    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning,
+    // The overview is read in place: frozen, turned to the camera, book open.
+    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
+    isReading: isMinimapOpen,
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);
@@ -371,7 +379,30 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // Direction keys still flow through useWindowKeyDown, but movement is now
   // continuous — the handler only forwards the key. Key release, the run
   // modifier and focus loss are owned by useMultiKeyDirection.
+  // The overview only opens when nothing else owns the screen.
+  const canOpenMinimap =
+    !isMinimapOpen && !isPauseMenuOpen && !showTriggerModal && activeDialogue === null && !isTransitioning;
+
+  function openMinimap() {
+    soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+    setIsMinimapOpen(true);
+  }
+
+  function closeMinimap() {
+    soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+    setIsMinimapOpen(false);
+  }
+
   useWindowKeyDown((event) => {
+    // Claimed only when it opens the overview, so Tab still moves focus between the
+    // buttons of a prompt or menu on top of the map. Closing is the overview's own job.
+    if (isMinimapKey(event.key) && canOpenMinimap) {
+      event.preventDefault();
+      if (event.repeat) return;
+      openMinimap();
+      return;
+    }
+
     const dir = movement.onKeyDown(event.key);
     if (!dir) return;
     event.preventDefault();
@@ -661,6 +692,15 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
             )}
           </div>
 
+          <KeyHintPill
+            size="sm"
+            className="map-key-hint"
+            items={[
+              { keys: ['Tab'], label: 'map' },
+              { keys: ['Esc'], label: 'menu' },
+            ]}
+          />
+
           {debug && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
       </div>
@@ -704,6 +744,18 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           resources={collectedFloorLoot}
           onClose={() => setCollectedFloorLoot(null)}
           characterPosition={popupAnchor ?? getCharacterScreenPosition()}
+        />
+      )}
+
+      {/* Map overview (Tab) */}
+      {isMinimapOpen && (
+        <MapMinimap
+          map={map}
+          walkableMask={walkableMask}
+          tileSize={tileSize}
+          characterPoint={movement.getMapPosition()}
+          markerStatus={markerStatus}
+          onClose={closeMinimap}
         />
       )}
 

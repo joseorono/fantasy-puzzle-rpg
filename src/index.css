@@ -461,6 +461,8 @@
 
 @import './styles/loot-notification.css';
 
+@import './styles/map-minimap.css';
+
 @import './components/ui-custom/styles/toffec-button.css';
 
 @import './components/ui-custom/styles/indigolay-bar.css';

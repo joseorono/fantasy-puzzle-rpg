@@ -1,3 +1,4 @@
+import type { NavDirection } from '~/constants/keyboard';
 import { MEMAO_ANIMATIONS, MEMAO_SHEETS } from '~/constants/memao-sprite';
 
 /** Memao spritesheet for the player character on the map. */
@@ -9,7 +10,14 @@ export const CHARACTER_MODE_ANIMATION = {
   walk: 'walk',
   run: 'run',
   sit: 'sit',
+  read: 'read',
 } as const;
+
+/**
+ * The character turns this way to read (while the map overview is open). Facing the
+ * camera is the only way the book shows — from behind she just appears to stand.
+ */
+export const CHARACTER_READING_FACING: NavDirection = 'down';
 
 /** Number of frames in the run animation cycle. */
 export const RUN_FRAME_COUNT = MEMAO_ANIMATIONS.find((animation) => animation.name === 'run')!.framesPerDirection;

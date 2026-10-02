@@ -1,0 +1,155 @@
+/*
+  Map overview (Tab). Built on the confirm panel's frame (modals.css): this file only
+  widens the panel to fit the map and styles the parchment sheet and its pins.
+  The sheet image is drawn at 1px per tile and enlarged by an integer scale in JS.
+*/
+
+.map-minimap-backdrop {
+  /* Above the window frame and the map's own popups; same layer as the confirm panel. */
+  z-index: 220;
+}
+
+.confirm-panel.map-minimap {
+  width: auto;
+  max-width: none;
+  max-height: none;
+}
+
+.map-minimap__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+/* The parchment sheet. Sized in JS to `cols × scale` by `rows × scale`. */
+.map-minimap__sheet {
+  position: relative;
+  flex: none;
+  outline: 3px solid #5c3a1e;
+  box-shadow:
+    0 0 0 6px #2a1a0e,
+    0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+.map-minimap__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* ─── Pins ─────────────────────────────────────────────────────────────── */
+
+.map-minimap__pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.map-minimap__pin--node {
+  font-size: 14px;
+  filter: drop-shadow(1px 1px 0 rgba(42, 26, 14, 0.9));
+}
+
+.map-minimap__pin--done {
+  opacity: 0.5;
+  filter: grayscale(0.6) drop-shadow(1px 1px 0 rgba(42, 26, 14, 0.9));
+}
+
+.map-minimap__pin--floorLoot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c8872e;
+  box-shadow: 0 0 0 1px #5c3a1e;
+}
+
+.map-minimap__pin--dialogueTrigger {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #8b2e2e;
+  text-shadow: 1px 1px 0 rgba(227, 207, 161, 0.9);
+}
+
+/* ─── You are here ─────────────────────────────────────────────────────── */
+
+.map-minimap__player {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #8b2e2e;
+  box-shadow:
+    0 0 0 2px #e3cfa1,
+    0 0 0 3px #5c3a1e;
+  pointer-events: none;
+}
+
+/* A ring that ripples out. Its resting state is invisible, so with reduced motion
+   (animations collapsed to one 1ms run) only the dot remains. */
+.map-minimap__player::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #8b2e2e;
+  opacity: 0;
+  animation: map-minimap-ripple 1.4s ease-out infinite;
+}
+
+@keyframes map-minimap-ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+/* ─── Legend ───────────────────────────────────────────────────────────── */
+
+.map-minimap__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.55rem;
+  color: #e8dcc8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.map-minimap__legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.map-minimap__legend-player {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8b2e2e;
+  box-shadow: 0 0 0 2px #e3cfa1;
+}
+
+/* ─── On-map hint ──────────────────────────────────────────────────────── */
+
+/* Sits over the bottom of the map viewport; never intercepts clicks meant for the map. */
+.map-key-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.6rem;
+  z-index: 20;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.85;
+}
