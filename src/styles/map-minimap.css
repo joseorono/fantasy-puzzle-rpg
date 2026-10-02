@@ -64,8 +64,7 @@
   color: var(--mm-ink);
   background-color: rgba(227, 207, 161, 0.92);
   background-image:
-    radial-gradient(ellipse at center, transparent 55%, var(--mm-aged) 100%),
-    url('/assets/bg/bgnoise-10-60-scroll.png');
+    radial-gradient(ellipse at center, transparent 55%, var(--mm-aged) 100%), url('/assets/bg/bgnoise-10-60-scroll.png');
   background-size:
     100% 100%,
     256px 256px;
@@ -286,7 +285,9 @@
   height: 8px;
   border-radius: 50%;
   background: #8b2e2e;
-  box-shadow: 0 0 0 2px var(--mm-parchment), 0 0 0 3px var(--mm-ink);
+  box-shadow:
+    0 0 0 2px var(--mm-parchment),
+    0 0 0 3px var(--mm-ink);
 }
 
 .map-minimap__key-hint {

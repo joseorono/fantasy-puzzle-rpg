@@ -56,10 +56,19 @@ function fitMinimapSheet(available: MapSize, cols: number, rows: number): MapSiz
  * @param rows Map height in tiles.
  * @param dockSide Preferred side, from {@link getMinimapDockSide}.
  */
-export function getMinimapLayout(window: MapSize, cols: number, rows: number, dockSide: MinimapDockSide): MinimapLayout {
+export function getMinimapLayout(
+  window: MapSize,
+  cols: number,
+  rows: number,
+  dockSide: MinimapDockSide,
+): MinimapLayout {
   const height = window.height - MINIMAP_CHROME_HEIGHT_PX;
 
-  const docked = fitMinimapSheet({ width: window.width * MINIMAP_DOCK_WIDTH_FRACTION - MINIMAP_CHROME_WIDTH_PX, height }, cols, rows);
+  const docked = fitMinimapSheet(
+    { width: window.width * MINIMAP_DOCK_WIDTH_FRACTION - MINIMAP_CHROME_WIDTH_PX, height },
+    cols,
+    rows,
+  );
   if (docked) return { side: dockSide, sheet: docked };
 
   const centred = fitMinimapSheet({ width: window.width - MINIMAP_CHROME_WIDTH_PX, height }, cols, rows);

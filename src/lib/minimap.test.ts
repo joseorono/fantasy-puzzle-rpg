@@ -33,7 +33,10 @@ describe('getMinimapLayout', () => {
 
   it('caps small maps at the maximum pixels per tile', () => {
     const layout = getMinimapLayout({ width: 1900, height: 950 }, 30, 20, 'left');
-    expect(layout).toEqual({ side: 'left', sheet: { width: 30 * MINIMAP_MAX_PX_PER_TILE, height: 20 * MINIMAP_MAX_PX_PER_TILE } });
+    expect(layout).toEqual({
+      side: 'left',
+      sheet: { width: 30 * MINIMAP_MAX_PX_PER_TILE, height: 20 * MINIMAP_MAX_PX_PER_TILE },
+    });
   });
 
   it('goes centre-stage when docking would drop below the minimum', () => {
