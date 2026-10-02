@@ -1,37 +1,26 @@
 /*
- * Map overview (Tab). The image is one pixel per tile, drawn from the walkable mask as
- * ink on parchment, then shown at an integer scale.
+ * Map overview (Tab). The walkable region is traced into smooth ink contours and drawn as
+ * one SVG path on a parchment sheet docked beside the character. Colours live in
+ * src/styles/map-minimap.css.
  */
 
-/** An sRGB colour as `[red, green, blue]`, 0–255. */
-export type MinimapRgb = readonly [number, number, number];
+/** How much path corners are rounded: 0 keeps the tile steps, 1 smooths them fully. */
+export const MINIMAP_CORNER_ROUNDING = 1;
 
-/** Blank parchment. */
-export const MINIMAP_PARCHMENT_RGB: MinimapRgb = [227, 207, 161];
+/** Hand-drawn wobble of the ink, in tiles. 0 draws clean lines and renders no filter. */
+export const MINIMAP_INK_WOBBLE_TILES = 0.18;
 
-/** Walkable tiles: a soft ink wash. */
-export const MINIMAP_PATH_RGB: MinimapRgb = [168, 123, 79];
+/** Smallest screen pixels per tile. Below this the sheet stops docking and goes centre-stage. */
+export const MINIMAP_MIN_PX_PER_TILE = 2;
 
-/** Blocked tiles touching a path: the ink outline that gives paths their shape. */
-export const MINIMAP_EDGE_RGB: MinimapRgb = [92, 58, 30];
+/** Largest screen pixels per tile, so small maps don't fill the window. */
+export const MINIMAP_MAX_PX_PER_TILE = 10;
 
-/** What the parchment darkens toward at the map's border, like an old, handled sheet. */
-export const MINIMAP_AGED_EDGE_RGB: MinimapRgb = [184, 149, 106];
+/** Share of the window width a docked sheet may use. */
+export const MINIMAP_DOCK_WIDTH_FRACTION = 0.5;
 
-/** How far in from the border the ageing reaches, in tiles. */
-export const MINIMAP_AGED_EDGE_TILES = 4;
+/** Window width reserved for the sheet's padding and its distance from the window edge. */
+export const MINIMAP_CHROME_WIDTH_PX = 96;
 
-/** Largest per-tile brightness jitter on blank parchment, so it reads as paper rather than a flat fill. */
-export const MINIMAP_GRAIN = 6;
-
-/** Smallest screen pixels per tile, even if the map then overflows a small window. */
-export const MINIMAP_MIN_SCALE = 2;
-
-/** Largest screen pixels per tile, so small maps don't turn into giant blocks. */
-export const MINIMAP_MAX_SCALE = 8;
-
-/** Window width reserved for the panel's frame and padding around the map image. */
-export const MINIMAP_CHROME_WIDTH_PX = 160;
-
-/** Window height reserved for the panel's header, legend, key hint and padding. */
-export const MINIMAP_CHROME_HEIGHT_PX = 300;
+/** Window height reserved for the title banner, legend, key hint and padding. */
+export const MINIMAP_CHROME_HEIGHT_PX = 220;

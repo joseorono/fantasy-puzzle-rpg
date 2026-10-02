@@ -1,29 +1,23 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef } from 'react';
 import type { MapDefinition } from '~/types/map';
 import type { WalkableMask } from '~/lib/tilemap-collision';
 import type { MarkerStatus } from '~/lib/map-draw';
 import type { MapPoint } from '~/lib/map-camera';
 import {
   buildMinimapMarkers,
-  buildMinimapPixels,
+  getMinimapDockSide,
+  getMinimapLayout,
   getMinimapLegend,
-  getMinimapScale,
   mapPointToMinimapPercent,
   tileToMinimapPercent,
 } from '~/lib/minimap';
+import { buildMinimapOutlinePath } from '~/lib/minimap-outline';
 import { useElementSize } from '~/hooks/use-element-size';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { isCancelKey, isMinimapKey } from '~/constants/keyboard';
-import {
-  MINIMAP_CHROME_HEIGHT_PX,
-  MINIMAP_CHROME_WIDTH_PX,
-  MINIMAP_MAX_SCALE,
-  MINIMAP_MIN_SCALE,
-} from '~/constants/minimap';
+import { MINIMAP_INK_WOBBLE_TILES } from '~/constants/minimap';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
-import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
-import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { cn } from '~/lib/utils';
 
 interface MapMinimapProps {
@@ -39,56 +33,54 @@ interface MapMinimapProps {
   onClose: () => void;
 }
 
-// One image per map, built on first open. Keyed by the mask, which lives as long as the map does.
-const imageCache = new WeakMap<WalkableMask, ImageData>();
+// One outline per map, traced on first open. Keyed by the mask, which lives as long as the map does.
+const outlineCache = new WeakMap<WalkableMask, string>();
 
-function getMinimapImage(mask: WalkableMask): ImageData {
-  const cached = imageCache.get(mask);
-  if (cached) return cached;
-  const image = new ImageData(buildMinimapPixels(mask), mask.width, mask.height);
-  imageCache.set(mask, image);
-  return image;
+function getMinimapOutline(mask: WalkableMask): string {
+  const cached = outlineCache.get(mask);
+  if (cached !== undefined) return cached;
+  const outline = buildMinimapOutlinePath(mask);
+  outlineCache.set(mask, outline);
+  return outline;
+}
+
+const WOBBLE_FILTER_ID = 'map-minimap-wobble';
+
+/** A small inked compass rose for the chart's corner. */
+function CompassRose() {
+  return (
+    <svg className="map-minimap__compass" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="18" r="9" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.55" />
+      <path d="M16 6 L18.5 18 L16 30 L13.5 18 Z" fill="currentColor" />
+      <path d="M4 18 L16 15.5 L28 18 L16 20.5 Z" fill="currentColor" opacity="0.45" />
+      <text x="16" y="5" textAnchor="middle" fontSize="6" fontFamily="'Press Start 2P', monospace" fill="currentColor">
+        N
+      </text>
+    </svg>
+  );
 }
 
 /**
- * The map overview opened with Tab: the map drawn as ink paths on parchment, with its
- * nodes, loot and the player's position pinned on top.
+ * The map overview opened with Tab: the walkable region traced as smooth ink contours on
+ * a parchment sheet, with its nodes, loot and the player's position pinned on top. The
+ * sheet docks on the side of the window away from the character, so she stays in view.
  *
- * Nothing here runs per frame. The image is one pixel per tile, drawn once into a canvas
- * and enlarged by an integer CSS scale; the pins are plain positioned elements.
+ * Nothing here runs per frame. The outline is one static SVG path, built once per map;
+ * the pins are plain positioned elements, and the only animation is the player ripple.
  */
 export function MapMinimap({ map, walkableMask, tileSize, characterPoint, markerStatus, onClose }: MapMinimapProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const windowSize = useElementSize(backdropRef);
 
   const { width: cols, height: rows } = walkableMask;
-  const scale = windowSize
-    ? getMinimapScale(
-        {
-          width: windowSize.width - MINIMAP_CHROME_WIDTH_PX,
-          height: windowSize.height - MINIMAP_CHROME_HEIGHT_PX,
-        },
-        cols,
-        rows,
-        MINIMAP_MIN_SCALE,
-        MINIMAP_MAX_SCALE,
-      )
-    : null;
+  const dockSide = getMinimapDockSide(characterPoint, cols, tileSize);
+  const layout = windowSize ? getMinimapLayout(windowSize, cols, rows, dockSide) : null;
 
+  const outline = getMinimapOutline(walkableMask);
   const markers = buildMinimapMarkers(map, markerStatus);
   const legend = getMinimapLegend(markers);
   const player = mapPointToMinimapPercent(characterPoint, cols, rows, tileSize);
-
-  // The canvas holds the image at 1px per tile; CSS does the (integer) enlargement.
-  useLayoutEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    canvas.width = walkableMask.width;
-    canvas.height = walkableMask.height;
-    ctx.putImageData(getMinimapImage(walkableMask), 0, 0);
-  }, [walkableMask, scale]);
+  const hasWobble = MINIMAP_INK_WOBBLE_TILES > 0;
 
   // Claimed in the capture phase, so Esc closes the overview without also opening the
   // pause menu, and Tab never reaches the map's own handler (which would reopen it).
@@ -105,28 +97,52 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
   );
 
   return (
-    <div ref={backdropRef} className="confirm-panel-backdrop map-minimap-backdrop" onClick={onClose}>
-      <div
-        className="confirm-panel map-minimap"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Map of ${map.displayMapName}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <ToffecSquareButton variant="medieval1" hasBg size="sm" className="confirm-panel__close" onClick={onClose} />
+    <div
+      ref={backdropRef}
+      className={cn('map-minimap-backdrop', `map-minimap-backdrop--${layout?.side ?? 'center'}`)}
+      onClick={onClose}
+    >
+      {layout && (
+        <div className="map-minimap-stack">
+          <div
+            className="map-minimap"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Map of ${map.displayMapName}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="map-minimap__banner">
+              <span className="map-minimap__title pixel-font">{map.displayMapName}</span>
+            </div>
 
-        <div className="confirm-panel__header">
-          <div className="confirm-panel__title">
-            <NarikWoodBitFont text={map.displayMapName} size={1.1} />
-          </div>
-        </div>
+            <ToffecSquareButton variant="medieval1" hasBg size="sm" className="map-minimap__close" onClick={onClose} />
 
-        <IndigolayDivider />
-
-        {scale !== null && (
-          <div className="map-minimap__body">
-            <div className="map-minimap__sheet" style={{ width: cols * scale, height: rows * scale }}>
-              <canvas ref={canvasRef} className="map-minimap__image" />
+            <div className="map-minimap__chart" style={{ width: layout.sheet.width, height: layout.sheet.height }}>
+              <svg
+                className="map-minimap__ink"
+                viewBox={`0 0 ${cols} ${rows}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                {hasWobble && (
+                  <defs>
+                    <filter id={WOBBLE_FILTER_ID} x="-5%" y="-5%" width="110%" height="110%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="noise" />
+                      <feDisplacementMap
+                        in="SourceGraphic"
+                        in2="noise"
+                        scale={MINIMAP_INK_WOBBLE_TILES}
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                      />
+                    </filter>
+                  </defs>
+                )}
+                <g filter={hasWobble ? `url(#${WOBBLE_FILTER_ID})` : undefined}>
+                  <path d={outline} className="map-minimap__ink-bleed" vectorEffect="non-scaling-stroke" />
+                  <path d={outline} className="map-minimap__path" vectorEffect="non-scaling-stroke" />
+                </g>
+              </svg>
 
               {markers.map((marker) => {
                 const { left, top } = tileToMinimapPercent(marker.row, marker.col, cols, rows);
@@ -151,6 +167,8 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
                 role="img"
                 aria-label="You are here"
               />
+
+              <CompassRose />
             </div>
 
             <ul className="map-minimap__legend pixel-font">
@@ -166,10 +184,10 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
               ))}
             </ul>
           </div>
-        )}
 
-        <KeyHintPill size="sm" className="confirm-panel__key-hint" items={[{ keys: ['Tab', 'Esc'], label: 'close' }]} />
-      </div>
+          <KeyHintPill size="sm" className="map-minimap__key-hint" items={[{ keys: ['Tab', 'Esc'], label: 'close' }]} />
+        </div>
+      )}
     </div>
   );
 }

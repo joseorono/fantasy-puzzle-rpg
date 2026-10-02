@@ -1,43 +1,192 @@
 /*
-  Map overview (Tab). Built on the confirm panel's frame (modals.css): this file only
-  widens the panel to fit the map and styles the parchment sheet and its pins.
-  The sheet image is drawn at 1px per tile and enlarged by an integer scale in JS.
+  Map overview (Tab). A parchment sheet docked beside the character, carrying the walkable
+  region as smooth ink contours (one static SVG path), the pins and an inked legend.
+  Layout and chart size come from src/lib/minimap.ts; tunables from src/constants/minimap.ts.
 */
 
+/* ─── Backdrop ─────────────────────────────────────────────────────────── */
+
+/* No backdrop blur on purpose: the map canvas keeps blitting underneath, so a blur would
+   cost GPU time every frame, and it would hide the character's reading animation. */
 .map-minimap-backdrop {
+  position: fixed;
+  inset: 0;
   /* Above the window frame and the map's own popups; same layer as the confirm panel. */
   z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 4vw;
+  background: radial-gradient(ellipse 45% 60% at 50% 50%, rgba(8, 5, 3, 0.3) 0%, rgba(8, 5, 3, 0.62) 100%);
+  animation: map-minimap-fade 0.18s ease-out;
 }
 
-.confirm-panel.map-minimap {
-  width: auto;
-  max-width: none;
-  max-height: none;
+.map-minimap-backdrop--right {
+  justify-content: flex-end;
 }
 
-.map-minimap__body {
+.map-minimap-backdrop--left {
+  justify-content: flex-start;
+}
+
+@keyframes map-minimap-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.map-minimap-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem 0.5rem;
+  gap: 0.6rem;
+  /* Room for the banner that overhangs the sheet's top edge. */
+  padding-top: 2rem;
 }
 
-/* The parchment sheet. Sized in JS to `cols × scale` by `rows × scale`. */
-.map-minimap__sheet {
+/* ─── The sheet ────────────────────────────────────────────────────────── */
+
+.map-minimap {
+  --mm-parchment: #e3cfa1;
+  --mm-ink: #4a2e17;
+  --mm-ink-faded: rgba(74, 46, 23, 0.35);
+  --mm-wash: rgba(120, 80, 40, 0.38);
+  --mm-aged: rgba(120, 85, 45, 0.45);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 3rem 1.1rem 0.9rem;
+  color: var(--mm-ink);
+  background-color: rgba(227, 207, 161, 0.92);
+  background-image:
+    radial-gradient(ellipse at center, transparent 55%, var(--mm-aged) 100%),
+    url('/assets/bg/bgnoise-10-60-scroll.png');
+  background-size:
+    100% 100%,
+    256px 256px;
+  background-blend-mode: normal, multiply;
+  border-radius: 3px;
+  /* A drawn frame line just inside the edge, plus the darkening of a handled sheet. */
+  box-shadow:
+    inset 0 0 0 1px var(--mm-ink),
+    inset 0 0 0 4px transparent,
+    inset 0 0 0 5px var(--mm-ink-faded),
+    inset 0 0 36px rgba(90, 60, 30, 0.35),
+    0 14px 34px rgba(0, 0, 0, 0.7),
+    0 2px 0 rgba(0, 0, 0, 0.5);
+  animation: map-minimap-unroll 0.18s ease-out;
+}
+
+@keyframes map-minimap-unroll {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* The scroll banner carrying the map name, pinned over the sheet's top edge. */
+.map-minimap__banner {
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 234px;
+  height: 85px;
+  padding: 0 2.6rem 0.2rem;
+  transform: translateX(-50%);
+  background: url('/assets/menu/save-load/indigolay-scroll-normal.png') no-repeat center / 234px 85px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.map-minimap__title {
+  font-size: 0.6rem;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: #3e2712;
+  text-shadow: 0 1px 0 rgba(255, 240, 210, 0.5);
+}
+
+.map-minimap .map-minimap__close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 3;
+  image-rendering: pixelated;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.map-minimap .map-minimap__close:hover {
+  transform: scale(1.1);
+  filter: brightness(1.15);
+}
+
+.map-minimap .map-minimap__close:active {
+  transform: scale(0.92);
+}
+
+/* ─── The chart ────────────────────────────────────────────────────────── */
+
+/* Sized in JS to the map's aspect ratio. */
+.map-minimap__chart {
   position: relative;
   flex: none;
-  outline: 3px solid #5c3a1e;
-  box-shadow:
-    0 0 0 6px #2a1a0e,
-    0 6px 18px rgba(0, 0, 0, 0.7);
 }
 
-.map-minimap__image {
+.map-minimap__ink {
   display: block;
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
+  overflow: visible;
+  shape-rendering: geometricPrecision;
+}
+
+/* The walkable region: an ink wash with an inked outline. Strokes are in screen pixels
+   (non-scaling), so a 30-tile map and a 124-tile map get the same line weight. */
+.map-minimap__path {
+  fill: var(--mm-wash);
+  fill-rule: nonzero;
+  stroke: var(--mm-ink);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* A wide, faint stroke underneath, like ink bleeding into the paper. */
+.map-minimap__ink-bleed {
+  fill: none;
+  stroke: var(--mm-ink);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.16;
+}
+
+.map-minimap__compass {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 26px;
+  height: 26px;
+  color: var(--mm-ink);
+  opacity: 0.75;
+  pointer-events: none;
 }
 
 /* ─── Pins ─────────────────────────────────────────────────────────────── */
@@ -51,12 +200,12 @@
 
 .map-minimap__pin--node {
   font-size: 14px;
-  filter: drop-shadow(1px 1px 0 rgba(42, 26, 14, 0.9));
+  filter: drop-shadow(0 0 1px rgba(255, 240, 210, 0.9)) drop-shadow(1px 1px 0 rgba(74, 46, 23, 0.55));
 }
 
 .map-minimap__pin--done {
-  opacity: 0.5;
-  filter: grayscale(0.6) drop-shadow(1px 1px 0 rgba(42, 26, 14, 0.9));
+  opacity: 0.45;
+  filter: grayscale(0.7) drop-shadow(0 0 1px rgba(255, 240, 210, 0.9));
 }
 
 .map-minimap__pin--floorLoot {
@@ -64,14 +213,14 @@
   height: 5px;
   border-radius: 50%;
   background: #c8872e;
-  box-shadow: 0 0 0 1px #5c3a1e;
+  box-shadow: 0 0 0 1px var(--mm-ink);
 }
 
 .map-minimap__pin--dialogueTrigger {
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   color: #8b2e2e;
-  text-shadow: 1px 1px 0 rgba(227, 207, 161, 0.9);
+  text-shadow: 1px 1px 0 rgba(255, 240, 210, 0.9);
 }
 
 /* ─── You are here ─────────────────────────────────────────────────────── */
@@ -84,8 +233,8 @@
   transform: translate(-50%, -50%);
   background: #8b2e2e;
   box-shadow:
-    0 0 0 2px #e3cfa1,
-    0 0 0 3px #5c3a1e;
+    0 0 0 2px var(--mm-parchment),
+    0 0 0 3px var(--mm-ink);
   pointer-events: none;
 }
 
@@ -118,13 +267,12 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.4rem 1rem;
+  gap: 0.35rem 0.9rem;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.55rem;
-  color: #e8dcc8;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  font-size: 0.5rem;
+  color: var(--mm-ink);
 }
 
 .map-minimap__legend li {
@@ -138,7 +286,11 @@
   height: 8px;
   border-radius: 50%;
   background: #8b2e2e;
-  box-shadow: 0 0 0 2px #e3cfa1;
+  box-shadow: 0 0 0 2px var(--mm-parchment), 0 0 0 3px var(--mm-ink);
+}
+
+.map-minimap__key-hint {
+  pointer-events: none;
 }
 
 /* ─── On-map hint ──────────────────────────────────────────────────────── */

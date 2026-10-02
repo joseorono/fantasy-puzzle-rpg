@@ -1,163 +1,72 @@
-import { isMaskWalkable, type WalkableMask } from '~/lib/tilemap-collision';
 import type { MarkerStatus } from '~/lib/map-draw';
 import type { MapPoint, MapSize } from '~/lib/map-camera';
 import type { MapDefinition } from '~/types/map';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import { MAP_NODE_MARKER_STYLES } from '~/constants/map';
 import {
-  MINIMAP_AGED_EDGE_RGB,
-  MINIMAP_AGED_EDGE_TILES,
-  MINIMAP_EDGE_RGB,
-  MINIMAP_GRAIN,
-  MINIMAP_PARCHMENT_RGB,
-  MINIMAP_PATH_RGB,
-  type MinimapRgb,
+  MINIMAP_CHROME_HEIGHT_PX,
+  MINIMAP_CHROME_WIDTH_PX,
+  MINIMAP_DOCK_WIDTH_FRACTION,
+  MINIMAP_MAX_PX_PER_TILE,
+  MINIMAP_MIN_PX_PER_TILE,
 } from '~/constants/minimap';
 
-/** How a tile is drawn on the overview. */
-export type MinimapTileKind = 'path' | 'edge' | 'blank';
+/** Which side of the window the sheet docks to. */
+export type MinimapDockSide = 'left' | 'right';
 
-export interface MinimapPalette {
-  parchment: MinimapRgb;
-  path: MinimapRgb;
-  edge: MinimapRgb;
-  agedEdge: MinimapRgb;
-  /** Width of the aged border, in tiles. 0 turns ageing off. */
-  agedEdgeTiles: number;
-  /** Largest brightness jitter on blank parchment. 0 turns grain off. */
-  grain: number;
-}
-
-export const DEFAULT_MINIMAP_PALETTE: MinimapPalette = {
-  parchment: MINIMAP_PARCHMENT_RGB,
-  path: MINIMAP_PATH_RGB,
-  edge: MINIMAP_EDGE_RGB,
-  agedEdge: MINIMAP_AGED_EDGE_RGB,
-  agedEdgeTiles: MINIMAP_AGED_EDGE_TILES,
-  grain: MINIMAP_GRAIN,
-};
-
-/** The eight neighbours of a tile, as `[rowOffset, colOffset]`. */
-const NEIGHBOUR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [-1, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, -1],
-  [0, 1],
-  [1, -1],
-  [1, 0],
-  [1, 1],
-];
-
-/**
- * Classifies a tile for the overview: walkable ground is a path, blocked ground
- * touching a path (diagonals included) is its ink outline, everything else is blank.
- *
- * @param mask The map's walkable mask. Out-of-bounds tiles count as blocked.
- * @param row Grid row.
- * @param col Grid column.
- */
-export function classifyMinimapTile(mask: WalkableMask, row: number, col: number): MinimapTileKind {
-  if (isMaskWalkable(mask, row, col)) return 'path';
-  for (const [rowOffset, colOffset] of NEIGHBOUR_OFFSETS) {
-    if (isMaskWalkable(mask, row + rowOffset, col + colOffset)) return 'edge';
-  }
-  return 'blank';
+export interface MinimapLayout {
+  /** Where the sheet sits. `center` is the fallback when docking would make it too small. */
+  side: MinimapDockSide | 'center';
+  /** Size of the chart, in CSS pixels. */
+  sheet: MapSize;
 }
 
 /**
- * Deterministic per-tile noise, so a map's paper grain is identical every time it opens.
+ * The side to dock the sheet on so it stays clear of the character. She's on the
+ * opposite half of the map, which is also where the camera shows her once it's clamped
+ * at a map edge; when it isn't clamped she's mid-screen and either side is clear.
  *
- * @param row Grid row.
- * @param col Grid column.
- * @returns A value in `[-1, 1]`.
- */
-export function tileGrain(row: number, col: number): number {
-  let hash = Math.imul(row, 374761393) ^ Math.imul(col, 668265263);
-  hash = Math.imul(hash ^ (hash >>> 13), 1274126177);
-  hash ^= hash >>> 16;
-  return ((hash >>> 0) / 0xffffffff) * 2 - 1;
-}
-
-/**
- * How strongly a tile is aged by its closeness to the map border.
- *
- * @param row Grid row.
- * @param col Grid column.
- * @param rows Map height in tiles.
+ * @param characterPoint Where the character stands, in map pixels.
  * @param cols Map width in tiles.
- * @param edgeTiles Width of the aged border.
- * @returns 1 on the border, falling linearly to 0 at `edgeTiles` in.
+ * @param tileSize Edge length of one tile in map pixels.
  */
-export function agedEdgeFactor(row: number, col: number, rows: number, cols: number, edgeTiles: number): number {
-  if (edgeTiles <= 0) return 0;
-  const distance = Math.min(row, col, rows - 1 - row, cols - 1 - col);
-  return Math.min(1, Math.max(0, 1 - distance / edgeTiles));
-}
-
-/** Writes one opaque RGB pixel. */
-function writePixel(pixels: Uint8ClampedArray, offset: number, red: number, green: number, blue: number): void {
-  pixels[offset] = red;
-  pixels[offset + 1] = green;
-  pixels[offset + 2] = blue;
-  pixels[offset + 3] = 255;
+export function getMinimapDockSide(characterPoint: MapPoint, cols: number, tileSize: number): MinimapDockSide {
+  return characterPoint.x < (cols * tileSize) / 2 ? 'right' : 'left';
 }
 
 /**
- * Renders the overview image: one RGBA pixel per tile, row-major, ready for `ImageData`.
- *
- * Paths and outlines are flat ink. Blank parchment blends toward the aged-edge colour
- * near the border and gets a little deterministic grain.
- *
- * @param mask The map's walkable mask.
- * @param palette Colours and texture amounts.
+ * The largest chart that fits the given box at the map's aspect ratio, or `null` when
+ * it would drop below the minimum pixels per tile.
  */
-export function buildMinimapPixels(mask: WalkableMask, palette: MinimapPalette = DEFAULT_MINIMAP_PALETTE) {
-  const { width: cols, height: rows } = mask;
-  const pixels = new Uint8ClampedArray(cols * rows * 4);
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const offset = (row * cols + col) * 4;
-      const kind = classifyMinimapTile(mask, row, col);
-
-      if (kind !== 'blank') {
-        const [red, green, blue] = kind === 'path' ? palette.path : palette.edge;
-        writePixel(pixels, offset, red, green, blue);
-        continue;
-      }
-
-      const aged = agedEdgeFactor(row, col, rows, cols, palette.agedEdgeTiles);
-      const grain = Math.round(tileGrain(row, col) * palette.grain);
-      const [red, green, blue] = palette.parchment.map(
-        (channel, index) => Math.round(channel + (palette.agedEdge[index] - channel) * aged) + grain,
-      );
-      writePixel(pixels, offset, red, green, blue);
-    }
-  }
-
-  return pixels;
+function fitMinimapSheet(available: MapSize, cols: number, rows: number): MapSize | null {
+  if (cols <= 0 || rows <= 0) return null;
+  const pxPerTile = Math.min(available.width / cols, available.height / rows);
+  if (pxPerTile < MINIMAP_MIN_PX_PER_TILE) return null;
+  const clamped = Math.min(MINIMAP_MAX_PX_PER_TILE, pxPerTile);
+  return { width: Math.round(cols * clamped), height: Math.round(rows * clamped) };
 }
 
 /**
- * The integer screen scale (pixels per tile) at which the whole map fits.
+ * Sizes and places the sheet. Docked, it may use a fraction of the window width; when
+ * even the minimum scale doesn't fit there it goes centre-stage with the full width, and
+ * failing that it's drawn at the minimum scale regardless.
  *
- * @param available Space for the image, in CSS pixels.
+ * @param window Window size in CSS pixels.
  * @param cols Map width in tiles.
  * @param rows Map height in tiles.
- * @param minScale Floor, used even when the map then doesn't fit.
- * @param maxScale Ceiling, so small maps stay a sensible size.
+ * @param dockSide Preferred side, from {@link getMinimapDockSide}.
  */
-export function getMinimapScale(
-  available: MapSize,
-  cols: number,
-  rows: number,
-  minScale: number,
-  maxScale: number,
-): number {
-  if (cols <= 0 || rows <= 0) return minScale;
-  const fitting = Math.floor(Math.min(available.width / cols, available.height / rows));
-  return Math.min(maxScale, Math.max(minScale, fitting));
+export function getMinimapLayout(window: MapSize, cols: number, rows: number, dockSide: MinimapDockSide): MinimapLayout {
+  const height = window.height - MINIMAP_CHROME_HEIGHT_PX;
+
+  const docked = fitMinimapSheet({ width: window.width * MINIMAP_DOCK_WIDTH_FRACTION - MINIMAP_CHROME_WIDTH_PX, height }, cols, rows);
+  if (docked) return { side: dockSide, sheet: docked };
+
+  const centred = fitMinimapSheet({ width: window.width - MINIMAP_CHROME_WIDTH_PX, height }, cols, rows);
+  return {
+    side: 'center',
+    sheet: centred ?? { width: cols * MINIMAP_MIN_PX_PER_TILE, height: rows * MINIMAP_MIN_PX_PER_TILE },
+  };
 }
 
 /**
