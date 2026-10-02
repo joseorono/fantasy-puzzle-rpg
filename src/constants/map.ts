@@ -1,6 +1,12 @@
-/**
- * Rendering constants for the tile-map's interactive node markers.
- * Sizes are in map pixels (pre-scale), the same space the canvas draws tiles in.
+
+/*
+ * Tile-map camera. Distances are in map pixels, the space tiles are authored in;
+ * `zoom` is applied only when drawing.
+ */
+
+/** Integer display scale used when a map config omits `zoom`. 1 = tiles at native pixel size. */
+export const MAP_DEFAULT_ZOOM = 1;
+
  */
 
 /**
