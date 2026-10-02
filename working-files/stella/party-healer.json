@@ -3,7 +3,25 @@
     {
       "Name": "body",
       "Category": "Body",
-      "Part": "Lean Male",
+      "Part": "Slim Female",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "socks",
+      "Category": "Socks",
+      "Part": "Socks04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "pant",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom06",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
@@ -12,51 +30,17 @@
     {
       "Name": "top",
       "Category": "Clothing Top",
-      "Part": "Top07_2",
+      "Part": "Top03",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {
         "Face": {
-          "ff0000ff": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
           "ffff0000": {
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
             "Color": null
-          },
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          }
-        },
-        "Walk": {
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          }
-        },
-        "Sv": {
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
           }
         }
       }
@@ -73,7 +57,7 @@
     {
       "Name": "nose",
       "Category": "Nose",
-      "Part": "Nose01",
+      "Part": "Nose04",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
@@ -82,7 +66,7 @@
     {
       "Name": "eyes",
       "Category": "Eyes",
-      "Part": "Eye06",
+      "Part": "Eye01",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
@@ -91,11 +75,11 @@
     {
       "Name": "eyebrows",
       "Category": "Eyebrows",
-      "Part": "Brow04",
+      "Part": "Brow01",
       "Offsets": {
-        "Face": "0, -4",
-        "Sv": "0, -4",
-        "Walk": "0, -4"
+        "Face": "0, -2",
+        "Sv": "0, -2",
+        "Walk": "0, -2"
       },
       "Visible": true,
       "UseSkinToneColoring": true,
@@ -104,12 +88,8 @@
     {
       "Name": "mouth",
       "Category": "Mouth",
-      "Part": "Mouth06",
-      "Offsets": {
-        "Face": "0, 6",
-        "Sv": "0, 6",
-        "Walk": "0, 6"
-      },
+      "Part": "Mouth02",
+      "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {}
@@ -117,7 +97,7 @@
     {
       "Name": "back hair",
       "Category": "Rear Hair",
-      "Part": "Hair01",
+      "Part": "Hair05",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
@@ -126,111 +106,44 @@
     {
       "Name": "front hair",
       "Category": "Front Hair",
-      "Part": "Front04",
+      "Part": "Front06",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {}
     },
     {
-      "Name": "pant",
-      "Category": "Clothing Bottom",
-      "Part": "Bottom07",
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes01",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {
         "Face": {
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
           "ff0000ff": {
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FFFFFF00"
-          }
-        },
-        "Walk": {
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff0000ff": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          }
-        },
-        "Sv": {
-          "ffffff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
-          },
-          "ff0000ff": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FFFFFF00"
+            "Color": null
           }
         }
       }
     },
     {
-      "Name": "shoes",
-      "Category": "Shoes",
-      "Part": "Shoes07",
-      "Offsets": {},
-      "Visible": true,
-      "UseSkinToneColoring": true,
-      "LayerSettings": {}
-    },
-    {
-      "Name": "hat",
+      "Name": "Layer#12",
       "Category": "Hat",
-      "Part": "Hat3",
+      "Part": "Hat1",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {
         "Face": {
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF000000"
-          },
           "ff0000ff": {
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FFF0E68C"
+            "Color": "#FFCD853F"
           }
         },
         "Walk": {
@@ -238,32 +151,20 @@
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FFFFD700"
-          },
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF000000"
+            "Color": "#FFFA8072"
           }
         },
         "Sv": {
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF000000"
-          },
           "ff0000ff": {
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FFF0E68C"
+            "Color": "#FFFA8072"
           }
         }
       }
     }
   ],
-  "BodyType": "Male Lean",
+  "BodyType": "Female Slim (Neutral Pose)",
   "BodyTypeVariation": ""
 }
