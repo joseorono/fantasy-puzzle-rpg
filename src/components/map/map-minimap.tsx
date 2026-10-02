@@ -168,11 +168,7 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
           </div>
         )}
 
-        <KeyHintPill
-          size="sm"
-          className="confirm-panel__key-hint"
-          items={[{ keys: ['Tab', 'Esc'], label: 'close' }]}
-        />
+        <KeyHintPill size="sm" className="confirm-panel__key-hint" items={[{ keys: ['Tab', 'Esc'], label: 'close' }]} />
       </div>
     </div>
   );

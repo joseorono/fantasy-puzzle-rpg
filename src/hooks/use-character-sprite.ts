@@ -2,11 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import type { NavDirection } from '~/constants/keyboard';
 import { advanceFrame, type CharacterSpriteMode } from '~/lib/character-sprite';
 import { getMemaoStepDurationMs } from '~/lib/memao-sprite';
-import {
-  CHARACTER_MODE_ANIMATION,
-  CHARACTER_READING_FACING,
-  IDLE_SIT_DELAY_MS,
-} from '~/constants/character-sprite';
+import { CHARACTER_MODE_ANIMATION, CHARACTER_READING_FACING, IDLE_SIT_DELAY_MS } from '~/constants/character-sprite';
 
 export interface SpriteState {
   mode: CharacterSpriteMode;
