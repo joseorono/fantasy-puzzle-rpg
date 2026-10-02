@@ -50,7 +50,7 @@ const TILESET_DATA_FILE = path.join(REPO_ROOT, 'src', 'constants', 'maps', 'tile
 
 /** Tile size the character sprite constants are calibrated against (src/constants/character-sprite.ts). */
 const BASELINE_TILE_PX = 16;
-const CHARACTER_BODY_HEIGHT_TILES = 2.625;
+const CHARACTER_BODY_HEIGHT_TILES = 2.5;
 
 /* ------------------------------------------------------------------ */
 /*  CLI                                                                */
@@ -294,7 +294,7 @@ function renderConfig({ id, displayName, exportName, walkable, visible, spawn, b
     `  debug: true,`,
   ];
   if (bodyHeightTiles !== null) {
-    lines.push(`  // ${bodyHeightTiles.tilePx}px tiles: keep the same 42px body the 16px maps draw.`);
+    lines.push(`  // ${bodyHeightTiles.tilePx}px tiles: keep the same 40px body the 16px maps draw.`);
     lines.push(`  characterBodyHeightTiles: ${bodyHeightTiles.value},`);
   }
   lines.push(`  tiledData: ${exportName},`, `};`, ``);

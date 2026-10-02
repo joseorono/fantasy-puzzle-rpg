@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
 import type { NavDirection } from '~/constants/keyboard';
 import { advanceFrame, type CharacterSpriteMode } from '~/lib/character-sprite';
-import { SIT_FRAME_INTERVAL_MS, IDLE_SIT_DELAY_MS } from '~/constants/character-sprite';
+import { getMemaoStepDurationMs } from '~/lib/memao-sprite';
+import { CHARACTER_MODE_ANIMATION, IDLE_SIT_DELAY_MS } from '~/constants/character-sprite';
 
 export interface SpriteState {
   mode: CharacterSpriteMode;
@@ -17,8 +18,9 @@ export interface SpriteState {
  * the cycle can never drift out of phase with the character's actual speed.
  *
  * The only timers here are the idle chain:
- *   stand → (IDLE_SIT_DELAY_MS) → sit → (toggles every SIT_FRAME_INTERVAL_MS)
- * Any movement cancels it and stands the character back up.
+ *   stand (idle loop) → (IDLE_SIT_DELAY_MS) → sit (plays once, holds its last frame)
+ * Frame timings come from the Memao animation definitions. Any movement cancels the
+ * chain and stands the character back up.
  */
 /** Modes the movement loop may drive. `sit` is owned by this hook's idle timer. */
 export type DrivenSpriteMode = Exclude<CharacterSpriteMode, 'sit'>;
@@ -36,17 +38,21 @@ export function useCharacterSprite(): {
   // Mirrors `spriteState` so the rAF loop can compare without re-subscribing.
   const currentRef = useRef<SpriteState>(spriteState);
   const sitDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sitToggleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const frameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function clearFrameTimer() {
+    if (frameTimerRef.current !== null) {
+      clearTimeout(frameTimerRef.current);
+      frameTimerRef.current = null;
+    }
+  }
 
   function clearIdleChain() {
     if (sitDelayTimerRef.current !== null) {
       clearTimeout(sitDelayTimerRef.current);
       sitDelayTimerRef.current = null;
     }
-    if (sitToggleIntervalRef.current !== null) {
-      clearInterval(sitToggleIntervalRef.current);
-      sitToggleIntervalRef.current = null;
-    }
+    clearFrameTimer();
   }
 
   function commit(next: SpriteState) {
@@ -54,25 +60,43 @@ export function useCharacterSprite(): {
     setSpriteState(next);
   }
 
-  function scheduleSit() {
-    clearIdleChain();
-    sitDelayTimerRef.current = setTimeout(() => {
-      commit({ mode: 'sit', facing: currentRef.current.facing, frameIndex: 0 });
-
-      sitToggleIntervalRef.current = setInterval(() => {
+  /** Steps the current timed mode (stand or sit) until it loops forever or holds. */
+  function playTimedFrames() {
+    const { mode, frameIndex } = currentRef.current;
+    frameTimerRef.current = setTimeout(
+      () => {
         const previous = currentRef.current;
-        commit({ ...previous, frameIndex: advanceFrame('sit', previous.frameIndex) });
-      }, SIT_FRAME_INTERVAL_MS);
+        const nextFrame = advanceFrame(previous.mode, previous.frameIndex);
+        if (nextFrame === previous.frameIndex) {
+          frameTimerRef.current = null;
+          return;
+        }
+        commit({ ...previous, frameIndex: nextFrame });
+        playTimedFrames();
+      },
+      getMemaoStepDurationMs(CHARACTER_MODE_ANIMATION[mode], frameIndex),
+    );
+  }
+
+  /** Starts the idle loop for a freshly committed stand, and arms the sit countdown. */
+  function startIdleChain() {
+    clearIdleChain();
+    playTimedFrames();
+    sitDelayTimerRef.current = setTimeout(() => {
+      sitDelayTimerRef.current = null;
+      clearFrameTimer();
+      commit({ mode: 'sit', facing: currentRef.current.facing, frameIndex: 0 });
+      playTimedFrames();
     }, IDLE_SIT_DELAY_MS);
   }
 
   /**
    * Sets the sprite frame. Called every animation frame by the movement loop —
    * it no-ops when nothing changed, so React only re-renders on a real frame
-   * change (roughly nine times a second while walking).
+   * change (roughly eight times a second while walking).
    *
-   * Passing `stand` means "not moving"; it does not disturb an in-progress sit,
-   * which is why the idle chain can survive the loop's per-frame calls.
+   * Passing `stand` means "not moving"; it does not disturb an in-progress idle or
+   * sit, which is why the idle chain can survive the loop's per-frame calls.
    */
   function updateSprite(mode: DrivenSpriteMode, facing: NavDirection, frameIndex: number): void {
     const previous = currentRef.current;
@@ -81,21 +105,20 @@ export function useCharacterSprite(): {
       if (previous.mode === 'sit') {
         // Stay seated until the player actually turns or moves.
         if (previous.facing === facing) return;
-        clearIdleChain();
         commit({ mode: 'stand', facing, frameIndex: 0 });
-        scheduleSit();
+        startIdleChain();
         return;
       }
 
       if (previous.mode !== 'stand') {
         commit({ mode: 'stand', facing, frameIndex: 0 });
-        scheduleSit();
+        startIdleChain();
         return;
       }
 
       // Turning in place while already standing must not delay sitting down.
       if (previous.facing !== facing) {
-        commit({ mode: 'stand', facing, frameIndex: 0 });
+        commit({ ...previous, facing });
       }
       return;
     }
@@ -112,9 +135,9 @@ export function useCharacterSprite(): {
     commit({ mode, facing, frameIndex });
   }
 
-  // Arm the sit countdown for the initial stand, and clean up on unmount.
+  // Start the idle chain for the initial stand, and clean up on unmount.
   useEffect(() => {
-    scheduleSit();
+    startIdleChain();
     return clearIdleChain;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

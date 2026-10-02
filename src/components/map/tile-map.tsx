@@ -295,7 +295,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { scale, offsetX, offsetY } = useCanvasMetrics(canvasRef, canvasContainerRef, mapData.width * tileSize);
 
   // --- Smooth character movement (rAF-based) ---
-  // Sizes derive from the sprite's visible body, not its mostly-empty 64px frame.
+  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
   // `displayScale` is passed as 1 here: only `collisionInsetPx` is read, and the
   // simulation must never see the display scale.
   const characterMetrics = getCharacterSpriteMetrics(
@@ -893,7 +893,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
             }}
           />
 
-          {/* Animated LPC character sprite — offset by the canvas's position
+          {/* Animated Memao character sprite — offset by the canvas's position
               inside this centring container, which letterboxes it. */}
           {canvasReady && (
             <MapCharacterSprite
