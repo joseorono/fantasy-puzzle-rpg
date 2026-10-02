@@ -23,6 +23,11 @@ describe('getSpriteFrameOrigin', () => {
     expect(getSpriteFrameOrigin('run', 'right', 5)).toEqual({ x: 7 * 48, y: 7 * 48 });
   });
 
+  it('read·down·0 → the Memao read block (book held to camera)', () => {
+    // read starts at 300 → row 37, col 4
+    expect(getSpriteFrameOrigin('read', 'down', 0)).toEqual({ x: 192, y: 37 * 48 });
+  });
+
   it('sit·left·0 → sit block', () => {
     // sit starts at 284; left → +8 → 292 = row 36, col 4
     expect(getSpriteFrameOrigin('sit', 'left', 0)).toEqual({ x: 192, y: 36 * 48 });
@@ -55,8 +60,13 @@ describe('advanceFrame', () => {
     expect(advanceFrame('sit', 3)).toBe(3);
   });
 
+  it('read loops its 4 frames', () => {
+    expect(advanceFrame('read', 2)).toBe(3);
+    expect(advanceFrame('read', 3)).toBe(0);
+  });
+
   it('handles any mode label', () => {
-    const modes: CharacterSpriteMode[] = ['walk', 'run', 'stand', 'sit'];
+    const modes: CharacterSpriteMode[] = ['walk', 'run', 'stand', 'sit', 'read'];
     modes.forEach((mode) => {
       const result = advanceFrame(mode, 0);
       expect(typeof result).toBe('number');
