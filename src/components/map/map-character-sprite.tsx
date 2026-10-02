@@ -11,13 +11,13 @@ import '~/styles/map-character-sprite.css';
 
 interface MapCharacterSpriteProps {
   /**
-   * Ref for the positioned wrapper. `useCharacterMovement` writes its
-   * `transform` every animation frame, so position never passes through React.
+   * Ref for the positioned wrapper. `useMapRenderer` writes its `transform` every
+   * animation frame, so position never passes through React.
    */
   positionRef: RefObject<HTMLDivElement | null>;
   /** The pixel size of one map tile, before display scaling. */
   tileSize: number;
-  /** CSS scale the canvas is displayed at. */
+  /** The map's integer zoom. */
   displayScale: number;
   /** Overrides the visible body height in tiles. Falls back to `CHARACTER_BODY_HEIGHT_TILES`. */
   characterBodyHeightTiles?: number;
@@ -30,8 +30,8 @@ interface MapCharacterSpriteProps {
 /**
  * Renders a Memao character sprite on the map using CSS background-position.
  *
- * The wrapper is a zero-size anchor placed at the character's collision point by the
- * movement loop; the inner div holds one 48×48 frame, scaled so the *visible body* is
+ * The wrapper is a zero-size anchor placed at the character's collision point, in camera
+ * space, by `useMapRenderer`; the inner div holds one 48×48 frame, scaled so the *visible body* is
  * `CHARACTER_BODY_HEIGHT_TILES` tall and centred horizontally above that anchor. There
  * are no CSS transitions — smoothness comes from the rAF loop.
  *
