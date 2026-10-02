@@ -1,171 +1,54 @@
 import { describe, expect, it } from 'vitest';
 import {
-  agedEdgeFactor,
   buildMinimapMarkers,
-  buildMinimapPixels,
-  classifyMinimapTile,
-  DEFAULT_MINIMAP_PALETTE,
+  getMinimapDockSide,
+  getMinimapLayout,
   getMinimapLegend,
-  getMinimapScale,
   mapPointToMinimapPercent,
-  tileGrain,
   tileToMinimapPercent,
-  type MinimapPalette,
 } from './minimap';
-import type { WalkableMask } from './tilemap-collision';
 import type { MarkerStatus } from './map-draw';
 import type { MapDefinition } from '~/types/map';
 import { MAP_NODE_MARKER_STYLES } from '~/constants/map';
+import { MINIMAP_MAX_PX_PER_TILE, MINIMAP_MIN_PX_PER_TILE } from '~/constants/minimap';
 
-/** Builds a mask from rows of '#' (walkable) and '.' (blocked). */
-function maskFrom(rows: string[]): WalkableMask {
-  const height = rows.length;
-  const width = rows[0].length;
-  const data = new Uint8Array(width * height);
-  rows.forEach((line, row) => {
-    [...line].forEach((cell, col) => {
-      if (cell === '#') data[row * width + col] = 1;
+// ---------------------------------------------------------------------------
+// Docking + layout
+// ---------------------------------------------------------------------------
+
+describe('getMinimapDockSide', () => {
+  it('docks on the side away from the character', () => {
+    expect(getMinimapDockSide({ x: 40, y: 0 }, 10, 16)).toBe('right');
+    expect(getMinimapDockSide({ x: 120, y: 0 }, 10, 16)).toBe('left');
+  });
+});
+
+describe('getMinimapLayout', () => {
+  it('docks a big map on a wide window at the map aspect ratio', () => {
+    const layout = getMinimapLayout({ width: 1900, height: 950 }, 124, 76, 'right');
+    expect(layout.side).toBe('right');
+    expect(layout.sheet.width / layout.sheet.height).toBeCloseTo(124 / 76, 1);
+    expect(layout.sheet.width).toBeLessThanOrEqual(1900 / 2);
+  });
+
+  it('caps small maps at the maximum pixels per tile', () => {
+    const layout = getMinimapLayout({ width: 1900, height: 950 }, 30, 20, 'left');
+    expect(layout).toEqual({ side: 'left', sheet: { width: 30 * MINIMAP_MAX_PX_PER_TILE, height: 20 * MINIMAP_MAX_PX_PER_TILE } });
+  });
+
+  it('goes centre-stage when docking would drop below the minimum', () => {
+    const layout = getMinimapLayout({ width: 600, height: 500 }, 124, 76, 'right');
+    expect(layout.side).toBe('center');
+    expect(layout.sheet.width / 124).toBeGreaterThanOrEqual(MINIMAP_MIN_PX_PER_TILE);
+    expect(layout.sheet.width).toBeLessThanOrEqual(600);
+  });
+
+  it('draws at the minimum when nothing fits', () => {
+    const layout = getMinimapLayout({ width: 200, height: 300 }, 124, 76, 'right');
+    expect(layout).toEqual({
+      side: 'center',
+      sheet: { width: 124 * MINIMAP_MIN_PX_PER_TILE, height: 76 * MINIMAP_MIN_PX_PER_TILE },
     });
-  });
-  return { data, width, height };
-}
-
-/** Reads one pixel's RGBA back out of a buffer. */
-function pixelAt(pixels: Uint8ClampedArray, width: number, row: number, col: number): number[] {
-  const offset = (row * width + col) * 4;
-  return Array.from(pixels.slice(offset, offset + 4));
-}
-
-const MASK = maskFrom([
-  '.......', //
-  '.......',
-  '..###..',
-  '.......',
-  '.......',
-]);
-
-// ---------------------------------------------------------------------------
-// classifyMinimapTile
-// ---------------------------------------------------------------------------
-
-describe('classifyMinimapTile', () => {
-  it('draws walkable tiles as paths', () => {
-    expect(classifyMinimapTile(MASK, 2, 3)).toBe('path');
-  });
-
-  it('outlines blocked tiles touching a path, diagonals included', () => {
-    expect(classifyMinimapTile(MASK, 1, 3)).toBe('edge'); // above
-    expect(classifyMinimapTile(MASK, 2, 1)).toBe('edge'); // left
-    expect(classifyMinimapTile(MASK, 3, 5)).toBe('edge'); // diagonal
-  });
-
-  it('leaves tiles away from paths blank', () => {
-    expect(classifyMinimapTile(MASK, 0, 0)).toBe('blank');
-    expect(classifyMinimapTile(MASK, 4, 6)).toBe('blank');
-  });
-
-  it('treats tiles past the map border as blocked', () => {
-    const corner = maskFrom(['#.', '..']);
-    expect(classifyMinimapTile(corner, 0, 0)).toBe('path');
-    expect(classifyMinimapTile(corner, 1, 1)).toBe('edge');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// tileGrain / agedEdgeFactor
-// ---------------------------------------------------------------------------
-
-describe('tileGrain', () => {
-  it('is deterministic and within [-1, 1]', () => {
-    for (let row = 0; row < 20; row++) {
-      for (let col = 0; col < 20; col++) {
-        const grain = tileGrain(row, col);
-        expect(grain).toBe(tileGrain(row, col));
-        expect(grain).toBeGreaterThanOrEqual(-1);
-        expect(grain).toBeLessThanOrEqual(1);
-      }
-    }
-  });
-
-  it('varies from tile to tile', () => {
-    const values = new Set([tileGrain(0, 0), tileGrain(0, 1), tileGrain(1, 0), tileGrain(5, 9), tileGrain(9, 5)]);
-    expect(values.size).toBeGreaterThan(3);
-  });
-});
-
-describe('agedEdgeFactor', () => {
-  it('is 1 on the border and 0 beyond the aged band', () => {
-    expect(agedEdgeFactor(0, 10, 20, 20, 4)).toBe(1);
-    expect(agedEdgeFactor(10, 19, 20, 20, 4)).toBe(1);
-    expect(agedEdgeFactor(10, 10, 20, 20, 4)).toBe(0);
-    expect(agedEdgeFactor(4, 10, 20, 20, 4)).toBe(0);
-  });
-
-  it('fades monotonically toward the inside', () => {
-    const band = [0, 1, 2, 3, 4].map((row) => agedEdgeFactor(row, 10, 20, 20, 4));
-    for (let index = 1; index < band.length; index++) expect(band[index]).toBeLessThan(band[index - 1]);
-  });
-
-  it('is off with no aged band', () => {
-    expect(agedEdgeFactor(0, 0, 20, 20, 0)).toBe(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// buildMinimapPixels
-// ---------------------------------------------------------------------------
-
-describe('buildMinimapPixels', () => {
-  const pixels = buildMinimapPixels(MASK);
-
-  it('has one opaque RGBA pixel per tile', () => {
-    expect(pixels.length).toBe(MASK.width * MASK.height * 4);
-    for (let index = 3; index < pixels.length; index += 4) expect(pixels[index]).toBe(255);
-  });
-
-  it('paints paths and outlines in exactly the palette colours', () => {
-    expect(pixelAt(pixels, MASK.width, 2, 3)).toEqual([...DEFAULT_MINIMAP_PALETTE.path, 255]);
-    expect(pixelAt(pixels, MASK.width, 1, 3)).toEqual([...DEFAULT_MINIMAP_PALETTE.edge, 255]);
-  });
-
-  it('keeps blank parchment within the grain of its base colour', () => {
-    const noAgeing: MinimapPalette = { ...DEFAULT_MINIMAP_PALETTE, agedEdgeTiles: 0 };
-    const flat = buildMinimapPixels(MASK, noAgeing);
-    const [red, green, blue] = pixelAt(flat, MASK.width, 0, 0);
-    const base = DEFAULT_MINIMAP_PALETTE.parchment;
-    const grain = DEFAULT_MINIMAP_PALETTE.grain;
-    expect(Math.abs(red - base[0])).toBeLessThanOrEqual(grain);
-    expect(Math.abs(green - base[1])).toBeLessThanOrEqual(grain);
-    expect(Math.abs(blue - base[2])).toBeLessThanOrEqual(grain);
-    // The same offset on every channel, so grain shifts brightness, not hue.
-    expect(red - base[0]).toBe(green - base[1]);
-  });
-
-  it('draws the same map the same way every time', () => {
-    expect(buildMinimapPixels(MASK)).toEqual(pixels);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// getMinimapScale
-// ---------------------------------------------------------------------------
-
-describe('getMinimapScale', () => {
-  it('picks the largest whole scale that fits', () => {
-    expect(getMinimapScale({ width: 900, height: 600 }, 124, 76, 2, 8)).toBe(7);
-  });
-
-  it('caps small maps at the maximum', () => {
-    expect(getMinimapScale({ width: 1800, height: 1000 }, 45, 30, 2, 8)).toBe(8);
-  });
-
-  it('falls back to the minimum when even that overflows', () => {
-    expect(getMinimapScale({ width: 100, height: 100 }, 124, 76, 2, 8)).toBe(2);
-    expect(getMinimapScale({ width: -50, height: 300 }, 124, 76, 2, 8)).toBe(2);
-  });
-
-  it('handles an empty map', () => {
-    expect(getMinimapScale({ width: 900, height: 600 }, 0, 0, 2, 8)).toBe(2);
   });
 });
 
