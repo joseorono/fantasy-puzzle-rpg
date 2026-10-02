@@ -10,14 +10,19 @@ import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
-import { findNodeAt, findFloorLootAt, findDialogueTriggerAt } from '~/lib/map-content';
+import { MapMinimap } from './map-minimap';
+import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
+import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
-import { useCanvasMetrics } from '~/hooks/use-canvas-metrics';
+import { useElementSize } from '~/hooks/use-element-size';
+import { useMapRenderer } from '~/hooks/use-map-renderer';
 import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
+import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
+import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
 import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
 import { CHARACTER_BODY_HEIGHT_TILES, CHARACTER_FOOT_OFFSET_TILES } from '~/constants/character-sprite';
 import MapCharacterSprite from './map-character-sprite';
@@ -34,6 +39,8 @@ import {
   useParty,
   useDungeonProgressActions,
   useDungeonProgressState,
+  useMapProgressState,
+  useFloorLootProgressState,
 } from '~/stores/game-store';
 import { getDungeonById } from '~/lib/dungeon-system';
 import { canGoBack } from '~/lib/routing';
@@ -43,12 +50,6 @@ import { addResources } from '~/lib/resources';
 import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
-import {
-  MAP_NODE_MARKER_SIZE,
-  MAP_NODE_ICON_RATIO,
-  MAP_NODE_CHECK_RATIO,
-  MAP_NODE_CHECK_INSET_RATIO,
-} from '~/constants/map';
 import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
 import type { LootTable } from '~/types/loot';
 import type { Resources } from '~/types/resources';
@@ -57,8 +58,9 @@ import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
-import type { MapNodeType } from '~/stores/slices/map-progress.types';
+import type { MapProgressState } from '~/stores/slices/map-progress.types';
 import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
+import { isMinimapKey } from '~/constants/keyboard';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -70,13 +72,16 @@ function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined
  * itself records the clear in `dungeonProgress.completedDungeons`, so the node needs no second
  * write in `mapProgress`, and a remix clear correctly doesn't count because we always look up
  * the BASE dungeon. Every other node type reads map progress as before.
+ *
+ * Takes subscribed state rather than store getters: the map no longer re-renders every
+ * frame, so a render-time read must change whenever the progress it depends on changes.
  */
 function isMapNodeCompleted(
   node: InteractiveMapNode,
   completedDungeons: Record<string, boolean>,
-  isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean,
+  mapProgress: MapProgressState,
 ): boolean {
-  if (node.type !== 'Dungeon') return isNodeCompleted(node.type, node.id);
+  if (node.type !== 'Dungeon') return isNodeCompletedInProgress(mapProgress, node.type, node.id);
   const base = resolveDungeon(node);
   return base ? completedDungeons[base.id] === true : false;
 }
@@ -96,7 +101,9 @@ interface TilemapComponentProps {
 const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const spriteRef = useRef<HTMLDivElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
   const [mapData] = useState<TilemapData>(map.tiledData);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
@@ -110,14 +117,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
   const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
-  const [pulseAnimation, setPulseAnimation] = useState(0);
-  const animationFrameRef = useRef<number | undefined>(undefined);
-  const [canvasReady, setCanvasReady] = useState(false);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [closingNode, setClosingNode] = useState<{ node: InteractiveMapNode; position: Position } | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
   const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
+  const [isMinimapOpen, setIsMinimapOpen] = useState(false);
+  // Where the character is on screen, kept current only while a popup points at it.
+  const [popupAnchor, setPopupAnchor] = useState<Position | null>(null);
   // True while a cover transition plays before leaving the map: movement stays frozen underneath it.
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { enterBattle, enterTown } = useViewTransitions();
@@ -125,8 +132,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
 
-  // Get stable reference to isNodeCompleted function
-  const isNodeCompleted = useGameStore((state) => state.actions.mapProgress.isNodeCompleted);
+  const mapProgressState = useMapProgressState();
+  const floorLootProgressState = useFloorLootProgressState();
   const mapProgressActions = useMapProgressActions();
   const inventoryActions = useInventoryActions();
   const resourcesActions = useResourcesActions();
@@ -146,20 +153,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const setupBattle = useSetAtom(setupBattleAtom);
   const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
   const { autosave } = useSaveGameActions();
-
-  // Pulse animation for markers
-  useEffect(() => {
-    function animate() {
-      setPulseAnimation((prev) => (prev + 0.05) % (Math.PI * 2));
-      animationFrameRef.current = requestAnimationFrame(animate);
-    }
-    animationFrameRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
 
   // Load tileset image
   useEffect(() => {
@@ -187,13 +180,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       const node = findNodeAt(map.nodes, row, col);
       if (node && node.blocksMovement) {
         // Node blocks movement - check if it's completed
-        const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
+        const isCompleted = isMapNodeCompleted(node, completedDungeons, mapProgressState);
         return isCompleted; // Can only walk through if completed
       }
 
       return true;
     },
-    [walkableMask, isNodeCompleted, completedDungeons, map.nodes],
+    [walkableMask, mapProgressState, completedDungeons, map.nodes],
   );
 
   // Mirror the live position into the store as it changes, so a save taken while the
@@ -290,12 +283,43 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     [map.id, map.floorLoot, currentResources, floorLootProgressActions, resourcesActions],
   );
 
-  // The canvas is shrink-to-fit and centred inside its container, so it is both
-  // scaled and letterboxed. Render-only — the simulation stays in map pixels.
-  const { scale, offsetX, offsetY } = useCanvasMetrics(canvasRef, canvasContainerRef, mapData.width * tileSize);
+  // --- Camera ---
+  // The map draws at an integer zoom (native size by default) through a viewport that
+  // fills the stage, or shrinks to the map when the map is smaller. Render-only — the
+  // simulation stays in map pixels.
+  const zoom = resolveMapZoom(map.zoom);
+  const stageSize = useElementSize(stageRef);
+  const mapPixelSize = { width: mapData.width * tileSize, height: mapData.height * tileSize };
+  const viewportLayout = stageSize ? computeViewportLayout(stageSize, mapPixelSize, zoom) : null;
+
+  // Shared by the camera's markers and the overview's pins.
+  const markerStatus: MarkerStatus = {
+    isNodeCompleted: (node) => isMapNodeCompleted(node, completedDungeons, mapProgressState),
+    isFloorLootCollected: (lootId) => floorLootProgressState[map.id]?.[lootId] === true,
+    isTriggerVisited: (row, col) => visitedTriggers.has(`${row},${col}`),
+  };
+  const markers = buildMarkerList(map, tileSize, markerStatus);
+
+  const isPopupOpen = showNodeMenu || collectedFloorLoot !== null;
+  // Drop the anchor once nothing points at it, so the next popup can't open at a stale spot.
+  if (!isPopupOpen && popupAnchor !== null) setPopupAnchor(null);
+
+  const renderer = useMapRenderer({
+    canvasRef,
+    spriteRef,
+    viewportRef,
+    mapData,
+    tileset,
+    visibleLayers,
+    tileSize,
+    layout: viewportLayout,
+    markers,
+    watchAnchor: isPopupOpen,
+    onAnchorChange: setPopupAnchor,
+  });
 
   // --- Smooth character movement (rAF-based) ---
-  // Sizes derive from the sprite's visible body, not its mostly-empty 64px frame.
+  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
   // `displayScale` is passed as 1 here: only `collisionInsetPx` is read, and the
   // simulation must never see the display scale.
   const characterMetrics = getCharacterSpriteMetrics(
@@ -309,21 +333,21 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     initialRow: charPosition.row,
     initialCol: charPosition.col,
     tileSize,
-    displayScale: scale,
-    offsetX,
-    offsetY,
     toMapPoint: (clientX, clientY) => {
-      const canvasElement = canvasRef.current;
-      if (!canvasElement) return null;
-      return clientToMapPoint(clientX, clientY, canvasElement.getBoundingClientRect(), scale);
+      const viewportElement = viewportRef.current;
+      if (!viewportElement) return null;
+      return clientToMapPoint(clientX, clientY, viewportElement.getBoundingClientRect(), zoom, renderer.getCamera());
     },
+    onFrame: renderer.renderFrame,
     canMoveTo: (row, col) => isRoadTile(row, col),
-    // Map pixels, deliberately independent of `scale`: the simulation runs in map space.
+    // Map pixels, deliberately independent of `zoom`: the simulation runs in map space.
     collisionInsetPx: characterMetrics.collisionInsetPx,
     // An event prompt is a decision, not scenery — walking away from one is how you miss it.
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
-    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning,
+    // The overview is read in place: frozen, turned to the camera, book open.
+    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
+    isReading: isMinimapOpen,
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);
@@ -335,7 +359,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
       // Close node menu with exit transition when moving
       if (showNodeMenu && currentNode) {
-        setClosingNode({ node: currentNode, position: getCharacterScreenPosition() });
+        setClosingNode({ node: currentNode, position: popupAnchor ?? getCharacterScreenPosition() });
         setShowNodeMenu(false);
         setCurrentNode(null);
         setTimeout(() => setClosingNode(null), 180);
@@ -355,7 +379,30 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // Direction keys still flow through useWindowKeyDown, but movement is now
   // continuous — the handler only forwards the key. Key release, the run
   // modifier and focus loss are owned by useMultiKeyDirection.
+  // The overview only opens when nothing else owns the screen.
+  const canOpenMinimap =
+    !isMinimapOpen && !isPauseMenuOpen && !showTriggerModal && activeDialogue === null && !isTransitioning;
+
+  function openMinimap() {
+    soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+    setIsMinimapOpen(true);
+  }
+
+  function closeMinimap() {
+    soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
+    setIsMinimapOpen(false);
+  }
+
   useWindowKeyDown((event) => {
+    // Claimed only when it opens the overview, so Tab still moves focus between the
+    // buttons of a prompt or menu on top of the map. Closing is the overview's own job.
+    if (isMinimapKey(event.key) && canOpenMinimap) {
+      event.preventDefault();
+      if (event.repeat) return;
+      openMinimap();
+      return;
+    }
+
     const dir = movement.onKeyDown(event.key);
     if (!dir) return;
     event.preventDefault();
@@ -600,309 +647,59 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // Don't close the menu - dialogue renders as overlay
   }
 
-  // Draw the map and character
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-
-    if (!canvas || !ctx || !tileset) return;
-
-    // Mark canvas as ready after first successful draw
-    if (!canvasReady) {
-      setCanvasReady(true);
-    }
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Calculate canvas size based on map dimensions
-    const canvasWidth = mapData.width * tileSize;
-    const canvasHeight = mapData.height * tileSize;
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-
-    // Draw each visible layer
-    mapData.layers.forEach((layer) => {
-      if (!visibleLayers.includes(layer.name)) return;
-
-      for (let y = 0; y < layer.height; y++) {
-        for (let x = 0; x < layer.width; x++) {
-          const dataIndex = y * layer.width + x;
-          const tileId = layer.data[dataIndex];
-
-          // Skip empty tiles (0 typically means no tile)
-          if (tileId === 0) continue;
-
-          // Calculate tile position in tileset using tileset metadata
-          const tilesetInfo = mapData.tilesets?.[0];
-          if (!tilesetInfo) continue;
-
-          const tilesetCols = tilesetInfo.columns;
-          const tileWidth = tilesetInfo.tilewidth;
-          const tileHeight = tilesetInfo.tileheight;
-          const firstgid = tilesetInfo.firstgid;
-
-          // Adjust tileId by firstgid to get the correct index in the tileset
-          const tileIndex = tileId - firstgid;
-
-          const tilesetX = (tileIndex % tilesetCols) * tileWidth;
-          const tilesetY = Math.floor(tileIndex / tilesetCols) * tileHeight;
-
-          ctx.drawImage(
-            tileset,
-            tilesetX,
-            tilesetY,
-            tileWidth,
-            tileHeight,
-            x * tileSize,
-            y * tileSize,
-            tileSize,
-            tileSize,
-          );
-        }
-      }
-    });
-
-    // Draw interactive node markers
-    (map.nodes ?? []).forEach((node) => {
-      const isCompleted = isMapNodeCompleted(node, completedDungeons, isNodeCompleted);
-      const markerSize = MAP_NODE_MARKER_SIZE;
-      // Markers are bigger than a tile, so center them on the node's tile instead of
-      // top-left aligning to it.
-      const markerInset = (markerSize - tileSize) / 2;
-      const markerX = node.position.col * tileSize - markerInset;
-      const markerY = node.position.row * tileSize - markerInset;
-
-      // Calculate pulse effect (0.5 to 1.0)
-      const pulse = 0.5 + Math.sin(pulseAnimation) * 0.5;
-
-      // Color based on node type
-      let color: string;
-      let icon: string;
-      switch (node.type) {
-        case 'Battle':
-          color = isCompleted ? 'rgba(255, 100, 100, ' : 'rgba(220, 20, 60, ';
-          icon = '⚔';
-          break;
-        case 'Boss':
-          color = isCompleted ? 'rgba(200, 100, 255, ' : 'rgba(138, 43, 226, ';
-          icon = '👑';
-          break;
-        case 'Town':
-          color = isCompleted ? 'rgba(100, 150, 255, ' : 'rgba(30, 144, 255, ';
-          icon = '🏠';
-          break;
-        case 'Dungeon':
-          color = isCompleted ? 'rgba(128, 208, 198, ' : 'rgba(0, 176, 158, ';
-          icon = '💀';
-          break;
-        case 'Treasure':
-          color = isCompleted ? 'rgba(255, 255, 150, ' : 'rgba(255, 215, 0, ';
-          icon = isCompleted ? '📦' : '🎁';
-          break;
-        case 'Mystery':
-          color = isCompleted ? 'rgba(200, 150, 255, ' : 'rgba(148, 0, 211, ';
-          icon = '❓';
-          break;
-      }
-
-      // Draw marker background
-      if (!isCompleted) {
-        // Pulsing glow for incomplete nodes
-        const glowSize = markerSize * (1 + pulse * 0.3);
-        const gradient = ctx.createRadialGradient(
-          markerX + markerSize / 2,
-          markerY + markerSize / 2,
-          0,
-          markerX + markerSize / 2,
-          markerY + markerSize / 2,
-          glowSize,
-        );
-        gradient.addColorStop(0, color + `${0.6 * pulse})`);
-        gradient.addColorStop(0.5, color + `${0.3 * pulse})`);
-        gradient.addColorStop(1, color + '0)');
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(markerX - glowSize / 2, markerY - glowSize / 2, glowSize * 2, glowSize * 2);
-      }
-
-      // Draw marker background square
-      ctx.fillStyle = color + (isCompleted ? '0.4)' : '0.7)');
-      ctx.fillRect(markerX, markerY, markerSize, markerSize);
-
-      // Draw icon
-      ctx.font = `bold ${markerSize * MAP_NODE_ICON_RATIO}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(icon, markerX + markerSize / 2, markerY + markerSize / 2);
-
-      // Draw border
-      ctx.strokeStyle = color + (isCompleted ? '0.6)' : `${0.8 + pulse * 0.2})`);
-      ctx.lineWidth = isCompleted ? 1 : 2;
-      ctx.strokeRect(markerX, markerY, markerSize, markerSize);
-
-      // Draw completion checkmark
-      if (isCompleted) {
-        const checkInset = markerSize * MAP_NODE_CHECK_INSET_RATIO;
-        ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-        ctx.font = `bold ${markerSize * MAP_NODE_CHECK_RATIO}px monospace`;
-        ctx.fillText('✓', markerX + markerSize - checkInset, markerY + checkInset);
-      }
-    });
-
-    // Draw floor loot markers
-    (map.floorLoot ?? []).forEach((lootSpot) => {
-      const isCollected = floorLootProgressActions.isFloorLootCollected(map.id, lootSpot.id);
-
-      // Don't render if already collected
-      if (isCollected) return;
-
-      const markerX = lootSpot.position.col * tileSize;
-      const markerY = lootSpot.position.row * tileSize;
-      const markerSize = tileSize * 0.6; // Smaller than node markers
-      const centerX = markerX + tileSize / 2;
-      const centerY = markerY + tileSize / 2;
-
-      // Calculate gentle pulse effect
-      const pulse = 0.7 + Math.sin(pulseAnimation * 1.5) * 0.3;
-
-      // Draw subtle glow
-      const glowSize = markerSize * 1.2;
-      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowSize);
-      gradient.addColorStop(0, `rgba(255, 215, 0, ${0.4 * pulse})`);
-      gradient.addColorStop(0.7, `rgba(255, 215, 0, ${0.2 * pulse})`);
-      gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(centerX - glowSize, centerY - glowSize, glowSize * 2, glowSize * 2);
-
-      // Draw coin icon
-      ctx.fillStyle = `rgba(255, 215, 0, ${0.9 + pulse * 0.1})`;
-      ctx.font = 'bold 10px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('💰', centerX, centerY);
-    });
-
-    // Draw dialogue trigger markers
-    (map.dialogueTriggers ?? []).forEach((trigger) => {
-      const triggerKey = `${trigger.row},${trigger.col}`;
-      const isVisited = visitedTriggers.has(triggerKey);
-
-      const markerX = trigger.col * tileSize;
-      const markerY = trigger.row * tileSize;
-      const markerSize = tileSize;
-
-      // Draw pulsing marker for unvisited triggers
-      if (!isVisited) {
-        // Calculate pulse effect (0.5 to 1.0)
-        const pulse = 0.5 + Math.sin(pulseAnimation) * 0.5;
-
-        // Outer glow with pulse
-        const glowSize = markerSize * (1 + pulse * 0.5);
-        const gradient = ctx.createRadialGradient(
-          markerX + markerSize / 2,
-          markerY + markerSize / 2,
-          0,
-          markerX + markerSize / 2,
-          markerY + markerSize / 2,
-          glowSize,
-        );
-        gradient.addColorStop(0, `rgba(255, 215, 0, ${0.6 * pulse})`);
-        gradient.addColorStop(0.5, `rgba(255, 215, 0, ${0.3 * pulse})`);
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(markerX - glowSize / 2, markerY - glowSize / 2, glowSize * 2, glowSize * 2);
-
-        // Star/exclamation marker with pulse
-        ctx.fillStyle = `rgba(255, 215, 0, ${0.8 + pulse * 0.2})`;
-        ctx.font = 'bold 14px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('!', markerX + markerSize / 2, markerY + markerSize / 2);
-
-        // Border with pulse
-        ctx.strokeStyle = `rgba(255, 165, 0, ${0.6 + pulse * 0.4})`;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(markerX, markerY, markerSize, markerSize);
-      } else {
-        // Faded marker for visited triggers
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
-        ctx.fillRect(markerX, markerY, markerSize, markerSize);
-
-        ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(markerX, markerY, markerSize, markerSize);
-      }
-    });
-  }, [
-    tileset,
-    mapData,
-    tileSize,
-    visibleLayers,
-    visitedTriggers,
-    pulseAnimation,
-    isNodeCompleted,
-    completedDungeons,
-    floorLootProgressActions,
-    map,
-    canvasReady,
-  ]);
-
-  // Calculate character screen position for tooltip (uses continuous pixel position)
-  const getCharacterScreenPosition = () => {
-    const canvasElement = canvasRef.current;
-    if (!canvasElement) return { x: 0, y: 0 };
-    const canvasRect = canvasElement.getBoundingClientRect();
-    const { x, y } = movement.getMapPosition();
-    return {
-      x: canvasRect.left + x * scale,
-      y: canvasRect.top + y * scale,
-    };
+  /** The character's window position, for popups that point at it. */
+  const getCharacterScreenPosition = (): Position => {
+    const viewportElement = viewportRef.current;
+    if (!viewportElement) return { x: 0, y: 0 };
+    return mapToClientPoint(
+      movement.getMapPosition(),
+      renderer.getCamera(),
+      zoom,
+      viewportElement.getBoundingClientRect(),
+    );
   };
 
   return (
     <>
       <div className="tilemap-container">
         <MapInfoPanel displayMapName={displayMapName} onLeave={canLeaveMap ? routerActions.goBack : undefined} />
-        <div
-          ref={canvasContainerRef}
-          style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          <canvas
-            ref={canvasRef}
+        <div ref={stageRef} className="map-stage">
+          {/* Stays mounted before the stage is measured, so the canvas is never re-created
+              at its default size. */}
+          <div
+            ref={viewportRef}
+            className="map-viewport"
             {...movement.pointerHandlers}
             style={{
-              background: '#87CEEB',
-              imageRendering: 'pixelated',
-              display: 'block',
-              maxWidth: '100%',
-              maxHeight: '100%',
-              width: 'auto',
-              height: 'auto',
-              objectFit: 'contain',
+              left: stageSize && viewportLayout ? Math.floor((stageSize.width - viewportLayout.cssWidth) / 2) : 0,
+              top: stageSize && viewportLayout ? Math.floor((stageSize.height - viewportLayout.cssHeight) / 2) : 0,
+              width: viewportLayout?.cssWidth ?? 0,
+              height: viewportLayout?.cssHeight ?? 0,
+              visibility: viewportLayout ? 'visible' : 'hidden',
             }}
-          />
+          >
+            <canvas ref={canvasRef} />
 
-          {/* Animated LPC character sprite — offset by the canvas's position
-              inside this centring container, which letterboxes it. */}
-          {canvasReady && (
-            <MapCharacterSprite
-              positionRef={movement.characterRef}
-              tileSize={tileSize}
-              displayScale={scale}
-              characterBodyHeightTiles={map.characterBodyHeightTiles}
-              characterFootOffsetTiles={map.characterFootOffsetTiles}
-              spriteState={movement.spriteState}
+            {renderer.isReady && (
+              <MapCharacterSprite
+                positionRef={spriteRef}
+                tileSize={tileSize}
+                displayScale={zoom}
+                characterBodyHeightTiles={map.characterBodyHeightTiles}
+                characterFootOffsetTiles={map.characterFootOffsetTiles}
+                spriteState={movement.spriteState}
+              />
+            )}
+          </div>
+
+          {!isMinimapOpen && (
+            <KeyHintPill
+              size="sm"
+              className="map-key-hint"
+              items={[
+                { keys: ['Tab'], label: 'map' },
+                { keys: ['Esc'], label: 'menu' },
+              ]}
             />
           )}
 
@@ -918,23 +715,23 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       />
 
       {/* Node interaction tooltip */}
-      {showNodeMenu && currentNode && canvasReady ? (
+      {showNodeMenu && currentNode && renderer.isReady ? (
         <NodeInteractionMenu
           key={currentNode.id}
           node={currentNode}
-          isCompleted={isMapNodeCompleted(currentNode, completedDungeons, isNodeCompleted)}
+          isCompleted={isMapNodeCompleted(currentNode, completedDungeons, mapProgressState)}
           onFight={currentNode.type === 'Battle' || currentNode.type === 'Boss' ? handleNodeFight : undefined}
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
           onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}
           onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
-          characterPosition={getCharacterScreenPosition()}
+          characterPosition={popupAnchor ?? getCharacterScreenPosition()}
         />
-      ) : closingNode && canvasReady ? (
+      ) : closingNode && renderer.isReady ? (
         <NodeInteractionMenu
           key={`closing-${closingNode.node.id}`}
           node={closingNode.node}
-          isCompleted={isMapNodeCompleted(closingNode.node, completedDungeons, isNodeCompleted)}
+          isCompleted={isMapNodeCompleted(closingNode.node, completedDungeons, mapProgressState)}
           characterPosition={closingNode.position}
           isClosing
         />
@@ -948,9 +745,19 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
         <FloorLootNotification
           resources={collectedFloorLoot}
           onClose={() => setCollectedFloorLoot(null)}
-          characterPosition={getCharacterScreenPosition()}
+          characterPosition={popupAnchor ?? getCharacterScreenPosition()}
+        />
+      )}
+
+      {/* Map overview (Tab) */}
+      {isMinimapOpen && (
+        <MapMinimap
+          map={map}
+          walkableMask={walkableMask}
           tileSize={tileSize}
-          displayScale={scale}
+          characterPoint={movement.getMapPosition()}
+          markerStatus={markerStatus}
+          onClose={closeMinimap}
         />
       )}
 

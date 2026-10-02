@@ -32,28 +32,35 @@ function eastOf(origin: { x: number; y: number }, distanceTiles: number) {
 // ---------------------------------------------------------------------------
 
 describe('clientToMapPoint', () => {
-  it('subtracts the canvas origin and divides by the scale', () => {
-    expect(clientToMapPoint(140, 90, { left: 100, top: 50 }, 2)).toEqual({ x: 20, y: 20 });
+  const NO_CAMERA = { x: 0, y: 0 };
+
+  it('subtracts the viewport origin and divides by the zoom', () => {
+    expect(clientToMapPoint(140, 90, { left: 100, top: 50 }, 2, NO_CAMERA)).toEqual({ x: 20, y: 20 });
+  });
+
+  it('adds the camera offset', () => {
+    expect(clientToMapPoint(140, 90, { left: 100, top: 50 }, 2, { x: 100, y: 40 })).toEqual({ x: 120, y: 60 });
   });
 
   it('is the exact inverse of the forward map→client transform', () => {
     const origin = { left: 37.5, top: 12.25 };
-    const scale = 0.6875;
+    const zoom = 3;
+    const camera = { x: 37, y: 12 };
     const mapPoint = { x: 704, y: 928 };
 
     // Forward transform, as used to position the sprite and the node tooltip.
-    const clientX = origin.left + mapPoint.x * scale;
-    const clientY = origin.top + mapPoint.y * scale;
+    const clientX = origin.left + (mapPoint.x - camera.x) * zoom;
+    const clientY = origin.top + (mapPoint.y - camera.y) * zoom;
 
-    const roundTripped = clientToMapPoint(clientX, clientY, origin, scale);
+    const roundTripped = clientToMapPoint(clientX, clientY, origin, zoom, camera);
     expect(roundTripped?.x).toBeCloseTo(mapPoint.x, 9);
     expect(roundTripped?.y).toBeCloseTo(mapPoint.y, 9);
   });
 
-  it('returns null before the canvas has a usable scale', () => {
-    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, 0)).toBeNull();
-    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, -1)).toBeNull();
-    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, Number.NaN)).toBeNull();
+  it('returns null before the viewport has a usable zoom', () => {
+    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, 0, NO_CAMERA)).toBeNull();
+    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, -1, NO_CAMERA)).toBeNull();
+    expect(clientToMapPoint(10, 10, { left: 0, top: 0 }, Number.NaN, NO_CAMERA)).toBeNull();
   });
 });
 

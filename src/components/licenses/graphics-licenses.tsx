@@ -11,6 +11,14 @@ export default function GraphicsLicensesDialogContent() {
         </h3>
 
         <p>
+          Map character sprites: Art by Memao, created with Memao Sprite Sheet Creator by Sleeping Robot
+          Games&nbsp;
+          <a href="https://sleeping-robot-games.itch.io/sprite-sheet-creator">
+            https://sleeping-robot-games.itch.io/sprite-sheet-creator
+          </a>
+        </p>
+
+        <p>
           Innkeeper portrait, CC-BY 3.0, JosephSeraph&nbsp;
           <a href="https://opengameart.org/content/js-actor-innkeeper">
             https://opengameart.org/content/js-actor-innkeeper

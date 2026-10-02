@@ -1,10 +1,11 @@
 /*
-  Map screen. The map is a fixed-aspect canvas inside the ever-present window
-  frame, so it is always letterboxed on one axis; the letterbox is a tiled board
-  texture, and a thin ring hugs the canvas itself.
+  Map screen. The map draws at its native pixel size (or an integer zoom) through a
+  camera viewport that fills the stage. A map smaller than the stage on an axis
+  shrinks the viewport to fit it, leaving the letterbox — a tiled board texture —
+  around it. A thin ring hugs the viewport itself.
 
   Tunables. --map-viewport-inset must stay >= --map-frame-width: .game-map clips
-  at its padding box, and the frame ring is painted outside the canvas.
+  at its padding box, and the frame ring is painted outside the viewport.
 */
 :root {
   --map-viewport-inset: 0.5rem;
@@ -58,22 +59,41 @@
   min-height: 0;
 }
 
+/* The space the viewport may fill. Measured to size and centre the viewport. */
+.map-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
 /*
-  The frame ring is an `outline`, never a `border`: it hugs the canvas exactly
-  with square corners while costing no layout space, so `useCanvasMetrics` keeps
-  measuring the canvas itself.
+  The camera viewport. Sized in JS to a whole multiple of the zoom, and centred in
+  JS at a whole-pixel offset — flex centring would land on a half pixel whenever the
+  leftover space is odd, blurring every tile. It clips the map and the sprite, so
+  nothing outside the map ever shows.
+
+  The frame ring is an `outline`, never a `border`: it hugs the viewport exactly
+  with square corners while costing no layout space, so the viewport's client
+  rect is exactly the canvas's.
 */
-.tilemap-container canvas {
-  display: block;
+.map-viewport {
+  position: absolute;
+  overflow: hidden;
   outline: var(--map-frame-width) solid var(--map-frame-color);
   /* Click-and-hold moves the character. Keep the custom gauntlet cursor with
      the interactive hotspot (matching buttons) rather than a native pointer.
-     `touch-action: none` lets a touch drag steer instead of panning the page —
-     the map never scrolls anyway. */
+     `touch-action: none` lets a touch drag steer instead of panning the page. */
   cursor:
     var(--cursor-gauntlet) 8 8,
     auto;
   touch-action: none;
+}
+
+.map-viewport canvas {
+  display: block;
+  /* Drawn at the map's zoom already; this keeps a HiDPI resample crisp too. */
+  image-rendering: pixelated;
 }
 
 /* Debug readout, pinned to the top-right of the game frame (inside the window

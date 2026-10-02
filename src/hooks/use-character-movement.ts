@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { NavDirection } from '~/constants/keyboard';
 import { useMultiKeyDirection } from '~/hooks/use-multi-key-direction';
 import { useCharacterSprite, type DrivenSpriteMode } from '~/hooks/use-character-sprite';
@@ -31,15 +31,10 @@ export interface UseCharacterMovementOptions {
   initialCol: number;
   /** Pixel size of a single map tile, before display scaling. */
   tileSize: number;
-  /** CSS scale factor the canvas is displayed at. Render-only — never affects the simulation. */
-  displayScale: number;
-  /** Canvas's left edge relative to the sprite's positioning container, in CSS pixels. */
-  offsetX?: number;
-  /** Canvas's top edge relative to the sprite's positioning container, in CSS pixels. */
-  offsetY?: number;
   /**
-   * Converts viewport coordinates to map pixels. Supplying it enables
-   * click-and-hold movement; spread the returned `pointerHandlers` onto the canvas.
+   * Converts window coordinates to map pixels. Supplying it enables click-and-hold
+   * movement; spread the returned `pointerHandlers` onto the map viewport. Called every
+   * frame while a pointer is held, so it must reflect the current camera.
    */
   toMapPoint?: ToMapPoint;
   /** Predicate: can the character occupy tile (row, col)? */
@@ -56,8 +51,34 @@ export interface UseCharacterMovementOptions {
    * the pause.
    */
   isPaused?: boolean;
+  /**
+   * Holds the reading pose (turned to the camera, book open). Pair it with `isPaused`;
+   * reading doesn't stop movement by itself.
+   */
+  isReading?: boolean;
   /** Called when the character's logical tile changes (footsteps, loot checks, etc.). */
   onTileEnter?: (row: number, col: number) => void;
+  /**
+   * Called once per animation frame with the character's position — the renderer's cue
+   * to move the camera, the sprite and the canvas in the same tick. Also called while
+   * paused, and immediately after a teleport.
+   */
+  onFrame?: (frame: MovementFrame) => void;
+}
+
+/** What the movement loop reports to the renderer each frame. */
+export interface MovementFrame {
+  /** Character position in map pixels. */
+  x: number;
+  y: number;
+  /** Real time covered by this frame, in seconds. 0 for a discarded stall or a teleport. */
+  dtSeconds: number;
+  /** The frame's timestamp, comparable with `performance.now()`. */
+  timestampMs: number;
+  /** True while movement is frozen by a modal, dialogue or transition. */
+  isPaused: boolean;
+  /** True when the position jumped rather than moved, so the camera should snap. */
+  teleported: boolean;
 }
 
 /** Used when no `toMapPoint` was supplied, so pointer input is simply inert. */
@@ -69,12 +90,12 @@ const NO_MAP_POINT: ToMapPoint = () => null;
  * Two things make this feel smooth, and both are load-bearing:
  *
  * - **One coordinate space.** The whole simulation runs in *map pixels*, the
- *   same space the canvas draws tiles in. `displayScale` is applied only when
- *   the sprite's transform is written, so resizing the window can never move,
- *   re-anchor, or re-speed the character.
- * - **The loop does not re-render React.** Position is written straight to the
- *   sprite element's `transform`. React state changes only on real events —
- *   entering a new tile, or the sprite frame actually changing.
+ *   same space the map is authored in. The camera and zoom are applied only by
+ *   the renderer, so resizing the window can never move, re-anchor, or re-speed
+ *   the character.
+ * - **The loop does not re-render React.** Each frame's position goes to
+ *   `onFrame`, which draws straight to the DOM and canvas. React state changes
+ *   only on real events — entering a new tile, or the sprite frame changing.
  *
  * Time is consumed in fixed `MOVEMENT_STEP_SECONDS` substeps with carry-over,
  * so behaviour is identical at 30 or 144 fps and fast movement cannot tunnel
@@ -93,21 +114,17 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     initialRow,
     initialCol,
     tileSize,
-    displayScale,
-    offsetX = 0,
-    offsetY = 0,
     toMapPoint = NO_MAP_POINT,
     canMoveTo,
     collisionInsetPx = 0,
     onTileEnter,
     isPaused = false,
+    isReading = false,
   } = options;
 
   const multiKey = useMultiKeyDirection();
-  const pointer = usePointerDirection(toMapPoint);
-  const { spriteState, updateSprite } = useCharacterSprite();
-
-  const characterRef = useRef<HTMLDivElement | null>(null);
+  const pointer = usePointerDirection();
+  const { spriteState, updateSprite, setReading } = useCharacterSprite();
 
   // Position lives in map pixels; the tile is always floor(position / tileSize).
   const pointRef = useRef<MovementPointState>({
@@ -119,10 +136,14 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
 
   const tileSizeRef = useRef(tileSize);
   const collisionInsetRef = useRef(collisionInsetPx);
-  const displayScaleRef = useRef(displayScale);
-  const offsetRef = useRef({ x: offsetX, y: offsetY });
   const canMoveToRef = useRef(canMoveTo);
   const onTileEnterRef = useRef(onTileEnter);
+  // Read during render: both close over the current camera, which the loop must see
+  // on the very next frame.
+  const onFrameRef = useRef(options.onFrame);
+  onFrameRef.current = options.onFrame;
+  const toMapPointRef = useRef(toMapPoint);
+  toMapPointRef.current = toMapPoint;
   // Read during render so the loop and `onKeyDown` see the pause on the very next frame,
   // not one commit later.
   const isPausedRef = useRef(isPaused);
@@ -165,41 +186,30 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaused]);
 
-  /**
-   * Writes the character's map-pixel position to the DOM: scaled to screen
-   * pixels, shifted by the canvas's offset within the positioning container
-   * (the canvas is centred and letterboxed), and rounded to whole pixels so the
-   * pixel-art sprite never lands on a fractional device pixel and shimmers.
-   */
-  function writeTransform() {
-    const element = characterRef.current;
-    if (!element) return;
+  useEffect(() => {
+    setReading(isReading);
+    // `setReading` reads refs only, so its identity is not a meaningful dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReading]);
 
-    const scale = displayScaleRef.current;
-    const { x: originX, y: originY } = offsetRef.current;
-    const transform = `translate3d(${Math.round(originX + pointRef.current.x * scale)}px, ${Math.round(
-      originY + pointRef.current.y * scale,
-    )}px, 0)`;
-
-    // Compared against the element's own inline style rather than a cached
-    // string, so a remounted sprite is always positioned.
-    if (element.style.transform === transform) return;
-    element.style.transform = transform;
+  /** Reports the current position to `onFrame`. */
+  function emitFrame(dtSeconds: number, timestampMs: number, isPausedFrame: boolean, teleported: boolean): void {
+    onFrameRef.current?.({
+      x: pointRef.current.x,
+      y: pointRef.current.y,
+      dtSeconds,
+      timestampMs,
+      isPaused: isPausedFrame,
+      teleported,
+    });
   }
-
-  // Position before first paint, and again whenever the canvas is relaid out.
-  useLayoutEffect(() => {
-    displayScaleRef.current = displayScale;
-    offsetRef.current = { x: offsetX, y: offsetY };
-    writeTransform();
-  }, [displayScale, offsetX, offsetY]);
 
   /** Teleports the character to a tile centre — used for spawn placement. */
   function setPosition(row: number, col: number): void {
     const size = tileSizeRef.current;
     pointRef.current = { x: (col + 0.5) * size, y: (row + 0.5) * size, row, col };
     animationDistanceRef.current = 0;
-    writeTransform();
+    emitFrame(0, performance.now(), isPausedRef.current, true);
     setTileRow(row);
     setTileCol(col);
   }
@@ -214,9 +224,8 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
       const elapsed = previousTimestamp === 0 ? 0 : (timestamp - previousTimestamp) / 1000;
       // Discard non-positive deltas and long stalls outright rather than
       // replaying them — a hitch must never teleport the character.
-      if (elapsed > 0 && elapsed <= MAX_FRAME_SECONDS) {
-        accumulatorRef.current += elapsed;
-      }
+      const acceptedSeconds = elapsed > 0 && elapsed <= MAX_FRAME_SECONDS ? elapsed : 0;
+      accumulatorRef.current += acceptedSeconds;
 
       // Paused: hold position and stand. Facing is kept so resuming looks continuous, and
       // banked time is dropped so the character can't lurch forward when play resumes.
@@ -227,6 +236,8 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
           setIsMoving(false);
         }
         updateSprite('stand', facingRef.current, 0);
+        // The map keeps drawing under a modal: marker pulses and resizes still show.
+        emitFrame(acceptedSeconds, timestamp, true, false);
         return;
       }
 
@@ -237,9 +248,14 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
       // drives. Both go through the same octant table, so a held key and a held
       // pointer emit identical direction vectors.
       const keyboardIntent = keyboardToIntent(multiKey.stateRef.current);
+      // Converted every frame, not per event: the camera scrolls the map under a
+      // stationary pointer, and the held spot must keep meaning the same screen spot.
       const pointerState = pointer.stateRef.current;
-      const pointerIntent: MovementIntent = pointerState.active
-        ? resolvePointerIntent(pointerState, pointRef.current, size, {
+      const pointerPoint = pointerState.active
+        ? toMapPointRef.current(pointerState.clientX, pointerState.clientY)
+        : null;
+      const pointerIntent: MovementIntent = pointerPoint
+        ? resolvePointerIntent(pointerPoint, pointRef.current, size, {
             facing: facingRef.current,
             running: isRunningRef.current,
           })
@@ -281,7 +297,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
         }
       }
 
-      writeTransform();
+      emitFrame(acceptedSeconds, timestamp, false, false);
 
       if (pointRef.current.row !== previousRow || pointRef.current.col !== previousCol) {
         setTileRow(pointRef.current.row);
@@ -324,8 +340,6 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   }, []);
 
   return {
-    /** Attach to the sprite wrapper — the loop writes its transform directly. */
-    characterRef,
     /** Current tile row (game-logic grid Y). */
     tileRow,
     /** Current tile column (game-logic grid X). */
@@ -334,14 +348,14 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     spriteState,
     /** Whether the character is actually moving (input held *and* not walled in). */
     isMoving,
-    /** Current map-pixel position, for positioning overlays against the canvas. */
+    /** Current map-pixel position, for positioning overlays against the map. */
     getMapPosition: () => ({ x: pointRef.current.x, y: pointRef.current.y }),
     /** Teleport to a tile centre (spawn placement / position restore). */
     setPosition,
     /** Call from `useWindowKeyDown` to forward a direction key press. Ignored while paused. */
     onKeyDown: (key: string): NavDirection | null =>
       isPausedRef.current ? null : multiKey.onDirectionKeyDown(key),
-    /** Spread onto the canvas to enable click-and-hold (and touch-drag) movement. */
+    /** Spread onto the map viewport to enable click-and-hold (and touch-drag) movement. */
     pointerHandlers: pointer.pointerHandlers,
   };
 }

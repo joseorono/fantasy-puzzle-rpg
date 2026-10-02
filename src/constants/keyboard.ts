@@ -11,6 +11,8 @@ export const KeyboardKeys = {
    *  competes with the confirm key a view is already using. */
   Backspace: 'Backspace',
   Help: 'h',
+  /** Opens and closes the map overview. Its focus traversal is suppressed only when it does. */
+  Tab: 'Tab',
   ArrowUp: 'ArrowUp',
   ArrowDown: 'ArrowDown',
   ArrowLeft: 'ArrowLeft',
@@ -51,6 +53,11 @@ export function getNavDirection(key: string): NavDirection | null {
 /** Whether a key opens the town help panel. Shift+H is accepted as well. */
 export function isHelpKey(key: string): boolean {
   return key.length === 1 && key.toLowerCase() === KeyboardKeys.Help;
+}
+
+/** Whether a key toggles the map overview. */
+export function isMinimapKey(key: string): boolean {
+  return key === KeyboardKeys.Tab;
 }
 
 /** Whether a key confirms/activates the current selection (Enter or Space). */

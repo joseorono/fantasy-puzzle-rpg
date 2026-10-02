@@ -4,6 +4,7 @@ import {
   POINTER_RUN_DISTANCE_TILES,
   POINTER_RUN_HYSTERESIS_TILES,
 } from '~/constants/map-movement';
+import { viewportToMapPoint } from '~/lib/map-camera';
 
 /**
  * A resolved movement request, in the shape the simulation consumes.
@@ -67,26 +68,25 @@ const OCTANT_COUNT = OCTANT_VECTORS.length;
 const RADIANS_PER_OCTANT = (Math.PI * 2) / OCTANT_COUNT;
 
 /**
- * Converts a viewport (client) coordinate into map-pixel space — the inverse of
+ * Converts a window (client) coordinate into map-pixel space — the inverse of
  * the transform that draws the character.
  *
- * @param clientX Viewport X, e.g. `PointerEvent.clientX`.
- * @param clientY Viewport Y.
- * @param canvasOrigin The canvas's viewport position (`getBoundingClientRect()`).
- * @param scale The canvas's display scale (rendered width / map-pixel width).
- * @returns The point in map pixels, or `null` when the scale isn't usable yet.
+ * @param clientX Window X, e.g. `PointerEvent.clientX`.
+ * @param clientY Window Y.
+ * @param viewportOrigin The map viewport's client position (`getBoundingClientRect()`).
+ * @param zoom The map's display scale.
+ * @param camera The camera's top-left corner in map pixels, as last drawn.
+ * @returns The point in map pixels, or `null` when the zoom isn't usable yet.
  */
 export function clientToMapPoint(
   clientX: number,
   clientY: number,
-  canvasOrigin: CanvasOrigin,
-  scale: number,
+  viewportOrigin: CanvasOrigin,
+  zoom: number,
+  camera: PointerPoint,
 ): PointerPoint | null {
-  if (!(scale > 0)) return null;
-  return {
-    x: (clientX - canvasOrigin.left) / scale,
-    y: (clientY - canvasOrigin.top) / scale,
-  };
+  if (!(zoom > 0)) return null;
+  return viewportToMapPoint({ x: clientX - viewportOrigin.left, y: clientY - viewportOrigin.top }, camera, zoom);
 }
 
 /**

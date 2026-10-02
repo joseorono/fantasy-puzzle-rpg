@@ -177,7 +177,7 @@ export const assetList: string[] = [
   '/assets/orbs/orb_yellow.png',
 
   // Sprites
-  '/assets/sprite/placeholder.png',
+  '/assets/sprite/party-memao-mage.png',
   '/assets/sprite/party-mage-stella-side-view.png',
   '/assets/sprite/party-warrior-stella-side-view.png',
 

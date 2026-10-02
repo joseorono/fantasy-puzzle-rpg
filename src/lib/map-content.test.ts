@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { findNodeAt, findFloorLootAt, findDialogueTriggerAt } from './map-content';
+import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from './map-content';
+import { createInitialMapProgressState } from '~/stores/slices/map-progress';
 import type { InteractiveMapNode, FloorLootSpot } from '~/types/map-node';
 import type { DialogueTrigger } from '~/types/map';
 
@@ -113,5 +114,29 @@ describe('the three finders are independent', () => {
     expect(findNodeAt(nodes, 0, 0)?.id).toBe('a');
     expect(findFloorLootAt(lootSpots, 0, 0)?.id).toBe('loot-a');
     expect(findDialogueTriggerAt(triggers, 0, 0)?.scene).toBe('intro');
+  });
+});
+
+describe('isNodeCompletedInProgress', () => {
+  it('reads each node type from its own progress record', () => {
+    const progress = {
+      ...createInitialMapProgressState(),
+      battlesCompleted: { fight: true },
+      townsVisited: { village: true },
+      mysteriesSolved: { riddle: true },
+    };
+    expect(isNodeCompletedInProgress(progress, 'Battle', 'fight')).toBe(true);
+    expect(isNodeCompletedInProgress(progress, 'Town', 'village')).toBe(true);
+    expect(isNodeCompletedInProgress(progress, 'Mystery', 'riddle')).toBe(true);
+  });
+
+  it('does not mix up types that share an id', () => {
+    const progress = { ...createInitialMapProgressState(), battlesCompleted: { shared: true } };
+    expect(isNodeCompletedInProgress(progress, 'Boss', 'shared')).toBe(false);
+    expect(isNodeCompletedInProgress(progress, 'Treasure', 'shared')).toBe(false);
+  });
+
+  it('treats unknown ids as not completed', () => {
+    expect(isNodeCompletedInProgress(createInitialMapProgressState(), 'Dungeon', 'nowhere')).toBe(false);
   });
 });

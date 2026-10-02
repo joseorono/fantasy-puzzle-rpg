@@ -9,8 +9,6 @@ interface FloorLootNotificationProps {
   resources: Resources;
   onClose: () => void;
   characterPosition: Position;
-  tileSize?: number;
-  displayScale?: number;
 }
 
 /**
@@ -18,11 +16,7 @@ interface FloorLootNotificationProps {
  * Appears above the character and auto-dismisses after FLOOR_LOOT_NOTIFICATION_DISMISS_MS.
  * Only displays resources with non-zero values.
  */
-export function FloorLootNotification({
-  resources,
-  onClose,
-  characterPosition,
-}: FloorLootNotificationProps) {
+export function FloorLootNotification({ resources, onClose, characterPosition }: FloorLootNotificationProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {

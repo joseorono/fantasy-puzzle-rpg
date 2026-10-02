@@ -6,8 +6,3 @@
      compositor layer so moving never triggers layout. */
   will-change: transform;
 }
-
-.map-character-sprite-inner {
-  /* Crisp pixel art at any scale. */
-  image-rendering: pixelated;
-}

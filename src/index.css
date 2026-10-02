@@ -408,6 +408,8 @@
 
 @import './styles/party-sprites.css';
 
+@import './styles/memao-sprite.css';
+
 @import './styles/radial-countdown.css';
 
 @import './styles/battle-over-modal.css';
@@ -458,6 +460,8 @@
 @import './styles/tooltip.css';
 
 @import './styles/loot-notification.css';
+
+@import './styles/map-minimap.css';
 
 @import './components/ui-custom/styles/toffec-button.css';
 

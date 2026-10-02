@@ -1,76 +1,42 @@
 import type { NavDirection } from '~/constants/keyboard';
-import {
-  SPRITE_FRAME_SIZE_PX,
-  SPRITE_DIRECTION_ROW,
-  SPRITE_RUN_BLOCK_Y,
-  SPRITE_SIT_BLOCK_Y,
-  SPRITE_WALK_BLOCK_Y,
-  SPRITE_WALK_BODY_BOX,
-  WALK_STAND_COLUMN,
-  RUN_FRAME_COUNT,
-  WALK_FRAME_COUNT,
-} from '~/constants/character-sprite';
+import { CHARACTER_MODE_ANIMATION } from '~/constants/character-sprite';
+import { MEMAO_FOOT_BASELINE_PX, MEMAO_FRAME_SIZE_PX, MEMAO_STAND_WALK_BODY_BOX } from '~/constants/memao-sprite';
 import { MAX_COLLISION_INSET_TILES } from '~/constants/map-movement';
+import { getMemaoAnimation, getMemaoFrameOrigin, getMemaoStepCount } from '~/lib/memao-sprite';
 
 /** The modes a character sprite can be in at any moment. */
-export type CharacterSpriteMode = 'walk' | 'run' | 'stand' | 'sit';
+export type CharacterSpriteMode = keyof typeof CHARACTER_MODE_ANIMATION;
 
 /**
  * Computes the top-left pixel origin of a specific frame in the spritesheet.
  *
- * The sheet is laid out in three vertical blocks with a 2px gutter between
- * them: run at Y=0, sit at Y=258, walk/stand at Y=516. Within each block,
- * rows map to directions and columns to animation frames.
+ * @param mode Sprite mode, mapped to its Memao animation.
+ * @param facing Facing direction.
+ * @param frameIndex Playback step within the mode's animation.
  */
 export function getSpriteFrameOrigin(
   mode: CharacterSpriteMode,
   facing: NavDirection,
   frameIndex: number,
 ): { x: number; y: number } {
-  const row = SPRITE_DIRECTION_ROW[facing];
-  let col: number;
-  let blockY: number;
-
-  switch (mode) {
-    case 'run':
-      col = frameIndex;
-      blockY = SPRITE_RUN_BLOCK_Y;
-      break;
-    case 'sit':
-      col = frameIndex;
-      blockY = SPRITE_SIT_BLOCK_Y;
-      break;
-    case 'walk':
-      col = frameIndex + 1; // columns 1–8; column 0 is the stand frame
-      blockY = SPRITE_WALK_BLOCK_Y;
-      break;
-    case 'stand':
-      col = WALK_STAND_COLUMN; // column 0 in the walk block
-      blockY = SPRITE_WALK_BLOCK_Y;
-      break;
-  }
-
-  return {
-    x: col * SPRITE_FRAME_SIZE_PX,
-    y: blockY + row * SPRITE_FRAME_SIZE_PX,
-  };
+  return getMemaoFrameOrigin(CHARACTER_MODE_ANIMATION[mode], facing, frameIndex);
 }
 
 /**
- * Advances a frame index within a given mode's animation cycle.
- * Knows the looping behaviour for each mode (wrap, toggle, or stay).
+ * Advances a frame index within a given mode's animation cycle. Looping animations
+ * wrap; one-shots (sit) stay on their last frame.
+ *
+ * @param mode Sprite mode.
+ * @param frameIndex Current playback step.
  */
 export function advanceFrame(mode: CharacterSpriteMode, frameIndex: number): number {
-  switch (mode) {
-    case 'run':
-      return (frameIndex + 1) % RUN_FRAME_COUNT;
-    case 'walk':
-      return (frameIndex + 1) % WALK_FRAME_COUNT;
-    case 'sit':
-      return frameIndex === 0 ? 1 : 0; // toggle between the two sit frames
-    case 'stand':
-      return 0;
+  const animationName = CHARACTER_MODE_ANIMATION[mode];
+  const stepCount = getMemaoStepCount(animationName);
+
+  if (getMemaoAnimation(animationName).holdsLastFrame) {
+    return Math.min(frameIndex + 1, stepCount - 1);
   }
+  return (frameIndex + 1) % stepCount;
 }
 
 /** Everything the map needs to draw and collide the character at a given tile size. */
@@ -87,11 +53,13 @@ export interface CharacterSpriteMetrics {
   collisionInsetPx: number;
   /** How far below the collision point to draw the sprite, in CSS pixels. */
   footOffsetPx: number;
+  /** Empty frame below the feet, in CSS pixels. Shifting down by it puts the feet on the anchor. */
+  baselinePadPx: number;
 }
 
 /**
  * Derives every size the character needs from its *visible body*, not from the
- * mostly-empty 64px frame.
+ * partly-empty 48px frame.
  *
  * Splitting map pixels from CSS pixels is the point of this function. `scale` and
  * `frameSizePx` are what gets drawn, so they carry `displayScale`. `bodyWidthPx` and
@@ -115,16 +83,18 @@ export function getCharacterSpriteMetrics(
   displayScale: number,
   footOffsetTiles: number,
 ): CharacterSpriteMetrics {
-  const spriteScale = (tileSize * bodyHeightTiles) / SPRITE_WALK_BODY_BOX.height;
-  const bodyWidthPx = SPRITE_WALK_BODY_BOX.width * spriteScale;
+  const spriteScale = (tileSize * bodyHeightTiles) / MEMAO_STAND_WALK_BODY_BOX.height;
+  const bodyWidthPx = MEMAO_STAND_WALK_BODY_BOX.width * spriteScale;
   const collisionInsetTiles = Math.min(bodyWidthPx / 2 / tileSize, MAX_COLLISION_INSET_TILES);
+  const scale = spriteScale * displayScale;
 
   return {
-    scale: spriteScale * displayScale,
-    frameSizePx: SPRITE_FRAME_SIZE_PX * spriteScale * displayScale,
+    scale,
+    frameSizePx: MEMAO_FRAME_SIZE_PX * scale,
     bodyWidthPx,
-    bodyHeightPx: SPRITE_WALK_BODY_BOX.height * spriteScale,
+    bodyHeightPx: MEMAO_STAND_WALK_BODY_BOX.height * spriteScale,
     collisionInsetPx: collisionInsetTiles * tileSize,
     footOffsetPx: footOffsetTiles * tileSize * displayScale,
+    baselinePadPx: (MEMAO_FRAME_SIZE_PX - MEMAO_FOOT_BASELINE_PX) * scale,
   };
 }

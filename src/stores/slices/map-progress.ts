@@ -1,5 +1,6 @@
 import type { MapProgressSlice, MapProgressState, MapNodeType } from './map-progress.types';
 import type { SliceSet, SliceGet } from '~/types/store';
+import { isNodeCompletedInProgress } from '~/lib/map-content';
 
 /**
  * Fresh map progress — nothing completed, nobody placed. A factory (not a shared
@@ -60,22 +61,7 @@ export const createMapProgressSlice = (
 
       isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => {
         const state = get() as MapProgressSlice;
-        switch (nodeType) {
-          case 'Battle':
-            return state.mapProgress.battlesCompleted[nodeId] === true;
-          case 'Boss':
-            return state.mapProgress.bossesCompleted[nodeId] === true;
-          case 'Dungeon':
-            return state.mapProgress.dungeonsCompleted[nodeId] === true;
-          case 'Town':
-            return state.mapProgress.townsVisited[nodeId] === true;
-          case 'Treasure':
-            return state.mapProgress.treasuresFound[nodeId] === true;
-          case 'Mystery':
-            return state.mapProgress.mysteriesSolved[nodeId] === true;
-          default:
-            return false;
-        }
+        return isNodeCompletedInProgress(state.mapProgress, nodeType, nodeId);
       },
 
       setCharacterPosition: (mapId, position) =>

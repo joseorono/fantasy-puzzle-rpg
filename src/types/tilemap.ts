@@ -73,4 +73,11 @@ export interface TiledMapConfig {
    * pre-offset look.
    */
   characterFootOffsetTiles?: number;
+
+  /**
+   * Integer display scale: each map pixel draws as `zoom`×`zoom` screen pixels. 1 shows the
+   * map at its native pixel size. Non-integers are floored and values below 1 clamp to 1.
+   * Omit for `MAP_DEFAULT_ZOOM`.
+   */
+  zoom?: number;
 }
