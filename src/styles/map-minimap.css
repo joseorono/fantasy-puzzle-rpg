@@ -62,7 +62,10 @@
   gap: 0.7rem;
   padding: 3rem 1.1rem 0.9rem;
   color: var(--mm-ink);
-  background-color: rgba(227, 207, 161, 0.92);
+  /* The grain tile is opaque, so the sheet's translucency comes from opacity, not alpha.
+     Pale parchment over a dark map needs to go well under 0.9 before anything shows through. */
+  opacity: 0.86;
+  background-color: var(--mm-parchment);
   background-image:
     radial-gradient(ellipse at center, transparent 55%, var(--mm-aged) 100%), url('/assets/bg/bgnoise-10-60-scroll.png');
   background-size:
@@ -272,6 +275,8 @@
   list-style: none;
   font-size: 0.5rem;
   color: var(--mm-ink);
+  /* The pixel font's 2px black shadow reads as a strike-through at this size. */
+  text-shadow: 0 1px 0 rgba(255, 240, 210, 0.6);
 }
 
 .map-minimap__legend li {

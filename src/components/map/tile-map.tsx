@@ -692,14 +692,16 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
             )}
           </div>
 
-          <KeyHintPill
-            size="sm"
-            className="map-key-hint"
-            items={[
-              { keys: ['Tab'], label: 'map' },
-              { keys: ['Esc'], label: 'menu' },
-            ]}
-          />
+          {!isMinimapOpen && (
+            <KeyHintPill
+              size="sm"
+              className="map-key-hint"
+              items={[
+                { keys: ['Tab'], label: 'map' },
+                { keys: ['Esc'], label: 'menu' },
+              ]}
+            />
+          )}
 
           {debug && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
