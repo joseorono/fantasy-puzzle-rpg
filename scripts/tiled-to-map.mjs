@@ -32,6 +32,8 @@
  *   --tileset <CONST>   Force reuse of a named constant in tileset-data.ts instead of
  *                       matching on image path.
  *   --spawn <x,y>       defaultPlayerPosition in tiles. Default: the map's centre.
+ *   --zoom <n>          Integer display scale. Default: 1 (native pixel size), which is
+ *                       left out of the config.
  *   --out <dir>         Output root. Default: src/constants/maps.
  *   --write             Write files (default is a dry run that reports what it would do).
  *   --force             Overwrite an existing map folder.
@@ -65,6 +67,7 @@ function parseArgs(argv) {
     visible: null,
     tileset: null,
     spawn: null,
+    zoom: null,
     out: path.join('src', 'constants', 'maps'),
     write: false,
     force: false,
@@ -88,6 +91,7 @@ function parseArgs(argv) {
     else if (arg === '--visible-layer') opts.visible = [...(opts.visible ?? []), argv[++i]];
     else if (arg === '--tileset') opts.tileset = argv[++i];
     else if (arg === '--spawn') opts.spawn = list(argv[++i]).map(Number);
+    else if (arg === '--zoom') opts.zoom = Number(argv[++i]);
     else if (arg === '--out') opts.out = argv[++i];
     else if (arg.startsWith('--')) throw new Error(`Unknown argument: ${arg}`);
     else if (!opts.input) opts.input = arg;
@@ -97,6 +101,9 @@ function parseArgs(argv) {
   if (!opts.input) throw new Error('Usage: node scripts/tiled-to-map.mjs <input.tmj> [--id map-02-name] [--write]');
   if (opts.spawn && (opts.spawn.length !== 2 || opts.spawn.some(Number.isNaN))) {
     throw new Error('--spawn expects two numbers, e.g. --spawn 35,39');
+  }
+  if (opts.zoom !== null && !(Number.isInteger(opts.zoom) && opts.zoom >= 1)) {
+    throw new Error('--zoom expects a whole number of at least 1, e.g. --zoom 2');
   }
   return opts;
 }
@@ -278,7 +285,7 @@ function renderTiledData(tiled, layers, tilesetConstant, exportName) {
   ].join('\n');
 }
 
-function renderConfig({ id, displayName, exportName, walkable, visible, spawn, bodyHeightTiles }) {
+function renderConfig({ id, displayName, exportName, walkable, visible, spawn, bodyHeightTiles, zoom }) {
   const constName = toUpperSnake(id);
   const lines = [
     `import type { MapDefinition } from '~/types/map';`,
@@ -297,6 +304,7 @@ function renderConfig({ id, displayName, exportName, walkable, visible, spawn, b
     lines.push(`  // ${bodyHeightTiles.tilePx}px tiles: keep the same 40px body the 16px maps draw.`);
     lines.push(`  characterBodyHeightTiles: ${bodyHeightTiles.value},`);
   }
+  if (zoom !== null && zoom !== 1) lines.push(`  zoom: ${zoom},`);
   lines.push(`  tiledData: ${exportName},`, `};`, ``);
   return lines.join('\n');
 }
@@ -397,7 +405,7 @@ async function main() {
 
   const tiledDataSource = await format(renderTiledData(tiled, layers, tilesetConstant, exportName), prettierOptions);
   const configSource = await format(
-    renderConfig({ id, displayName, exportName, walkable, visible, spawn, bodyHeightTiles }).replace(
+    renderConfig({ id, displayName, exportName, walkable, visible, spawn, bodyHeightTiles, zoom: opts.zoom }).replace(
       'TILESET_PLACEHOLDER',
       tilesetConstant,
     ),
