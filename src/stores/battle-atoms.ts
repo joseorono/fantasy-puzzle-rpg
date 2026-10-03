@@ -571,6 +571,7 @@ export const flagMaxFlinchAtom = atom(null, (get, set, enemyId: string) => {
 // ─── Victory-rating stats (see ~/lib/battle-rating.ts) ───────────────────────
 // Thin read selectors for the end-of-battle rating. `?? 0` guards any pre-existing state object.
 export const battleStartedAtAtom = atom((get) => get(battleStateAtom).startedAt ?? 0);
+export const battleStartingHpTotalAtom = atom((get) => get(battleStateAtom).startingHpTotal ?? 0);
 export const maxComboAtom = atom((get) => get(battleStateAtom).maxCombo ?? 0);
 export const itemsUsedAtom = atom((get) => get(battleStateAtom).itemsUsed ?? 0);
 export const ultimateSkillsUsedAtom = atom((get) => get(battleStateAtom).ultimateSkillsUsed);

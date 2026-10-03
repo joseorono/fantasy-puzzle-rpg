@@ -18,7 +18,7 @@ export type RatingCriterionKey = 'time' | 'hp' | 'combo' | 'score' | 'ultimates'
 /** Player-facing row labels, keyed by criterion. Copy lives here, not in the scoring logic. */
 export const RATING_CRITERION_LABELS: Record<RatingCriterionKey, string> = {
   time: 'CLEAR TIME',
-  hp: 'HP REMAINING',
+  hp: 'HP KEPT',
   combo: 'MAX COMBO',
   score: 'MATCH SCORE',
   ultimates: 'ULTIMATES USED',
