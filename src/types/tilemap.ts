@@ -2,12 +2,15 @@
 import type { Position } from './geometry';
 
 export interface TilemapLayer {
+  /** Tiled GIDs, row-major. The top bits carry flip flags; see `decodeTileGid` in `~/lib/map-draw`. */
   data: number[];
   height: number;
   id: number;
   name: string;
+  /** Applied when the layer is drawn into the map's layer cache. */
   opacity: number;
   type: string;
+  /** Editor-only. The map config's `visibleLayers` decides what renders. */
   visible: boolean;
   width: number;
   x: number;
@@ -56,7 +59,7 @@ export interface TiledMapConfig {
   walkableLayers: string[];
   visibleLayers: string[];
   defaultPlayerPosition: Position;
-  /** When true, shows debug overlays (controls, character position, status). Defaults to false. */
+  /** When true, shows the position/status overlay — but only while `DEBUG_MODE` is on. Defaults to false. */
   debug?: boolean;
   /**
    * How many tiles tall the character's *visible body* renders, overriding the global

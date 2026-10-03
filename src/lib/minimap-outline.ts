@@ -135,7 +135,7 @@ export function loopToSmoothPath(loop: OutlinePoint[], rounding: number): string
 
 /**
  * The whole walkable region as one SVG path in tile units, ready for a `viewBox` of
- * `0 0 cols rows`. Built once per map; Fairy Forest (124×76) takes well under a millisecond.
+ * `0 0 cols rows`. Built once per map; Castle Garden (124×76) takes well under a millisecond.
  *
  * @param mask The map's walkable mask.
  * @param rounding Corner rounding, 0–1. Defaults to the tunable.

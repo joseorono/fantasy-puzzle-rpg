@@ -11,10 +11,11 @@ import {
   ultimateSkillsUsedAtom,
   enemiesBrokenAtom,
   battleStartedAtAtom,
+  battleStartingHpTotalAtom,
   lastBattleRatingAtom,
 } from '~/stores/battle-atoms';
 import { BattleRatingScreen } from '~/components/battle/battle-rating-screen';
-import { computeBattleRating, type BattleRatingResult } from '~/lib/battle-rating';
+import { computeBattleRating, computeHpKeptPct, type BattleRatingResult } from '~/lib/battle-rating';
 import { VICTORY_FLAVOR_BY_STARS } from '~/constants/battle-rating';
 import { resetDungeonRunAtom } from '~/stores/dungeon-atoms';
 import { useRouterActions, usePartyActions } from '~/stores/game-store';
@@ -40,6 +41,7 @@ export function BattleOverModal() {
   const ultimateSkillsUsed = useAtomValue(ultimateSkillsUsedAtom);
   const enemiesBroken = useAtomValue(enemiesBrokenAtom);
   const startedAt = useAtomValue(battleStartedAtAtom);
+  const startingHpTotal = useAtomValue(battleStartingHpTotalAtom);
   const resetBattle = useSetAtom(resetBattleAtom);
   const resetDungeonRun = useSetAtom(resetDungeonRunAtom);
   const setLastRating = useSetAtom(lastBattleRatingAtom);
@@ -75,7 +77,7 @@ export function BattleOverModal() {
       elapsedMs: Date.now() - startedAt,
       score,
       maxCombo,
-      hpRemainingPct: maxHpTotal > 0 ? currentHpTotal / maxHpTotal : 0,
+      hpKeptPct: computeHpKeptPct(startingHpTotal, currentHpTotal, maxHpTotal),
       itemsUsed,
       ultimateSkillsUsed,
       enemiesBroken,

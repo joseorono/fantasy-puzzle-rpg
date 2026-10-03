@@ -1,6 +1,7 @@
 import { expect, test, describe } from 'vitest';
 import {
   computeBattleRating,
+  computeHpKeptPct,
   getLootMultiplier,
   formatClearTime,
   formatThousands,
@@ -24,7 +25,7 @@ const perfectRun: BattleRatingInput = {
   elapsedMs: 10_000, // under TIME_FULL_MS → full time
   score: SCORE_TARGET * 2, // >= target → full
   maxCombo: COMBO_TARGET * 2, // >= target → full
-  hpRemainingPct: 1,
+  hpKeptPct: 1,
   itemsUsed: 0,
 };
 
@@ -33,7 +34,7 @@ const poorRun: BattleRatingInput = {
   elapsedMs: TIME_ZERO_MS + 30_000, // over cap → zero time
   score: 0,
   maxCombo: 1,
-  hpRemainingPct: 0.05,
+  hpKeptPct: 0.05,
   itemsUsed: 5,
 };
 
@@ -57,6 +58,29 @@ describe('formatThousands', () => {
   });
 });
 
+describe('computeHpKeptPct', () => {
+  test('entering wounded and taking no damage is flawless', () => {
+    expect(computeHpKeptPct(400, 400, 1000)).toBe(1);
+  });
+
+  test('ending above the starting HP clamps to flawless', () => {
+    expect(computeHpKeptPct(400, 650, 1000)).toBe(1);
+  });
+
+  test('the same loss costs the same at any starting HP', () => {
+    expect(computeHpKeptPct(1000, 700, 1000)).toBeCloseTo(0.7);
+    expect(computeHpKeptPct(500, 200, 1000)).toBeCloseTo(0.7);
+  });
+
+  test('a wipe from full HP keeps nothing', () => {
+    expect(computeHpKeptPct(1000, 0, 1000)).toBe(0);
+  });
+
+  test('zero max HP yields 0', () => {
+    expect(computeHpKeptPct(0, 0, 0)).toBe(0);
+  });
+});
+
 describe('computeBattleRating — extremes', () => {
   test('a fast, flawless, no-item clear earns the max 5 stars', () => {
     const result = computeBattleRating(perfectRun);
@@ -74,7 +98,7 @@ describe('computeBattleRating — extremes', () => {
       elapsedMs: 10_000_000,
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0,
+      hpKeptPct: 0,
       itemsUsed: 99,
     });
     expect(worst.stars).toBeGreaterThanOrEqual(1);
@@ -87,7 +111,7 @@ describe('computeBattleRating — monotonicity', () => {
     elapsedMs: 60_000,
     score: 1_500,
     maxCombo: 3,
-    hpRemainingPct: 0.6,
+    hpKeptPct: 0.6,
     itemsUsed: 1,
   };
 
@@ -100,8 +124,8 @@ describe('computeBattleRating — monotonicity', () => {
   });
 
   test('keeping more HP never lowers the rating', () => {
-    const low = computeBattleRating({ ...base, hpRemainingPct: 0.2 }).normalized;
-    const high = computeBattleRating({ ...base, hpRemainingPct: 0.9 }).normalized;
+    const low = computeBattleRating({ ...base, hpKeptPct: 0.2 }).normalized;
+    const high = computeBattleRating({ ...base, hpKeptPct: 0.9 }).normalized;
     expect(high).toBeGreaterThanOrEqual(low);
   });
 
@@ -117,7 +141,7 @@ describe('computeBattleRating — ultimate reward', () => {
     elapsedMs: 60_000,
     score: 1_000,
     maxCombo: 2,
-    hpRemainingPct: 0.5,
+    hpKeptPct: 0.5,
     itemsUsed: 0,
   };
 
@@ -144,7 +168,7 @@ describe('computeBattleRating — ultimate reward', () => {
       elapsedMs: 4_000,
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 1,
+      hpKeptPct: 1,
       itemsUsed: 0,
       ultimateSkillsUsed: 0,
     });
@@ -157,7 +181,7 @@ describe('computeBattleRating — stagger reward', () => {
     elapsedMs: 60_000,
     score: 1_000,
     maxCombo: 2,
-    hpRemainingPct: 0.5,
+    hpKeptPct: 0.5,
     itemsUsed: 0,
   };
 
@@ -191,7 +215,7 @@ describe('computeBattleRating — stagger reward', () => {
       elapsedMs: 4_000,
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 1,
+      hpKeptPct: 1,
       itemsUsed: 0,
       enemiesBroken: 0,
     });
@@ -205,7 +229,7 @@ describe('computeBattleRating — RNG criteria are weighted low', () => {
       elapsedMs: TIME_ZERO_MS, // zero time
       score: SCORE_TARGET * 10, // maxed
       maxCombo: COMBO_TARGET * 10, // maxed
-      hpRemainingPct: 0, // no HP
+      hpKeptPct: 0, // no HP
       itemsUsed: 0,
     });
     // score+combo weights sum to 0.1 → well under the first (0.30) cutoff.
@@ -250,7 +274,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
       elapsedMs: 40_000,
       score: 500,
       maxCombo: 0,
-      hpRemainingPct: 0.8,
+      hpKeptPct: 0.8,
       itemsUsed: 0,
       ultimateSkillsUsed: 0,
       enemiesBroken: 0,
@@ -263,7 +287,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
       elapsedMs: 40_000,
       score: 500,
       maxCombo: 2,
-      hpRemainingPct: 0.8,
+      hpKeptPct: 0.8,
       itemsUsed: 1,
       ultimateSkillsUsed: 1,
       enemiesBroken: 1,
@@ -284,9 +308,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
 
   test('flawless flag set only when HP is full', () => {
     const flawless = computeBattleRating(perfectRun).criteria.find((c) => c.key === 'hp')!;
-    const hurt = computeBattleRating({ ...perfectRun, hpRemainingPct: 0.5 }).criteria.find(
-      (c) => c.key === 'hp',
-    )!;
+    const hurt = computeBattleRating({ ...perfectRun, hpKeptPct: 0.5 }).criteria.find((c) => c.key === 'hp')!;
     expect(flawless.isFlawless).toBe(true);
     expect(hurt.isFlawless).toBe(false);
   });
@@ -296,7 +318,7 @@ describe('computeBattleRating — penalty + breakdown', () => {
       elapsedMs: 42_000,
       score: 1_240,
       maxCombo: 4,
-      hpRemainingPct: 0.88,
+      hpKeptPct: 0.88,
       itemsUsed: 3,
       enemiesBroken: 2,
     });
@@ -347,7 +369,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: TIME_ZERO_MS, // subTime 0
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.75, // 0.4 * 0.75 = 0.30
+      hpKeptPct: 0.75, // 0.4 * 0.75 = 0.30
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.3, 5);
@@ -359,7 +381,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: 50_000, // subTime 0.8 → 0.5 * 0.8 = 0.40
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.3, // 0.4 * 0.30 = 0.12
+      hpKeptPct: 0.3, // 0.4 * 0.30 = 0.12
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.52, 5);
@@ -371,7 +393,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: TIME_FULL_MS, // subTime 1 → 0.50
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.55, // 0.4 * 0.55 = 0.22
+      hpKeptPct: 0.55, // 0.4 * 0.55 = 0.22
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.72, 5);
@@ -383,7 +405,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: TIME_FULL_MS, // 0.50
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.875, // 0.4 * 0.875 = 0.35
+      hpKeptPct: 0.875, // 0.4 * 0.875 = 0.35
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.85, 5);
@@ -397,7 +419,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: 4_000, // super short → subTime clamps to 1 → 0.50
       score: 0, // no time to rack up score
       maxCombo: 0, // no cascade
-      hpRemainingPct: 1, // untouched → 0.40
+      hpKeptPct: 1, // untouched → 0.40
       itemsUsed: 0,
     });
     expect(result.normalized).toBeCloseTo(0.9, 5);
@@ -409,7 +431,7 @@ describe('computeBattleRating — star boundaries (1–5)', () => {
       elapsedMs: TIME_ZERO_MS,
       score: 0,
       maxCombo: 0,
-      hpRemainingPct: 0.7, // 0.28 < 0.30
+      hpKeptPct: 0.7, // 0.28 < 0.30
       itemsUsed: 0,
     });
     expect(result.stars).toBe(1);

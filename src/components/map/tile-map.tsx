@@ -1,8 +1,8 @@
-// components/Tilemap.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
 import type { Position } from '~/types/geometry';
+import { DEBUG_MODE } from '~/constants/dev';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { MapDebugOverlay } from './map-debug-overlay';
 import { MapInfoPanel } from './map-info-panel';
@@ -105,6 +105,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const spriteRef = useRef<HTMLDivElement>(null);
   const [tileset, setTileset] = useState<HTMLImageElement | null>(null);
+  // The sheet URL that failed to load, if any; compared against the current one so a map change clears it.
+  const [failedTileset, setFailedTileset] = useState<string | null>(null);
   const [mapData] = useState<TilemapData>(map.tiledData);
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
@@ -158,12 +160,10 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   useEffect(() => {
     const img = new Image();
     img.src = tilesetImage;
-    img.onload = () => {
-      console.log('Tileset loaded:', tilesetImage, 'Size:', img.width, 'x', img.height);
-      setTileset(img);
-    };
+    img.onload = () => setTileset(img);
     img.onerror = () => {
       console.error('Failed to load tileset image:', tilesetImage);
+      setFailedTileset(tilesetImage);
     };
   }, [tilesetImage]);
 
@@ -703,7 +703,13 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
             />
           )}
 
-          {debug && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
+          {failedTileset === tilesetImage && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-4 text-center text-xs leading-relaxed text-red-300">
+              Tileset failed to load: {tilesetImage}
+            </div>
+          )}
+
+          {debug && DEBUG_MODE && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
       </div>
 

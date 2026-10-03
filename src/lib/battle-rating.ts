@@ -35,8 +35,8 @@ export interface BattleRatingInput {
   score: number;
   /** Deepest cascade combo reached (chain length). */
   maxCombo: number;
-  /** Party HP remaining as a fraction (0..1) of max HP at victory. */
-  hpRemainingPct: number;
+  /** 1 − net party HP lost this battle as a fraction of party max HP (see {@link computeHpKeptPct}). */
+  hpKeptPct: number;
   /** Number of battle items consumed (penalty). */
   itemsUsed: number;
   /** Number of ultimate skills used (capped bonus). Defaults to 0 when omitted. */
@@ -60,7 +60,7 @@ export interface RatingCriterion {
   isPenalty: boolean;
   /** True for board-RNG-dependent criteria (score, combo) so the UI can de-emphasize them. */
   isRngHeavy: boolean;
-  /** True when HP remaining is full (a flawless clear). */
+  /** True when no net HP was lost this battle (a flawless clear). */
   isFlawless: boolean;
 }
 
@@ -94,6 +94,21 @@ function clamp01(value: number): number {
 }
 
 /**
+ * The HP criterion's input: how much of the party's HP survived this battle. Scored on net loss
+ * against the HP the party walked in with, so entering wounded isn't punished, and normalized by
+ * max HP so the same hit costs the same at any starting HP. Healing back to (or past) the starting
+ * total counts as flawless.
+ * @param startHpTotal Party HP summed at battle start.
+ * @param endHpTotal Party HP summed at victory.
+ * @param maxHpTotal Party max HP summed.
+ * @returns A fraction in [0, 1]; 1 means no net HP lost. 0 when max HP is 0.
+ */
+export function computeHpKeptPct(startHpTotal: number, endHpTotal: number, maxHpTotal: number): number {
+  if (maxHpTotal <= 0) return 0;
+  return 1 - clamp01((startHpTotal - endHpTotal) / maxHpTotal);
+}
+
+/**
  * Formats a duration as `M:SS` (e.g. 42000 → "0:42", 125000 → "2:05").
  * @param ms Duration in milliseconds (negative is treated as 0).
  */
@@ -106,7 +121,9 @@ export function formatClearTime(ms: number): string {
 
 /** Inserts thousands separators (locale-independent), e.g. 12480 → "12,480". */
 export function formatThousands(value: number): string {
-  return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /** Faster clears score higher; linear between {@link TIME_FULL_MS} and {@link TIME_ZERO_MS}. */
@@ -124,10 +141,10 @@ function toPoints(weightedNormalized: number): number {
  * @returns A star count, total points, and the per-criterion breakdown for display.
  */
 export function computeBattleRating(input: BattleRatingInput): BattleRatingResult {
-  const { elapsedMs, score, maxCombo, hpRemainingPct, itemsUsed, ultimateSkillsUsed = 0, enemiesBroken = 0 } = input;
+  const { elapsedMs, score, maxCombo, hpKeptPct, itemsUsed, ultimateSkillsUsed = 0, enemiesBroken = 0 } = input;
 
   const subTime = normalizeTime(elapsedMs);
-  const subHp = clamp01(hpRemainingPct);
+  const subHp = clamp01(hpKeptPct);
   const subScore = clamp01(SCORE_TARGET > 0 ? score / SCORE_TARGET : 0);
   const subCombo = clamp01(COMBO_TARGET > 0 ? maxCombo / COMBO_TARGET : 0);
 
@@ -140,10 +157,7 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
   const itemPenalty = Math.min(Math.max(0, itemsUsed) * ITEM_PENALTY_PER_USE, MAX_ITEM_PENALTY);
   // Using ultimates grants a small capped bonus on top of the positive score (outside the weight
   // sum, so it never dents the skill ceiling — a flawless no-ultimate clear is already maxed).
-  const ultimateBonus = Math.min(
-    Math.max(0, ultimateSkillsUsed) * ULTIMATE_BONUS_PER_USE,
-    MAX_ULTIMATE_BONUS,
-  );
+  const ultimateBonus = Math.min(Math.max(0, ultimateSkillsUsed) * ULTIMATE_BONUS_PER_USE, MAX_ULTIMATE_BONUS);
   // Staggering enemies earns its own bonus on the same terms, capped independently of the
   // ultimates one: the two are different plays and are never pooled.
   const staggerBonus = Math.min(Math.max(0, enemiesBroken) * STAGGER_BONUS_PER_BREAK, MAX_STAGGER_BONUS);
@@ -240,7 +254,10 @@ export function computeBattleRating(input: BattleRatingInput): BattleRatingResul
       : []),
   ];
 
-  const totalScore = Math.max(0, criteria.reduce((sum, c) => sum + c.points, 0));
+  const totalScore = Math.max(
+    0,
+    criteria.reduce((sum, c) => sum + c.points, 0),
+  );
 
   return { stars, totalScore, normalized, lootMultiplier: getLootMultiplier(stars), criteria };
 }
