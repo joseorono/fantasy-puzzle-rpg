@@ -53,10 +53,15 @@ export function useSaveGameActions() {
     // Flashed here rather than in `autosave()` so manual saves get the badge too, and the
     // slot id is what decides the wording.
     store.set(saveIndicatorAtom, (prev) => ({ id: (prev?.id ?? 0) + 1, isAutosave: slotId === 'autosave' }));
-    soundService.playSound(SoundNames.saveChime, 0.7);
+    soundService.playSound(SoundNames.saveChime, slotId === 'autosave' ? 0.35 : 0.7);
   }
 
-  /** Writes the autosave slot. Called at major progress beats, never by the player. */
+  /**
+   * Writes the autosave slot. Called at major progress beats, never by the player:
+   * entering a town node, leaving town, exiting the rewards screen of an overworld
+   * fight, and finishing a dungeon. Fights inside a dungeon must not call it — the
+   * run is in-memory only, so the one completion autosave is its sole checkpoint.
+   */
   function autosave(): void {
     saveToSlot('autosave');
   }
