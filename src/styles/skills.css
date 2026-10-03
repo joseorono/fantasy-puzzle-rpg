@@ -982,6 +982,13 @@
   z-index: 70;
 }
 
+/* Secondary to the bitmap title — the shared .gom-subtitle is sized for VICTORY at 3x. */
+.skill-celebration .gom-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.625rem;
+  color: #e3bb92;
+}
+
 /* ── Slot hover card ───────────────────────────────────────────────────────
    A compact read of a slot you haven't selected: what it is, what it does, and
    what it costs. Sized around the list body, which lists.css pins to 0.92rem
