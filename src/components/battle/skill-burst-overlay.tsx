@@ -54,20 +54,23 @@ export function SkillBurstOverlay() {
       {/* Radial speed lines */}
       <div className="skill-burst-lines" style={{ '--burst-color-light': colors.light } as React.CSSProperties} />
 
-      {/* Full-body portrait cut-in on a diagonal band */}
-      <div className="skill-burst-cutin">
-        <img src={sprites.face} alt="" className="skill-burst-cutin__portrait" />
-      </div>
+      {/* Centered stage so the cut-in, battler and ribbon stay grouped on wide screens */}
+      <div className="skill-burst-stage">
+        {/* Full-body portrait backdrop on a diagonal band */}
+        <div className="skill-burst-cutin">
+          <img src={sprites.face} alt="" className="skill-burst-cutin__portrait" />
+        </div>
 
-      {/* Battler playing its cast motion, scaled up */}
-      <div className="skill-burst-battler">
-        <StellaBattlerSprite characterClass={displayData.characterClass} motion={sprites.castMotion} mode="once" />
-      </div>
+        <div className="skill-burst-hero">
+          {/* Battler playing its cast motion, scaled up */}
+          <div className="skill-burst-battler">
+            <StellaBattlerSprite characterClass={displayData.characterClass} motion={sprites.castMotion} mode="once" />
+          </div>
 
-      {/* Skill name on a ribbon banner (reuses the title-sign artwork). */}
-      <div className="absolute inset-0 flex items-end justify-center pb-[16%]">
-        <div className="skill-burst-text title-sign title-sign--large title-sign--text-gold">
-          <span className="title-sign__text pixel-font">{displayData.skillName}</span>
+          {/* Skill name on a ribbon banner (reuses the title-sign artwork). */}
+          <div className="skill-burst-text title-sign title-sign--large title-sign--text-gold">
+            <span className="title-sign__text pixel-font">{displayData.skillName}</span>
+          </div>
         </div>
       </div>
     </div>

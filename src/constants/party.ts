@@ -289,7 +289,7 @@ export const CHARACTER_BATTLE_COLORS = {
 
 // ─── Skill Burst Overlay ─────────────────────────────────────────────
 
-export const SKILL_BURST_DURATION_MS = 900;
+export const SKILL_BURST_DURATION_MS = 1000;
 
 export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: string }> = {
   warrior: { bg: 'rgba(37, 99, 235, 0.85)', light: 'rgba(147, 197, 253, 0.5)' },
