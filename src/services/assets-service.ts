@@ -1,5 +1,6 @@
 import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
+import { ALL_MAPS } from '~/constants/maps';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -185,10 +186,8 @@ export const assetList: string[] = [
   '/assets/tabs/UI_tab_Off.png',
   '/assets/tabs/UI_tab_On.png',
 
-  // Tilesets
-  '/assets/tileset/demo-map-2.png',
-  '/assets/tileset/demo-map.png',
-  '/assets/tileset/pc-forge-tileset.png',
+  // Tilesets — every registered map's sheet, so a new map never needs a line here.
+  ...new Set(ALL_MAPS.map((map) => map.tilesetImage)),
 
   // Title Signs
   '/assets/title-signs/ribbon-red-large.png',

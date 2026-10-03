@@ -12,9 +12,9 @@ import type { TilemapTileset } from '~/types/tilemap';
  * sheet is named in exactly one place. Tiled's authoring metadata (`tiledversion`,
  * `type`, `version`) is dropped; nothing reads it.
  *
- * `src/components/map/tile-map.tsx` reads `columns`, `tilewidth`, `tileheight` and
- * `firstgid` off `tilesets[0]` to slice tiles out of the sheet, so those must match the
- * real image.
+ * `src/lib/map-draw.ts` reads `columns`, `tilewidth`, `tileheight`, `margin`, `spacing`
+ * and `firstgid` off `tilesets[0]` to slice tiles out of the sheet, so those must match
+ * the real image.
  */
 
 /** 512×512 @ 16px — the original overworld sheet (`map-00`). */
