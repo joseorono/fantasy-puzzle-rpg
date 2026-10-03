@@ -13,6 +13,9 @@
  * flavours — and rewrites the `../public/assets/...` authoring path to the `/assets/...`
  * path the browser actually fetches.
  *
+ * Group layers are flattened in file order. Object and image layers are dropped, and
+ * layer features the renderer ignores (offsets, tint, parallax) are reported as warnings.
+ *
  * Usage:
  *   node scripts/tiled-to-map.mjs tiled/pc-forest-01.tmj --id map-02-deep-woods
  *   node scripts/tiled-to-map.mjs tiled/pc-forest-01.tmj --id map-02-deep-woods --write
@@ -36,7 +39,9 @@
  *                       left out of the config.
  *   --out <dir>         Output root. Default: src/constants/maps.
  *   --write             Write files (default is a dry run that reports what it would do).
- *   --force             Overwrite an existing map folder.
+ *   --force             Regenerate tiled-data.ts in an existing map folder. config.ts is kept,
+ *                       since it holds hand-authored nodes, loot and zoom.
+ *   --force-config      Also regenerate config.ts.
  *
  * The registry wiring is deliberately NOT automated — the script prints the three edits
  * (`MapId`, `MAP_REGISTRY`, `MAP_ID_COVERAGE`) so they stay reviewable.
@@ -71,6 +76,7 @@ function parseArgs(argv) {
     out: path.join('src', 'constants', 'maps'),
     write: false,
     force: false,
+    forceConfig: false,
   };
   const list = (value) =>
     value
@@ -82,6 +88,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--write') opts.write = true;
     else if (arg === '--force') opts.force = true;
+    else if (arg === '--force-config') opts.forceConfig = true;
     else if (arg === '--id') opts.id = argv[++i];
     else if (arg === '--name') opts.name = argv[++i];
     else if (arg === '--walkable') opts.walkable = [...(opts.walkable ?? []), ...list(argv[++i])];
@@ -194,7 +201,7 @@ function resolveTileset(tiled, inputFile) {
   if (entries.length === 0) throw new Error('Map has no tileset.');
   if (entries.length > 1) {
     throw new Error(
-      `Map uses ${entries.length} tilesets; tile-map.tsx only reads tilesets[0]. Merge the sheets in Tiled first.`,
+      `Map uses ${entries.length} tilesets; map-draw.ts only reads tilesets[0]. Merge the sheets in Tiled first.`,
     );
   }
 
@@ -209,8 +216,12 @@ function resolveTileset(tiled, inputFile) {
     raw = /\.tsx$/i.test(sidecar) ? parseTsx(text, entry.source) : JSON.parse(text);
   }
 
+  const warnings = [];
+  if (raw.tileoffset)
+    warnings.push(`tileset has a tileoffset (${raw.tileoffset.x},${raw.tileoffset.y}); the renderer ignores it.`);
+
   // Tiled's authoring metadata (tiledversion/type/version) is dropped — nothing reads it.
-  return {
+  const tileset = {
     columns: raw.columns,
     firstgid,
     image: toRuntimeImagePath(raw.image),
@@ -223,6 +234,7 @@ function resolveTileset(tiled, inputFile) {
     tileheight: raw.tileheight,
     tilewidth: raw.tilewidth,
   };
+  return { tileset, warnings };
 }
 
 /** Existing `export const NAME: TilemapTileset` entries, keyed by their runtime image path. */
@@ -236,6 +248,28 @@ function readExistingTilesets() {
     if (image) found[image[1]] = name;
   }
   return found;
+}
+
+/** Any of Tiled's four flip/rotate flag bits in a GID. */
+const TILED_FLAG_MASK = 0xf0000000;
+
+/** Walks the layer tree depth-first in file order, flattening groups into their tile layers. */
+function collectTileLayers(layers, tileLayers = [], dropped = []) {
+  for (const layer of layers ?? []) {
+    if (layer.type === 'group') collectTileLayers(layer.layers, tileLayers, dropped);
+    else if (layer.type === 'tilelayer') tileLayers.push(layer);
+    else dropped.push(layer);
+  }
+  return { tileLayers, dropped };
+}
+
+/** Per-layer Tiled features the renderer does not honour, as `name: feature, feature` strings. */
+function describeIgnoredLayerFeatures(layer) {
+  const features = [];
+  if (layer.offsetx || layer.offsety) features.push(`offset ${layer.offsetx ?? 0},${layer.offsety ?? 0}`);
+  if (layer.tintcolor) features.push(`tintcolor ${layer.tintcolor}`);
+  if ((layer.parallaxx ?? 1) !== 1 || (layer.parallaxy ?? 1) !== 1) features.push('parallax');
+  return features.length > 0 ? `${layer.name}: ${features.join(', ')}` : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -298,7 +332,6 @@ function renderConfig({ id, displayName, exportName, walkable, visible, spawn, b
     `  walkableLayers: ${JSON.stringify(walkable)},`,
     `  visibleLayers: ${JSON.stringify(visible)},`,
     `  defaultPlayerPosition: { x: ${spawn[0]}, y: ${spawn[1]} },`,
-    `  debug: true,`,
   ];
   if (bodyHeightTiles !== null) {
     lines.push(`  // ${bodyHeightTiles.tilePx}px tiles: keep the same 40px body the 16px maps draw.`);
@@ -330,10 +363,9 @@ async function main() {
   const exportName = `${toCamel(id)}TiledData`;
 
   /* ---- layers ---- */
-  const tileLayers = (tiled.layers ?? []).filter((layer) => layer.type === 'tilelayer');
+  const { tileLayers, dropped } = collectTileLayers(tiled.layers);
   if (tileLayers.length === 0) throw new Error('Map has no tile layers.');
 
-  const dropped = (tiled.layers ?? []).filter((layer) => layer.type !== 'tilelayer');
   const encoded = tileLayers.filter((layer) => !Array.isArray(layer.data));
   if (encoded.length > 0) {
     throw new Error(
@@ -342,8 +374,18 @@ async function main() {
     );
   }
 
+  const flippedCount = tileLayers.reduce(
+    (count, layer) => count + layer.data.filter((gid) => (gid & TILED_FLAG_MASK) !== 0).length,
+    0,
+  );
+  const translucent = tileLayers
+    .filter((layer) => layer.opacity !== 1)
+    .map((layer) => `${layer.name} ${layer.opacity}`);
+  const ignoredFeatures = tileLayers.map(describeIgnoredLayerFeatures).filter(Boolean);
+
   const layerNames = tileLayers.map((layer) => layer.name);
-  const visible = opts.visible ?? layerNames;
+  const hiddenLayers = tileLayers.filter((layer) => layer.visible === false).map((layer) => layer.name);
+  const visible = opts.visible ?? layerNames.filter((name) => !hiddenLayers.includes(name));
   const walkable = opts.walkable ?? (layerNames.includes('road') ? ['road'] : null);
   if (!walkable) {
     throw new Error(
@@ -372,7 +414,7 @@ async function main() {
   }));
 
   /* ---- tileset ---- */
-  const tileset = resolveTileset(tiled, inputFile);
+  const { tileset, warnings: tilesetWarnings } = resolveTileset(tiled, inputFile);
   const existing = readExistingTilesets();
   const matched = opts.tileset ?? existing[tileset.image];
   const tilesetConstant = matched ?? `TILESET_${toUpperSnake(tileset.name)}`;
@@ -390,6 +432,9 @@ async function main() {
         };
 
   const spawn = opts.spawn ?? [Math.floor(tiled.width / 2), Math.floor(tiled.height / 2)];
+  const isSpawnWalkable = tileLayers
+    .filter((layer) => walkable.includes(layer.name))
+    .some((layer) => layer.data[spawn[1] * layer.width + spawn[0]] !== 0);
 
   /* ---- render ---- */
   const prettierOptions = { ...((await resolveConfig(TILESET_DATA_FILE)) ?? {}), parser: 'typescript' };
@@ -400,8 +445,12 @@ async function main() {
   const configFile = path.join(outDir, 'config.ts');
 
   if (existsSync(outDir) && !opts.force) {
-    throw new Error(`${path.relative(REPO_ROOT, outDir)} already exists. Pass --force to overwrite.`);
+    throw new Error(
+      `${path.relative(REPO_ROOT, outDir)} already exists. Pass --force to regenerate tiled-data.ts ` +
+        '(config.ts is kept unless you also pass --force-config).',
+    );
   }
+  const writeConfig = opts.forceConfig || !existsSync(configFile);
 
   const tiledDataSource = await format(renderTiledData(tiled, layers, tilesetConstant, exportName), prettierOptions);
   const configSource = await format(
@@ -437,6 +486,10 @@ async function main() {
   if (dropped.length > 0) {
     console.log(`  note   dropped ${dropped.length} non-tile layer(s): ${dropped.map((l) => l.name).join(', ')}`);
   }
+  if (flippedCount > 0) console.log(`  note   ${flippedCount} flipped/rotated tile(s)`);
+  if (translucent.length > 0) console.log(`  note   layer opacity applied at draw time: ${translucent.join(', ')}`);
+  for (const feature of ignoredFeatures) console.log(`  WARN   the renderer ignores — ${feature}`);
+  for (const warning of tilesetWarnings) console.log(`  WARN   ${warning}`);
   if (imageMissing) {
     console.log(
       `  WARN   tileset image not in public/: ${tileset.image} — copy the sheet there or the map renders blank.`,
@@ -447,16 +500,25 @@ async function main() {
       `  note   ${bodyHeightTiles.tilePx}px tiles: config sets characterBodyHeightTiles ${bodyHeightTiles.value}`,
     );
   }
+  if (hiddenLayers.length > 0 && !opts.visible) {
+    console.log(`  note   hidden in Tiled, left out of visibleLayers: ${hiddenLayers.join(', ')}`);
+  }
+  if (!isSpawnWalkable) {
+    console.log(
+      `  WARN   spawn ${spawn[0]},${spawn[1]} is not on a walkable layer — the game will fall back to the first walkable tile.`,
+    );
+  }
 
   const label = opts.write ? 'ok    ' : 'would ';
   console.log(`  ${label} write ${rel(tiledDataFile)}  (${layers.length} layers)`);
-  console.log(`  ${label} write ${rel(configFile)}`);
+  if (writeConfig) console.log(`  ${label} write ${rel(configFile)}`);
+  else console.log(`  keep   ${rel(configFile)}  (hand-edited; pass --force-config to regenerate)`);
   if (isNewTileset) console.log(`  ${label} append ${tilesetConstant} to ${rel(TILESET_DATA_FILE)}`);
 
   if (opts.write) {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(tiledDataFile, tiledDataSource);
-    writeFileSync(configFile, configSource);
+    if (writeConfig) writeFileSync(configFile, configSource);
     if (tilesetSource) writeFileSync(TILESET_DATA_FILE, tilesetSource);
   }
 
