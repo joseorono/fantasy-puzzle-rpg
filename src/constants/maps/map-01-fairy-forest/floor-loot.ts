@@ -6,6 +6,22 @@ import { createFloorLootSpot } from '~/lib/loot';
  * Every spot sits on a walkable `road` tile — positions are (row, col).
  */
 export const FAIRY_FOREST_FLOOR_LOOT: FloorLootSpot[] = [
+  // ─── Spawn clearing ─────────────────────────────────────────────────
+  createFloorLootSpot('fairy_forest_loot_11', 38, 29, {
+    coins: 35,
+    copper: 3,
+  }),
+  createFloorLootSpot('fairy_forest_loot_12', 42, 36, {
+    coins: 45,
+    copper: 2,
+    iron: 1,
+  }),
+  createFloorLootSpot('fairy_forest_loot_13', 46, 27, {
+    coins: 50,
+    copper: 4,
+  }),
+
+  // ─── Trail ──────────────────────────────────────────────────────────
   createFloorLootSpot('fairy_forest_loot_1', 1, 10, {
     coins: 40,
     copper: 3,

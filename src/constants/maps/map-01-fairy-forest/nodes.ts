@@ -1,0 +1,166 @@
+import type { InteractiveMapNode } from '~/types/map-node';
+import { MOSSY_CHEST_LOOT, WILLOW_HOLLOW_CHEST_LOOT, FAIRY_CACHE_LOOT, THORNWOOD_CHEST_LOOT } from './loot-tables';
+
+/**
+ * Interactive nodes on the Fairy Forest trail. Every position sits on a reachable `road` tile.
+ * Ids are prefixed because map progress is keyed by node id across all maps.
+ */
+export const FAIRY_FOREST_NODES: InteractiveMapNode[] = [
+  // ─── Spawn clearing ─────────────────────────────────────────────────
+  {
+    id: 'fairy_forest_treasure_1',
+    type: 'Treasure',
+    position: { row: 36, col: 23 },
+    name: 'Mossy Chest',
+    blocksMovement: false,
+    description: 'A moss-covered chest tucked into a hollow between the roots',
+    lootPayload: MOSSY_CHEST_LOOT,
+  },
+  {
+    id: 'fairy_forest_mystery_1',
+    type: 'Mystery',
+    position: { row: 44, col: 22 },
+    name: 'Fairy Ring',
+    dialogueScene: 'fairy-ring',
+    blocksMovement: false,
+    description: 'A perfect circle of glowing mushrooms hums faintly',
+  },
+  {
+    id: 'fairy_forest_battle_1',
+    type: 'Battle',
+    position: { row: 39, col: 49 },
+    name: 'Glade Ambush',
+    dialogueScene: 'glade-ambush',
+    blocksMovement: false,
+    description: 'Something rustles in the ferns at the edge of the glade',
+  },
+
+  // ─── Mid trail ──────────────────────────────────────────────────────
+  {
+    id: 'fairy_forest_battle_2',
+    type: 'Battle',
+    position: { row: 19, col: 32 },
+    name: 'Bramble Path',
+    blocksMovement: false,
+    description: 'Creatures lurk among the brambles to the north',
+  },
+  {
+    id: 'fairy_forest_dungeon_1',
+    type: 'Dungeon',
+    position: { row: 28, col: 57 },
+    name: 'Rootbound Den',
+    dungeonId: 'easy-dungeon',
+    blocksMovement: false,
+    description: 'A burrow beneath an ancient oak, its roots twisting into the dark',
+  },
+  {
+    id: 'fairy_forest_battle_3',
+    type: 'Battle',
+    position: { row: 50, col: 15 },
+    name: 'Mire Crossing',
+    blocksMovement: false,
+    description: 'Frogs croak from the boggy undergrowth',
+  },
+  {
+    id: 'fairy_forest_town_1',
+    type: 'Town',
+    position: { row: 56, col: 9 },
+    name: 'Glimmerdell',
+    blocksMovement: false,
+    description: 'A hidden hamlet lit by drifting fairy lights',
+  },
+  {
+    id: 'fairy_forest_battle_4',
+    type: 'Battle',
+    position: { row: 38, col: 74 },
+    name: 'Sunlit Clearing',
+    blocksMovement: false,
+    description: 'The clearing is too quiet — something is watching',
+  },
+  {
+    id: 'fairy_forest_battle_5',
+    type: 'Battle',
+    position: { row: 61, col: 55 },
+    name: 'Fernshade Hollow',
+    blocksMovement: false,
+    description: 'Golems slumber beneath the ferns',
+  },
+  {
+    id: 'fairy_forest_battle_6',
+    type: 'Battle',
+    position: { row: 67, col: 40 },
+    name: 'Toadstool Grove',
+    blocksMovement: false,
+    description: 'Giant toadstools shelter a nest of frogs',
+  },
+
+  // ─── Far reaches ────────────────────────────────────────────────────
+  {
+    id: 'fairy_forest_treasure_2',
+    type: 'Treasure',
+    position: { row: 0, col: 1 },
+    name: 'Willow Hollow Chest',
+    blocksMovement: false,
+    description: 'A chest hidden beneath the drooping willows',
+    lootPayload: WILLOW_HOLLOW_CHEST_LOOT,
+  },
+  {
+    id: 'fairy_forest_battle_7',
+    type: 'Battle',
+    position: { row: 10, col: 84 },
+    name: 'Canopy Skirmish',
+    blocksMovement: false,
+    description: 'Moss-covered sentinels guard the northern canopy',
+  },
+  {
+    id: 'fairy_forest_treasure_3',
+    type: 'Treasure',
+    position: { row: 21, col: 104 },
+    name: 'Fairy Cache',
+    blocksMovement: false,
+    description: 'Trinkets the fairies have hoarded, glittering in the grass',
+    lootPayload: FAIRY_CACHE_LOOT,
+  },
+  {
+    id: 'fairy_forest_boss_1',
+    type: 'Boss',
+    position: { row: 12, col: 112 },
+    name: 'Elder Treant',
+    dialogueScene: 'elder-treant',
+    blocksMovement: false,
+    description: 'An ancient guardian of the forest stirs from its slumber',
+  },
+  {
+    id: 'fairy_forest_battle_8',
+    type: 'Battle',
+    position: { row: 66, col: 100 },
+    name: 'Thornwood Pass',
+    blocksMovement: false,
+    description: 'Thorny vines and worse block the eastern pass',
+  },
+  {
+    id: 'fairy_forest_treasure_4',
+    type: 'Treasure',
+    position: { row: 55, col: 113 },
+    name: 'Thornwood Chest',
+    blocksMovement: false,
+    description: 'A sturdy chest wrapped in thorny vines',
+    lootPayload: THORNWOOD_CHEST_LOOT,
+  },
+  {
+    id: 'fairy_forest_boss_2',
+    type: 'Boss',
+    position: { row: 73, col: 113 },
+    name: 'Bog Sovereign',
+    blocksMovement: false,
+    description: 'The bloated ruler of the eastern bog',
+  },
+  {
+    id: 'fairy_forest_boss_3',
+    type: 'Boss',
+    position: { row: 77, col: 34 },
+    name: 'Gatekeeper of the Glade',
+    blocksMovement: false,
+    description: 'A colossal golem blocks the southern path out of the forest',
+  },
+];
