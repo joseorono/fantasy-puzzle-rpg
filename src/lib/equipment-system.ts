@@ -208,8 +208,10 @@ export function getAvailableEquipmentForSlot(
     // Count how many of this exact (item, rarity) are equipped by OTHER members
     const equippedByOthers = party.filter((member) => {
       if (member.id === character.id) return false;
-      const weaponMatch = member.equippedWeaponId === item.id && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
-      const armorMatch = member.equippedArmorId === item.id && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
+      const weaponMatch =
+        member.equippedWeaponId === item.id && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
+      const armorMatch =
+        member.equippedArmorId === item.id && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
       return weaponMatch || armorMatch;
     }).length;
 
@@ -223,15 +225,28 @@ export function getAvailableEquipmentForSlot(
 }
 
 /**
+ * Party members currently wearing a specific (itemId, rarity) instance in either slot.
+ * A member with no stored rarity on a slot counts as `DEFAULT_RARITY`.
+ * @param party - Party to search
+ * @param itemId - Equipment item id
+ * @param rarity - Rolled rarity of the instance
+ * @returns The members wearing it, in party order
+ */
+export function getEquippedHolders(party: CharacterData[], itemId: string, rarity: RarityTier): CharacterData[] {
+  return party.filter((member) => {
+    const weaponMatch =
+      member.equippedWeaponId === itemId && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
+    const armorMatch = member.equippedArmorId === itemId && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
+    return weaponMatch || armorMatch;
+  });
+}
+
+/**
  * Count how many party members have a specific (itemId, rarity) instance equipped
- * in either slot.
+ * in either slot. An item id maps to a single slot, so a member counts at most once.
  */
 export function countEquippedInstances(party: CharacterData[], itemId: string, rarity: RarityTier): number {
-  return party.reduce((count, member) => {
-    const weaponMatch = member.equippedWeaponId === itemId && (member.equippedWeaponRarity ?? DEFAULT_RARITY) === rarity;
-    const armorMatch = member.equippedArmorId === itemId && (member.equippedArmorRarity ?? DEFAULT_RARITY) === rarity;
-    return count + (weaponMatch ? 1 : 0) + (armorMatch ? 1 : 0);
-  }, 0);
+  return getEquippedHolders(party, itemId, rarity).length;
 }
 
 /**

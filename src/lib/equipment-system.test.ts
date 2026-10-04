@@ -11,6 +11,8 @@ import {
   getScaledEquipmentStats,
   getOwnedEquipmentInstances,
   findEquipmentItem,
+  getEquippedHolders,
+  countEquippedInstances,
 } from './equipment-system';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { InventoryItem } from '~/lib/inventory';
@@ -34,7 +36,7 @@ function makeCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
     maxCooldown: 30,
     unlockedSkillIds: ['warrior-smash'],
     selectedSkillId: 'warrior-smash',
-  unlockedPassiveIds: [],
+    unlockedPassiveIds: [],
     skillLevels: {},
     ...overrides,
   };
@@ -349,5 +351,38 @@ describe('getOwnedEquipmentInstances', () => {
     const wielder = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'common' });
     const result = getOwnedEquipmentInstances(inventory, [wielder]);
     expect(result[0].available).toBe(1);
+  });
+});
+
+describe('getEquippedHolders', () => {
+  const party = [
+    makeCharacter({ id: 'warrior', equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'rare' }),
+    makeCharacter({ id: 'rogue', class: 'rogue', equippedArmorId: 'iron-armor' }),
+    makeCharacter({ id: 'mage', class: 'mage', equippedArmorId: 'iron-armor', equippedArmorRarity: 'epic' }),
+  ];
+
+  it('returns nobody when the instance is not worn', () => {
+    expect(getEquippedHolders(party, 'steel-sword', 'common')).toEqual([]);
+  });
+
+  it('finds a weapon holder', () => {
+    expect(getEquippedHolders(party, 'iron-sword', 'rare').map((member) => member.id)).toEqual(['warrior']);
+  });
+
+  it('finds armor holders by exact rarity', () => {
+    expect(getEquippedHolders(party, 'iron-armor', 'epic').map((member) => member.id)).toEqual(['mage']);
+  });
+
+  it('excludes a rarity mismatch', () => {
+    expect(getEquippedHolders(party, 'iron-sword', 'common')).toEqual([]);
+  });
+
+  it('treats a missing stored rarity as common', () => {
+    expect(getEquippedHolders(party, 'iron-armor', 'common').map((member) => member.id)).toEqual(['rogue']);
+  });
+
+  it('matches countEquippedInstances', () => {
+    expect(countEquippedInstances(party, 'iron-armor', 'common')).toBe(1);
+    expect(countEquippedInstances(party, 'steel-sword', 'common')).toBe(0);
   });
 });

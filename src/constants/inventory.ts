@@ -7,6 +7,9 @@ import { CRAFTING_FEE } from '~/constants/blacksmith';
 
 export const MAX_AMOUNT_PER_ITEM = 99;
 
+/** HP a fallen hero gets on top of a heal item's amount when the item revives them. */
+export const ITEM_REVIVE_BASE_HP = 1;
+
 /*
  * Items
  */
