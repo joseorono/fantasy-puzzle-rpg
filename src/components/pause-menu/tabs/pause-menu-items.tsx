@@ -1,56 +1,88 @@
 import { useEffect, useRef, useState } from 'react';
-import NumberFlow from '@number-flow/react';
 import { useInventory, useParty, useInventoryActions, usePartyActions } from '~/stores/game-store';
 import { ConsumableItems, EquipmentItems } from '~/constants/inventory';
-import { filterInventoryByType, getItemQuantity } from '~/lib/inventory';
-import { getHealableMembers, getDeadMembers, healPartyMember } from '~/lib/party-system';
-import { cn } from '~/lib/utils';
+import { DEFAULT_RARITY } from '~/constants/rarity';
+import {
+  filterInventoryByType,
+  getConsumableUsability,
+  sortInventoryForDisplay,
+  type InventoryItem,
+} from '~/lib/inventory';
+import { applyHealItem, canReceiveHealing } from '~/lib/party-system';
+import { countEquippedInstances } from '~/lib/equipment-system';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import { getNavDirection, isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useKeyboardSelection, type KeyboardSelectableItem } from '~/hooks/use-keyboard-selection';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
-import type { BaseItemData } from '~/types/inventory';
-import type { RarityTier } from '~/constants/rarity';
-import { getScaledEquipmentStats } from '~/lib/equipment-system';
-import { getRarityColor, getRarityLabel } from '~/lib/rarity';
-import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { PauseMenuResourcesBar } from '~/components/pause-menu/pause-menu-resources-bar';
 import { PauseMenuTabHeader } from '~/components/pause-menu/pause-menu-tab-header';
+import { PauseMenuItemRow } from '~/components/pause-menu/pause-menu-item-row';
+import { PauseMenuItemDetail, type ItemUseState } from '~/components/pause-menu/pause-menu-item-detail';
+import { PauseMenuItemTargetPicker } from '~/components/pause-menu/pause-menu-item-target-picker';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { IndigolayTab, IndigolayTabs } from '~/components/ui-custom/indigolay-tab';
-import type { ConsumableItemData, EquipmentItemData } from '~/types';
-import {
-  SNAPPY_SPIN_TIMING,
-  SNAPPY_TRANSFORM_TIMING,
-  SNAPPY_OPACITY_TIMING,
-  INTEGER_FORMAT,
-} from '~/constants/number-flow';
+import type { BaseItemData, ConsumableItemData, ItemTypes } from '~/types/inventory';
 
-type ItemCategory = 'consumable' | 'equipment' | 'key';
+interface ItemCategoryDef {
+  id: ItemTypes;
+  label: string;
+  emptyTitle: string;
+  emptyHint: string;
+}
 
-const CATEGORIES: { id: ItemCategory; label: string }[] = [
-  { id: 'consumable', label: 'Consumable' },
-  { id: 'equipment', label: 'Equipment' },
-  { id: 'key', label: 'Key' },
+const CATEGORIES: ItemCategoryDef[] = [
+  {
+    id: 'consumable',
+    label: 'Consumable',
+    emptyTitle: 'Your pack is empty',
+    emptyHint: 'Potions are sold at the town shop.',
+  },
+  {
+    id: 'equipment',
+    label: 'Equipment',
+    emptyTitle: 'No gear in your pack',
+    emptyHint: 'The blacksmith can forge some.',
+  },
+  { id: 'key', label: 'Key', emptyTitle: 'No key items yet', emptyHint: 'Story items you find are kept here.' },
 ];
 
 const ALL_ITEMS: BaseItemData[] = [...ConsumableItems, ...EquipmentItems];
+const ITEMS_BY_ID = new Map(ALL_ITEMS.map((item) => [item.id, item]));
 
 /**
  * Stable selection key for an inventory stack. Equipment of the same id but
  * different rarity are separate stacks, so rarity is part of the key.
  */
-function stackKey(itemId: string, rarity?: RarityTier): string {
-  return `${itemId}::${rarity ?? ''}`;
+function stackKey(stack: InventoryItem): string {
+  return `${stack.itemId}::${stack.rarity ?? ''}`;
+}
+
+/** HP a consumable restores when used from the menu, or `null` when it can't be used here. */
+function getFieldHealAmount(item: BaseItemData): number | null {
+  if (item.type !== 'consumable') return null;
+  const consumable = item as ConsumableItemData;
+  const usability = getConsumableUsability(consumable);
+  if (usability !== 'anywhere' && usability !== 'field') return null;
+  return consumable.action?.type === 'heal' ? consumable.action.amount : null;
+}
+
+/** Whether the card shows Use for this item, and why it's disabled when it is. */
+function getItemUseState(item: BaseItemData, hasHealTarget: boolean): ItemUseState {
+  if (item.type !== 'consumable') return { kind: 'hidden' };
+  const usability = getConsumableUsability(item as ConsumableItemData);
+  if (usability !== 'anywhere' && usability !== 'field') return { kind: 'hidden' };
+  if (getFieldHealAmount(item) === null) return { kind: 'disabled', reason: "Can't be used from the menu" };
+  if (!hasHealTarget) return { kind: 'disabled', reason: 'Party is at full HP' };
+  return { kind: 'enabled' };
 }
 
 interface PauseMenuItemsProps {
   /**
    * The content zone owns the keyboard — arrows/Enter act on this pane. Note there is
    * no `onExitToSidebar` here: ←→ are spent cycling categories, so backing out of this
-   * tab is Escape/Backspace only (handled by the pause overlay).
+   * tab is Escape/Backspace only (handled by the pause overlay, or by the target picker
+   * while it is open).
    */
   keyboardActive?: boolean;
 }
@@ -60,98 +92,55 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
   const party = useParty();
   const inventoryActions = useInventoryActions();
   const partyActions = usePartyActions();
-  const [category, setCategory] = useState<ItemCategory>('consumable');
+  const [category, setCategory] = useState<ItemTypes>('consumable');
+  // The stack the card shows. Survives pointer movement, unlike the keyboard cursor.
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  // The consumable whose target picker is open, if any.
+  const [pickerItemId, setPickerItemId] = useState<string | null>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
 
-  const filteredInventory = filterInventoryByType(inventory, ALL_ITEMS, category);
+  const categoryCounts = CATEGORIES.map((cat) => filterInventoryByType(inventory, ALL_ITEMS, cat.id).length);
+  const activeCategory = CATEGORIES.find((cat) => cat.id === category) ?? CATEGORIES[0];
+  const stacks = sortInventoryForDisplay(filterInventoryByType(inventory, ALL_ITEMS, category), ALL_ITEMS);
 
-  const selectedInvItem = selectedKey
-    ? filteredInventory.find((inv) => stackKey(inv.itemId, inv.rarity) === selectedKey)
-    : undefined;
-  const selectedItem = selectedInvItem ? (ALL_ITEMS.find((item) => item.id === selectedInvItem.itemId) ?? null) : null;
-  const selectedRarity = selectedInvItem?.rarity;
-  const selectedIsEquipment = !!selectedItem && 'pow' in selectedItem;
-  const selectedScaledStats =
-    selectedIsEquipment && selectedItem
-      ? getScaledEquipmentStats(selectedItem as EquipmentItemData, selectedRarity)
-      : null;
+  // A stale or missing selection falls back to the first stack, so the card is never blank.
+  const inspectedStack = stacks.find((stack) => stackKey(stack) === selectedKey) ?? stacks[0];
+  const inspectedKey = inspectedStack ? stackKey(inspectedStack) : null;
+  const inspectedItem = inspectedStack ? ITEMS_BY_ID.get(inspectedStack.itemId) : undefined;
+  const hasHealTarget = party.some(canReceiveHealing);
+  const itemUse: ItemUseState = inspectedItem ? getItemUseState(inspectedItem, hasHealTarget) : { kind: 'hidden' };
 
-  function getItemData(itemId: string): BaseItemData | undefined {
-    return ALL_ITEMS.find((item) => item.id === itemId);
-  }
+  // Derived, so a spent stack closes the picker on its own.
+  const pickerStack = pickerItemId ? stacks.find((stack) => stack.itemId === pickerItemId) : undefined;
+  const pickerItem = pickerStack ? (ITEMS_BY_ID.get(pickerStack.itemId) as ConsumableItemData | undefined) : undefined;
+  const pickerHealAmount = pickerItem ? getFieldHealAmount(pickerItem) : null;
+  const isPickerOpen = pickerStack !== undefined && pickerItem !== undefined && pickerHealAmount !== null;
 
-  function isUsableConsumable(item: BaseItemData): item is ConsumableItemData {
-    return item.type === 'consumable' && (item as ConsumableItemData).usableOutOfBattle;
-  }
-
-  function canUseItem(item: ConsumableItemData): boolean {
-    if (!item.action) return false;
-    if (item.action.type === 'heal') {
-      return getHealableMembers(party).length > 0 || getDeadMembers(party).length > 0;
-    }
-    return false;
-  }
-
-  function handleUseItem(item: ConsumableItemData) {
-    if (!item.action || !canUseItem(item)) return;
-
-    if (item.action.type === 'heal') {
-      // Prioritize reviving dead members, then heal most damaged living member
-      const dead = getDeadMembers(party);
-      if (dead.length > 0) {
-        const target = dead[0];
-        const reviveAmount = 1 + item.action.amount;
-        const healed = healPartyMember(party, target.id, reviveAmount);
-        partyActions.setParty(healed);
-      } else {
-        const healable = getHealableMembers(party);
-        if (healable.length === 0) return;
-        const target = healable[0];
-        const healed = healPartyMember(party, target.id, item.action.amount);
-        partyActions.setParty(healed);
-      }
-
-      inventoryActions.removeItem(item.id);
-      soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6);
-
-      // Deselect if we used the last one
-      if (getItemQuantity(inventory, item.id) <= 1) {
-        setSelectedKey(null);
-      }
-    }
-  }
-
-  // ─── Keyboard grid: one row per stack, then [Use] ────────────────────
+  // ─── Keyboard grid: one row per stack ────────────────────────────────
   // The category tabs are deliberately absent: ←→ cycle them from anywhere in the
-  // pane, so they're driven by the keys rather than walked to by the cursor.
-  const usableItem = selectedItem && isUsableConsumable(selectedItem) ? selectedItem : null;
-  const gridRows: KeyboardSelectableItem[][] = [
-    ...filteredInventory.map((inv) => [{ id: stackKey(inv.itemId, inv.rarity) }]),
-    ...(usableItem ? [[{ id: 'use', disabled: !canUseItem(usableItem) }]] : []),
-  ];
+  // pane. Use is absent too: Enter on a usable stack opens the target picker directly.
+  const gridRows: KeyboardSelectableItem[][] = stacks.map((stack) => [{ id: stackKey(stack) }]);
 
   const selection = useKeyboardSelection(gridRows, {
-    // The cursor drives the same selection the mouse uses, so the detail panel
-    // and the row's `.selected` styling follow it for free.
+    // Every cursor move re-points the card, so the cursor never sits on a row the card isn't showing.
     onMove: (id) => {
       soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
-      if (id !== 'use') setSelectedKey(id);
+      setSelectedKey(id);
     },
   });
 
-  // Entering the pane reveals the first stack right away. Leaving it (Escape/Backspace
-  // back to the sidebar) drops the cursor, so a later return can't show a stale one.
+  // Entering the pane reveals the cursor on the inspected stack. Leaving it (Escape/Backspace
+  // back to the sidebar) drops the cursor and closes the picker, so a later return is clean.
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   useEffect(() => {
     if (!keyboardActive) {
       selectionRef.current.clear();
+      setPickerItemId(null);
       return;
     }
-    if (selectionRef.current.selectedId !== null) return;
-    const first = filteredInventory[0];
-    if (first) selectionRef.current.select(stackKey(first.itemId, first.rarity));
+    if (selectionRef.current.selectedId !== null || inspectedKey === null) return;
+    selectionRef.current.select(inspectedKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardActive]);
 
@@ -161,13 +150,18 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
   // category tabs from planting a keyboard cursor.
   const pendingCategoryRevealRef = useRef(false);
 
+  function changeCategory(next: ItemTypes) {
+    setCategory(next);
+    setSelectedKey(null);
+    setPickerItemId(null);
+  }
+
   /** Cycle the category tabs with ←→, revealing the new list's first item. */
   function cycleCategory(step: 1 | -1) {
     const currentIndex = CATEGORIES.findIndex((cat) => cat.id === category);
     const next = CATEGORIES[(currentIndex + step + CATEGORIES.length) % CATEGORIES.length];
     soundService.playSound(SoundNames.mechanicalClick, 0.5);
-    setCategory(next.id);
-    setSelectedKey(null);
+    changeCategory(next.id);
     selection.clear();
     pendingCategoryRevealRef.current = true;
   }
@@ -175,8 +169,8 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
   useEffect(() => {
     if (!pendingCategoryRevealRef.current) return;
     pendingCategoryRevealRef.current = false;
-    const first = filteredInventory[0];
-    if (first) selectionRef.current.select(stackKey(first.itemId, first.rarity));
+    const first = stacks[0];
+    if (first) selectionRef.current.select(stackKey(first));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
@@ -185,6 +179,55 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
     if (!selection.selectedId) return;
     rowRefs.current.get(selection.selectedId)?.scrollIntoView({ block: 'nearest' });
   }, [selection.selectedId]);
+
+  function openPicker(itemId: string) {
+    soundService.playSound(SoundNames.mechanicalClick, 0.5);
+    selection.clear();
+    setPickerItemId(itemId);
+  }
+
+  /** Back to the list. From the keyboard, the cursor returns to the stack being used. */
+  function closePicker(viaKeyboard: boolean) {
+    setPickerItemId(null);
+    if (viaKeyboard && inspectedKey) {
+      selection.select(inspectedKey);
+      return;
+    }
+    soundService.playSound(SoundNames.mechanicalClick, 0.35);
+  }
+
+  function handleToggleUse() {
+    if (isPickerOpen) {
+      closePicker(false);
+      return;
+    }
+    if (inspectedItem && itemUse.kind === 'enabled') openPicker(inspectedItem.id);
+  }
+
+  /**
+   * Drink the picked potion. The picker stays open for the next one, and closes once the
+   * stack runs out (re-inspecting a neighbour) or nobody is left to heal.
+   */
+  function handleApplyItem(memberId: string, viaKeyboard: boolean) {
+    if (!isPickerOpen) return;
+    const target = party.find((member) => member.id === memberId);
+    if (!target || !canReceiveHealing(target)) return;
+
+    const healedParty = applyHealItem(party, memberId, pickerHealAmount);
+    partyActions.setParty(healedParty);
+    inventoryActions.removeItem(pickerItem.id);
+    soundService.playSound(SoundNames.shimmeringSuccessShorter, 0.6);
+
+    const isStackSpent = pickerStack.quantity <= 1;
+    if (!isStackSpent && healedParty.some(canReceiveHealing)) return;
+
+    setPickerItemId(null);
+    const index = stacks.indexOf(pickerStack);
+    const nextStack = isStackSpent ? (stacks[index + 1] ?? stacks[index - 1]) : pickerStack;
+    const nextKey = nextStack ? stackKey(nextStack) : null;
+    setSelectedKey(nextKey);
+    if (viaKeyboard && nextKey) selection.select(nextKey);
+  }
 
   useWindowKeyDown((event) => {
     if (event.defaultPrevented) return;
@@ -198,6 +241,12 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
         cycleCategory(direction === 'right' ? 1 : -1);
         return;
       }
+      // The first press after the mouse cleared the cursor reveals it on the inspected
+      // stack rather than jumping to the top of the list.
+      if (selection.selectedId === null && inspectedKey) {
+        selection.select(inspectedKey);
+        return;
+      }
       selection.move(direction);
       return;
     }
@@ -205,147 +254,91 @@ export function PauseMenuItems({ keyboardActive = false }: PauseMenuItemsProps) 
     if (isConfirmKey(event.key)) {
       event.preventDefault();
       if (event.repeat) return;
-      const entry = gridRows.flat().find((item) => item.id === selection.selectedId);
-      if (!entry || entry.disabled) return;
-      if (entry.id === 'use') {
-        if (usableItem) handleUseItem(usableItem);
-        return;
-      }
-      // A stack row: Enter steps down to Use when it exists.
-      if (usableItem) selection.select('use');
+      const key = selection.selectedId ?? inspectedKey;
+      const stack = stacks.find((candidate) => stackKey(candidate) === key);
+      const item = stack ? ITEMS_BY_ID.get(stack.itemId) : undefined;
+      if (item && getItemUseState(item, hasHealTarget).kind === 'enabled') openPicker(item.id);
     }
-  }, keyboardActive);
+  }, keyboardActive && !isPickerOpen);
 
   return (
     <>
-      <PauseMenuTabHeader text="Items" hint="Browse your packs — use consumables on the party." />
+      <PauseMenuTabHeader text="Items" hint="Browse your packs — use potions on a hero." />
       <IndigolayTabs className="pause-menu-item-categories">
-        {CATEGORIES.map((cat) => (
+        {CATEGORIES.map((cat, index) => (
           <IndigolayTab
             key={cat.id}
             size="sm"
             glow={false}
             isActive={category === cat.id}
             className="pause-menu-item-category-tab"
-            onClick={() => {
-              setCategory(cat.id);
-              setSelectedKey(null);
-            }}
+            onClick={() => changeCategory(cat.id)}
           >
             {cat.label}
+            <span className="pause-menu-item-category-tab__count">{categoryCounts[index]}</span>
           </IndigolayTab>
         ))}
-        {keyboardActive && (
+        {keyboardActive && !isPickerOpen && (
           <KeyHintPill className="pause-menu-inline-hint" items={[{ keys: ['←', '→'], label: 'switch' }]} />
         )}
       </IndigolayTabs>
       <div className="pause-menu-items-layout">
-        <div className="pause-menu-item-list">
-          {filteredInventory.length === 0 && <div className="pause-menu-empty">No items</div>}
-          {filteredInventory.map((invItem) => {
-            const itemData = getItemData(invItem.itemId);
-            if (!itemData) return null;
-            const key = stackKey(invItem.itemId, invItem.rarity);
-            const isEquip = itemData.type === 'equipment';
-            return (
-              <div
-                key={key}
-                ref={(el) => {
-                  if (el) rowRefs.current.set(key, el);
-                  else rowRefs.current.delete(key);
-                }}
-                className={cn('pause-menu-item-row', selectedKey === key && 'selected')}
-                onClick={() => setSelectedKey(key)}
-              >
-                <span className="pause-menu-item-icon-slot">
-                  <ItemIcon item={itemData} size={24} />
-                </span>
-                <span
-                  className="pause-menu-item-name"
-                  style={isEquip ? { color: getRarityColor(invItem.rarity) } : undefined}
-                >
-                  {itemData.name}
-                </span>
-                <span className="pause-menu-item-qty number-flow-container">
-                  x
-                  <NumberFlow
-                    value={invItem.quantity}
-                    format={INTEGER_FORMAT}
-                    trend={-1}
-                    spinTiming={SNAPPY_SPIN_TIMING}
-                    transformTiming={SNAPPY_TRANSFORM_TIMING}
-                    opacityTiming={SNAPPY_OPACITY_TIMING}
-                  />
-                </span>
+        {isPickerOpen ? (
+          <PauseMenuItemTargetPicker
+            item={pickerItem}
+            healAmount={pickerHealAmount}
+            party={party}
+            remaining={pickerStack.quantity}
+            keyboardActive={keyboardActive}
+            onApply={handleApplyItem}
+            onClose={closePicker}
+          />
+        ) : (
+          <div className="pause-menu-item-list pixel-scrollbar">
+            {stacks.length === 0 && (
+              <div className="pause-menu-empty pause-menu-empty--items">
+                <span>{activeCategory.emptyTitle}</span>
+                <span className="pause-menu-empty__sub">{activeCategory.emptyHint}</span>
               </div>
-            );
-          })}
-        </div>
-        <div className="pause-menu-item-detail">
-          {selectedItem ? (
-            <>
-              <div className="pause-menu-item-detail-icon">
-                <ItemIcon item={selectedItem} size={48} />
-              </div>
-              <div className="pause-menu-item-detail-name">{selectedItem.name}</div>
-              {selectedIsEquipment && (
-                <div
-                  className="pause-menu-item-detail-rarity text-[0.65rem] tracking-wider uppercase"
-                  style={{ color: getRarityColor(selectedRarity) }}
-                >
-                  {getRarityLabel(selectedRarity)}
-                </div>
-              )}
-              <div className="pause-menu-item-detail-desc">{selectedItem.description}</div>
-              {selectedScaledStats && (
-                <div className="pause-menu-item-detail-stats">
-                  {selectedScaledStats.pow !== 0 && (
-                    <span className="pause-menu-item-stat-badge">
-                      POW {selectedScaledStats.pow > 0 ? '+' : ''}
-                      {selectedScaledStats.pow}
-                    </span>
-                  )}
-                  {selectedScaledStats.vit !== 0 && (
-                    <span className="pause-menu-item-stat-badge">
-                      VIT {selectedScaledStats.vit > 0 ? '+' : ''}
-                      {selectedScaledStats.vit}
-                    </span>
-                  )}
-                  {selectedScaledStats.spd !== 0 && (
-                    <span className="pause-menu-item-stat-badge">
-                      SPD {selectedScaledStats.spd > 0 ? '+' : ''}
-                      {selectedScaledStats.spd}
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="pause-menu-item-detail-desc number-flow-container">
-                Owned:{' '}
-                <NumberFlow
-                  value={getItemQuantity(inventory, selectedItem.id, selectedRarity)}
-                  format={INTEGER_FORMAT}
-                  trend={-1}
-                  spinTiming={SNAPPY_SPIN_TIMING}
-                  transformTiming={SNAPPY_TRANSFORM_TIMING}
-                  opacityTiming={SNAPPY_OPACITY_TIMING}
+            )}
+            {stacks.map((stack) => {
+              const item = ITEMS_BY_ID.get(stack.itemId);
+              if (!item) return null;
+              const key = stackKey(stack);
+              return (
+                <PauseMenuItemRow
+                  key={key}
+                  item={item}
+                  stack={stack}
+                  equippedCount={
+                    item.type === 'equipment'
+                      ? countEquippedInstances(party, item.id, stack.rarity ?? DEFAULT_RARITY)
+                      : 0
+                  }
+                  isSelected={key === inspectedKey}
+                  isKeyboardCursor={selection.isSelected(key)}
+                  onSelect={() => setSelectedKey(key)}
+                  rowRef={(el) => {
+                    if (el) rowRefs.current.set(key, el);
+                    else rowRefs.current.delete(key);
+                  }}
                 />
-              </div>
-              {isUsableConsumable(selectedItem) && (
-                <ToffecBeigeCornersWrapper forceDisplay={selection.isSelected('use')}>
-                  <button
-                    className="pause-menu-use-btn"
-                    disabled={!canUseItem(selectedItem)}
-                    onClick={() => handleUseItem(selectedItem)}
-                  >
-                    Use
-                  </button>
-                </ToffecBeigeCornersWrapper>
-              )}
-            </>
-          ) : (
-            <div className="pause-menu-empty">Select an item</div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
+        {inspectedStack && inspectedItem && (
+          <PauseMenuItemDetail
+            key={inspectedKey}
+            item={inspectedItem}
+            rarity={inspectedStack.rarity}
+            owned={inspectedStack.quantity}
+            party={party}
+            itemUse={itemUse}
+            isPickerOpen={isPickerOpen}
+            onToggleUse={handleToggleUse}
+          />
+        )}
       </div>
       <PauseMenuResourcesBar />
     </>
