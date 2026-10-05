@@ -20,7 +20,7 @@ same name into public/assets/skills; `--no-manifest` writes only the PNGs. The
 `indigolay-` asset out of the global `image-rendering: pixelated`, which would
 otherwise wreck this art.
 
-Requires Pillow. The source pack lives outside the repo, at
+Requires Pillow (`pip install -r scripts/requirements.txt`). The source pack lives outside the repo, at
     <OneDrive>/Documents/assets/indigolay-mega/PixelSkillIconsBookUI_PNG_v1.0/SkillIcon
 which is the default for --src.
 """

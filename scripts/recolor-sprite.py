@@ -17,7 +17,7 @@ The Stone Golem was made with:
         public/assets/enemy-sprites/stone_golem_idle.png \\
         --map-out public/assets/enemy-sprites/stone_golem_map.png
 
-Requires Pillow.
+Requires Pillow: `pip install -r scripts/requirements.txt`.
 """
 
 import argparse
