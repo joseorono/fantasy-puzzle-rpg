@@ -29,6 +29,17 @@ export interface TilemapTileset {
   tilecount: number;
   tileheight: number;
   tilewidth: number;
+  /**
+   * Base GIDs (flip bits ignored) whose tiles are fully transparent and draw
+   * nothing. Skipped when finding the visible top tile for collision.
+   */
+  blankGids?: number[];
+  /**
+   * Base GIDs (flip bits ignored) of visible tiles that do not block movement —
+   * overhead structures such as arches the player walks under. Skipped when
+   * finding the visible top tile for collision.
+   */
+  overheadGids?: number[];
   source?: string;
   tiledversion?: string;
   type?: string;
@@ -58,6 +69,14 @@ export interface TiledMapConfig {
   displayMapName: string;
   walkableLayers: string[];
   visibleLayers: string[];
+  /**
+   * When set, walkability uses the visible-top-surface rule: a region cell is
+   * walkable only when its top-most visibly drawn tile belongs to a walkable
+   * layer or one of these layers. Lists extra non-walkable layers (floors)
+   * acceptable as the visible top surface. An empty array means only walkable
+   * layers may be the visible top.
+   */
+  surfaceLayers?: string[];
   defaultPlayerPosition: Position;
   /** When true, shows the position/status overlay — but only while `DEBUG_MODE` is on. Defaults to false. */
   debug?: boolean;

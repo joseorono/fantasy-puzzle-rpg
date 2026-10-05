@@ -99,7 +99,8 @@ interface TilemapComponentProps {
 }
 
 const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
-  const { tilesetImage, displayMapName, walkableLayers, visibleLayers, defaultPlayerPosition, debug } = map;
+  const { tilesetImage, displayMapName, walkableLayers, surfaceLayers, visibleLayers, defaultPlayerPosition, debug } =
+    map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -169,7 +170,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
   // Ground walkability, flattened once so the movement loop's per-substep
   // queries are a single array read instead of a scan over the layer list.
-  const walkableMask = React.useMemo(() => buildWalkableMask(mapData, walkableLayers), [mapData, walkableLayers]);
+  const walkableMask = React.useMemo(() => {
+    const tileset = mapData.tilesets?.[0];
+    const ignoredGids = new Set([...(tileset?.blankGids ?? []), ...(tileset?.overheadGids ?? [])]);
+    return buildWalkableMask(mapData, walkableLayers, { surfaceLayers, ignoredGids });
+  }, [mapData, walkableLayers, surfaceLayers]);
 
   // Check if a position is walkable (walkable ground, and no blocking node)
   const isRoadTile = React.useCallback(
