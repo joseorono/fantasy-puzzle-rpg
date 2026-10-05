@@ -39,6 +39,20 @@ export const FOE_POST_BATTLE_GRACE_SECONDS = 3;
 /** Most cells one path search may expand before giving up (the FOE then heads home). */
 export const FOE_PATH_NODE_BUDGET = 2500;
 
+/** Row and column offsets of the four edge neighbours a path may step to. */
+export const FOE_PATH_NEIGHBOUR_OFFSETS: readonly (readonly [number, number])[] = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+];
+
+/** The player must be this many contact distances away before contact re-arms. */
+export const FOE_CONTACT_REARM_RATIO = 1.5;
+
+/** Horizontal movement smaller than this leaves a FOE's facing unchanged, in map pixels. */
+export const FOE_FACING_EPSILON_PX = 0.001;
+
 // --- rendering ---
 
 /** Multiplier on the map sprite's natural size. The sprites are authored for 16 px tiles. */
@@ -61,3 +75,19 @@ export const FOE_CULL_MARGIN_PX = 32;
 
 /** Minimap pin and debug-ring look. `color` is an `rgba(` prefix; the alpha is appended. */
 export const FOE_MARKER_STYLE = { color: 'rgba(176, 182, 196, ', icon: '👁' } as const;
+
+/** The "!" drawn above a FOE that has just spotted the player. `offsetPx` lifts it off the sprite. */
+export const FOE_ALERT_STYLE = {
+  font: 'bold 12px monospace',
+  fill: '#f1e4c3',
+  outline: 'rgba(20, 12, 8, 0.85)',
+  outlineWidth: 3,
+  offsetPx: 2,
+} as const;
+
+/** Debug overlay: the mode label's font and offset above the sprite, and the leash ring's dash. */
+export const FOE_DEBUG_STYLE = {
+  labelFont: 'bold 8px monospace',
+  labelOffsetPx: 14,
+  leashDash: [4, 4],
+} as const;

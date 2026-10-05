@@ -8,15 +8,12 @@ import {
   resolveFoeTunables,
   stepFoe,
   tileCenter,
-  type FoeActor,
-  type FoeRuntime,
-  type FoeWorld,
 } from './foe-system';
-import type { FoeDefinition, FoeTunables } from '~/types/foe';
-import { FOE_ALERT_FLASH_SECONDS, FOE_DEFAULT_TUNABLES } from '~/constants/foe';
+import type { FoeActor, FoeDefinition, FoeRuntime, FoeTunables, FoeWorld } from '~/types/foe';
+import { FOE_ALERT_FLASH_SECONDS, FOE_DEFAULT_TUNABLES, FOE_PLAYER_RUN_TILES_PER_SECOND } from '~/constants/foe';
 
 const TILE = 16;
-const RUN_SPEED_PX = 7.75 * TILE;
+const RUN_SPEED_PX = FOE_PLAYER_RUN_TILES_PER_SECOND * TILE;
 const DT = 1 / 60;
 
 /** `.` walkable, `#` blocked; out of bounds blocked. */

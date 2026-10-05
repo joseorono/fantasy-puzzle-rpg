@@ -1,16 +1,18 @@
 import { useRef } from 'react';
 import type { MapDefinition } from '~/types/map';
-import type { FoeDefinition } from '~/types/foe';
+import type { FoeDefinition, FoeRuntime, TilePathfinder, WalkablePredicate } from '~/types/foe';
 import type { MovementFrame } from '~/hooks/use-character-movement';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import { isMaskWalkable, type WalkableMask } from '~/lib/tilemap-collision';
-import { createTilePathfinder, type TilePathfinder, type WalkablePredicate } from '~/lib/foe-pathfinding';
-import { createFoeRuntime, stepFoe, tileCenter, type FoeRuntime } from '~/lib/foe-system';
+import { createTilePathfinder } from '~/lib/foe-pathfinding';
+import { createFoeRuntime, stepFoe, tileCenter } from '~/lib/foe-system';
 import { DEBUG_MODE } from '~/constants/dev';
 import {
+  FOE_ALERT_STYLE,
   FOE_BOB_AMPLITUDE_PX,
   FOE_BOB_RADIANS_PER_SECOND,
   FOE_CULL_MARGIN_PX,
+  FOE_DEBUG_STYLE,
   FOE_FOOT_OFFSET_TILES,
   FOE_MARKER_STYLE,
   FOE_PATH_NODE_BUDGET,
@@ -69,7 +71,7 @@ function drawFoeDebug(ctx: CanvasRenderingContext2D, foe: FoeRuntime, tileSize: 
   ctx.arc(foe.x, foe.y, tunables.detectionRadiusTiles * tileSize, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.setLineDash([4, 4]);
+  ctx.setLineDash([...FOE_DEBUG_STYLE.leashDash]);
   ctx.beginPath();
   ctx.arc(home.x, home.y, tunables.leashRadiusTiles * tileSize, 0, Math.PI * 2);
   ctx.stroke();
@@ -85,7 +87,7 @@ function drawFoeDebug(ctx: CanvasRenderingContext2D, foe: FoeRuntime, tileSize: 
     ctx.stroke();
   }
 
-  ctx.font = 'bold 8px monospace';
+  ctx.font = FOE_DEBUG_STYLE.labelFont;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = `${FOE_MARKER_STYLE.color}1)`;
@@ -215,17 +217,18 @@ export function useFoeSimulation(options: UseFoeSimulationOptions): FoeSimulatio
       }
 
       if (foe.alertSeconds > 0) {
-        ctx.font = 'bold 12px monospace';
+        const alertY = top - FOE_ALERT_STYLE.offsetPx;
+        ctx.font = FOE_ALERT_STYLE.font;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(20, 12, 8, 0.85)';
-        ctx.strokeText('!', foe.x, top - 2);
-        ctx.fillStyle = '#f1e4c3';
-        ctx.fillText('!', foe.x, top - 2);
+        ctx.lineWidth = FOE_ALERT_STYLE.outlineWidth;
+        ctx.strokeStyle = FOE_ALERT_STYLE.outline;
+        ctx.strokeText('!', foe.x, alertY);
+        ctx.fillStyle = FOE_ALERT_STYLE.fill;
+        ctx.fillText('!', foe.x, alertY);
       }
 
-      if (showDebugRef.current) drawFoeDebug(ctx, foe, tileSize, top - 14);
+      if (showDebugRef.current) drawFoeDebug(ctx, foe, tileSize, top - FOE_DEBUG_STYLE.labelOffsetPx);
     }
   }
 

@@ -1,8 +1,21 @@
 import type { GridPosition } from '~/types/geometry';
-import type { FoeDefinition, FoeTunables } from '~/types/foe';
+import type {
+  FoeActor,
+  FoeDefinition,
+  FoeFacing,
+  FoeRuntime,
+  FoeStepResult,
+  FoeTunables,
+  FoeWorld,
+  PathAdvance,
+} from '~/types/foe';
 import type { MapPoint } from '~/lib/map-camera';
-import type { TilePathfinder, WalkablePredicate } from './foe-pathfinding';
-import { FOE_ALERT_FLASH_SECONDS, FOE_DEFAULT_TUNABLES } from '~/constants/foe';
+import {
+  FOE_ALERT_FLASH_SECONDS,
+  FOE_CONTACT_REARM_RATIO,
+  FOE_DEFAULT_TUNABLES,
+  FOE_FACING_EPSILON_PX,
+} from '~/constants/foe';
 
 /**
  * Roaming-enemy (FOE) behaviour as pure functions over a `FoeRuntime` value.
@@ -19,77 +32,6 @@ import { FOE_ALERT_FLASH_SECONDS, FOE_DEFAULT_TUNABLES } from '~/constants/foe';
  * Contact (the fight trigger) is checked in every mode. The runtime is never mutated:
  * `stepFoe` returns a new value so a frame's result can be compared with its input.
  */
-
-export type FoeMode = 'patrol' | 'chase' | 'return';
-export type FoeFacing = 'left' | 'right';
-
-/** One FOE's live state. Positions are in map pixels. */
-export interface FoeRuntime {
-  definition: FoeDefinition;
-  /** Defaults merged with the definition's overrides, resolved once. */
-  tunables: FoeTunables;
-  x: number;
-  y: number;
-  mode: FoeMode;
-  facing: FoeFacing;
-  /** Index into `definition.patrol` of the waypoint being walked toward. */
-  patrolIndex: number;
-  /** Tiles still to step through, next first. */
-  path: GridPosition[];
-  /** The tile `path` leads to, so a stale path can be recognised. */
-  pathTarget: GridPosition | null;
-  /** Remaining pause at a waypoint. */
-  waitSeconds: number;
-  /** Countdown to the next chase repath. */
-  repathSeconds: number;
-  /** How long the player has been out of sight during a chase. */
-  lostSightSeconds: number;
-  /** While positive, the FOE neither notices nor catches the player. */
-  graceSeconds: number;
-  /** While positive, the "!" is shown. */
-  alertSeconds: number;
-  /** Contact can fire only once the player has been clear of the FOE since it spawned. */
-  isContactArmed: boolean;
-}
-
-/** The player as the simulation sees it: a map-pixel point and the tile it is in. */
-export interface FoeActor extends MapPoint {
-  row: number;
-  col: number;
-}
-
-/** Everything about the map a step needs. */
-export interface FoeWorld {
-  tileSize: number;
-  /** The player's run speed in map pixels per second; chase speed is a ratio of it. */
-  playerRunSpeedPx: number;
-  isWalkable: WalkablePredicate;
-  pathfinder: TilePathfinder;
-  pathNodeBudget: number;
-}
-
-export interface FoeStepResult {
-  foe: FoeRuntime;
-  /** True when this step caught the player: start the battle. */
-  contact: boolean;
-}
-
-/** Result of walking along a path for one step. */
-export interface PathAdvance {
-  point: MapPoint;
-  /** The tiles still ahead. */
-  path: GridPosition[];
-  /** Signed horizontal distance covered, for facing. */
-  movedX: number;
-  /** True once the last tile was reached. */
-  arrived: boolean;
-}
-
-/** The player must be this many contact distances away before contact re-arms. */
-const CONTACT_REARM_RATIO = 1.5;
-
-/** Horizontal movement smaller than this leaves the facing unchanged. */
-const FACING_EPSILON_PX = 0.001;
 
 /**
  * Merges the shared defaults with a FOE's overrides.
@@ -132,8 +74,8 @@ function isSameTile(a: GridPosition | null, b: GridPosition): boolean {
 }
 
 function facingFrom(movedX: number, previous: FoeFacing): FoeFacing {
-  if (movedX > FACING_EPSILON_PX) return 'right';
-  if (movedX < -FACING_EPSILON_PX) return 'left';
+  if (movedX > FOE_FACING_EPSILON_PX) return 'right';
+  if (movedX < -FOE_FACING_EPSILON_PX) return 'left';
   return previous;
 }
 
@@ -392,7 +334,7 @@ export function stepFoe(foe: FoeRuntime, player: FoeActor, dtSeconds: number, wo
   };
   if (
     !ticked.isContactArmed &&
-    !isWithinTiles(ticked, player, tunables.contactDistanceTiles * CONTACT_REARM_RATIO, tileSize)
+    !isWithinTiles(ticked, player, tunables.contactDistanceTiles * FOE_CONTACT_REARM_RATIO, tileSize)
   ) {
     ticked.isContactArmed = true;
   }

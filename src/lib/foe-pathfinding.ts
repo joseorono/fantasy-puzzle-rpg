@@ -1,35 +1,6 @@
 import type { GridPosition } from '~/types/geometry';
-
-/** Whether a tile may be walked on. Out-of-bounds tiles must report `false`. */
-export type WalkablePredicate = (row: number, col: number) => boolean;
-
-/** A grid path search with its scratch buffers allocated once per map. */
-export interface TilePathfinder {
-  /**
-   * Shortest 4-connected path from `from` to `to`.
-   *
-   * @param from Start tile; it is not included in the result and need not be walkable.
-   * @param to Goal tile; it is the last element of the result.
-   * @param isWalkable Walkability of every tile other than `from`.
-   * @param nodeBudget Most cells the search may expand before giving up.
-   * @returns The tiles to step through, `[]` when already there, or `null` when the goal
-   *   is unreachable or the budget ran out.
-   */
-  findPath(
-    from: GridPosition,
-    to: GridPosition,
-    isWalkable: WalkablePredicate,
-    nodeBudget?: number,
-  ): GridPosition[] | null;
-}
-
-/** Row and column offsets of the four edge neighbours. */
-const NEIGHBOUR_OFFSETS: readonly (readonly [number, number])[] = [
-  [-1, 0],
-  [1, 0],
-  [0, -1],
-  [0, 1],
-];
+import type { TilePathfinder, WalkablePredicate } from '~/types/foe';
+import { FOE_PATH_NEIGHBOUR_OFFSETS } from '~/constants/foe';
 
 /**
  * Creates a breadth-first pathfinder for a `width × height` tile grid.
@@ -93,7 +64,7 @@ export function createTilePathfinder(width: number, height: number): TilePathfin
 
       const row = (cell / width) | 0;
       const col = cell % width;
-      for (const [dRow, dCol] of NEIGHBOUR_OFFSETS) {
+      for (const [dRow, dCol] of FOE_PATH_NEIGHBOUR_OFFSETS) {
         const nextRow = row + dRow;
         const nextCol = col + dCol;
         if (!inBounds(nextRow, nextCol)) continue;
