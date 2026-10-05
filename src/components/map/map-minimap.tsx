@@ -16,9 +16,17 @@ import { useElementSize } from '~/hooks/use-element-size';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { isCancelKey, isMinimapKey } from '~/constants/keyboard';
 import { MINIMAP_INK_WOBBLE_TILES } from '~/constants/minimap';
+import { FOE_MARKER_STYLE } from '~/constants/foe';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { cn } from '~/lib/utils';
+
+/** A roaming enemy's live position, in map pixels. */
+export interface FoeMinimapPoint {
+  id: string;
+  x: number;
+  y: number;
+}
 
 interface MapMinimapProps {
   map: MapDefinition;
@@ -30,6 +38,8 @@ interface MapMinimapProps {
   characterPoint: MapPoint;
   /** Progress lookups — the same ones the map's own markers use. */
   markerStatus: MarkerStatus;
+  /** Where the surviving roaming enemies stand, read as the overview opens. */
+  foePoints?: FoeMinimapPoint[];
   onClose: () => void;
 }
 
@@ -68,7 +78,15 @@ function CompassRose() {
  * Nothing here runs per frame. The outline is one static SVG path, built once per map;
  * the pins are plain positioned elements, and the only animation is the player ripple.
  */
-export function MapMinimap({ map, walkableMask, tileSize, characterPoint, markerStatus, onClose }: MapMinimapProps) {
+export function MapMinimap({
+  map,
+  walkableMask,
+  tileSize,
+  characterPoint,
+  markerStatus,
+  foePoints = [],
+  onClose,
+}: MapMinimapProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
   const windowSize = useElementSize(backdropRef);
 
@@ -161,6 +179,21 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
                 );
               })}
 
+              {foePoints.map((foe) => {
+                const { left, top } = mapPointToMinimapPercent(foe, cols, rows, tileSize);
+                return (
+                  <span
+                    key={foe.id}
+                    className="map-minimap__pin map-minimap__pin--foe"
+                    style={{ left: `${left}%`, top: `${top}%` }}
+                    role="img"
+                    aria-label="Roaming enemy"
+                  >
+                    {FOE_MARKER_STYLE.icon}
+                  </span>
+                );
+              })}
+
               <span
                 className="map-minimap__player"
                 style={{ left: `${player.left}%`, top: `${player.top}%` }}
@@ -182,6 +215,12 @@ export function MapMinimap({ map, walkableMask, tileSize, characterPoint, marker
                   {type}
                 </li>
               ))}
+              {foePoints.length > 0 && (
+                <li>
+                  <span aria-hidden="true">{FOE_MARKER_STYLE.icon}</span>
+                  FOE
+                </li>
+              )}
             </ul>
           </div>
 

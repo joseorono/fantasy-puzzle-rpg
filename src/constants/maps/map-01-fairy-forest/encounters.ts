@@ -1,5 +1,5 @@
 import type { EncounterDefinition } from '~/types/map-node';
-import { MOSS_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { MOSS_GOLEM, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 
 /**
  * Enemy encounter compositions for each fight node on the Fairy Forest.
@@ -78,5 +78,16 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
       { ...MOSS_GOLEM, id: 'moss-golem-2', name: 'Moss Golem A' },
       { ...MOSS_GOLEM, id: 'moss-golem-3', name: 'Moss Golem B' },
     ],
+  },
+
+  // ─── Roaming FOEs (keys match ids in foes.ts) ───────────────────────
+  fairy_forest_foe_1: {
+    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
+  },
+  fairy_forest_foe_2: {
+    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
+  },
+  fairy_forest_foe_3: {
+    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
   },
 };

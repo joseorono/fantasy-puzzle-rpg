@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
+import type { FoeDefinition } from '~/types/foe';
 import type { Position } from '~/types/geometry';
 import { DEBUG_MODE } from '~/constants/dev';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
@@ -18,6 +19,7 @@ import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
 import { useElementSize } from '~/hooks/use-element-size';
 import { useMapRenderer } from '~/hooks/use-map-renderer';
+import { useFoeSimulation } from '~/hooks/use-foe-simulation';
 import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
 import { clientToMapPoint } from '~/lib/pointer-movement';
@@ -194,6 +196,19 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     [walkableMask, mapProgressState, completedDungeons, map.nodes],
   );
 
+  // Roaming enemies step inside the movement loop (see `onFrame`) and draw on the canvas.
+  // The chest loot panel holds them: the player can't act under it, so nothing may creep up.
+  const foes = useFoeSimulation({
+    map,
+    tileSize,
+    walkableMask,
+    isWalkable: isRoadTile,
+    defeatedIds: mapProgressState.foesDefeated,
+    isHeld: currentLoot !== null,
+    showDebug: Boolean(debug) && DEBUG_MODE,
+    onContact: (foe) => startFoeBattle(foe),
+  });
+
   // Mirror the live position into the store as it changes, so a save taken while the
   // map is still mounted records where the player actually stands. One write per tile
   // step is cheap: both readers use `getState()`, so nothing re-renders on it.
@@ -321,6 +336,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     markers,
     watchAnchor: isPopupOpen,
     onAnchorChange: setPopupAnchor,
+    drawOverlay: foes.drawFoes,
   });
 
   // --- Smooth character movement (rAF-based) ---
@@ -343,7 +359,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       if (!viewportElement) return null;
       return clientToMapPoint(clientX, clientY, viewportElement.getBoundingClientRect(), zoom, renderer.getCamera());
     },
-    onFrame: renderer.renderFrame,
+    // FOEs step before the frame draws, so the canvas shows this frame's positions.
+    onFrame: (frame) => {
+      foes.step(frame);
+      renderer.renderFrame(frame);
+    },
     canMoveTo: (row, col) => isRoadTile(row, col),
     // Map pixels, deliberately independent of `zoom`: the simulation runs in map space.
     collisionInsetPx: characterMetrics.collisionInsetPx,
@@ -445,6 +465,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // A FOE battle still pending when the map mounts was never won (a save loaded mid-fight):
+  // forget it so the FOE stays alive. Victories are resolved by the rewards screen.
+  useEffect(() => {
+    mapProgressActions.setPendingFoeBattle(null);
+    // Once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleAcceptDialogue() {
     if (pendingDialogue) {
       const triggerKey = `${charPosition.row},${charPosition.col}`;
@@ -488,6 +516,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     setIsTransitioning(true);
     await enterBattle();
     routerActions.goToBattleDemo({ enemyId: nodeId, location: displayMapName });
+  }
+
+  /** A FOE caught the player: note which one so the rewards screen can retire it, then fight. */
+  function startFoeBattle(foe: FoeDefinition) {
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+    mapProgressActions.setPendingFoeBattle(foe.id);
+    void startBattle(foe.encounterId ?? foe.id);
   }
 
   /** Walk into a town: checkpoint, cover transition with the map frozen, then the hub. */
@@ -768,6 +804,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           tileSize={tileSize}
           characterPoint={movement.getMapPosition()}
           markerStatus={markerStatus}
+          foePoints={foes.getFoes().map((foe) => ({ id: foe.definition.id, x: foe.x, y: foe.y }))}
           onClose={closeMinimap}
         />
       )}

@@ -16,6 +16,7 @@ import {
   useResources,
   useResourcesActions,
   useInventoryActions,
+  useMapProgressActions,
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
@@ -67,6 +68,7 @@ export function BattleRewardsScreen() {
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
   const routerActions = useRouterActions();
+  const mapProgressActions = useMapProgressActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
   const [randomPotentialStats, setRandomPotentialStats] = useState<CoreRPGStats | null>(null);
@@ -85,6 +87,8 @@ export function BattleRewardsScreen() {
     // next entry anyway, and resetting here would replay (and re-grant) the whole reward
     // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
+      // A roaming FOE's battle is won by the time rewards show; retire it before the checkpoint.
+      mapProgressActions.resolvePendingFoeBattle();
       // Loot, EXP and level-ups are all committed by now, so this is the checkpoint.
       if (shouldAutosaveOnExit) autosave();
       routerActions.goBack();
@@ -104,7 +108,16 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions, autosave, shouldAutosaveOnExit]);
+  }, [
+    step,
+    currentLevelUpIndex,
+    pendingLevelUps,
+    randomPotentialStats,
+    routerActions,
+    mapProgressActions,
+    autosave,
+    shouldAutosaveOnExit,
+  ]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;

@@ -5,6 +5,7 @@ import { DEMO_MAP_NODES } from './nodes';
 import { DEMO_FLOOR_LOOT } from './floor-loot';
 import { MAP_00_DIALOGUE_SCENES, MAP_00_DIALOGUE_TRIGGERS } from './dialogue';
 import { MAP_00_ENCOUNTERS } from './encounters';
+import { MAP_00_FOES } from './foes';
 
 export const MAP_00: MapDefinition = {
   id: 'map-00',
@@ -20,4 +21,5 @@ export const MAP_00: MapDefinition = {
   dialogueTriggers: MAP_00_DIALOGUE_TRIGGERS,
   dialogueScenes: MAP_00_DIALOGUE_SCENES,
   encounters: MAP_00_ENCOUNTERS,
+  foes: MAP_00_FOES,
 };

@@ -5,6 +5,7 @@ import { FAIRY_FOREST_NODES } from './nodes';
 import { FAIRY_FOREST_FLOOR_LOOT } from './floor-loot';
 import { FAIRY_FOREST_DIALOGUE_SCENES, FAIRY_FOREST_DIALOGUE_TRIGGERS } from './dialogue';
 import { FAIRY_FOREST_ENCOUNTERS } from './encounters';
+import { FAIRY_FOREST_FOES } from './foes';
 
 /** 120×80 forest trail — only the `road` layer is walkable. */
 export const MAP_01_FAIRY_FOREST: MapDefinition = {
@@ -32,4 +33,5 @@ export const MAP_01_FAIRY_FOREST: MapDefinition = {
   dialogueTriggers: FAIRY_FOREST_DIALOGUE_TRIGGERS,
   dialogueScenes: FAIRY_FOREST_DIALOGUE_SCENES,
   encounters: FAIRY_FOREST_ENCOUNTERS,
+  foes: FAIRY_FOREST_FOES,
 };

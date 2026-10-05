@@ -82,6 +82,8 @@ export const assetList: string[] = [
   // Enemies
   '/assets/enemy-sprites/frogger_idle.png',
   '/assets/enemy-sprites/gollux_idle.png',
+  '/assets/enemy-sprites/stone_golem_idle.png',
+  '/assets/enemy-sprites/stone_golem_map.png',
 
   // Fonts
   '/assets/fonts/RedWood-5x-narik.png',
