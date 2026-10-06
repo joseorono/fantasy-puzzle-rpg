@@ -43,7 +43,7 @@ function SkillCelebration({
       sparkleCount={20}
       backdropClassName="skill-celebration-backdrop"
     >
-      <div className="gom-modal gom-modal--victory">
+      <div className="gom-modal gom-modal--victory skill-celebration">
         <div className="gom-content">
           <SkillDecoIcon
             characterClass={characterClass}
@@ -54,7 +54,7 @@ function SkillCelebration({
 
           <div className="gom-title-group">
             <div className="gom-title">
-              <NarikWoodBitFont text={title} size={1} />
+              <NarikWoodBitFont text={title} size={1.6} />
             </div>
             <p className="gom-subtitle pixel-font">{subtitle}</p>
           </div>

@@ -26,6 +26,10 @@ export interface MapProgressState {
   mysteriesSolved: NodeProgress;
   /** Where the player stood on each map, so every map resumes at its own spot. */
   characterPositions: Partial<Record<MapId, GridPosition>>;
+  /** Roaming enemies (FOEs) beaten for good, by FOE id. */
+  foesDefeated: NodeProgress;
+  /** The FOE whose battle is in flight; resolved by the rewards screen, cleared by the map on mount. */
+  pendingFoeBattleId: string | null;
 }
 
 /**
@@ -36,6 +40,12 @@ export interface MapProgressActions {
   isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => boolean;
   resetProgress: () => void;
   setCharacterPosition: (mapId: MapId, position: GridPosition) => void;
+  /** Retire a FOE for good. */
+  markFoeDefeated: (foeId: string) => void;
+  /** Remember (or forget, with `null`) which FOE's battle is about to start. */
+  setPendingFoeBattle: (foeId: string | null) => void;
+  /** Mark the pending FOE defeated and clear it; a no-op when nothing is pending. */
+  resolvePendingFoeBattle: () => void;
 }
 
 /**

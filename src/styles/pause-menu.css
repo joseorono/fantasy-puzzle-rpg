@@ -552,6 +552,19 @@
   color: #f3e7d8;
 }
 
+.pause-menu-item-category-tab__count {
+  margin-left: 0.35rem;
+  font-size: 0.5rem;
+  opacity: 0.7;
+}
+
+/* The pane is the query container (a container can't query itself), so the layout
+   below can drop the card under the list when the pane gets narrow. */
+.pause-menu-content--items {
+  container: items-layout / inline-size;
+}
+
+/* List (or target picker) beside the parchment item card. */
 .pause-menu-items-layout {
   display: flex;
   gap: 1rem;
@@ -559,27 +572,39 @@
   min-height: 0;
 }
 
-.pause-menu-item-list {
+.pause-menu-item-list,
+.pause-menu-item-picker {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.92), rgba(10, 6, 4, 0.92));
   border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
   border-radius: 8px;
   padding: 0.5rem;
+}
+
+.pause-menu-item-list {
+  gap: 0.2rem;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
+/* Icon | name (+ rarity) | equipped pill + quantity. */
 .pause-menu-item-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.6rem;
+  column-gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.4rem;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.1s ease;
   border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
 }
 
 .pause-menu-item-row:hover {
@@ -592,6 +617,74 @@
   border-color: #d4a574;
 }
 
+/* The shared ring's 8px radius would round past the row's own corners. */
+.pause-menu .pause-menu-item-row.kb-cursor {
+  border-radius: 4px;
+}
+
+.pause-menu-item-row__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 1px solid #84684a;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.pause-menu-item-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pause-menu-item-row__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: #f3e7d8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-item-row__rarity {
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.pause-menu-item-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pause-menu-item-row__equipped {
+  flex-shrink: 0;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid rgba(212, 165, 116, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(110, 76, 49, 0.72), rgba(71, 47, 30, 0.82));
+  color: #e3bb92;
+  font-size: 0.45rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pause-menu-item-row__qty {
+  min-width: 2.2rem;
+  justify-content: flex-end;
+  font-size: 0.65rem;
+  color: #d4a574;
+}
+
+/* Kept for the Equip tab's slot rows. */
 .pause-menu-item-icon-slot {
   display: inline-flex;
   align-items: center;
@@ -601,76 +694,18 @@
   flex-shrink: 0;
 }
 
-.pause-menu-item-name {
-  font-size: 0.7rem;
-  color: #e0e0e0;
-  font-weight: 700;
-}
-
-.pause-menu-item-qty {
-  font-size: 0.65rem;
-  color: #d4a574;
-  font-weight: 700;
-}
-
-.pause-menu-item-detail {
-  width: 220px;
-  flex-shrink: 0;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgb(42 24 16 / 60%) 0%, rgb(26 16 8 / 60%) 100%);
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.pause-menu-item-detail-name {
-  font-size: 0.85rem;
-  color: #e3bb92;
-  font-weight: 700;
-  text-align: center;
-}
-
-.pause-menu-item-detail-icon {
-  font-size: 2rem;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
-  background-size: contain;
-  image-rendering: pixelated;
-  border: none;
-  border-radius: 8px;
-}
-
-.pause-menu-item-detail-desc {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-style: italic;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.pause-menu-item-detail-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
-}
-
+/* Shared with the Equip tab's available-gear list. */
 .pause-menu-item-stat-badge {
   padding: 0.2rem 0.5rem;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  border: 1px solid rgba(212, 165, 116, 0.35);
   border-radius: 3px;
   font-size: 0.6rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
 }
 
+/* Empty category: centred two-line note inside the list frame. */
 .pause-menu-empty {
   display: flex;
   align-items: center;
@@ -681,32 +716,386 @@
   font-style: italic;
 }
 
-/* Use button in item detail panel */
-.pause-menu-use-btn {
-  margin-top: auto;
-  padding: 0.5rem 1rem;
+.pause-menu-empty--items {
+  flex: 1;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.5rem 1rem;
+  font-style: normal;
+  text-align: center;
+  line-height: 1.6;
+  color: #e3bb92;
+}
+
+.pause-menu-empty--items .pause-menu-empty__sub {
+  font-family: monospace;
   font-size: 0.75rem;
-  font-weight: 700;
+  color: #b38a63;
+}
+
+/* ─── Item card (parchment, the .skill-detail recipe in skills.css) ─── */
+
+.pause-menu-item-detail {
+  width: 240px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 0.35rem 0.45rem;
+  border: 20px solid transparent;
+  border-image: url('/assets/skills/ui/indigolay-skill-panel-text-area.png') 30 fill / 20px stretch;
+  color: #33200f;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  animation: skill-detail-in 0.18s ease-out backwards;
+}
+
+.pause-menu-item-detail .pixel-font {
+  text-shadow: none;
+}
+
+.pause-menu-item-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.pause-menu-item-card__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__name {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #33200f;
+  overflow-wrap: anywhere;
+}
+
+.pause-menu-item-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Dark gilded capsule (the .skill-detail__tier-badge recipe) — the muted rarity
+   colours only read on a dark ground, never on the parchment itself. */
+.pause-menu-item-card__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 0.55rem;
+  font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: linear-gradient(to bottom, #d48c46, #8b4513);
-  border: 2px solid #ffd700;
+  letter-spacing: 0.08em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+}
+
+.pause-menu-item-card__desc {
+  margin: 0;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #33200f;
+}
+
+.pause-menu-item-card__ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.45rem 0.5rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  border: 2px solid #5c3a1e;
   border-radius: 8px;
-  color: #fff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1.5px rgba(212, 165, 116, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.pause-menu-item-card__effect {
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: #e9be76;
+}
+
+.pause-menu-item-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pause-menu-item-card__chip {
+  padding: 0.12rem 0.4rem;
+  font-size: 0.45rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e3bb92;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 999px;
+}
+
+.pause-menu-item-card__chip--battle {
+  color: #e09a63;
+  border-color: rgba(224, 154, 99, 0.4);
+}
+
+.pause-menu-item-card__chip--field {
+  color: #a9c281;
+  border-color: rgba(169, 194, 129, 0.4);
+}
+
+/* POW / VIT / SPD: the Equip tab's gear chips, label stacked over value. */
+.pause-menu-item-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.pause-menu-item-card__stats .gear-stats__chip {
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.25rem 0.2rem;
+}
+
+.pause-menu-item-card__stats .gear-stats__value--zero {
+  opacity: 0.45;
+}
+
+.pause-menu-item-card__stats .gear-stats__value--down {
+  color: #c9785f;
+}
+
+.pause-menu-item-card__fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__fact-label {
+  flex-shrink: 0;
+  font-size: 0.45rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d4a574;
+}
+
+.pause-menu-item-card__fact-value {
+  min-width: 0;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-align: right;
+  color: #f7e3c4;
+  overflow-wrap: anywhere;
+}
+
+.pause-menu-item-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.pause-menu-item-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #5c3a1e;
+}
+
+.pause-menu-item-card__owned strong {
+  color: #33200f;
+}
+
+.pause-menu-item-card__sell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* The cursor-corner wrapper defaults to fit-content (cursor.css); the button spans the card. */
+.pause-menu-item-card__use.cursor-corners {
+  display: block;
+  width: 100%;
+}
+
+.pause-menu-item-card__use .toffec-button {
+  width: 100%;
+}
+
+.pause-menu-item-card__reason {
+  margin: 0;
+  font-family: monospace;
+  font-size: 0.65rem;
+  font-style: italic;
+  text-align: center;
+  color: #7a5230;
+}
+
+/* ─── Target picker (replaces the list while a potion is being used) ── */
+
+.pause-menu-item-picker {
+  gap: 0.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.pause-menu-item-picker__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  font-size: 0.65rem;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-item-picker__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pause-menu-item-picker__remaining {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  color: #d4a574;
+}
+
+.pause-menu-item-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.pause-menu-item-picker__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Same gotchas the Inn solves (town.css): the card's 200px floor and the corner
+   wrapper's fit-content would both overflow a half-width cell. */
+.pause-menu-item-picker__grid .party-member-card--bar {
+  min-width: 0;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
-.pause-menu-use-btn:hover:not(:disabled) {
-  background: linear-gradient(to bottom, #e59c56, #9b5523);
-  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
-  transform: translateY(-1px);
+.pause-menu-item-picker__grid .cursor-corners {
+  display: block;
+  width: 100%;
 }
 
-.pause-menu-use-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  border-color: color(srgb 0.83 0.65 0.46 / 0.6);
+.pause-menu-item-picker__cell--disabled {
+  opacity: 0.55;
+}
+
+.pause-menu-item-picker__cell--disabled .party-member-card--bar {
+  cursor: default;
+}
+
+.pause-menu-item-picker__cell--disabled:hover .cursor-corner {
+  opacity: 0;
+}
+
+/* Result preview under each hero: the Inn's heal-cost plate. */
+.pause-menu-item-picker__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.55rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #e8c48a;
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.95));
+  border: 1px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.pause-menu-item-picker__status--revive {
+  color: #e09a63;
+}
+
+.pause-menu-item-picker__status--full {
+  color: #a8c79a;
+}
+
+.pause-menu-item-picker__hint {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+/* Narrow pane: the card drops under the list and sheds its flavor text and price. */
+@container items-layout (max-width: 520px) {
+  .pause-menu-items-layout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pause-menu-item-list,
+  .pause-menu-item-picker {
+    flex: 1 1 0;
+    min-height: 132px;
+  }
+
+  .pause-menu-item-detail {
+    width: auto;
+  }
+
+  .pause-menu-item-card__desc,
+  .pause-menu-item-card__sell {
+    display: none;
+  }
+
+  .pause-menu-item-card__ledger {
+    max-height: 96px;
+  }
 }
 
 /* ─── Stats Tab ──────────────────────────────────────────────────────── */

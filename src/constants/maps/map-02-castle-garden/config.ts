@@ -7,6 +7,10 @@ export const MAP_02_CASTLE_GARDEN: MapDefinition = {
   tilesetImage: TILESET_CASTLE_GARDEN.image,
   displayMapName: 'Castle Garden',
   walkableLayers: ['road'],
+  // The visible-surface rule: a road cell is only walkable if what the player actually sees
+  // on top is the road or one of these floors — transparent road tiles must not let the
+  // player walk through grass, bushes or trees drawn underneath.
+  surfaceLayers: ['base-floor', 'fountains-floor'],
   visibleLayers: [
     'base-floor',
     'fountains-floor',

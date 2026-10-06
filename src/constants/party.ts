@@ -60,7 +60,7 @@ const partyBase: CharacterData[] = [
   },
   {
     id: 'rogue',
-    name: 'Finn',
+    name: 'Robin',
     class: 'rogue',
     color: 'green',
     stats: {
@@ -166,7 +166,6 @@ export const CHARACTER_ICONS = {
 } as const;
 
 // ─── Character Sprites ───────────────────────────────────────────────
-// Healer and rogue clone the mage and warrior art until their own Stella exports exist.
 
 interface CharacterSpriteSet {
   /** Stella side-view battler sheet. */
@@ -197,12 +196,26 @@ const MAGE_ART = {
   faceFocus: { x: 0.48, y: 0.16 },
 };
 
+const ROGUE_ART = {
+  battler: '/assets/sprite/party-rogue-stella-side-view.png',
+  walk: '/assets/sprite/party-rogue-stella-walk.png',
+  face: '/assets/portraits/party-rogue-face.png',
+  faceFocus: { x: 0.43, y: 0.1 },
+};
+
+const HEALER_ART = {
+  battler: '/assets/sprite/party-healer-stella-side-view.png',
+  walk: '/assets/sprite/party-healer-stella-walk.png',
+  face: '/assets/portraits/party-healer-face.png',
+  faceFocus: { x: 0.52, y: 0.13 },
+};
+
 export const CHARACTER_SPRITES: Record<CharacterClass, CharacterSpriteSet> = {
   warrior: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'swing' },
-  rogue: { ...WARRIOR_ART, actionMotion: 'thrust', castMotion: 'missile' },
+  rogue: { ...ROGUE_ART, actionMotion: 'thrust', castMotion: 'missile' },
   mage: { ...MAGE_ART, actionMotion: 'skill', castMotion: 'spell' },
   // Not `chant` for the cast: it barely moves on Stella sheets (see STELLA_SV_MOTIONS).
-  healer: { ...MAGE_ART, actionMotion: 'item', castMotion: 'spell' },
+  healer: { ...HEALER_ART, actionMotion: 'item', castMotion: 'spell' },
 };
 
 // ─── Character Colors ────────────────────────────────────────────────
@@ -276,7 +289,7 @@ export const CHARACTER_BATTLE_COLORS = {
 
 // ─── Skill Burst Overlay ─────────────────────────────────────────────
 
-export const SKILL_BURST_DURATION_MS = 900;
+export const SKILL_BURST_DURATION_MS = 1000;
 
 export const SKILL_BURST_COLORS: Record<CharacterClass, { bg: string; light: string }> = {
   warrior: { bg: 'rgba(37, 99, 235, 0.85)', light: 'rgba(147, 197, 253, 0.5)' },

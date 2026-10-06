@@ -58,6 +58,8 @@ function makeGameState(): SaveGameState {
       treasuresFound: {},
       mysteriesSolved: {},
       characterPositions: { 'map-00': { row: 4, col: 7 } },
+      foesDefeated: { fairy_forest_foe_1: true },
+      pendingFoeBattleId: null,
     },
     floorLootProgress: { 'map-00': { floor_loot_1: true } },
     crafting: { pity: 5 },
@@ -95,6 +97,18 @@ describe('buildSaveData', () => {
 
     const save = buildSaveData({ state: dirty, currentMapId: 'map-00', playtimeMs: 0, savedAt: SAVED_AT });
     expect('shopsVisited' in save.state.mapProgress).toBe(false);
+  });
+
+  it('fills in FOE progress for saves written before it existed', () => {
+    const state = makeGameState();
+    const legacyMapProgress: Record<string, unknown> = { ...state.mapProgress };
+    delete legacyMapProgress.foesDefeated;
+    delete legacyMapProgress.pendingFoeBattleId;
+    const legacy = { ...state, mapProgress: legacyMapProgress } as unknown as SaveGameState;
+
+    const save = buildSaveData({ state: legacy, currentMapId: 'map-00', playtimeMs: 0, savedAt: SAVED_AT });
+    expect(save.state.mapProgress.foesDefeated).toEqual({});
+    expect(save.state.mapProgress.pendingFoeBattleId).toBeNull();
   });
 
   it('survives a localStorage round-trip unchanged', () => {

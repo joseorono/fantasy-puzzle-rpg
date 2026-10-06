@@ -5,6 +5,7 @@
 import type { CharacterData } from '~/types/rpg-elements';
 import { subtractionWithMin, additionWithMax } from './math';
 import { calculatePartyCurrentHp } from './rpg-calculations';
+import { ITEM_REVIVE_BASE_HP } from '~/constants/inventory';
 
 /**
  * Fully heal all party members to their max HP
@@ -115,6 +116,40 @@ export function healPartyMember(party: CharacterData[], characterId: string, amo
   return party.map((char) =>
     char.id === characterId ? { ...char, currentHp: additionWithMax(char.currentHp, amount, char.maxHp) } : char,
   );
+}
+
+/**
+ * Whether a heal item can do anything for this member: they are wounded or fallen.
+ * @param member - Party member
+ * @returns true when below max HP (a fallen member is revived)
+ */
+export function canReceiveHealing(member: CharacterData): boolean {
+  return member.currentHp < member.maxHp;
+}
+
+/**
+ * HP a heal item would restore to this member, clamped to what they are missing.
+ * A fallen member is revived with `ITEM_REVIVE_BASE_HP + amount`.
+ * @param member - Target party member
+ * @param amount - The item's heal amount
+ * @returns HP gained (0 when already at full HP)
+ */
+export function getHealItemGain(member: CharacterData, amount: number): number {
+  const heal = member.currentHp <= 0 ? ITEM_REVIVE_BASE_HP + amount : amount;
+  return Math.max(0, Math.min(heal, member.maxHp - member.currentHp));
+}
+
+/**
+ * Applies a heal item to one member, reviving them if they have fallen.
+ * @param party - Array of party members
+ * @param memberId - ID of the member drinking the item
+ * @param amount - The item's heal amount
+ * @returns New party array with the target healed (unchanged for an unknown id)
+ */
+export function applyHealItem(party: CharacterData[], memberId: string, amount: number): CharacterData[] {
+  const target = party.find((member) => member.id === memberId);
+  if (!target) return party;
+  return healPartyMember(party, memberId, getHealItemGain(target, amount));
 }
 
 /**

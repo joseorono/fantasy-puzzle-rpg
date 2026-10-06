@@ -141,6 +141,7 @@ export function createBattleState(
     lastMatchedType: null,
     lastSkillActivation: null,
     startedAt: Date.now(),
+    startingHpTotal: effectiveParty.reduce((sum, char) => sum + char.currentHp, 0),
     maxCombo: 0,
     itemsUsed: 0,
     ultimateSkillsUsed: 0,

@@ -15,6 +15,8 @@ export const createInitialMapProgressState = (): MapProgressState => ({
   treasuresFound: {},
   mysteriesSolved: {},
   characterPositions: {},
+  foesDefeated: {},
+  pendingFoeBattleId: null,
 });
 
 /**
@@ -71,6 +73,36 @@ export const createMapProgressSlice = (
           },
           false,
           'mapProgress/setCharacterPosition',
+        ),
+
+      markFoeDefeated: (foeId) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.foesDefeated[foeId] = true;
+          },
+          false,
+          'mapProgress/markFoeDefeated',
+        ),
+
+      setPendingFoeBattle: (foeId) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.pendingFoeBattleId = foeId;
+          },
+          false,
+          'mapProgress/setPendingFoeBattle',
+        ),
+
+      resolvePendingFoeBattle: () =>
+        set(
+          (state: MapProgressSlice) => {
+            const foeId = state.mapProgress.pendingFoeBattleId;
+            if (foeId === null) return;
+            state.mapProgress.foesDefeated[foeId] = true;
+            state.mapProgress.pendingFoeBattleId = null;
+          },
+          false,
+          'mapProgress/resolvePendingFoeBattle',
         ),
 
       resetProgress: () =>

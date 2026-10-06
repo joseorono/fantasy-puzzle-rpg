@@ -1,18 +1,14 @@
 import type { TilemapData, TiledMapConfig } from './tilemap';
 import type { InteractiveMapNode, EncounterDefinition, FloorLootSpot } from './map-node';
 import type { DialogueScene } from './dialogue';
+import type { FoeDefinition } from './foe';
 
 /**
  * Every map in the game. Adding one means adding a member here, an entry in
  * MAP_REGISTRY, and a key in `MAP_ID_COVERAGE` (src/types/save-game.ts) so the
  * id validates in saves — TypeScript flags a half-added map at every end.
  */
-export type MapId =
-  | 'map-00'
-  | 'map-01'
-  | 'map-00-apprentice-forge'
-  | 'map-01-fairy-forest'
-  | 'map-02-castle-garden';
+export type MapId = 'map-00' | 'map-01' | 'map-00-apprentice-forge' | 'map-01-fairy-forest' | 'map-02-castle-garden';
 
 /**
  * A dialogue scene that fires when the player steps onto a tile.
@@ -44,4 +40,6 @@ export interface MapDefinition extends TiledMapConfig {
   dialogueScenes?: Record<string, DialogueScene>;
   /** Enemy compositions, keyed by the node id that starts the fight. */
   encounters?: Record<string, EncounterDefinition>;
+  /** Roaming enemies; each one's fight lives in `encounters` under `encounterId ?? id`. */
+  foes?: FoeDefinition[];
 }

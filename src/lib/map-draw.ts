@@ -149,7 +149,53 @@ export function getMarkerPulsePhase(timestampMs: number): number {
   return ((timestampMs / 1000) * MAP_MARKER_PULSE_RADIANS_PER_SECOND) % (Math.PI * 2);
 }
 
-/** Draws one tile layer, in map pixels. */
+/** Tiled packs a tile's flip flags into the top bits of its GID ("Global tile IDs" in the Tiled docs). */
+const TILED_FLIP_H = 0x80000000;
+const TILED_FLIP_V = 0x40000000;
+const TILED_FLIP_D = 0x20000000;
+/** Clears all four flag bits, including the hex-rotate bit Tiled keeps even on orthogonal maps. */
+const TILED_GID_MASK = 0x0fffffff;
+
+export interface TileFlips {
+  flipH: boolean;
+  flipV: boolean;
+  flipD: boolean;
+}
+
+export interface DecodedTileGid extends TileFlips {
+  /** The tile's global id with every flag bit cleared. */
+  gid: number;
+}
+
+/**
+ * Splits a Tiled GID into its tile id and flip flags.
+ *
+ * @param rawGid A value from a tile layer's `data`, flags included.
+ */
+export function decodeTileGid(rawGid: number): DecodedTileGid {
+  return {
+    gid: rawGid & TILED_GID_MASK,
+    flipH: (rawGid & TILED_FLIP_H) !== 0,
+    flipV: (rawGid & TILED_FLIP_V) !== 0,
+    flipD: (rawGid & TILED_FLIP_D) !== 0,
+  };
+}
+
+/**
+ * The 2×2 transform that applies a tile's flips about its centre, as the `[a, b, c, d]`
+ * of `CanvasRenderingContext2D.setTransform`. Tiled applies the diagonal flip first, then
+ * the horizontal and vertical ones.
+ *
+ * @param flips From {@link decodeTileGid}.
+ */
+export function getTileFlipMatrix(flips: TileFlips): [number, number, number, number] {
+  const scaleX = flips.flipH ? -1 : 1;
+  const scaleY = flips.flipV ? -1 : 1;
+  // The diagonal flip swaps the axes, so the scales move to the off-diagonal.
+  return flips.flipD ? [0, scaleY, scaleX, 0] : [scaleX, 0, 0, scaleY];
+}
+
+/** Draws one tile layer, in map pixels. Expects and leaves the context at the identity transform. */
 function drawTileLayer(
   ctx: CanvasRenderingContext2D,
   layer: TilemapLayer,
@@ -157,21 +203,35 @@ function drawTileLayer(
   tilesetInfo: TilemapTileset,
   tileSize: number,
 ): void {
-  const { columns, tilewidth, tileheight, firstgid } = tilesetInfo;
+  const { columns, tilewidth, tileheight, firstgid, margin, spacing } = tilesetInfo;
+  const half = tileSize / 2;
 
+  ctx.globalAlpha = layer.opacity;
   for (let y = 0; y < layer.height; y++) {
     for (let x = 0; x < layer.width; x++) {
-      const tileId = layer.data[y * layer.width + x];
+      const rawGid = layer.data[y * layer.width + x];
       // 0 means no tile.
-      if (tileId === 0) continue;
+      if (rawGid === 0) continue;
 
-      const tileIndex = tileId - firstgid;
-      const tilesetX = (tileIndex % columns) * tilewidth;
-      const tilesetY = Math.floor(tileIndex / columns) * tileheight;
+      const { gid, flipH, flipV, flipD } = decodeTileGid(rawGid);
+      const tileIndex = gid - firstgid;
+      const sourceX = margin + (tileIndex % columns) * (tilewidth + spacing);
+      const sourceY = margin + Math.floor(tileIndex / columns) * (tileheight + spacing);
+      const destX = x * tileSize;
+      const destY = y * tileSize;
 
-      ctx.drawImage(tileset, tilesetX, tilesetY, tilewidth, tileheight, x * tileSize, y * tileSize, tileSize, tileSize);
+      if (!flipH && !flipV && !flipD) {
+        ctx.drawImage(tileset, sourceX, sourceY, tilewidth, tileheight, destX, destY, tileSize, tileSize);
+        continue;
+      }
+
+      const [a, b, c, d] = getTileFlipMatrix({ flipH, flipV, flipD });
+      ctx.setTransform(a, b, c, d, destX + half, destY + half);
+      ctx.drawImage(tileset, sourceX, sourceY, tilewidth, tileheight, -half, -half, tileSize, tileSize);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   }
+  ctx.globalAlpha = 1;
 }
 
 /**

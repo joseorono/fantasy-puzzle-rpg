@@ -1,5 +1,6 @@
 import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
+import { ALL_MAPS } from '~/constants/maps';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -9,7 +10,9 @@ export const assetList: string[] = [
   '/assets/portraits/Innkeeper_02.png',
   '/assets/portraits/Witch_03.png',
   '/assets/portraits/innkeeper-2.png',
+  '/assets/portraits/party-healer-face.png',
   '/assets/portraits/party-mage-face.png',
+  '/assets/portraits/party-rogue-face.png',
   '/assets/portraits/party-warrior-face.png',
 
   // Backgrounds
@@ -79,6 +82,8 @@ export const assetList: string[] = [
   // Enemies
   '/assets/enemy-sprites/frogger_idle.png',
   '/assets/enemy-sprites/gollux_idle.png',
+  '/assets/enemy-sprites/stone_golem_idle.png',
+  '/assets/enemy-sprites/stone_golem_map.png',
 
   // Fonts
   '/assets/fonts/RedWood-5x-narik.png',
@@ -180,15 +185,15 @@ export const assetList: string[] = [
   '/assets/sprite/party-memao-mage.png',
   '/assets/sprite/party-mage-stella-side-view.png',
   '/assets/sprite/party-warrior-stella-side-view.png',
+  '/assets/sprite/party-rogue-stella-side-view.png',
+  '/assets/sprite/party-healer-stella-side-view.png',
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',
   '/assets/tabs/UI_tab_On.png',
 
-  // Tilesets
-  '/assets/tileset/demo-map-2.png',
-  '/assets/tileset/demo-map.png',
-  '/assets/tileset/pc-forge-tileset.png',
+  // Tilesets — every registered map's sheet, so a new map never needs a line here.
+  ...new Set(ALL_MAPS.map((map) => map.tilesetImage)),
 
   // Title Signs
   '/assets/title-signs/ribbon-red-large.png',

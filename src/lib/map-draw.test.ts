@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildMarkerList,
+  decodeTileGid,
   getMarkerPulsePhase,
+  getTileFlipMatrix,
   isMarkerInView,
   type MapMarker,
   type MarkerStatus,
   type NodeMarker,
+  type TileFlips,
 } from './map-draw';
 import type { MapDefinition } from '~/types/map';
 import type { TilemapData } from '~/types/tilemap';
@@ -150,5 +153,61 @@ describe('getMarkerPulsePhase', () => {
   it('repeats every full turn', () => {
     const periodMs = ((Math.PI * 2) / MAP_MARKER_PULSE_RADIANS_PER_SECOND) * 1000;
     expect(getMarkerPulsePhase(250 + periodMs)).toBeCloseTo(getMarkerPulsePhase(250), 6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// decodeTileGid
+// ---------------------------------------------------------------------------
+
+describe('decodeTileGid', () => {
+  it('passes an unflagged gid through', () => {
+    expect(decodeTileGid(131)).toEqual({ gid: 131, flipH: false, flipV: false, flipD: false });
+  });
+
+  it('reads each flag bit', () => {
+    expect(decodeTileGid(2147484149)).toEqual({ gid: 501, flipH: true, flipV: false, flipD: false });
+    expect(decodeTileGid(3221225512)).toEqual({ gid: 40, flipH: true, flipV: true, flipD: false });
+    expect(decodeTileGid(3758096515)).toEqual({ gid: 131, flipH: true, flipV: true, flipD: true });
+  });
+
+  it('clears the hex-rotate bit Tiled keeps on orthogonal maps', () => {
+    expect(decodeTileGid(0x10000000 + 7)).toEqual({ gid: 7, flipH: false, flipV: false, flipD: false });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getTileFlipMatrix
+// ---------------------------------------------------------------------------
+
+describe('getTileFlipMatrix', () => {
+  const flips = (flipH: boolean, flipV: boolean, flipD: boolean): TileFlips => ({ flipH, flipV, flipD });
+
+  /** Maps a point through the matrix, as the canvas would (y pointing down). */
+  function apply([a, b, c, d]: [number, number, number, number], x: number, y: number): [number, number] {
+    return [a * x + c * y, b * x + d * y];
+  }
+
+  it('is the identity without flags', () => {
+    expect(getTileFlipMatrix(flips(false, false, false))).toEqual([1, 0, 0, 1]);
+  });
+
+  it('mirrors on each axis', () => {
+    expect(apply(getTileFlipMatrix(flips(true, false, false)), 1, 0)).toEqual([-1, 0]);
+    expect(apply(getTileFlipMatrix(flips(false, true, false)), 0, 1)).toEqual([0, -1]);
+    expect(getTileFlipMatrix(flips(true, true, false))).toEqual([-1, 0, 0, -1]);
+  });
+
+  it('swaps the axes on the diagonal flip', () => {
+    const diagonal = getTileFlipMatrix(flips(false, false, true));
+    expect(apply(diagonal, 1, 0)).toEqual([0, 1]);
+    expect(apply(diagonal, 0, 1)).toEqual([1, 0]);
+  });
+
+  it("rotates with Tiled's flag pairs", () => {
+    // 90° clockwise (H + D): right becomes down.
+    expect(apply(getTileFlipMatrix(flips(true, false, true)), 1, 0)).toEqual([0, 1]);
+    // 270° clockwise (V + D): right becomes up.
+    expect(apply(getTileFlipMatrix(flips(false, true, true)), 1, 0)).toEqual([0, -1]);
   });
 });

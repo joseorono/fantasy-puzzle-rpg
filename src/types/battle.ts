@@ -180,6 +180,8 @@ export interface BattleState {
   lastPoiseBreak: { enemyIds: string[]; timestamp: number } | null;
   /** `Date.now()` when the battle was created; drives the victory rating's clear-time criterion. */
   startedAt: number;
+  /** Party HP summed at battle creation; the victory rating scores HP lost against it. */
+  startingHpTotal: number;
   /** Deepest cascade combo (chain length) reached this battle; feeds the victory rating. */
   maxCombo: number;
   /** Count of battle items consumed this battle; a penalty in the victory rating. */

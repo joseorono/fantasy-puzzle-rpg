@@ -41,6 +41,8 @@ export interface UseMapRendererOptions {
   watchAnchor: boolean;
   /** Receives the character's window position, rounded, whenever it changes. */
   onAnchorChange: (position: Position) => void;
+  /** Drawn after the markers each frame, in map pixels under the camera transform. */
+  drawOverlay?: (ctx: CanvasRenderingContext2D, camera: MapPoint, layout: ViewportLayout, timestampMs: number) => void;
 }
 
 export interface MapRenderer {
@@ -77,6 +79,7 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
     markers,
     watchAnchor,
     onAnchorChange,
+    drawOverlay,
   } = options;
 
   const cacheRef = useRef<HTMLCanvasElement | null>(null);
@@ -98,6 +101,8 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   watchAnchorRef.current = watchAnchor;
   const onAnchorChangeRef = useRef(onAnchorChange);
   onAnchorChangeRef.current = onAnchorChange;
+  const drawOverlayRef = useRef(drawOverlay);
+  drawOverlayRef.current = drawOverlay;
 
   function renderFrame(frame: MovementFrame): void {
     lastFrameRef.current = frame;
@@ -129,6 +134,7 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
 
     drawCameraView(ctx, cacheRef.current, camera, currentLayout);
     drawMarkers(ctx, markersRef.current, camera, currentLayout, getMarkerPulsePhase(frame.timestampMs));
+    drawOverlayRef.current?.(ctx, camera, currentLayout, frame.timestampMs);
 
     if (viewportRect) {
       const anchor = mapToClientPoint(frame, camera, currentLayout.zoom, viewportRect);

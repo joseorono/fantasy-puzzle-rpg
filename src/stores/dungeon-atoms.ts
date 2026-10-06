@@ -7,7 +7,8 @@
  * so module-level atoms (mirroring `battle-atoms.ts`) are the right tool. None of
  * it is persisted: reloading the page restarts the run at Floor 1 (in-memory v1).
  * The Zustand store is written exactly once per run, on completion
- * (`markDungeonCompleted`), never per floor/event.
+ * (`markDungeonCompleted`), never per floor/event. The autosave follows the same
+ * rule: it fires once after that write, not after each floor's fight.
  */
 
 import { atom } from 'jotai';

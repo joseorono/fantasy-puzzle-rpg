@@ -10,6 +10,40 @@
       "LayerSettings": {}
     },
     {
+      "Name": "top",
+      "Category": "Clothing Top",
+      "Part": "Top05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Walk": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        },
+        "Sv": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF00FF00"
+          }
+        }
+      }
+    },
+    {
       "Name": "head",
       "Category": "Head",
       "Part": "Head02",
@@ -74,7 +108,7 @@
     {
       "Name": "back hair",
       "Category": "Rear Hair",
-      "Part": "Hair05",
+      "Part": "Hair06",
       "Offsets": {
         "Face": "1, 0",
         "Sv": "1, 0",
@@ -112,8 +146,12 @@
     {
       "Name": "front hair",
       "Category": "Front Hair",
-      "Part": "Front06",
-      "Offsets": {},
+      "Part": "Front02",
+      "Offsets": {
+        "Face": "2, 0",
+        "Sv": "2, 0",
+        "Walk": "2, 0"
+      },
       "Visible": true,
       "UseSkinToneColoring": true,
       "LayerSettings": {
@@ -147,40 +185,6 @@
       "Name": "pant",
       "Category": "Clothing Bottom",
       "Part": "Bottom05",
-      "Offsets": {},
-      "Visible": true,
-      "UseSkinToneColoring": true,
-      "LayerSettings": {
-        "Face": {
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF00FF00"
-          }
-        },
-        "Walk": {
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF00FF00"
-          }
-        },
-        "Sv": {
-          "ff00ff00": {
-            "Hue": 0,
-            "Saturation": 0,
-            "Lightness": 0,
-            "Color": "#FF00FF00"
-          }
-        }
-      }
-    },
-    {
-      "Name": "top",
-      "Category": "Clothing Top",
-      "Part": "Top05",
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,

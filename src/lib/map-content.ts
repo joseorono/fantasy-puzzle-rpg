@@ -1,6 +1,6 @@
 import type { InteractiveMapNode, FloorLootSpot } from '~/types/map-node';
 import type { DialogueTrigger } from '~/types/map';
-import type { MapNodeType, MapProgressState } from '~/stores/slices/map-progress.types';
+import type { MapNodeType, MapProgressState, NodeProgress } from '~/stores/slices/map-progress.types';
 
 /**
  * Finds the interactive node occupying a tile.
@@ -50,8 +50,13 @@ export function findDialogueTriggerAt(
   return triggers?.find((trigger) => trigger.row === row && trigger.col === col);
 }
 
+/** The `MapProgressState` fields that are per-id completion records. */
+type NodeProgressKey = {
+  [K in keyof MapProgressState]: MapProgressState[K] extends NodeProgress ? K : never;
+}[keyof MapProgressState];
+
 /** Which map progress record tracks completion for each node type. */
-const NODE_PROGRESS_KEYS: Record<MapNodeType, Exclude<keyof MapProgressState, 'characterPositions'>> = {
+const NODE_PROGRESS_KEYS: Record<MapNodeType, NodeProgressKey> = {
   Battle: 'battlesCompleted',
   Boss: 'bossesCompleted',
   Dungeon: 'dungeonsCompleted',

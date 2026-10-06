@@ -61,6 +61,93 @@ describe('buildWalkableMask', () => {
   });
 });
 
+describe('buildWalkableMask — visible surface rule', () => {
+  it('skips an ignored top tile and falls through to the walkable layer below', () => {
+    const mask = buildWalkableMask(
+      makeMap([
+        layer('base-floor', 3, 2, [5, 0, 0, 0, 0, 0]),
+        layer('road', 3, 2, [1, 0, 0, 0, 0, 0]),
+        layer('trees', 3, 2, [12, 0, 0, 0, 0, 0]),
+      ]),
+      ['road'],
+      { surfaceLayers: [], ignoredGids: new Set([12]) },
+    );
+
+    expect(Array.from(mask.data)).toEqual([1, 0, 0, 0, 0, 0]);
+  });
+
+  it('blocks a cell whose visible top tile is a non-ground layer', () => {
+    const mask = buildWalkableMask(
+      makeMap([layer('road', 3, 2, [1, 0, 0, 0, 0, 0]), layer('trees', 3, 2, [9, 0, 0, 0, 0, 0])]),
+      ['road'],
+      { surfaceLayers: ['base-floor'] },
+    );
+
+    expect(Array.from(mask.data)).toEqual([0, 0, 0, 0, 0, 0]);
+  });
+
+  it('keeps a cell walkable when a walkable-layer tile is the visible top', () => {
+    const mask = buildWalkableMask(
+      makeMap([layer('base-floor', 3, 2, [5, 0, 0, 0, 0, 0]), layer('road', 3, 2, [1, 0, 0, 0, 0, 0])]),
+      ['road'],
+      { surfaceLayers: ['base-floor'] },
+    );
+
+    expect(Array.from(mask.data)).toEqual([1, 0, 0, 0, 0, 0]);
+  });
+
+  it('blocks an ignored road tile over a surface floor when no surface layer is allowed', () => {
+    const mask = buildWalkableMask(
+      makeMap([layer('base-floor', 3, 2, [5, 0, 0, 0, 0, 0]), layer('road', 3, 2, [12, 0, 0, 0, 0, 0])]),
+      ['road'],
+      { surfaceLayers: [], ignoredGids: new Set([12]) },
+    );
+
+    expect(Array.from(mask.data)).toEqual([0, 0, 0, 0, 0, 0]);
+  });
+
+  it('strips Tiled flip bits before matching ignored GIDs', () => {
+    const base = 12;
+    // Bit 31 is the horizontal-flip flag and bit 28 the hex-rotate flag Tiled keeps
+    // even on orthogonal maps. Both must be cleared before the ignored-GID lookup.
+    const flippedIgnored = base | 0x80000000 | 0x10000000;
+    const mask = buildWalkableMask(
+      makeMap([layer('base-floor', 3, 2, [5, 0, 0, 0, 0, 0]), layer('road', 3, 2, [flippedIgnored, 0, 0, 0, 0, 0])]),
+      ['road'],
+      { surfaceLayers: [], ignoredGids: new Set([base]) },
+    );
+
+    expect(Array.from(mask.data)).toEqual([0, 0, 0, 0, 0, 0]);
+  });
+
+  it('keeps a road cell walkable when an overhead GID draws over it', () => {
+    const mask = buildWalkableMask(
+      makeMap([
+        layer('base-floor', 3, 2, [5, 0, 0, 0, 0, 0]),
+        layer('road', 3, 2, [1, 0, 0, 0, 0, 0]),
+        layer('decoration', 3, 2, [189, 0, 0, 0, 0, 0]),
+      ]),
+      ['road'],
+      { surfaceLayers: [], ignoredGids: new Set([189]) },
+    );
+
+    expect(Array.from(mask.data)).toEqual([1, 0, 0, 0, 0, 0]);
+  });
+
+  it('keeps the legacy union behavior when surfaceLayers is omitted', () => {
+    const mask = buildWalkableMask(
+      makeMap([
+        layer('road', 3, 2, [1, 0, 0, 0, 0, 0]),
+        layer('walkable-2', 3, 2, [0, 0, 0, 0, 2, 0]),
+        layer('trees', 3, 2, [9, 0, 0, 0, 0, 0]),
+      ]),
+      ['road', 'walkable-2'],
+    );
+
+    expect(Array.from(mask.data)).toEqual([1, 0, 0, 0, 1, 0]);
+  });
+});
+
 describe('isMaskWalkable', () => {
   const mask = buildWalkableMask(makeMap([layer('road', 3, 2, [1, 0, 1, 0, 0, 1])]), ['road']);
 

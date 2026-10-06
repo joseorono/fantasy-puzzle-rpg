@@ -12,7 +12,11 @@ import {
   healAllLivingPartyMembers,
   healAllByMaxHpPercent,
   isPartyDefeated,
+  canReceiveHealing,
+  getHealItemGain,
+  applyHealItem,
 } from './party-system';
+import { ITEM_REVIVE_BASE_HP } from '~/constants/inventory';
 
 const createTestCharacter = (overrides: Partial<CharacterData> = {}): CharacterData => ({
   id: 'test-warrior',
@@ -441,6 +445,65 @@ describe('party system utilities', () => {
 
     it('should return true for empty party', () => {
       expect(isPartyDefeated([])).toBe(true);
+    });
+  });
+});
+
+describe('heal items', () => {
+  describe('canReceiveHealing', () => {
+    it('is false at full HP', () => {
+      expect(canReceiveHealing(createTestCharacter({ currentHp: 100, maxHp: 100 }))).toBe(false);
+    });
+
+    it('is true when wounded', () => {
+      expect(canReceiveHealing(createTestCharacter({ currentHp: 40, maxHp: 100 }))).toBe(true);
+    });
+
+    it('is true when fallen', () => {
+      expect(canReceiveHealing(createTestCharacter({ currentHp: 0, maxHp: 100 }))).toBe(true);
+    });
+  });
+
+  describe('getHealItemGain', () => {
+    it('restores the full amount when there is room', () => {
+      expect(getHealItemGain(createTestCharacter({ currentHp: 20, maxHp: 100 }), 50)).toBe(50);
+    });
+
+    it('clamps to the missing HP', () => {
+      expect(getHealItemGain(createTestCharacter({ currentHp: 80, maxHp: 100 }), 50)).toBe(20);
+    });
+
+    it('adds the revive base for a fallen member', () => {
+      expect(getHealItemGain(createTestCharacter({ currentHp: 0, maxHp: 100 }), 50)).toBe(ITEM_REVIVE_BASE_HP + 50);
+    });
+
+    it('is 0 at full HP', () => {
+      expect(getHealItemGain(createTestCharacter({ currentHp: 100, maxHp: 100 }), 50)).toBe(0);
+    });
+  });
+
+  describe('applyHealItem', () => {
+    const party = [
+      createTestCharacter({ id: 'a', currentHp: 10, maxHp: 100 }),
+      createTestCharacter({ id: 'b', currentHp: 0, maxHp: 100 }),
+      createTestCharacter({ id: 'c', currentHp: 90, maxHp: 100 }),
+    ];
+
+    it('heals only the target', () => {
+      const healed = applyHealItem(party, 'a', 50);
+      expect(healed.map((member) => member.currentHp)).toEqual([60, 0, 90]);
+    });
+
+    it('revives a fallen target', () => {
+      expect(applyHealItem(party, 'b', 50)[1].currentHp).toBe(ITEM_REVIVE_BASE_HP + 50);
+    });
+
+    it('clamps to max HP', () => {
+      expect(applyHealItem(party, 'c', 200)[2].currentHp).toBe(100);
+    });
+
+    it('returns the party unchanged for an unknown id', () => {
+      expect(applyHealItem(party, 'nobody', 50)).toBe(party);
     });
   });
 });

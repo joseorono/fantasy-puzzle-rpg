@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useAtomValue } from 'jotai';
 import NumberFlow from '@number-flow/react';
 import {
   SNAPPY_SPIN_TIMING,
@@ -15,6 +16,7 @@ import {
   useResources,
   useResourcesActions,
   useInventoryActions,
+  useMapProgressActions,
 } from '~/stores/game-store';
 import { calculateLevelUpsForParty } from '~/lib/battle-rewards';
 import { LevelUpView } from './level-up-view';
@@ -35,6 +37,7 @@ import { isReducedMotion } from '~/lib/reduced-motion';
 import { isConfirmKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
+import { activeDungeonIdAtom } from '~/stores/dungeon-atoms';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
@@ -65,10 +68,15 @@ export function BattleRewardsScreen() {
   const battleRewardsData = useViewData('battle-rewards');
   const partyActions = usePartyActions();
   const routerActions = useRouterActions();
+  const mapProgressActions = useMapProgressActions();
   const [pendingLevelUps, setPendingLevelUps] = useState<PendingLevelUp[]>([]);
   const [currentLevelUpIndex, setCurrentLevelUpIndex] = useState(0);
   const [randomPotentialStats, setRandomPotentialStats] = useState<CoreRPGStats | null>(null);
   const { autosave } = useSaveGameActions();
+  // Dungeon fights don't checkpoint: the run is in-memory only and `DungeonView` autosaves
+  // once on completion, so a mid-run save would bank floors the player must redo.
+  const isInDungeonRun = useAtomValue(activeDungeonIdAtom) !== null;
+  const shouldAutosaveOnExit = !isInDungeonRun;
 
   // Handle completion of all level-ups in step 3
   useEffect(() => {
@@ -79,8 +87,10 @@ export function BattleRewardsScreen() {
     // next entry anyway, and resetting here would replay (and re-grant) the whole reward
     // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
+      // A roaming FOE's battle is won by the time rewards show; retire it before the checkpoint.
+      mapProgressActions.resolvePendingFoeBattle();
       // Loot, EXP and level-ups are all committed by now, so this is the checkpoint.
-      autosave();
+      if (shouldAutosaveOnExit) autosave();
       routerActions.goBack();
       return;
     }
@@ -98,7 +108,16 @@ export function BattleRewardsScreen() {
       const random = getRandomPotentialStats({ ...currentPending.character.potentialStats }, totalPoints);
       setRandomPotentialStats(random);
     }
-  }, [step, currentLevelUpIndex, pendingLevelUps, randomPotentialStats, routerActions, autosave]);
+  }, [
+    step,
+    currentLevelUpIndex,
+    pendingLevelUps,
+    randomPotentialStats,
+    routerActions,
+    mapProgressActions,
+    autosave,
+    shouldAutosaveOnExit,
+  ]);
 
   if (!battleRewardsData) {
     return <div className="level-up-screen">Error: No battle rewards data</div>;

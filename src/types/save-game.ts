@@ -91,6 +91,9 @@ export const saveGameStateSchema = z.object({
     treasuresFound: nodeProgressSchema,
     mysteriesSolved: nodeProgressSchema,
     characterPositions: z.partialRecord(mapIdSchema, gridPositionSchema),
+    // Defaulted: saves written before FOEs existed lack both keys.
+    foesDefeated: nodeProgressSchema.default({}),
+    pendingFoeBattleId: z.string().nullable().default(null),
   }),
   floorLootProgress: z.record(z.string(), z.record(z.string(), z.boolean())),
   crafting: z.object({ pity: z.number().int().min(0) }),
