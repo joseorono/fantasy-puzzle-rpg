@@ -57,6 +57,11 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          TinyMap Tileset, by Jirby&nbsp;
+          <a href="https://jirbyart.itch.io">https://jirbyart.itch.io</a>
+        </p>
+
+        <p>
           Free Pixel Art RPG UI, by allcreatinghere&nbsp;
           <a href="https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack">
             https://allcreatinghere.itch.io/free-pixel-art-rpg-ui-and-icons-asset-pack
