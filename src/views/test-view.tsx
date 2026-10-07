@@ -7,11 +7,9 @@ import { MarqueeText } from '~/components/marquee/marquee-text';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import {
-  JirbySymbolIcon,
-  JIRBY_COLOR_SYMBOL_NAMES,
-  JIRBY_WHITE_SYMBOL_NAMES,
-} from '~/components/sprite-icons/jirby-symbol-icons';
+import { JirbySymbolIcon } from '~/components/sprite-icons/jirby-symbol-icons';
+import { MarkerAtlasPreview } from '~/components/map/marker-atlas-preview';
+import { JIRBY_COLOR_SYMBOL_NAMES, JIRBY_WHITE_SYMBOL_NAMES } from '~/constants/jirby-symbols';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 
 export default function TestView() {
@@ -50,6 +48,10 @@ export default function TestView() {
                   </div>
                 </div>
               ))}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs opacity-70">Map marker atlas (todo / done / done + stepped on)</p>
+                <MarkerAtlasPreview />
+              </div>
               <div className="flex items-end gap-3">
                 <JirbySymbolIcon name="chest" />
                 <JirbySymbolIcon name="chest" size={32} />
