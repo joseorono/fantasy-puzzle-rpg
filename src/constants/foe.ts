@@ -1,3 +1,4 @@
+import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
 import type { FoeTunables } from '~/types/foe';
 import { RUN_SPEED_MULTIPLIER, WALK_TILES_PER_SECOND } from './map-movement';
 
@@ -74,7 +75,10 @@ export const FOE_ALERT_FLASH_SECONDS = 0.8;
 export const FOE_CULL_MARGIN_PX = 32;
 
 /** Minimap pin and debug-ring look. `color` is an `rgba(` prefix; the alpha is appended. */
-export const FOE_MARKER_STYLE = { color: 'rgba(176, 182, 196, ', icon: '👁' } as const;
+export const FOE_MARKER_STYLE = {
+  color: 'rgba(176, 182, 196, ',
+  symbol: 'skull',
+} as const satisfies { color: string; symbol: JirbyWhiteSymbolName };
 
 /** The "!" drawn above a FOE that has just spotted the player. `offsetPx` lifts it off the sprite. */
 export const FOE_ALERT_STYLE = {

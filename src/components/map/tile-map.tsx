@@ -318,7 +318,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     isFloorLootCollected: (lootId) => floorLootProgressState[map.id]?.[lootId] === true,
     isTriggerVisited: (row, col) => visitedTriggers.has(`${row},${col}`),
   };
-  const markers = buildMarkerList(map, tileSize, markerStatus);
+  const markers = buildMarkerList(map, tileSize, markerStatus, charPosition);
 
   const isPopupOpen = showNodeMenu || collectedFloorLoot !== null;
   // Drop the anchor once nothing points at it, so the next popup can't open at a stale spot.

@@ -18,6 +18,7 @@ import { isCancelKey, isMinimapKey } from '~/constants/keyboard';
 import { MINIMAP_INK_WOBBLE_TILES } from '~/constants/minimap';
 import { FOE_MARKER_STYLE } from '~/constants/foe';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
+import { JirbySymbolIcon } from '~/components/sprite-icons/jirby-symbol-icons';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { cn } from '~/lib/utils';
 
@@ -158,11 +159,12 @@ export function MapMinimap({
                     className={cn(
                       'map-minimap__pin',
                       `map-minimap__pin--${marker.kind}`,
+                      marker.symbol && 'map-minimap__pin--inked',
                       marker.isDone && 'map-minimap__pin--done',
                     )}
                     style={{ left: `${left}%`, top: `${top}%` }}
                   >
-                    {marker.kind === 'node' ? marker.icon : marker.kind === 'dialogueTrigger' ? '!' : null}
+                    {marker.symbol && <JirbySymbolIcon tone="white" name={marker.symbol} isOutlined={false} />}
                   </span>
                 );
               })}
@@ -172,12 +174,10 @@ export function MapMinimap({
                 return (
                   <span
                     key={foe.id}
-                    className="map-minimap__pin map-minimap__pin--foe"
+                    className="map-minimap__pin map-minimap__pin--foe map-minimap__pin--inked"
                     style={{ left: `${left}%`, top: `${top}%` }}
-                    role="img"
-                    aria-label="Roaming enemy"
                   >
-                    {FOE_MARKER_STYLE.icon}
+                    <JirbySymbolIcon tone="white" name={FOE_MARKER_STYLE.symbol} isOutlined={false} />
                   </span>
                 );
               })}
@@ -197,15 +197,20 @@ export function MapMinimap({
                 <span className="map-minimap__legend-player" aria-hidden="true" />
                 You
               </li>
-              {legend.map(({ type, icon }) => (
+              {legend.map(({ type, symbol }) => (
                 <li key={type}>
-                  <span aria-hidden="true">{icon}</span>
+                  <JirbySymbolIcon tone="white" name={symbol} isOutlined={false} className="map-minimap__inked" />
                   {type}
                 </li>
               ))}
               {foePoints.length > 0 && (
                 <li>
-                  <span aria-hidden="true">{FOE_MARKER_STYLE.icon}</span>
+                  <JirbySymbolIcon
+                    tone="white"
+                    name={FOE_MARKER_STYLE.symbol}
+                    isOutlined={false}
+                    className="map-minimap__inked"
+                  />
                   FOE
                 </li>
               )}

@@ -1,20 +1,23 @@
 import type { TilemapData, TilemapLayer, TilemapTileset } from '~/types/tilemap';
-import type { MapDefinition } from '~/types/map';
+import type { MapDefinition, NodeMarkerState } from '~/types/map';
 import type { InteractiveMapNode } from '~/types/map-node';
+import type { GridPosition, PixelRect } from '~/types/geometry';
+import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import {
   MAP_BACKGROUND_COLOR,
+  MAP_MARKER_BOB_PX,
+  MAP_MARKER_CHECK,
   MAP_MARKER_CULL_MARGIN_PX,
+  MAP_MARKER_FLOAT_LIFT_PX,
+  MAP_MARKER_PLATE_SIZE_PX,
   MAP_MARKER_PULSE_RADIANS_PER_SECOND,
-  MAP_NODE_CHECK_INSET_RATIO,
-  MAP_NODE_CHECK_RATIO,
-  MAP_NODE_ICON_RATIO,
-  MAP_NODE_MARKER_SIZE,
-  MAP_NODE_MARKER_STYLES,
-  type MapNodeMarkerStyle,
+  MAP_MARKER_SHADOW,
 } from '~/constants/map';
+import { JIRBY_SYMBOL_SHEET } from '~/constants/jirby-symbols';
+import { getMarkerAtlasExtraFrame, getMarkerAtlasFrame } from '~/lib/map-marker-atlas';
 
-/** A marker's reach, glow included, in map pixels. Used to skip markers outside the view. */
+/** A marker's reach, bob and badge included, in map pixels. Used to skip markers outside the view. */
 export interface MarkerBounds {
   left: number;
   top: number;
@@ -23,28 +26,27 @@ export interface MarkerBounds {
 }
 
 interface MarkerBase {
-  /** Top-left of the marker square, in map pixels. */
+  /** Top-left of the plate (nodes) or the floating symbol (loot, triggers), in map pixels, at rest. */
   x: number;
   y: number;
-  /** Edge length of the marker square, in map pixels. */
-  size: number;
+  /** Whole-number art scale, from {@link getMapMarkerScale}. */
+  scale: number;
   bounds: MarkerBounds;
 }
 
 export interface NodeMarker extends MarkerBase {
   kind: 'node';
-  isDone: boolean;
-  style: MapNodeMarkerStyle;
+  nodeType: MapNodeType;
+  state: NodeMarkerState;
 }
 
-/** `x`/`y`/`size` describe the loot's tile; the coin is drawn centred on it. */
 export interface FloorLootMarker extends MarkerBase {
   kind: 'floorLoot';
 }
 
+/** Only unvisited triggers get one. */
 export interface DialogueTriggerMarker extends MarkerBase {
   kind: 'dialogueTrigger';
-  isDone: boolean;
 }
 
 export type MapMarker = NodeMarker | FloorLootMarker | DialogueTriggerMarker;
@@ -56,39 +58,79 @@ export interface MarkerStatus {
   isTriggerVisited: (row: number, col: number) => boolean;
 }
 
+/**
+ * The whole-number scale markers draw at, so a 16px symbol keeps its size relative to
+ * the tile without ever being resampled to a fraction.
+ *
+ * @param tileSize Edge length of one tile in map pixels.
+ */
+export function getMapMarkerScale(tileSize: number): number {
+  return Math.max(1, Math.round(tileSize / JIRBY_SYMBOL_SHEET.cellSize));
+}
+
+/**
+ * How a node marker draws: coloured until done, grey with a check once done, and lit
+ * in colour again (check kept) while the character stands on it.
+ *
+ * @param isDone Whether the node is completed.
+ * @param isOccupied Whether the character stands on the node's tile.
+ */
+export function getNodeMarkerState(isDone: boolean, isOccupied: boolean): NodeMarkerState {
+  if (!isDone) return 'todo';
+  return isOccupied ? 'doneActive' : 'done';
+}
+
 /** A tile's rect grown by the cull margin. */
-function getTileBounds(row: number, col: number, tileSize: number): MarkerBounds {
+function getTileBounds(row: number, col: number, tileSize: number, scale: number): MarkerBounds {
+  const margin = MAP_MARKER_CULL_MARGIN_PX * scale;
   return {
-    left: col * tileSize - MAP_MARKER_CULL_MARGIN_PX,
-    top: row * tileSize - MAP_MARKER_CULL_MARGIN_PX,
-    right: (col + 1) * tileSize + MAP_MARKER_CULL_MARGIN_PX,
-    bottom: (row + 1) * tileSize + MAP_MARKER_CULL_MARGIN_PX,
+    left: col * tileSize - margin,
+    top: row * tileSize - margin,
+    right: (col + 1) * tileSize + margin,
+    bottom: (row + 1) * tileSize + margin,
+  };
+}
+
+/** Top-left of a floating symbol: centred on its tile, hovering above the tile's bottom edge. */
+function getFloatingOrigin(row: number, col: number, tileSize: number, scale: number): MapPoint {
+  const symbolSize = JIRBY_SYMBOL_SHEET.cellSize * scale;
+  return {
+    x: col * tileSize + (tileSize - symbolSize) / 2,
+    y: (row + 1) * tileSize - symbolSize - MAP_MARKER_FLOAT_LIFT_PX * scale,
   };
 }
 
 /**
  * Everything the map draws on top of its tiles, resolved against current progress.
- * Collected floor loot is left out entirely.
+ * Collected floor loot and visited dialogue triggers are left out entirely.
  *
  * @param map The map whose nodes, floor loot and dialogue triggers to list.
  * @param tileSize Edge length of one tile in map pixels.
  * @param status Progress lookups.
+ * @param characterTile The tile the character stands on; a completed node there relights.
  */
-export function buildMarkerList(map: MapDefinition, tileSize: number, status: MarkerStatus): MapMarker[] {
+export function buildMarkerList(
+  map: MapDefinition,
+  tileSize: number,
+  status: MarkerStatus,
+  characterTile: GridPosition | null = null,
+): MapMarker[] {
   const markers: MapMarker[] = [];
+  const scale = getMapMarkerScale(tileSize);
+  const plateSize = MAP_MARKER_PLATE_SIZE_PX * scale;
 
   for (const node of map.nodes ?? []) {
     const { row, col } = node.position;
-    // Markers are bigger than a tile, so centre them on the node's tile.
-    const inset = (MAP_NODE_MARKER_SIZE - tileSize) / 2;
+    const isOccupied = characterTile !== null && characterTile.row === row && characterTile.col === col;
+    // The plate is wider than the tile: centred on it, standing on its bottom edge.
     markers.push({
       kind: 'node',
-      x: col * tileSize - inset,
-      y: row * tileSize - inset,
-      size: MAP_NODE_MARKER_SIZE,
-      bounds: getTileBounds(row, col, tileSize),
-      isDone: status.isNodeCompleted(node),
-      style: MAP_NODE_MARKER_STYLES[node.type],
+      x: col * tileSize + (tileSize - plateSize) / 2,
+      y: (row + 1) * tileSize - plateSize,
+      scale,
+      bounds: getTileBounds(row, col, tileSize, scale),
+      nodeType: node.type,
+      state: getNodeMarkerState(status.isNodeCompleted(node), isOccupied),
     });
   }
 
@@ -97,21 +139,19 @@ export function buildMarkerList(map: MapDefinition, tileSize: number, status: Ma
     const { row, col } = spot.position;
     markers.push({
       kind: 'floorLoot',
-      x: col * tileSize,
-      y: row * tileSize,
-      size: tileSize,
-      bounds: getTileBounds(row, col, tileSize),
+      ...getFloatingOrigin(row, col, tileSize, scale),
+      scale,
+      bounds: getTileBounds(row, col, tileSize, scale),
     });
   }
 
   for (const trigger of map.dialogueTriggers ?? []) {
+    if (status.isTriggerVisited(trigger.row, trigger.col)) continue;
     markers.push({
       kind: 'dialogueTrigger',
-      x: trigger.col * tileSize,
-      y: trigger.row * tileSize,
-      size: tileSize,
-      bounds: getTileBounds(trigger.row, trigger.col, tileSize),
-      isDone: status.isTriggerVisited(trigger.row, trigger.col),
+      ...getFloatingOrigin(trigger.row, trigger.col, tileSize, scale),
+      scale,
+      bounds: getTileBounds(trigger.row, trigger.col, tileSize, scale),
     });
   }
 
@@ -119,7 +159,7 @@ export function buildMarkerList(map: MapDefinition, tileSize: number, status: Ma
 }
 
 /**
- * Whether any part of a marker, glow included, can show in the view.
+ * Whether any part of a marker, bob and badge included, can show in the view.
  *
  * @param marker The marker.
  * @param camera Rounded camera, in map pixels.
@@ -140,13 +180,23 @@ export function isMarkerInView(
 }
 
 /**
- * The markers' shared pulse angle at a moment in time.
+ * The markers' shared bob angle at a moment in time.
  *
  * @param timestampMs A `requestAnimationFrame` / `performance.now()` timestamp.
  * @returns An angle in `[0, 2π)`.
  */
 export function getMarkerPulsePhase(timestampMs: number): number {
   return ((timestampMs / 1000) * MAP_MARKER_PULSE_RADIANS_PER_SECOND) % (Math.PI * 2);
+}
+
+/**
+ * The markers' bob at a phase, rounded so the art always lands on whole marker pixels.
+ *
+ * @param phase From {@link getMarkerPulsePhase}.
+ * @returns A vertical offset in marker pixels, between `-MAP_MARKER_BOB_PX` and `MAP_MARKER_BOB_PX`.
+ */
+export function getMarkerBobOffset(phase: number): number {
+  return Math.round(Math.sin(phase) * MAP_MARKER_BOB_PX);
 }
 
 /** Tiled packs a tile's flip flags into the top bits of its GID ("Global tile IDs" in the Tiled docs). */
@@ -308,129 +358,50 @@ export function drawCameraView(
   );
 }
 
-function drawNodeMarker(ctx: CanvasRenderingContext2D, marker: NodeMarker, phase: number): void {
-  const { x: markerX, y: markerY, size: markerSize, isDone: isCompleted, style } = marker;
-  const color = isCompleted ? style.doneColor : style.color;
-  const icon = isCompleted ? (style.doneIcon ?? style.icon) : style.icon;
-
-  // Pulse between 0.5 and 1.0
-  const pulse = 0.5 + Math.sin(phase) * 0.5;
-
-  if (!isCompleted) {
-    // Pulsing glow for incomplete nodes
-    const glowSize = markerSize * (1 + pulse * 0.3);
-    const gradient = ctx.createRadialGradient(
-      markerX + markerSize / 2,
-      markerY + markerSize / 2,
-      0,
-      markerX + markerSize / 2,
-      markerY + markerSize / 2,
-      glowSize,
-    );
-    gradient.addColorStop(0, color + `${0.6 * pulse})`);
-    gradient.addColorStop(0.5, color + `${0.3 * pulse})`);
-    gradient.addColorStop(1, color + '0)');
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(markerX - glowSize / 2, markerY - glowSize / 2, glowSize * 2, glowSize * 2);
-  }
-
-  // Marker background square
-  ctx.fillStyle = color + (isCompleted ? '0.4)' : '0.7)');
-  ctx.fillRect(markerX, markerY, markerSize, markerSize);
-
-  // Icon
-  ctx.font = `bold ${markerSize * MAP_NODE_ICON_RATIO}px monospace`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(icon, markerX + markerSize / 2, markerY + markerSize / 2);
-
-  // Border
-  ctx.strokeStyle = color + (isCompleted ? '0.6)' : `${0.8 + pulse * 0.2})`);
-  ctx.lineWidth = isCompleted ? 1 : 2;
-  ctx.strokeRect(markerX, markerY, markerSize, markerSize);
-
-  // Completion checkmark
-  if (isCompleted) {
-    const checkInset = markerSize * MAP_NODE_CHECK_INSET_RATIO;
-    ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-    ctx.font = `bold ${markerSize * MAP_NODE_CHECK_RATIO}px monospace`;
-    ctx.fillText('✓', markerX + markerSize - checkInset, markerY + checkInset);
-  }
+/** Copies one atlas sprite to the map at a whole-number scale. */
+function drawAtlasSprite(
+  ctx: CanvasRenderingContext2D,
+  atlas: HTMLCanvasElement,
+  frame: PixelRect,
+  x: number,
+  y: number,
+  scale: number,
+): void {
+  ctx.drawImage(atlas, frame.x, frame.y, frame.width, frame.height, x, y, frame.width * scale, frame.height * scale);
 }
 
-function drawFloorLootMarker(ctx: CanvasRenderingContext2D, marker: FloorLootMarker, phase: number): void {
-  const tileSize = marker.size;
-  const markerSize = tileSize * 0.6; // Smaller than node markers
-  const centerX = marker.x + tileSize / 2;
-  const centerY = marker.y + tileSize / 2;
+function drawNodeMarker(
+  ctx: CanvasRenderingContext2D,
+  atlas: HTMLCanvasElement,
+  marker: NodeMarker,
+  bob: number,
+): void {
+  const { x, y, scale, state } = marker;
 
-  // Gentle pulse
-  const pulse = 0.7 + Math.sin(phase * 1.5) * 0.3;
+  // The shadow stays on the ground while the plate bobs; it tucks under the plate's bottom edge.
+  const shadow = getMarkerAtlasExtraFrame('plateShadow');
+  const shadowX = x + ((MAP_MARKER_PLATE_SIZE_PX - shadow.width) / 2) * scale;
+  const shadowY = y + (MAP_MARKER_PLATE_SIZE_PX - MAP_MARKER_SHADOW.overlapPx) * scale;
+  drawAtlasSprite(ctx, atlas, shadow, shadowX, shadowY, scale);
 
-  // Subtle glow
-  const glowSize = markerSize * 1.2;
-  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowSize);
-  gradient.addColorStop(0, `rgba(255, 215, 0, ${0.4 * pulse})`);
-  gradient.addColorStop(0.7, `rgba(255, 215, 0, ${0.2 * pulse})`);
-  gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(centerX - glowSize, centerY - glowSize, glowSize * 2, glowSize * 2);
-
-  // Coin icon
-  ctx.fillStyle = `rgba(255, 215, 0, ${0.9 + pulse * 0.1})`;
-  ctx.font = 'bold 10px monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('💰', centerX, centerY);
+  // Only nodes still to do bob; the frame starts above the plate to hold the check badge.
+  const lift = state === 'todo' ? bob : 0;
+  const frame = getMarkerAtlasFrame(marker.nodeType, state);
+  drawAtlasSprite(ctx, atlas, frame, x, y + (lift - MAP_MARKER_CHECK.overhangPx) * scale, scale);
 }
 
-function drawDialogueTriggerMarker(ctx: CanvasRenderingContext2D, marker: DialogueTriggerMarker, phase: number): void {
-  const { x: markerX, y: markerY, size: markerSize } = marker;
+function drawFloatingMarker(
+  ctx: CanvasRenderingContext2D,
+  atlas: HTMLCanvasElement,
+  marker: FloorLootMarker | DialogueTriggerMarker,
+  bob: number,
+): void {
+  const { x, y, scale } = marker;
+  const symbolSize = JIRBY_SYMBOL_SHEET.cellSize;
 
-  if (marker.isDone) {
-    // Faded marker for visited triggers
-    ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
-    ctx.fillRect(markerX, markerY, markerSize, markerSize);
-
-    ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(markerX, markerY, markerSize, markerSize);
-    return;
-  }
-
-  // Pulse between 0.5 and 1.0
-  const pulse = 0.5 + Math.sin(phase) * 0.5;
-
-  // Outer glow
-  const glowSize = markerSize * (1 + pulse * 0.5);
-  const gradient = ctx.createRadialGradient(
-    markerX + markerSize / 2,
-    markerY + markerSize / 2,
-    0,
-    markerX + markerSize / 2,
-    markerY + markerSize / 2,
-    glowSize,
-  );
-  gradient.addColorStop(0, `rgba(255, 215, 0, ${0.6 * pulse})`);
-  gradient.addColorStop(0.5, `rgba(255, 215, 0, ${0.3 * pulse})`);
-  gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(markerX - glowSize / 2, markerY - glowSize / 2, glowSize * 2, glowSize * 2);
-
-  // Exclamation marker
-  ctx.fillStyle = `rgba(255, 215, 0, ${0.8 + pulse * 0.2})`;
-  ctx.font = 'bold 14px monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('!', markerX + markerSize / 2, markerY + markerSize / 2);
-
-  // Border
-  ctx.strokeStyle = `rgba(255, 165, 0, ${0.6 + pulse * 0.4})`;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(markerX, markerY, markerSize, markerSize);
+  const shadow = getMarkerAtlasExtraFrame('floatShadow');
+  drawAtlasSprite(ctx, atlas, shadow, x + ((symbolSize - shadow.width) / 2) * scale, y + symbolSize * scale, scale);
+  drawAtlasSprite(ctx, atlas, getMarkerAtlasExtraFrame(marker.kind), x, y + bob * scale, scale);
 }
 
 /**
@@ -441,6 +412,7 @@ function drawDialogueTriggerMarker(ctx: CanvasRenderingContext2D, marker: Dialog
  * @param camera Rounded camera, in map pixels.
  * @param layout The viewport layout.
  * @param phase From {@link getMarkerPulsePhase}.
+ * @param atlas From `getReadyMapMarkerAtlas`; `null` while the symbol sheet loads, which draws nothing.
  */
 export function drawMarkers(
   ctx: CanvasRenderingContext2D,
@@ -448,23 +420,22 @@ export function drawMarkers(
   camera: MapPoint,
   layout: ViewportLayout,
   phase: number,
+  atlas: HTMLCanvasElement | null,
 ): void {
+  if (!atlas) return;
+
   const { zoom } = layout;
   ctx.setTransform(zoom, 0, 0, zoom, -camera.x * zoom, -camera.y * zoom);
+  ctx.imageSmoothingEnabled = false;
+  const bob = getMarkerBobOffset(phase);
 
   for (const marker of markers) {
     if (!isMarkerInView(marker, camera, layout)) continue;
 
-    switch (marker.kind) {
-      case 'node':
-        drawNodeMarker(ctx, marker, phase);
-        break;
-      case 'floorLoot':
-        drawFloorLootMarker(ctx, marker, phase);
-        break;
-      case 'dialogueTrigger':
-        drawDialogueTriggerMarker(ctx, marker, phase);
-        break;
+    if (marker.kind === 'node') {
+      drawNodeMarker(ctx, atlas, marker, bob);
+    } else {
+      drawFloatingMarker(ctx, atlas, marker, bob);
     }
   }
 }

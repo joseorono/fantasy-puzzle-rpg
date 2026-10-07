@@ -2,21 +2,26 @@ import { describe, expect, it } from 'vitest';
 import {
   buildMarkerList,
   decodeTileGid,
+  getMapMarkerScale,
+  getMarkerBobOffset,
   getMarkerPulsePhase,
+  getNodeMarkerState,
   getTileFlipMatrix,
   isMarkerInView,
   type MapMarker,
   type MarkerStatus,
-  type NodeMarker,
   type TileFlips,
 } from './map-draw';
 import type { MapDefinition } from '~/types/map';
 import type { TilemapData } from '~/types/tilemap';
 import {
+  MAP_MARKER_BOB_PX,
+  MAP_MARKER_CHECK,
   MAP_MARKER_CULL_MARGIN_PX,
+  MAP_MARKER_FLOAT_LIFT_PX,
+  MAP_MARKER_PLATE_LIFT_PX,
+  MAP_MARKER_PLATE_SIZE_PX,
   MAP_MARKER_PULSE_RADIANS_PER_SECOND,
-  MAP_NODE_MARKER_SIZE,
-  MAP_NODE_MARKER_STYLES,
 } from '~/constants/map';
 
 const TILE = 16;
@@ -56,36 +61,81 @@ function find<K extends MapMarker['kind']>(markers: MapMarker[], kind: K): Extra
 }
 
 // ---------------------------------------------------------------------------
+// getMapMarkerScale / getNodeMarkerState
+// ---------------------------------------------------------------------------
+
+describe('getMapMarkerScale', () => {
+  it('draws native size on 16px tiles and whole multiples on bigger ones', () => {
+    expect(getMapMarkerScale(16)).toBe(1);
+    expect(getMapMarkerScale(32)).toBe(2);
+    expect(getMapMarkerScale(48)).toBe(3);
+  });
+
+  it('never drops below native size', () => {
+    expect(getMapMarkerScale(8)).toBe(1);
+  });
+});
+
+describe('getNodeMarkerState', () => {
+  it('stays todo until done, whoever stands on it', () => {
+    expect(getNodeMarkerState(false, false)).toBe('todo');
+    expect(getNodeMarkerState(false, true)).toBe('todo');
+  });
+
+  it('greys out once done and relights while occupied', () => {
+    expect(getNodeMarkerState(true, false)).toBe('done');
+    expect(getNodeMarkerState(true, true)).toBe('doneActive');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // buildMarkerList
 // ---------------------------------------------------------------------------
 
 describe('buildMarkerList', () => {
   const markers = buildMarkerList(MAP, TILE, STATUS);
 
-  it('lists every node, flagging completed ones', () => {
-    const nodes = find(markers, 'node');
-    expect(nodes.map((node) => [node.isDone, node.style])).toEqual([
-      [false, MAP_NODE_MARKER_STYLES.Battle],
-      [true, MAP_NODE_MARKER_STYLES.Treasure],
+  it('lists every node with its type and state', () => {
+    expect(find(markers, 'node').map((node) => [node.nodeType, node.state])).toEqual([
+      ['Battle', 'todo'],
+      ['Treasure', 'done'],
     ]);
   });
 
-  it('centres a node marker bigger than its tile on that tile', () => {
-    const [fight] = find(markers, 'node') as NodeMarker[];
-    expect(fight.size).toBe(MAP_NODE_MARKER_SIZE);
-    expect(fight.x + fight.size / 2).toBe(3 * TILE + TILE / 2);
-    expect(fight.y + fight.size / 2).toBe(2 * TILE + TILE / 2);
+  it('relights a completed node the character stands on', () => {
+    const occupied = buildMarkerList(MAP, TILE, STATUS, { row: 4, col: 4 });
+    expect(find(occupied, 'node').map((node) => node.state)).toEqual(['todo', 'doneActive']);
   });
 
-  it('leaves out collected floor loot', () => {
-    expect(find(markers, 'floorLoot').map((loot) => [loot.x, loot.y])).toEqual([[5 * TILE, 5 * TILE]]);
+  it('centres a plate on its tile, standing on the tile bottom', () => {
+    const [fight] = find(markers, 'node');
+    expect(fight.scale).toBe(1);
+    expect(fight.x + MAP_MARKER_PLATE_SIZE_PX / 2).toBe(3 * TILE + TILE / 2);
+    expect(fight.y).toBe(2 * TILE - MAP_MARKER_PLATE_LIFT_PX);
+    expect(fight.y + MAP_MARKER_PLATE_SIZE_PX).toBe(3 * TILE);
   });
 
-  it('flags visited dialogue triggers', () => {
-    expect(find(markers, 'dialogueTrigger').map((trigger) => trigger.isDone)).toEqual([true, false]);
+  it('scales the plate by whole numbers on 32px tiles', () => {
+    const [fight] = find(buildMarkerList(MAP, 32, STATUS), 'node');
+    const plateSize = MAP_MARKER_PLATE_SIZE_PX * 2;
+    expect(fight.scale).toBe(2);
+    expect(fight.x + plateSize / 2).toBe(3 * 32 + 16);
+    expect(fight.y + plateSize).toBe(3 * 32);
   });
 
-  it('grows each tile by the cull margin', () => {
+  it('floats uncollected loot above its tile and leaves out collected loot', () => {
+    expect(find(markers, 'floorLoot').map((loot) => [loot.x, loot.y])).toEqual([
+      [5 * TILE, 5 * TILE - MAP_MARKER_FLOAT_LIFT_PX],
+    ]);
+  });
+
+  it('leaves out visited dialogue triggers', () => {
+    expect(find(markers, 'dialogueTrigger').map((trigger) => [trigger.x, trigger.y])).toEqual([
+      [7 * TILE, 7 * TILE - MAP_MARKER_FLOAT_LIFT_PX],
+    ]);
+  });
+
+  it('grows each tile by the cull margin, scaled with the marker', () => {
     const [loot] = find(markers, 'floorLoot');
     expect(loot.bounds).toEqual({
       left: 5 * TILE - MAP_MARKER_CULL_MARGIN_PX,
@@ -93,6 +143,16 @@ describe('buildMarkerList', () => {
       right: 6 * TILE + MAP_MARKER_CULL_MARGIN_PX,
       bottom: 6 * TILE + MAP_MARKER_CULL_MARGIN_PX,
     });
+
+    const [bigLoot] = find(buildMarkerList(MAP, 32, STATUS), 'floorLoot');
+    expect(bigLoot.bounds.left).toBe(5 * 32 - MAP_MARKER_CULL_MARGIN_PX * 2);
+  });
+
+  it('keeps the plate, its bob and the check badge inside the cull bounds', () => {
+    const [fight] = find(markers, 'node');
+    expect(fight.x).toBeGreaterThanOrEqual(fight.bounds.left);
+    expect(fight.x + MAP_MARKER_PLATE_SIZE_PX).toBeLessThanOrEqual(fight.bounds.right);
+    expect(fight.y - MAP_MARKER_BOB_PX - MAP_MARKER_CHECK.overhangPx).toBeGreaterThanOrEqual(fight.bounds.top);
   });
 
   it('handles a map with no content', () => {
@@ -112,7 +172,7 @@ describe('isMarkerInView', () => {
     kind: 'floorLoot',
     x: 0,
     y: 0,
-    size: TILE,
+    scale: 1,
     bounds: { left: 1000, top: 1000, right: 1100, bottom: 1100 },
   };
 
@@ -127,9 +187,29 @@ describe('isMarkerInView', () => {
     expect(isMarkerInView(marker, { x: 900, y: 700 }, view)).toBe(false); // view above it
   });
 
-  it('shows a marker whose glow straddles an edge', () => {
+  it('shows a marker whose reach straddles an edge', () => {
     expect(isMarkerInView(marker, { x: 1050, y: 1050 }, view)).toBe(true);
     expect(isMarkerInView(marker, { x: 700, y: 900 }, view)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getMarkerBobOffset
+// ---------------------------------------------------------------------------
+
+describe('getMarkerBobOffset', () => {
+  it('only ever moves by whole pixels within the bob range', () => {
+    for (let step = 0; step < 64; step++) {
+      const offset = getMarkerBobOffset((step / 64) * Math.PI * 2);
+      expect(Number.isInteger(offset)).toBe(true);
+      expect(Math.abs(offset)).toBeLessThanOrEqual(MAP_MARKER_BOB_PX);
+    }
+  });
+
+  it('rests at 0 and peaks at the bob amplitude', () => {
+    expect(getMarkerBobOffset(0)).toBe(0);
+    expect(getMarkerBobOffset(Math.PI / 2)).toBe(MAP_MARKER_BOB_PX);
+    expect(getMarkerBobOffset((Math.PI * 3) / 2)).toBe(-MAP_MARKER_BOB_PX);
   });
 });
 

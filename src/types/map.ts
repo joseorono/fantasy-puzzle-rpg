@@ -2,6 +2,7 @@ import type { TilemapData, TiledMapConfig } from './tilemap';
 import type { InteractiveMapNode, EncounterDefinition, FloorLootSpot } from './map-node';
 import type { DialogueScene } from './dialogue';
 import type { FoeDefinition } from './foe';
+import type { JirbyColorSymbolName, JirbyWhiteSymbolName } from './jirby-symbols';
 
 /**
  * Every map in the game. Adding one means adding a member here, an entry in
@@ -43,3 +44,33 @@ export interface MapDefinition extends TiledMapConfig {
   /** Roaming enemies; each one's fight lives in `encounters` under `encounterId ?? id`. */
   foes?: FoeDefinition[];
 }
+
+/** The three shades of a node marker's plate, as CSS colours. */
+export interface MarkerPlatePalette {
+  fill: string;
+  /** Top inner rows. */
+  highlight: string;
+  /** Bottom inner rows. */
+  shade: string;
+}
+
+/** Look of a node marker: its symbol in each tone, and the plate it sits on. */
+export interface MapNodeMarkerStyle {
+  /** Drawn on the coloured plate, and on the map until the node is done. */
+  symbol: JirbyColorSymbolName;
+  /** Drawn on the grey plate once done, and as the minimap pin. */
+  whiteSymbol: JirbyWhiteSymbolName;
+  plate: MarkerPlatePalette;
+}
+
+/**
+ * How a node marker draws. `doneActive` is a completed node the character stands on:
+ * it relights in colour but keeps its check.
+ */
+export type NodeMarkerState = 'todo' | 'done' | 'doneActive';
+
+/** What one pixel of a marker plate is painted as. */
+export type PlatePixelRole = 'outline' | 'highlight' | 'fill' | 'shade';
+
+/** Marker atlas sprites that aren't node plates: the floating symbols and the two ground shadows. */
+export type MarkerAtlasExtra = 'floorLoot' | 'dialogueTrigger' | 'plateShadow' | 'floatShadow';

@@ -18,6 +18,7 @@ import {
   getMarkerPulsePhase,
   type MapMarker,
 } from '~/lib/map-draw';
+import { getReadyMapMarkerAtlas } from '~/lib/map-marker-atlas';
 
 export interface UseMapRendererOptions {
   /** The viewport-sized canvas the map is drawn into. */
@@ -133,7 +134,14 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
     }
 
     drawCameraView(ctx, cacheRef.current, camera, currentLayout);
-    drawMarkers(ctx, markersRef.current, camera, currentLayout, getMarkerPulsePhase(frame.timestampMs));
+    drawMarkers(
+      ctx,
+      markersRef.current,
+      camera,
+      currentLayout,
+      getMarkerPulsePhase(frame.timestampMs),
+      getReadyMapMarkerAtlas(),
+    );
     drawOverlayRef.current?.(ctx, camera, currentLayout, frame.timestampMs);
 
     if (viewportRect) {

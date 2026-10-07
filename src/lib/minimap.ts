@@ -2,7 +2,8 @@ import type { MarkerStatus } from '~/lib/map-draw';
 import type { MapPoint, MapSize } from '~/lib/map-camera';
 import type { MapDefinition } from '~/types/map';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
-import { MAP_NODE_MARKER_STYLES } from '~/constants/map';
+import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
+import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
 import {
   MINIMAP_CHROME_HEIGHT_PX,
   MINIMAP_CHROME_WIDTH_PX,
@@ -126,8 +127,8 @@ export interface MinimapMarker {
   isDone: boolean;
   /** Node markers only. */
   nodeType?: MapNodeType;
-  /** Node markers only: the same glyph the map draws. */
-  icon?: string;
+  /** The pin's symbol; floor loot has none and draws as a dot. */
+  symbol?: JirbyWhiteSymbolName;
 }
 
 /**
@@ -141,16 +142,14 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   const markers: MinimapMarker[] = [];
 
   for (const node of map.nodes ?? []) {
-    const isDone = status.isNodeCompleted(node);
-    const style = MAP_NODE_MARKER_STYLES[node.type];
     markers.push({
       kind: 'node',
       id: `node-${node.id}`,
       row: node.position.row,
       col: node.position.col,
-      isDone,
+      isDone: status.isNodeCompleted(node),
       nodeType: node.type,
-      icon: isDone ? (style.doneIcon ?? style.icon) : style.icon,
+      symbol: MAP_NODE_MARKER_STYLES[node.type].whiteSymbol,
     });
   }
 
@@ -173,6 +172,7 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
       row: trigger.row,
       col: trigger.col,
       isDone: false,
+      symbol: MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL,
     });
   }
 
@@ -183,15 +183,15 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
 const LEGEND_ORDER: readonly MapNodeType[] = ['Town', 'Dungeon', 'Battle', 'Boss', 'Treasure', 'Mystery'];
 
 /**
- * The node types present on the overview, in a fixed order, with their glyphs.
+ * The node types present on the overview, in a fixed order, with their symbols.
  * Types the map doesn't have get no legend entry.
  *
  * @param markers From {@link buildMinimapMarkers}.
  */
-export function getMinimapLegend(markers: MinimapMarker[]): { type: MapNodeType; icon: string }[] {
+export function getMinimapLegend(markers: MinimapMarker[]): { type: MapNodeType; symbol: JirbyWhiteSymbolName }[] {
   const present = new Set(markers.map((marker) => marker.nodeType));
   return LEGEND_ORDER.filter((type) => present.has(type)).map((type) => ({
     type,
-    icon: MAP_NODE_MARKER_STYLES[type].icon,
+    symbol: MAP_NODE_MARKER_STYLES[type].whiteSymbol,
   }));
 }
