@@ -57,7 +57,7 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
-          TinyMap Tileset, by Jirby&nbsp;
+          TinyMap Tileset (premium), purchased from Jirby&nbsp;
           <a href="https://jirbyart.itch.io">https://jirbyart.itch.io</a>
         </p>
 
