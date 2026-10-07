@@ -146,6 +146,7 @@ export const assetList: string[] = [
   '/assets/icons/indigolay/icon-unmute.png',
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
+  '/assets/icons/jirby-symbols-16x16.png',
 
   // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
   ...SKILL_ICON_SHEET_IMAGES,

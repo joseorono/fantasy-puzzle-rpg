@@ -7,6 +7,11 @@ import { MarqueeText } from '~/components/marquee/marquee-text';
 import { NarikRedwoodBitFont } from '~/components/bitmap-fonts/narik-redwood';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
+import {
+  JirbySymbolIcon,
+  JIRBY_COLOR_SYMBOL_NAMES,
+  JIRBY_WHITE_SYMBOL_NAMES,
+} from '~/components/sprite-icons/jirby-symbol-icons';
 import Franuka05aFrame from '~/components/frames/franuka-05a-frame';
 
 export default function TestView() {
@@ -20,6 +25,40 @@ export default function TestView() {
       <MarqueeText type="general" variant="marquee--clear" />
       <div id="test-view" className="p-8">
         <h1 className="mb-4 text-3xl font-bold">Test View</h1>
+        {/* Sprite Icons: Jirby symbols, all four blocks of the sheet */}
+        <div className="mb-6">
+          <Franuka05aFrame>
+            <div className="flex flex-col gap-4 p-4">
+              <h2 className="text-xl font-bold">Sprite Icons (Jirby Symbols)</h2>
+              {[true, false].map((isOutlined) => (
+                <div key={`color-${isOutlined}`} className="flex flex-col gap-2">
+                  <p className="text-xs opacity-70">Color{isOutlined ? ' + outline' : ''}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {JIRBY_COLOR_SYMBOL_NAMES.map((name) => (
+                      <JirbySymbolIcon key={name} name={name} isOutlined={isOutlined} size={32} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {[true, false].map((isOutlined) => (
+                <div key={`white-${isOutlined}`} className="flex flex-col gap-2">
+                  <p className="text-xs opacity-70">White{isOutlined ? ' + outline' : ''}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {JIRBY_WHITE_SYMBOL_NAMES.map((name) => (
+                      <JirbySymbolIcon key={name} tone="white" name={name} isOutlined={isOutlined} size={32} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-end gap-3">
+                <JirbySymbolIcon name="chest" />
+                <JirbySymbolIcon name="chest" size={32} />
+                <JirbySymbolIcon name="chest" size={48} />
+                <JirbySymbolIcon name="chest" size={64} />
+              </div>
+            </div>
+          </Franuka05aFrame>
+        </div>
         <Tooltip>
           <TooltipTrigger asChild>
             <ToffecButton onClick={handleClick}>Test Button</ToffecButton>
