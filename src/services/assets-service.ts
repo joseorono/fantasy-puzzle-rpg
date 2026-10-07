@@ -64,6 +64,7 @@ export const assetList: string[] = [
 
   // Decorations
   '/assets/decorations/indigolay/divider-ornament.png',
+  '/assets/decorations/jirby-compass.png',
 
   // Indicators
   '/assets/indicators/indigolay/level-tag-red.png',

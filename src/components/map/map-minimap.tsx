@@ -56,19 +56,7 @@ function getMinimapOutline(mask: WalkableMask): string {
 
 const WOBBLE_FILTER_ID = 'map-minimap-wobble';
 
-/** A small inked compass rose for the chart's corner. */
-function CompassRose() {
-  return (
-    <svg className="map-minimap__compass" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="18" r="9" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.55" />
-      <path d="M16 6 L18.5 18 L16 30 L13.5 18 Z" fill="currentColor" />
-      <path d="M4 18 L16 15.5 L28 18 L16 20.5 Z" fill="currentColor" opacity="0.45" />
-      <text x="16" y="5" textAnchor="middle" fontSize="6" fontFamily="'Press Start 2P', monospace" fill="currentColor">
-        N
-      </text>
-    </svg>
-  );
-}
+const COMPASS_SRC = '/assets/decorations/jirby-compass.png';
 
 /**
  * The map overview opened with Tab: the walkable region traced as smooth ink contours on
@@ -201,7 +189,7 @@ export function MapMinimap({
                 aria-label="You are here"
               />
 
-              <CompassRose />
+              <img className="map-minimap__compass" src={COMPASS_SRC} alt="" draggable={false} />
             </div>
 
             <ul className="map-minimap__legend pixel-font">

@@ -32,6 +32,18 @@ img[src*='indigolay-'],
   image-rendering: auto;
 }
 
+/*
+  Jirby art is native-res pixel art: the mirror of the indigolay rule above. It is
+  pixelated by default already, but `image-rendering` inherits, so pin it in case
+  it lands inside an `.indigolay-art` container. Same matching: `/jirby/` folders,
+  the `jirby-` filename prefix, and `.jirby-art` for CSS-painted surfaces.
+*/
+img[src*='/jirby/'],
+img[src*='jirby-'],
+.jirby-art {
+  image-rendering: pixelated;
+}
+
 /* Zoomed portrait crop for full-body art: the frame clips, and the image scales from
    its top edge so the head stays in view. Tune per frame with --portrait-zoom. */
 .portrait-zoom,

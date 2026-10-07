@@ -180,14 +180,14 @@
   opacity: 0.16;
 }
 
+/* Jirby pixel art at its native 87×84, so it stays crisp; it tucks into the sheet's padding. */
 .map-minimap__compass {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
-  width: 26px;
-  height: 26px;
-  color: var(--mm-ink);
-  opacity: 0.75;
+  right: -10px;
+  bottom: -6px;
+  width: 87px;
+  height: 84px;
+  opacity: 0.9;
   pointer-events: none;
 }
 
