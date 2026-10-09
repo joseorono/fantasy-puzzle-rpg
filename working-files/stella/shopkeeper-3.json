@@ -1,0 +1,145 @@
+{
+  "Layers": [
+    {
+      "Name": "body",
+      "Category": "Body",
+      "Part": "Lean Male",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "head",
+      "Category": "Head",
+      "Part": "Head01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "nose",
+      "Category": "Nose",
+      "Part": "Nose04",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "eyes",
+      "Category": "Eyes",
+      "Part": "Eye05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFBDB76B"
+          }
+        }
+      }
+    },
+    {
+      "Name": "eyebrows",
+      "Category": "Eyebrows",
+      "Part": "Brow02",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF191970"
+          }
+        }
+      }
+    },
+    {
+      "Name": "mouth",
+      "Category": "Mouth",
+      "Part": "Mouth09",
+      "Offsets": {
+        "Face": "0, 1",
+        "Sv": "0, 1",
+        "Walk": "0, 1"
+      },
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "back hair",
+      "Category": "Rear Hair",
+      "Part": "Hair01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF191970"
+          }
+        }
+      }
+    },
+    {
+      "Name": "front hair",
+      "Category": "Front Hair",
+      "Part": "Front02",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {
+        "Face": {
+          "ff0000ff": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FF191970"
+          }
+        }
+      }
+    },
+    {
+      "Name": "shoes",
+      "Category": "Shoes",
+      "Part": "Shoes01",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "bottom ",
+      "Category": "Clothing Bottom",
+      "Part": "Bottom05",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    },
+    {
+      "Name": "top ",
+      "Category": "Clothing Top",
+      "Part": "Top02",
+      "Offsets": {},
+      "Visible": true,
+      "UseSkinToneColoring": true,
+      "LayerSettings": {}
+    }
+  ],
+  "BodyType": "Male Lean (Neutral Pose)",
+  "BodyTypeVariation": ""
+}

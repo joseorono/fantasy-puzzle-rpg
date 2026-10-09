@@ -18,6 +18,7 @@ import { isCancelKey, isMinimapKey } from '~/constants/keyboard';
 import { MINIMAP_INK_WOBBLE_TILES } from '~/constants/minimap';
 import { FOE_MARKER_STYLE } from '~/constants/foe';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
+import { JirbySymbolIcon } from '~/components/sprite-icons/jirby-symbol-icons';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
 import { cn } from '~/lib/utils';
 
@@ -56,19 +57,7 @@ function getMinimapOutline(mask: WalkableMask): string {
 
 const WOBBLE_FILTER_ID = 'map-minimap-wobble';
 
-/** A small inked compass rose for the chart's corner. */
-function CompassRose() {
-  return (
-    <svg className="map-minimap__compass" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="18" r="9" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.55" />
-      <path d="M16 6 L18.5 18 L16 30 L13.5 18 Z" fill="currentColor" />
-      <path d="M4 18 L16 15.5 L28 18 L16 20.5 Z" fill="currentColor" opacity="0.45" />
-      <text x="16" y="5" textAnchor="middle" fontSize="6" fontFamily="'Press Start 2P', monospace" fill="currentColor">
-        N
-      </text>
-    </svg>
-  );
-}
+const COMPASS_SRC = '/assets/decorations/jirby-compass.png';
 
 /**
  * The map overview opened with Tab: the walkable region traced as smooth ink contours on
@@ -170,11 +159,12 @@ export function MapMinimap({
                     className={cn(
                       'map-minimap__pin',
                       `map-minimap__pin--${marker.kind}`,
+                      marker.symbol && 'map-minimap__pin--inked',
                       marker.isDone && 'map-minimap__pin--done',
                     )}
                     style={{ left: `${left}%`, top: `${top}%` }}
                   >
-                    {marker.kind === 'node' ? marker.icon : marker.kind === 'dialogueTrigger' ? '!' : null}
+                    {marker.symbol && <JirbySymbolIcon tone="white" name={marker.symbol} isOutlined={false} />}
                   </span>
                 );
               })}
@@ -184,12 +174,10 @@ export function MapMinimap({
                 return (
                   <span
                     key={foe.id}
-                    className="map-minimap__pin map-minimap__pin--foe"
+                    className="map-minimap__pin map-minimap__pin--foe map-minimap__pin--inked"
                     style={{ left: `${left}%`, top: `${top}%` }}
-                    role="img"
-                    aria-label="Roaming enemy"
                   >
-                    {FOE_MARKER_STYLE.icon}
+                    <JirbySymbolIcon tone="white" name={FOE_MARKER_STYLE.symbol} isOutlined={false} />
                   </span>
                 );
               })}
@@ -201,7 +189,7 @@ export function MapMinimap({
                 aria-label="You are here"
               />
 
-              <CompassRose />
+              <img className="map-minimap__compass" src={COMPASS_SRC} alt="" draggable={false} />
             </div>
 
             <ul className="map-minimap__legend pixel-font">
@@ -209,15 +197,20 @@ export function MapMinimap({
                 <span className="map-minimap__legend-player" aria-hidden="true" />
                 You
               </li>
-              {legend.map(({ type, icon }) => (
+              {legend.map(({ type, symbol }) => (
                 <li key={type}>
-                  <span aria-hidden="true">{icon}</span>
+                  <JirbySymbolIcon tone="white" name={symbol} isOutlined={false} className="map-minimap__inked" />
                   {type}
                 </li>
               ))}
               {foePoints.length > 0 && (
                 <li>
-                  <span aria-hidden="true">{FOE_MARKER_STYLE.icon}</span>
+                  <JirbySymbolIcon
+                    tone="white"
+                    name={FOE_MARKER_STYLE.symbol}
+                    isOutlined={false}
+                    className="map-minimap__inked"
+                  />
                   FOE
                 </li>
               )}

@@ -6,6 +6,7 @@ import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import { isMaskWalkable, type WalkableMask } from '~/lib/tilemap-collision';
 import { createTilePathfinder } from '~/lib/foe-pathfinding';
 import { createFoeRuntime, stepFoe, tileCenter } from '~/lib/foe-system';
+import { getCachedImage, isImageReady } from '~/lib/image-cache';
 import { DEBUG_MODE } from '~/constants/dev';
 import {
   FOE_ALERT_STYLE,
@@ -46,19 +47,6 @@ export interface FoeSimulation {
   drawFoes: (ctx: CanvasRenderingContext2D, camera: MapPoint, layout: ViewportLayout, timestampMs: number) => void;
   /** The surviving FOEs and where they are right now. */
   getFoes: () => readonly FoeRuntime[];
-}
-
-// Map sprites are shared by every FOE that uses them and by every map mount.
-const imageCache = new Map<string, HTMLImageElement>();
-
-function getFoeImage(src: string): HTMLImageElement {
-  let image = imageCache.get(src);
-  if (!image) {
-    image = new Image();
-    image.src = src;
-    imageCache.set(src, image);
-  }
-  return image;
 }
 
 function drawFoeDebug(ctx: CanvasRenderingContext2D, foe: FoeRuntime, tileSize: number, labelY: number): void {
@@ -196,11 +184,11 @@ export function useFoeSimulation(options: UseFoeSimulationOptions): FoeSimulatio
     for (const foe of foes) {
       if (foe.x < minX || foe.x > maxX || foe.y < minY || foe.y > maxY) continue;
 
-      const image = getFoeImage(foe.definition.mapSprite);
+      const image = getCachedImage(foe.definition.mapSprite);
       const feetY = foe.y + FOE_FOOT_OFFSET_TILES * tileSize;
       let top = feetY - tileSize;
 
-      if (image.complete && image.naturalWidth > 0) {
+      if (isImageReady(image)) {
         const width = image.naturalWidth * FOE_SPRITE_SCALE;
         const height = image.naturalHeight * FOE_SPRITE_SCALE;
         top = feetY - height + (foe.mode === 'patrol' ? bob : 0);

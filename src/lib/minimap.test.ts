@@ -9,7 +9,7 @@ import {
 } from './minimap';
 import type { MarkerStatus } from './map-draw';
 import type { MapDefinition } from '~/types/map';
-import { MAP_NODE_MARKER_STYLES } from '~/constants/map';
+import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
 import { MINIMAP_MAX_PX_PER_TILE, MINIMAP_MIN_PX_PER_TILE } from '~/constants/minimap';
 
 // ---------------------------------------------------------------------------
@@ -111,10 +111,15 @@ const STATUS: MarkerStatus = {
 describe('buildMinimapMarkers', () => {
   const markers = buildMinimapMarkers(MAP, STATUS);
 
-  it('keeps completed nodes, flagged, with their completed glyph', () => {
+  it('keeps completed nodes, flagged, with the same symbol', () => {
     const chest = markers.find((marker) => marker.id === 'node-chest');
-    expect(chest).toMatchObject({ isDone: true, icon: MAP_NODE_MARKER_STYLES.Treasure.doneIcon });
-    expect(markers.find((marker) => marker.id === 'node-fight')).toMatchObject({ isDone: false, icon: '⚔' });
+    expect(chest).toMatchObject({ isDone: true, symbol: 'chest' });
+    expect(markers.find((marker) => marker.id === 'node-fight')).toMatchObject({ isDone: false, symbol: 'sword' });
+  });
+
+  it('pins triggers with a symbol and loot as a plain dot', () => {
+    expect(markers.find((marker) => marker.kind === 'dialogueTrigger')?.symbol).toBe(MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL);
+    expect(markers.find((marker) => marker.kind === 'floorLoot')?.symbol).toBeUndefined();
   });
 
   it('leaves out collected loot and visited triggers', () => {
@@ -133,7 +138,7 @@ describe('getMinimapLegend', () => {
   it('lists only the node types present, in a fixed order', () => {
     const legend = getMinimapLegend(buildMinimapMarkers(MAP, STATUS));
     expect(legend.map((entry) => entry.type)).toEqual(['Town', 'Battle', 'Treasure']);
-    expect(legend[0].icon).toBe(MAP_NODE_MARKER_STYLES.Town.icon);
+    expect(legend[0].symbol).toBe(MAP_NODE_MARKER_STYLES.Town.whiteSymbol);
   });
 
   it('is empty for a map without nodes', () => {

@@ -4,6 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "main": "dist-electron/main.js",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "dev-expose-host": "vite --host",
