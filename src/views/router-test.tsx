@@ -4,7 +4,7 @@ import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
 import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
-import { BADGER, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { BADGER, GIANT_FROG, SWAMP_FROG } from '~/constants/enemies/world-00';
 import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 import { cn } from '~/lib/utils';
@@ -52,6 +52,17 @@ const BATTLE_DEMOS: {
     location: 'Swamp',
     title: 'Admurin Frogger: animated sheet enemy (idle, hurt, tongue/spit) with a fast second attack.',
     enemies: [{ ...SWAMP_FROG, id: 'swamp-frog-1' }],
+  },
+  {
+    id: 'giant-frog',
+    label: 'Swamp + Giant Frog',
+    className: 'bg-emerald-700 hover:bg-emerald-800',
+    location: 'Swamp',
+    title: 'The Fairy Forest FOE (xl card) next to a regular Swamp Frog (md card), to compare sizes.',
+    enemies: [
+      { ...SWAMP_FROG, id: 'swamp-frog-1' },
+      { ...GIANT_FROG, id: 'giant-frog-1' },
+    ],
   },
 ];
 

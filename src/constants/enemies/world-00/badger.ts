@@ -7,16 +7,21 @@ export const BADGER_SHEET: AdmurinEnemySheet = {
   image: '/assets/enemy-sprites/badger_sheet.png',
   cellW: 384,
   cellH: 128,
-  characterRect: { x: 139, y: 79, width: 105, height: 49 },
   animations: {
-    idle: { row: 0, frames: 5, frameDurationMs: 140, source: 'idle' },
-    move: { row: 1, frames: 8, frameDurationMs: 80, source: 'move' },
-    hurt: { row: 2, frames: 4, frameDurationMs: 80, source: 'hurt' },
+    idle: { row: 0, frames: 5, frameDurationMs: 140, source: 'idle', rect: { x: 139, y: 79, width: 105, height: 49 } },
+    move: { row: 1, frames: 8, frameDurationMs: 80, source: 'move', rect: { x: 119, y: 56, width: 132, height: 72 } },
+    hurt: { row: 2, frames: 4, frameDurationMs: 80, source: 'hurt', rect: { x: 139, y: 80, width: 105, height: 48 } },
     attacks: [
-      { row: 3, frames: 15, frameDurationMs: 70, source: 'attack_A' },
-      { row: 4, frames: 11, frameDurationMs: 70, source: 'attack_B' },
+      { row: 3, frames: 15, frameDurationMs: 70, source: 'attack_A', rect: { x: 112, y: 55, width: 132, height: 73 } },
+      { row: 4, frames: 11, frameDurationMs: 70, source: 'attack_B', rect: { x: 115, y: 60, width: 140, height: 68 } },
     ],
-    ability: { row: 5, frames: 15, frameDurationMs: 80, source: 'ability' },
+    ability: {
+      row: 5,
+      frames: 15,
+      frameDurationMs: 80,
+      source: 'ability',
+      rect: { x: 139, y: 79, width: 105, height: 49 },
+    },
   },
 };
 

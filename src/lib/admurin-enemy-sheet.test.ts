@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   getAdmurinAnimationCycleMs,
   getAdmurinAnimationOrigin,
-  getAdmurinDisplayZoom,
+  getAdmurinAnimationZoom,
+  getAdmurinPlacement,
   getAdmurinSheetRowCount,
   resolveAdmurinAttackAnimation,
 } from './admurin-enemy-sheet';
@@ -13,6 +14,7 @@ const animation = (overrides: Partial<AdmurinEnemyAnimation> = {}): AdmurinEnemy
   frames: 5,
   frameDurationMs: 150,
   source: 'idle',
+  rect: { x: 0, y: 0, width: 72, height: 59 },
   ...overrides,
 });
 
@@ -75,19 +77,52 @@ describe('getAdmurinSheetRowCount', () => {
   });
 });
 
-describe('getAdmurinDisplayZoom', () => {
-  it("scales the cell so the character's longest side fills it", () => {
-    // A 72x59 body inside a 128px cell (the Frogger idle) needs ~1.78x to reach the card edge.
-    expect(getAdmurinDisplayZoom({ cellH: 128, characterRect: { x: 0, y: 0, width: 72, height: 59 } })).toBeCloseTo(
-      128 / 72,
+describe('getAdmurinAnimationZoom', () => {
+  const sheet = { cellH: 128, animations: { idle: animation({ rect: { x: 0, y: 0, width: 72, height: 59 } }) } };
+
+  it('fits the animation inside the card, padding included', () => {
+    // Frog idle body 72x59: the body fills ~84% of the card.
+    expect(getAdmurinAnimationZoom(sheet, { rect: { x: 0, y: 0, width: 72, height: 59 } })).toBeCloseTo(
+      (128 / 72) * 0.84,
     );
-    // A tall body scales by its height instead.
-    expect(getAdmurinDisplayZoom({ cellH: 128, characterRect: { x: 0, y: 0, width: 40, height: 96 } })).toBeCloseTo(
-      128 / 96,
+  });
+
+  it('floors the shrink so a long attack does not turn the enemy into a dot', () => {
+    const idleZoom = (128 / 72) * 0.84;
+    // A pure fit of the 228px spit would be ~0.47; the floor keeps it at 60% of the idle zoom.
+    expect(getAdmurinAnimationZoom(sheet, { rect: { x: 0, y: 0, width: 228, height: 63 } })).toBeCloseTo(
+      idleZoom * 0.6,
+    );
+    // A gentle pose (a badger-like 105px idle and a 132px attack) fits exactly, above the floor.
+    const badgerSheet = {
+      cellH: 128,
+      animations: { idle: animation({ rect: { x: 0, y: 0, width: 105, height: 49 } }) },
+    };
+    expect(getAdmurinAnimationZoom(badgerSheet, { rect: { x: 0, y: 0, width: 132, height: 73 } })).toBeCloseTo(
+      (128 / 132) * 0.84,
     );
   });
 
   it('never divides by a zero rect', () => {
-    expect(getAdmurinDisplayZoom({ cellH: 128, characterRect: { x: 0, y: 0, width: 0, height: 0 } })).toBe(1);
+    expect(getAdmurinAnimationZoom(sheet, { rect: { x: 0, y: 0, width: 0, height: 0 } })).toBe(1);
+  });
+});
+
+describe('getAdmurinPlacement', () => {
+  it("centres the animation's own content on the card", () => {
+    const sheet: Pick<AdmurinEnemySheet, 'cellW' | 'cellH' | 'animations'> = {
+      cellW: 384,
+      cellH: 128,
+      animations: { idle: animation({ rect: { x: 156, y: 69, width: 72, height: 59 } }) },
+    };
+
+    const idle = getAdmurinPlacement(sheet, sheet.animations.idle);
+    expect(idle.centerXPercent).toBeCloseTo(50);
+    expect(idle.centerYPercent).toBeCloseTo(((69 + 59 / 2) / 128) * 100);
+
+    // The spit's content reaches right, so its centre sits right of the body — the pose is centred.
+    const spit = getAdmurinPlacement(sheet, animation({ rect: { x: 154, y: 65, width: 228, height: 63 } }));
+    expect(spit.centerXPercent).toBeCloseTo(((154 + 114) / 384) * 100);
+    expect(spit.zoom).toBeLessThan(idle.zoom);
   });
 });

@@ -14,6 +14,12 @@ export interface AdmurinEnemyAnimation {
   frameDurationMs: number;
   /** Original animation name in the pack ('tongue', 'attack_A', …) — audit trail. */
   source: string;
+  /**
+   * Ink bounds of this row's frames in cell coordinates — what the card has to fit. It is per
+   * animation because poses differ wildly: the frog's tongue reaches ~3x its body, and fitting the
+   * idle alone would spill the attack past the card edge, where it just disappears.
+   */
+  rect: { x: number; y: number; width: number; height: number };
 }
 
 /** The combined sheet an Admurin enemy renders from. */
@@ -21,12 +27,6 @@ export interface AdmurinEnemySheet {
   image: string;
   cellW: number;
   cellH: number;
-  /**
-   * Ink bounds of the idle row in cell coordinates — where the character actually is. The art sits
-   * at the bottom of a frame with a lot of empty headroom, so the card is fitted to this rect (and
-   * the cell crops around it), not to the whole cell.
-   */
-  characterRect: { x: number; y: number; width: number; height: number };
   animations: {
     idle: AdmurinEnemyAnimation;
     move?: AdmurinEnemyAnimation;

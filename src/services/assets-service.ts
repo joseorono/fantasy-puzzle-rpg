@@ -84,6 +84,7 @@ export const assetList: string[] = [
 
   // Enemies
   '/assets/enemy-sprites/badger_sheet.png',
+  '/assets/enemy-sprites/frogger_map.png',
   '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
   '/assets/enemy-sprites/stone_golem_idle.png',

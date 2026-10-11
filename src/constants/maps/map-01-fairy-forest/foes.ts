@@ -1,6 +1,7 @@
 import type { FoeDefinition } from '~/types/foe';
 
 const STONE_GOLEM_MAP_SPRITE = '/assets/enemy-sprites/stone_golem_map.png';
+const GIANT_FROG_MAP_SPRITE = '/assets/enemy-sprites/frogger_map.png';
 
 /**
  * Roaming enemies on the Fairy Forest trail, one guarding each far chest. Every waypoint
@@ -32,13 +33,15 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   },
   {
     id: 'fairy_forest_foe_3',
-    name: 'Stone Golem',
-    mapSprite: STONE_GOLEM_MAP_SPRITE,
-    // Thornwood — the east pocket, chest at (55, 113).
+    name: 'Giant Frog',
+    mapSprite: GIANT_FROG_MAP_SPRITE,
+    // Thornwood — the east pocket, chest at (55, 113). The swamp's biggest frog holds this one.
     patrol: [
       { row: 53, col: 111 },
       { row: 55, col: 116 },
       { row: 52, col: 108 },
     ],
+    // A giant notices the player from farther out than the golems do.
+    overrides: { detectionRadiusTiles: 8 },
   },
 ];

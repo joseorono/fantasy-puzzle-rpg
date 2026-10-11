@@ -1,9 +1,8 @@
 /* ─── Admurin enemy battler sprites ───────────────────────────────────
    One combined sheet per enemy (see scripts/admurin-enemy-to-sprite-sheet.mjs). AdmurinEnemySprite
-   sets --admurin-row / --admurin-frames / --admurin-rows / --admurin-aspect / --admurin-zoom and
-   --admurin-cycle-ms.
+   sets --admurin-row / --admurin-frames / --admurin-rows / --admurin-cycle-ms.
 
-   Compositor-only: the cell clips a window the size of the card box, and the strip holds the whole
+   Compositor-only: a cell-sized box (scaled per pose) clips the sheet, and the strip holds the whole
    sheet, stepping frames by translating itself. Keyframes use literal values — no var() — so the
    browser can run them off the main thread, exactly like party-sprites.css. */
 
@@ -14,13 +13,18 @@
   overflow: hidden;
 }
 
-/* The art sits at the bottom of its frame with ~50% empty headroom, so the cell is zoomed and
-   anchored on the feet: the card shows the character, and the empty headroom crops away. */
-.admurin-enemy-sprite__zoom {
+/* One cell of the sheet at the pose's scale, centred on the pose and clipped: the box IS the clip
+   region, so without it a zoomed-out pose would drag the rows above/below into view. Size and
+   offset come in inline, per animation. */
+.admurin-enemy-sprite__cell {
   position: absolute;
-  inset: 0;
-  transform: scale(var(--admurin-zoom, 1));
-  transform-origin: bottom center;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  transition:
+    width 120ms ease-out,
+    height 120ms ease-out,
+    transform 120ms ease-out;
 }
 
 /* Row selection is a static offset, so it never competes with the strip's frame transform. */
@@ -30,14 +34,13 @@
   transform: translateY(calc(var(--admurin-row, 0) * -100%));
 }
 
+/* One cell is one box wide, so a step of 100% spans every frame's cell and `steps(frames)` lands on
+   each one. */
 .admurin-enemy-sprite__strip {
   position: absolute;
   top: 0;
-  /* A cell is `aspect` windows wide, and the character sits in the middle of it, so the strip is
-     shifted to bring that middle into the window (otherwise the window shows the empty left third). */
-  left: calc((var(--admurin-aspect, 1) - 1) * -50%);
-  /* A step of 100% spans every frame's cell, so `steps(frames)` lands on each one. */
-  width: calc(var(--admurin-frames, 1) * var(--admurin-aspect, 1) * 100%);
+  left: 0;
+  width: calc(var(--admurin-frames, 1) * 100%);
   height: calc(var(--admurin-rows, 1) * 100%);
   background-repeat: no-repeat;
   background-position: 0 0;

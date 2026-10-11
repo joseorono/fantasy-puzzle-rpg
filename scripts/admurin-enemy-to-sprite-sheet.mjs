@@ -41,6 +41,8 @@
  *   --attack-b fast|heavy Preset for the second attack in the generated enemy template.
  *                         Default: heavy.
  *   --sheet-only          Emit only the sheet constant (for re-skinning an existing enemy).
+ *   --map-sprite <px>     Also write the overworld FOE sprite (`<slug>_map.png`): the idle pose
+ *                         cropped to its ink and downscaled to <px> wide, nearest-neighbour.
  *   --write               Write files. Default is a dry run that prints the plan.
  *
  * The wiring is deliberately NOT automated — the script prints the `assetList` line for
@@ -68,6 +70,9 @@ const FRAME_DURATION_MS = {
   attack2: 70,
   ability: 80,
 };
+
+/** Fraction of the card left empty around the sprite, mirroring `ADMURIN_CARD_PADDING` in the app. */
+const ADMURIN_CARD_PADDING = 0.08;
 
 /** Lowercased filename suffix -> sheet slot. `attacks` rows are ordered by ATTACK_ORDER. */
 const VOCABULARY = {
@@ -106,6 +111,7 @@ function parseArgs(argv) {
     anim: [],
     attackB: 'heavy',
     sheetOnly: false,
+    mapSprite: null,
     write: false,
   };
 
@@ -113,6 +119,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--write') opts.write = true;
     else if (arg === '--sheet-only') opts.sheetOnly = true;
+    else if (arg === '--map-sprite') opts.mapSprite = Number(argv[++i]);
     else if (arg === '--cell') opts.cell = Number(argv[++i]);
     else if (arg === '--out') opts.out = argv[++i];
     else if (arg === '--id') opts.id = argv[++i];
@@ -132,6 +139,9 @@ function parseArgs(argv) {
   }
   if (opts.attackB !== 'fast' && opts.attackB !== 'heavy') {
     throw new Error(`--attack-b expects fast or heavy, got "${opts.attackB}"`);
+  }
+  if (opts.mapSprite !== null && !(Number.isInteger(opts.mapSprite) && opts.mapSprite > 0)) {
+    throw new Error('--map-sprite expects a positive whole number of pixels, e.g. --map-sprite 40');
   }
 
   opts.anim = opts.anim.map((entry) => {
@@ -341,11 +351,11 @@ async function measureRow(row) {
 }
 
 /**
- * Ink bounds of a row's frames, in the coordinates of ONE cell (the frames of a row sit in
- * different cells, so the union is measured frame-local and offset once). Every frame is pasted
- * centred, so this is where the character is inside a cell — the rect the display scales around.
+ * Ink bounds of one row's frames, in the coordinates of ONE cell (frames sit in different cells,
+ * so the union is measured frame-local and offset once). Each animation's rect is what the card
+ * must fit — the frog's tongue reaches far past its body, and it has to stay visible.
  */
-async function measureCharacterRect(row, cellH, frameOffset) {
+async function measureRowRect(row, cellH, frameOffset) {
   const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
   const stripWidth = row.width;
   let minX = Infinity;
@@ -371,32 +381,52 @@ async function measureCharacterRect(row, cellH, frameOffset) {
 const cellOffset = (cellW, frameW) => Math.floor((cellW - frameW) / 2);
 
 /**
- * The card shows a square of `max(characterRect)` centred on the body and bottom-aligned to the
- * feet, so every frame must have the character inside that square. A blank one is exactly the
- * symptom of frames sliced at the wrong width (or a window that missed the body), and it reaches
- * the player as flickering — so this fails the run instead of shipping the sheet.
+ * The overworld FOE sprite: one frame cropped to its ink and downscaled to `width` px with
+ * nearest-neighbour, so the map keeps crisp pixels (what `scripts/recolor-sprite.py` did for the
+ * stone golem). The map draws it at its natural size, feet on the ground.
  */
-async function assertFramesVisible(rows, cellW, cellH, characterRect) {
-  const size = Math.max(characterRect.width, characterRect.height);
-  const windowX = Math.round(characterRect.x + characterRect.width / 2 - size / 2);
-  const windowY = cellH - size;
+async function buildMapSprite(row, frameIndex, width) {
+  const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
+  const stripWidth = row.width;
+  let minX = row.frameW;
+  let minY = row.height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < row.height; y += 1) {
+    for (let x = 0; x < row.frameW; x += 1) {
+      if (raw[(y * stripWidth + frameIndex * row.frameW + x) * 4 + 3] > 8) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) throw new Error(`${row.file}: frame ${frameIndex} is blank, cannot build a map sprite.`);
 
+  return sharp(row.file)
+    .extract({ left: frameIndex * row.frameW + minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
+    .resize({ width, kernel: 'nearest' })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+/**
+ * Every frame must carry ink: a blank one is the symptom of frames sliced at the wrong width (or a
+ * window that missed the body), and it reaches the player as flickering, so this fails the run.
+ */
+async function assertFramesVisible(rows) {
   for (const row of rows) {
     const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
-    const frameLocalX = windowX - cellOffset(cellW, row.frameW);
     for (let frame = 0; frame < row.frames; frame += 1) {
       let ink = 0;
-      for (let y = 0; y < size && ink === 0; y += 1) {
-        for (let x = 0; x < size && ink === 0; x += 1) {
-          const sx = frame * row.frameW + frameLocalX + x;
-          const sy = windowY + y;
-          if (sx >= 0 && sx < row.width && raw[(sy * row.width + sx) * 4 + 3] > 8) ink += 1;
+      for (let y = 0; y < row.height && ink === 0; y += 1) {
+        for (let x = 0; x < row.frameW && ink === 0; x += 1) {
+          if (raw[(y * row.width + frame * row.frameW + x) * 4 + 3] > 8) ink += 1;
         }
       }
       if (ink === 0) {
-        throw new Error(
-          `${row.file}: frame ${frame} is blank inside the card window — the frame width is probably wrong.`,
-        );
+        throw new Error(`${row.file}: frame ${frame} is blank — the frame width is probably wrong.`);
       }
     }
   }
@@ -439,16 +469,13 @@ async function compositeSheet(rows, cellW, cellH) {
 /* ------------------------------------------------------------------ */
 
 const animLine = (slot, row) =>
-  `    ${slot}: { row: ${row.row}, frames: ${row.frames}, frameDurationMs: ${row.frameDurationMs}, source: '${row.keyword}' },`;
+  `    ${slot}: { row: ${row.row}, frames: ${row.frames}, frameDurationMs: ${row.frameDurationMs}, source: '${row.keyword}', rect: { x: ${row.rect.x}, y: ${row.rect.y}, width: ${row.rect.width}, height: ${row.rect.height} } },`;
 
 function renderSheetConstant(constName, sheet) {
   const lines = [`export const ${constName}: AdmurinEnemySheet = {`];
   lines.push(`  image: '${sheet.image}',`);
   lines.push(`  cellW: ${sheet.cellW},`);
   lines.push(`  cellH: ${sheet.cellH},`);
-  lines.push(
-    `  characterRect: { x: ${sheet.characterRect.x}, y: ${sheet.characterRect.y}, width: ${sheet.characterRect.width}, height: ${sheet.characterRect.height} },`,
-  );
   lines.push(`  animations: {`);
   for (const slot of ['idle', 'move', 'hurt']) {
     const row = sheet.rows.find((entry) => entry.slotKey === slot);
@@ -459,7 +486,7 @@ function renderSheetConstant(constName, sheet) {
     lines.push(`    attacks: [`);
     for (const row of attacks) {
       lines.push(
-        `      { row: ${row.row}, frames: ${row.frames}, frameDurationMs: ${row.frameDurationMs}, source: '${row.keyword}' },`,
+        `      { row: ${row.row}, frames: ${row.frames}, frameDurationMs: ${row.frameDurationMs}, source: '${row.keyword}', rect: { x: ${row.rect.x}, y: ${row.rect.y}, width: ${row.rect.width}, height: ${row.rect.height} } },`,
       );
     }
     lines.push(`    ],`);
@@ -571,7 +598,6 @@ async function main() {
   let cellH;
   let sheetWidth;
   let sheetHeight;
-  let characterRect = null;
   let sheetBuffer = null;
 
   if (isFolder) {
@@ -606,8 +632,9 @@ async function main() {
     sheetWidth = composed.sheetWidth;
     sheetHeight = composed.sheetHeight;
 
-    const idle = rows.find((row) => row.slotKey === 'idle') ?? rows[0];
-    characterRect = await measureCharacterRect(idle, cellH, cellOffset(cellW, idle.frameW));
+    for (const row of rows) {
+      row.rect = await measureRowRect(row, cellH, cellOffset(cellW, row.frameW));
+    }
   } else {
     const meta = await sharp(sourcePath).metadata();
     const imageWidth = meta.width ?? 0;
@@ -640,11 +667,13 @@ async function main() {
     }));
     sheetWidth = imageWidth;
     sheetHeight = imageHeight;
-    characterRect = await measureCharacterRect(rows[0], cellH, 0);
+    for (const row of rows) {
+      row.rect = await measureRowRect(row, cellH, 0);
+    }
   }
 
-  const sheet = { image: sheetImage, cellW, cellH, characterRect, rows };
-  await assertFramesVisible(rows, cellW, cellH, characterRect);
+  const sheet = { image: sheetImage, cellW, cellH, rows };
+  await assertFramesVisible(rows);
   const sheetConst = `${toUpperSnake(slug)}_SHEET`;
   const enemyConst = toUpperSnake(slug);
   const hpConst = `${toUpperSnake(slug)}_MAX_HP`;
@@ -673,10 +702,11 @@ async function main() {
   console.log(`slug:     ${slug}  "${name}"${opts.id ? '' : ' (id from folder name)'}`);
   console.log(`cell:     ${cellW}×${cellH} px${isFolder ? '' : ` (${opts.cell ? '--cell' : 'height ÷ 6'})`}`);
   console.log(`sheet:    ${sheetWidth}×${sheetHeight} px  (${rows.length} row(s))`);
+  const idleRow = rows.find((row) => row.slotKey === 'idle') ?? rows[0];
   console.log(
-    `body:     ${characterRect.width}×${characterRect.height} px at (${characterRect.x}, ${characterRect.y})`,
+    `body:     idle ${idleRow.rect.width}×${idleRow.rect.height} px — the card fits each animation with ${Math.round(ADMURIN_CARD_PADDING * 100)}% padding`,
   );
-  console.log(`window:   every frame keeps the character inside the card window ✓`);
+  console.log(`window:   every frame carries ink and fits the card ✓`);
   console.log(`mapping:`);
   for (const row of rows) {
     console.log(
@@ -695,18 +725,34 @@ async function main() {
   else console.log(`  ${label} write ${rel(sheetFile)}  (copy of the source PNG)`);
   console.log(`  ${label} write ${rel(tsFile)}`);
 
+  // The FOE sprite is the neutral idle pose — the map draws one static frame, so a mid-stride
+  // walk frame would just look frozen mid-step (the repo's stone golem sprite is an idle too).
+  const mapSpriteRow = opts.mapSprite ? (rows.find((row) => row.slotKey === 'idle') ?? rows[0]) : null;
+  const mapSpriteFrame = 0;
+  const mapSpriteFile = path.join(REPO_ROOT, SHEET_OUT_DIR, `${slug}_map.png`);
+  const mapSpriteBuffer = mapSpriteRow ? await buildMapSprite(mapSpriteRow, mapSpriteFrame, opts.mapSprite) : null;
+  if (mapSpriteRow) {
+    console.log(
+      `  ${label} write ${rel(mapSpriteFile)}  (${opts.mapSprite}px wide, ${mapSpriteRow.keyword} frame ${mapSpriteFrame})`,
+    );
+  }
+
   if (opts.write) {
     mkdirSync(path.dirname(sheetFile), { recursive: true });
     if (isFolder) writeFileSync(sheetFile, sheetBuffer);
     else if (sourcePath !== sheetFile) copyFileSync(sourcePath, sheetFile);
     mkdirSync(outDir, { recursive: true });
     writeFileSync(tsFile, tsSource);
+    if (mapSpriteBuffer) writeFileSync(mapSpriteFile, mapSpriteBuffer);
   }
 
   /* ---- the wiring the script leaves to you ---- */
   console.log(`\nStill to wire up by hand:`);
   console.log(`  ${rel(path.join(REPO_ROOT, 'src', 'services', 'assets-service.ts'))}`);
   console.log(`      add to the Enemies block: '${sheetImage}',`);
+  if (opts.mapSprite) {
+    console.log(`      add to the Enemies block: '/${SHEET_URL_DIR}/${slug}_map.png',`);
+  }
   if (!opts.sheetOnly) {
     console.log(`  ${rel(path.join(REPO_ROOT, 'src', 'constants', 'enemies', 'world-00', 'index.ts'))}`);
     console.log(`      import { ${enemyConst} } from './${slug}';`);
