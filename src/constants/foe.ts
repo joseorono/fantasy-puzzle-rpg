@@ -17,7 +17,7 @@ import { RUN_SPEED_MULTIPLIER, WALK_TILES_PER_SECOND } from './map-movement';
  */
 export const FOE_DEFAULT_TUNABLES: FoeTunables = {
   detectionRadiusTiles: 5,
-  leashRadiusTiles: 9,
+  leashRadiusTiles: 12,
   loseSightSeconds: 2.5,
   chaseSpeedRatio: 0.9,
   patrolSpeedTilesPerSecond: 2,
