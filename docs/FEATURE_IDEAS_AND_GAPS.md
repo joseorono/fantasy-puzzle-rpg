@@ -119,7 +119,7 @@ Everything below expands on these and the rest of the systems.
 ### What's lacking
 - **Single active world map.** `map-00` is built; multi-region navigation is ready for `map-01`.
 - **No quests.** Nodes are freeform; nothing tracks objectives. No quest slice, no quest log.
-- **Static encounters.** No fog-of-war, no dynamic enemy spawns.
+- **Mostly static encounters.** some strong enemies (foes) roam the map, but there is no fog-of-war and no random spawns.
 
 ### Fun features to add
 - [x] **The Dungeon run.** Multi-floor encounters with between-floor exploration, persisting
@@ -129,6 +129,8 @@ Everything below expands on these and the rest of the systems.
 - [ ] **Multiple linked maps / a world map.** Wire `map-01` in and let town-hub exits travel between
   regions, gated by progress.
 - [ ] **Fog-of-war & hidden nodes** to reward exploration; **fast-travel** between cleared towns.
+- [x] **Roaming FOEs.** Patrol/chase/leash enemies on the tile map that start a battle on contact and
+  die for good (`src/lib/foe-system.ts`, `docs/FOE_SYSTEM.md`).
 - [ ] **Roaming NPCs / random events** on the map for texture and surprise.
 
 ---
