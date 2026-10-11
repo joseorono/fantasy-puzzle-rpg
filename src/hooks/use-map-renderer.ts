@@ -12,17 +12,25 @@ import {
   type ViewportLayout,
 } from '~/lib/map-camera';
 import {
+  buildOccluderLayerCanvas,
   buildStaticLayerCanvas,
   drawCameraView,
   drawMarkers,
+  drawOcclusionPatch,
   getMarkerPulsePhase,
   type MapMarker,
 } from '~/lib/map-draw';
 import { getReadyMapMarkerAtlas } from '~/lib/map-marker-atlas';
+import { buildOcclusionGrid, collectOccludingCells, getCharacterOcclusionBox } from '~/lib/map-occlusion';
+import type { CharacterSpriteMetrics } from '~/lib/character-sprite';
+import type { MapPixelBox, OcclusionGrid } from '~/types/map-occlusion';
+import { OCCLUDER_ALPHA } from '~/constants/map';
 
 export interface UseMapRendererOptions {
   /** The viewport-sized canvas the map is drawn into. */
   canvasRef: RefObject<HTMLCanvasElement | null>;
+  /** A viewport-sized canvas stacked above the sprite; occluders that cover her are redrawn here. */
+  occlusionCanvasRef: RefObject<HTMLCanvasElement | null>;
   /** The character sprite's wrapper; its transform is written every frame. */
   spriteRef: RefObject<HTMLDivElement | null>;
   /** The `.map-viewport` element, for converting to window coordinates. */
@@ -32,6 +40,12 @@ export interface UseMapRendererOptions {
   tileset: HTMLImageElement | null;
   /** Tile layers to draw, by name. */
   visibleLayers: string[];
+  /** Layers that cover the character when she is behind them; see `TiledMapConfig.occlusionLayers`. */
+  occlusionLayers?: string[];
+  /** Base GIDs that cover the character on any layer, e.g. arches. */
+  overheadGids?: number[];
+  /** Sprite sizes in map pixels (display scale 1), for the area occluders are redrawn over. */
+  characterMetrics: CharacterSpriteMetrics;
   /** Edge length of one tile in map pixels. */
   tileSize: number;
   /** From `computeViewportLayout`; `null` until the stage is measured. */
@@ -64,17 +78,23 @@ export interface MapRenderer {
  * which the movement loop calls once per animation frame, so the three can never be a
  * frame apart.
  *
+ * Occluders standing in front of the character (see `buildOcclusionGrid`) are redrawn
+ * from a second cache onto a canvas above the sprite — only the few cells under her.
+ *
  * Camera state lives in refs and never in React state. The only React-facing output is
  * the popup anchor, reported only while `watchAnchor` is set and only when it moves.
  */
 export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   const {
     canvasRef,
+    occlusionCanvasRef,
     spriteRef,
     viewportRef,
     mapData,
     tileset,
     visibleLayers,
+    occlusionLayers,
+    overheadGids,
     tileSize,
     layout,
     markers,
@@ -84,6 +104,12 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   } = options;
 
   const cacheRef = useRef<HTMLCanvasElement | null>(null);
+  const occluderCacheRef = useRef<HTMLCanvasElement | null>(null);
+  const occlusionGridRef = useRef<OcclusionGrid | null>(null);
+  // Reused every frame so the occlusion pass allocates nothing.
+  const occludingCellsRef = useRef<number[]>([]);
+  const occlusionBoxRef = useRef<MapPixelBox>({ left: 0, top: 0, right: 0, bottom: 0 });
+  const hasOcclusionPatchRef = useRef(false);
   // `null` means "no camera yet": the next frame snaps instead of easing in from (0, 0).
   const cameraRef = useRef<MapPoint | null>(null);
   const roundedCameraRef = useRef<MapPoint>({ x: 0, y: 0 });
@@ -104,6 +130,35 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   onAnchorChangeRef.current = onAnchorChange;
   const drawOverlayRef = useRef(drawOverlay);
   drawOverlayRef.current = drawOverlay;
+  const characterMetricsRef = useRef(options.characterMetrics);
+  characterMetricsRef.current = options.characterMetrics;
+  const tileSizeRef = useRef(tileSize);
+  tileSizeRef.current = tileSize;
+
+  /** Redraws the occluders that stand in front of the character onto the canvas above her. */
+  function drawOcclusion(frame: MovementFrame, camera: MapPoint, currentLayout: ViewportLayout): void {
+    const ctx = occlusionCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
+
+    if (hasOcclusionPatchRef.current) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, currentLayout.cssWidth, currentLayout.cssHeight);
+      hasOcclusionPatchRef.current = false;
+    }
+
+    const grid = occlusionGridRef.current;
+    const cache = occluderCacheRef.current;
+    if (!grid || !cache || !spriteRef.current) return;
+
+    const size = tileSizeRef.current;
+    const box = getCharacterOcclusionBox(frame.x, frame.y, characterMetricsRef.current, occlusionBoxRef.current);
+    const cells = occludingCellsRef.current;
+    const count = collectOccludingCells(grid, size, box, Math.floor(frame.y / size), cells);
+    if (count === 0) return;
+
+    drawOcclusionPatch(ctx, cache, cells, count, grid.width, size, camera, currentLayout, OCCLUDER_ALPHA);
+    hasOcclusionPatchRef.current = true;
+  }
 
   function renderFrame(frame: MovementFrame): void {
     lastFrameRef.current = frame;
@@ -143,6 +198,7 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
       getReadyMapMarkerAtlas(),
     );
     drawOverlayRef.current?.(ctx, camera, currentLayout, frame.timestampMs);
+    drawOcclusion(frame, camera, currentLayout);
 
     if (viewportRect) {
       const anchor = mapToClientPoint(frame, camera, currentLayout.zoom, viewportRect);
@@ -166,15 +222,20 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   useEffect(() => {
     if (!tileset) {
       cacheRef.current = null;
+      occluderCacheRef.current = null;
+      occlusionGridRef.current = null;
       setIsTilesetDrawn(false);
       return;
     }
     cacheRef.current = buildStaticLayerCanvas(mapData, tileset, visibleLayers, tileSize);
+    const grid = buildOcclusionGrid(mapData, visibleLayers, occlusionLayers ?? [], overheadGids ?? []);
+    occlusionGridRef.current = grid;
+    occluderCacheRef.current = buildOccluderLayerCanvas(mapData, tileset, visibleLayers, grid, tileSize);
     setIsTilesetDrawn(true);
     redrawLastFrame(false);
     // `redrawLastFrame` reads refs only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapData, tileset, visibleLayers, tileSize]);
+  }, [mapData, tileset, visibleLayers, occlusionLayers, overheadGids, tileSize]);
 
   // Resizing a canvas clears it, so redraw before paint. A resize snaps the camera to its
   // re-clamped target rather than letting it drift there.
@@ -187,6 +248,11 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
     if (!canvas || cssWidth === undefined || cssHeight === undefined) return;
     if (canvas.width !== cssWidth) canvas.width = cssWidth;
     if (canvas.height !== cssHeight) canvas.height = cssHeight;
+    const occlusionCanvas = occlusionCanvasRef.current;
+    if (occlusionCanvas) {
+      if (occlusionCanvas.width !== cssWidth) occlusionCanvas.width = cssWidth;
+      if (occlusionCanvas.height !== cssHeight) occlusionCanvas.height = cssHeight;
+    }
     redrawLastFrame(true);
     // `redrawLastFrame` reads refs only; the view size is listed so a zoom change snaps too.
     // eslint-disable-next-line react-hooks/exhaustive-deps

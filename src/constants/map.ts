@@ -28,6 +28,12 @@ export const MAP_CAMERA_SNAP_DISTANCE_PX = 0.5;
 /** Fill shown where no tile is drawn yet (tileset still loading) or a layer leaves gaps. */
 export const MAP_BACKGROUND_COLOR = '#87CEEB';
 
+/**
+ * Opacity of foliage, walls and arches redrawn over the character when she is behind
+ * them. Below 1 so she still shows faintly through a canopy and is never lost.
+ */
+export const OCCLUDER_ALPHA = 0.85;
+
 /*
  * Marker rendering. Sizes are in marker pixels: map pixels on a 16px-tile map, and
  * scaled by a whole number on bigger tiles (see `getMapMarkerScale`), so the Jirby

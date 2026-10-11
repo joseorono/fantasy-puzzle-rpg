@@ -106,6 +106,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { tilesetImage, displayMapName, walkableLayers, surfaceLayers, visibleLayers, defaultPlayerPosition, debug } =
     map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const occlusionCanvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const spriteRef = useRef<HTMLDivElement>(null);
@@ -329,13 +330,27 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // Drop the anchor once nothing points at it, so the next popup can't open at a stale spot.
   if (!isPopupOpen && popupAnchor !== null) setPopupAnchor(null);
 
+  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
+  // `displayScale` is passed as 1 here: the simulation and the occlusion pass work in
+  // map pixels and must never see the display scale.
+  const characterMetrics = getCharacterSpriteMetrics(
+    tileSize,
+    map.characterBodyHeightTiles ?? CHARACTER_BODY_HEIGHT_TILES,
+    1,
+    map.characterFootOffsetTiles ?? CHARACTER_FOOT_OFFSET_TILES,
+  );
+
   const renderer = useMapRenderer({
     canvasRef,
+    occlusionCanvasRef,
     spriteRef,
     viewportRef,
     mapData,
     tileset,
     visibleLayers,
+    occlusionLayers: map.occlusionLayers,
+    overheadGids: mapData.tilesets?.[0]?.overheadGids,
+    characterMetrics,
     tileSize,
     layout: viewportLayout,
     markers,
@@ -345,16 +360,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   });
 
   // --- Smooth character movement (rAF-based) ---
-  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
-  // `displayScale` is passed as 1 here: only `collisionInsetPx` is read, and the
-  // simulation must never see the display scale.
-  const characterMetrics = getCharacterSpriteMetrics(
-    tileSize,
-    map.characterBodyHeightTiles ?? CHARACTER_BODY_HEIGHT_TILES,
-    1,
-    map.characterFootOffsetTiles ?? CHARACTER_FOOT_OFFSET_TILES,
-  );
-
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
     initialCol: charPosition.col,
@@ -734,6 +739,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
                 spriteState={movement.spriteState}
               />
             )}
+
+            {/* Above the sprite: bushes, canopies and arches she stands behind are redrawn here. */}
+            <canvas ref={occlusionCanvasRef} className="map-occlusion-canvas" />
           </div>
 
           {!isMinimapOpen && (

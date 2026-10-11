@@ -104,6 +104,15 @@ export interface TiledMapConfig {
   zoom?: number;
 
   /**
+   * Layers whose tiles cover the character when she stands behind them (tree canopies,
+   * bushes, walls). Depth is per layer and tile column: a vertical run of occluding tiles
+   * counts as one object grounded on its bottom row, and covers her while her feet are on
+   * or above that row. The tileset's `overheadGids` occlude the same way on any layer.
+   * Omit for none.
+   */
+  occlusionLayers?: string[];
+
+  /**
    * Footstep volume baseline (0–1) — hard floors ring louder than soil or sand. Random
    * jitter only lowers it. Omit for `DEFAULT_FOOTSTEP_VOLUME`.
    */
