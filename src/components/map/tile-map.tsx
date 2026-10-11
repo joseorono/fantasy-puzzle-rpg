@@ -26,7 +26,12 @@ import { clientToMapPoint } from '~/lib/pointer-movement';
 import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
 import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
 import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
-import { CHARACTER_BODY_HEIGHT_TILES, CHARACTER_FOOT_OFFSET_TILES } from '~/constants/character-sprite';
+import {
+  CHARACTER_BODY_HEIGHT_TILES,
+  CHARACTER_FOOT_OFFSET_TILES,
+  CHARACTER_SPRITE_SHEET_PATH,
+} from '~/constants/character-sprite';
+import type { SpriteState } from '~/hooks/use-character-sprite';
 import MapCharacterSprite from './map-character-sprite';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
@@ -107,6 +112,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const occlusionCanvasRef = useRef<HTMLCanvasElement>(null);
+  const spriteStateRef = useRef<SpriteState | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const spriteRef = useRef<HTMLDivElement>(null);
@@ -351,6 +357,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     occlusionLayers: map.occlusionLayers,
     overheadGids: mapData.tilesets?.[0]?.overheadGids,
     characterMetrics,
+    characterSheetPath: CHARACTER_SPRITE_SHEET_PATH,
+    spriteStateRef,
     tileSize,
     layout: viewportLayout,
     markers,
@@ -408,6 +416,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       checkFloorLoot(row, col);
     },
   });
+  // The renderer is created before the movement hook, so it reads the sprite frame through this.
+  spriteStateRef.current = movement.spriteState;
 
   // Direction keys still flow through useWindowKeyDown, but movement is now
   // continuous — the handler only forwards the key. Key release, the run

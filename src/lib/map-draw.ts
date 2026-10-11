@@ -1,7 +1,7 @@
 import type { TilemapData, TilemapLayer, TilemapTileset } from '~/types/tilemap';
 import type { MapDefinition, NodeMarkerState } from '~/types/map';
 import type { InteractiveMapNode } from '~/types/map-node';
-import type { GridPosition, PixelRect } from '~/types/geometry';
+import type { GridPosition, PixelRect, Position } from '~/types/geometry';
 import type { OcclusionGrid } from '~/types/map-occlusion';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
@@ -402,6 +402,35 @@ export function drawOcclusionPatch(
     ctx.drawImage(cache, x, y, tileSize, tileSize, x, y, tileSize, tileSize);
   }
 
+  ctx.globalAlpha = 1;
+}
+
+/**
+ * Draws a see-through copy of the character's current frame over the occlusion patch,
+ * kept to the patch's own pixels (`source-atop`), so she shows through exactly where
+ * foliage covers her and nowhere else.
+ *
+ * @param ctx The occlusion canvas's context, with the patch already drawn.
+ * @param sheet The character's loaded sprite sheet.
+ * @param frameOrigin Top-left of the current frame in the sheet, from `getSpriteFrameOrigin`.
+ * @param frameSize Edge length of one sheet frame.
+ * @param rect Where the DOM sprite draws the frame, from `getCharacterFrameViewportRect`.
+ * @param alpha Opacity of the copy.
+ */
+export function drawOccludedCharacterGhost(
+  ctx: CanvasRenderingContext2D,
+  sheet: HTMLImageElement,
+  frameOrigin: Position,
+  frameSize: number,
+  rect: PixelRect,
+  alpha: number,
+): void {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(sheet, frameOrigin.x, frameOrigin.y, frameSize, frameSize, rect.x, rect.y, rect.width, rect.height);
+  ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
 }
 

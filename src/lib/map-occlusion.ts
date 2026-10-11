@@ -1,5 +1,6 @@
 import type { TilemapData } from '~/types/tilemap';
 import type { MapPixelBox, OcclusionGrid } from '~/types/map-occlusion';
+import type { PixelRect, Position } from '~/types/geometry';
 import type { CharacterSpriteMetrics } from '~/lib/character-sprite';
 import { decodeTileGid } from '~/lib/map-draw';
 
@@ -95,6 +96,32 @@ export function getCharacterOcclusionBox(
   out.right = x + halfFrame;
   out.top = frameBottom - metrics.frameSizePx;
   out.bottom = frameBottom;
+  return out;
+}
+
+/**
+ * Writes where `MapCharacterSprite` draws its frame into `out`, in viewport (CSS) pixels,
+ * so a canvas copy of the frame lands exactly on the DOM sprite. Mirrors its CSS: centred
+ * on the anchor, scaled about its bottom edge, and shifted down by the rounded foot offset
+ * plus the empty strip below the feet.
+ *
+ * @param translation The sprite wrapper's translation, from `getSpriteTranslation`.
+ * @param metrics From `getCharacterSpriteMetrics` with a display scale of 1.
+ * @param zoom The map's integer zoom.
+ * @param out Reused rect, overwritten and returned.
+ */
+export function getCharacterFrameViewportRect(
+  translation: Position,
+  metrics: CharacterSpriteMetrics,
+  zoom: number,
+  out: PixelRect,
+): PixelRect {
+  const size = metrics.frameSizePx * zoom;
+  const bottom = translation.y + Math.round((metrics.footOffsetPx + metrics.baselinePadPx) * zoom);
+  out.x = translation.x - size / 2;
+  out.y = bottom - size;
+  out.width = size;
+  out.height = size;
   return out;
 }
 

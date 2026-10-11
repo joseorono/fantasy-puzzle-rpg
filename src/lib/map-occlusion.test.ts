@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildOcclusionGrid, collectOccludingCells, getCharacterOcclusionBox } from './map-occlusion';
+import {
+  buildOcclusionGrid,
+  collectOccludingCells,
+  getCharacterFrameViewportRect,
+  getCharacterOcclusionBox,
+} from './map-occlusion';
 import { getCharacterSpriteMetrics } from './character-sprite';
 import type { TilemapData, TilemapLayer } from '~/types/tilemap';
 import type { MapPixelBox } from '~/types/map-occlusion';
@@ -145,5 +150,26 @@ describe('getCharacterOcclusionBox', () => {
     expect(box.top).toBeCloseTo(frameBottom - metrics.frameSizePx);
     expect(box.right - box.left).toBeCloseTo(metrics.frameSizePx);
     expect((box.left + box.right) / 2).toBeCloseTo(40);
+  });
+});
+
+describe('getCharacterFrameViewportRect', () => {
+  // `MapCharacterSprite` sizes itself from metrics at the map's zoom; the canvas copy derives
+  // the same rect from zoom-1 metrics. Both must land on the same pixels.
+  it.each([
+    [16, 2.5, 0.25, 1],
+    [16, 2.5, 0.25, 2],
+    [32, 1.25, 0.25, 3],
+  ])('matches the DOM sprite (tile %ipx, body %f tiles, foot %f, zoom %i)', (tileSize, body, foot, zoom) => {
+    const mapMetrics = getCharacterSpriteMetrics(tileSize, body, 1, foot);
+    const domMetrics = getCharacterSpriteMetrics(tileSize, body, zoom, foot);
+    const translation = { x: 120, y: 90 };
+    const rect = getCharacterFrameViewportRect(translation, mapMetrics, zoom, { x: 0, y: 0, width: 0, height: 0 });
+
+    const domBottom = translation.y + Math.round(domMetrics.footOffsetPx + domMetrics.baselinePadPx);
+    expect(rect.width).toBeCloseTo(domMetrics.frameSizePx);
+    expect(rect.height).toBeCloseTo(domMetrics.frameSizePx);
+    expect(rect.y + rect.height).toBeCloseTo(domBottom);
+    expect(rect.x + rect.width / 2).toBeCloseTo(translation.x);
   });
 });

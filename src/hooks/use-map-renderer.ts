@@ -16,15 +16,24 @@ import {
   buildStaticLayerCanvas,
   drawCameraView,
   drawMarkers,
+  drawOccludedCharacterGhost,
   drawOcclusionPatch,
   getMarkerPulsePhase,
   type MapMarker,
 } from '~/lib/map-draw';
 import { getReadyMapMarkerAtlas } from '~/lib/map-marker-atlas';
-import { buildOcclusionGrid, collectOccludingCells, getCharacterOcclusionBox } from '~/lib/map-occlusion';
-import type { CharacterSpriteMetrics } from '~/lib/character-sprite';
+import {
+  buildOcclusionGrid,
+  collectOccludingCells,
+  getCharacterFrameViewportRect,
+  getCharacterOcclusionBox,
+} from '~/lib/map-occlusion';
+import { getSpriteFrameOrigin, type CharacterSpriteMetrics } from '~/lib/character-sprite';
+import type { SpriteState } from '~/hooks/use-character-sprite';
 import type { MapPixelBox, OcclusionGrid } from '~/types/map-occlusion';
-import { OCCLUDER_ALPHA } from '~/constants/map';
+import type { PixelRect } from '~/types/geometry';
+import { OCCLUDED_CHARACTER_ALPHA, OCCLUDER_ALPHA } from '~/constants/map';
+import { MEMAO_FRAME_SIZE_PX } from '~/constants/memao-sprite';
 
 export interface UseMapRendererOptions {
   /** The viewport-sized canvas the map is drawn into. */
@@ -46,6 +55,13 @@ export interface UseMapRendererOptions {
   overheadGids?: number[];
   /** Sprite sizes in map pixels (display scale 1), for the area occluders are redrawn over. */
   characterMetrics: CharacterSpriteMetrics;
+  /** The character's sheet, for the see-through copy drawn where occluders cover her. */
+  characterSheetPath: string;
+  /**
+   * The DOM sprite's current frame, mirrored by the caller during render — the same
+   * commit that repaints the sprite — so the see-through copy always matches it.
+   */
+  spriteStateRef: RefObject<SpriteState | null>;
   /** Edge length of one tile in map pixels. */
   tileSize: number;
   /** From `computeViewportLayout`; `null` until the stage is measured. */
@@ -95,6 +111,8 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
     visibleLayers,
     occlusionLayers,
     overheadGids,
+    characterSheetPath,
+    spriteStateRef,
     tileSize,
     layout,
     markers,
@@ -110,6 +128,8 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
   const occludingCellsRef = useRef<number[]>([]);
   const occlusionBoxRef = useRef<MapPixelBox>({ left: 0, top: 0, right: 0, bottom: 0 });
   const hasOcclusionPatchRef = useRef(false);
+  const ghostRectRef = useRef<PixelRect>({ x: 0, y: 0, width: 0, height: 0 });
+  const characterSheetRef = useRef<HTMLImageElement | null>(null);
   // `null` means "no camera yet": the next frame snaps instead of easing in from (0, 0).
   const cameraRef = useRef<MapPoint | null>(null);
   const roundedCameraRef = useRef<MapPoint>({ x: 0, y: 0 });
@@ -158,6 +178,25 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
 
     drawOcclusionPatch(ctx, cache, cells, count, grid.width, size, camera, currentLayout, OCCLUDER_ALPHA);
     hasOcclusionPatchRef.current = true;
+
+    const sheet = characterSheetRef.current;
+    const spriteState = spriteStateRef.current;
+    if (!sheet || !spriteState) return;
+    const { mode, facing, frameIndex } = spriteState;
+    const rect = getCharacterFrameViewportRect(
+      getSpriteTranslation(frame, camera, currentLayout.zoom),
+      characterMetricsRef.current,
+      currentLayout.zoom,
+      ghostRectRef.current,
+    );
+    drawOccludedCharacterGhost(
+      ctx,
+      sheet,
+      getSpriteFrameOrigin(mode, facing, frameIndex),
+      MEMAO_FRAME_SIZE_PX,
+      rect,
+      OCCLUDED_CHARACTER_ALPHA,
+    );
   }
 
   function renderFrame(frame: MovementFrame): void {
@@ -236,6 +275,19 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
     // `redrawLastFrame` reads refs only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapData, tileset, visibleLayers, occlusionLayers, overheadGids, tileSize]);
+
+  // Until the sheet loads, occluders still draw; only the see-through copy waits.
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () => {
+      characterSheetRef.current = image;
+    };
+    image.src = characterSheetPath;
+    return () => {
+      image.onload = null;
+      characterSheetRef.current = null;
+    };
+  }, [characterSheetPath]);
 
   // Resizing a canvas clears it, so redraw before paint. A resize snaps the camera to its
   // re-clamped target rather than letting it drift there.
