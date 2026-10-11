@@ -13,6 +13,7 @@ import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corn
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ModalTitle } from '~/components/typography/modal-title';
 import { CreditsModal } from '~/components/credits-modal';
+import { TitleMapScroll } from '~/components/title-map-scroll';
 import { cn } from '~/lib/utils';
 
 interface StartMenuModalProps {
@@ -195,6 +196,8 @@ export function StartMenuModal({ onStartGame }: StartMenuModalProps) {
   return (
     <div className="main-menu">
       <div className="main-menu__bg" />
+      <TitleMapScroll />
+      <div className="main-menu__overlay" />
       <div className="main-menu__content">
         <div className="main-menu__title">
           <h1 className="main-menu__title-text">
