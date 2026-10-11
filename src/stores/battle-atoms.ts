@@ -195,45 +195,49 @@ export const checkSwapValidityAtom = atom(null, (get, _set, from: GridPosition, 
 });
 
 // Atom to damage party (targets random living hero)
-export const damagePartyAtom = atom(null, (get, set, damage: number, attackerEnemyId?: string) => {
-  const currentState = get(battleStateAtom);
+export const damagePartyAtom = atom(
+  null,
+  (get, set, damage: number, attackerEnemyId?: string, guardBreakOverride?: number) => {
+    const currentState = get(battleStateAtom);
 
-  // Get living party members
-  const living = getLivingMembers(currentState.party);
-  if (living.length === 0) return;
+    // Get living party members
+    const living = getLivingMembers(currentState.party);
+    if (living.length === 0) return;
 
-  // The Guard meter mitigates incoming damage before it reaches a hero. The attacking
-  // enemy's guardBreak only scales how hard the hit drains the bar, not the mitigation.
-  const attacker = attackerEnemyId ? currentState.enemies.find((e) => e.id === attackerEnemyId) : undefined;
-  const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
-    damage,
-    currentState.guard,
-    attacker?.guardBreak ?? 1,
-  );
-  const wasGuarded = damageTaken < damage;
+    // The Guard meter mitigates incoming damage before it reaches a hero. The attacking enemy's
+    // guardBreak — or an attack variant's override — only scales how hard the hit drains the bar,
+    // not the mitigation.
+    const attacker = attackerEnemyId ? currentState.enemies.find((e) => e.id === attackerEnemyId) : undefined;
+    const { damageTaken, guardAfter, wasFullBlock } = resolveGuardedDamage(
+      damage,
+      currentState.guard,
+      guardBreakOverride ?? attacker?.guardBreak ?? 1,
+    );
+    const wasGuarded = damageTaken < damage;
 
-  // Select a random living hero to take the post-Guard damage
-  const targetHero = getRandomElement(living);
+    // Select a random living hero to take the post-Guard damage
+    const targetHero = getRandomElement(living);
 
-  const party = damagePartyMember(currentState.party, targetHero.id, damageTaken);
-  const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
+    const party = damagePartyMember(currentState.party, targetHero.id, damageTaken);
+    const gameStatus = isPartyDefeated(party) ? 'lost' : 'playing';
 
-  set(battleStateAtom, {
-    ...currentState,
-    party,
-    guard: guardAfter,
-    gameStatus,
-    lastDamage: {
-      amount: damageTaken,
-      target: 'party',
-      timestamp: Date.now(),
-      characterId: targetHero.id,
-      enemyId: attackerEnemyId,
-      wasGuarded,
-      blocked: wasFullBlock,
-    },
-  });
-});
+    set(battleStateAtom, {
+      ...currentState,
+      party,
+      guard: guardAfter,
+      gameStatus,
+      lastDamage: {
+        amount: damageTaken,
+        target: 'party',
+        timestamp: Date.now(),
+        characterId: targetHero.id,
+        enemyId: attackerEnemyId,
+        wasGuarded,
+        blocked: wasFullBlock,
+      },
+    });
+  },
+);
 
 type EnemyHit = { amount: number; characterId?: string };
 
@@ -515,6 +519,11 @@ export const lastPreemptiveStrikeAtom = atom((get) => get(battleStateAtom).lastP
 export const lastReshuffleAtom = atom((get) => get(battleStateAtom).lastReshuffle ?? null);
 // Per-enemy "Flinched!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
 export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
+
+/** Payload of {@link lastEnemyAttackAtom}: which enemy attacked, when, and which attack row played. */
+export type LastEnemyAttack = { enemyId: string; timestamp: number; attackIndex: number };
+/** Latest enemy attack, for the sprite layer. `attackIndex` indexes the sheet's attack rows. */
+export const lastEnemyAttackAtom = atom<LastEnemyAttack | null>(null);
 
 // ─── Enemy Poise / Break (see ~/lib/poise-system) ────────────────────────────
 // Per-enemy poise pools and Break windows. `?? {}` guards any pre-existing state object without the field.

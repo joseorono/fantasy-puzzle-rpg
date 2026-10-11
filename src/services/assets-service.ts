@@ -83,7 +83,8 @@ export const assetList: string[] = [
   '/assets/cursors/mouse/dwarven-gauntlet-cursor.png',
 
   // Enemies
-  '/assets/enemy-sprites/frogger_idle.png',
+  '/assets/enemy-sprites/badger_sheet.png',
+  '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',
