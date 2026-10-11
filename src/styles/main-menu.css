@@ -43,7 +43,7 @@
 .title-map-scroll {
   /* Tunables */
   --title-map-scroll-opacity: 0.22;
-  --title-map-scroll-duration: 180s;
+  --title-map-scroll-duration: 140s;
 
   pointer-events: none;
   position: absolute;
