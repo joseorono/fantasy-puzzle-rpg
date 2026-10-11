@@ -61,7 +61,9 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapProgressState } from '~/stores/slices/map-progress.types';
-import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
+import { footstepSystem } from '~/services/footstep-system';
+import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/footsteps';
+import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
@@ -111,6 +113,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // The sheet URL that failed to load, if any; compared against the current one so a map change clears it.
   const [failedTileset, setFailedTileset] = useState<string | null>(null);
   const [mapData] = useState<TilemapData>(map.tiledData);
+  const [footstepProfile] = useState(() =>
+    createFootstepProfile(map.footstepVolume ?? DEFAULT_FOOTSTEP_VOLUME, map.footstepPitch ?? DEFAULT_FOOTSTEP_PITCH),
+  );
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
@@ -373,14 +378,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // The overview is read in place: frozen, turned to the camera, book open.
     isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
     isReading: isMinimapOpen,
+    onFootstep: ({ running }) => {
+      footstepSystem.playFootstep(running ? footstepProfile.run : footstepProfile.walk);
+    },
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);
-
-      // Footstep sound
-      const surfaceType = determineSurfaceTypeFromPosition(row, col, mapData);
-      footstepSystem.setSurface(surfaceType);
-      footstepSystem.playFootstep();
 
       // Close node menu with exit transition when moving
       if (showNodeMenu && currentNode) {

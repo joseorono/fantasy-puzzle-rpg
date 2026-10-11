@@ -27,6 +27,8 @@ export const MAP_01_FAIRY_FOREST: MapDefinition = {
   ],
   defaultPlayerPosition: { x: 35, y: 39 },
   debug: true,
+  footstepVolume: 0.65,
+  footstepPitch: 0.9,
   tiledData: newMap,
   nodes: FAIRY_FOREST_NODES,
   floorLoot: FAIRY_FOREST_FLOOR_LOOT,

@@ -14,6 +14,8 @@ export const MAP_03_DESERT: MapDefinition = {
   visibleLayers: ['base-floor', 'road', 'pyramids', 'mountains', 'cactus', 'obelisk'],
   defaultPlayerPosition: { x: 1, y: 40 },
   debug: true,
+  footstepVolume: 0.6,
+  footstepPitch: 0.92,
   tiledData: map03DesertTiledData,
   floorLoot: DESERT_FLOOR_LOOT,
 };

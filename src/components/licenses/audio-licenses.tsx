@@ -180,6 +180,11 @@ export default function AudioLicensesDialogContent() {
             https://freesound.org/people/RutgerMuller/sounds/51163/
           </a>
         </p>
+
+        <p>
+          Footsteps (footstep01–06) by GboxMikeFozzy — License: Creative Commons 0&nbsp;
+          <a href="https://opengameart.org/content/footsteps-0">https://opengameart.org/content/footsteps-0</a>
+        </p>
       </div>
     </>
   );

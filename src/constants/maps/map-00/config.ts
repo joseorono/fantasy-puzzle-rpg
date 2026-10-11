@@ -15,6 +15,8 @@ export const MAP_00: MapDefinition = {
   visibleLayers: ['Capa de patrones 1', 'road', 'mountains', 'trees', 'signs'],
   defaultPlayerPosition: { x: 70, y: 58 },
   debug: true,
+  footstepVolume: 0.8,
+  footstepPitch: 1,
   tiledData: demoMap,
   nodes: DEMO_MAP_NODES,
   floorLoot: DEMO_FLOOR_LOOT,

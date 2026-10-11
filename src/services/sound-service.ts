@@ -133,7 +133,13 @@ class SoundService {
     }
   }
 
-  playSound(alias: SoundNames, volume: number = 1, volVariance: number = 0, spdVariance: number = 0) {
+  playSound(
+    alias: SoundNames,
+    volume: number = 1,
+    volVariance: number = 0,
+    spdVariance: number = 0,
+    baseSpeed: number = 1,
+  ) {
     volume = betweenZeroAndOne(volume, 'volume');
     volVariance = betweenZeroAndOne(volVariance, 'volVariance');
     spdVariance = betweenZeroAndOne(spdVariance, 'spdVariance');
@@ -141,7 +147,7 @@ class SoundService {
     this.ensureContextRunning();
     sound.play(alias, {
       volume: getRandomlyVariedValue(volume * this.sfxVolume, volVariance),
-      speed: getRandomlyVariedValue(1, spdVariance),
+      speed: getRandomlyVariedValue(baseSpeed, spdVariance),
     });
   }
 

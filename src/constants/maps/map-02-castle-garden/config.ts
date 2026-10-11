@@ -29,5 +29,7 @@ export const MAP_02_CASTLE_GARDEN: MapDefinition = {
   ],
   defaultPlayerPosition: { x: 1, y: 4 },
   debug: true,
+  footstepVolume: 0.85,
+  footstepPitch: 1,
   tiledData: map02CastleGardenTiledData,
 };
