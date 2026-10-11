@@ -333,7 +333,10 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
         if (isSteppingOff) animationDistanceRef.current = 0;
         const unwrappedDistance = animationDistanceRef.current + frameDistance;
         const strideDistance = cycleDistance / FOOTFALLS_PER_ANIM_CYCLE;
-        if (isSteppingOff || countStrideCrossings(animationDistanceRef.current, unwrappedDistance, strideDistance) > 0) {
+        if (
+          isSteppingOff ||
+          countStrideCrossings(animationDistanceRef.current, unwrappedDistance, strideDistance) > 0
+        ) {
           onFootstepRef.current?.({ running });
         }
         animationDistanceRef.current = unwrappedDistance % cycleDistance;
@@ -368,8 +371,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     /** Teleport to a tile centre (spawn placement / position restore). */
     setPosition,
     /** Call from `useWindowKeyDown` to forward a direction key press. Ignored while paused. */
-    onKeyDown: (key: string): NavDirection | null =>
-      isPausedRef.current ? null : multiKey.onDirectionKeyDown(key),
+    onKeyDown: (key: string): NavDirection | null => (isPausedRef.current ? null : multiKey.onDirectionKeyDown(key)),
     /** Spread onto the map viewport to enable click-and-hold (and touch-drag) movement. */
     pointerHandlers: pointer.pointerHandlers,
   };

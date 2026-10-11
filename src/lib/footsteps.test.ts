@@ -69,7 +69,13 @@ describe('resolveFootstepPlayback', () => {
   });
 
   it('clamps running volume to 1', () => {
-    const { volume } = resolveFootstepPlayback({ baseVolume: 1, basePitch: 1, running: true, foot: 'left', random: () => 0 });
+    const { volume } = resolveFootstepPlayback({
+      baseVolume: 1,
+      basePitch: 1,
+      running: true,
+      foot: 'left',
+      random: () => 0,
+    });
     expect(volume).toBe(1);
   });
 
@@ -90,7 +96,13 @@ describe('resolveFootstepPlayback', () => {
     const random = seededRng(5);
     const maxOffset = FOOTSTEP_FOOT_PITCH_BIAS + FOOTSTEP_PITCH_VARIANCE;
     for (let draw = 0; draw < 500; draw++) {
-      const { speed } = resolveFootstepPlayback({ baseVolume: 0.6, basePitch: 0.9, running: false, foot: 'left', random });
+      const { speed } = resolveFootstepPlayback({
+        baseVolume: 0.6,
+        basePitch: 0.9,
+        running: false,
+        foot: 'left',
+        random,
+      });
       expect(speed).toBeGreaterThanOrEqual(0.9 * (1 - maxOffset));
       expect(speed).toBeLessThanOrEqual(0.9 * (1 + maxOffset));
     }
