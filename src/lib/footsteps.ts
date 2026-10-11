@@ -2,10 +2,10 @@ import {
   FOOTSTEP_FOOT_PITCH_BIAS,
   FOOTSTEP_PITCH_VARIANCE,
   FOOTSTEP_RUN_PITCH_MULTIPLIER,
-  FOOTSTEP_RUN_VOLUME_MULTIPLIER,
   FOOTSTEP_VOLUME_VARIANCE,
+  FOOTSTEP_WALK_VOLUME_RATIO,
 } from '~/constants/footsteps';
-import type { FootstepPlayback, FootstepPlaybackInput } from '~/types/footsteps';
+import type { FootstepPlayback, FootstepPlaybackInput, FootstepProfile } from '~/types/footsteps';
 
 /**
  * Counts how many stride boundaries were crossed while travelling from `previousDistance`
@@ -48,27 +48,36 @@ export function pickFootstepSample(
 }
 
 /**
+ * Resolves a map's walk and run baselines once, so footfalls only look their gait up.
+ *
+ * Running plays at the map's volume baseline; walking is a subtle step quieter.
+ *
+ * @param baseVolume - The map's volume baseline (0–1), used as-is for running.
+ * @param basePitch - The map's playback-rate baseline, used as-is for walking.
+ * @returns The walk and run gaits, volumes clamped to 0–1.
+ */
+export function createFootstepProfile(baseVolume: number, basePitch: number): FootstepProfile {
+  const runVolume = Math.min(1, Math.max(0, baseVolume));
+  return {
+    walk: { volume: runVolume * FOOTSTEP_WALK_VOLUME_RATIO, pitch: basePitch },
+    run: { volume: runVolume, pitch: basePitch * FOOTSTEP_RUN_PITCH_MULTIPLIER },
+  };
+}
+
+/**
  * Resolves the final volume and playback rate of one footfall.
  *
- * Volume jitter only lowers the map baseline, so the baseline acts as a ceiling. Pitch
- * jitter is symmetric, with a fixed per-foot bias so left/right alternate audibly.
+ * Volume jitter only lowers the gait's volume, so it acts as a ceiling. Pitch jitter is
+ * symmetric, with a fixed per-foot bias so left/right alternate audibly.
  *
- * @returns The volume (clamped to 0–1) and playback speed to hand to the sound service.
+ * @returns The volume and playback speed to hand to the sound service.
  */
-export function resolveFootstepPlayback({
-  baseVolume,
-  basePitch,
-  running,
-  foot,
-  random = Math.random,
-}: FootstepPlaybackInput): FootstepPlayback {
-  const gaitVolume = running ? baseVolume * FOOTSTEP_RUN_VOLUME_MULTIPLIER : baseVolume;
-  const volume = Math.min(1, Math.max(0, gaitVolume * (1 - FOOTSTEP_VOLUME_VARIANCE * random())));
+export function resolveFootstepPlayback({ gait, foot, random = Math.random }: FootstepPlaybackInput): FootstepPlayback {
+  const volume = gait.volume * (1 - FOOTSTEP_VOLUME_VARIANCE * random());
 
   const footBias = foot === 'left' ? -FOOTSTEP_FOOT_PITCH_BIAS : FOOTSTEP_FOOT_PITCH_BIAS;
   const jitter = (random() * 2 - 1) * FOOTSTEP_PITCH_VARIANCE;
-  const gaitPitch = running ? basePitch * FOOTSTEP_RUN_PITCH_MULTIPLIER : basePitch;
-  const speed = gaitPitch * (1 + footBias + jitter);
+  const speed = gait.pitch * (1 + footBias + jitter);
 
   return { volume, speed };
 }

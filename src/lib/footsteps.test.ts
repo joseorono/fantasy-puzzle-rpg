@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { countStrideCrossings, pickFootstepSample, resolveFootstepPlayback } from './footsteps';
-import { FOOTSTEP_FOOT_PITCH_BIAS, FOOTSTEP_PITCH_VARIANCE } from '~/constants/footsteps';
+import { countStrideCrossings, createFootstepProfile, pickFootstepSample, resolveFootstepPlayback } from './footsteps';
+import { FOOTSTEP_FOOT_PITCH_BIAS, FOOTSTEP_PITCH_VARIANCE, FOOTSTEP_WALK_VOLUME_RATIO } from '~/constants/footsteps';
 
 /** Deterministic LCG in [0, 1). */
 function seededRng(seed: number): () => number {
@@ -56,53 +56,48 @@ describe('pickFootstepSample', () => {
   });
 });
 
-describe('resolveFootstepPlayback', () => {
-  const base = { baseVolume: 0.8, basePitch: 1 };
+describe('createFootstepProfile', () => {
+  it('runs at the map baseline and walks a ratio quieter', () => {
+    const profile = createFootstepProfile(0.8, 1);
+    expect(profile.run.volume).toBe(0.8);
+    expect(profile.walk.volume).toBeCloseTo(0.8 * FOOTSTEP_WALK_VOLUME_RATIO);
+    expect(profile.walk.volume).toBeLessThan(profile.run.volume);
+  });
 
-  it('keeps volume at or under the baseline when walking', () => {
+  it('pitches running higher than walking', () => {
+    const profile = createFootstepProfile(0.8, 0.9);
+    expect(profile.walk.pitch).toBe(0.9);
+    expect(profile.run.pitch).toBeGreaterThan(profile.walk.pitch);
+  });
+
+  it('clamps an out-of-range baseline to 1', () => {
+    expect(createFootstepProfile(1.4, 1).run.volume).toBe(1);
+  });
+});
+
+describe('resolveFootstepPlayback', () => {
+  const gait = { volume: 0.8, pitch: 1 };
+
+  it('keeps volume at or under the gait volume', () => {
     const random = seededRng(11);
     for (let draw = 0; draw < 500; draw++) {
-      const { volume } = resolveFootstepPlayback({ ...base, running: false, foot: 'left', random });
+      const { volume } = resolveFootstepPlayback({ gait, foot: 'left', random });
       expect(volume).toBeLessThanOrEqual(0.8);
       expect(volume).toBeGreaterThan(0);
     }
   });
 
-  it('clamps running volume to 1', () => {
-    const { volume } = resolveFootstepPlayback({
-      baseVolume: 1,
-      basePitch: 1,
-      running: true,
-      foot: 'left',
-      random: () => 0,
-    });
-    expect(volume).toBe(1);
-  });
-
-  it('makes running louder and higher than walking', () => {
-    const walk = resolveFootstepPlayback({ ...base, running: false, foot: 'right', random: () => 0.5 });
-    const run = resolveFootstepPlayback({ ...base, running: true, foot: 'right', random: () => 0.5 });
-    expect(run.volume).toBeGreaterThan(walk.volume);
-    expect(run.speed).toBeGreaterThan(walk.speed);
-  });
-
   it('pitches the left foot lower than the right', () => {
-    const left = resolveFootstepPlayback({ ...base, running: false, foot: 'left', random: () => 0.5 });
-    const right = resolveFootstepPlayback({ ...base, running: false, foot: 'right', random: () => 0.5 });
+    const left = resolveFootstepPlayback({ gait, foot: 'left', random: () => 0.5 });
+    const right = resolveFootstepPlayback({ gait, foot: 'right', random: () => 0.5 });
     expect(right.speed - left.speed).toBeCloseTo(2 * FOOTSTEP_FOOT_PITCH_BIAS);
   });
 
-  it('scales with the map pitch and stays within the jitter band', () => {
+  it('scales with the gait pitch and stays within the jitter band', () => {
     const random = seededRng(5);
     const maxOffset = FOOTSTEP_FOOT_PITCH_BIAS + FOOTSTEP_PITCH_VARIANCE;
     for (let draw = 0; draw < 500; draw++) {
-      const { speed } = resolveFootstepPlayback({
-        baseVolume: 0.6,
-        basePitch: 0.9,
-        running: false,
-        foot: 'left',
-        random,
-      });
+      const { speed } = resolveFootstepPlayback({ gait: { volume: 0.6, pitch: 0.9 }, foot: 'left', random });
       expect(speed).toBeGreaterThanOrEqual(0.9 * (1 - maxOffset));
       expect(speed).toBeLessThanOrEqual(0.9 * (1 + maxOffset));
     }

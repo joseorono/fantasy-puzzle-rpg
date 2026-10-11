@@ -3,7 +3,7 @@
  * `footstepVolume` / `footstepPitch`; these are the defaults and the shared variance.
  */
 
-/** Volume baseline for maps that don't set `footstepVolume`. Acts as a ceiling: jitter only lowers it. */
+/** Volume baseline for maps that don't set `footstepVolume`. Running plays at it; jitter only lowers it. */
 export const DEFAULT_FOOTSTEP_VOLUME = 0.8;
 
 /** Playback-rate baseline for maps that don't set `footstepPitch`. */
@@ -18,8 +18,8 @@ export const FOOTSTEP_PITCH_VARIANCE = 0.05;
 /** Fixed pitch offset between feet: left plays lower, right higher, for a natural gait. */
 export const FOOTSTEP_FOOT_PITCH_BIAS = 0.02;
 
-/** Running footfalls land harder. Result is clamped to 1. */
-export const FOOTSTEP_RUN_VOLUME_MULTIPLIER = 1.15;
+/** Walking plays at this fraction of the map's baseline; running lands harder at the full baseline. */
+export const FOOTSTEP_WALK_VOLUME_RATIO = 0.85;
 
 /** Running footfalls are quicker and slightly higher. */
 export const FOOTSTEP_RUN_PITCH_MULTIPLIER = 1.04;
