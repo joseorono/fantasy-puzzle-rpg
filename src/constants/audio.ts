@@ -27,6 +27,12 @@ export enum SoundNames {
   saveChime = 'saveChime',
   loadChime = 'loadChime',
   runningUpStairs = 'runningUpStairs',
+  footstep01 = 'footstep01',
+  footstep02 = 'footstep02',
+  footstep03 = 'footstep03',
+  footstep04 = 'footstep04',
+  footstep05 = 'footstep05',
+  footstep06 = 'footstep06',
 }
 
 /**
@@ -63,7 +69,22 @@ export const soundFiles = {
   [SoundNames.saveChime]: '/assets/audio/ui/chime-saved-1.mp3',
   [SoundNames.loadChime]: '/assets/audio/ui/chimes-saved.mp3',
   [SoundNames.runningUpStairs]: '/assets/audio/ui/running-up-the-stairs.ogg',
+  [SoundNames.footstep01]: '/assets/audio/footsteps/01-footstep.ogg',
+  [SoundNames.footstep02]: '/assets/audio/footsteps/02-footstep.ogg',
+  [SoundNames.footstep03]: '/assets/audio/footsteps/03-footstep.ogg',
+  [SoundNames.footstep04]: '/assets/audio/footsteps/04-footstep.ogg',
+  [SoundNames.footstep05]: '/assets/audio/footsteps/05-footstep.ogg',
+  [SoundNames.footstep06]: '/assets/audio/footsteps/06-footstep.ogg',
 };
+
+/** Map footstep sample pool. `footstep04` is left out: it is ~5 dB hotter than the rest. */
+export const FOOTSTEP_SOUNDS = [
+  SoundNames.footstep01,
+  SoundNames.footstep02,
+  SoundNames.footstep03,
+  SoundNames.footstep05,
+  SoundNames.footstep06,
+] as const;
 
 // Background sounds for the town hub (randomly selected on entry)
 export const TOWN_HUB_BG_SOUNDS = [SoundNames.bgNoiseForum, SoundNames.bgNoiseFarmer];
