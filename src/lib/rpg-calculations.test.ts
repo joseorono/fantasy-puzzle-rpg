@@ -166,6 +166,11 @@ describe('Damage Calculations', () => {
     expect(result).toBe(32); // 25 * (1 + 15*2/100) = 32.5 -> 32
   });
 
+  test('calculateEnemyDamage: scales with an attack variant multiplier', () => {
+    expect(rpg.calculateEnemyDamage(mockEnemy, 1.6)).toBe(51); // floor(32.5)=32, 32 * 1.6 = 51.2 -> 51
+    expect(rpg.calculateEnemyDamage(mockEnemy, 0.75)).toBe(24); // 32 * 0.75 = 24
+  });
+
   test('calculateEnemyExpReward: scales with max HP', () => {
     expect(rpg.calculateEnemyExpReward(400)).toBe(62); // 400/8 + 12
     expect(rpg.calculateEnemyExpReward(68)).toBe(21); // 68/8 + 12 = 20.5 -> 21

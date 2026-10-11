@@ -1,6 +1,7 @@
 import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
 import { ALL_MAPS } from '~/constants/maps';
+import { TITLE_MAP_PREVIEW_IMAGES } from '~/constants/title-screen';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -49,6 +50,7 @@ export const assetList: string[] = [
   // Start Menu
   '/assets/bg/start-menu/main-menu-bg-2.jpg',
   '/assets/bg/start-menu/main-menu-bg.png',
+  ...TITLE_MAP_PREVIEW_IMAGES,
 
   // UI Backgrounds
   '/assets/bg/tc-bg-item-darker.png',
@@ -81,7 +83,9 @@ export const assetList: string[] = [
   '/assets/cursors/mouse/dwarven-gauntlet-cursor.png',
 
   // Enemies
-  '/assets/enemy-sprites/frogger_idle.png',
+  '/assets/enemy-sprites/badger_sheet.png',
+  '/assets/enemy-sprites/frogger_map.png',
+  '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',

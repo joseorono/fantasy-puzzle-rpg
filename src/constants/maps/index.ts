@@ -4,6 +4,7 @@ import { MAP_01 } from './map-01/config';
 import { MAP_00_APPRENTICE_FORGE } from './map-00-apprentice-forge/config';
 import { MAP_01_FAIRY_FOREST } from './map-01-fairy-forest/config';
 import { MAP_02_CASTLE_GARDEN } from './map-02-castle-garden/config';
+import { MAP_03_DESERT } from './map-03-desert/config';
 
 /**
  * Every playable map, keyed by id. This is the only place maps are enumerated:
@@ -16,6 +17,7 @@ export const MAP_REGISTRY: Record<MapId, MapDefinition> = {
   'map-00-apprentice-forge': MAP_00_APPRENTICE_FORGE,
   'map-01-fairy-forest': MAP_01_FAIRY_FOREST,
   'map-02-castle-garden': MAP_02_CASTLE_GARDEN,
+  'map-03-desert': MAP_03_DESERT,
 };
 
 /** Map used when a navigation arrives without one. */

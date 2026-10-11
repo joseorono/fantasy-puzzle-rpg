@@ -26,7 +26,12 @@ import { clientToMapPoint } from '~/lib/pointer-movement';
 import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
 import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
 import { getCharacterSpriteMetrics } from '~/lib/character-sprite';
-import { CHARACTER_BODY_HEIGHT_TILES, CHARACTER_FOOT_OFFSET_TILES } from '~/constants/character-sprite';
+import {
+  CHARACTER_BODY_HEIGHT_TILES,
+  CHARACTER_FOOT_OFFSET_TILES,
+  CHARACTER_SPRITE_SHEET_PATH,
+} from '~/constants/character-sprite';
+import type { SpriteState } from '~/hooks/use-character-sprite';
 import MapCharacterSprite from './map-character-sprite';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
@@ -61,7 +66,9 @@ import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
 import type { InteractiveMapNode } from '~/types/map-node';
 import type { MapProgressState } from '~/stores/slices/map-progress.types';
-import { footstepSystem, determineSurfaceTypeFromPosition } from '~/services/footstep-system';
+import { footstepSystem } from '~/services/footstep-system';
+import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/footsteps';
+import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
@@ -104,6 +111,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { tilesetImage, displayMapName, walkableLayers, surfaceLayers, visibleLayers, defaultPlayerPosition, debug } =
     map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const occlusionCanvasRef = useRef<HTMLCanvasElement>(null);
+  const spriteStateRef = useRef<SpriteState | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const spriteRef = useRef<HTMLDivElement>(null);
@@ -111,6 +120,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // The sheet URL that failed to load, if any; compared against the current one so a map change clears it.
   const [failedTileset, setFailedTileset] = useState<string | null>(null);
   const [mapData] = useState<TilemapData>(map.tiledData);
+  const [footstepProfile] = useState(() =>
+    createFootstepProfile(map.footstepVolume ?? DEFAULT_FOOTSTEP_VOLUME, map.footstepPitch ?? DEFAULT_FOOTSTEP_PITCH),
+  );
   const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
@@ -324,13 +336,29 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // Drop the anchor once nothing points at it, so the next popup can't open at a stale spot.
   if (!isPopupOpen && popupAnchor !== null) setPopupAnchor(null);
 
+  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
+  // `displayScale` is passed as 1 here: the simulation and the occlusion pass work in
+  // map pixels and must never see the display scale.
+  const characterMetrics = getCharacterSpriteMetrics(
+    tileSize,
+    map.characterBodyHeightTiles ?? CHARACTER_BODY_HEIGHT_TILES,
+    1,
+    map.characterFootOffsetTiles ?? CHARACTER_FOOT_OFFSET_TILES,
+  );
+
   const renderer = useMapRenderer({
     canvasRef,
+    occlusionCanvasRef,
     spriteRef,
     viewportRef,
     mapData,
     tileset,
     visibleLayers,
+    occlusionLayers: map.occlusionLayers,
+    overheadGids: mapData.tilesets?.[0]?.overheadGids,
+    characterMetrics,
+    characterSheetPath: CHARACTER_SPRITE_SHEET_PATH,
+    spriteStateRef,
     tileSize,
     layout: viewportLayout,
     markers,
@@ -340,16 +368,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   });
 
   // --- Smooth character movement (rAF-based) ---
-  // Sizes derive from the sprite's visible body, not its partly-empty 48px frame.
-  // `displayScale` is passed as 1 here: only `collisionInsetPx` is read, and the
-  // simulation must never see the display scale.
-  const characterMetrics = getCharacterSpriteMetrics(
-    tileSize,
-    map.characterBodyHeightTiles ?? CHARACTER_BODY_HEIGHT_TILES,
-    1,
-    map.characterFootOffsetTiles ?? CHARACTER_FOOT_OFFSET_TILES,
-  );
-
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
     initialCol: charPosition.col,
@@ -373,14 +391,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // The overview is read in place: frozen, turned to the camera, book open.
     isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
     isReading: isMinimapOpen,
+    onFootstep: ({ running }) => {
+      footstepSystem.playFootstep(running ? footstepProfile.run : footstepProfile.walk);
+    },
     onTileEnter: (row, col) => {
       setCharPosition({ row, col });
       setDebugInfo(`On road at (${row}, ${col})`);
-
-      // Footstep sound
-      const surfaceType = determineSurfaceTypeFromPosition(row, col, mapData);
-      footstepSystem.setSurface(surfaceType);
-      footstepSystem.playFootstep();
 
       // Close node menu with exit transition when moving
       if (showNodeMenu && currentNode) {
@@ -400,6 +416,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       checkFloorLoot(row, col);
     },
   });
+  // The renderer is created before the movement hook, so it reads the sprite frame through this.
+  spriteStateRef.current = movement.spriteState;
 
   // Direction keys still flow through useWindowKeyDown, but movement is now
   // continuous — the handler only forwards the key. Key release, the run
@@ -731,6 +749,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
                 spriteState={movement.spriteState}
               />
             )}
+
+            {/* Above the sprite: bushes, canopies and arches she stands behind are redrawn here. */}
+            <canvas ref={occlusionCanvasRef} className="map-occlusion-canvas" />
           </div>
 
           {!isMinimapOpen && (

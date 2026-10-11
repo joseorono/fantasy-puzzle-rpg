@@ -96,6 +96,14 @@
   image-rendering: pixelated;
 }
 
+/* Stacked over the character sprite (z-index 10); never takes the click-and-hold input. */
+.map-viewport .map-occlusion-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
 /* Debug readout, pinned to the top-right of the game frame (inside the window
    frame border) so it costs no layout space around the map. */
 .map-debug-overlay {

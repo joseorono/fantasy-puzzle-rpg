@@ -23,6 +23,8 @@ import {
   WALK_FRAME_COUNT,
   WALK_TILES_PER_ANIM_FRAME,
 } from '~/constants/character-sprite';
+import { FOOTFALLS_PER_ANIM_CYCLE } from '~/constants/footsteps';
+import { countStrideCrossings } from '~/lib/footsteps';
 
 export interface UseCharacterMovementOptions {
   /** Starting tile row (grid Y). */
@@ -58,6 +60,11 @@ export interface UseCharacterMovementOptions {
   isReading?: boolean;
   /** Called when the character's logical tile changes (footsteps, loot checks, etc.). */
   onTileEnter?: (row: number, col: number) => void;
+  /**
+   * Called when a foot lands: twice per walk/run animation cycle, plus once on step-off.
+   * Driven by distance covered, so it stops when walled in and speeds up when running.
+   */
+  onFootstep?: (footfall: { running: boolean }) => void;
   /**
    * Called once per animation frame with the character's position — the renderer's cue
    * to move the camera, the sprite and the canvas in the same tick. Also called while
@@ -138,6 +145,8 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
   const collisionInsetRef = useRef(collisionInsetPx);
   const canMoveToRef = useRef(canMoveTo);
   const onTileEnterRef = useRef(onTileEnter);
+  const onFootstepRef = useRef(options.onFootstep);
+  onFootstepRef.current = options.onFootstep;
   // Read during render: both close over the current camera, which the loop must see
   // on the very next frame.
   const onFrameRef = useRef(options.onFrame);
@@ -320,8 +329,17 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
         const cycleDistance = distancePerFrame * frameCount;
 
         // Restart the cycle on step-off so every departure plants the same foot.
-        if (!isMovingRef.current) animationDistanceRef.current = 0;
-        animationDistanceRef.current = (animationDistanceRef.current + frameDistance) % cycleDistance;
+        const isSteppingOff = !isMovingRef.current;
+        if (isSteppingOff) animationDistanceRef.current = 0;
+        const unwrappedDistance = animationDistanceRef.current + frameDistance;
+        const strideDistance = cycleDistance / FOOTFALLS_PER_ANIM_CYCLE;
+        if (
+          isSteppingOff ||
+          countStrideCrossings(animationDistanceRef.current, unwrappedDistance, strideDistance) > 0
+        ) {
+          onFootstepRef.current?.({ running });
+        }
+        animationDistanceRef.current = unwrappedDistance % cycleDistance;
         frameIndex = Math.floor(animationDistanceRef.current / distancePerFrame) % frameCount;
       }
 
@@ -353,8 +371,7 @@ export function useCharacterMovement(options: UseCharacterMovementOptions) {
     /** Teleport to a tile centre (spawn placement / position restore). */
     setPosition,
     /** Call from `useWindowKeyDown` to forward a direction key press. Ignored while paused. */
-    onKeyDown: (key: string): NavDirection | null =>
-      isPausedRef.current ? null : multiKey.onDirectionKeyDown(key),
+    onKeyDown: (key: string): NavDirection | null => (isPausedRef.current ? null : multiKey.onDirectionKeyDown(key)),
     /** Spread onto the map viewport to enable click-and-hold (and touch-drag) movement. */
     pointerHandlers: pointer.pointerHandlers,
   };

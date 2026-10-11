@@ -127,10 +127,11 @@ export function calculateCharacterDamage(character: CharacterData, baseDamage: n
 /**
  * Calculates damage for an enemy's attack.
  * @param enemy Enemy data
+ * @param damageMultiplier Attack-variant scaling (default 1, e.g. `EnemyAttackVariant.damageMultiplier`)
  * @returns Final damage value
  */
-export function calculateEnemyDamage(enemy: EnemyData): number {
-  return calculateDamage(enemy.attackDamage, enemy.stats.pow);
+export function calculateEnemyDamage(enemy: EnemyData, damageMultiplier: number = 1): number {
+  return Math.floor(calculateDamage(enemy.attackDamage, enemy.stats.pow) * damageMultiplier);
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { LootTable } from './loot';
 import type { RarityTier } from '~/constants/rarity';
+import type { AdmurinEnemySheet } from './admurin-enemies';
 
 export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
@@ -55,10 +56,28 @@ export interface CharacterData extends BaseStats {
   skillLevels: Record<string, number>;
 }
 
+/** One of an enemy's attacks. Multipliers scale the base EnemyData fields. */
+export interface EnemyAttackVariant {
+  /** Display name, e.g. 'Tongue' or 'Attack B'. */
+  name: string;
+  /** × EnemyData.attackDamage. */
+  damageMultiplier: number;
+  /** × the countdown leading into this attack (default 1). */
+  intervalMultiplier?: number;
+  /** × EnemyData.guardBreak (default 1). */
+  guardBreakMultiplier?: number;
+}
+
 // Enemy-specific stats
 export interface EnemyData extends BaseStats {
   type: string;
   sprite: string;
+  /** Admurin packs only: the combined sheet this enemy animates from. */
+  admurinSheet?: AdmurinEnemySheet;
+  /** Two attack variants alternate per cycle; absent = today's single implicit attack. */
+  attacks?: EnemyAttackVariant[];
+  /** Battle card size. Default 'md'. */
+  spriteSize?: 'md' | 'lg' | 'xl';
   attackInterval: number; // Base interval before SPD modifications
   attackDamage: number; // Base damage before POW modifications
   lootTable: LootTable; // Loot dropped when defeated

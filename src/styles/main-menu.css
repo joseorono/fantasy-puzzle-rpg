@@ -36,6 +36,76 @@
   z-index: 0;
 }
 
+/* ==========================================
+   DRIFTING MAP PREVIEWS (between bg and overlay)
+   ========================================== */
+
+.title-map-scroll {
+  /* Tunables */
+  --title-map-scroll-opacity: 0.22;
+  --title-map-scroll-duration: 140s;
+
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  opacity: var(--title-map-scroll-opacity);
+  filter: sepia(0.25) saturate(0.85);
+  animation: title-map-scroll-fade-in 2s ease-out both;
+}
+
+/* No `to` frame: it eases up to the element's own opacity. */
+@keyframes title-map-scroll-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.title-map-scroll__track {
+  display: flex;
+  height: 100%;
+  width: max-content;
+  will-change: transform;
+  animation: title-map-scroll-drift var(--title-map-scroll-duration) linear infinite;
+}
+
+@keyframes title-map-scroll-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Faded edges + a slight overlap let each map dissolve into the next. Margin
+   (not gap) keeps the -50% loop point exact. */
+.title-map-scroll__tile {
+  height: 100%;
+  width: auto;
+  flex-shrink: 0;
+  margin-right: -6vh;
+  image-rendering: pixelated;
+  user-select: none;
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-map-scroll__track {
+    animation-play-state: paused;
+  }
+}
+
+/* Soft vignette over the bg + maps, matching the Press Start screen */
+.main-menu__overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.62) 100%);
+  z-index: 1;
+}
+
 .main-menu__content {
   display: flex;
   flex-direction: column;

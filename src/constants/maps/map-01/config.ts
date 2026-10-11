@@ -11,5 +11,7 @@ export const MAP_01: MapDefinition = {
   visibleLayers: ['not-walkable', 'walkable', 'walkable-2'],
   defaultPlayerPosition: { x: 10, y: 10 },
   debug: true,
+  footstepVolume: 0.9,
+  footstepPitch: 1.05,
   tiledData: newMap,
 };

@@ -1,7 +1,8 @@
 import type { TilemapData, TilemapLayer, TilemapTileset } from '~/types/tilemap';
 import type { MapDefinition, NodeMarkerState } from '~/types/map';
 import type { InteractiveMapNode } from '~/types/map-node';
-import type { GridPosition, PixelRect } from '~/types/geometry';
+import type { GridPosition, PixelRect, Position } from '~/types/geometry';
+import type { OcclusionGrid } from '~/types/map-occlusion';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import {
@@ -245,13 +246,17 @@ export function getTileFlipMatrix(flips: TileFlips): [number, number, number, nu
   return flips.flipD ? [0, scaleY, scaleX, 0] : [scaleX, 0, 0, scaleY];
 }
 
-/** Draws one tile layer, in map pixels. Expects and leaves the context at the identity transform. */
+/**
+ * Draws one tile layer, in map pixels. Expects and leaves the context at the identity transform.
+ * `shouldDrawCell`, when given, limits the layer to the cells it accepts.
+ */
 function drawTileLayer(
   ctx: CanvasRenderingContext2D,
   layer: TilemapLayer,
   tileset: HTMLImageElement,
   tilesetInfo: TilemapTileset,
   tileSize: number,
+  shouldDrawCell?: (col: number, row: number) => boolean,
 ): void {
   const { columns, tilewidth, tileheight, firstgid, margin, spacing } = tilesetInfo;
   const half = tileSize / 2;
@@ -262,6 +267,7 @@ function drawTileLayer(
       const rawGid = layer.data[y * layer.width + x];
       // 0 means no tile.
       if (rawGid === 0) continue;
+      if (shouldDrawCell && !shouldDrawCell(x, y)) continue;
 
       const { gid, flipH, flipV, flipD } = decodeTileGid(rawGid);
       const tileIndex = gid - firstgid;
@@ -316,6 +322,116 @@ export function buildStaticLayerCanvas(
   }
 
   return canvas;
+}
+
+/**
+ * Pre-renders only what can cover the character: at each occluding cell, every visible
+ * layer from the cell's lowest occluder upward, so decorations stacked on a bush or a
+ * canopy keep their order when redrawn over her.
+ *
+ * @param mapData The Tiled map.
+ * @param tileset The loaded tileset image.
+ * @param layerNames Visible layers, matched by name.
+ * @param grid From `buildOcclusionGrid`.
+ * @param tileSize Edge length of one tile in map pixels.
+ * @returns The occluder cache, or `null` when nothing occludes or a 2D context is unavailable.
+ */
+export function buildOccluderLayerCanvas(
+  mapData: TilemapData,
+  tileset: HTMLImageElement,
+  layerNames: string[],
+  grid: OcclusionGrid,
+  tileSize: number,
+): HTMLCanvasElement | null {
+  const tilesetInfo = mapData.tilesets?.[0];
+  if (!tilesetInfo || grid.occludingCellCount === 0) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = mapData.width * tileSize;
+  canvas.height = mapData.height * tileSize;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  mapData.layers.forEach((layer, layerIndex) => {
+    if (!layerNames.includes(layer.name)) return;
+    drawTileLayer(ctx, layer, tileset, tilesetInfo, tileSize, (col, row) => {
+      const startLayer = grid.startLayers[row * grid.width + col];
+      return startLayer !== -1 && layerIndex >= startLayer;
+    });
+  });
+
+  return canvas;
+}
+
+/**
+ * Redraws the given occluder cells over the character, in map pixels under the camera
+ * transform. Outside her outline the result matches the map canvas beneath, so the
+ * cells can be drawn whole.
+ *
+ * @param ctx The occlusion canvas's context, cleared by the caller.
+ * @param cache From {@link buildOccluderLayerCanvas}.
+ * @param cells Cell indices from `collectOccludingCells`; only the first `count` are read.
+ * @param count How many entries of `cells` to draw.
+ * @param mapWidth Map width in tiles.
+ * @param tileSize Edge length of one tile in map pixels.
+ * @param camera Rounded camera, in map pixels.
+ * @param layout The viewport layout.
+ * @param alpha Opacity of the redrawn cells.
+ */
+export function drawOcclusionPatch(
+  ctx: CanvasRenderingContext2D,
+  cache: HTMLCanvasElement,
+  cells: readonly number[],
+  count: number,
+  mapWidth: number,
+  tileSize: number,
+  camera: MapPoint,
+  layout: ViewportLayout,
+  alpha: number,
+): void {
+  const { zoom } = layout;
+  ctx.setTransform(zoom, 0, 0, zoom, -camera.x * zoom, -camera.y * zoom);
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = alpha;
+
+  for (let i = 0; i < count; i++) {
+    const cell = cells[i];
+    const x = (cell % mapWidth) * tileSize;
+    const y = Math.floor(cell / mapWidth) * tileSize;
+    ctx.drawImage(cache, x, y, tileSize, tileSize, x, y, tileSize, tileSize);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+/**
+ * Draws a see-through copy of the character's current frame over the occlusion patch,
+ * kept to the patch's own pixels (`source-atop`), so she shows through exactly where
+ * foliage covers her and nowhere else.
+ *
+ * @param ctx The occlusion canvas's context, with the patch already drawn.
+ * @param sheet The character's loaded sprite sheet.
+ * @param frameOrigin Top-left of the current frame in the sheet, from `getSpriteFrameOrigin`.
+ * @param frameSize Edge length of one sheet frame.
+ * @param rect Where the DOM sprite draws the frame, from `getCharacterFrameViewportRect`.
+ * @param alpha Opacity of the copy.
+ */
+export function drawOccludedCharacterGhost(
+  ctx: CanvasRenderingContext2D,
+  sheet: HTMLImageElement,
+  frameOrigin: Position,
+  frameSize: number,
+  rect: PixelRect,
+  alpha: number,
+): void {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(sheet, frameOrigin.x, frameOrigin.y, frameSize, frameSize, rect.x, rect.y, rect.width, rect.height);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
 }
 
 /**

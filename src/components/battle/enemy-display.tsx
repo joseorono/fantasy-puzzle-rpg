@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useState, useEffect, useRef } from 'react';
+import { cva } from 'class-variance-authority';
 import {
   enemiesAtom,
   enemyPoiseSummaryAtom,
@@ -15,6 +16,8 @@ import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
 import { POISE_BREAK_CALLOUT_DURATION_MS } from '~/constants/battle';
 import { POISE_BREAK_SOUND } from '~/constants/audio';
 import { cn } from '~/lib/utils';
+import { AdmurinEnemySprite } from '~/components/battle/admurin-enemy-sprite';
+import { useAdmurinEnemyMotion } from '~/hooks/use-admurin-enemy-motion';
 import { soundService } from '~/services/sound-service';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
 import { EnemyPoiseBar } from '~/components/battle/enemy-poise-bar';
@@ -22,6 +25,36 @@ import { TrainingDummyReadout } from '~/components/battle/training-dummy-readout
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 import type { EnemyData } from '~/types/rpg-elements';
+
+type EnemySpriteSize = NonNullable<EnemyData['spriteSize']>;
+
+/** Card size variants. `md` is the original 64→80→96px box the smaller enemies still use. */
+const enemyCardVariants = cva(
+  'relative flex items-center justify-center rounded-lg border-2 transition-all duration-300',
+  {
+    variants: {
+      size: {
+        md: 'h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24',
+        lg: 'h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32',
+        xl: 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40',
+      },
+    },
+    defaultVariants: { size: 'md' },
+  },
+);
+
+// Name and bar widths follow the card size, so a big sprite doesn't dwarf its readouts.
+const ENEMY_CARD_NAME_SIZE: Record<EnemySpriteSize, string> = {
+  md: 'text-[8px] sm:text-[10px]',
+  lg: 'text-[9px] sm:text-[11px]',
+  xl: 'text-[10px] sm:text-[12px]',
+};
+
+const ENEMY_CARD_BAR_WIDTH: Record<EnemySpriteSize, string> = {
+  md: 'max-w-[70px] sm:max-w-[85px] md:max-w-[100px]',
+  lg: 'max-w-[100px] sm:max-w-[115px] md:max-w-[130px]',
+  xl: 'max-w-[130px] sm:max-w-[145px] md:max-w-[160px]',
+};
 
 interface EnemySpriteProps {
   enemy: EnemyData;
@@ -41,6 +74,8 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
   const poise = useAtomValue(enemyPoiseSummaryAtom(enemy.id));
   const isStaggered = poise?.phase === 'broken';
   const isStandby = useAtomValue(standbyEnemyIdsAtom).includes(enemy.id);
+  const size = enemy.spriteSize ?? 'md';
+  const motion = useAdmurinEnemyMotion(enemy, isBattlePaused);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
@@ -114,7 +149,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           <div
             onClick={handleClick}
             className={cn(
-              'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
+              enemyCardVariants({ size }),
               isDead
                 ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
                 : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
@@ -124,7 +159,16 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           >
             {/* The Broken tint/sway sits on the sprite itself (state-driven, clears when the tick ends
                 the window) so it never competes with the wrapper's recoil animation. */}
-            {enemy.sprite.startsWith('/') ? (
+            {enemy.admurinSheet && motion ? (
+              <AdmurinEnemySprite
+                sheet={enemy.admurinSheet}
+                animation={motion.animation}
+                mode={motion.mode}
+                playId={motion.playId}
+                paused={motion.paused}
+                className={cn('h-full w-full', isStaggered && !isDead && 'enemy-staggered')}
+              />
+            ) : enemy.sprite.startsWith('/') ? (
               <img
                 src={enemy.sprite}
                 alt={enemy.name}
@@ -208,7 +252,8 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
       {/* Enemy name */}
       <div
         className={cn(
-          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          'pixel-font font-bold uppercase',
+          ENEMY_CARD_NAME_SIZE[size],
           isDead ? 'text-gray-500 line-through' : 'text-emerald-300',
         )}
       >
@@ -217,24 +262,18 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
 
       {/* HP bar — or, for a dummy that cannot die, the damage readout in its place */}
       {isTraining ? (
-        <TrainingDummyReadout
-          isBattlePaused={isBattlePaused}
-          poise={poise}
-          className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
-        />
+        <TrainingDummyReadout isBattlePaused={isBattlePaused} poise={poise} className={ENEMY_CARD_BAR_WIDTH[size]} />
       ) : (
         <BattleHpBar
           currentHp={enemy.currentHp}
           maxHp={enemy.maxHp}
           thresholdColors={ENEMY_HP_THRESHOLD_BG}
-          className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
+          className={ENEMY_CARD_BAR_WIDTH[size]}
         />
       )}
 
       {/* Poise bar — posture left before the next Break, then the Break and recovery windows */}
-      {poise && !isDead && (
-        <EnemyPoiseBar poise={poise} isStandby={isStandby} className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]" />
-      )}
+      {poise && !isDead && <EnemyPoiseBar poise={poise} isStandby={isStandby} className={ENEMY_CARD_BAR_WIDTH[size]} />}
     </div>
   );
 }

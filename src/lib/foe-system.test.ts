@@ -216,14 +216,15 @@ describe('patrol', () => {
 describe('detection', () => {
   it('switches to chase with an alert flash when the player is inside the radius', () => {
     const foe = awakeFoe();
-    const result = stepFoe(foe, playerAt(2, 6), DT, worldFor()); // 4 tiles away, radius 5
+    const result = stepFoe(foe, playerAt(2, 6), DT, worldFor()); // 4 tiles away
     expect(result.foe.mode).toBe('chase');
     expect(result.foe.alertSeconds).toBeCloseTo(FOE_ALERT_FLASH_SECONDS);
   });
 
   it('keeps patrolling when the player is just outside the radius', () => {
     const foe = awakeFoe();
-    const result = stepFoe(foe, playerAt(2, 8), DT, worldFor()); // 6 tiles away
+    const justOutsideCol = 2 + FOE_DEFAULT_TUNABLES.detectionRadiusTiles + 1;
+    const result = stepFoe(foe, playerAt(2, justOutsideCol), DT, worldFor());
     expect(result.foe.mode).toBe('patrol');
   });
 

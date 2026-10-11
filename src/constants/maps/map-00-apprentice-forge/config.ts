@@ -9,8 +9,11 @@ export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   displayMapName: 'Apprentice Forge',
   walkableLayers: ['road'],
   visibleLayers: ['lava', 'details', 'statues', 'walls', 'road', 'chests, barrils and doors'],
+  occlusionLayers: ['walls', 'statues'],
   defaultPlayerPosition: { x: 35, y: 24 },
   debug: true,
+  footstepVolume: 0.95,
+  footstepPitch: 1.08,
   // 32px tiles: keep the same 40px body the 16px maps draw.
   characterBodyHeightTiles: 1.25,
   tiledData: newMap,

@@ -20,6 +20,7 @@ const MAP_ID_COVERAGE = {
   'map-00-apprentice-forge': true,
   'map-01-fairy-forest': true,
   'map-02-castle-garden': true,
+  'map-03-desert': true,
 } as const satisfies Record<MapId, true>;
 export const mapIdSchema = z.enum(Object.keys(MAP_ID_COVERAGE) as [MapId, ...MapId[]]);
 

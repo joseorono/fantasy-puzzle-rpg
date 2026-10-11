@@ -1,5 +1,5 @@
 import type { EncounterDefinition } from '~/types/map-node';
-import { MOSS_GOLEM, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { GIANT_FROG, MOSS_GOLEM, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 
 /**
  * Enemy encounter compositions for each fight node on the Fairy Forest.
@@ -88,6 +88,6 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
     enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
   },
   fairy_forest_foe_3: {
-    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
+    enemies: [{ ...GIANT_FROG, id: 'giant-frog-1' }],
   },
 };
