@@ -59,6 +59,8 @@ export const EXP_PINATA_FROGS: EnemyData[] = Array.from({ length: EXP_PINATA_FRO
   attackDamage: 1,
   attackInterval: 60_000,
   guardBreak: 0,
+  // Keep the single implicit attack: the spread would otherwise inherit the Swamp Frog's variants.
+  attacks: [],
   // The first frog absorbs the rounding remainder so the three sum to the exact total.
   expReward: index === 0 ? EXP_PINATA_TOTAL_EXP - EXP_PINATA_SHARE * (EXP_PINATA_FROG_COUNT - 1) : EXP_PINATA_SHARE,
   lootTable: index === 0 ? EXP_PINATA_LOOT : createEmptyLootTable(),
