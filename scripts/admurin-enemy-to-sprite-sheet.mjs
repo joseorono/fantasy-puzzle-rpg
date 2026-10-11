@@ -16,6 +16,11 @@
  * explicit (see VOCABULARY); an unknown suffix is a hard error, and `--anim` forces a file
  * into a slot when the pack invents a name we do not know yet.
  *
+ * Admurin mixes frame sizes: the idle strip uses 128px-wide frames while every other animation
+ * uses 384px-wide ones, so the frame width is DETECTED per strip (see detectFrameWidth) and every
+ * frame is pasted centred into one uniform cell. Assuming a square 128 grid — as this script
+ * first did — slices drawings in half and fills half the "frames" with blanks.
+ *
  * The combined sheet is written already compressed — this script does NOT run the repo-wide
  * images optimizer, so the PNG that lands in `public/` is the one that ships.
  *
@@ -26,7 +31,8 @@
  *   node scripts/admurin-enemy-to-sprite-sheet.mjs public/assets/enemy-sprites/badger_sheet.png --cell 128
  *
  * Flags:
- *   --cell <px>           Frame size. Default: the strips' height (cells must be square).
+ *   --cell <px>           Force the frame width (folder mode) or the square cell size (PNG mode).
+ *                         Default: detected per strip (Admurin mixes 128px idle and 384px rest).
  *   --out <dir>           Output root for the generated TS. Default: src/constants/enemies/world-00.
  *   --id <slug>           Enemy id/slug. Default: kebab-case of the pack folder name.
  *   --name <text>         Enemy display name. Default: Title Case of the id.
@@ -55,12 +61,12 @@ const SHEET_URL_DIR = 'assets/enemy-sprites';
 
 /** How long each frame of a slot is shown, in ms. Attacks snap; idle breathes. */
 const FRAME_DURATION_MS = {
-  idle: 150,
-  move: 60,
-  hurt: 60,
-  attack1: 45,
-  attack2: 45,
-  ability: 60,
+  idle: 140,
+  move: 80,
+  hurt: 80,
+  attack1: 70,
+  attack2: 70,
+  ability: 80,
 };
 
 /** Lowercased filename suffix -> sheet slot. `attacks` rows are ordered by ATTACK_ORDER. */
@@ -250,34 +256,174 @@ function buildRows(slots) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Frame geometry                                                     */
+/* ------------------------------------------------------------------ */
+
+/** Which columns of a strip hold ink, so frame edges can be found without guessing. */
+async function columnInk(file, width, height) {
+  const raw = await sharp(file).ensureAlpha().raw().toBuffer();
+  const ink = new Uint8Array(width);
+  for (let x = 0; x < width; x += 1) {
+    for (let y = 0; y < height; y += 1) {
+      if (raw[(y * width + x) * 4 + 3] > 8) {
+        ink[x] = 1;
+        break;
+      }
+    }
+  }
+  return ink;
+}
+
+/** Maximal inked column runs, as [start, end] pairs. */
+function inkRuns(ink) {
+  const runs = [];
+  let start = -1;
+  for (let x = 0; x < ink.length; x += 1) {
+    if (ink[x] && start === -1) start = x;
+    const last = x === ink.length - 1;
+    if (start !== -1 && (!ink[x] || last)) {
+      runs.push([start, ink[x] ? x : x - 1]);
+      start = -1;
+    }
+  }
+  return runs;
+}
+
+/**
+ * A strip's true frame width: the smallest divisor of the strip width where no drawing crosses a
+ * frame edge and no frame comes out empty. That is exactly what a blanket 128px assumption gets
+ * wrong — `badger_attack_A` reads as 15 frames, not 45, and its hurt as 4, not 12.
+ */
+function detectFrameWidth(width, ink) {
+  const runs = inkRuns(ink);
+  if (runs.length === 0) return null;
+  const widestRun = Math.max(...runs.map(([start, end]) => end - start + 1));
+
+  for (let frameW = Math.max(16, widestRun); frameW <= width; frameW += 1) {
+    if (width % frameW !== 0) continue;
+    if (runs.some(([start, end]) => Math.floor(start / frameW) !== Math.floor(end / frameW))) continue;
+    let isEmpty = false;
+    for (let frame = 0; frame < width / frameW && !isEmpty; frame += 1) {
+      let hasInk = false;
+      for (let x = frame * frameW; x < (frame + 1) * frameW && !hasInk; x += 1) hasInk = ink[x] === 1;
+      isEmpty = !hasInk;
+    }
+    if (!isEmpty) return frameW;
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Measurement + compositing                                          */
 /* ------------------------------------------------------------------ */
 
-/** One present row with its measured geometry. */
-async function measureRow(row, cell) {
+/** One present row with its measured geometry and detected frame width. */
+async function measureRow(row) {
   const meta = await sharp(row.file).metadata();
   const width = meta.width ?? 0;
   const height = meta.height ?? 0;
-  if (width % cell !== 0) {
-    throw new Error(`${row.file}: width ${width}px is not a whole number of ${cell}px cells.`);
+  const ink = await columnInk(row.file, width, height);
+  const frameW = detectFrameWidth(width, ink);
+  if (!frameW) {
+    throw new Error(
+      `${row.file}: could not find a frame width (a drawing would cross every frame edge, or a frame is blank). Pass --cell to force one.`,
+    );
   }
   return {
     ...row,
     file: row.file,
     width,
     height,
-    frames: width / cell,
+    frameW,
+    frames: width / frameW,
     frameDurationMs: FRAME_DURATION_MS[row.durationSlot],
   };
 }
 
-/** Composites the measured strips onto one transparent sheet, in row order. */
-async function compositeSheet(rows, cell, sheetWidth) {
-  const layers = rows.map((row) => ({ input: row.file, top: row.row * cell, left: 0 }));
-  return sharp({
+/**
+ * Ink bounds of a row's frames, in the coordinates of ONE cell (the frames of a row sit in
+ * different cells, so the union is measured frame-local and offset once). Every frame is pasted
+ * centred, so this is where the character is inside a cell — the rect the display scales around.
+ */
+async function measureCharacterRect(row, cellH, frameOffset) {
+  const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
+  const stripWidth = row.width;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (let frame = 0; frame < row.frames; frame += 1) {
+    for (let y = 0; y < cellH; y += 1) {
+      for (let x = 0; x < row.frameW; x += 1) {
+        if (raw[(y * stripWidth + frame * row.frameW + x) * 4 + 3] > 8) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+  }
+  return { x: frameOffset + minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+}
+
+/** Frame offset inside the cell — every source frame is centred so the drawing never shifts. */
+const cellOffset = (cellW, frameW) => Math.floor((cellW - frameW) / 2);
+
+/**
+ * The card shows a square of `max(characterRect)` centred on the body and bottom-aligned to the
+ * feet, so every frame must have the character inside that square. A blank one is exactly the
+ * symptom of frames sliced at the wrong width (or a window that missed the body), and it reaches
+ * the player as flickering — so this fails the run instead of shipping the sheet.
+ */
+async function assertFramesVisible(rows, cellW, cellH, characterRect) {
+  const size = Math.max(characterRect.width, characterRect.height);
+  const windowX = Math.round(characterRect.x + characterRect.width / 2 - size / 2);
+  const windowY = cellH - size;
+
+  for (const row of rows) {
+    const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
+    const frameLocalX = windowX - cellOffset(cellW, row.frameW);
+    for (let frame = 0; frame < row.frames; frame += 1) {
+      let ink = 0;
+      for (let y = 0; y < size && ink === 0; y += 1) {
+        for (let x = 0; x < size && ink === 0; x += 1) {
+          const sx = frame * row.frameW + frameLocalX + x;
+          const sy = windowY + y;
+          if (sx >= 0 && sx < row.width && raw[(sy * row.width + sx) * 4 + 3] > 8) ink += 1;
+        }
+      }
+      if (ink === 0) {
+        throw new Error(
+          `${row.file}: frame ${frame} is blank inside the card window — the frame width is probably wrong.`,
+        );
+      }
+    }
+  }
+}
+
+/** Composites every frame into one uniform-cell sheet, in row order. */
+async function compositeSheet(rows, cellW, cellH) {
+  const layers = [];
+  for (const row of rows) {
+    const offset = cellOffset(cellW, row.frameW);
+    for (let frame = 0; frame < row.frames; frame += 1) {
+      layers.push({
+        input: await sharp(row.file)
+          .extract({ left: frame * row.frameW, top: 0, width: row.frameW, height: cellH })
+          .png()
+          .toBuffer(),
+        top: row.row * cellH,
+        left: frame * cellW + offset,
+      });
+    }
+  }
+  const sheetWidth = Math.max(...rows.map((row) => row.frames * cellW));
+  const sheetHeight = rows.length * cellH;
+  const buffer = await sharp({
     create: {
       width: sheetWidth,
-      height: rows.length * cell,
+      height: sheetHeight,
       channels: 4,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
@@ -285,6 +431,7 @@ async function compositeSheet(rows, cell, sheetWidth) {
     .composite(layers)
     .png({ compressionLevel: 9 })
     .toBuffer();
+  return { buffer, sheetWidth, sheetHeight };
 }
 
 /* ------------------------------------------------------------------ */
@@ -299,6 +446,9 @@ function renderSheetConstant(constName, sheet) {
   lines.push(`  image: '${sheet.image}',`);
   lines.push(`  cellW: ${sheet.cellW},`);
   lines.push(`  cellH: ${sheet.cellH},`);
+  lines.push(
+    `  characterRect: { x: ${sheet.characterRect.x}, y: ${sheet.characterRect.y}, width: ${sheet.characterRect.width}, height: ${sheet.characterRect.height} },`,
+  );
   lines.push(`  animations: {`);
   for (const slot of ['idle', 'move', 'hurt']) {
     const row = sheet.rows.find((entry) => entry.slotKey === slot);
@@ -417,8 +567,11 @@ async function main() {
   const tsFile = path.join(outDir, opts.sheetOnly ? `${slug}-sheet.ts` : `${slug}.ts`);
 
   let rows;
-  let cell;
+  let cellW;
+  let cellH;
   let sheetWidth;
+  let sheetHeight;
+  let characterRect = null;
   let sheetBuffer = null;
 
   if (isFolder) {
@@ -426,46 +579,53 @@ async function main() {
     const order = buildRows(slots);
     if (order.length === 0) throw new Error(`No recognizable animations in ${opts.source}.`);
 
-    // Cell defaults to the strips' height; every strip must agree on it, and cells must be square.
-    const sizes = await Promise.all(order.map(async (row) => ({ row, meta: await sharp(row.file).metadata() })));
-    const heights = new Set(sizes.map(({ meta }) => meta.height));
+    // Every strip shares one height; each strip's frame WIDTH is detected (Admurin mixes 128 and 384).
+    const measured = await Promise.all(order.map(measureRow));
+    const heights = new Set(measured.map((row) => row.height));
     if (heights.size > 1) {
       throw new Error(
         `All strips must share one height; found ${[...heights].sort((a, b) => a - b).join(', ')} in ${opts.source}.`,
       );
     }
-    const stripHeight = sizes[0].meta.height ?? 0;
-    cell = opts.cell ?? stripHeight;
-    if (cell !== stripHeight) {
-      throw new Error(
-        `--cell ${opts.cell} does not match the strips' ${stripHeight}px height; cells must be square (one row per strip).`,
-      );
-    }
+    cellH = [...heights][0];
 
-    rows = [];
-    for (let index = 0; index < order.length; index += 1) {
-      rows.push({ ...(await measureRow(order[index], cell)), row: index });
+    if (opts.cell) {
+      for (const row of measured) {
+        if (row.width % opts.cell !== 0) {
+          throw new Error(`--cell ${opts.cell} does not divide ${row.file} (${row.width}px).`);
+        }
+        row.frameW = opts.cell;
+        row.frames = row.width / opts.cell;
+      }
     }
-    sheetWidth = Math.max(...rows.map((row) => row.width));
-    sheetBuffer = await compositeSheet(rows, cell, sheetWidth);
+    cellW = Math.max(...measured.map((row) => row.frameW));
+
+    rows = measured.map((row, index) => ({ ...row, row: index }));
+    const composed = await compositeSheet(rows, cellW, cellH);
+    sheetBuffer = composed.buffer;
+    sheetWidth = composed.sheetWidth;
+    sheetHeight = composed.sheetHeight;
+
+    const idle = rows.find((row) => row.slotKey === 'idle') ?? rows[0];
+    characterRect = await measureCharacterRect(idle, cellH, cellOffset(cellW, idle.frameW));
   } else {
     const meta = await sharp(sourcePath).metadata();
     const imageWidth = meta.width ?? 0;
     const imageHeight = meta.height ?? 0;
-    cell = opts.cell ?? imageHeight / 6;
-    if (!Number.isInteger(cell) || cell <= 0) {
+    cellW = opts.cell ?? imageHeight / 6;
+    if (!Number.isInteger(cellW) || cellW <= 0) {
       throw new Error(`PNG mode needs --cell: ${imageHeight}px height is not a whole number of default 6 rows.`);
     }
-    const rowCount = imageHeight / cell;
+    cellH = cellW;
+    const rowCount = imageHeight / cellH;
     if (!Number.isInteger(rowCount) || rowCount < 1 || rowCount > CANONICAL_SLOTS.length) {
       throw new Error(
-        `PNG mode: ${imageHeight}px / ${cell}px = ${rowCount} rows; expected 1–${CANONICAL_SLOTS.length}.`,
+        `PNG mode: ${imageHeight}px / ${cellH}px = ${rowCount} rows; expected 1–${CANONICAL_SLOTS.length}.`,
       );
     }
-    if (imageWidth % cell !== 0) {
-      throw new Error(`PNG mode: width ${imageWidth}px is not a whole number of ${cell}px cells.`);
+    if (imageWidth % cellW !== 0) {
+      throw new Error(`PNG mode: width ${imageWidth}px is not a whole number of ${cellW}px cells.`);
     }
-    const frames = imageWidth / cell;
     rows = CANONICAL_SLOTS.slice(0, rowCount).map((slotKey, index) => ({
       slotKey,
       keyword: slotKey,
@@ -473,15 +633,18 @@ async function main() {
       row: index,
       file: sourcePath,
       width: imageWidth,
-      height: cell,
-      frames,
+      height: cellH,
+      frameW: cellW,
+      frames: imageWidth / cellW,
       frameDurationMs: FRAME_DURATION_MS[slotKey],
     }));
     sheetWidth = imageWidth;
+    sheetHeight = imageHeight;
+    characterRect = await measureCharacterRect(rows[0], cellH, 0);
   }
 
-  const sheetHeight = rows.length * cell;
-  const sheet = { image: sheetImage, cellW: cell, cellH: cell, rows };
+  const sheet = { image: sheetImage, cellW, cellH, characterRect, rows };
+  await assertFramesVisible(rows, cellW, cellH, characterRect);
   const sheetConst = `${toUpperSnake(slug)}_SHEET`;
   const enemyConst = toUpperSnake(slug);
   const hpConst = `${toUpperSnake(slug)}_MAX_HP`;
@@ -508,13 +671,18 @@ async function main() {
   /* ---- report ---- */
   console.log(`source:   ${rel(sourcePath)}  (${isFolder ? 'pack folder' : 'combined PNG'})`);
   console.log(`slug:     ${slug}  "${name}"${opts.id ? '' : ' (id from folder name)'}`);
-  console.log(`cell:     ${cell}×${cell} px${isFolder ? '' : ` (${opts.cell ? '--cell' : 'height ÷ 6'})`}`);
+  console.log(`cell:     ${cellW}×${cellH} px${isFolder ? '' : ` (${opts.cell ? '--cell' : 'height ÷ 6'})`}`);
   console.log(`sheet:    ${sheetWidth}×${sheetHeight} px  (${rows.length} row(s))`);
+  console.log(
+    `body:     ${characterRect.width}×${characterRect.height} px at (${characterRect.x}, ${characterRect.y})`,
+  );
+  console.log(`window:   every frame keeps the character inside the card window ✓`);
   console.log(`mapping:`);
   for (const row of rows) {
     console.log(
-      `  ${String(row.row).padEnd(5)} ${row.slotKey.padEnd(8)} ${String(row.frames).padStart(3)} frames  ` +
-        `${String(row.frameDurationMs).padStart(3)}ms  ${row.keyword}  <- ${rel(row.file)}`,
+      `  ${String(row.row).padEnd(5)} ${row.slotKey.padEnd(8)} ${String(row.frameW).padStart(3)}px  ` +
+        `${String(row.frames).padStart(3)} frames  ${String(row.frameDurationMs).padStart(3)}ms  ` +
+        `${row.keyword}  <- ${rel(row.file)}`,
     );
   }
   if (opts.sheetOnly) console.log(`enemy:    --sheet-only (no EnemyData template)`);
