@@ -11,11 +11,14 @@ import {
   gameStatusAtom,
   isTrainingBattleAtom,
   lastDamageAtom,
+  lastEnemyAttackAtom,
   staggeredEnemySignatureAtom,
   standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
 import { resolveStaggerHits, weighHitsByAttacker } from '~/lib/flinch-system';
+import { resolveEnemyAttackCycle, type ResolvedEnemyAttack } from '~/lib/enemy-attacks';
+import type { EnemyData } from '~/types/rpg-elements';
 import { resolveCountdownRingAnchor } from '~/lib/battle-system';
 import { POISE_BREAK_STAGGER_DURATION_MS, SKILL_STAGGER_MULTIPLIER } from '~/constants/battle';
 
@@ -96,6 +99,10 @@ function timerListsMatch(next: EnemyAttackTimer[], prev: EnemyAttackTimer[]): bo
  * by `battleTickAtom`; this hook only reacts to it, the same way it reacts to `standbyEnemyIds`.
  * When the signature clears, the "no live cycle" branch below opens a fresh full cycle.
  *
+ * Each cycle also advances the enemy's attack variant (`EnemyData.attacks`): the variant scales the
+ * interval that leads into its shot and the damage/guardBreak it lands with, and its index rides on
+ * `lastEnemyAttackAtom` so the animated sprite plays the matching row.
+ *
  * Performance: no central loop and no polling. Still one timer per living enemy (<= 4); a stagger
  * only re-anchors the ring and extends `releaseAtRef` — the running shot timer re-defers itself on
  * its next wake, so staggering never tears the timers down. `releaseAtRef` (absolute timestamps)
@@ -117,6 +124,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const damageParty = useSetAtom(damagePartyAtom);
   const endStandby = useSetAtom(endEnemyStandbyAtom);
   const flagMaxFlinch = useSetAtom(flagMaxFlinchAtom);
+  const flagEnemyAttack = useSetAtom(lastEnemyAttackAtom);
 
   // Per-enemy ring cycle counter; bumped on each attack AND each stagger to remount the ring.
   const [version, setVersion] = useState<Record<string, number>>({});
@@ -134,6 +142,10 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const releaseAtRef = useRef<Map<string, number>>(new Map()); // when the enemy next attacks
   const cycleStartRef = useRef<Map<string, number>>(new Map()); // when the current ring cycle began
   const staggerUsedRef = useRef<Map<string, number>>(new Map()); // push-back (ms) spent this cycle
+  // Attack variants: the one currently winding up (its multipliers land with the shot) and how many
+  // cycles this enemy has started, so variants alternate normal → fast/heavy → normal…
+  const pendingAttackRef = useRef<Map<string, ResolvedEnemyAttack>>(new Map());
+  const attackCycleRef = useRef<Map<string, number>>(new Map());
   // Ring geometry captured at each (re)anchor, read during render.
   const ringDurationRef = useRef<Map<string, number>>(new Map());
   const ringElapsedRef = useRef<Map<string, number>>(new Map());
@@ -152,6 +164,13 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
 
   const livingEnemies = enemies.filter((enemy) => enemy.currentHp > 0);
 
+  // The countdown leading into the enemy's next shot: the pending variant scales the base interval
+  // (a fast attack comes sooner). Falls back to the base interval before the first cycle opens.
+  function variantInterval(enemy: EnemyData, id: string): number {
+    const pending = pendingAttackRef.current.get(id);
+    return Math.round(calculateEnemyAttackInterval(enemy) * (pending?.intervalMultiplier ?? 1));
+  }
+
   // Stable signature of the roster — changes only when an enemy joins/dies or an
   // interval changes, NOT when HP merely drops. This is (part of) the effect's trigger.
   const rosterSignature = livingEnemies.map((enemy) => `${enemy.id}:${calculateEnemyAttackInterval(enemy)}`).join('|');
@@ -166,6 +185,8 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     releaseAtRef.current = new Map();
     cycleStartRef.current = new Map();
     staggerUsedRef.current = new Map();
+    pendingAttackRef.current = new Map();
+    attackCycleRef.current = new Map();
     ringDurationRef.current = new Map();
     ringElapsedRef.current = new Map();
     staggerPulseRef.current = new Map();
@@ -200,7 +221,13 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     function startCycle(id: string) {
       const enemy = enemiesRef.current.find((e) => e.id === id);
       if (!enemy || enemy.currentHp <= 0) return;
-      const interval = calculateEnemyAttackInterval(enemy);
+      // Alternate the enemy's attack variants: the resolved one owns both the interval that leads
+      // into its shot and the hit it lands, and its index rides to the sprite on lastEnemyAttackAtom.
+      const cycleIndex = attackCycleRef.current.get(id) ?? 0;
+      const resolved = resolveEnemyAttackCycle(enemy, cycleIndex);
+      attackCycleRef.current.set(id, cycleIndex + 1);
+      pendingAttackRef.current.set(id, resolved);
+      const interval = Math.round(calculateEnemyAttackInterval(enemy) * resolved.intervalMultiplier);
       const start = performance.now();
       cycleStartRef.current.set(id, start);
       releaseAtRef.current.set(id, start + interval);
@@ -233,7 +260,13 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       }
       const enemy = enemiesRef.current.find((e) => e.id === id);
       if (!enemy || enemy.currentHp <= 0) return;
-      damageParty(calculateEnemyDamage(enemy), id);
+      const resolved = pendingAttackRef.current.get(id) ?? resolveEnemyAttackCycle(enemy, 0);
+      damageParty(
+        calculateEnemyDamage(enemy, resolved.damageMultiplier),
+        id,
+        (enemy.guardBreak ?? 1) * resolved.guardBreakMultiplier,
+      );
+      flagEnemyAttack({ enemyId: id, timestamp: Date.now(), attackIndex: resolved.attackIndex });
       startCycle(id);
     }
 
@@ -280,10 +313,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
         // discard their accumulated stagger. Re-anchor the ring to its current progress so the
         // countdown stays visually continuous. Only enemies with no live cycle start a fresh one.
         if (releaseAtRef.current.has(id) && cycleStartRef.current.has(id)) {
-          const anchor = resolveCountdownRingAnchor(
-            calculateEnemyAttackInterval(enemy),
-            releaseAtRef.current.get(id)! - now,
-          );
+          const anchor = resolveCountdownRingAnchor(variantInterval(enemy, id), releaseAtRef.current.get(id)! - now);
           ringDurationRef.current.set(id, anchor.durationMs);
           ringElapsedRef.current.set(id, anchor.elapsedMs);
           bumpVersion(id);
@@ -305,6 +335,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     enemyStandbyMs,
     damageParty,
     endStandby,
+    flagEnemyAttack,
   ]);
 
   // Stagger: on each new enemy-targeting hit, push the struck enemy's next attack back (capped),
@@ -335,7 +366,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       const enemy = enemiesRef.current.find((e) => e.id === id);
       if (!enemy || enemy.currentHp <= 0) continue;
 
-      const interval = calculateEnemyAttackInterval(enemy);
+      const interval = variantInterval(enemy, id);
       const used = staggerUsedRef.current.get(id) ?? 0;
       const { appliedMs: applied, maxedFlinch } = resolveStaggerHits(
         hits,
@@ -392,7 +423,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     }
     return {
       id,
-      durationMs: ringDurationRef.current.get(id) ?? calculateEnemyAttackInterval(enemy),
+      durationMs: ringDurationRef.current.get(id) ?? variantInterval(enemy, id),
       elapsedMs: ringElapsedRef.current.get(id) ?? 0,
       cycleKey: version[id] ?? 0,
       isStandby: false,
