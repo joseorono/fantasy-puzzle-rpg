@@ -115,7 +115,8 @@ That is fine for a cosmetic nudge, but **Poise must not follow this pattern** (s
 - [x] `poise?: number` on `EnemyData` — `src/types/rpg-elements.ts:59`, next to `guardBreak?` with the same
       JSDoc shape: default 1; `0.5` = stoic, `2` = glass jaw.
 - [x] Author values in `src/constants/enemies/world-00/index.ts`: `MOSS_GOLEM` ≈ `0.5` (stone, hard to
-      stagger), `SWAMP_FROG` ≈ `1.6` (squishy).
+      stagger), `SWAMP_FROG` ≈ `1.6` (squishy), `BAT` `2.0` (glass jaw), `SMALL_SLIME` `0.6`, `SKELETON` `1.0`.
+      The weakness bonus (`weakTo`) is HP-only, like the preemptive and vulnerable bonuses.
 - [x] `TRAINING_DUMMY` (`src/constants/enemies/training.ts`) — its HP is a `MAX_SAFE_INTEGER` sentinel, so a
       poise of `1` would give it an unbreakable pool. Instead `poise = TRAINING_DUMMY_HP /
       TRAINING_DUMMY_POISE_HP_EQUIVALENT` (400), so it Breaks exactly like a 400-HP enemy would.
