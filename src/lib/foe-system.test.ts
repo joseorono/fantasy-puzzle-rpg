@@ -298,10 +298,57 @@ describe('chase', () => {
     expect(foe2.patrolIndex).toBe(1);
   });
 
-  it('does not re-aggro while walking home, even with the player nearby', () => {
+  /** Walking home from (2, 6) toward a single post at (2, 2); the trailing player never touches it. */
+  function returningFoe(overrides: Partial<FoeRuntime> = {}): FoeRuntime {
     const def = definition({ patrol: [{ row: 2, col: 2 }] });
-    const returning = { ...awakeFoe(def), mode: 'return' as const, x: 6.5 * TILE, y: 2.5 * TILE };
-    const { foe } = simulate(returning, playerAt(2, 9), 0.5);
+    return { ...awakeFoe(def), mode: 'return', x: 6.5 * TILE, y: 2.5 * TILE, ...overrides };
+  }
+  const TRAILING_PLAYER = playerAt(4, 4);
+
+  it('re-notices a player trailing it home', () => {
+    const { foe } = stepFoe(returningFoe(), TRAILING_PLAYER, DT, worldFor());
+    expect(foe.mode).toBe('chase');
+    expect(foe.alertSeconds).toBe(FOE_ALERT_FLASH_SECONDS);
+  });
+
+  it('waits out the re-aggro cooldown after giving up', () => {
+    const returning = returningFoe({ reaggroSeconds: 1 });
+    const early = simulate(returning, TRAILING_PLAYER, 0.5);
+    expect(early.foe.mode).toBe('return');
+
+    const later = simulate(early.foe, TRAILING_PLAYER, 0.6);
+    expect(later.foe.mode).toBe('chase');
+  });
+
+  it('starts the cooldown when it gives up a chase', () => {
+    const foe = { ...awakeFoe(definition(), { leashRadiusTiles: 100, loseSightSeconds: 0.5 }), mode: 'chase' as const };
+    const { foe: after } = simulate(foe, FAR_AWAY, 0.6);
+    expect(after.mode).toBe('return');
+    expect(after.reaggroSeconds).toBeGreaterThan(0);
+  });
+
+  it('ignores a player standing outside the leash on the way home, so it never bounces', () => {
+    const def = definition({
+      patrol: [
+        { row: 2, col: 2 },
+        { row: 2, col: 4 },
+      ],
+    });
+    // Seen (detection 12) but past the leash (4 tiles from home).
+    const foe = { ...awakeFoe(def, { leashRadiusTiles: 4, detectionRadiusTiles: 12 }), mode: 'chase' as const };
+    const player = playerAt(2, 12);
+    let current = simulate(foe, player, 1.2).foe;
+    expect(current.mode).toBe('return');
+
+    for (let elapsed = 0; elapsed < 5 && current.mode === 'return'; elapsed += DT) {
+      current = stepFoe(current, player, DT, worldFor()).foe;
+      expect(current.mode).not.toBe('chase');
+    }
+    expect(current.mode).toBe('patrol');
+  });
+
+  it('does not re-notice the player during the grace period', () => {
+    const { foe } = simulate(returningFoe({ graceSeconds: 1 }), TRAILING_PLAYER, 0.5);
     expect(foe.mode).toBe('return');
   });
 

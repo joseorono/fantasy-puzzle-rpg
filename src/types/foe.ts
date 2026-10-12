@@ -23,6 +23,8 @@ export interface FoeTunables {
   contactDistanceTiles: number;
   /** Shortest interval between path recomputations while chasing, in seconds. */
   repathIntervalSeconds: number;
+  /** Seconds after giving up a chase before a returning FOE can notice the player again. */
+  reaggroCooldownSeconds: number;
 }
 
 /**
@@ -71,6 +73,8 @@ export interface FoeRuntime {
   graceSeconds: number;
   /** While positive, the "!" is shown. */
   alertSeconds: number;
+  /** While positive, a returning FOE cannot re-notice the player (set on giving up a chase). */
+  reaggroSeconds: number;
   /** Contact can fire only once the player has been clear of the FOE since it spawned. */
   isContactArmed: boolean;
 }
