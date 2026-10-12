@@ -798,7 +798,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               items={[
                 { keys: ['Tab'], label: 'map', onClick: canOpenMinimap ? openMinimap : undefined },
                 { keys: ['Esc'], label: 'menu', onClick: openPauseMenu },
-                { keys: ['?'], label: 'tutorial', onClick: () => openPauseMenuTab('tutorial') },
+                { keys: ['H', '?'], label: 'tutorial', onClick: () => openPauseMenuTab('tutorial') },
               ]}
             />
           )}
