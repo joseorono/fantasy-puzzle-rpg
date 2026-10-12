@@ -147,3 +147,31 @@ export const SKELETON_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Badger, the Fairy Forest's area boss
+ */
+export const BADGER_LOOT: LootTable = {
+  equipableItems: [
+    {
+      item: EquipmentItems.find((item) => item.id === 'silver-armor')!,
+      probability: 0.35 as ProbabilityNumber,
+    },
+  ],
+  consumableItems: [
+    {
+      item: ConsumableItems.find((item) => item.id === 'high-potion')!,
+      probability: 1 as ProbabilityNumber,
+    },
+  ],
+  resources: {
+    item: {
+      coins: 300,
+      gold: 1,
+      copper: 6,
+      silver: 3,
+      iron: 6,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
