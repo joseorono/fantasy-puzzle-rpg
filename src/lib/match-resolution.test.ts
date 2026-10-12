@@ -41,7 +41,12 @@ describe('resolveMatchGroups', () => {
 
     expect(result.primaryMatchedType).toBe('blue');
     expect(result.effects).toEqual([
-      { amount: expectedDamage(PARTY, 'blue', 4), isHeal: false, characterId: findByColor(PARTY, 'blue').id },
+      {
+        amount: expectedDamage(PARTY, 'blue', 4),
+        isHeal: false,
+        characterId: findByColor(PARTY, 'blue').id,
+        orbType: 'blue',
+      },
     ]);
     expect(result.cooldownReductions).toEqual([
       { characterId: findByColor(PARTY, 'blue').id, amount: 4 * COOLDOWN_REDUCTION_PER_ORB },
@@ -77,7 +82,7 @@ describe('resolveMatchGroups', () => {
 
     expect(healer.class).toBe('healer');
     expect(result.effects).toEqual([
-      { amount: expectedDamage(PARTY, 'yellow', 3), isHeal: true, characterId: healer.id },
+      { amount: expectedDamage(PARTY, 'yellow', 3), isHeal: true, characterId: healer.id, orbType: 'yellow' },
     ]);
   });
 
@@ -86,7 +91,7 @@ describe('resolveMatchGroups', () => {
 
     expect(result.cooldownReductions).toEqual([]);
     expect(result.effects).toEqual([
-      { amount: expectedDamage(PARTY, 'gray', 4), isHeal: false, characterId: undefined },
+      { amount: expectedDamage(PARTY, 'gray', 4), isHeal: false, characterId: undefined, orbType: 'gray' },
     ]);
     expect(result.guardGain).toBeCloseTo(
       4 *

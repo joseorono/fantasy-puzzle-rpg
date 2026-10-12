@@ -9,6 +9,12 @@ export const ENEMY_STANDBY_MAX_MS = 3000;
  */
 export const PREEMPTIVE_STRIKE_DAMAGE_BONUS = 0.25;
 
+/**
+ * Bonus HP damage when a hit matches one of the enemy's `weakTo` sources (a colour, or
+ * `'ultimate'`), e.g. `0.2` = +20%. Applied once per hit even if both the colour and the kind match.
+ */
+export const WEAKNESS_DAMAGE_BONUS = 0.2;
+
 // ─── Enemy Stagger (a.k.a. "Flinch") ─────────────────────────────────────────
 // Every hit pushes the enemy's next attack back a little, scaled by how hard it lands and
 // reduced by VIT, but hard-capped per attack cycle so you can slow an enemy yet never stunlock

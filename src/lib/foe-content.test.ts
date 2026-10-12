@@ -13,6 +13,21 @@ function maskFor(map: MapDefinition) {
 }
 
 const mapsWithFoes = ALL_MAPS.filter((map) => (map.foes?.length ?? 0) > 0);
+const mapsWithBattleNodes = ALL_MAPS.filter((map) => (map.nodes ?? []).some((node) => node.type === 'Battle'));
+
+describe('authored battle nodes', () => {
+  it.each(mapsWithBattleNodes.map((map) => [map.id, map] as const))(
+    '%s: every one is walkable and has an encounter',
+    (_id, map) => {
+      const mask = maskFor(map);
+      for (const node of map.nodes!.filter((entry) => entry.type === 'Battle')) {
+        const { row, col } = node.position;
+        expect(isMaskWalkable(mask, row, col), `${node.id} at (${row}, ${col}) walkable`).toBe(true);
+        expect(map.encounters?.[node.id], `${node.id} encounter exists`).toBeDefined();
+      }
+    },
+  );
+});
 
 describe('authored FOEs', () => {
   it('at least one map has FOEs (otherwise the per-map checks below are vacuous)', () => {

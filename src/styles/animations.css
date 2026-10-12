@@ -559,6 +559,14 @@
     0 0 8px rgba(247, 231, 198, 0.55);
 }
 
+/* Weakness callout — same pop in muted teal (WEAK_HIT_COLOR), so it never reads as a crit. */
+.stagger-callout--weak {
+  color: #8fd6cf;
+  text-shadow:
+    0 1px 0 #0d2a28,
+    0 0 6px rgba(143, 214, 207, 0.5);
+}
+
 /* Broken enemy — washed out and dazed for the whole stagger window. The tint is static (survives
    reduced motion); only the slow sway is animation. Transform-only + filter, palette-safe. */
 @keyframes enemy-staggered-sway {

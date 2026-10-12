@@ -18,6 +18,7 @@ import { BOMB_REFILL_CHANCE } from '~/constants/board';
 import { GUARD_MAX, POISE_SKILL_MULTIPLIER, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import { weighHitsByAttacker } from '~/lib/flinch-system';
+import { isWeakTo, resolveWeaknessDamage, resolveWeaknessHits } from '~/lib/weakness-system';
 import {
   applyPoiseHits,
   countEnemyBreaks,
@@ -239,7 +240,7 @@ export const damagePartyAtom = atom(
   },
 );
 
-type EnemyHit = { amount: number; characterId?: string };
+type EnemyHit = { amount: number; characterId?: string; orbType?: OrbType };
 
 /** A batched match: every damaging color at once, plus the cascade depth it landed at (0 = the swap). */
 type EnemyHitBatch = { hits: EnemyHit[]; cascadeLevel?: number };
@@ -269,9 +270,10 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | En
   // A hit on a Broken enemy lands in its vulnerable window. Read from the PRE-hit state, so the
   // hit that causes a Break never gets the bonus itself.
   const isStaggered = poiseBefore ? isEnemyStaggered(poiseBefore) : false;
+  const weakness = resolveWeaknessHits(hits, currentState.enemies.find((e) => e.id === selectedId)?.weakTo);
   const preemptiveHits = isPreemptive
-    ? hits.map((h) => ({ ...h, amount: Math.round(h.amount * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS)) }))
-    : hits;
+    ? weakness.hits.map((h) => ({ ...h, amount: Math.round(h.amount * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS)) }))
+    : weakness.hits;
   const finalHits = resolveVulnerableHits(preemptiveHits, isStaggered);
   const finalDamage = finalHits.reduce((sum, h) => sum + h.amount, 0);
   const characterId = finalHits[finalHits.length - 1].characterId;
@@ -317,7 +319,15 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | En
     selectedEnemyId: newSelectedId,
     pendingVictory: allDead,
     totalDamageDealt: (currentState.totalDamageDealt ?? 0) + finalDamage,
-    lastDamage: { amount: finalDamage, target: 'enemy', timestamp, enemyId: selectedId, characterId, hits: finalHits },
+    lastDamage: {
+      amount: finalDamage,
+      target: 'enemy',
+      timestamp,
+      enemyId: selectedId,
+      characterId,
+      hits: finalHits,
+      weakEnemyIds: weakness.isWeak ? [selectedId] : undefined,
+    },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
     enemyPoise,
     lastPoiseBreak,
@@ -851,9 +861,21 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   // Per-target HP damage, once the vulnerable bonus is applied; the popup reads its own entry.
   const amountByEnemyId: Record<string, number> = {};
 
+  const weakEnemyIds: string[] = [];
+  const attackerColor = character.color;
+
   function isStaggeredTarget(enemyId: string): boolean {
     const poise = enemyPoise[enemyId];
     return poise ? isEnemyStaggered(poise) : false;
+  }
+
+  /** HP this Ultimate deals to one target: weakness first, then the vulnerable window. */
+  function resolveLandedAmount(target: EnemyData): number {
+    const isWeak = isWeakTo(target.weakTo, { color: attackerColor, kind: 'ultimate' });
+    if (isWeak) weakEnemyIds.push(target.id);
+    const landed = resolveVulnerableDamage(resolveWeaknessDamage(amount, isWeak), isStaggeredTarget(target.id));
+    amountByEnemyId[target.id] = landed;
+    return landed;
   }
 
   function landPoise(struck: EnemyData) {
@@ -868,11 +890,9 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
 
   if (skill.target === 'enemy') {
     // Damage the selected enemy
-    const landed = resolveVulnerableDamage(amount, isStaggeredTarget(selectedEnemyId));
-    amountByEnemyId[selectedEnemyId] = landed;
     enemies = enemies.map((e) => {
       if (e.id !== selectedEnemyId) return e;
-      return { ...e, currentHp: subtractionWithMin(e.currentHp, landed, 0) };
+      return { ...e, currentHp: subtractionWithMin(e.currentHp, resolveLandedAmount(e), 0) };
     });
 
     // Check if selected enemy just died — auto-select next
@@ -888,12 +908,10 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       gameStatus = 'won';
     }
   } else if (skill.target === 'allEnemy') {
-    // Damage every living enemy, each by its own vulnerable-window amount
+    // Damage every living enemy, each by its own weakness and vulnerable-window amount
     enemies = enemies.map((e) => {
       if (e.currentHp <= 0) return e;
-      const landed = resolveVulnerableDamage(amount, isStaggeredTarget(e.id));
-      amountByEnemyId[e.id] = landed;
-      return { ...e, currentHp: subtractionWithMin(e.currentHp, landed, 0) };
+      return { ...e, currentHp: subtractionWithMin(e.currentHp, resolveLandedAmount(e), 0) };
     });
     for (const struck of enemies) {
       if (hitEnemyIds.includes(struck.id)) landPoise(struck);
@@ -933,7 +951,15 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   let damageDealt = 0;
   if (skill.target === 'enemy') {
     const landed = amountByEnemyId[hitEnemyId];
-    lastDamage = { amount: landed, target: 'enemy', timestamp, enemyId: hitEnemyId, characterId, source: 'skill' };
+    lastDamage = {
+      amount: landed,
+      target: 'enemy',
+      timestamp,
+      enemyId: hitEnemyId,
+      characterId,
+      source: 'skill',
+      weakEnemyIds: weakEnemyIds.length > 0 ? weakEnemyIds : undefined,
+    };
     damageDealt = landed;
   } else if (skill.target === 'allEnemy') {
     lastDamage = {
@@ -944,6 +970,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       characterId,
       source: 'skill',
       amountByEnemyId,
+      weakEnemyIds: weakEnemyIds.length > 0 ? weakEnemyIds : undefined,
     };
     damageDealt = hitEnemyIds.reduce((sum, id) => sum + amountByEnemyId[id], 0);
   }

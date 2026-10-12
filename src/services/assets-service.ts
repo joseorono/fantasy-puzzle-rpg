@@ -87,8 +87,14 @@ export const assetList: string[] = [
   '/assets/enemy-sprites/frogger_map.png',
   '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
+  '/assets/enemy-sprites/monopixelart-skeleton_map.png',
+  '/assets/enemy-sprites/monopixelart-skeleton_sheet.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',
+  '/assets/enemy-sprites/tecopena-bat_map.png',
+  '/assets/enemy-sprites/tecopena-bat_sheet.png',
+  '/assets/enemy-sprites/tecopena-slime_map.png',
+  '/assets/enemy-sprites/tecopena-slime_sheet.png',
 
   // Fonts
   '/assets/fonts/RedWood-5x-narik.png',

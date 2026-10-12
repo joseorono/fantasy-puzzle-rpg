@@ -4,6 +4,12 @@ import type { AdmurinEnemySheet } from './admurin-enemies';
 
 export type OrbType = 'blue' | 'green' | 'purple' | 'yellow' | 'gray';
 
+/** What damage can come from: a matched colour, or any hero's Ultimate. */
+export type DamageKind = 'match' | 'ultimate';
+
+/** What an enemy can be weak to: a colour (whoever lands it), or Ultimates as a whole. */
+export type WeaknessSource = OrbType | 'ultimate';
+
 export type CharacterClass = 'warrior' | 'rogue' | 'mage' | 'healer';
 
 export type StatType = 'pow' | 'vit' | 'spd';
@@ -89,6 +95,8 @@ export interface EnemyData extends BaseStats {
    * `2` = glass jaw. The pool itself is derived from max HP — see `~/lib/poise-system`.
    */
   poise?: number;
+  /** Takes `WEAKNESS_DAMAGE_BONUS` extra HP damage from any of these, applied once per hit. */
+  weakTo?: WeaknessSource[];
   /**
    * Luck bias applied to equipment-drop rarity rolls; default 0 (neutral odds).
    * Higher values skew this enemy's drops toward rarer tiers. See `rollRarity`.

@@ -51,6 +51,11 @@
   animation-duration: var(--admurin-cycle-ms, 600ms);
 }
 
+/* Small sheets are scaled UP into the card, where smoothing only blurs. */
+.admurin-enemy-sprite__strip--pixelated {
+  image-rendering: pixelated;
+}
+
 .admurin-enemy-sprite__strip--loop {
   animation-name: admurin-enemy-strip;
   animation-iteration-count: infinite;

@@ -1,3 +1,4 @@
+import { WEAK_HIT_COLOR } from '~/constants/ui';
 import { cn } from '~/lib/utils';
 import type { DamageDisplayProps } from '~/types/components';
 
@@ -8,6 +9,8 @@ function getNumeralColor(type: DamageDisplayProps['type']): string {
       return '#9bf0a6';
     case 'critical':
       return '#ffd47a';
+    case 'weak':
+      return WEAK_HIT_COLOR;
     case 'damage':
     default:
       return '#ff8a78';
