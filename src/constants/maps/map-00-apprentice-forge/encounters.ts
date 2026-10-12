@@ -32,6 +32,12 @@ export const APPRENTICE_FORGE_ENCOUNTERS: Record<string, EncounterDefinition> = 
       { ...SKELETON, id: 'skeleton-2', name: 'Skeleton B' },
     ],
   },
+  apprentice_forge_battle_5: {
+    enemies: [
+      { ...SKELETON, id: 'skeleton-1' },
+      { ...SMALL_SLIME, id: 'small-slime-1' },
+    ],
+  },
 
   // ─── Roaming FOEs (keys match ids in foes.ts) ───────────────────────
   apprentice_forge_foe_1: {

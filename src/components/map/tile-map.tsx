@@ -28,6 +28,7 @@ import { useMapRenderer } from '~/hooks/use-map-renderer';
 import { useFoeSimulation } from '~/hooks/use-foe-simulation';
 import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
+import { canPlayerOccupy, floodOpenTiles, getUnbeatenGateTiles } from '~/lib/map-gates';
 import { clientToMapPoint } from '~/lib/pointer-movement';
 import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
 import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
@@ -134,6 +135,9 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
+  // Where this visit began. Ground reachable from here (or the map's spawn) stays open past gates,
+  // so arriving from the far side of one never strands the player.
+  const [visitStartTile] = useState(charPosition);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
@@ -196,23 +200,28 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     return buildWalkableMask(mapData, walkableLayers, { surfaceLayers, ignoredGids });
   }, [mapData, walkableLayers, surfaceLayers]);
 
-  // Check if a position is walkable (walkable ground, and no blocking node)
-  const isRoadTile = React.useCallback(
-    (row: number, col: number): boolean => {
-      if (!isMaskWalkable(walkableMask, row, col)) return false;
-
-      // Check if there's an interactive node at this position
-      const node = findNodeAt(map.nodes, row, col);
-      if (node && node.blocksMovement) {
-        // Node blocks movement - check if it's completed
-        const isCompleted = isMapNodeCompleted(node, completedDungeons, mapProgressState);
-        return isCompleted; // Can only walk through if completed
-      }
-
-      return true;
-    },
-    [walkableMask, mapProgressState, completedDungeons, map.nodes],
+  // Gates: an unbeaten blocking node can be stepped onto, but the ground past it is sealed.
+  const isUnbeatenGateAt = (row: number, col: number): boolean => {
+    const node = findNodeAt(map.nodes, row, col);
+    return node !== undefined && node.blocksMovement && !isMapNodeCompleted(node, completedDungeons, mapProgressState);
+  };
+  const gateTiles = getUnbeatenGateTiles(map.nodes, (node) =>
+    isMapNodeCompleted(node, completedDungeons, mapProgressState),
   );
+  const openTiles =
+    gateTiles.length > 0
+      ? floodOpenTiles(walkableMask, gateTiles, [
+          { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x },
+          visitStartTile,
+        ])
+      : null;
+
+  const isRoadTile = (row: number, col: number): boolean =>
+    canPlayerOccupy(walkableMask, openTiles, isUnbeatenGateAt(row, col), row, col);
+
+  // FOEs never cross an unbeaten gate, but roam freely on either side of it.
+  const isFoeWalkable = (row: number, col: number): boolean =>
+    isMaskWalkable(walkableMask, row, col) && !isUnbeatenGateAt(row, col);
 
   // Roaming enemies step inside the movement loop (see `onFrame`) and draw on the canvas.
   // The chest loot panel holds them: the player can't act under it, so nothing may creep up.
@@ -220,7 +229,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     map,
     tileSize,
     walkableMask,
-    isWalkable: isRoadTile,
+    isWalkable: isFoeWalkable,
     defeatedIds: mapProgressState.foesDefeated,
     isHeld: currentLoot !== null,
     showDebug: Boolean(debug) && DEBUG_MODE,

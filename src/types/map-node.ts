@@ -21,11 +21,8 @@ export interface InteractiveMapNode {
   id: string;
   /** Type of node */
   type: MapNodeType;
-  /** Position on the map grid */
-  position: {
-    row: number;
-    col: number;
-  };
+  /** Position on the map grid; several tiles place copies that share this node's id and progress */
+  position: GridPosition | GridPosition[];
   /** Display name for the node */
   name: string;
   /** Optional dialogue scene key to trigger */

@@ -3,7 +3,8 @@ import { ALL_MAPS, MAP_REGISTRY } from '~/constants/maps';
 import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
 import { buildWalkableMask, isMaskWalkable } from './tilemap-collision';
 import { createTilePathfinder } from './foe-pathfinding';
-import { findFloorLootAt, findNodeAt } from './map-content';
+import { findDialogueTriggerAt, findFloorLootAt, findNodeAt, getNodePositions } from './map-content';
+import { getUnbeatenGateTiles } from './map-gates';
 import type { MapDefinition } from '~/types/map';
 
 /** The same mask the map builds at runtime (`tile-map.tsx`). */
@@ -22,12 +23,33 @@ describe('authored battle nodes', () => {
     (_id, map) => {
       const mask = maskFor(map);
       for (const node of map.nodes!.filter((entry) => entry.type === 'Battle')) {
-        const { row, col } = node.position;
-        expect(isMaskWalkable(mask, row, col), `${node.id} at (${row}, ${col}) walkable`).toBe(true);
+        for (const { row, col } of getNodePositions(node)) {
+          expect(isMaskWalkable(mask, row, col), `${node.id} at (${row}, ${col}) walkable`).toBe(true);
+        }
         expect(map.encounters?.[node.id], `${node.id} encounter exists`).toBeDefined();
       }
     },
   );
+});
+
+describe('authored chests and floor loot', () => {
+  it.each(ALL_MAPS.map((map) => [map.id, map] as const))('%s: chests carry loot', (_id, map) => {
+    for (const node of (map.nodes ?? []).filter((entry) => entry.type === 'Treasure')) {
+      expect(node.lootPayload, `${node.id} lootPayload`).toBeDefined();
+    }
+  });
+
+  it('Apprentice Forge: every floor loot spot is walkable and off nodes and triggers', () => {
+    const forge = MAP_REGISTRY['map-00-apprentice-forge'];
+    const mask = maskFor(forge);
+    expect(forge.floorLoot?.length ?? 0).toBeGreaterThan(0);
+    for (const spot of forge.floorLoot ?? []) {
+      const { row, col } = spot.position;
+      expect(isMaskWalkable(mask, row, col), `${spot.id} walkable`).toBe(true);
+      expect(findNodeAt(forge.nodes, row, col), `${spot.id} off nodes`).toBeUndefined();
+      expect(findDialogueTriggerAt(forge.dialogueTriggers, row, col), `${spot.id} off triggers`).toBeUndefined();
+    }
+  });
 });
 
 describe('authored map exits', () => {
@@ -62,6 +84,9 @@ describe('authored FOEs', () => {
   describe.each(mapsWithFoes.map((map) => [map.id, map] as const))('%s', (_id, map) => {
     const mask = maskFor(map);
     const isWalkable = (row: number, col: number) => isMaskWalkable(mask, row, col);
+    // As at runtime on a fresh save: FOEs never cross an unbeaten gate.
+    const gates = new Set(getUnbeatenGateTiles(map.nodes, () => false).map(({ row, col }) => `${row},${col}`));
+    const isFoeWalkable = (row: number, col: number) => isWalkable(row, col) && !gates.has(`${row},${col}`);
     const pathfinder = createTilePathfinder(mask.width, mask.height);
 
     it.each(map.foes!.map((foe) => [foe.id, foe] as const))('%s is fully authored', (_foeId, foe) => {
@@ -83,7 +108,7 @@ describe('authored FOEs', () => {
       for (let index = 0; index < foe.patrol.length; index++) {
         const from = foe.patrol[index];
         const to = foe.patrol[(index + 1) % foe.patrol.length];
-        expect(pathfinder.findPath(from, to, isWalkable), `leg ${index} reachable`).not.toBeNull();
+        expect(pathfinder.findPath(from, to, isFoeWalkable), `leg ${index} reachable past gates`).not.toBeNull();
       }
     });
   });

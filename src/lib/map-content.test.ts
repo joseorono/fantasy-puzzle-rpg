@@ -4,6 +4,7 @@ import {
   findFloorLootAt,
   findDialogueTriggerAt,
   getDialogueTriggerSeenKey,
+  getNodePositions,
   isNodeCompletedInProgress,
 } from './map-content';
 import { createInitialMapProgressState } from '~/stores/slices/map-progress';
@@ -164,5 +165,29 @@ describe('getDialogueTriggerSeenKey', () => {
 
   it('keeps maps apart when they reuse a scene key', () => {
     expect(getDialogueTriggerSeenKey('map-00', 'intro')).not.toBe(getDialogueTriggerSeenKey('map-01', 'intro'));
+  });
+});
+
+describe('nodes on several tiles', () => {
+  const gate: InteractiveMapNode = {
+    id: 'gate',
+    type: 'Battle',
+    position: [
+      { row: 5, col: 1 },
+      { row: 5, col: 2 },
+    ],
+    name: 'Gate',
+    blocksMovement: true,
+  };
+
+  it('are found on every one of their tiles, as the same node', () => {
+    expect(findNodeAt([gate], 5, 1)).toBe(gate);
+    expect(findNodeAt([gate], 5, 2)).toBe(gate);
+    expect(findNodeAt([gate], 5, 3)).toBeUndefined();
+  });
+
+  it('list their positions in order, and a single position becomes a one-item list', () => {
+    expect(getNodePositions(gate)).toEqual(gate.position);
+    expect(getNodePositions(makeNode('solo', 1, 2))).toEqual([{ row: 1, col: 2 }]);
   });
 });

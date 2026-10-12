@@ -3,7 +3,8 @@ import { TUTORIAL_TOPICS, TUTORIAL_TOPIC_ORDER } from '~/constants/tutorial';
 import { MAP_REGISTRY } from '~/constants/maps';
 import { buildTutorialScene } from './tutorial';
 import { buildWalkableMask, isMaskWalkable } from './tilemap-collision';
-import { findFloorLootAt, findNodeAt } from './map-content';
+import { findFloorLootAt, findNodeAt, getNodePositions } from './map-content';
+import { floodOpenTiles, getUnbeatenGateTiles } from './map-gates';
 import { FOE_DEFAULT_TUNABLES } from '~/constants/foe';
 
 const FORGE = MAP_REGISTRY['map-00-apprentice-forge'];
@@ -87,5 +88,52 @@ describe('Apprentice Forge tutorial events', () => {
         }
       }
     }
+  });
+});
+
+describe('Apprentice Forge gates', () => {
+  const mask = forgeMask();
+  const spawn = { row: FORGE.defaultPlayerPosition.y, col: FORGE.defaultPlayerPosition.x };
+  const isOpen = (open: Uint8Array, row: number, col: number) => open[row * mask.width + col] === 1;
+  const gateIds = (FORGE.nodes ?? []).filter((node) => node.blocksMovement).map((node) => node.id);
+  const openWith = (beaten: readonly string[]) =>
+    floodOpenTiles(
+      mask,
+      getUnbeatenGateTiles(FORGE.nodes, (node) => beaten.includes(node.id)),
+      [spawn],
+    );
+  const exit = FORGE.nodes!.find((node) => node.type === 'NextMap')!;
+  const [exitTile] = getNodePositions(exit);
+  const scrapCache = { row: 11, col: 2 };
+
+  it('seals the exit and the Scrap Cache on a fresh save', () => {
+    const open = openWith([]);
+    expect(isOpen(open, exitTile.row, exitTile.col), 'exit').toBe(false);
+    expect(isOpen(open, scrapCache.row, scrapCache.col), 'Scrap Cache').toBe(false);
+  });
+
+  it('still seals the exit when only the side gate is beaten', () => {
+    expect(isOpen(openWith(['apprentice_forge_battle_2']), exitTile.row, exitTile.col)).toBe(false);
+  });
+
+  it('opens the exit once Cinder Watch and Bone Sentries are beaten', () => {
+    const open = openWith(['apprentice_forge_battle_5', 'apprentice_forge_battle_4']);
+    expect(isOpen(open, exitTile.row, exitTile.col)).toBe(true);
+    expect(isOpen(open, scrapCache.row, scrapCache.col)).toBe(false);
+  });
+
+  it('opens every walkable tile once every gate is beaten', () => {
+    const open = openWith(gateIds);
+    for (let row = 0; row < mask.height; row++) {
+      for (let col = 0; col < mask.width; col++) {
+        if (isMaskWalkable(mask, row, col)) expect(isOpen(open, row, col), `(${row}, ${col})`).toBe(true);
+      }
+    }
+  });
+
+  it('never seals a tutorial lesson that plays before the first gate', () => {
+    const open = openWith([]);
+    const beforeGates = (FORGE.dialogueTriggers ?? []).filter((trigger) => trigger.scene !== 'tutorial-towns');
+    for (const trigger of beforeGates) expect(isOpen(open, trigger.row, trigger.col), trigger.scene).toBe(true);
   });
 });

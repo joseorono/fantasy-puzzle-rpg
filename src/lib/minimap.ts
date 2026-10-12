@@ -4,6 +4,7 @@ import type { MapDefinition } from '~/types/map';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
 import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
+import { getNodePositions } from '~/lib/map-content';
 import {
   MINIMAP_CHROME_HEIGHT_PX,
   MINIMAP_CHROME_WIDTH_PX,
@@ -142,14 +143,18 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   const markers: MinimapMarker[] = [];
 
   for (const node of map.nodes ?? []) {
-    markers.push({
-      kind: 'node',
-      id: `node-${node.id}`,
-      row: node.position.row,
-      col: node.position.col,
-      isDone: status.isNodeCompleted(node),
-      nodeType: node.type,
-      symbol: MAP_NODE_MARKER_STYLES[node.type].whiteSymbol,
+    const isDone = status.isNodeCompleted(node);
+    getNodePositions(node).forEach(({ row, col }, index) => {
+      markers.push({
+        kind: 'node',
+        // Copies of a node get their own key: the id is a React key.
+        id: index === 0 ? `node-${node.id}` : `node-${node.id}-${index}`,
+        row,
+        col,
+        isDone,
+        nodeType: node.type,
+        symbol: MAP_NODE_MARKER_STYLES[node.type].whiteSymbol,
+      });
     });
   }
 
