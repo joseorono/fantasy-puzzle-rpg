@@ -8,9 +8,15 @@ const keyHintPillVariants = cva('key-hint-pill pixel-font', {
       sm: 'key-hint-pill--sm',
       md: 'key-hint-pill--md',
     },
+    variant: {
+      default: '',
+      // Opaque plate for busy, low-contrast backdrops such as the map's tile art.
+      map: 'key-hint-pill--map',
+    },
   },
   defaultVariants: {
     size: 'md',
+    variant: 'default',
   },
 });
 
@@ -68,12 +74,12 @@ function KeyHintContent({ item }: { item: KeyHintItem }) {
  * Groups with an `onClick` render as buttons; their clicks don't bubble, so a pill
  * inside a click-to-close backdrop fires its action once.
  */
-export function KeyHintPill({ items, separator = '·', size, className, ...rest }: KeyHintPillProps) {
+export function KeyHintPill({ items, separator = '·', size, variant, className, ...rest }: KeyHintPillProps) {
   const isInteractive = items.some((item) => item.onClick);
 
   return (
     <span
-      className={cn(keyHintPillVariants({ size }), isInteractive && 'key-hint-pill--interactive', className)}
+      className={cn(keyHintPillVariants({ size, variant }), isInteractive && 'key-hint-pill--interactive', className)}
       {...rest}
     >
       {items.map((item, index) => {

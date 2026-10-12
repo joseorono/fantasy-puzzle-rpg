@@ -798,6 +798,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           {!isMinimapOpen && (
             <KeyHintPill
               size="sm"
+              variant="map"
               className="map-key-hint"
               items={[
                 { keys: ['Tab'], label: 'map', onClick: canOpenMinimap ? openMinimap : undefined },
