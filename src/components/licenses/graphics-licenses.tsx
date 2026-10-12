@@ -84,6 +84,23 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Badger and Frog enemy sprites, by Admurin&nbsp;
+          <a href="https://admurin.itch.io">https://admurin.itch.io</a>
+        </p>
+
+        <p>
+          Pixel Art Bat and Pixel Art Slime enemy sprites, by tecopena&nbsp;
+          <a href="https://tecopena.itch.io/pixel-art-bat">https://tecopena.itch.io/pixel-art-bat</a>
+          &nbsp;
+          <a href="https://tecopena.itch.io/pixel-art-slime">https://tecopena.itch.io/pixel-art-slime</a>
+        </p>
+
+        <p>
+          Pixel Art Skeletons Pack, by MonoPixelArt&nbsp;
+          <a href="https://monopixelart.itch.io/skeletons-pack">https://monopixelart.itch.io/skeletons-pack</a>
+        </p>
+
+        <p>
           Medieval Buttons, CC0 1.0, by pzUH&nbsp;
           <a href="https://opengameart.org/content/medieval-game-button-pack">
             https://opengameart.org/content/medieval-game-button-pack

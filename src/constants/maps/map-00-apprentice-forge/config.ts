@@ -2,6 +2,9 @@ import type { MapDefinition } from '~/types/map';
 import { newMap } from './tiled-data';
 import { TILESET_FORGE } from '../tileset-data';
 import { APPRENTICE_FORGE_FLOOR_LOOT } from './floor-loot';
+import { APPRENTICE_FORGE_NODES } from './nodes';
+import { APPRENTICE_FORGE_ENCOUNTERS } from './encounters';
+import { APPRENTICE_FORGE_FOES } from './foes';
 
 export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   id: 'map-00-apprentice-forge',
@@ -17,5 +20,8 @@ export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   // 32px tiles: keep the same 40px body the 16px maps draw.
   characterBodyHeightTiles: 1.25,
   tiledData: newMap,
+  nodes: APPRENTICE_FORGE_NODES,
   floorLoot: APPRENTICE_FORGE_FLOOR_LOOT,
+  encounters: APPRENTICE_FORGE_ENCOUNTERS,
+  foes: APPRENTICE_FORGE_FOES,
 };

@@ -1,5 +1,5 @@
 import type { EncounterDefinition } from '~/types/map-node';
-import { GIANT_FROG, MOSS_GOLEM, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { BAT, GIANT_FROG, MOSS_GOLEM, SMALL_SLIME, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 
 /**
  * Enemy encounter compositions for each fight node on the Fairy Forest.
@@ -14,7 +14,11 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
     ],
   },
   fairy_forest_battle_2: {
-    enemies: [MOSS_GOLEM, { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog' }],
+    enemies: [
+      { ...BAT, id: 'bat-1', name: 'Bat A' },
+      { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog' },
+      { ...BAT, id: 'bat-2', name: 'Bat B' },
+    ],
   },
   fairy_forest_battle_3: {
     enemies: [
@@ -25,8 +29,9 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
   },
   fairy_forest_battle_4: {
     enemies: [
-      { ...MOSS_GOLEM, id: 'moss-golem-1', name: 'Moss Golem A' },
-      { ...MOSS_GOLEM, id: 'moss-golem-2', name: 'Moss Golem B' },
+      { ...SMALL_SLIME, id: 'small-slime-1', name: 'Small Slime A' },
+      { ...BAT, id: 'bat-1' },
+      { ...SMALL_SLIME, id: 'small-slime-2', name: 'Small Slime B' },
     ],
   },
   fairy_forest_battle_5: {
@@ -47,7 +52,7 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
     enemies: [
       { ...MOSS_GOLEM, id: 'moss-golem-1', name: 'Moss Golem A' },
       { ...MOSS_GOLEM, id: 'moss-golem-2', name: 'Moss Golem B' },
-      { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog' },
+      { ...BAT, id: 'bat-1' },
     ],
   },
   fairy_forest_battle_8: {
@@ -89,5 +94,17 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
   },
   fairy_forest_foe_3: {
     enemies: [{ ...GIANT_FROG, id: 'giant-frog-1' }],
+  },
+  fairy_forest_foe_4: {
+    enemies: [
+      { ...BAT, id: 'bat-1', name: 'Bat A' },
+      { ...BAT, id: 'bat-2', name: 'Bat B' },
+    ],
+  },
+  fairy_forest_foe_5: {
+    enemies: [
+      { ...SMALL_SLIME, id: 'small-slime-1', name: 'Small Slime A' },
+      { ...SMALL_SLIME, id: 'small-slime-2', name: 'Small Slime B' },
+    ],
   },
 };

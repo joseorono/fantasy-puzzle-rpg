@@ -93,3 +93,57 @@ export const GIANT_FROG_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Bat — trash-tier, a few coins
+ */
+export const BAT_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 10,
+      gold: 0,
+      copper: 0,
+      silver: 0,
+      iron: 0,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Small Slime — sturdy, so it pays a little more than its size suggests
+ */
+export const SMALL_SLIME_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 25,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Skeleton
+ */
+export const SKELETON_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 30,
+      gold: 0,
+      copper: 0,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};

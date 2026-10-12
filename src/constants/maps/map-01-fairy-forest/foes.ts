@@ -2,6 +2,8 @@ import type { FoeDefinition } from '~/types/foe';
 
 const STONE_GOLEM_MAP_SPRITE = '/assets/enemy-sprites/stone_golem_map.png';
 const GIANT_FROG_MAP_SPRITE = '/assets/enemy-sprites/frogger_map.png';
+const BAT_MAP_SPRITE = '/assets/enemy-sprites/tecopena-bat_map.png';
+const SLIME_MAP_SPRITE = '/assets/enemy-sprites/tecopena-slime_map.png';
 
 /**
  * Roaming enemies on the Fairy Forest trail, one guarding each far chest. Every waypoint
@@ -43,5 +45,27 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
     ],
     // A giant notices the player from farther out than the golems do.
     overrides: { detectionRadiusTiles: 8 },
+  },
+  {
+    id: 'fairy_forest_foe_4',
+    name: 'Bats',
+    mapSprite: BAT_MAP_SPRITE,
+    // The open glade around the Rootbound Den.
+    patrol: [
+      { row: 25, col: 52 },
+      { row: 33, col: 52 },
+      { row: 33, col: 62 },
+    ],
+  },
+  {
+    id: 'fairy_forest_foe_5',
+    name: 'Slimes',
+    mapSprite: SLIME_MAP_SPRITE,
+    // The southern meadow between the two lower battles.
+    patrol: [
+      { row: 63, col: 45 },
+      { row: 63, col: 60 },
+      { row: 66, col: 50 },
+    ],
   },
 ];
