@@ -27,7 +27,7 @@ export interface OwnedEquipmentInstance extends EquipmentInstance {
 
 /**
  * Determine the equipment slot for an item by its ID.
- * Weapons have forClass set; armor items don't (or contain 'armor'/'plate').
+ * Weapon ids contain sword/bow/staff/scepter/rod; armor ids contain 'armor'/'plate'.
  */
 export function getEquipmentSlot(itemId: string): EquipmentSlot | null {
   if (
@@ -35,7 +35,8 @@ export function getEquipmentSlot(itemId: string): EquipmentSlot | null {
     itemId.includes('broadsword') ||
     itemId.includes('bow') ||
     itemId.includes('staff') ||
-    itemId.includes('scepter')
+    itemId.includes('scepter') ||
+    itemId.includes('rod')
   ) {
     return 'weapon';
   }

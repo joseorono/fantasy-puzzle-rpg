@@ -58,6 +58,11 @@ describe('getEquipmentSlot', () => {
     expect(getEquipmentSlot('golden-scepter')).toBe('weapon');
   });
 
+  it('returns weapon for rod items', () => {
+    expect(getEquipmentSlot('iron-rod')).toBe('weapon');
+    expect(getEquipmentSlot('golden-holy-rod')).toBe('weapon');
+  });
+
   it('returns armor for armor items', () => {
     expect(getEquipmentSlot('iron-armor')).toBe('armor');
     expect(getEquipmentSlot('golden-plate-armor')).toBe('armor');
@@ -106,14 +111,24 @@ describe('canEquip', () => {
     expect(canEquip(healer, armor)).toBe(true);
   });
 
-  it('prevents healer from equipping weapons (no healer weapons exist)', () => {
+  it('allows healer to equip rods', () => {
     const healer = makeCharacter({ id: 'healer', class: 'healer', color: 'yellow' });
-    const sword = findEquipmentItem('iron-sword')!;
-    const bows = findEquipmentItem('iron-short-bow')!;
-    const staff = findEquipmentItem('iron-staff')!;
-    expect(canEquip(healer, sword)).toBe(false);
-    expect(canEquip(healer, bows)).toBe(false);
-    expect(canEquip(healer, staff)).toBe(false);
+    const rod = findEquipmentItem('iron-rod')!;
+    expect(canEquip(healer, rod)).toBe(true);
+  });
+
+  it('keeps rods healer-only and other weapons off the healer', () => {
+    const warrior = makeCharacter({ class: 'warrior' });
+    const rogue = makeCharacter({ id: 'rogue', class: 'rogue', color: 'green' });
+    const mage = makeCharacter({ id: 'mage', class: 'mage', color: 'purple' });
+    const healer = makeCharacter({ id: 'healer', class: 'healer', color: 'yellow' });
+    const rod = findEquipmentItem('iron-rod')!;
+    expect(canEquip(warrior, rod)).toBe(false);
+    expect(canEquip(rogue, rod)).toBe(false);
+    expect(canEquip(mage, rod)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-sword')!)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-short-bow')!)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-staff')!)).toBe(false);
   });
 });
 

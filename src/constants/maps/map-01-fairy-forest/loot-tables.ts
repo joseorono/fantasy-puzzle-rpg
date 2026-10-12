@@ -11,6 +11,10 @@ export const MOSSY_CHEST_LOOT: LootTable = {
       item: EquipmentItems.find((item) => item.id === 'bronze-armor')!,
       probability: 1 as ProbabilityNumber,
     },
+    {
+      item: EquipmentItems.find((item) => item.id === 'bronze-rod')!,
+      probability: 1 as ProbabilityNumber,
+    },
   ],
   consumableItems: [
     {
