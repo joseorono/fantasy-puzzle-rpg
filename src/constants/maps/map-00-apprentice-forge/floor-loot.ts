@@ -18,4 +18,6 @@ export const APPRENTICE_FORGE_FLOOR_LOOT: FloorLootSpot[] = [
   createFloorLootSpot('apprentice_forge_loot_7', 25, 5, { coins: 40, copper: 2 }),
   createFloorLootSpot('apprentice_forge_loot_8', 28, 16, { coins: 45, iron: 2 }),
   createFloorLootSpot('apprentice_forge_loot_9', 23, 39, { coins: 50, copper: 3 }),
+  // The Quench Pit pocket's other corner, opposite the Quench Stash.
+  createFloorLootSpot('apprentice_forge_loot_10', 29, 6, { coins: 35, copper: 2 }),
 ];

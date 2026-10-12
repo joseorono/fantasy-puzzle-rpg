@@ -104,7 +104,7 @@ describe('Apprentice Forge gates', () => {
     );
   const exit = FORGE.nodes!.find((node) => node.type === 'NextMap')!;
   const [exitTile] = getNodePositions(exit);
-  const scrapCache = { row: 11, col: 2 };
+  const scrapCache = { row: 10, col: 2 };
 
   it('seals the exit and the Scrap Cache on a fresh save', () => {
     const open = openWith([]);

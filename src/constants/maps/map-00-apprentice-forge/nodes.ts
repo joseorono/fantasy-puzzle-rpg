@@ -59,7 +59,10 @@ export const APPRENTICE_FORGE_NODES: InteractiveMapNode[] = [
   {
     id: 'apprentice_forge_battle_3',
     type: 'Battle',
-    position: { row: 28, col: 7 },
+    position: [
+      { row: 28, col: 7 },
+      { row: 28, col: 6 },
+    ],
     name: 'Quench Pit',
     blocksMovement: false,
     description: 'Something gelatinous has settled in the quenching water',
@@ -69,7 +72,7 @@ export const APPRENTICE_FORGE_NODES: InteractiveMapNode[] = [
   {
     id: 'apprentice_forge_treasure_1',
     type: 'Treasure',
-    position: { row: 11, col: 2 },
+    position: { row: 10, col: 2 },
     name: 'Scrap Cache',
     blocksMovement: false,
     description: 'A tool chest buried under the scrap, its lock rusted through',
