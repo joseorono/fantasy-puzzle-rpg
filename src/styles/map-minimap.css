@@ -189,7 +189,7 @@
   height: 84px;
   opacity: 0.9;
   pointer-events: none;
-  image-rendering: auto;
+  image-rendering: auto !important;
 }
 
 /* ─── Pins ─────────────────────────────────────────────────────────────── */
