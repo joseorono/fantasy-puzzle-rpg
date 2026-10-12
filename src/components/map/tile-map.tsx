@@ -483,10 +483,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A FOE battle still pending when the map mounts was never won (a save loaded mid-fight):
-  // forget it so the FOE stays alive. Victories are resolved by the rewards screen.
+  // A battle still pending when the map mounts was never won (a save loaded mid-fight): forget
+  // it so the FOE stays alive and the node stays open. Victories are resolved by the rewards screen.
   useEffect(() => {
     mapProgressActions.setPendingFoeBattle(null);
+    mapProgressActions.setPendingNodeBattle(null);
     // Once per mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -521,8 +522,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
   /**
    * Start a battle for the given encounter: set up the atoms, play a cover transition with the
-   * map frozen, then navigate under it. A fought node is marked complete once covered, so its
-   * check mark never shows during the transition.
+   * map frozen, then navigate under it. A fought node is only marked pending here; the rewards
+   * screen completes it on victory.
    */
   async function startBattle(nodeId: string, foughtNode?: InteractiveMapNode) {
     const encounter = map.encounters?.[nodeId];
@@ -531,10 +532,10 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       return;
     }
 
+    if (foughtNode) mapProgressActions.setPendingNodeBattle({ nodeType: foughtNode.type, nodeId: foughtNode.id });
     setupBattle({ enemies: encounter.enemies, party: partyMembers });
     setIsTransitioning(true);
     await enterBattle();
-    if (foughtNode) mapProgressActions.completeNode(foughtNode.type, foughtNode.id);
     routerActions.goToBattleDemo({ enemyId: nodeId, location: displayMapName });
   }
 

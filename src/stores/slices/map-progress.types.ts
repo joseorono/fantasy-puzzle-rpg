@@ -14,6 +14,12 @@ export interface NodeProgress {
   [nodeId: string]: boolean;
 }
 
+/** A map node whose battle is in flight. */
+export interface PendingNodeBattle {
+  nodeType: MapNodeType;
+  nodeId: string;
+}
+
 /**
  * Map progress state structure
  */
@@ -30,6 +36,8 @@ export interface MapProgressState {
   foesDefeated: NodeProgress;
   /** The FOE whose battle is in flight; resolved by the rewards screen, cleared by the map on mount. */
   pendingFoeBattleId: string | null;
+  /** The node whose battle is in flight; completed by the rewards screen, cleared by the map on mount. */
+  pendingNodeBattle: PendingNodeBattle | null;
 }
 
 /**
@@ -44,8 +52,10 @@ export interface MapProgressActions {
   markFoeDefeated: (foeId: string) => void;
   /** Remember (or forget, with `null`) which FOE's battle is about to start. */
   setPendingFoeBattle: (foeId: string | null) => void;
-  /** Mark the pending FOE defeated and clear it; a no-op when nothing is pending. */
-  resolvePendingFoeBattle: () => void;
+  /** Remember (or forget, with `null`) which node's battle is about to start. */
+  setPendingNodeBattle: (battle: PendingNodeBattle | null) => void;
+  /** The pending battle was won: retire its FOE or complete its node, then clear both. */
+  resolvePendingBattle: () => void;
 }
 
 /**
