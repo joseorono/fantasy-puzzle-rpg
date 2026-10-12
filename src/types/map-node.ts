@@ -3,6 +3,8 @@ import type { EnemyData } from './rpg-elements';
 import type { Resources } from './resources';
 import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
+import type { MapId } from './map';
+import type { GridPosition } from './geometry';
 
 // ─── General Map Types ────────────────────────────────────────────────
 
@@ -38,6 +40,17 @@ export interface InteractiveMapNode {
   dungeonId?: string;
   /** Inline dungeon definition for a Dungeon node — takes precedence over `dungeonId` when both are set */
   dungeon?: DungeonDefinition;
+  /** Where a NextMap / PreviousMap node leads */
+  destination?: MapDestination;
+}
+
+/**
+ * The far end of a map exit. `arrival` should sit beside the paired exit node, not on it,
+ * so its menu doesn't pop open the moment the player lands.
+ */
+export interface MapDestination {
+  mapId: MapId;
+  arrival: GridPosition;
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { InteractiveMapNode, FloorLootSpot } from '~/types/map-node';
-import type { DialogueTrigger } from '~/types/map';
+import type { DialogueTrigger, MapId } from '~/types/map';
 import type { MapNodeType, MapProgressState, NodeProgress } from '~/stores/slices/map-progress.types';
 
 /**
@@ -50,6 +50,17 @@ export function findDialogueTriggerAt(
   return triggers?.find((trigger) => trigger.row === row && trigger.col === col);
 }
 
+/**
+ * The persisted key of a dialogue trigger's event: every tile that plays the same scene on
+ * the same map shares it, so walking any one of them consumes the whole event.
+ *
+ * @param mapId The owning map's id.
+ * @param scene The trigger's scene key.
+ */
+export function getDialogueTriggerSeenKey(mapId: MapId, scene: string): string {
+  return `${mapId}:${scene}`;
+}
+
 /** The `MapProgressState` fields that are per-id completion records. */
 type NodeProgressKey = {
   [K in keyof MapProgressState]: MapProgressState[K] extends NodeProgress ? K : never;
@@ -63,6 +74,8 @@ const NODE_PROGRESS_KEYS: Record<MapNodeType, NodeProgressKey> = {
   Town: 'townsVisited',
   Treasure: 'treasuresFound',
   Mystery: 'mysteriesSolved',
+  NextMap: 'exitsUsed',
+  PreviousMap: 'exitsUsed',
 };
 
 /**

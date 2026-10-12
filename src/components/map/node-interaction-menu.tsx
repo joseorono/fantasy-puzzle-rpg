@@ -6,6 +6,7 @@ import { FrostyRpgIcon, type FrostyRpgIconName } from '~/components/sprite-icons
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { cn } from '~/lib/utils';
+import { MAP_EXIT_NODE_TYPES, MAP_NODE_TYPE_LABELS } from '~/constants/map';
 
 interface NodeInteractionMenuProps {
   node: InteractiveMapNode;
@@ -14,6 +15,7 @@ interface NodeInteractionMenuProps {
   onEnter?: () => void;
   onRandomize?: () => void;
   onOpenChest?: () => void;
+  onTravel?: () => void;
   onViewDialogue?: () => void;
   characterPosition: Position;
   isClosing?: boolean;
@@ -26,6 +28,8 @@ const NODE_ICONS: Record<MapNodeType, FrostyRpgIconName> = {
   Dungeon: 'skull',
   Treasure: 'parchment',
   Mystery: 'pouch',
+  NextMap: 'copperKey',
+  PreviousMap: 'copperKey',
 };
 
 /**
@@ -38,6 +42,7 @@ export function NodeInteractionMenu({
   onEnter,
   onRandomize,
   onOpenChest,
+  onTravel,
   onViewDialogue,
   characterPosition,
   isClosing: externalIsClosing = false,
@@ -59,6 +64,7 @@ export function NodeInteractionMenu({
   const canInteract = node.type === 'Mystery';
   // The remix is a post-clear replay mode — it only unlocks once the dungeon has been beaten.
   const canRandomize = node.type === 'Dungeon' && isCompleted;
+  const canTravel = MAP_EXIT_NODE_TYPES.includes(node.type);
 
   // Position tooltip to the right of character, or left if too close to edge
   const tooltipWidth = 280;
@@ -93,19 +99,21 @@ export function NodeInteractionMenu({
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="nim-title pixel-font">{node.name}</h2>
-          <p className="nim-type pixel-font">{node.type}</p>
+          <p className="nim-type pixel-font">{MAP_NODE_TYPE_LABELS[node.type]}</p>
         </div>
       </div>
 
-      {/* Completion status */}
-      <div className="nim-status">
-        <span className="nim-status-label pixel-font">Completed:</span>
-        <span
-          className={`nim-status-value pixel-font ${isCompleted ? 'nim-status-value--true' : 'nim-status-value--false'}`}
-        >
-          {isCompleted ? 'Yes' : 'No'}
-        </span>
-      </div>
+      {/* Completion status — an exit is a way through, not something to finish */}
+      {!canTravel && (
+        <div className="nim-status">
+          <span className="nim-status-label pixel-font">Completed:</span>
+          <span
+            className={`nim-status-value pixel-font ${isCompleted ? 'nim-status-value--true' : 'nim-status-value--false'}`}
+          >
+            {isCompleted ? 'Yes' : 'No'}
+          </span>
+        </div>
+      )}
 
       {/* Description */}
       {node.description && (
@@ -161,6 +169,13 @@ export function NodeInteractionMenu({
           <ToffecButton variant="tan" size="sm" className="nim-btn" onClick={() => handleAction(onOpenChest)}>
             <FrostyRpgIcon name="sealedScroll" size={16} />
             Open
+          </ToffecButton>
+        )}
+
+        {canTravel && onTravel && (
+          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={() => handleAction(onTravel)}>
+            <FrostyRpgIcon name="copperKey" size={16} />
+            Travel
           </ToffecButton>
         )}
 

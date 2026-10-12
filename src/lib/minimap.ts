@@ -165,7 +165,7 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   }
 
   for (const trigger of map.dialogueTriggers ?? []) {
-    if (status.isTriggerVisited(trigger.row, trigger.col)) continue;
+    if (trigger.autoPlay || status.isTriggerVisited(trigger.row, trigger.col)) continue;
     markers.push({
       kind: 'dialogueTrigger',
       id: `trigger-${trigger.row}-${trigger.col}`,
@@ -180,7 +180,16 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
 }
 
 /** Order the legend lists node types in, regardless of their order on the map. */
-const LEGEND_ORDER: readonly MapNodeType[] = ['Town', 'Dungeon', 'Battle', 'Boss', 'Treasure', 'Mystery'];
+const LEGEND_ORDER: readonly MapNodeType[] = [
+  'Town',
+  'Dungeon',
+  'Battle',
+  'Boss',
+  'Treasure',
+  'Mystery',
+  'NextMap',
+  'PreviousMap',
+];
 
 /**
  * The node types present on the overview, in a fixed order, with their symbols.
