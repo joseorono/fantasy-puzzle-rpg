@@ -4,7 +4,7 @@ import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
 import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
-import { BADGER, GIANT_FROG, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { BADGER, BAT, GIANT_FROG, SKELETON, SMALL_SLIME, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 import { cn } from '~/lib/utils';
@@ -63,6 +63,34 @@ const BATTLE_DEMOS: {
       { ...SWAMP_FROG, id: 'swamp-frog-1' },
       { ...GIANT_FROG, id: 'giant-frog-1' },
     ],
+  },
+  {
+    id: 'bat-slime',
+    label: 'Bats + Slime (tecopena)',
+    className: 'bg-fuchsia-700 hover:bg-fuchsia-800',
+    location: 'Forest',
+    title: 'Fast glass-jaw bats (weak to green) next to a slow, sturdy slime (weak to purple).',
+    enemies: [
+      { ...BAT, id: 'bat-1', name: 'Bat A' },
+      { ...SMALL_SLIME, id: 'small-slime-1' },
+      { ...BAT, id: 'bat-2', name: 'Bat B' },
+    ],
+  },
+  {
+    id: 'skeleton',
+    label: 'Skeleton (MonoPixelArt)',
+    className: 'bg-stone-600 hover:bg-stone-700',
+    location: 'Forge',
+    title: 'Sword skeleton with a slash and a quick lunge; weak to blue.',
+    enemies: [{ ...SKELETON, id: 'skeleton-1' }],
+  },
+  {
+    id: 'stone-golem',
+    label: 'Stone Golem (weak to Ultimates)',
+    className: 'bg-slate-600 hover:bg-slate-700',
+    location: 'Forest',
+    title: 'The roaming FOE: only Ultimates exploit its weakness.',
+    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
   },
 ];
 
