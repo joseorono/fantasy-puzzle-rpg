@@ -147,7 +147,7 @@ export function buildMarkerList(
   }
 
   for (const trigger of map.dialogueTriggers ?? []) {
-    if (status.isTriggerVisited(trigger.row, trigger.col)) continue;
+    if (trigger.autoPlay || status.isTriggerVisited(trigger.row, trigger.col)) continue;
     markers.push({
       kind: 'dialogueTrigger',
       ...getFloatingOrigin(trigger.row, trigger.col, tileSize, scale),

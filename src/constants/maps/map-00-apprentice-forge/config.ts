@@ -5,6 +5,7 @@ import { APPRENTICE_FORGE_FLOOR_LOOT } from './floor-loot';
 import { APPRENTICE_FORGE_NODES } from './nodes';
 import { APPRENTICE_FORGE_ENCOUNTERS } from './encounters';
 import { APPRENTICE_FORGE_FOES } from './foes';
+import { APPRENTICE_FORGE_DIALOGUE_SCENES, APPRENTICE_FORGE_DIALOGUE_TRIGGERS } from './dialogue';
 
 export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   id: 'map-00-apprentice-forge',
@@ -13,7 +14,8 @@ export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   walkableLayers: ['road'],
   visibleLayers: ['lava', 'details', 'statues', 'walls', 'road', 'chests, barrils and doors'],
   occlusionLayers: ['walls', 'statues'],
-  defaultPlayerPosition: { x: 35, y: 24 },
+  // The door room, top-left; the tutorial events lead out of it.
+  defaultPlayerPosition: { x: 4, y: 3 },
   debug: true,
   footstepVolume: 0.95,
   footstepPitch: 1.08,
@@ -24,4 +26,6 @@ export const MAP_00_APPRENTICE_FORGE: MapDefinition = {
   floorLoot: APPRENTICE_FORGE_FLOOR_LOOT,
   encounters: APPRENTICE_FORGE_ENCOUNTERS,
   foes: APPRENTICE_FORGE_FOES,
+  dialogueTriggers: APPRENTICE_FORGE_DIALOGUE_TRIGGERS,
+  dialogueScenes: APPRENTICE_FORGE_DIALOGUE_SCENES,
 };

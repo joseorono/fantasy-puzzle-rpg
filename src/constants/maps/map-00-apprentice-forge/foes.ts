@@ -36,11 +36,13 @@ export const APPRENTICE_FORGE_FOES: FoeDefinition[] = [
     id: 'apprentice_forge_foe_3',
     name: 'Skeleton',
     mapSprite: SKELETON_MAP_SPRITE,
-    // The central crossing between the west corridor and the east wing.
+    // The central crossing between the west corridor and the east wing. The west post stays
+    // out of detection range of the tutorial corridor, but close enough to the Bats' range
+    // that fleeing one north can run you into the other.
     patrol: [
       { row: 16, col: 20 },
       { row: 16, col: 30 },
-      { row: 14, col: 8 },
+      { row: 15, col: 12 },
     ],
   },
 ];

@@ -13,7 +13,13 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MapMinimap } from './map-minimap';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
-import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from '~/lib/map-content';
+import {
+  findNodeAt,
+  findFloorLootAt,
+  findDialogueTriggerAt,
+  getDialogueTriggerSeenKey,
+  isNodeCompletedInProgress,
+} from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
@@ -70,6 +76,7 @@ import { footstepSystem } from '~/services/footstep-system';
 import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/footsteps';
 import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
+import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -128,7 +135,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
@@ -144,7 +150,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [popupAnchor, setPopupAnchor] = useState<Position | null>(null);
   // True while a cover transition plays before leaving the map: movement stays frozen underneath it.
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { enterBattle, enterTown } = useViewTransitions();
+  const { enterBattle, enterTown, travelBetweenMaps } = useViewTransitions();
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -168,7 +174,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
-  const { isOpen: isPauseMenuOpen, open: openPauseMenu } = usePauseMenu();
+  const { isOpen: isPauseMenuOpen, open: openPauseMenu, openTab: openPauseMenuTab } = usePauseMenu();
   const { autosave } = useSaveGameActions();
 
   // Load tileset image
@@ -245,19 +251,24 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const checkDialogueTrigger = React.useCallback(
     (row: number, col: number) => {
       const trigger = findDialogueTriggerAt(map.dialogueTriggers, row, col);
+      if (!trigger) return;
 
-      if (trigger) {
-        const triggerKey = `${row},${col}`;
+      // Read fresh: the tiles of one event sit side by side, and a stale render must not replay it.
+      const seenKey = getDialogueTriggerSeenKey(map.id, trigger.scene);
+      if (useGameStore.getState().mapProgress.dialogueTriggersSeen[seenKey]) return;
 
-        // Only trigger if not already visited
-        if (!visitedTriggers.has(triggerKey)) {
-          console.log('Dialogue trigger activated at:', { row, col });
-          setPendingDialogue(trigger.scene);
-          setShowTriggerModal(true);
-        }
+      if (trigger.autoPlay) {
+        mapProgressActions.markDialogueTriggerSeen(seenKey);
+        setDialogueKey((k) => k + 1);
+        setActiveDialogue(trigger.scene);
+        return;
       }
+
+      setPendingDialogue(trigger.scene);
+      setShowTriggerModal(true);
     },
-    [visitedTriggers, map.dialogueTriggers],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [map.id, map.dialogueTriggers],
   );
 
   // Check if character is standing on an interactive node
@@ -328,7 +339,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const markerStatus: MarkerStatus = {
     isNodeCompleted: (node) => isMapNodeCompleted(node, completedDungeons, mapProgressState),
     isFloorLootCollected: (lootId) => floorLootProgressState[map.id]?.[lootId] === true,
-    isTriggerVisited: (row, col) => visitedTriggers.has(`${row},${col}`),
+    isTriggerVisited: (row, col) => {
+      const trigger = findDialogueTriggerAt(map.dialogueTriggers, row, col);
+      if (!trigger) return false;
+      return mapProgressState.dialogueTriggersSeen[getDialogueTriggerSeenKey(map.id, trigger.scene)] === true;
+    },
   };
   const markers = buildMarkerList(map, tileSize, markerStatus, charPosition);
 
@@ -494,8 +509,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
-      const triggerKey = `${charPosition.row},${charPosition.col}`;
-      setVisitedTriggers((prev) => new Set(prev).add(triggerKey));
+      mapProgressActions.markDialogueTriggerSeen(getDialogueTriggerSeenKey(map.id, pendingDialogue));
       setDialogueKey((k) => k + 1);
       setActiveDialogue(pendingDialogue);
     }
@@ -559,6 +573,29 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       townName: node.name,
       onLeaveCallback: () => routerActions.goBack(),
     });
+  }
+
+  /** Take a map exit: climb under the stairs cover, then land beside the far end's paired exit. */
+  async function travelToMap(node: InteractiveMapNode) {
+    const { destination } = node;
+    if (!destination) {
+      console.warn(`Exit node "${node.id}" has no destination.`);
+      return;
+    }
+
+    setIsTransitioning(true);
+    await travelBetweenMaps();
+    mapProgressActions.completeNode(node.type, node.id);
+    mapProgressActions.setCharacterPosition(destination.mapId, destination.arrival);
+    routerActions.goToMap({ mapId: destination.mapId }, { history: 'replace' });
+  }
+
+  function handleNodeTravel() {
+    if (!currentNode) return;
+    const exitNode = currentNode;
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+    void travelToMap(exitNode);
   }
 
   // Node interaction handlers
@@ -761,6 +798,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               items={[
                 { keys: ['Tab'], label: 'map', onClick: canOpenMinimap ? openMinimap : undefined },
                 { keys: ['Esc'], label: 'menu', onClick: openPauseMenu },
+                { keys: ['?'], label: 'tutorial', onClick: () => openPauseMenuTab('tutorial') },
               ]}
             />
           )}
@@ -792,6 +830,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
           onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}
           onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
+          onTravel={MAP_EXIT_NODE_TYPES.includes(currentNode.type) ? handleNodeTravel : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={popupAnchor ?? getCharacterScreenPosition()}
         />

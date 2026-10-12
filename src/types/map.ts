@@ -25,6 +25,8 @@ export interface DialogueTrigger {
   row: number;
   col: number;
   scene: string;
+  /** Plays at once, with no "investigate?" prompt and no floating marker. For tutorials. */
+  autoPlay?: boolean;
 }
 
 /**

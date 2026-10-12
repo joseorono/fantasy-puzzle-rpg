@@ -32,6 +32,8 @@ const MAP_NODE_TYPE_COVERAGE = {
   Dungeon: true,
   Treasure: true,
   Mystery: true,
+  NextMap: true,
+  PreviousMap: true,
 } as const satisfies Record<MapNodeType, true>;
 const mapNodeTypeSchema = z.enum(Object.keys(MAP_NODE_TYPE_COVERAGE) as [MapNodeType, ...MapNodeType[]]);
 
@@ -102,6 +104,9 @@ export const saveGameStateSchema = z.object({
     townsVisited: nodeProgressSchema,
     treasuresFound: nodeProgressSchema,
     mysteriesSolved: nodeProgressSchema,
+    // Defaulted: saves written before map exits and persisted dialogue events lack both keys.
+    exitsUsed: nodeProgressSchema.default({}),
+    dialogueTriggersSeen: nodeProgressSchema.default({}),
     characterPositions: z.partialRecord(mapIdSchema, gridPositionSchema),
     // Defaulted: saves written before FOEs existed lack both keys.
     foesDefeated: nodeProgressSchema.default({}),

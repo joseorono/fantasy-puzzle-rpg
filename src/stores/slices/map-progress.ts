@@ -14,6 +14,8 @@ export const createInitialMapProgressState = (): MapProgressState => ({
   townsVisited: {},
   treasuresFound: {},
   mysteriesSolved: {},
+  exitsUsed: {},
+  dialogueTriggersSeen: {},
   characterPositions: {},
   foesDefeated: {},
   pendingFoeBattleId: null,
@@ -40,6 +42,10 @@ function markNodeCompleted(progress: MapProgressState, nodeType: MapNodeType, no
       break;
     case 'Mystery':
       progress.mysteriesSolved[nodeId] = true;
+      break;
+    case 'NextMap':
+    case 'PreviousMap':
+      progress.exitsUsed[nodeId] = true;
       break;
   }
 }
@@ -88,6 +94,15 @@ export const createMapProgressSlice = (
           },
           false,
           'mapProgress/markFoeDefeated',
+        ),
+
+      markDialogueTriggerSeen: (key) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.dialogueTriggersSeen[key] = true;
+          },
+          false,
+          'mapProgress/markDialogueTriggerSeen',
         ),
 
       setPendingFoeBattle: (foeId) =>

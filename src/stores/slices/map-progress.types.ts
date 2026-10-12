@@ -5,7 +5,7 @@ import type { MapId } from '../../types/map';
 /**
  * Map node types
  */
-export type MapNodeType = 'Town' | 'Battle' | 'Boss' | 'Dungeon' | 'Treasure' | 'Mystery';
+export type MapNodeType = 'Town' | 'Battle' | 'Boss' | 'Dungeon' | 'Treasure' | 'Mystery' | 'NextMap' | 'PreviousMap';
 
 /**
  * Progress tracking for individual nodes
@@ -30,6 +30,10 @@ export interface MapProgressState {
   townsVisited: NodeProgress;
   treasuresFound: NodeProgress;
   mysteriesSolved: NodeProgress;
+  /** Next Map / Previous Map nodes travelled through. */
+  exitsUsed: NodeProgress;
+  /** Dialogue trigger events already played, by `getDialogueTriggerSeenKey`. */
+  dialogueTriggersSeen: NodeProgress;
   /** Where the player stood on each map, so every map resumes at its own spot. */
   characterPositions: Partial<Record<MapId, GridPosition>>;
   /** Roaming enemies (FOEs) beaten for good, by FOE id. */
@@ -50,6 +54,8 @@ export interface MapProgressActions {
   setCharacterPosition: (mapId: MapId, position: GridPosition) => void;
   /** Retire a FOE for good. */
   markFoeDefeated: (foeId: string) => void;
+  /** Remember that a dialogue trigger event played, so it never fires again. */
+  markDialogueTriggerSeen: (key: string) => void;
   /** Remember (or forget, with `null`) which FOE's battle is about to start. */
   setPendingFoeBattle: (foeId: string | null) => void;
   /** Remember (or forget, with `null`) which node's battle is about to start. */

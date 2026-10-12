@@ -96,6 +96,9 @@ export const ANIMATION_CONFIG: Record<GlobalAnimationType, AnimationConfig> = {
 /** Played when walking into a town from the map. */
 export const TOWN_ENTRY_ANIMATION: GlobalAnimationType = 'town-arrival';
 
+/** Played when taking a Next Map / Previous Map exit. */
+export const MAP_TRAVEL_ANIMATION: GlobalAnimationType = 'stairs-ascent';
+
 /** Pool for entering combat: one is drawn per encounter, never the same one twice in a row. */
 export const BATTLE_TRANSITION_ANIMATIONS: readonly GlobalAnimationType[] = [
   'battle-swirl',

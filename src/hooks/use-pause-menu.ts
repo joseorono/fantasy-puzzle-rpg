@@ -1,5 +1,10 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { isPauseMenuOpenAtom, activeMenuTabAtom, pauseMenuZoneAtom } from '~/stores/pause-menu-atoms';
+import {
+  isPauseMenuOpenAtom,
+  activeMenuTabAtom,
+  pauseMenuZoneAtom,
+  PAUSE_MENU_HIDDEN_TABS,
+} from '~/stores/pause-menu-atoms';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
 import { useCurrentView } from '~/stores/game-store';
@@ -22,14 +27,20 @@ export function usePauseMenu() {
   // Blocked on certain views, and never opened over an active dialogue.
   const isDisabled = DISABLED_VIEWS.includes(currentView) || isDialogueActive;
 
-  function open() {
+  /** Open the menu on a given tab. A hidden tab has no sidebar entry, so its content takes the keyboard. */
+  function openTab(tab: PauseMenuTab) {
     if (isDisabled) return;
     // Drop focus from whichever button opened the menu (mouse clicks leave focus behind),
     // so a later Enter can't re-activate a control now hidden behind the overlay.
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    setActiveTab('items');
-    setZone('sidebar');
+    setActiveTab(tab);
+    setZone(PAUSE_MENU_HIDDEN_TABS.includes(tab) ? 'content' : 'sidebar');
     setIsOpen(true);
+  }
+
+  // Takes no arguments, so it can be handed straight to an onClick.
+  function open() {
+    openTab('items');
   }
 
   function close() {
@@ -54,5 +65,5 @@ export function usePauseMenu() {
     setZone('sidebar');
   }
 
-  return { isOpen, isDisabled, activeTab, open, close, toggle, selectTab };
+  return { isOpen, isDisabled, activeTab, open, openTab, close, toggle, selectTab };
 }

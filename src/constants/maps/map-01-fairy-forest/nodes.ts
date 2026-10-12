@@ -8,6 +8,15 @@ import { MOSSY_CHEST_LOOT, WILLOW_HOLLOW_CHEST_LOOT, FAIRY_CACHE_LOOT, THORNWOOD
 export const FAIRY_FOREST_NODES: InteractiveMapNode[] = [
   // ─── Spawn clearing ─────────────────────────────────────────────────
   {
+    id: 'fairy_forest_previous_map',
+    type: 'PreviousMap',
+    position: { row: 39, col: 32 },
+    name: 'Forge Stairs',
+    blocksMovement: false,
+    description: 'The stairs back down to the Apprentice Forge',
+    destination: { mapId: 'map-00-apprentice-forge', arrival: { row: 24, col: 37 } },
+  },
+  {
     id: 'fairy_forest_treasure_1',
     type: 'Treasure',
     position: { row: 36, col: 23 },

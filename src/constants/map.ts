@@ -122,4 +122,29 @@ export const MAP_NODE_MARKER_STYLES: Record<MapNodeType, MapNodeMarkerStyle> = {
     whiteSymbol: 'question',
     plate: { fill: '#6e508c', highlight: '#946cbd', shade: '#47345b' },
   },
+  NextMap: {
+    symbol: 'cross',
+    whiteSymbol: 'cross',
+    plate: { fill: '#8c4632', highlight: '#bd5f44', shade: '#5b2e21' },
+  },
+  PreviousMap: {
+    symbol: 'cross',
+    whiteSymbol: 'cross',
+    plate: { fill: '#32737d', highlight: '#449ba8', shade: '#214b51' },
+  },
 };
+
+/** How each node type is named to the player: the node menu subtitle and the overview legend. */
+export const MAP_NODE_TYPE_LABELS: Record<MapNodeType, string> = {
+  Battle: 'Battle',
+  Boss: 'Boss',
+  Town: 'Town',
+  Dungeon: 'Dungeon',
+  Treasure: 'Treasure',
+  Mystery: 'Mystery',
+  NextMap: 'Next Map',
+  PreviousMap: 'Previous Map',
+};
+
+/** Node types that travel to another map. */
+export const MAP_EXIT_NODE_TYPES: readonly MapNodeType[] = ['NextMap', 'PreviousMap'];

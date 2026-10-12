@@ -1,5 +1,5 @@
 import { useGlobalAnimation } from '~/components/global-animations-system';
-import { BATTLE_TRANSITION_ANIMATIONS, TOWN_ENTRY_ANIMATION } from '~/constants/animation-system';
+import { BATTLE_TRANSITION_ANIMATIONS, MAP_TRAVEL_ANIMATION, TOWN_ENTRY_ANIMATION } from '~/constants/animation-system';
 
 /**
  * Cover transitions played before a route change, JRPG style. Each resolves once the screen is
@@ -18,5 +18,6 @@ export function useViewTransitions() {
     /** A random pick from `BATTLE_TRANSITION_ANIMATIONS`, never the same one twice in a row. */
     enterBattle: () => triggerFromPool(BATTLE_TRANSITION_ANIMATIONS),
     enterTown: () => trigger(TOWN_ENTRY_ANIMATION),
+    travelBetweenMaps: () => trigger(MAP_TRAVEL_ANIMATION),
   };
 }

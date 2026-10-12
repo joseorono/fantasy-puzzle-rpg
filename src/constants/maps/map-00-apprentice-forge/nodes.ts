@@ -32,9 +32,19 @@ export const APPRENTICE_FORGE_NODES: InteractiveMapNode[] = [
   {
     id: 'apprentice_forge_battle_4',
     type: 'Battle',
-    position: { row: 4, col: 4 },
+    // Guards the way into the exit hall.
+    position: { row: 25, col: 27 },
     name: 'Bone Sentries',
     blocksMovement: false,
     description: 'Two skeletons still stand guard over a forge long gone cold',
+  },
+  {
+    id: 'apprentice_forge_next_map',
+    type: 'NextMap',
+    position: { row: 24, col: 38 },
+    name: 'Forge Stairs',
+    blocksMovement: false,
+    description: 'Worn steps climb toward daylight and the smell of moss',
+    destination: { mapId: 'map-01-fairy-forest', arrival: { row: 39, col: 34 } },
   },
 ];
