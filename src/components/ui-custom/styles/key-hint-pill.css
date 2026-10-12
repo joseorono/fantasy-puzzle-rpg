@@ -133,7 +133,9 @@
   --khp-map-cap-hover: rgba(92, 28, 40, 0.9);
 
   isolation: isolate;
-  padding: 0.5rem 1.35rem 0.55rem;
+  /* The art carries more transparent margin above its frame than below, so the maroon
+     centre sits ~0.7px under the box centre; the extra top padding follows it. */
+  padding: 0.6rem 2rem 0.5rem;
   color: var(--khp-map-text);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
   background: none;
@@ -176,6 +178,8 @@
   border: 1px solid var(--khp-map-gold);
   border-bottom: 2px solid var(--khp-map-gold-shade);
   border-radius: 3px;
+  /* Evens out the 1px/2px borders so the key sits on the label's line. */
+  padding-top: 1px;
 }
 
 .key-hint-pill--map .key-hint-pill__item--clickable:hover,
@@ -183,13 +187,18 @@
   color: var(--khp-map-text-hover);
 }
 
+/* No lift here: the key stays on the label's line, and the gold trim marks the hover. */
 .key-hint-pill--map .key-hint-pill__item--clickable:hover .key-hint-pill__key,
 .key-hint-pill--map .key-hint-pill__item--clickable:focus-visible .key-hint-pill__key {
+  transform: none;
   background: var(--khp-map-cap-hover);
   border-color: var(--khp-map-gold-hover);
   border-bottom-color: var(--khp-map-gold-shade-hover);
 }
 
+/* Pressed: the shade row collapses; the padding swap keeps the text in place. */
 .key-hint-pill--map .key-hint-pill__item--clickable:active .key-hint-pill__key {
+  transform: none;
   border-bottom-width: 1px;
+  padding-top: 0;
 }
