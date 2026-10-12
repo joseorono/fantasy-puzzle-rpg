@@ -132,7 +132,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
-  const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
+  const [pendingFightNode, setPendingFightNode] = useState<InteractiveMapNode | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
@@ -512,18 +512,19 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     setActiveDialogue(null);
 
     // If a fight was pending after dialogue, start it now
-    if (pendingFightNodeId) {
-      const nodeId = pendingFightNodeId;
-      setPendingFightNodeId(null);
-      void startBattle(nodeId);
+    if (pendingFightNode) {
+      const node = pendingFightNode;
+      setPendingFightNode(null);
+      void startBattle(node.id, node);
     }
   }
 
   /**
    * Start a battle for the given encounter: set up the atoms, play a cover transition with the
-   * map frozen, then navigate under it.
+   * map frozen, then navigate under it. A fought node is marked complete once covered, so its
+   * check mark never shows during the transition.
    */
-  async function startBattle(nodeId: string) {
+  async function startBattle(nodeId: string, foughtNode?: InteractiveMapNode) {
     const encounter = map.encounters?.[nodeId];
     if (!encounter) {
       console.warn('No encounter found for node:', nodeId);
@@ -533,6 +534,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     setupBattle({ enemies: encounter.enemies, party: partyMembers });
     setIsTransitioning(true);
     await enterBattle();
+    if (foughtNode) mapProgressActions.completeNode(foughtNode.type, foughtNode.id);
     routerActions.goToBattleDemo({ enemyId: nodeId, location: displayMapName });
   }
 
@@ -546,11 +548,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
   /** Walk into a town: checkpoint, cover transition with the map frozen, then the hub. */
   async function walkIntoTown(node: InteractiveMapNode) {
+    setIsTransitioning(true);
+    await enterTown();
     mapProgressActions.completeNode(node.type, node.id);
     // Reaching a town is a checkpoint — snapshot before the player starts spending.
     autosave();
-    setIsTransitioning(true);
-    await enterTown();
     routerActions.goToTownHub({
       ...DEFAULT_TOWN_HUB_DATA,
       townName: node.name,
@@ -563,23 +565,20 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     if (!currentNode) return;
     console.log('Starting fight with:', currentNode.name);
 
-    // Mark node as completed (rewards screen can re-check if needed)
-    mapProgressActions.completeNode(currentNode.type, currentNode.id);
-
     // Close menu
     setShowNodeMenu(false);
     setCurrentNode(null);
 
     // If the node has a pre-fight dialogue, play it first
     if (currentNode.dialogueScene && map.dialogueScenes?.[currentNode.dialogueScene]) {
-      setPendingFightNodeId(currentNode.id);
+      setPendingFightNode(currentNode);
       setDialogueKey((k) => k + 1);
       setActiveDialogue(currentNode.dialogueScene);
       return;
     }
 
     // No dialogue — go straight to battle
-    void startBattle(currentNode.id);
+    void startBattle(currentNode.id, currentNode);
   }
 
   function handleNodeEnter() {
