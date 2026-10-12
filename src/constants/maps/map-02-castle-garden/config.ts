@@ -1,6 +1,7 @@
 import type { MapDefinition } from '~/types/map';
 import { map02CastleGardenTiledData } from './tiled-data';
 import { TILESET_CASTLE_GARDEN } from '../tileset-data';
+import { CASTLE_GARDEN_NODES } from './nodes';
 
 export const MAP_02_CASTLE_GARDEN: MapDefinition = {
   id: 'map-02-castle-garden',
@@ -32,4 +33,5 @@ export const MAP_02_CASTLE_GARDEN: MapDefinition = {
   footstepVolume: 0.85,
   footstepPitch: 1,
   tiledData: map02CastleGardenTiledData,
+  nodes: CASTLE_GARDEN_NODES,
 };
