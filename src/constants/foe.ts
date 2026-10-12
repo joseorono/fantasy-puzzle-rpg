@@ -49,6 +49,12 @@ export const FOE_PATH_NEIGHBOUR_OFFSETS: readonly (readonly [number, number])[] 
   [0, 1],
 ];
 
+/**
+ * A line-of-sight segment whose next X and Y tile crossings are this close (in segment
+ * parameter `t`) passes exactly through a grid corner, so both side tiles must be walkable.
+ */
+export const FOE_LOS_CORNER_EPSILON = 1e-9;
+
 /** The player must be this many contact distances away before contact re-arms. */
 export const FOE_CONTACT_REARM_RATIO = 1.5;
 

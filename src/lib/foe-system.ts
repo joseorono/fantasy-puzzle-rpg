@@ -16,6 +16,7 @@ import {
   FOE_DEFAULT_TUNABLES,
   FOE_FACING_EPSILON_PX,
 } from '~/constants/foe';
+import { smoothPath } from './foe-pathfinding';
 
 /**
  * Roaming-enemy (FOE) behaviour as pure functions over a `FoeRuntime` value.
@@ -158,8 +159,12 @@ export function advanceAlongPath(
   return { point: { x, y }, path: index === 0 ? path : path.slice(index), movedX, arrived: index >= path.length };
 }
 
+/** A tile route to `target`, straightened so the FOE walks any angle where the way is clear. */
 function findPathFrom(foe: FoeRuntime, target: GridPosition, world: FoeWorld): GridPosition[] | null {
-  return world.pathfinder.findPath(pointToTile(foe, world.tileSize), target, world.isWalkable, world.pathNodeBudget);
+  const { tileSize } = world;
+  const path = world.pathfinder.findPath(pointToTile(foe, tileSize), target, world.isWalkable, world.pathNodeBudget);
+  if (path === null) return null;
+  return smoothPath({ x: foe.x / tileSize, y: foe.y / tileSize }, path, world.isWalkable);
 }
 
 function startChase(foe: FoeRuntime): FoeRuntime {

@@ -264,6 +264,18 @@ describe('chase', () => {
     expect(foe.repathSeconds).toBeCloseTo(FOE_DEFAULT_TUNABLES.repathIntervalSeconds, 5);
   });
 
+  it('cuts diagonally toward a player across open ground instead of walking an L', () => {
+    const foe = { ...awakeFoe(), mode: 'chase' as const };
+    const { foe: after } = simulate(foe, playerAt(4, 8), 0.3);
+    const movedX = after.x - foe.x;
+    const movedY = after.y - foe.y;
+
+    expect(movedX).toBeGreaterThan(0);
+    expect(movedY).toBeGreaterThan(0);
+    // Heading along the straight line to the player: about 1 row down per 3 columns across.
+    expect(movedY / movedX).toBeCloseTo(2 / 6, 1);
+  });
+
   it('paths around walls rather than through them', () => {
     // Home above the wall, player directly below it.
     const def = definition({ patrol: [{ row: 4, col: 15 }] });

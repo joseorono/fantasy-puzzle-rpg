@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTilePathfinder } from './foe-pathfinding';
+import { createTilePathfinder, hasLineOfSight, smoothPath } from './foe-pathfinding';
 
 /**
  * Builds an `isWalkable` predicate from an ASCII grid.
@@ -96,5 +96,70 @@ describe('createTilePathfinder', () => {
       { row: 0, col: 1 },
       { row: 0, col: 2 },
     ]);
+  });
+});
+
+/** Tile centre in tile units, as `hasLineOfSight` and `smoothPath` take points. */
+function centre(row: number, col: number) {
+  return { x: col + 0.5, y: row + 0.5 };
+}
+
+describe('hasLineOfSight', () => {
+  const OPEN = ['.....', '.....', '.....', '.....', '.....'];
+
+  it('sees across an open field at any angle', () => {
+    const isWalkable = gridWalkable(OPEN);
+    expect(hasLineOfSight(centre(0, 0), centre(4, 4), isWalkable)).toBe(true);
+    expect(hasLineOfSight(centre(0, 0), centre(1, 4), isWalkable)).toBe(true);
+  });
+
+  it('is blocked by a wall tile on the segment', () => {
+    const isWalkable = gridWalkable(['.....', '.....', '..#..', '.....', '.....']);
+    expect(hasLineOfSight(centre(0, 0), centre(4, 4), isWalkable)).toBe(false);
+  });
+
+  it('never squeezes through a corner between two diagonal walls', () => {
+    const isWalkable = gridWalkable(['.#', '#.']);
+    expect(hasLineOfSight(centre(0, 0), centre(1, 1), isWalkable)).toBe(false);
+  });
+
+  it('runs along a wall edge without touching it', () => {
+    const isWalkable = gridWalkable(['.....', '#####']);
+    expect(hasLineOfSight(centre(0, 0), centre(0, 4), isWalkable)).toBe(true);
+  });
+
+  it('is blocked when the end tile itself is blocked', () => {
+    const isWalkable = gridWalkable(['...#']);
+    expect(hasLineOfSight(centre(0, 0), centre(0, 3), isWalkable)).toBe(false);
+  });
+});
+
+describe('smoothPath', () => {
+  it('collapses an open-field route into a single straight leg to the goal', () => {
+    const rows = ['......', '......', '......', '......', '......', '......'];
+    const { finder, isWalkable } = pathfinderFor(rows);
+    const path = finder.findPath({ row: 0, col: 0 }, { row: 5, col: 5 }, isWalkable)!;
+
+    expect(smoothPath(centre(0, 0), path, isWalkable)).toEqual([{ row: 5, col: 5 }]);
+  });
+
+  it('keeps only the turns needed to get around a wall, all walkable, ending on the goal', () => {
+    const rows = ['......', '.####.', '......'];
+    const { finder, isWalkable } = pathfinderFor(rows);
+    const path = finder.findPath({ row: 0, col: 2 }, { row: 2, col: 3 }, isWalkable)!;
+    const smoothed = smoothPath(centre(0, 2), path, isWalkable);
+
+    expect(smoothed.length).toBeLessThan(path.length);
+    expect(smoothed[smoothed.length - 1]).toEqual({ row: 2, col: 3 });
+    let anchor = centre(0, 2);
+    for (const tile of smoothed) {
+      expect(isWalkable(tile.row, tile.col)).toBe(true);
+      expect(hasLineOfSight(anchor, centre(tile.row, tile.col), isWalkable)).toBe(true);
+      anchor = centre(tile.row, tile.col);
+    }
+  });
+
+  it('returns an empty path unchanged', () => {
+    expect(smoothPath(centre(0, 0), [], () => true)).toEqual([]);
   });
 });
