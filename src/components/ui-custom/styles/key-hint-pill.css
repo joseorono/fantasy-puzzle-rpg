@@ -51,6 +51,62 @@
   margin-left: 0.15rem;
 }
 
+/* ─── Clickable groups (items with an onClick) ─────────────────────────── */
+
+/* Wins over a caller's `pointer-events: none` layout class. */
+.key-hint-pill--interactive {
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+}
+
+.key-hint-pill--interactive:hover {
+  opacity: 1;
+}
+
+.key-hint-pill__item--clickable {
+  margin: -0.1rem -0.3rem;
+  padding: 0.1rem 0.3rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.key-hint-pill__item--clickable:hover,
+.key-hint-pill__item--clickable:focus-visible {
+  color: #f5e6c8;
+  background: rgba(212, 165, 116, 0.18);
+}
+
+.key-hint-pill__item--clickable:focus-visible {
+  outline: 1px solid rgba(212, 165, 116, 0.6);
+  outline-offset: 1px;
+}
+
+.key-hint-pill__item--clickable .key-hint-pill__key {
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.08s ease;
+}
+
+.key-hint-pill__item--clickable:hover .key-hint-pill__key,
+.key-hint-pill__item--clickable:focus-visible .key-hint-pill__key {
+  background: rgba(212, 165, 116, 0.28);
+  border-color: rgba(212, 165, 116, 0.6);
+}
+
+/* Pressed: the keycap sinks into its thick bottom border. */
+.key-hint-pill__item--clickable:active .key-hint-pill__key {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+
 /* Compact variant for tight surfaces (confirm dialogs, inline row hints). */
 .key-hint-pill--sm {
   gap: 0.35rem;
@@ -69,4 +125,9 @@
 
 .key-hint-pill--sm .key-hint-pill__label {
   margin-left: 0.1rem;
+}
+
+.key-hint-pill--sm .key-hint-pill__item--clickable {
+  margin: -0.1rem -0.2rem;
+  padding: 0.1rem 0.2rem;
 }

@@ -217,7 +217,7 @@ export function MapMinimap({
             </ul>
           </div>
 
-          <KeyHintPill size="sm" className="map-minimap__key-hint" items={[{ keys: ['Tab', 'Esc'], label: 'close' }]} />
+          <KeyHintPill size="sm" items={[{ keys: ['Tab', 'Esc'], label: 'close', onClick: onClose }]} />
         </div>
       )}
     </div>

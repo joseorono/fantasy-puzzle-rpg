@@ -33,9 +33,9 @@ import {
 } from '~/constants/character-sprite';
 import type { SpriteState } from '~/hooks/use-character-sprite';
 import MapCharacterSprite from './map-character-sprite';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
-import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
+import { usePauseMenu } from '~/hooks/use-pause-menu';
 import {
   useMapProgressActions,
   useGameStore,
@@ -168,7 +168,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
-  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
+  const { isOpen: isPauseMenuOpen, open: openPauseMenu } = usePauseMenu();
   const { autosave } = useSaveGameActions();
 
   // Load tileset image
@@ -759,8 +759,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
               size="sm"
               className="map-key-hint"
               items={[
-                { keys: ['Tab'], label: 'map' },
-                { keys: ['Esc'], label: 'menu' },
+                { keys: ['Tab'], label: 'map', onClick: canOpenMinimap ? openMinimap : undefined },
+                { keys: ['Esc'], label: 'menu', onClick: openPauseMenu },
               ]}
             />
           )}
