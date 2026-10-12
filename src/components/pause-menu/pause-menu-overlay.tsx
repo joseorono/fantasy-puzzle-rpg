@@ -1,14 +1,27 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { pauseMenuZoneAtom } from '~/stores/pause-menu-atoms';
+import { PAUSE_MENU_HIDDEN_TABS, pauseMenuZoneAtom } from '~/stores/pause-menu-atoms';
 import { usePauseMenu } from '~/hooks/use-pause-menu';
-import { KeyboardKeys, isCancelKey } from '~/constants/keyboard';
+import { KeyboardKeys, isCancelKey, isTutorialKey } from '~/constants/keyboard';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { PauseMenu } from './pause-menu';
 
 export function PauseMenuOverlay() {
-  const { isOpen, isDisabled, close, open } = usePauseMenu();
+  const { isOpen, isDisabled, activeTab, close, open, openTab } = usePauseMenu();
   const [zone, setZone] = useAtom(pauseMenuZoneAtom);
+  const isHiddenTab = PAUSE_MENU_HIDDEN_TABS.includes(activeTab);
+
+  // H / ? toggle the Tutorial tab from anywhere the menu may open, including from another tab.
+  useWindowKeyDown((e) => {
+    if (!isTutorialKey(e.key) || e.defaultPrevented) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (isOpen && activeTab === 'tutorial') {
+      close();
+      return;
+    }
+    openTab('tutorial');
+  });
 
   // The app-wide cancel binding lives here — the overlay is mounted exactly once while
   // the game runs — instead of inside usePauseMenu, where every consumer re-bound it.
@@ -22,7 +35,8 @@ export function PauseMenuOverlay() {
     if (e.repeat) return;
     // The isOpen check matters: a stale 'content' zone must never swallow the Escape
     // that opens the menu from the game world.
-    if (isOpen && zone === 'content') {
+    // A hidden tab has no sidebar entry to back out to.
+    if (isOpen && zone === 'content' && !isHiddenTab) {
       setZone('sidebar');
       return;
     }

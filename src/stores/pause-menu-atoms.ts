@@ -14,8 +14,11 @@ const volumeStorage = createValidatedStorage(volumePercentSchema);
 const mutedStorage = createValidatedStorage(mutedSchema);
 const reducedMotionStorage = createValidatedStorage(reducedMotionSchema);
 
-export const PAUSE_MENU_TABS = ['items', 'equip', 'skills', 'stats', 'options', 'save', 'load'] as const;
+export const PAUSE_MENU_TABS = ['items', 'equip', 'skills', 'stats', 'options', 'save', 'load', 'tutorial'] as const;
 export type PauseMenuTab = (typeof PAUSE_MENU_TABS)[number];
+
+/** Tabs left out of the sidebar, reached only by their own shortcut. Cancel closes the menu from them. */
+export const PAUSE_MENU_HIDDEN_TABS: readonly PauseMenuTab[] = ['tutorial'];
 
 export const isPauseMenuOpenAtom = atom(false);
 export const activeMenuTabAtom = atom<PauseMenuTab>(PAUSE_MENU_TABS[0]);

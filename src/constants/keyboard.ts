@@ -11,6 +11,8 @@ export const KeyboardKeys = {
    *  competes with the confirm key a view is already using. */
   Backspace: 'Backspace',
   Help: 'h',
+  /** Opens and closes the pause menu's Tutorial tab, alongside Help. */
+  Tutorial: '?',
   /** Opens and closes the map overview. Its focus traversal is suppressed only when it does. */
   Tab: 'Tab',
   ArrowUp: 'ArrowUp',
@@ -50,9 +52,14 @@ export function getNavDirection(key: string): NavDirection | null {
   return NAV_KEY_TO_DIRECTION[normalized] ?? null;
 }
 
-/** Whether a key opens the town help panel. Shift+H is accepted as well. */
+/** Whether a key opens a help surface: the town help panel, or the Tutorial tab. Shift+H is accepted as well. */
 export function isHelpKey(key: string): boolean {
   return key.length === 1 && key.toLowerCase() === KeyboardKeys.Help;
+}
+
+/** Whether a key toggles the pause menu's Tutorial tab: H or ?. */
+export function isTutorialKey(key: string): boolean {
+  return key === KeyboardKeys.Tutorial || isHelpKey(key);
 }
 
 /** Whether a key toggles the map overview. */
