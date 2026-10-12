@@ -57,6 +57,8 @@ function makeGameState(): SaveGameState {
       townsVisited: { town_1: true },
       treasuresFound: {},
       mysteriesSolved: {},
+      exitsUsed: {},
+      dialogueTriggersSeen: { 'map-00-apprentice-forge:tutorial-exploring': true },
       characterPositions: { 'map-00': { row: 4, col: 7 } },
       foesDefeated: { fairy_forest_foe_1: true },
       pendingFoeBattleId: null,
@@ -120,6 +122,18 @@ describe('buildSaveData', () => {
 
     const save = buildSaveData({ state: legacy, currentMapId: 'map-00', playtimeMs: 0, savedAt: SAVED_AT });
     expect(save.state.mapProgress.pendingNodeBattle).toBeNull();
+  });
+
+  it('fills in map exits and seen dialogue events for saves written before they existed', () => {
+    const state = makeGameState();
+    const legacyMapProgress: Record<string, unknown> = { ...state.mapProgress };
+    delete legacyMapProgress.exitsUsed;
+    delete legacyMapProgress.dialogueTriggersSeen;
+    const legacy = { ...state, mapProgress: legacyMapProgress } as unknown as SaveGameState;
+
+    const save = buildSaveData({ state: legacy, currentMapId: 'map-00', playtimeMs: 0, savedAt: SAVED_AT });
+    expect(save.state.mapProgress.exitsUsed).toEqual({});
+    expect(save.state.mapProgress.dialogueTriggersSeen).toEqual({});
   });
 
   it('survives a localStorage round-trip unchanged', () => {

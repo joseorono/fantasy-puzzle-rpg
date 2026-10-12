@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_MAPS } from '~/constants/maps';
+import { ALL_MAPS, MAP_REGISTRY } from '~/constants/maps';
+import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
 import { buildWalkableMask, isMaskWalkable } from './tilemap-collision';
 import { createTilePathfinder } from './foe-pathfinding';
 import { findFloorLootAt, findNodeAt } from './map-content';
@@ -27,6 +28,25 @@ describe('authored battle nodes', () => {
       }
     },
   );
+});
+
+describe('authored map exits', () => {
+  const exits = ALL_MAPS.flatMap((map) =>
+    (map.nodes ?? []).filter((node) => MAP_EXIT_NODE_TYPES.includes(node.type)).map((node) => [node.id, node] as const),
+  );
+
+  it('at least one map has an exit (otherwise the per-exit checks below are vacuous)', () => {
+    expect(exits.length).toBeGreaterThan(0);
+  });
+
+  it.each(exits)('%s lands on a walkable tile beside, not on, a node', (_id, node) => {
+    expect(node.destination, 'destination set').toBeDefined();
+    const { mapId, arrival } = node.destination!;
+    const target = MAP_REGISTRY[mapId];
+    expect(target, `${mapId} registered`).toBeDefined();
+    expect(isMaskWalkable(maskFor(target), arrival.row, arrival.col), 'arrival walkable').toBe(true);
+    expect(findNodeAt(target.nodes, arrival.row, arrival.col), 'arrival off nodes').toBeUndefined();
+  });
 });
 
 describe('authored FOEs', () => {

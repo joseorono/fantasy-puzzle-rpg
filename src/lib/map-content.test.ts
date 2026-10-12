@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from './map-content';
+import {
+  findNodeAt,
+  findFloorLootAt,
+  findDialogueTriggerAt,
+  getDialogueTriggerSeenKey,
+  isNodeCompletedInProgress,
+} from './map-content';
 import { createInitialMapProgressState } from '~/stores/slices/map-progress';
 import type { InteractiveMapNode, FloorLootSpot } from '~/types/map-node';
 import type { DialogueTrigger } from '~/types/map';
@@ -138,5 +144,25 @@ describe('isNodeCompletedInProgress', () => {
 
   it('treats unknown ids as not completed', () => {
     expect(isNodeCompletedInProgress(createInitialMapProgressState(), 'Dungeon', 'nowhere')).toBe(false);
+  });
+});
+
+describe('map exits', () => {
+  it('share one progress record across both directions', () => {
+    const progress = { ...createInitialMapProgressState(), exitsUsed: { stairs: true } };
+    expect(isNodeCompletedInProgress(progress, 'NextMap', 'stairs')).toBe(true);
+    expect(isNodeCompletedInProgress(progress, 'PreviousMap', 'stairs')).toBe(true);
+    expect(isNodeCompletedInProgress(progress, 'Battle', 'stairs')).toBe(false);
+  });
+});
+
+describe('getDialogueTriggerSeenKey', () => {
+  it('is the same for every tile of one event', () => {
+    const [left, right] = [makeTrigger('intro', 4, 3), makeTrigger('intro', 4, 4)];
+    expect(getDialogueTriggerSeenKey('map-00', left.scene)).toBe(getDialogueTriggerSeenKey('map-00', right.scene));
+  });
+
+  it('keeps maps apart when they reuse a scene key', () => {
+    expect(getDialogueTriggerSeenKey('map-00', 'intro')).not.toBe(getDialogueTriggerSeenKey('map-01', 'intro'));
   });
 });
