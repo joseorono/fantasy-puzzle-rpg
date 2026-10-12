@@ -21,6 +21,11 @@
  * frame is pasted centred into one uniform cell. Assuming a square 128 grid — as this script
  * first did — slices drawings in half and fills half the "frames" with blanks.
  *
+ * Other packs work too. Folder mode also knows MonoPixelArt-style names
+ * (`Skeleton_01_White_Attack1.png`), and a pack that ships ONE strip holding every animation
+ * (tecopena's bat and slime) goes through single-strip mode: `--ranges` names the frame range of
+ * each slot.
+ *
  * The combined sheet is written already compressed — this script does NOT run the repo-wide
  * images optimizer, so the PNG that lands in `public/` is the one that ships.
  *
@@ -29,6 +34,8 @@
  *   node scripts/admurin-enemy-to-sprite-sheet.mjs context/Badger --attack-b heavy --write
  *   node scripts/admurin-enemy-to-sprite-sheet.mjs context/Frogger --sheet-only --attack-b fast --write
  *   node scripts/admurin-enemy-to-sprite-sheet.mjs public/assets/enemy-sprites/badger_sheet.png --cell 128
+ *   node scripts/admurin-enemy-to-sprite-sheet.mjs context/bat/Bat_NoContour.png --cell 64 \
+ *     --ranges idle=0-6,attack1=7-11,hurt=12-13 --id tecopena-bat --sheet-only --pixelated --write
  *
  * Flags:
  *   --cell <px>           Force the frame width (folder mode) or the square cell size (PNG mode).
@@ -42,8 +49,15 @@
  *                         Default: heavy.
  *   --sheet-only          Emit only the sheet constant (for re-skinning an existing enemy).
  *   --map-sprite <px>     Also write the overworld FOE sprite (`<slug>_map.png`): the idle pose
- *                         cropped to its ink and downscaled to <px> wide, nearest-neighbour.
- *   --write               Write files. Default is a dry run that prints the plan.
+ *                         cropped to its ink and resized to <px> wide, nearest-neighbour.
+ *   --ranges <slot>=<a>-<b>,…
+ *                         Single-strip mode (PNG source + --cell): 0-based inclusive frame range
+ *                         of each slot on the one strip. Ranges may overlap (move often reuses idle).
+ *   --frame-ms <slot>=<ms>,…
+ *                         Override a slot's frame duration (default: FRAME_DURATION_MS). Repeatable.
+ *   --pixelated           Mark the sheet `pixelated: true` — for small sprites the card scales UP,
+ *                         where smoothing would blur them.
+ *   --write              Write files. Default is a dry run that prints the plan.
  *
  * The wiring is deliberately NOT automated — the script prints the `assetList` line for
  * `src/services/assets-service.ts` and, in full mode, the import/export line for
@@ -79,18 +93,27 @@ const VOCABULARY = {
   idle: 'idle',
   move: 'move',
   hurt: 'hurt',
+  walk: 'move',
   attack_a: 'attacks',
   attack_b: 'attacks',
+  attack1: 'attacks',
+  attack2: 'attacks',
   tongue: 'attacks',
   spit: 'attacks',
   stomp: 'attacks',
   ability: 'ability',
   heal: 'ability',
   skill: 'ability',
+  // Battles have no death row yet: recognized so they don't fail the run, then left out.
+  die: 'skip',
+  death: 'skip',
 };
 
+/** Vocabulary keys longest first, so `attack_a` wins over a shorter key that also ends the name. */
+const VOCABULARY_BY_LENGTH = Object.keys(VOCABULARY).sort((a, b) => b.length - a.length);
+
 /** Attack keywords in the order combat should play them. */
-const ATTACK_ORDER = ['attack_a', 'attack_b', 'tongue', 'spit', 'stomp'];
+const ATTACK_ORDER = ['attack_a', 'attack_b', 'attack1', 'attack2', 'tongue', 'spit', 'stomp'];
 
 /** Canonical row order; only present slots get a row, assigned sequentially in this order. */
 const CANONICAL_SLOTS = ['idle', 'move', 'hurt', 'attack1', 'attack2', 'ability'];
@@ -112,12 +135,19 @@ function parseArgs(argv) {
     attackB: 'heavy',
     sheetOnly: false,
     mapSprite: null,
+    ranges: null,
+    frameMs: {},
+    pixelated: false,
     write: false,
   };
+  const frameMsArgs = [];
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--write') opts.write = true;
+    else if (arg === '--pixelated') opts.pixelated = true;
+    else if (arg === '--ranges') opts.ranges = argv[++i];
+    else if (arg === '--frame-ms') frameMsArgs.push(argv[++i]);
     else if (arg === '--sheet-only') opts.sheetOnly = true;
     else if (arg === '--map-sprite') opts.mapSprite = Number(argv[++i]);
     else if (arg === '--cell') opts.cell = Number(argv[++i]);
@@ -153,7 +183,36 @@ function parseArgs(argv) {
     return { slot, keyword: keyword.toLowerCase() };
   });
 
+  if (opts.ranges !== null) {
+    opts.ranges = splitSlotList(opts.ranges, '--ranges').map(([slot, value]) => {
+      const match = /^(\d+)-(\d+)$/.exec(value);
+      if (!match || Number(match[1]) > Number(match[2])) {
+        throw new Error(`--ranges expects <slot>=<first>-<last> (0-based, inclusive), got "${slot}=${value}"`);
+      }
+      return { slot, first: Number(match[1]), last: Number(match[2]) };
+    });
+    if (!opts.ranges.some((range) => range.slot === 'idle')) throw new Error('--ranges needs an idle range.');
+  }
+
+  for (const [slot, value] of frameMsArgs.flatMap((entry) => splitSlotList(entry, '--frame-ms'))) {
+    const ms = Number(value);
+    if (!(Number.isInteger(ms) && ms > 0)) throw new Error(`--frame-ms expects whole ms, got "${slot}=${value}"`);
+    opts.frameMs[slot] = ms;
+  }
+
   return opts;
+}
+
+/** `idle=0-6,hurt=12-13` -> [['idle', '0-6'], ['hurt', '12-13']], every slot validated. */
+function splitSlotList(list, flag) {
+  return list.split(',').map((entry) => {
+    const [slot, value] = entry.split('=');
+    if (!slot || !value) throw new Error(`${flag} expects <slot>=<value>, got "${entry}"`);
+    if (!ANIM_SLOTS.has(slot)) {
+      throw new Error(`${flag} slot must be one of ${[...ANIM_SLOTS].join(', ')}, got "${slot}"`);
+    }
+    return [slot, value];
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -183,14 +242,17 @@ const toTitleCase = (value) =>
 
 /**
  * The animation keyword a strip filename carries: everything after the pack prefix
- * (`badger_attack_A` in the `Badger` pack -> `attack_A`). Falls back to everything after the
- * first underscore when the filename does not carry the pack prefix. Casing is preserved so the
- * generated `source` stays an exact audit trail; lookups lowercase it.
+ * (`badger_attack_A` in the `Badger` pack -> `attack_A`). Without the pack prefix, a known
+ * vocabulary suffix wins (`Skeleton_01_White_Attack1` -> `Attack1`), then everything after the
+ * first underscore. Casing is preserved so the generated `source` stays an exact audit trail;
+ * lookups lowercase it.
  */
 function stripKeyword(fileName, packPrefix) {
   const base = fileName.replace(/\.[^.]+$/, '');
   const lower = base.toLowerCase();
   if (lower.startsWith(packPrefix)) return base.slice(packPrefix.length);
+  const known = VOCABULARY_BY_LENGTH.find((key) => lower.endsWith(`_${key}`));
+  if (known) return base.slice(base.length - known.length);
   const underscore = lower.indexOf('_');
   return underscore === -1 ? base : base.slice(underscore + 1);
 }
@@ -222,7 +284,7 @@ function collectFolderStrips(folder, overrides) {
     .sort();
   if (files.length === 0) throw new Error(`No *.png strips in ${folder} (files starting with _ are ignored).`);
 
-  const slots = { idle: null, move: null, hurt: null, attacks: [], ability: null };
+  const slots = { idle: null, move: null, hurt: null, attacks: [], ability: null, skipped: [] };
   const unknown = [];
 
   for (const file of files) {
@@ -230,6 +292,10 @@ function collectFolderStrips(folder, overrides) {
     const slot = resolveSlot(keyword, overrides);
     if (!slot) {
       unknown.push({ file, keyword });
+      continue;
+    }
+    if (slot === 'skip') {
+      slots.skipped.push(file);
       continue;
     }
     const entry = { keyword, file: path.join(folder, file) };
@@ -262,6 +328,39 @@ function buildRows(slots) {
   push('hurt', slots.hurt, 'hurt');
   slots.attacks.forEach((entry, index) => push('attacks', entry, index === 0 ? 'attack1' : 'attack2'));
   push('ability', slots.ability, 'ability');
+  return rows;
+}
+
+/**
+ * Single-strip mode: cuts each `--ranges` slot out of the one strip into its own in-memory strip,
+ * so everything downstream treats it exactly like a pack-folder strip (sharp reads Buffers too).
+ */
+async function collectRangeStrips(file, ranges, cell, label) {
+  const meta = await sharp(file).metadata();
+  const width = meta.width ?? 0;
+  const height = meta.height ?? 0;
+  if (width % cell !== 0) throw new Error(`--cell ${cell} does not divide ${label} (${width}px).`);
+  const frameCount = width / cell;
+
+  const rows = [];
+  for (const slot of CANONICAL_SLOTS) {
+    const range = ranges.find((entry) => entry.slot === slot);
+    if (!range) continue;
+    if (range.last >= frameCount) {
+      throw new Error(`--ranges ${slot}=${range.first}-${range.last}: the strip only has frames 0-${frameCount - 1}.`);
+    }
+    const strip = await sharp(file)
+      .extract({ left: range.first * cell, top: 0, width: (range.last - range.first + 1) * cell, height })
+      .png()
+      .toBuffer();
+    rows.push({
+      slotKey: slot === 'attack1' || slot === 'attack2' ? 'attacks' : slot,
+      keyword: slot,
+      file: strip,
+      label: `${label} [${range.first}-${range.last}]`,
+      durationSlot: slot,
+    });
+  }
   return rows;
 }
 
@@ -327,26 +426,27 @@ function detectFrameWidth(width, ink) {
 /*  Measurement + compositing                                          */
 /* ------------------------------------------------------------------ */
 
-/** One present row with its measured geometry and detected frame width. */
-async function measureRow(row) {
+/** One present row with its measured geometry and frame width (`forcedFrameW`, else detected). */
+async function measureRow(row, forcedFrameW, frameMs) {
   const meta = await sharp(row.file).metadata();
   const width = meta.width ?? 0;
   const height = meta.height ?? 0;
-  const ink = await columnInk(row.file, width, height);
-  const frameW = detectFrameWidth(width, ink);
+  if (forcedFrameW && width % forcedFrameW !== 0) {
+    throw new Error(`--cell ${forcedFrameW} does not divide ${row.label} (${width}px).`);
+  }
+  const frameW = forcedFrameW ?? detectFrameWidth(width, await columnInk(row.file, width, height));
   if (!frameW) {
     throw new Error(
-      `${row.file}: could not find a frame width (a drawing would cross every frame edge, or a frame is blank). Pass --cell to force one.`,
+      `${row.label}: could not find a frame width (a drawing would cross every frame edge, or a frame is blank). Pass --cell to force one.`,
     );
   }
   return {
     ...row,
-    file: row.file,
     width,
     height,
     frameW,
     frames: width / frameW,
-    frameDurationMs: FRAME_DURATION_MS[row.durationSlot],
+    frameDurationMs: frameMs[row.durationSlot] ?? FRAME_DURATION_MS[row.durationSlot],
   };
 }
 
@@ -383,7 +483,8 @@ const cellOffset = (cellW, frameW) => Math.floor((cellW - frameW) / 2);
 /**
  * The overworld FOE sprite: one frame cropped to its ink and downscaled to `width` px with
  * nearest-neighbour, so the map keeps crisp pixels (what `scripts/recolor-sprite.py` did for the
- * stone golem). The map draws it at its natural size, feet on the ground.
+ * stone golem). The map draws it at its natural size, feet on the ground. Returns the ink size
+ * too, so the report can show whether `width` is 1:1, 2x, …
  */
 async function buildMapSprite(row, frameIndex, width) {
   const raw = await sharp(row.file).ensureAlpha().raw().toBuffer();
@@ -402,13 +503,16 @@ async function buildMapSprite(row, frameIndex, width) {
       }
     }
   }
-  if (maxX < 0) throw new Error(`${row.file}: frame ${frameIndex} is blank, cannot build a map sprite.`);
+  if (maxX < 0) throw new Error(`${row.label}: frame ${frameIndex} is blank, cannot build a map sprite.`);
 
-  return sharp(row.file)
-    .extract({ left: frameIndex * row.frameW + minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
+  const inkWidth = maxX - minX + 1;
+  const inkHeight = maxY - minY + 1;
+  const buffer = await sharp(row.file)
+    .extract({ left: frameIndex * row.frameW + minX, top: minY, width: inkWidth, height: inkHeight })
     .resize({ width, kernel: 'nearest' })
     .png({ compressionLevel: 9 })
     .toBuffer();
+  return { buffer, inkWidth, inkHeight };
 }
 
 /**
@@ -426,7 +530,7 @@ async function assertFramesVisible(rows) {
         }
       }
       if (ink === 0) {
-        throw new Error(`${row.file}: frame ${frame} is blank — the frame width is probably wrong.`);
+        throw new Error(`${row.label}: frame ${frame} is blank — the frame width is probably wrong.`);
       }
     }
   }
@@ -476,6 +580,7 @@ function renderSheetConstant(constName, sheet) {
   lines.push(`  image: '${sheet.image}',`);
   lines.push(`  cellW: ${sheet.cellW},`);
   lines.push(`  cellH: ${sheet.cellH},`);
+  if (sheet.pixelated) lines.push(`  pixelated: true,`);
   lines.push(`  animations: {`);
   for (const slot of ['idle', 'move', 'hurt']) {
     const row = sheet.rows.find((entry) => entry.slotKey === slot);
@@ -582,6 +687,10 @@ async function main() {
   const sourcePath = path.resolve(REPO_ROOT, opts.source);
   if (!existsSync(sourcePath)) throw new Error(`Source not found: ${opts.source}`);
   const isFolder = statSync(sourcePath).isDirectory();
+  const isStripMode = !isFolder && opts.ranges !== null;
+  if (isFolder && opts.ranges !== null) throw new Error('--ranges takes a single strip PNG, not a pack folder.');
+  if (isStripMode && !opts.cell) throw new Error('--ranges needs --cell: the frame width of the strip.');
+  const sourceMode = isFolder ? 'pack folder' : isStripMode ? 'single strip' : 'combined PNG';
 
   const packName = isFolder ? path.basename(sourcePath) : path.basename(sourcePath, path.extname(sourcePath));
   const slug = toKebab(opts.id ?? packName);
@@ -600,13 +709,21 @@ async function main() {
   let sheetHeight;
   let sheetBuffer = null;
 
-  if (isFolder) {
-    const slots = collectFolderStrips(sourcePath, opts.anim);
-    const order = buildRows(slots);
+  let skipped = [];
+
+  if (isFolder || isStripMode) {
+    let order;
+    if (isFolder) {
+      const slots = collectFolderStrips(sourcePath, opts.anim);
+      skipped = slots.skipped;
+      order = buildRows(slots).map((row) => ({ ...row, label: rel(row.file) }));
+    } else {
+      order = await collectRangeStrips(sourcePath, opts.ranges, opts.cell, rel(sourcePath));
+    }
     if (order.length === 0) throw new Error(`No recognizable animations in ${opts.source}.`);
 
     // Every strip shares one height; each strip's frame WIDTH is detected (Admurin mixes 128 and 384).
-    const measured = await Promise.all(order.map(measureRow));
+    const measured = await Promise.all(order.map((row) => measureRow(row, opts.cell, opts.frameMs)));
     const heights = new Set(measured.map((row) => row.height));
     if (heights.size > 1) {
       throw new Error(
@@ -614,16 +731,6 @@ async function main() {
       );
     }
     cellH = [...heights][0];
-
-    if (opts.cell) {
-      for (const row of measured) {
-        if (row.width % opts.cell !== 0) {
-          throw new Error(`--cell ${opts.cell} does not divide ${row.file} (${row.width}px).`);
-        }
-        row.frameW = opts.cell;
-        row.frames = row.width / opts.cell;
-      }
-    }
     cellW = Math.max(...measured.map((row) => row.frameW));
 
     rows = measured.map((row, index) => ({ ...row, row: index }));
@@ -659,6 +766,7 @@ async function main() {
       durationSlot: slotKey,
       row: index,
       file: sourcePath,
+      label: rel(sourcePath),
       width: imageWidth,
       height: cellH,
       frameW: cellW,
@@ -672,7 +780,7 @@ async function main() {
     }
   }
 
-  const sheet = { image: sheetImage, cellW, cellH, rows };
+  const sheet = { image: sheetImage, cellW, cellH, pixelated: opts.pixelated, rows };
   await assertFramesVisible(rows);
   const sheetConst = `${toUpperSnake(slug)}_SHEET`;
   const enemyConst = toUpperSnake(slug);
@@ -698,9 +806,10 @@ async function main() {
   );
 
   /* ---- report ---- */
-  console.log(`source:   ${rel(sourcePath)}  (${isFolder ? 'pack folder' : 'combined PNG'})`);
+  console.log(`source:   ${rel(sourcePath)}  (${sourceMode})`);
   console.log(`slug:     ${slug}  "${name}"${opts.id ? '' : ' (id from folder name)'}`);
   console.log(`cell:     ${cellW}×${cellH} px${isFolder ? '' : ` (${opts.cell ? '--cell' : 'height ÷ 6'})`}`);
+  if (opts.pixelated) console.log(`render:   pixelated (the card scales this sheet up)`);
   console.log(`sheet:    ${sheetWidth}×${sheetHeight} px  (${rows.length} row(s))`);
   const idleRow = rows.find((row) => row.slotKey === 'idle') ?? rows[0];
   console.log(
@@ -712,15 +821,16 @@ async function main() {
     console.log(
       `  ${String(row.row).padEnd(5)} ${row.slotKey.padEnd(8)} ${String(row.frameW).padStart(3)}px  ` +
         `${String(row.frames).padStart(3)} frames  ${String(row.frameDurationMs).padStart(3)}ms  ` +
-        `${row.keyword}  <- ${rel(row.file)}`,
+        `${row.keyword}  <- ${row.label}`,
     );
   }
+  for (const file of skipped) console.log(`  skip  ${file}  (no battle slot for it yet)`);
   if (opts.sheetOnly) console.log(`enemy:    --sheet-only (no EnemyData template)`);
   else if (rows.some((row) => row.slotKey === 'attacks')) console.log(`attack B: ${opts.attackB} preset`);
   console.log(`mode:     ${opts.write ? 'WRITE' : 'dry run (pass --write to apply)'}\n`);
 
   const label = opts.write ? 'ok    ' : 'would ';
-  if (isFolder) console.log(`  ${label} write ${rel(sheetFile)}  (${sheetWidth}×${sheetHeight}, ${rows.length} rows)`);
+  if (sheetBuffer) console.log(`  ${label} write ${rel(sheetFile)}  (${sheetWidth}×${sheetHeight}, ${rows.length} rows)`);
   else if (sourcePath === sheetFile) console.log(`  keep   ${rel(sheetFile)}  (source is already the sheet)`);
   else console.log(`  ${label} write ${rel(sheetFile)}  (copy of the source PNG)`);
   console.log(`  ${label} write ${rel(tsFile)}`);
@@ -730,20 +840,20 @@ async function main() {
   const mapSpriteRow = opts.mapSprite ? (rows.find((row) => row.slotKey === 'idle') ?? rows[0]) : null;
   const mapSpriteFrame = 0;
   const mapSpriteFile = path.join(REPO_ROOT, SHEET_OUT_DIR, `${slug}_map.png`);
-  const mapSpriteBuffer = mapSpriteRow ? await buildMapSprite(mapSpriteRow, mapSpriteFrame, opts.mapSprite) : null;
+  const mapSprite = mapSpriteRow ? await buildMapSprite(mapSpriteRow, mapSpriteFrame, opts.mapSprite) : null;
   if (mapSpriteRow) {
     console.log(
-      `  ${label} write ${rel(mapSpriteFile)}  (${opts.mapSprite}px wide, ${mapSpriteRow.keyword} frame ${mapSpriteFrame})`,
+      `  ${label} write ${rel(mapSpriteFile)}  (${opts.mapSprite}px wide from ${mapSprite.inkWidth}×${mapSprite.inkHeight} ink, ${mapSpriteRow.keyword} frame ${mapSpriteFrame})`,
     );
   }
 
   if (opts.write) {
     mkdirSync(path.dirname(sheetFile), { recursive: true });
-    if (isFolder) writeFileSync(sheetFile, sheetBuffer);
+    if (sheetBuffer) writeFileSync(sheetFile, sheetBuffer);
     else if (sourcePath !== sheetFile) copyFileSync(sourcePath, sheetFile);
     mkdirSync(outDir, { recursive: true });
     writeFileSync(tsFile, tsSource);
-    if (mapSpriteBuffer) writeFileSync(mapSpriteFile, mapSpriteBuffer);
+    if (mapSprite) writeFileSync(mapSpriteFile, mapSprite.buffer);
   }
 
   /* ---- the wiring the script leaves to you ---- */
