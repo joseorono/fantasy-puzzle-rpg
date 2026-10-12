@@ -65,4 +65,16 @@ export const FAIRY_FOREST_FLOOR_LOOT: FloorLootSpot[] = [
     gold: 1,
     silver: 1,
   }),
+
+  // ─── Along the climb from the lower right ───────────────────────────
+  createFloorLootSpot('fairy_forest_loot_14', 74, 115, { coins: 30, copper: 2 }),
+  createFloorLootSpot('fairy_forest_loot_15', 75, 84, { coins: 40, copper: 3 }),
+  createFloorLootSpot('fairy_forest_loot_16', 57, 86, { coins: 45, iron: 1 }),
+  createFloorLootSpot('fairy_forest_loot_17', 49, 88, { coins: 60, copper: 3 }),
+  createFloorLootSpot('fairy_forest_loot_18', 31, 66, { coins: 70, iron: 2 }),
+  createFloorLootSpot('fairy_forest_loot_19', 15, 61, { coins: 110, silver: 1 }),
+  createFloorLootSpot('fairy_forest_loot_20', 76, 35, { coins: 140, silver: 2 }),
+  createFloorLootSpot('fairy_forest_loot_21', 53, 30, { coins: 90, copper: 4 }),
+  createFloorLootSpot('fairy_forest_loot_22', 22, 14, { coins: 110, iron: 3 }),
+  createFloorLootSpot('fairy_forest_loot_23', 9, 30, { coins: 120, silver: 1 }),
 ];
