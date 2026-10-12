@@ -3,11 +3,9 @@ import type { GridPosition } from './geometry';
 
 export type ActionTarget = 'party' | 'enemy';
 
-export interface Orb {
+export interface Orb extends GridPosition {
   id: string;
   type: OrbType;
-  row: number;
-  col: number;
   /** Wildcard tile: matches with any color and explodes a 3x3 area when matched. */
   isBomb?: boolean;
 }

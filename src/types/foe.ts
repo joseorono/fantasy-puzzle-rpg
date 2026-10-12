@@ -80,10 +80,7 @@ export interface FoeRuntime {
 }
 
 /** The player as the simulation sees it: a map-pixel point and the tile it is in. */
-export interface FoeActor extends Position {
-  row: number;
-  col: number;
-}
+export interface FoeActor extends Position, GridPosition {}
 
 /** Whether a tile may be walked on. Out-of-bounds tiles must report `false`. */
 export type WalkablePredicate = (row: number, col: number) => boolean;

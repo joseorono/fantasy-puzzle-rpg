@@ -5,17 +5,17 @@ import {
   PATH_CENTERING_DEADZONE_TILES,
   PATH_CENTERING_SPEED_RATIO,
 } from '~/constants/map-movement';
+import type { GridPosition } from '~/types/geometry';
 
-/** The character's collision point (its feet) in map-pixel space, plus the tile it occupies. */
-export interface MovementPointState {
+/**
+ * The character's collision point (its feet) in map-pixel space, plus the tile it occupies —
+ * always `row = Math.floor(y / tileSize)` and `col = Math.floor(x / tileSize)`.
+ */
+export interface MovementPointState extends GridPosition {
   /** Map-pixel X of the collision point. */
   x: number;
   /** Map-pixel Y of the collision point. */
   y: number;
-  /** Tile row currently occupied — always `Math.floor(y / tileSize)`. */
-  row: number;
-  /** Tile column currently occupied — always `Math.floor(x / tileSize)`. */
-  col: number;
 }
 
 export interface MovementInput {

@@ -3,6 +3,7 @@ import type { MapPoint, MapSize } from '~/lib/map-camera';
 import type { MapDefinition } from '~/types/map';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
+import type { GridPosition } from '~/types/geometry';
 import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
 import { getNodePositions } from '~/lib/map-content';
 import {
@@ -119,12 +120,10 @@ export function tileToMinimapPercent(
 }
 
 /** Something pinned on the overview. */
-export interface MinimapMarker {
+export interface MinimapMarker extends GridPosition {
   kind: 'node' | 'floorLoot' | 'dialogueTrigger';
   /** Stable React key. */
   id: string;
-  row: number;
-  col: number;
   isDone: boolean;
   /** Node markers only. */
   nodeType?: MapNodeType;

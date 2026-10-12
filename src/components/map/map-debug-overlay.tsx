@@ -1,5 +1,7 @@
+import type { GridPosition } from '~/types/geometry';
+
 interface MapDebugOverlayProps {
-  charPosition: { row: number; col: number };
+  charPosition: GridPosition;
   status?: string;
 }
 

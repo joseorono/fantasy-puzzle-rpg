@@ -3,6 +3,7 @@ import type { InteractiveMapNode, EncounterDefinition, FloorLootSpot } from './m
 import type { DialogueScene } from './dialogue';
 import type { FoeDefinition } from './foe';
 import type { JirbyColorSymbolName, JirbyWhiteSymbolName } from './jirby-symbols';
+import type { GridPosition } from './geometry';
 
 /**
  * Every map in the game. Adding one means adding a member here, an entry in
@@ -21,9 +22,7 @@ export type MapId =
  * A dialogue scene that fires when the player steps onto a tile.
  * `scene` keys into the owning map's `dialogueScenes`.
  */
-export interface DialogueTrigger {
-  row: number;
-  col: number;
+export interface DialogueTrigger extends GridPosition {
   scene: string;
   /** Plays at once, with no "investigate?" prompt and no floating marker. For tutorials. */
   autoPlay?: boolean;

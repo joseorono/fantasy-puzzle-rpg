@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
 import type { FoeDefinition } from '~/types/foe';
-import type { Position } from '~/types/geometry';
+import type { GridPosition, Position } from '~/types/geometry';
 import { DEBUG_MODE } from '~/constants/dev';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { MapDebugOverlay } from './map-debug-overlay';
@@ -105,11 +105,6 @@ function isMapNodeCompleted(
 
 type DialogueSceneKey = string;
 
-interface CharacterPosition {
-  row: number;
-  col: number;
-}
-
 interface TilemapComponentProps {
   /** The map to render and run. All content is read from here — nothing map-specific is imported. */
   map: MapDefinition;
@@ -131,7 +126,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [footstepProfile] = useState(() =>
     createFootstepProfile(map.footstepVolume ?? DEFAULT_FOOTSTEP_VOLUME, map.footstepPitch ?? DEFAULT_FOOTSTEP_PITCH),
   );
-  const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
+  const [charPosition, setCharPosition] = useState<GridPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });

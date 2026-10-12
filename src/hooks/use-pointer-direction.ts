@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { PointerPoint } from '~/lib/pointer-movement';
+import type { MapPoint } from '~/lib/map-camera';
 
 export interface PointerDirectionState {
   /** True while the pointer is held down on the map. */
@@ -18,7 +18,7 @@ export interface PointerDirectionHandlers {
 }
 
 /** Converts a window coordinate to map pixels, or `null` if not measurable yet. */
-export type ToMapPoint = (clientX: number, clientY: number) => PointerPoint | null;
+export type ToMapPoint = (clientX: number, clientY: number) => MapPoint | null;
 
 /**
  * Tracks a held pointer over the map and reports where it is in **window pixels**.

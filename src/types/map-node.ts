@@ -81,10 +81,7 @@ export interface FloorLootSpot {
   /** Unique identifier for this floor loot spot */
   id: string;
   /** Position on the map grid */
-  position: {
-    row: number;
-    col: number;
-  };
+  position: GridPosition;
   /** Maximum values for random resource generation */
   maxValues: Resources;
   /** Whether this loot has been collected (runtime state, not persisted here) */
