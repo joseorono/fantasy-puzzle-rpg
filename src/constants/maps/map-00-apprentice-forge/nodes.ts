@@ -105,6 +105,6 @@ export const APPRENTICE_FORGE_NODES: InteractiveMapNode[] = [
     name: 'Forge Stairs',
     blocksMovement: false,
     description: 'Worn steps climb toward daylight and the smell of moss',
-    destination: { mapId: 'map-01-fairy-forest', arrival: { row: 39, col: 34 } },
+    destination: { mapId: 'map-01-fairy-forest', arrival: { row: 72, col: 115 } },
   },
 ];
