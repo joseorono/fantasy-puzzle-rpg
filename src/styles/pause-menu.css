@@ -55,6 +55,29 @@
 
 /* ─── Party Bar (top) ────────────────────────────────────────────────── */
 
+/* Always mounted; tabs without the bar collapse its row track so the body eases up into the
+   space. The rounded top corners come from .pause-menu's own overflow clip. */
+.pause-menu-party-bar-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  flex-shrink: 0;
+  transition: grid-template-rows 0.22s ease-out;
+}
+
+.pause-menu-party-bar-slot--collapsed {
+  grid-template-rows: 0fr;
+}
+
+.pause-menu-party-bar-slot__inner {
+  min-height: 0;
+  overflow: hidden;
+  transition: opacity 0.18s ease-out;
+}
+
+.pause-menu-party-bar-slot--collapsed .pause-menu-party-bar-slot__inner {
+  opacity: 0;
+}
+
 .pause-menu-party-bar {
   display: flex;
   gap: 0.5rem;
@@ -293,11 +316,6 @@
   min-height: 0;
   background:
     linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
-}
-
-/* No party bar above: the body meets the menu's rounded top edge (12px minus the 3px border). */
-.pause-menu-body:first-child {
-  border-radius: 9px 9px 0 0;
 }
 
 /* Right column of the body — holds the tab content and the key-hint pill so the
