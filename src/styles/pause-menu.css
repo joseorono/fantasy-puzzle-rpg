@@ -1341,46 +1341,86 @@
 
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 
-/* Weapon + armor sockets in the Items list frame. */
+/* Both Equip panels sit in the Indigolay HUD title frame (gold filigree corners, crest on top),
+   nine-sliced at half scale. */
+.pause-menu-equip-slots,
+.pause-menu-equip-available {
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.15rem;
+  border: solid transparent;
+  border-width: 22px 26px;
+  border-image: url('/assets/menu/equip/indigolay-ornate-panel.png') 44 52 fill / 22px 26px stretch;
+  image-rendering: pixelated;
+}
+
 .pause-menu-equip-slots {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
   flex-shrink: 0;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.92), rgba(10, 6, 4, 0.92));
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 8px;
 }
 
-/* Socket | label, name, rarity | Unequip. Hover and open states are the Items row's. */
+/* Socket | label, name, rarity | Unequip. Frameless rows inside the ornate panel. */
 .pause-menu-equip-slot-row {
+  position: relative;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 0.65rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
-  border: 1px solid transparent;
-  border-radius: 4px;
+  padding: 0.3rem 0.5rem 0.3rem 0.4rem;
   cursor: pointer;
-  transition:
-    background 0.1s ease,
-    border-color 0.1s ease;
 }
 
-.pause-menu-equip-slot-row:hover {
-  background: rgba(92, 62, 38, 0.45);
-  border-color: rgba(212, 165, 116, 0.3);
+/* Fading gold hairline between the two slots. */
+.pause-menu-equip-slot-row + .pause-menu-equip-slot-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.55), transparent);
 }
 
-.pause-menu-equip-slot-row.active {
-  background: linear-gradient(135deg, rgba(110, 76, 49, 0.72), rgba(71, 47, 30, 0.82));
-  border-color: #d4a574;
+/* Hover, open slot and worn piece: a warm glow instead of a box. */
+.pause-menu-equip-slot-row:hover,
+.pause-menu-equip-available .pause-menu-item-row:hover {
+  background: radial-gradient(ellipse at 30% 50%, rgba(212, 165, 116, 0.14), transparent 70%);
+  border-color: transparent;
 }
 
-.pause-menu .pause-menu-equip-slot-row.kb-cursor {
-  border-radius: 4px;
+.pause-menu-equip-slot-row.active,
+.pause-menu-equip-available .pause-menu-item-row.selected {
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 190, 118, 0.2), transparent 75%);
+  border-color: transparent;
+}
+
+/* Indigolay corner brackets (the cursor art IndigolayCornersWrapper uses) in one pseudo-element,
+   shown on hover and under the keyboard cursor in place of the shared gold ring. */
+.pause-menu-equip-slot-row::after,
+.pause-menu-equip-available .pause-menu-item-row::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png') top left / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-topright.png') top right / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png') bottom left / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png') bottom right / 10px 10px no-repeat;
+  transition: opacity 0.12s ease;
+}
+
+.pause-menu-equip-slot-row:hover::after,
+.pause-menu-equip-available .pause-menu-item-row:hover::after,
+.pause-menu .pause-menu-equip-slot-row.kb-cursor::after,
+.pause-menu .pause-menu-equip-available .pause-menu-item-row.kb-cursor::after {
+  opacity: 1;
+}
+
+.pause-menu .pause-menu-equip-slot-row.kb-cursor,
+.pause-menu .pause-menu-equip-available .pause-menu-item-row.kb-cursor {
+  box-shadow: none;
 }
 
 /* Indigolay HUD slot; the gold-framed art marks the slot whose list is open. */
@@ -1518,41 +1558,84 @@
   border: 1px solid rgba(201, 120, 95, 0.25);
 }
 
-/* Available gear: the Items list frame, fills the column under the slots and scrolls inside. */
+/* Available gear: fills the column under the slots and scrolls inside its frame. */
 .pause-menu-equip-available {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.92), rgba(10, 6, 4, 0.92));
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 8px;
   animation: skill-detail-in 0.18s ease-out backwards;
 }
 
-/* Title over a gold rule that fades right (the character header's rule). */
+/* Centred title over the Indigolay filigree divider; Close pinned right. */
 .pause-menu-equip-available__header {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 0 0.2rem 0.3rem;
-  border-bottom: 1px solid transparent;
-  border-image: linear-gradient(90deg, #d4a574, #8b6914 60%, transparent) 1;
+  min-height: 22px;
+  padding-bottom: 14px;
+}
+
+.pause-menu-equip-available__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 216px;
+  max-width: 100%;
+  height: 13px;
+  transform: translateX(-50%);
+  background: url('/assets/menu/equip/indigolay-filigree-divider.png') center / contain no-repeat;
+  image-rendering: pixelated;
+}
+
+.pause-menu-equip-available__header .toffec-square-btn {
+  position: absolute;
+  top: 0;
+  right: 0.2rem;
 }
 
 .pause-menu-equip-available__title {
   margin: 0;
   font-size: 0.55rem;
   font-weight: 400;
-  color: #d4a574;
+  color: #e8c48a;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* Frameless Items rows; icons sit in the small HUD slot, gold-framed for the worn piece. */
+.pause-menu-equip-available .pause-menu-item-row {
+  position: relative;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  border-color: transparent;
+}
+
+.pause-menu-equip-available .pause-menu-item-row__icon {
+  width: 30px;
+  height: 30px;
+  background: url('/assets/menu/equip/indigolay-gear-slot-small.png') center / 100% 100% no-repeat;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
+.pause-menu-equip-available .pause-menu-item-row.selected .pause-menu-item-row__icon {
+  background-image: url('/assets/menu/equip/indigolay-gear-slot-small-selected.png');
+}
+
+/* Equipped: a dark plaque with a gold hairline. */
+.pause-menu-equip-available .pause-menu-item-row__equipped {
+  background: linear-gradient(to bottom, #3b2414, #24150b);
+  border: 1px solid #b8893f;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  color: #e8c48a;
 }
 
 .pause-menu-equip-available__list {
@@ -1588,17 +1671,16 @@
   font-size: 0.45rem;
 }
 
-/* Swap preview chip: stat label, then the signed change. */
+/* Swap preview: stat label, then the signed change, unboxed. */
 .pause-menu-equip-delta {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.12rem 0.35rem;
-  font-size: 0.55rem;
+  padding: 0 0.1rem;
+  font-size: 0.6rem;
   line-height: 1;
   white-space: nowrap;
-  background: rgba(0, 0, 0, 0.22);
-  border-radius: 3px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
 .pause-menu-equip-delta .gear-stats__label {
@@ -1607,17 +1689,14 @@
 
 .pause-menu-equip-delta--up {
   color: #e9be76;
-  border: 1px solid rgba(233, 190, 118, 0.22);
 }
 
 .pause-menu-equip-delta--down {
   color: #c9785f;
-  border: 1px solid rgba(201, 120, 95, 0.25);
 }
 
 .pause-menu-equip-delta--none {
   color: rgba(227, 187, 146, 0.45);
-  background: none;
 }
 
 .pause-menu-equip-tab {
