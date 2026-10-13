@@ -1,5 +1,10 @@
 import { useAtomValue } from 'jotai';
-import { activeMenuTabAtom, PAUSE_MENU_HIDDEN_TABS, pauseMenuZoneAtom } from '~/stores/pause-menu-atoms';
+import {
+  activeMenuTabAtom,
+  PAUSE_MENU_HIDDEN_TABS,
+  PAUSE_MENU_PARTY_BAR_TABS,
+  pauseMenuZoneAtom,
+} from '~/stores/pause-menu-atoms';
 import { PauseMenuPartyBar } from './pause-menu-party-bar';
 import { PauseMenuSidebar } from './pause-menu-sidebar';
 import { PauseMenuContent } from './pause-menu-content';
@@ -12,7 +17,7 @@ export function PauseMenu() {
 
   return (
     <div className="pause-menu" onClick={(e) => e.stopPropagation()}>
-      <PauseMenuPartyBar />
+      {PAUSE_MENU_PARTY_BAR_TABS.includes(activeTab) && <PauseMenuPartyBar />}
       <div className="pause-menu-body">
         <PauseMenuSidebar />
         <div className="pause-menu-main">

@@ -295,6 +295,11 @@
     linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
 }
 
+/* No party bar above: the body meets the menu's rounded top edge (12px minus the 3px border). */
+.pause-menu-body:first-child {
+  border-radius: 9px 9px 0 0;
+}
+
 /* Right column of the body — holds the tab content and the key-hint pill so the
    sidebar can stretch to the bottom edge of the menu. */
 .pause-menu-main {

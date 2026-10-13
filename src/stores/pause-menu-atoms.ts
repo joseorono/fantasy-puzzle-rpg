@@ -20,6 +20,9 @@ export type PauseMenuTab = (typeof PAUSE_MENU_TABS)[number];
 /** Tabs left out of the sidebar, reached only by their own shortcut. Cancel closes the menu from them. */
 export const PAUSE_MENU_HIDDEN_TABS: readonly PauseMenuTab[] = ['tutorial'];
 
+/** Tabs that show the party bar above the body; the rest have a roster of their own or don't need one. */
+export const PAUSE_MENU_PARTY_BAR_TABS: readonly PauseMenuTab[] = ['items', 'stats', 'save', 'load'];
+
 export const isPauseMenuOpenAtom = atom(false);
 export const activeMenuTabAtom = atom<PauseMenuTab>(PAUSE_MENU_TABS[0]);
 
