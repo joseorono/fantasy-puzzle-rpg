@@ -1565,6 +1565,29 @@
   overflow-y: auto;
 }
 
+/* Under a gear name: rarity, then the piece's own stats. */
+.pause-menu-equip-subline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pause-menu-equip-raw {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-size: 0.55rem;
+  color: #f3e7d8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-equip-raw .gear-stats__label {
+  font-size: 0.45rem;
+}
+
 /* Swap preview chip: stat label, then the signed change. */
 .pause-menu-equip-delta {
   display: inline-flex;

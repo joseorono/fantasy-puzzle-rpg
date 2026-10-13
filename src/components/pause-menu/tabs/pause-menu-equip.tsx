@@ -23,6 +23,7 @@ import {
   getEquipmentBonuses,
   getEffectiveStats,
   getEquipmentSwapDelta,
+  getScaledEquipmentStats,
   getAvailableEquipmentForSlot,
 } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
@@ -323,9 +324,7 @@ function EquipSlotRow({
             <span className="pause-menu-item-row__name" style={{ color: getRarityColor(rarity) }}>
               {item.name}
             </span>
-            <span className="pause-menu-item-row__rarity" style={{ color: getRarityColor(rarity) }}>
-              {getRarityLabel(rarity)}
-            </span>
+            <RarityStatLine item={item} rarity={rarity} />
           </>
         ) : (
           <span className="pause-menu-item-row__name pause-menu-equip-slot-row__empty">Empty</span>
@@ -350,6 +349,30 @@ function EquipSlotRow({
         </Tooltip>
       )}
     </div>
+  );
+}
+
+interface RarityStatLineProps {
+  item: EquipmentItemData;
+  rarity: RarityTier | undefined;
+}
+
+/** Rarity label, then the piece's own rarity-scaled POW/VIT/SPD (zeros left out). */
+function RarityStatLine({ item, rarity }: RarityStatLineProps) {
+  const stats = getScaledEquipmentStats(item, rarity);
+
+  return (
+    <span className="pause-menu-equip-subline">
+      <span className="pause-menu-item-row__rarity" style={{ color: getRarityColor(rarity) }}>
+        {getRarityLabel(rarity)}
+      </span>
+      {STAT_KEYS.filter((stat) => stats[stat] !== 0).map((stat) => (
+        <span key={stat} className="pause-menu-equip-raw">
+          <span className={`gear-stats__label gear-stats__label--${stat}`}>{stat}</span>
+          {stats[stat]}
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -440,9 +463,7 @@ function EquipAvailableItem({
         <span className="pause-menu-item-row__name" style={{ color: getRarityColor(rarity) }}>
           {item.name}
         </span>
-        <span className="pause-menu-item-row__rarity" style={{ color: getRarityColor(rarity) }}>
-          {getRarityLabel(rarity)}
-        </span>
+        <RarityStatLine item={item} rarity={rarity} />
       </span>
       <span className="pause-menu-item-row__meta">
         {isEquipped ? (
