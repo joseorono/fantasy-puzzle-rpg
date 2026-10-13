@@ -809,6 +809,14 @@
   border-radius: 999px;
 }
 
+.pause-menu-item-card__tag--battle {
+  color: #e09a63;
+}
+
+.pause-menu-item-card__tag--field {
+  color: #a9c281;
+}
+
 .pause-menu-item-card__desc {
   margin: 0;
   font-family: monospace;
@@ -848,38 +856,8 @@
   }
 }
 
-.pause-menu-item-card__effect {
-  font-family: monospace;
-  font-size: 0.78rem;
-  font-weight: bold;
-  color: #e9be76;
-}
-
-.pause-menu-item-card__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.pause-menu-item-card__chip {
-  padding: 0.12rem 0.4rem;
-  font-size: 0.45rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #e3bb92;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(212, 165, 116, 0.35);
-  border-radius: 999px;
-}
-
-.pause-menu-item-card__chip--battle {
-  color: #e09a63;
-  border-color: rgba(224, 154, 99, 0.4);
-}
-
-.pause-menu-item-card__chip--field {
-  color: #a9c281;
-  border-color: rgba(169, 194, 129, 0.4);
+.pause-menu-item-card__ledger .pause-menu-item-card__desc {
+  color: #f2d2af;
 }
 
 /* POW / VIT / SPD: the Equip tab's gear chips, label stacked over value. */
@@ -1078,7 +1056,7 @@
   margin-top: auto;
 }
 
-/* Narrow pane: the card drops under the list and sheds its flavor text and price. */
+/* Narrow pane: the card drops under the list and sheds its price. */
 @container items-layout (max-width: 520px) {
   .pause-menu-items-layout {
     flex-direction: column;
@@ -1095,7 +1073,6 @@
     width: auto;
   }
 
-  .pause-menu-item-card__desc,
   .pause-menu-item-card__sell {
     display: none;
   }

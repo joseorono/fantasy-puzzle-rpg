@@ -17,7 +17,7 @@ import {
   partyAtom,
 } from '~/stores/battle-atoms';
 import { ConsumableItems } from '~/constants/inventory';
-import { getItemQuantity } from '~/lib/inventory';
+import { describeConsumableAction, getItemQuantity } from '~/lib/inventory';
 import { pickBestLine } from '~/lib/line-clear';
 import { ITEM_COOLDOWN_LABEL_TICK_MS } from '~/constants/battle';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
@@ -202,7 +202,9 @@ export function BattleItemBar({ isBattlePaused }: BattleItemBarProps) {
                   <ItemIcon item={item} size={32} />
                   <span className="battle-item-tooltip__name pixel-font">{item.name}</span>
                 </div>
-                <span className="battle-item-tooltip__desc">{item.description}</span>
+                <span className="battle-item-tooltip__desc">
+                  {describeConsumableAction(item.action) ?? item.description}
+                </span>
                 {lineOrientation && (
                   <KeyHintPill
                     size="sm"
