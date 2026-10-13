@@ -1,59 +1,40 @@
-/* Shared EXP Bar Component */
+/* Shared EXP Bar Component
 
-.exp-bar {
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  border: 2px solid #8b6914;
-  background: rgba(10, 10, 20, 0.9);
-}
+   ExperienceBar is an IndigolayBar wrapper, so the track, fill, label and per-size
+   heights all come from indigolay-bar.css. Only the flash and the compact variant's
+   width live here. */
 
-/* Full variant (level-up screen) */
-.exp-bar--full {
-  height: 22px;
-  margin-bottom: 0.25rem;
-}
-
-/* Compact variant (battle rewards character card) */
 .exp-bar--compact {
-  height: 8px;
-  border-width: 1px;
-  border-color: #d4a574;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  /* Matches .reward-exp-numbers so the bar and the numbers under it share an edge. */
   max-width: 80%;
 }
 
-.exp-bar__fill {
-  height: 100%;
-  background: linear-gradient(90deg, #d4a574 0%, #ffd700 100%);
-  border-radius: 6px;
-  transition: width 0.3s ease;
+.exp-bar {
+  /* ---- Flash animation tweakables ---- */
+  --exp-flash-duration: 350ms;
+  --exp-flash-ease: ease-out;
+  --exp-flash-brightness: rgba(255, 255, 255, 1);
+  --exp-flash-glow-spread: 5px;
+  --exp-flash-glow-blur: 3px;
+  /* Peak opacity of the flash sheet. Below 1 so repeated level-ups don't strobe. */
+  --exp-flash-peak-opacity: 0.8;
 }
 
-.exp-bar--compact .exp-bar__fill {
-  border-radius: 2px;
-}
-
-.exp-bar__label {
+/* Rendered in IndigolayBar's `overlay` slot, which already spans the whole channel. */
+.exp-bar__flash {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  z-index: 1;
+  inset: 0;
+  background: var(--exp-flash-brightness);
+  box-shadow: 0 0 var(--exp-flash-glow-blur) var(--exp-flash-glow-spread) var(--exp-flash-brightness);
+  animation: expBarFlash var(--exp-flash-duration) var(--exp-flash-ease) forwards;
 }
 
-/* Responsive */
-@media (max-height: 700px) {
-  .exp-bar--full {
-    height: 18px;
+@keyframes expBarFlash {
+  from {
+    opacity: var(--exp-flash-peak-opacity);
   }
 
-  .exp-bar--compact {
-    height: 6px;
+  to {
+    opacity: 0;
   }
 }

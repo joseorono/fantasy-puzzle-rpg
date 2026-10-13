@@ -32,6 +32,16 @@ export const INN_WELCOME_TEXT: ReadonlyArray<string> = [
   'Care for a drink before you head to your room? The first one is on the house.',
 ] as const;
 
+export const TRAINING_GROUNDS_WELCOME_TEXT: ReadonlyArray<string> = [
+  'Back straight, feet apart. Now, what are we fixing today?',
+  "Regret how you spent your points? Happens to everyone. For a fee, we'll undo it.",
+  'Strength, toughness, or speed. Pick your poison, then pick it again.',
+  "A hero who never respecs is a hero who never learned anything. Let's get to work.",
+  'The first respec is cheap. The tenth is not. Choose like you mean it.',
+  'Skills sharpen here too. Show me what your party can do.',
+  "Don't expect a healer's touch from me. Lose Vitality and you feel it.",
+] as const;
+
 export const ITEM_SHOP_WELCOME_TEXT: ReadonlyArray<string> = [
   "Welcome to my little shop! I've got just the thing to help you on your journey.",
   'Feeling a bit bruised? My potions will patch you right up!',

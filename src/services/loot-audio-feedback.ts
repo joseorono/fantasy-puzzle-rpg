@@ -14,7 +14,7 @@ import { SoundNames } from '~/constants/audio';
 export const LOOT_AUDIO_CONFIG = {
   // Chest opening sound
   chestOpen: {
-    sound: SoundNames.bgNoiseMiner,
+    sound: SoundNames.rhodesmasChime,
     volume: 0.7, // Base volume (0-1)
     volumeVariance: 0.1, // Random volume variation (±10%)
     speedVariance: 0.05, // Random speed variation (±5%)

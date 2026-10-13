@@ -1,4 +1,4 @@
-import { expect, expectTypeOf, test } from 'vitest';
+import { expect, expectTypeOf, test, vi } from 'vitest';
 
 import * as math from './math';
 import type { Integer } from '~/types/number-types';
@@ -48,12 +48,51 @@ test('generateRange', () => {
   expect(() => math.generateRange(3, 2)).toThrowError(/RANGE ERROR/);
 });
 
-test.skip('randIntInRangeAfterTimeInterval gives you an integer', async () => {
-  const result = await math.randIntInRangeAfterTimeInterval(1 as Integer, 2 as Integer, 2000);
+test('createSeededRandom: same seed gives the same sequence', () => {
+  const a = math.createSeededRandom(42);
+  const b = math.createSeededRandom(42);
+  const first = Array.from({ length: 20 }, () => a());
+  const second = Array.from({ length: 20 }, () => b());
+  expect(first).toEqual(second);
+});
 
-  expectTypeOf(result).toBeNumber();
-  expect(result).toBeGreaterThanOrEqual(1);
-  expect(result).toBeLessThanOrEqual(2);
+test('createSeededRandom: different seeds give different sequences', () => {
+  const a = math.createSeededRandom(1);
+  const b = math.createSeededRandom(2);
+  const first = Array.from({ length: 20 }, () => a());
+  const second = Array.from({ length: 20 }, () => b());
+  expect(first).not.toEqual(second);
+});
+
+test('createSeededRandom: stays in [0, 1) and is roughly uniform', () => {
+  const rng = math.createSeededRandom(7);
+  const draws = 10_000;
+  let sum = 0;
+  for (let i = 0; i < draws; i++) {
+    const value = rng();
+    expect(value).toBeGreaterThanOrEqual(0);
+    expect(value).toBeLessThan(1);
+    sum += value;
+  }
+  expect(sum / draws).toBeGreaterThan(0.48);
+  expect(sum / draws).toBeLessThan(0.52);
+});
+
+test('randIntInRangeAfterTimeInterval gives you an integer', async () => {
+  // Fake timers so we don't wait the real 2s; advance past the interval, then await the result.
+  vi.useFakeTimers();
+  try {
+    const pending = math.randIntInRangeAfterTimeInterval(1 as Integer, 2 as Integer, 2000);
+    await vi.advanceTimersByTimeAsync(2000);
+    const result = await pending;
+
+    expectTypeOf(result).toBeNumber();
+    expect(Number.isInteger(result)).toBe(true);
+    expect(result).toBeGreaterThanOrEqual(1);
+    expect(result).toBeLessThanOrEqual(2);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test('betweenZeroAndOne is between zero and one', () => {

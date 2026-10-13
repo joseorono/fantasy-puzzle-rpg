@@ -8,12 +8,13 @@ export type DialogueCharacterId =
   | 'narrator'
   | 'mystery'
   | 'blacksmith'
-  | 'shopkeeper';
+  | 'shopkeeper'
+  | 'trainer';
 
 export const INNKEEPER_CHAR: DialogueCharacter = {
   id: 'innkeeper',
   name: 'Innkeeper',
-  portrait: '/assets/portraits/Innkeeper_02.png',
+  portrait: '/assets/portraits/innkeeper-2.png',
   side: 'left',
 };
 
@@ -52,14 +53,21 @@ export const MYSTERY_CHAR: DialogueCharacter = {
 export const BLACKSMITH_CHAR: DialogueCharacter = {
   id: 'blacksmith',
   name: 'Blacksmith',
-  portrait: '/assets/portraits/Innkeeper_02.png',
+  portrait: '/assets/portraits/innkeeper-2.png',
   side: 'left',
 };
 
 export const SHOPKEEPER_CHAR: DialogueCharacter = {
   id: 'shopkeeper',
   name: 'Shopkeeper',
-  portrait: '/assets/portraits/Innkeeper_02.png',
+  portrait: '/assets/portraits/innkeeper-2.png',
+  side: 'left',
+};
+
+export const TRAINER_CHAR: DialogueCharacter = {
+  id: 'trainer',
+  name: 'Drill Master',
+  portrait: '/assets/portraits/innkeeper-2.png',
   side: 'left',
 };
 
@@ -72,4 +80,5 @@ export const CharacterList: DialogueCharacterId[] = [
   'mystery',
   'blacksmith',
   'shopkeeper',
+  'trainer',
 ];

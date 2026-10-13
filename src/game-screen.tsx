@@ -8,10 +8,11 @@ import { DialogueTestView } from './views/dialogue-test';
 
 import { BattleRewardsScreen } from './views/battle-rewards-screen';
 
-import DemoMap from './components/map/demo-map.tsx';
-import DemoMap2 from './components/map/demo-map-2.tsx';
+import MapView from '~/views/map-view';
 
 import BattleScreen from '~/views/battle-screen';
+
+import DungeonView from '~/views/dungeon-view';
 
 /**
 
@@ -34,31 +35,27 @@ export default function GameScreen() {
           innCost={townHubData!.innCost}
           itemsForSell={townHubData!.itemsForSell}
           onLeaveCallback={townHubData!.onLeaveCallback}
+          initialLocation={townHubData!.initialLocation}
         />
       );
 
     case 'battle-demo':
       return <BattleScreen />;
 
-    case 'map-demo':
-      return <DemoMap />;
-
-    case 'map-demo-2':
-      return <DemoMap2 />;
+    case 'map':
+      return <MapView />;
 
     case 'dialogue-demo':
       return <DialogueTestView />;
-
-    case 'inventory':
-      // TODO: Implement inventory view
-
-      return <div>Inventory View - Coming Soon</div>;
 
     case 'debug':
       return <DebugView />;
 
     case 'battle-rewards':
       return <BattleRewardsScreen />;
+
+    case 'dungeon':
+      return <DungeonView />;
 
     default:
       return <div>Unknown View: {currentView}</div>;

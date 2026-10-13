@@ -1,0 +1,442 @@
+import { useEffect, useRef, useState } from 'react';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
+import {
+  damagePartyAtom,
+  enemiesAtom,
+  enemyPoiseAtom,
+  partyAtom,
+  enemyStandbyMsAtom,
+  endEnemyStandbyAtom,
+  flagMaxFlinchAtom,
+  gameStatusAtom,
+  isTrainingBattleAtom,
+  lastDamageAtom,
+  lastEnemyAttackAtom,
+  staggeredEnemySignatureAtom,
+  standbyEnemyIdsAtom,
+} from '~/stores/battle-atoms';
+import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
+import { resolveStaggerHits, weighHitsByAttacker } from '~/lib/flinch-system';
+import { resolveEnemyAttackCycle, type ResolvedEnemyAttack } from '~/lib/enemy-attacks';
+import type { EnemyData } from '~/types/rpg-elements';
+import { resolveCountdownRingAnchor } from '~/lib/battle-system';
+import { POISE_BREAK_STAGGER_DURATION_MS, SKILL_STAGGER_MULTIPLIER } from '~/constants/battle';
+
+/** Per-enemy attack timing exposed to the UI. */
+export interface EnemyAttackTimer {
+  /** The enemy's id. */
+  id: string;
+  /** Ring sweep length: the standby wait while observing, else the attack interval (see {@link resolveCountdownRingAnchor}). */
+  durationMs: number;
+  /**
+   * Negative animation offset in ms so a remount resumes mid-sweep. The ring always reads as
+   * "time remaining until release" against the interval, so a stagger of `p` ms steps the fill
+   * back by `p / interval` wherever it lands in the cycle. 0 at the start of a cycle.
+   */
+  elapsedMs: number;
+  /** Change this to restart the countdown ring (a new value remounts + replays the CSS fill). */
+  cycleKey: number | string;
+  /** True while the enemy is still on its start-of-battle standby (show the eye); false once attacking. */
+  isStandby: boolean;
+  /**
+   * True while the enemy is Broken (poise emptied): its attack is cancelled and the ring counts
+   * the stagger window down instead of an attack. Recovery opens a fresh full cycle.
+   */
+  isStaggered: boolean;
+  /**
+   * Bumped whenever a hit staggers this enemy, so the UI can shake the ring. `nonce` changes only on
+   * a real stagger (never on a plain new cycle); `level` is `'max'` on the hit that maxes the
+   * per-cycle flinch (fires the "Flinched!" callout) for a bigger shake, else `'normal'`. Null while
+   * observing / Broken / before the first stagger.
+   */
+  staggerPulse: { nonce: number; level: 'normal' | 'max' } | null;
+}
+
+/**
+ * Compares two timer lists field by field. `staggerPulse` is compared by value rather than by
+ * reference so that mutating a pulse in place could never slip through as "unchanged".
+ * @param next The list just built this render
+ * @param prev The list handed out on the previous render
+ * @returns True when nothing the UI reads has changed
+ */
+function timerListsMatch(next: EnemyAttackTimer[], prev: EnemyAttackTimer[]): boolean {
+  if (next.length !== prev.length) return false;
+
+  for (let i = 0; i < next.length; i++) {
+    const a = next[i];
+    const b = prev[i];
+    if (
+      a.id !== b.id ||
+      a.durationMs !== b.durationMs ||
+      a.elapsedMs !== b.elapsedMs ||
+      a.cycleKey !== b.cycleKey ||
+      a.isStandby !== b.isStandby ||
+      a.isStaggered !== b.isStaggered ||
+      a.staggerPulse?.nonce !== b.staggerPulse?.nonce ||
+      a.staggerPulse?.level !== b.staggerPulse?.level
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Runs each living enemy's attack loop and reports its timing for the UI.
+ *
+ * At battle start every enemy first spends a randomized **standby** delay (from
+ * {@link enemyStandbyMsAtom}) "observing" before its attack loop begins, so a fresh encounter's
+ * attacks fan out instead of all firing on the same tick. Once attacking, each enemy runs a
+ * self-rescheduling `setTimeout` anchored to an absolute release timestamp (`releaseAtRef`)
+ * rather than a fixed `setInterval`, which lets a hit **stagger** it: hitting an enemy pushes its
+ * next attack back a little (VIT-resisted, capped per cycle so it can never be stunlocked — see
+ * {@link resolveStaggerHits} in `~/lib/flinch-system`). The stagger is derived
+ * from the shared {@link lastDamageAtom} channel, so it needs no extra battle state.
+ *
+ * A **Break** (the enemy's poise pool emptied, see `~/lib/poise-system`) cancels the pending
+ * attack outright: while {@link staggeredEnemySignatureAtom} lists the enemy, its shot is dropped
+ * and the ring counts the stagger window down instead. The window itself is battle state ticked
+ * by `battleTickAtom`; this hook only reacts to it, the same way it reacts to `standbyEnemyIds`.
+ * When the signature clears, the "no live cycle" branch below opens a fresh full cycle.
+ *
+ * Each cycle also advances the enemy's attack variant (`EnemyData.attacks`): the variant scales the
+ * interval that leads into its shot and the damage/guardBreak it lands with, and its index rides on
+ * `lastEnemyAttackAtom` so the animated sprite plays the matching row.
+ *
+ * Performance: no central loop and no polling. Still one timer per living enemy (<= 4); a stagger
+ * only re-anchors the ring and extends `releaseAtRef` — the running shot timer re-defers itself on
+ * its next wake, so staggering never tears the timers down. `releaseAtRef` (absolute timestamps)
+ * is the source of truth, so a mid-battle rebuild (an enemy dies) resumes each observer's standby
+ * instead of restarting it. Which enemies are still observing lives in battle state
+ * (`standbyEnemyIds`), so the damage path can award preemptive-strike bonuses.
+ */
+export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAttackTimer[] {
+  const enemies = useAtomValue(enemiesAtom);
+  const gameStatus = useAtomValue(gameStatusAtom);
+  // A training dummy never attacks: no loop, no rings, no zero-damage hits on the party.
+  const isTraining = useAtomValue(isTrainingBattleAtom);
+  const enemyStandbyMs = useAtomValue(enemyStandbyMsAtom);
+  const standbyEnemyIds = useAtomValue(standbyEnemyIdsAtom);
+  // A string of Broken enemy ids: changes on a Break or a recovery, never on the countdown itself.
+  const staggeredSignature = useAtomValue(staggeredEnemySignatureAtom);
+  const lastDamage = useAtomValue(lastDamageAtom);
+  const store = useStore();
+  const damageParty = useSetAtom(damagePartyAtom);
+  const endStandby = useSetAtom(endEnemyStandbyAtom);
+  const flagMaxFlinch = useSetAtom(flagMaxFlinchAtom);
+  const flagEnemyAttack = useSetAtom(lastEnemyAttackAtom);
+
+  // Per-enemy ring cycle counter; bumped on each attack AND each stagger to remount the ring.
+  const [version, setVersion] = useState<Record<string, number>>({});
+
+  // Latest values, read inside timer/stagger callbacks without widening effect deps.
+  const enemiesRef = useRef(enemies);
+  enemiesRef.current = enemies;
+  const standbyIdsRef = useRef(standbyEnemyIds);
+  standbyIdsRef.current = standbyEnemyIds;
+  const staggeredIds = staggeredSignature === '' ? [] : staggeredSignature.split('|');
+  const staggeredIdsRef = useRef(staggeredIds);
+  staggeredIdsRef.current = staggeredIds;
+
+  // Absolute release timestamps (performance.now() based) — the source of truth for timing.
+  const releaseAtRef = useRef<Map<string, number>>(new Map()); // when the enemy next attacks
+  const cycleStartRef = useRef<Map<string, number>>(new Map()); // when the current ring cycle began
+  const staggerUsedRef = useRef<Map<string, number>>(new Map()); // push-back (ms) spent this cycle
+  // Attack variants: the one currently winding up (its multipliers land with the shot) and how many
+  // cycles this enemy has started, so variants alternate normal → fast/heavy → normal…
+  const pendingAttackRef = useRef<Map<string, ResolvedEnemyAttack>>(new Map());
+  const attackCycleRef = useRef<Map<string, number>>(new Map());
+  // Ring geometry captured at each (re)anchor, read during render.
+  const ringDurationRef = useRef<Map<string, number>>(new Map());
+  const ringElapsedRef = useRef<Map<string, number>>(new Map());
+  // Per-enemy stagger pulse (monotonic nonce + level), so the ring can shake on each applied stagger.
+  const staggerPulseRef = useRef<Map<string, { nonce: number; level: 'normal' | 'max' }>>(new Map());
+  // One pending timeout per enemy (standby wait or the next attack), for cleanup.
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  // Guards against re-processing the same hit (effect re-runs / StrictMode double-invoke).
+  const processedDamageRef = useRef<typeof lastDamage>(null);
+  // Last list handed to the caller, reused whenever the new one is field-for-field identical.
+  const lastTimersRef = useRef<EnemyAttackTimer[]>([]);
+  // When the current pause began, so resuming can shift every absolute timestamp forward by the
+  // time spent paused. Without this the release times keep ageing while the rings stand frozen,
+  // and an enemy paused near release fires the instant the battle resumes.
+  const pausedAtRef = useRef<number | null>(null);
+
+  const livingEnemies = enemies.filter((enemy) => enemy.currentHp > 0);
+
+  // The countdown leading into the enemy's next shot: the pending variant scales the base interval
+  // (a fast attack comes sooner). Falls back to the base interval before the first cycle opens.
+  function variantInterval(enemy: EnemyData, id: string): number {
+    const pending = pendingAttackRef.current.get(id);
+    return Math.round(calculateEnemyAttackInterval(enemy) * (pending?.intervalMultiplier ?? 1));
+  }
+
+  // Stable signature of the roster — changes only when an enemy joins/dies or an
+  // interval changes, NOT when HP merely drops. This is (part of) the effect's trigger.
+  const rosterSignature = livingEnemies.map((enemy) => `${enemy.id}:${calculateEnemyAttackInterval(enemy)}`).join('|');
+
+  function bumpVersion(id: string) {
+    setVersion((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  }
+
+  // New battle (a fresh `enemyStandbyMs` object) → wipe all timing bookkeeping so every enemy
+  // re-observes from scratch. (The observing set itself is reset in createBattleState.)
+  useEffect(() => {
+    releaseAtRef.current = new Map();
+    cycleStartRef.current = new Map();
+    staggerUsedRef.current = new Map();
+    pendingAttackRef.current = new Map();
+    attackCycleRef.current = new Map();
+    ringDurationRef.current = new Map();
+    ringElapsedRef.current = new Map();
+    staggerPulseRef.current = new Map();
+    pausedAtRef.current = null;
+    setVersion({});
+  }, [enemyStandbyMs]);
+
+  useEffect(() => {
+    function clearTimers() {
+      for (const timer of timersRef.current.values()) clearTimeout(timer);
+      timersRef.current.clear();
+    }
+
+    if (gameStatus !== 'playing' || isBattlePaused === true || isTraining) {
+      // Remember when the pause started (only the first time through — a re-run while still
+      // paused must not move the mark).
+      if (isBattlePaused === true && pausedAtRef.current === null) pausedAtRef.current = performance.now();
+      return clearTimers;
+    }
+
+    // Resuming: push every release and cycle start forward by the time spent paused, so each
+    // timer picks up exactly where its frozen ring left off.
+    if (pausedAtRef.current !== null) {
+      const pausedMs = performance.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+      for (const [id, releaseAt] of releaseAtRef.current) releaseAtRef.current.set(id, releaseAt + pausedMs);
+      for (const [id, cycleStart] of cycleStartRef.current) cycleStartRef.current.set(id, cycleStart + pausedMs);
+    }
+
+    // Opens a fresh attack cycle: a full ring over the interval, empty stagger budget, and the
+    // scheduled shot (which self-reschedules and re-defers when a stagger extends the release).
+    function startCycle(id: string) {
+      const enemy = enemiesRef.current.find((e) => e.id === id);
+      if (!enemy || enemy.currentHp <= 0) return;
+      // Alternate the enemy's attack variants: the resolved one owns both the interval that leads
+      // into its shot and the hit it lands, and its index rides to the sprite on lastEnemyAttackAtom.
+      const cycleIndex = attackCycleRef.current.get(id) ?? 0;
+      const resolved = resolveEnemyAttackCycle(enemy, cycleIndex);
+      attackCycleRef.current.set(id, cycleIndex + 1);
+      pendingAttackRef.current.set(id, resolved);
+      const interval = Math.round(calculateEnemyAttackInterval(enemy) * resolved.intervalMultiplier);
+      const start = performance.now();
+      cycleStartRef.current.set(id, start);
+      releaseAtRef.current.set(id, start + interval);
+      staggerUsedRef.current.set(id, 0);
+      ringDurationRef.current.set(id, interval);
+      ringElapsedRef.current.set(id, 0);
+      bumpVersion(id);
+      scheduleShot(id);
+    }
+
+    function scheduleShot(id: string) {
+      const delay = Math.max(0, (releaseAtRef.current.get(id) ?? performance.now()) - performance.now());
+      timersRef.current.set(
+        id,
+        setTimeout(() => fireShot(id), delay),
+      );
+    }
+
+    function fireShot(id: string) {
+      const now = performance.now();
+      const target = releaseAtRef.current.get(id) ?? now;
+      // A stagger pushed the release past this wake-up — wait out the remaining delta (the only
+      // extra work a stagger costs the timer, bounded by the per-cycle cap).
+      if (now < target - 1) {
+        timersRef.current.set(
+          id,
+          setTimeout(() => fireShot(id), target - now),
+        );
+        return;
+      }
+      const enemy = enemiesRef.current.find((e) => e.id === id);
+      if (!enemy || enemy.currentHp <= 0) return;
+      const resolved = pendingAttackRef.current.get(id) ?? resolveEnemyAttackCycle(enemy, 0);
+      damageParty(
+        calculateEnemyDamage(enemy, resolved.damageMultiplier),
+        id,
+        (enemy.guardBreak ?? 1) * resolved.guardBreakMultiplier,
+      );
+      flagEnemyAttack({ enemyId: id, timestamp: Date.now(), attackIndex: resolved.attackIndex });
+      startCycle(id);
+    }
+
+    const now = performance.now();
+
+    for (const enemy of enemiesRef.current.filter((e) => e.currentHp > 0)) {
+      const id = enemy.id;
+      const standbyMs = enemyStandbyMs[id] ?? 0;
+      const isObserving = standbyIdsRef.current.includes(id);
+
+      // Broken: drop the pending attack entirely (the previous run's cleanup already cleared its
+      // timeout) and point the ring at the stagger window instead. No recovery timer here — when
+      // the tick zeroes the window the signature changes, this effect re-runs, and the enemy has
+      // no live cycle any more, so the `startCycle` branch below opens a fresh full one.
+      if (staggeredIdsRef.current.includes(id)) {
+        releaseAtRef.current.delete(id);
+        cycleStartRef.current.delete(id);
+        staggerUsedRef.current.delete(id);
+        const remainingMs = store.get(enemyPoiseAtom)[id]?.staggerRemainingMs ?? POISE_BREAK_STAGGER_DURATION_MS;
+        ringDurationRef.current.set(id, POISE_BREAK_STAGGER_DURATION_MS);
+        ringElapsedRef.current.set(id, Math.max(0, POISE_BREAK_STAGGER_DURATION_MS - remainingMs));
+        bumpVersion(id);
+        continue;
+      }
+
+      if (!releaseAtRef.current.has(id)) releaseAtRef.current.set(id, now + standbyMs);
+      const remaining = releaseAtRef.current.get(id)! - now;
+
+      if (isObserving && standbyMs > 0 && remaining > 0) {
+        // Still observing — wait out the remaining standby, then begin attacking in place.
+        timersRef.current.set(
+          id,
+          setTimeout(() => {
+            endStandby(id);
+            startCycle(id);
+          }, remaining),
+        );
+      } else {
+        // Past standby (or none) — make sure state reflects "attacking".
+        if (isObserving) endStandby(id);
+        // Preserve an already-running attack cycle across a mid-battle rebuild (e.g. another enemy
+        // died and re-ran this effect): re-arm the shot against the EXISTING release time rather
+        // than opening a fresh cycle. Restarting would hand every survivor a free full interval and
+        // discard their accumulated stagger. Re-anchor the ring to its current progress so the
+        // countdown stays visually continuous. Only enemies with no live cycle start a fresh one.
+        if (releaseAtRef.current.has(id) && cycleStartRef.current.has(id)) {
+          const anchor = resolveCountdownRingAnchor(variantInterval(enemy, id), releaseAtRef.current.get(id)! - now);
+          ringDurationRef.current.set(id, anchor.durationMs);
+          ringElapsedRef.current.set(id, anchor.elapsedMs);
+          bumpVersion(id);
+          scheduleShot(id);
+        } else {
+          startCycle(id);
+        }
+      }
+    }
+
+    return clearTimers;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    gameStatus,
+    isBattlePaused,
+    isTraining,
+    rosterSignature,
+    staggeredSignature,
+    enemyStandbyMs,
+    damageParty,
+    endStandby,
+    flagEnemyAttack,
+  ]);
+
+  // Stagger: on each new enemy-targeting hit, push the struck enemy's next attack back (capped),
+  // and re-anchor its ring. Reads from `lastDamage` (which already carries the amount + which
+  // enemy) so no extra battle state is needed. The running shot timer re-defers itself.
+  useEffect(() => {
+    if (lastDamage === processedDamageRef.current) return;
+    processedDamageRef.current = lastDamage;
+    if (!lastDamage || lastDamage.target !== 'enemy') return;
+    if (gameStatus !== 'playing' || isBattlePaused === true) return;
+
+    const now = performance.now();
+    const ids = lastDamage.enemyIds ?? (lastDamage.enemyId ? [lastDamage.enemyId] : []);
+    // A multi-color match arrives as one event carrying every hit; a single hit has no `hits`.
+    const rawHits = lastDamage.hits ?? [{ amount: lastDamage.amount, characterId: lastDamage.characterId }];
+    // Attacker passives and the skill bonus scale each hit's raw push; both are applied BEFORE
+    // the per-cycle clamp (inside resolveStaggerHits), so the anti-stunlock cap stays authoritative.
+    // Read the party on demand: subscribing to `partyAtom` here would re-render the whole battle
+    // screen on every cooldown tick, and the stagger only needs the attacker's passives at hit time.
+    const hits = weighHitsByAttacker(rawHits, store.get(partyAtom), SKILL_STAGGER_MULTIPLIER, lastDamage.source);
+
+    for (const id of ids) {
+      // Skip enemies still observing (not attacking yet), Broken (no pending attack to push —
+      // poise owns that window), or without a live attack cycle.
+      if (standbyIdsRef.current.includes(id)) continue;
+      if (staggeredIdsRef.current.includes(id)) continue;
+      if (!releaseAtRef.current.has(id) || !cycleStartRef.current.has(id)) continue;
+      const enemy = enemiesRef.current.find((e) => e.id === id);
+      if (!enemy || enemy.currentHp <= 0) continue;
+
+      const interval = variantInterval(enemy, id);
+      const used = staggerUsedRef.current.get(id) ?? 0;
+      const { appliedMs: applied, maxedFlinch } = resolveStaggerHits(
+        hits,
+        { maxHp: enemy.maxHp, vit: enemy.stats.vit },
+        interval,
+        used,
+      );
+      if (applied <= 0) continue;
+
+      staggerUsedRef.current.set(id, used + applied);
+      // The batch that pushes this cycle over its cap "maxes" the flinch — flag it once (transition
+      // only) so the enemy can pop a "Flinched!" callout. Further hits this cycle apply 0 and skip.
+      if (maxedFlinch) flagMaxFlinch(id);
+      // Pulse the ring shake: bigger on the maxing hit, subtle otherwise.
+      const prevNonce = staggerPulseRef.current.get(id)?.nonce ?? 0;
+      staggerPulseRef.current.set(id, { nonce: prevNonce + 1, level: maxedFlinch ? 'max' : 'normal' });
+      const release = (releaseAtRef.current.get(id) ?? now) + applied;
+      releaseAtRef.current.set(id, release);
+      // Re-anchor the ring as "time remaining until release" so the fill visibly steps back by
+      // `applied / interval` (and still empties exactly at the new release).
+      const anchor = resolveCountdownRingAnchor(interval, release - now);
+      ringDurationRef.current.set(id, anchor.durationMs);
+      ringElapsedRef.current.set(id, anchor.elapsedMs);
+      bumpVersion(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastDamage, gameStatus, isBattlePaused]);
+
+  const timers: EnemyAttackTimer[] = livingEnemies.map((enemy) => {
+    const id = enemy.id;
+    const isStandby = standbyEnemyIds.includes(id);
+    if (isStandby) {
+      return {
+        id,
+        durationMs: enemyStandbyMs[id] ?? 0,
+        elapsedMs: 0,
+        cycleKey: `standby-${id}`,
+        isStandby: true,
+        isStaggered: false,
+        staggerPulse: null,
+      };
+    }
+    if (staggeredIds.includes(id)) {
+      // The ring counts the stagger window down; its own key so recovery remounts it from full.
+      return {
+        id,
+        durationMs: ringDurationRef.current.get(id) ?? POISE_BREAK_STAGGER_DURATION_MS,
+        elapsedMs: ringElapsedRef.current.get(id) ?? 0,
+        cycleKey: `stagger-${id}-${version[id] ?? 0}`,
+        isStandby: false,
+        isStaggered: true,
+        staggerPulse: null,
+      };
+    }
+    return {
+      id,
+      durationMs: ringDurationRef.current.get(id) ?? variantInterval(enemy, id),
+      elapsedMs: ringElapsedRef.current.get(id) ?? 0,
+      cycleKey: version[id] ?? 0,
+      isStandby: false,
+      isStaggered: false,
+      staggerPulse: staggerPulseRef.current.get(id) ?? null,
+    };
+  });
+
+  // The ring timings only move at anchor points (cycle start, mid-battle rebuild, stagger), but this
+  // list is rebuilt on every render of the battle screen. Handing back the previous array when
+  // nothing changed lets the compiler skip re-rendering `BattleTopBar` and its countdown rings
+  // instead of reconciling them behind a prop that is new only by identity.
+  if (timerListsMatch(timers, lastTimersRef.current)) return lastTimersRef.current;
+  lastTimersRef.current = timers;
+  return timers;
+}

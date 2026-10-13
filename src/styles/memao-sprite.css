@@ -1,0 +1,10 @@
+/* One frame of a Memao sprite sheet (src/constants/memao-sprite.ts). Set the sheet
+   with `background-image` and the frame with `background-position`. */
+.memao-sprite {
+  width: 48px;
+  height: 48px;
+  background-repeat: no-repeat;
+  background-size: auto;
+  /* Crisp pixel art at any scale. */
+  image-rendering: pixelated;
+}

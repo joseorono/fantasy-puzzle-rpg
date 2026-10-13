@@ -17,11 +17,12 @@ A store-based routing system for the game that provides full control over naviga
 ## Available Views
 
 - `town-hub` - Main town hub (contains blacksmith, inn, and item Shop as sub-locations)
-- `battle-demo` - Battle demo screen
-- `map-demo` - Map demo
-- `dialogue-demo` - Dialogue demo
-- `inventory` - Inventory management
-- `debug` - Debug/test view
+- `battle-demo` - Match-3 battle screen
+- `battle-rewards` - Post-battle rewards and EXP distribution screen
+- `dungeon` - Multi-floor dungeon exploration view
+- `map` - Overworld map; `mapId` in the view data selects which one from `MAP_REGISTRY`
+- `dialogue-demo` - Dialogue test/demo view
+- `debug` - Debug & feature testing dashboard
 
 ## Usage
 
@@ -31,7 +32,7 @@ A store-based routing system for the game that provides full control over naviga
 import { useRouterActions } from '~/stores/game-store';
 
 function MyComponent() {
-  const { goToBattle, goToTownHub, goBack } = useRouterActions();
+  const { goToBattleDemo, goToTownHub, goBack } = useRouterActions();
 
   // Navigate to battle demo with data
   const startBattle = () => {
@@ -70,7 +71,7 @@ function MyComponent() {
   // Get full router state
   const router = useRouterState();
   console.log(router.currentView);
-  console.log(router.previousView);
+  console.log(router.history); // [{ view, data }, …] oldest first — goBack() pops the last one
 
   // Get view-specific data
   const battleData = useViewData('battle-demo');
@@ -115,6 +116,22 @@ const quickBattle = () => {
 };
 ```
 
+### Transition Before Navigating
+
+Cover transitions (`useViewTransitions` in `src/hooks/use-view-transitions.ts`) play a global animation that
+ends fully opaque and resolve on its configured `duration` (`ANIMATION_CONFIG` in
+`src/constants/animation-system.ts`). Navigate in the continuation so the route change lands under the cover;
+the destination hard-cuts in. Lock the caller's input for the wait (the map pauses movement, the dungeon
+flips to `awaiting-battle`, the training grounds latch a ref). Under reduced motion they resolve immediately.
+
+```typescript
+const { enterBattle, enterTown } = useViewTransitions();
+
+setupBattle({ enemies, party });
+await enterBattle(); // random pick from BATTLE_TRANSITION_ANIMATIONS, never the same twice in a row
+goToBattleDemo({ enemyId, location });
+```
+
 ## Navigation Methods
 
 ### Specific View Navigation
@@ -123,10 +140,31 @@ Each view has a dedicated type-safe method:
 
 - `goToTownHub(data)` - Navigate to town hub (data required)
 - `goToBattleDemo(data)` - Navigate to battle demo (data required)
-- `goToMapDemo(data?)` - Navigate to map demo
+- `goToMap(data)` - Navigate to a map (`{ mapId }` required)
+- `goToDungeon(data)` - Navigate to a dungeon run (data required)
+- `goToBattleRewards(data)` - Navigate to battle rewards; from a battle, replaces it in the history
 - `goToDialogueDemo(data?)` - Navigate to dialogue demo
-- `goToInventory(data?)` - Navigate to inventory
 - `goToDebug(data?)` - Navigate to debug view
+
+### History Modes
+
+The router keeps a **history stack** of `{ view, data }` snapshots. Every `goToX` takes an optional
+second argument, `{ history }`, that says what happens to the view being left:
+
+- `push` (default) — the current view and its data are stacked, so `goBack()` returns to it exactly
+  as it was. Round-trips of any depth work by construction, including a view opening itself
+  (map → map: `goBack()` lands on the first map with its own `mapId`).
+- `replace` — the current view is dropped; the stack is untouched. `goToBattleRewards` applies this
+  itself when launched from a battle, so `goBack()` from the rewards skips the finished fight.
+- `reset` — the stack is emptied. Used by the save loader: a load is a fresh timeline, and whatever
+  the menu was opened over (a dungeon run, a dead battle) must not be reachable.
+
+```typescript
+goToMap({ mapId: save.currentMapId }, { history: 'reset' });
+```
+
+The stack is capped at `ROUTER_HISTORY_LIMIT` entries (`src/constants/routing.ts`); the oldest are
+dropped past it. Real flows are three deep at most.
 
 ### Type-Safe Navigation Functions
 
@@ -148,14 +186,15 @@ const result = goToBattleDemo(currentState, {
 ```typescript
 const { goBack, goBackTo } = useRouterActions();
 
-// Go to previous view (recommended)
+// Go to the previous view, restoring the data it had when the player left it
 goBack();
 
-// Jump directly to a specific view (use with caution)
-// WARNING: Can cause illogical navigation flows
-// Prefer direct navigation functions instead
-goBackTo('town-hub');
+// Unwind to the nearest occurrence of a view in the history, dropping everything above it.
+// Fails (with a console warning) when the view was never navigated from — it never jumps.
+goBackTo('map');
 ```
+
+To hide a dead back button, read `canGoBack(state.router)` from `~/lib/routing`.
 
 ### Update Data Without Navigation
 
@@ -163,12 +202,15 @@ goBackTo('town-hub');
 const { setViewData } = useRouterActions();
 
 // Update view data without navigating
-setViewData('battle', {
+setViewData('battle-demo', {
   enemyId: 'updated-enemy',
   location: 'New Location',
   canFlee: false,
 });
 ```
+
+For a view that is stacked rather than on screen, its history snapshot is updated too, so what you
+set is what the player finds on `goBack()`.
 
 ## Type Safety
 
@@ -206,10 +248,7 @@ console.log(townHubData!.innCost);
 1. **Add view type** in `/src/types/routing.ts`:
 
 ```typescript
-export type ViewType =
-  | 'town-hub'
-  | 'battle-demo'
-  | 'my-new-view'; // Add here
+export type ViewType = 'town-hub' | 'battle-demo' | 'my-new-view'; // Add here
 ```
 
 2. **Add view data interface**:
@@ -232,9 +271,10 @@ export interface ViewDataMap {
 ```typescript
 export function goToMyNewView(
   currentState: RouterState,
-  data: ViewDataMap['my-new-view']
+  data: ViewDataMap['my-new-view'],
+  options?: NavigationOptions,
 ): NavigationResult {
-  return prepareNavigation(currentState, 'my-new-view', data);
+  return prepareNavigation(currentState, 'my-new-view', data, options);
 }
 ```
 
@@ -245,7 +285,7 @@ export interface RouterSlice {
   actions: {
     router: {
       // ... existing methods
-      goToMyNewView: (data: ViewDataMap['my-new-view']) => void;
+      goToMyNewView: (data: ViewDataMap['my-new-view'], options?: NavigationOptions) => void;
     };
   };
 }
@@ -259,17 +299,11 @@ import {
   // ... other imports
 } from '~/lib/routing';
 
-goToMyNewView: (data) => {
-  set((state: RouterSlice) => {
-    const result = libGoToMyNewView(state.router, data);
-    if (result.success && result.nextState) {
-      state.router = result.nextState;
-    } else {
-      console.warn(`Navigation failed: ${result.error}`);
-    }
-  });
-},
+goToMyNewView: (data, options) =>
+  commit((state) => libGoToMyNewView(state.router, data, options), 'Navigation failed'),
 ```
+
+(`commit` is the slice-local helper that applies a `NavigationResult` or warns.)
 
 6. **Add case in GameScreen** (`/src/game-screen.tsx`):
 
@@ -284,27 +318,32 @@ case 'my-new-view':
 The routing logic is separated into pure functions in `/src/lib/routing.ts`:
 
 **Core Functions:**
-- `canNavigate(currentState, targetView)` - Validate navigation
-- `prepareNavigation(currentState, targetView, viewData)` - Prepare navigation
-- `prepareGoBack(currentState)` - Prepare back navigation
-- `prepareGoBackTo(currentState, targetView)` - Jump to specific view (use with caution)
-- `prepareSetViewData(currentState, view, data)` - Update view data
-- `getViewData(state, view)` - Get view data
-- `canGoBack(state)` - Check if can go back
 
-**Type-Safe Navigation Functions:**
+- `canNavigate()` - Validate navigation
+- `prepareNavigation(currentState, targetView, viewData?, options?)` - Prepare navigation (push / replace / reset)
+- `prepareGoBack(currentState)` - Pop the history, restoring the previous view's data
+- `prepareGoBackTo(currentState, targetView)` - Unwind to the nearest occurrence of a view
+- `prepareSetViewData(currentState, view, data)` - Update view data (and its snapshot, if stacked)
+- `getViewData(state, view)` - Get view data
+- `canGoBack(state)` - Whether the history has anything to pop
+
+**Type-Safe Navigation Functions** (all take `options?: NavigationOptions` last):
+
 - `goToTownHub(currentState, data)` - Navigate to town hub
 - `goToBattleDemo(currentState, data)` - Navigate to battle demo
-- `goToMapDemo(currentState, data?)` - Navigate to map demo
+- `goToMap(currentState, data)` - Navigate to a map
+- `goToDungeon(currentState, data)` - Navigate to a dungeon run
+- `goToBattleRewards(currentState, data)` - Navigate to rewards; replaces a battle it is launched from
 - `goToDialogueDemo(currentState, data?)` - Navigate to dialogue demo
-- `goToInventory(currentState, data?)` - Navigate to inventory
 - `goToDebug(currentState, data?)` - Navigate to debug
 
 These functions are testable and don't mutate state directly.
 
 ## Persistence
 
-Router state is automatically persisted to localStorage along with other game state. Navigation history and view data will be restored on page reload.
+The router is **not** saved. View data holds callbacks and map/dungeon definition references that
+can't be serialized, and a load always resumes on the saved map with an empty history
+(`loadSlot` in `src/hooks/use-save-game.ts`).
 
 ## Configuration
 
@@ -351,7 +390,7 @@ function QuestSystem() {
 
 - URL bar remains unchanged during navigation
 - All navigation is controlled through the store
-- Only tracks `previousView` (no full history array)
+- Full history stack of `{ view, data }` snapshots; `goBack()` restores the previous view exactly
 - View data persists across navigation
 - Type-safe navigation prevents runtime errors
-- `goBackTo()` should be used sparingly - prefer direct navigation functions
+- `goBackTo()` unwinds; it never jumps to a view that isn't in the history

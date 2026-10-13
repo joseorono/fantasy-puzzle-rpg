@@ -1,13 +1,18 @@
 import type { Resources } from './resources';
 import type { EquipmentItemData, ConsumableItemData } from './inventory';
 import type { ProbabilityNumber } from './number-types';
+import type { RarityTier } from '~/constants/rarity';
 
 /**
- * Loot item with probability of being included
+ * Loot item with probability of being included.
+ *
+ * `rarity` is set when an equipment drop is *materialized* (rolled once at battle
+ * end / chest open) so the rewards UI and the inventory grant agree on the tier.
  */
 export interface LootItem<T> {
   item: T;
   probability: ProbabilityNumber;
+  rarity?: RarityTier;
 }
 
 /**

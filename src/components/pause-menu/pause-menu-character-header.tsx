@@ -1,43 +1,29 @@
-import type { ElementType } from 'react';
+import { CHARACTER_COLORS, CHARACTER_ICONS } from '~/constants/party';
 import { cn } from '~/lib/utils';
-
-interface HeaderIconProps {
-  className?: string;
-  size?: number;
-}
-
-interface HeaderColors {
-  bg: string;
-  icon: string;
-}
+import type { CharacterData } from '~/types/rpg-elements';
 
 interface PauseMenuCharacterHeaderProps {
-  name: string;
-  classNameText: string;
-  level: number;
-  Icon: ElementType<HeaderIconProps>;
-  colors: HeaderColors;
+  member: CharacterData;
 }
 
-export function PauseMenuCharacterHeader({
-  name,
-  classNameText,
-  level,
-  Icon,
-  colors,
-}: PauseMenuCharacterHeaderProps) {
+/**
+ * One-line identity strip for the pause menu's per-hero tabs (Stats, Equip): class icon chip,
+ * name, class and level over a gold rule. Bars and portraits live in the party bar above.
+ */
+export function PauseMenuCharacterHeader({ member }: PauseMenuCharacterHeaderProps) {
+  const Icon = CHARACTER_ICONS[member.class];
+
   return (
-    <div className="pause-menu-equip-header">
-      <div className={cn('pause-menu-stats-icon', colors.bg)}>
-        <Icon size={16} className={colors.icon} />
+    <div className="pause-menu-character-header">
+      <div className="pause-menu-character-header__icon">
+        <Icon size={14} className={cn(CHARACTER_COLORS[member.class].icon)} />
       </div>
-      <div className="pause-menu-equip-header-line">
-        <div className="pause-menu-stats-name">{name}</div>
-        <span className="pause-menu-equip-header-separator">|</span>
-        <div className="pause-menu-stats-class">{classNameText}</div>
-        <span className="pause-menu-equip-header-separator">|</span>
-        <div className="pause-menu-equip-header-level">Lv. {level}</div>
-      </div>
+      <span className="pause-menu-character-header__name pixel-font">{member.name}</span>
+      <span className="pause-menu-character-header__meta pixel-font">
+        <span className="pause-menu-character-header__class">{member.class}</span>
+        <span className="pause-menu-character-header__sep">·</span>
+        <span className="pause-menu-character-header__level">Lv. {member.level}</span>
+      </span>
     </div>
   );
 }

@@ -1,0 +1,79 @@
+/* ─── Admurin enemy battler sprites ───────────────────────────────────
+   One combined sheet per enemy (see scripts/admurin-enemy-to-sprite-sheet.mjs). AdmurinEnemySprite
+   sets --admurin-row / --admurin-frames / --admurin-rows / --admurin-cycle-ms.
+
+   Compositor-only: a cell-sized box (scaled per pose) clips the sheet, and the strip holds the whole
+   sheet, stepping frames by translating itself. Keyframes use literal values — no var() — so the
+   browser can run them off the main thread, exactly like party-sprites.css. */
+
+.admurin-enemy-sprite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* One cell of the sheet at the pose's scale, centred on the pose and clipped: the box IS the clip
+   region, so without it a zoomed-out pose would drag the rows above/below into view. Size and
+   offset come in inline, per animation. */
+.admurin-enemy-sprite__cell {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  transition:
+    width 120ms ease-out,
+    height 120ms ease-out,
+    transform 120ms ease-out;
+}
+
+/* Row selection is a static offset, so it never competes with the strip's frame transform. */
+.admurin-enemy-sprite__shift {
+  position: absolute;
+  inset: 0;
+  transform: translateY(calc(var(--admurin-row, 0) * -100%));
+}
+
+/* One cell is one box wide, so a step of 100% spans every frame's cell and `steps(frames)` lands on
+   each one. */
+.admurin-enemy-sprite__strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--admurin-frames, 1) * 100%);
+  height: calc(var(--admurin-rows, 1) * 100%);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: auto 100%;
+  /* Downscaled, so nearest-neighbour would drop pixel rows (see party-sprites.css). */
+  image-rendering: auto;
+  will-change: transform;
+  animation-duration: var(--admurin-cycle-ms, 600ms);
+}
+
+/* Small sheets are scaled UP into the card, where smoothing only blurs. */
+.admurin-enemy-sprite__strip--pixelated {
+  image-rendering: pixelated;
+}
+
+.admurin-enemy-sprite__strip--loop {
+  animation-name: admurin-enemy-strip;
+  animation-iteration-count: infinite;
+}
+
+.admurin-enemy-sprite__strip--once {
+  animation-name: admurin-enemy-strip;
+  animation-iteration-count: 1;
+}
+
+/* 0 → one cell per step; the step count is the frame count, so every frame shows and loops wrap
+   cleanly. A finished one-shot falls back to frame 0 (fill-mode none) for the few ms until the
+   motion hook returns to idle — holding the end value would show a blank cell instead. */
+@keyframes admurin-enemy-strip {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

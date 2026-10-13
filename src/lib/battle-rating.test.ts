@@ -1,0 +1,439 @@
+import { expect, test, describe } from 'vitest';
+import {
+  computeBattleRating,
+  computeHpKeptPct,
+  getLootMultiplier,
+  formatClearTime,
+  formatThousands,
+  type BattleRatingInput,
+} from './battle-rating';
+import {
+  TIME_FULL_MS,
+  TIME_ZERO_MS,
+  SCORE_TARGET,
+  COMBO_TARGET,
+  MAX_ITEM_PENALTY,
+  ITEM_PENALTY_PER_USE,
+  MAX_ULTIMATE_BONUS,
+  ULTIMATE_BONUS_PER_USE,
+  MAX_STAGGER_BONUS,
+  STAGGER_BONUS_PER_BREAK,
+} from '~/constants/battle-rating';
+
+// A fast, flawless, no-item clear — everything maxed.
+const perfectRun: BattleRatingInput = {
+  elapsedMs: 10_000, // under TIME_FULL_MS → full time
+  score: SCORE_TARGET * 2, // >= target → full
+  maxCombo: COMBO_TARGET * 2, // >= target → full
+  hpKeptPct: 1,
+  itemsUsed: 0,
+};
+
+// A slow, nearly-dead, item-heavy clear — everything poor.
+const poorRun: BattleRatingInput = {
+  elapsedMs: TIME_ZERO_MS + 30_000, // over cap → zero time
+  score: 0,
+  maxCombo: 1,
+  hpKeptPct: 0.05,
+  itemsUsed: 5,
+};
+
+describe('formatClearTime', () => {
+  test('formats as M:SS with zero-padded seconds', () => {
+    expect(formatClearTime(42_000)).toBe('0:42');
+    expect(formatClearTime(125_000)).toBe('2:05');
+    expect(formatClearTime(0)).toBe('0:00');
+  });
+
+  test('never goes negative', () => {
+    expect(formatClearTime(-5000)).toBe('0:00');
+  });
+});
+
+describe('formatThousands', () => {
+  test('inserts separators', () => {
+    expect(formatThousands(12_480)).toBe('12,480');
+    expect(formatThousands(500)).toBe('500');
+    expect(formatThousands(1_000_000)).toBe('1,000,000');
+  });
+});
+
+describe('computeHpKeptPct', () => {
+  test('entering wounded and taking no damage is flawless', () => {
+    expect(computeHpKeptPct(400, 400, 1000)).toBe(1);
+  });
+
+  test('ending above the starting HP clamps to flawless', () => {
+    expect(computeHpKeptPct(400, 650, 1000)).toBe(1);
+  });
+
+  test('the same loss costs the same at any starting HP', () => {
+    expect(computeHpKeptPct(1000, 700, 1000)).toBeCloseTo(0.7);
+    expect(computeHpKeptPct(500, 200, 1000)).toBeCloseTo(0.7);
+  });
+
+  test('a wipe from full HP keeps nothing', () => {
+    expect(computeHpKeptPct(1000, 0, 1000)).toBe(0);
+  });
+
+  test('zero max HP yields 0', () => {
+    expect(computeHpKeptPct(0, 0, 0)).toBe(0);
+  });
+});
+
+describe('computeBattleRating — extremes', () => {
+  test('a fast, flawless, no-item clear earns the max 5 stars', () => {
+    const result = computeBattleRating(perfectRun);
+    expect(result.stars).toBe(5);
+    expect(result.normalized).toBeCloseTo(1, 5);
+  });
+
+  test('a slow, low-HP, item-heavy clear earns 1 star', () => {
+    const result = computeBattleRating(poorRun);
+    expect(result.stars).toBe(1);
+  });
+
+  test('you always earn at least 1 star for winning', () => {
+    const worst = computeBattleRating({
+      elapsedMs: 10_000_000,
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0,
+      itemsUsed: 99,
+    });
+    expect(worst.stars).toBeGreaterThanOrEqual(1);
+    expect(worst.normalized).toBe(0);
+  });
+});
+
+describe('computeBattleRating — monotonicity', () => {
+  const base: BattleRatingInput = {
+    elapsedMs: 60_000,
+    score: 1_500,
+    maxCombo: 3,
+    hpKeptPct: 0.6,
+    itemsUsed: 1,
+  };
+
+  test('using more items never raises the rating', () => {
+    const few = computeBattleRating({ ...base, itemsUsed: 0 }).normalized;
+    const more = computeBattleRating({ ...base, itemsUsed: 2 }).normalized;
+    const most = computeBattleRating({ ...base, itemsUsed: 6 }).normalized;
+    expect(more).toBeLessThanOrEqual(few);
+    expect(most).toBeLessThanOrEqual(more);
+  });
+
+  test('keeping more HP never lowers the rating', () => {
+    const low = computeBattleRating({ ...base, hpKeptPct: 0.2 }).normalized;
+    const high = computeBattleRating({ ...base, hpKeptPct: 0.9 }).normalized;
+    expect(high).toBeGreaterThanOrEqual(low);
+  });
+
+  test('a faster clear never lowers the rating', () => {
+    const slow = computeBattleRating({ ...base, elapsedMs: 120_000 }).normalized;
+    const fast = computeBattleRating({ ...base, elapsedMs: 20_000 }).normalized;
+    expect(fast).toBeGreaterThanOrEqual(slow);
+  });
+});
+
+describe('computeBattleRating — ultimate reward', () => {
+  const base: BattleRatingInput = {
+    elapsedMs: 60_000,
+    score: 1_000,
+    maxCombo: 2,
+    hpKeptPct: 0.5,
+    itemsUsed: 0,
+  };
+
+  test('using more ultimates never lowers the rating, and raises it up to the cap', () => {
+    const none = computeBattleRating({ ...base, ultimateSkillsUsed: 0 }).normalized;
+    const some = computeBattleRating({ ...base, ultimateSkillsUsed: 2 }).normalized;
+    const capped = computeBattleRating({ ...base, ultimateSkillsUsed: 20 }).normalized;
+    expect(some).toBeGreaterThanOrEqual(none);
+    expect(capped).toBeGreaterThanOrEqual(some);
+    // Beyond the cap, the total lift equals MAX_ULTIMATE_BONUS.
+    expect(capped - none).toBeCloseTo(MAX_ULTIMATE_BONUS, 5);
+  });
+
+  test('the ultimate bonus is capped', () => {
+    const capReached = Math.ceil(MAX_ULTIMATE_BONUS / ULTIMATE_BONUS_PER_USE);
+    const a = computeBattleRating({ ...base, ultimateSkillsUsed: capReached }).normalized;
+    const b = computeBattleRating({ ...base, ultimateSkillsUsed: capReached + 10 }).normalized;
+    expect(a).toBeCloseTo(b, 5);
+  });
+
+  test('a flawless clear still earns 5 stars without using any ultimates', () => {
+    // Proves the reward is additive, not required — the skill ceiling is preserved.
+    const result = computeBattleRating({
+      elapsedMs: 4_000,
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 1,
+      itemsUsed: 0,
+      ultimateSkillsUsed: 0,
+    });
+    expect(result.stars).toBe(5);
+  });
+});
+
+describe('computeBattleRating — stagger reward', () => {
+  const base: BattleRatingInput = {
+    elapsedMs: 60_000,
+    score: 1_000,
+    maxCombo: 2,
+    hpKeptPct: 0.5,
+    itemsUsed: 0,
+  };
+
+  test('breaking more enemies never lowers the rating, and raises it up to the cap', () => {
+    const none = computeBattleRating({ ...base, enemiesBroken: 0 }).normalized;
+    const some = computeBattleRating({ ...base, enemiesBroken: 2 }).normalized;
+    const capped = computeBattleRating({ ...base, enemiesBroken: 20 }).normalized;
+    expect(some).toBeGreaterThanOrEqual(none);
+    expect(capped).toBeGreaterThanOrEqual(some);
+    // Beyond the cap, the total lift equals MAX_STAGGER_BONUS.
+    expect(capped - none).toBeCloseTo(MAX_STAGGER_BONUS, 5);
+  });
+
+  test('the stagger bonus is capped', () => {
+    const capReached = Math.ceil(MAX_STAGGER_BONUS / STAGGER_BONUS_PER_BREAK);
+    const a = computeBattleRating({ ...base, enemiesBroken: capReached }).normalized;
+    const b = computeBattleRating({ ...base, enemiesBroken: capReached + 10 }).normalized;
+    expect(a).toBeCloseTo(b, 5);
+  });
+
+  test('staggers and ultimates are scored independently, each on its own cap', () => {
+    const none = computeBattleRating(base).normalized;
+    const both = computeBattleRating({ ...base, ultimateSkillsUsed: 20, enemiesBroken: 20 }).normalized;
+    // Neither bonus eats into the other: maxing both lifts by exactly the sum of the two caps.
+    expect(both - none).toBeCloseTo(MAX_ULTIMATE_BONUS + MAX_STAGGER_BONUS, 5);
+  });
+
+  test('a flawless clear still earns 5 stars without staggering anything', () => {
+    // Same contract as the ultimate bonus: the reward is additive, never required.
+    const result = computeBattleRating({
+      elapsedMs: 4_000,
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 1,
+      itemsUsed: 0,
+      enemiesBroken: 0,
+    });
+    expect(result.stars).toBe(5);
+  });
+});
+
+describe('computeBattleRating — RNG criteria are weighted low', () => {
+  test('maxing only score+combo (RNG) with poor skill stats cannot reach 3 stars', () => {
+    const rngOnly = computeBattleRating({
+      elapsedMs: TIME_ZERO_MS, // zero time
+      score: SCORE_TARGET * 10, // maxed
+      maxCombo: COMBO_TARGET * 10, // maxed
+      hpKeptPct: 0, // no HP
+      itemsUsed: 0,
+    });
+    // score+combo weights sum to 0.1 → well under the first (0.30) cutoff.
+    expect(rngOnly.normalized).toBeCloseTo(0.1, 5);
+    expect(rngOnly.stars).toBe(1);
+  });
+});
+
+describe('computeBattleRating — penalty + breakdown', () => {
+  test('the items penalty is capped', () => {
+    const capReached = Math.ceil(MAX_ITEM_PENALTY / ITEM_PENALTY_PER_USE);
+    const a = computeBattleRating({ ...perfectRun, itemsUsed: capReached });
+    const b = computeBattleRating({ ...perfectRun, itemsUsed: capReached + 20 });
+    // Beyond the cap, extra items don't lower the score further.
+    expect(a.normalized).toBeCloseTo(b.normalized, 5);
+    // Perfect positive (1.0) minus the max penalty.
+    expect(b.normalized).toBeCloseTo(1 - MAX_ITEM_PENALTY, 5);
+  });
+
+  test('breakdown lists rows in display order; items is the only penalty, the bonuses positive', () => {
+    // A fixture with every optional row present (combo/ultimates/staggers/items all > 0).
+    const { criteria } = computeBattleRating({
+      ...perfectRun,
+      itemsUsed: 2,
+      ultimateSkillsUsed: 2,
+      enemiesBroken: 2,
+    });
+    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'combo', 'score', 'ultimates', 'staggers', 'items']);
+    expect(criteria.filter((c) => c.isPenalty).map((c) => c.key)).toEqual(['items']);
+    expect(criteria.filter((c) => c.isRngHeavy).map((c) => c.key)).toEqual(['combo', 'score']);
+    for (const key of ['ultimates', 'staggers'] as const) {
+      const row = criteria.find((c) => c.key === key)!;
+      expect(row.isPenalty).toBe(false);
+      expect(row.points).toBeGreaterThan(0);
+    }
+    expect(criteria.find((c) => c.key === 'ultimates')!.displayValue).toBe('2');
+    expect(criteria.find((c) => c.key === 'staggers')!.displayValue).toBe('x2');
+  });
+
+  test('zero-contribution rows (combo, ultimates, staggers, items) are omitted', () => {
+    const { criteria } = computeBattleRating({
+      elapsedMs: 40_000,
+      score: 500,
+      maxCombo: 0,
+      hpKeptPct: 0.8,
+      itemsUsed: 0,
+      ultimateSkillsUsed: 0,
+      enemiesBroken: 0,
+    });
+    expect(criteria.map((c) => c.key)).toEqual(['time', 'hp', 'score']);
+  });
+
+  test('those rows appear once their values are non-zero', () => {
+    const { criteria } = computeBattleRating({
+      elapsedMs: 40_000,
+      score: 500,
+      maxCombo: 2,
+      hpKeptPct: 0.8,
+      itemsUsed: 1,
+      ultimateSkillsUsed: 1,
+      enemiesBroken: 1,
+    });
+    const keys = criteria.map((c) => c.key);
+    expect(keys).toContain('combo');
+    expect(keys).toContain('ultimates');
+    expect(keys).toContain('staggers');
+    expect(keys).toContain('items');
+  });
+
+  test('the items row reports negative points when items were used', () => {
+    const withItems = computeBattleRating({ ...perfectRun, itemsUsed: 2 });
+    const itemsRow = withItems.criteria.find((c) => c.key === 'items')!;
+    expect(itemsRow.points).toBeLessThan(0);
+    expect(itemsRow.displayValue).toBe('2');
+  });
+
+  test('flawless flag set only when HP is full', () => {
+    const flawless = computeBattleRating(perfectRun).criteria.find((c) => c.key === 'hp')!;
+    const hurt = computeBattleRating({ ...perfectRun, hpKeptPct: 0.5 }).criteria.find((c) => c.key === 'hp')!;
+    expect(flawless.isFlawless).toBe(true);
+    expect(hurt.isFlawless).toBe(false);
+  });
+
+  test('displayValue formatting for each criterion', () => {
+    const { criteria } = computeBattleRating({
+      elapsedMs: 42_000,
+      score: 1_240,
+      maxCombo: 4,
+      hpKeptPct: 0.88,
+      itemsUsed: 3,
+      enemiesBroken: 2,
+    });
+    const byKey = Object.fromEntries(criteria.map((c) => [c.key, c.displayValue]));
+    expect(byKey.time).toBe('0:42');
+    expect(byKey.score).toBe('1,240');
+    expect(byKey.combo).toBe('x4');
+    expect(byKey.hp).toBe('88%');
+    expect(byKey.items).toBe('3');
+    expect(byKey.staggers).toBe('x2');
+  });
+});
+
+describe('getLootMultiplier', () => {
+  test('maps each star tier to its multiplier (1★ baseline, 5★ double)', () => {
+    expect(getLootMultiplier(1)).toBe(1.0);
+    expect(getLootMultiplier(3)).toBe(1.25);
+    expect(getLootMultiplier(5)).toBe(2.0);
+  });
+
+  test('never decreases as stars increase', () => {
+    for (let s = 2; s <= 5; s++) {
+      expect(getLootMultiplier(s)).toBeGreaterThanOrEqual(getLootMultiplier(s - 1));
+    }
+  });
+
+  test('unmapped star counts fall back to 1 (no bonus)', () => {
+    expect(getLootMultiplier(0)).toBe(1);
+    expect(getLootMultiplier(99)).toBe(1);
+  });
+
+  test('computeBattleRating.lootMultiplier matches getLootMultiplier(stars)', () => {
+    const perfect = computeBattleRating(perfectRun);
+    expect(perfect.stars).toBe(5);
+    expect(perfect.lootMultiplier).toBe(getLootMultiplier(5));
+
+    const poor = computeBattleRating(poorRun);
+    expect(poor.lootMultiplier).toBe(getLootMultiplier(poor.stars));
+  });
+});
+
+describe('computeBattleRating — star boundaries (1–5)', () => {
+  // Each case lands normalized on a threshold; stars = 1 + (# thresholds cleared).
+  // Thresholds: [0.30, 0.52, 0.72, 0.85]. Weights: time 0.5, hp 0.4, score 0.05, combo 0.05.
+
+  test('normalized 0.30 → 2 stars (time zero, HP 0.75 → 0.4*0.75)', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_ZERO_MS, // subTime 0
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0.75, // 0.4 * 0.75 = 0.30
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.3, 5);
+    expect(result.stars).toBe(2);
+  });
+
+  test('normalized 0.52 → 3 stars (time 0.8 + HP 0.30)', () => {
+    const result = computeBattleRating({
+      elapsedMs: 50_000, // subTime 0.8 → 0.5 * 0.8 = 0.40
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0.3, // 0.4 * 0.30 = 0.12
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.52, 5);
+    expect(result.stars).toBe(3);
+  });
+
+  test('normalized 0.72 → 4 stars (time full + HP 0.55)', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_FULL_MS, // subTime 1 → 0.50
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0.55, // 0.4 * 0.55 = 0.22
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.72, 5);
+    expect(result.stars).toBe(4);
+  });
+
+  test('normalized 0.85 → 5 stars (time full + HP 0.875, no score/combo)', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_FULL_MS, // 0.50
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0.875, // 0.4 * 0.875 = 0.35
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.85, 5);
+    expect(result.stars).toBe(5);
+  });
+
+  test('a fast, flawless one-shot earns 5 stars with zero score/combo', () => {
+    // Regression: a short, dominant clear must not be capped at 4 stars just because the battle
+    // ended before score/combo could accumulate. Skill alone (time 0.5 + hp 0.4 = 0.9) clears 0.85.
+    const result = computeBattleRating({
+      elapsedMs: 4_000, // super short → subTime clamps to 1 → 0.50
+      score: 0, // no time to rack up score
+      maxCombo: 0, // no cascade
+      hpKeptPct: 1, // untouched → 0.40
+      itemsUsed: 0,
+    });
+    expect(result.normalized).toBeCloseTo(0.9, 5);
+    expect(result.stars).toBe(5);
+  });
+
+  test('just below the first threshold stays at 1 star', () => {
+    const result = computeBattleRating({
+      elapsedMs: TIME_ZERO_MS,
+      score: 0,
+      maxCombo: 0,
+      hpKeptPct: 0.7, // 0.28 < 0.30
+      itemsUsed: 0,
+    });
+    expect(result.stars).toBe(1);
+  });
+});

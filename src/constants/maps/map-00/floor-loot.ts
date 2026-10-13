@@ -67,17 +67,3 @@ export const DEMO_FLOOR_LOOT: FloorLootSpot[] = [
     iron: 3,
   }),
 ];
-
-/**
- * Get floor loot spot by ID
- */
-export function getFloorLootById(id: string): FloorLootSpot | undefined {
-  return DEMO_FLOOR_LOOT.find((spot) => spot.id === id);
-}
-
-/**
- * Get floor loot spot at a specific position
- */
-export function getFloorLootAtPosition(row: number, col: number): FloorLootSpot | undefined {
-  return DEMO_FLOOR_LOOT.find((spot) => spot.position.row === row && spot.position.col === col);
-}

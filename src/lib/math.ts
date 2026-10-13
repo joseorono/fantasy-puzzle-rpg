@@ -39,6 +39,23 @@ export function generateRange(min: number, max: number) {
   return Array.from({ length: max - min + 1 }, (_, i) => i + min);
 }
 
+/**
+ * Creates a deterministic `[0, 1)` generator (mulberry32) from a 32-bit seed. For tests and
+ * benchmarks that need repeatable boards and rolls; gameplay code keeps using `Math.random`.
+ * @param seed Any integer. The same seed always yields the same sequence.
+ * @returns A function returning the next pseudo-random number in `[0, 1)`.
+ */
+export function createSeededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // random int in range after time interval
 export function randIntInRangeAfterTimeInterval(min: Integer, max: Integer, timeInterval: number): Promise<number> {
   return new Promise((resolve) => {

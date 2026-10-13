@@ -15,15 +15,21 @@ import {
 
 import "~/components/ui/8bit/styles/retro.css";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const tooltipVariants = cva("", {
   variants: {
     font: {
       normal: "",
       retro: "retro",
     },
+    size: {
+      default: "",
+      compact: "tooltip-content--compact",
+    },
   },
   defaultVariants: {
     font: "normal",
+    size: "default",
   },
 });
 
@@ -35,9 +41,10 @@ function TooltipContent({
   className,
   children,
   font,
+  size,
   ...props
 }: BitTooltipContentProps) {
-  const color = tooltipVariants({ font });
+  const color = tooltipVariants({ font, size });
 
   return (
     <ShadcnTooltipContent

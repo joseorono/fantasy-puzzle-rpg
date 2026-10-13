@@ -1,6 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electron', {
+  platform: process.platform,
+  isElectron: true,
+  electronVersion: process.versions.electron,
   app: {
     getVersion: () => ipcRenderer.invoke('app:get-version'),
     getPath: (name: string) => ipcRenderer.invoke('app:get-path', name),

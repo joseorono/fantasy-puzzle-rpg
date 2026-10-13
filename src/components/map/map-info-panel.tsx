@@ -1,27 +1,17 @@
 interface MapInfoPanelProps {
+  /** Only used to label the back button — the map name itself is announced by the title sign. */
   displayMapName: string;
-  debug?: boolean;
-  charPosition: { row: number; col: number };
-  status?: string;
+  /** Leaves the map. Omit (or pass undefined) when there is nowhere to go back to. */
+  onLeave?: () => void;
 }
 
 /**
- * Shared header/info panel for tilemaps. Always shows the map title.
- * When `debug` is true, also shows controls, character position, and status.
+ * Chrome overlaid on a tilemap. Currently just the back button, shown when
+ * `onLeave` is supplied — the map name is announced by the title-sign ribbon
+ * (see `map-view.tsx`) so it costs the canvas no layout height.
  */
-export function MapInfoPanel({ displayMapName, debug = false, charPosition, status }: MapInfoPanelProps) {
-  return (
-    <>
-      <h2 className="map-title">{displayMapName}</h2>
-      {debug && (
-        <div className="character-info">
-          <strong>Character Position:</strong> Row {charPosition.row}, Col {charPosition.col}
-          <br />
-          <strong>Controls:</strong> Arrow Keys or WASD
-          <br />
-          <strong>Status:</strong> {status ?? '—'}
-        </div>
-      )}
-    </>
-  );
+export function MapInfoPanel({ displayMapName, onLeave }: MapInfoPanelProps) {
+  if (!onLeave) return null;
+
+  return <button className="leave-btn" onClick={onLeave} aria-label={`Leave ${displayMapName}`} />;
 }

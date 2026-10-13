@@ -1,0 +1,42 @@
+import type { MapDefinition } from '~/types/map';
+import { newMap } from './tiled-data';
+import { TILESET_FAIRY_FOREST } from '../tileset-data';
+import { FAIRY_FOREST_NODES } from './nodes';
+import { FAIRY_FOREST_FLOOR_LOOT } from './floor-loot';
+import { FAIRY_FOREST_DIALOGUE_SCENES, FAIRY_FOREST_DIALOGUE_TRIGGERS } from './dialogue';
+import { FAIRY_FOREST_ENCOUNTERS } from './encounters';
+import { FAIRY_FOREST_FOES } from './foes';
+
+/** 120×80 forest trail — only the `road` layer is walkable. */
+export const MAP_01_FAIRY_FOREST: MapDefinition = {
+  id: 'map-01-fairy-forest',
+  tilesetImage: TILESET_FAIRY_FOREST.image,
+  displayMapName: 'Fairy Forest',
+  walkableLayers: ['road'],
+  visibleLayers: [
+    'base-floor',
+    'road',
+    'mountains',
+    'trees',
+    'trees-2',
+    'plants',
+    'stones',
+    'stones-2',
+    'bushes',
+    'flowers',
+  ],
+  // The trail runs under canopies and through bushes: these cover her when she's behind them.
+  occlusionLayers: ['trees', 'trees-2', 'bushes', 'plants'],
+  // The lower-right corner; the trail climbs to the exit in the upper left.
+  defaultPlayerPosition: { x: 114, y: 71 },
+  debug: true,
+  footstepVolume: 0.65,
+  footstepPitch: 0.9,
+  tiledData: newMap,
+  nodes: FAIRY_FOREST_NODES,
+  floorLoot: FAIRY_FOREST_FLOOR_LOOT,
+  dialogueTriggers: FAIRY_FOREST_DIALOGUE_TRIGGERS,
+  dialogueScenes: FAIRY_FOREST_DIALOGUE_SCENES,
+  encounters: FAIRY_FOREST_ENCOUNTERS,
+  foes: FAIRY_FOREST_FOES,
+};

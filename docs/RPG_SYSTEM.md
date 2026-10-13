@@ -7,20 +7,31 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 
 ### Power (POW)
 **Effect**: Increases damage output
-- **Formula**: `damage = baseDamage * (1 + POW/100)`
-- **Example**: 20 POW = 20% damage increase
+- **Formula**: `damage = baseDamage * (1 + POW * POW_DAMAGE_PERCENT_PER_POINT / 100)`
+- **Coefficient**: `POW_DAMAGE_PERCENT_PER_POINT = 2` (in `src/constants/battle.ts`) — 2% per point
+- **Example**: 20 POW = 40% damage increase
 - **Applies to**:
   - Character match-3 damage
+  - Character (and healer) skill damage
   - Enemy attack damage
 
 ### Vitality (VIT)
-**Effect**: Increases maximum HP
+**Effect**: Increases maximum HP, and makes the party Guard meter last longer
 - **Formula**: `maxHP = baseHP + (VIT * multiplier)`
 - **Default multiplier**: 5 HP per VIT point
 - **Example**: 20 VIT = +100 HP
 - **Applies to**:
   - Character HP pool contribution
   - Enemy HP
+  - **Guard Decay Resistance** (derived) — the party's collective VIT slows how fast the shared Guard
+    meter bleeds, via `calculateGuardDecayResistance(party) = 1 / (1 + livingVit / GUARD_DECAY_VIT_DIVISOR)`.
+    A diminishing (hyperbolic) curve that stays in `(0, 1]`, so VIT makes the shield last but never
+    freezes it. Pairs with SPD's Guard Charge Rate: SPD builds the shield fast, VIT makes it last.
+  - **Flinch resistance** (enemies only) — VIT reduces how far each hit pushes back an enemy's next
+    attack, on a diminishing (sqrt) curve. See the Enemy Stagger (Flinch) section in
+    [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md). Note that **poise** (how easily an enemy is Staggered
+    outright) is a separate per-enemy stat, `EnemyData.poise`, not derived from VIT — though the
+    poise *pool* scales with max HP, which VIT feeds.
 
 ### Speed (SPD)
 **Effect**: Reduces cooldowns and attack intervals
@@ -29,6 +40,13 @@ The game now features a comprehensive RPG stat system that affects combat, HP, a
 - **Applies to**:
   - Character skill cooldowns
   - Enemy attack intervals
+  - **Item Cooldown** (derived) — the party's collective SPD shortens the shared consumable-item
+    cooldown in battle, via `calculateItemCooldownInMs(party)`. Because it is party-wide, every
+    member's SPD contributes (see the Item Cooldown row on the level-up screen).
+  - **Guard Charge Rate** (derived) — the party's collective SPD raises how fast gray matches
+    charge the shared Guard meter, via `calculateGuardChargeRate(party) = 1 + sqrt(livingSpd) / GUARD_CHARGE_RATE_DIVISOR`.
+    Uses a diminishing (sqrt) curve so stacking SPD speeds up defense without trivializing it. See the
+    Guard Meter section in [COMBAT_SYSTEM.md](./COMBAT_SYSTEM.md).
 
 ## Character Stats
 
@@ -115,10 +133,17 @@ Located in `src/lib/rpg-calculations.ts`:
 
 ### Speed Functions
 - `calculateAttackInterval(baseInterval, spd)` - Attack interval with SPD
-- `calculateCooldown(baseCooldown, spd)` - Cooldown with SPD
-- `calculateCooldownFillRate(baseCooldown, spd)` - Fill rate per second
+- `calculateSkillCooldown(baseCooldown, spd)` - Skill cooldown with SPD
+- `calculateSkillCooldownFillRate(baseCooldown, spd)` - Skill cooldown fill rate per second
 - `calculateEnemyAttackInterval(enemy)` - Enemy attack timing
 - `calculateCharacterCooldown(character)` - Character skill cooldown
+- `calculatePartyCollectiveSpd(party)` - Sum of living members' SPD (drives party-wide derived stats)
+- `calculateItemCooldownInMs(party)` - Consumable-item cooldown from the party's collective SPD
+
+### Guard Functions
+- `calculateGuardChargeRate(party)` - SPD-derived multiplier on gray-match Guard gain
+- `resolveGuardedDamage(incoming, guard, guardBreak)` - Mitigate an incoming hit against the Guard meter
+- `decayGuard(guard, dt)` - Bleed the Guard meter over time (anti-hoard)
 
 ### Utility Functions
 - `createCoreStats(pow, vit, spd)` - Create stats object
@@ -163,14 +188,33 @@ Refer to the source file for the complete and up-to-date type definitions.
 - **Matches needed to win**: 15-30 depending on match size and character POW
 
 ### Stat Scaling
-- **POW**: Linear scaling, 1% damage per point
-- **VIT**: Linear scaling, 5 HP per point
+- **POW**: Linear scaling, 2% damage per point (`POW_DAMAGE_PERCENT_PER_POINT`)
+- **VIT**: Linear scaling for HP (5 per point); diminishing (hyperbolic) for Guard decay resistance
 - **SPD**: Diminishing returns (hyperbolic), more effective at lower values
+
+## Progression & Skill Integration
+
+- **Leveling System (`src/lib/leveling-system.ts`)**: Characters earn EXP from battle victories, level up, and allocate stat points (POW, VIT, SPD) via the Level-Up screen.
+- **Skill System (`src/lib/skill-system.ts`)**: Active skills (Ultimates) unlock as characters level up; Passive skills with closed-set modifiers are purchased with resources in the pause menu Skills tab.
+
+### Respec (Training Grounds)
+
+Each level-up grants `STAT_POINTS_PER_LEVEL` (2) points the player allocates by hand plus the same number rolled at random from `potentialStats`. Only the hand-allocated share is refundable. Characters store stat totals, so the refund is derived per stat against the hero's level-1 entry in `INITIAL_PARTY`:
+
+```
+randomGained[s] = INITIAL.potentialStats[s] - potentialStats[s]
+allocated[s]    = max(0, stats[s] - INITIAL.stats[s] - randomGained[s])
+floor[s]        = stats[s] - allocated[s]
+```
+
+- `getAllocatedStats` / `getRespecFloor` / `getRefundableStatPoints` in `src/lib/leveling-system.ts` compute the above; the refundable total equals `STAT_POINTS_PER_LEVEL × (level − 1)`.
+- `respecStats(character, newStats)` returns a new character with `maxHp` recomputed and `currentHp` clamped down to it. A VIT drop costs HP; a VIT rise never heals, so respecing cannot replace the Inn. Requests below a floor or with a different point total are rejected unchanged.
+- The Training Grounds charges `getRespecCost(respecCount)` coins (`src/constants/training-grounds.ts`), rising with `progressFlags.respecCount`.
 
 ## Future Enhancements
 
-### Leveling System (Not Yet Implemented)
-- Experience points and level progression
-- Stat growth on level up
-- Skill unlocks and upgrades
-- See `src/lib/leveling-system.ts` for planned features
+- Status effects (Poison, Burn, Stun, Shield)
+- Elemental matchups (Fire, Ice, Lightning)
+- Random equipment affixes on high-tier gear
+- Boss phases and dynamic enemy transformations
+

@@ -1,4 +1,5 @@
 import type { Resources } from './resources';
+import type { LineOrientation } from './battle';
 import type { CharacterClass } from './rpg-elements';
 import type { FrostyRpgIconName } from '~/components/sprite-icons/frost-icons';
 import { ConsumableItemIds } from '~/constants/inventory';
@@ -19,12 +20,18 @@ export interface EquipmentItemData extends BaseItemData {
   vit: number;
   spd: number;
   forClass?: CharacterClass;
+  /**
+   * Bonus added to the per-level cascade combo multiplier while this item is equipped.
+   * Intentionally a very low percentual value (e.g. 0.02 = +2% per cascade level).
+   * Absent = 0. See `getEquipmentComboBonus` and `calculateComboMultiplier`.
+   */
+  comboBonus?: number;
 }
 
 export type ConsumableAction =
   | { type: 'heal'; amount: number }
-  | { type: 'clear-row' }
-  | { type: 'clear-column' }
+  /** Wipes one aimed row or column; every orb pays out like a match. See docs/LINE_CLEAR_ITEMS.md. */
+  | { type: 'clear-line'; orientation: LineOrientation }
   | { type: 'fill-ultimate'; amount: number };
 
 export interface ConsumableItemData extends BaseItemData {
@@ -37,4 +44,4 @@ export interface ConsumableItemData extends BaseItemData {
 export type ConsumableItemIds = (typeof ConsumableItemIds)[number];
 export type ItemStoreParams = Array<ConsumableItemIds>;
 
-export interface KeyItemData extends BaseItemData {}
+export type KeyItemData = BaseItemData;

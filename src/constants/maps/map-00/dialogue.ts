@@ -1,4 +1,5 @@
 import type { DialogueScene } from '~/types/dialogue';
+import type { DialogueTrigger } from '~/types/map';
 import { NARRATOR_CHAR, KNIGHT_CHAR } from '~/constants/dialogue/characters';
 import {
   TEST_DIALOGUE_SCENE,
@@ -7,10 +8,23 @@ import {
 } from '~/constants/dialogue/scenes/test-scene';
 
 /**
+ * Tiles that prompt a dialogue scene when the player walks onto them.
+ * `scene` keys into MAP_00_DIALOGUE_SCENES below.
+ */
+export const MAP_00_DIALOGUE_TRIGGERS: DialogueTrigger[] = [
+  { row: 6, col: 36, scene: 'test' },
+  { row: 22, col: 15, scene: 'simple' },
+  { row: 27, col: 40, scene: 'narrator' },
+  { row: 55, col: 19, scene: 'test' },
+  { row: 31, col: 83, scene: 'simple' },
+  { row: 13, col: 71, scene: 'narrator' },
+];
+
+/**
  * Pre-fight and map dialogue scenes for map-00.
  *
  * Keys match the `dialogueScene` values on nodes in nodes.ts, plus
- * the coordinate-based DIALOGUE_TRIGGERS keys ('test', 'simple', 'narrator').
+ * the MAP_00_DIALOGUE_TRIGGERS keys ('test', 'simple', 'narrator').
  */
 export const MAP_00_DIALOGUE_SCENES: Record<string, DialogueScene> = {
   // ─── Pre-fight dialogues (referenced by node dialogueScene) ─────────

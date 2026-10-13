@@ -1,35 +1,137 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useState, useEffect } from 'react';
-import { enemiesAtom, selectedEnemyIdAtom, selectEnemyAtom, lastDamageAtom } from '~/stores/battle-atoms';
+import { useState, useEffect, useRef } from 'react';
+import { cva } from 'class-variance-authority';
+import {
+  enemiesAtom,
+  enemyPoiseSummaryAtom,
+  selectedEnemyIdAtom,
+  selectEnemyAtom,
+  lastDamageAtom,
+  lastMaxFlinchAtom,
+  lastPoiseBreakAtom,
+  isTrainingBattleAtom,
+  standbyEnemyIdsAtom,
+} from '~/stores/battle-atoms';
 import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
+import { POISE_BREAK_CALLOUT_DURATION_MS } from '~/constants/battle';
+import { POISE_BREAK_SOUND } from '~/constants/audio';
 import { cn } from '~/lib/utils';
+import { AdmurinEnemySprite } from '~/components/battle/admurin-enemy-sprite';
+import { useAdmurinEnemyMotion } from '~/hooks/use-admurin-enemy-motion';
+import { soundService } from '~/services/sound-service';
 import { BattleHpBar } from '~/components/battle/battle-hp-bar';
+import { EnemyPoiseBar } from '~/components/battle/enemy-poise-bar';
+import { EnemyWeaknessBadges } from '~/components/battle/enemy-weakness-badges';
+import { TrainingDummyReadout } from '~/components/battle/training-dummy-readout';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
+import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
 import type { EnemyData } from '~/types/rpg-elements';
+
+type EnemySpriteSize = NonNullable<EnemyData['spriteSize']>;
+
+/** Card size variants. `md` is the original 64→80→96px box the smaller enemies still use. */
+const enemyCardVariants = cva(
+  'relative flex items-center justify-center rounded-lg border-2 transition-all duration-300',
+  {
+    variants: {
+      size: {
+        md: 'h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24',
+        lg: 'h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32',
+        xl: 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40',
+      },
+    },
+    defaultVariants: { size: 'md' },
+  },
+);
+
+// Name and bar widths follow the card size, so a big sprite doesn't dwarf its readouts.
+const ENEMY_CARD_NAME_SIZE: Record<EnemySpriteSize, string> = {
+  md: 'text-[8px] sm:text-[10px]',
+  lg: 'text-[9px] sm:text-[11px]',
+  xl: 'text-[10px] sm:text-[12px]',
+};
+
+const ENEMY_CARD_BAR_WIDTH: Record<EnemySpriteSize, string> = {
+  md: 'max-w-[70px] sm:max-w-[85px] md:max-w-[100px]',
+  lg: 'max-w-[100px] sm:max-w-[115px] md:max-w-[130px]',
+  xl: 'max-w-[130px] sm:max-w-[145px] md:max-w-[160px]',
+};
 
 interface EnemySpriteProps {
   enemy: EnemyData;
   isSelected: boolean;
+  isBattlePaused: boolean;
   onSelect: () => void;
 }
 
-function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
+function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySpriteProps) {
   const isDead = enemy.currentHp <= 0;
+  const isTraining = useAtomValue(isTrainingBattleAtom);
   const lastDamage = useAtomValue(lastDamageAtom);
+  const lastMaxFlinch = useAtomValue(lastMaxFlinchAtom);
+  const lastPoiseBreak = useAtomValue(lastPoiseBreakAtom);
+  // This enemy's poise only, as integer percents: the cached summary atom stays silent while other
+  // enemies' pools move and while regen nudges this one by less than a percent.
+  const poise = useAtomValue(enemyPoiseSummaryAtom(enemy.id));
+  const isStaggered = poise?.phase === 'broken';
+  const isStandby = useAtomValue(standbyEnemyIdsAtom).includes(enemy.id);
+  const size = enemy.spriteSize ?? 'md';
+  const motion = useAdmurinEnemyMotion(enemy, isBattlePaused);
   const [showDamage, setShowDamage] = useState(false);
   const [damageAmount, setDamageAmount] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
+  const [isRecoiling, setIsRecoiling] = useState(false);
+  const [isSkillHit, setIsSkillHit] = useState(false);
+  const [isVulnerableHit, setIsVulnerableHit] = useState(false);
+  const [isWeakHit, setIsWeakHit] = useState(false);
+  const [showStagger, setShowStagger] = useState(false);
+  const [staggerKey, setStaggerKey] = useState(0);
+  const [showBreak, setShowBreak] = useState(false);
+  const [breakKey, setBreakKey] = useState(0);
 
-  // Show damage animation when this enemy is hit
+  // Read at hit time without re-running the damage effect when the window opens or closes.
+  const isStaggeredRef = useRef(isStaggered);
+  isStaggeredRef.current = isStaggered;
+
+  // Show damage animation when this enemy is hit. Skills hit the selected enemy (enemyId)
+  // or every living enemy (enemyIds); matches only ever set enemyId.
   useEffect(() => {
-    if (lastDamage && lastDamage.target === 'enemy' && lastDamage.enemyId === enemy.id) {
-      setDamageAmount(lastDamage.amount);
+    const isHit =
+      lastDamage?.target === 'enemy' && (lastDamage.enemyId === enemy.id || lastDamage.enemyIds?.includes(enemy.id));
+    if (isHit) {
+      setDamageAmount(lastDamage.amountByEnemyId?.[enemy.id] ?? lastDamage.amount);
+      setIsSkillHit(lastDamage.source === 'skill');
+      // A hit landing while Broken (or the one that Breaks) reads as a crit.
+      setIsVulnerableHit(isStaggeredRef.current);
+      setIsWeakHit(lastDamage.weakEnemyIds?.includes(enemy.id) ?? false);
       setShowDamage(true);
+      setIsRecoiling(true);
       setAnimationKey((prev) => prev + 1);
       const timer = setTimeout(() => setShowDamage(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [lastDamage, enemy.id]);
+
+  // Pop a "FLINCHED!" callout when this enemy maxes out its per-cycle flinch (further hits this
+  // cycle no longer delay its attack). Fires once per cap-out; the timestamp re-arms it next cycle.
+  useEffect(() => {
+    if (lastMaxFlinch?.enemyId !== enemy.id) return;
+    setShowStagger(true);
+    setStaggerKey((prev) => prev + 1);
+    const timer = setTimeout(() => setShowStagger(false), 900);
+    return () => clearTimeout(timer);
+  }, [lastMaxFlinch, enemy.id]);
+
+  // Pop the "STAGGERED!" Break callout (and its clang) when this enemy's poise pool empties.
+  // Outranks the flinch pop: held longer, drawn bigger. The timestamp re-arms it on later Breaks.
+  useEffect(() => {
+    if (!lastPoiseBreak?.enemyIds.includes(enemy.id)) return;
+    setShowBreak(true);
+    setBreakKey((prev) => prev + 1);
+    if (POISE_BREAK_SOUND) soundService.playSound(POISE_BREAK_SOUND, 0.7, 0.1, 0.1);
+    const timer = setTimeout(() => setShowBreak(false), POISE_BREAK_CALLOUT_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [lastPoiseBreak, enemy.id]);
 
   function handleClick() {
     if (isDead) return;
@@ -38,32 +140,57 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {/* Enemy sprite container */}
-      <div className="group relative">
-        <div
-          onClick={handleClick}
-          className={cn(
-            'relative flex h-16 w-16 items-center justify-center rounded-lg border-2 transition-all duration-300 sm:h-20 sm:w-20 md:h-24 md:w-24',
-            isDead
-              ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
-              : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
-            isSelected && !isDead && 'enemy-selected border-yellow-400',
-            'enemy-sprite-container',
-          )}
-        >
-          {enemy.sprite.startsWith('/') ? (
-            <img src={enemy.sprite} alt={enemy.name} className="enemy-sprite-image h-full w-full" />
-          ) : (
-            <div className="text-3xl sm:text-4xl md:text-5xl">{enemy.sprite}</div>
-          )}
+      {/* Enemy sprite container — recoil lives here (not the hover-scaled inner box) */}
+      <div
+        className={cn('group relative', isRecoiling && (isSkillHit ? 'enemy-recoil-strong' : 'enemy-recoil'))}
+        onAnimationEnd={(e) => {
+          // animationend bubbles up from the flash/number children too — only the recoil clears it.
+          if (e.animationName.startsWith('enemy-recoil')) setIsRecoiling(false);
+        }}
+      >
+        <IndigolayCornersWrapper alwaysVisible={isSelected && !isDead}>
+          <div
+            onClick={handleClick}
+            className={cn(
+              enemyCardVariants({ size }),
+              isDead
+                ? 'cursor-default border-gray-600 bg-gray-700 opacity-40 grayscale'
+                : 'cursor-pointer border-emerald-700 bg-gradient-to-b from-emerald-600 to-emerald-800 hover:scale-105',
+              isSelected && !isDead && 'enemy-selected border-[#e3a43e]',
+              'enemy-sprite-container',
+            )}
+          >
+            {/* The Broken tint/sway sits on the sprite itself (state-driven, clears when the tick ends
+                the window) so it never competes with the wrapper's recoil animation. */}
+            {enemy.admurinSheet && motion ? (
+              <AdmurinEnemySprite
+                sheet={enemy.admurinSheet}
+                animation={motion.animation}
+                mode={motion.mode}
+                playId={motion.playId}
+                paused={motion.paused}
+                className={cn('h-full w-full', isStaggered && !isDead && 'enemy-staggered')}
+              />
+            ) : enemy.sprite.startsWith('/') ? (
+              <img
+                src={enemy.sprite}
+                alt={enemy.name}
+                className={cn('enemy-sprite-image h-full w-full', isStaggered && !isDead && 'enemy-staggered')}
+              />
+            ) : (
+              <div className={cn('text-3xl sm:text-4xl md:text-5xl', isStaggered && !isDead && 'enemy-staggered')}>
+                {enemy.sprite}
+              </div>
+            )}
 
-          {/* Death indicator */}
-          {isDead && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
-            </div>
-          )}
-        </div>
+            {/* Death indicator */}
+            {isDead && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-2xl opacity-80 sm:text-3xl">💀</div>
+              </div>
+            )}
+          </div>
+        </IndigolayCornersWrapper>
 
         {/* Selected arrow indicator */}
         {isSelected && !isDead && (
@@ -72,25 +199,64 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
           </div>
         )}
 
-        {/* Per-enemy damage number */}
+        {/* Per-enemy damage number. Skill hits erupt bigger and read as a warm crit chip;
+            match hits keep their snappy float. */}
         {showDamage && (
           <div
             key={animationKey}
-            className="damage-number pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8"
+            className={cn(
+              'pointer-events-none absolute -top-6 left-1/2 z-30 -translate-x-1/2 sm:-top-8',
+              isSkillHit ? 'damage-erupt' : 'damage-number',
+            )}
           >
             <DamageDisplay
               amount={damageAmount}
-              type={damageAmount > 20 ? 'critical' : 'damage'}
-              className="text-xl sm:text-2xl md:text-3xl"
+              type={isWeakHit ? 'weak' : isSkillHit || isVulnerableHit || damageAmount > 20 ? 'critical' : 'damage'}
+              className={isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'}
             />
           </div>
         )}
 
-        {/* Impact flash effect on hit */}
+        {/* Max-flinch callout — the enemy's attack timer just hit its per-cycle flinch cap.
+            Distinct from the poise "Staggered!" break callout; see docs/ENEMY_POISE_STAGGER.md. */}
+        {showStagger && !isDead && (
+          <div
+            key={`stagger-${staggerKey}`}
+            className="stagger-callout pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
+          >
+            Flinched!
+          </div>
+        )}
+
+        {/* Break callout — the enemy's poise pool just emptied and its attack was cancelled. */}
+        {showBreak && !isDead && (
+          <div
+            key={`break-${breakKey}`}
+            className="stagger-callout stagger-callout--break pixel-font pointer-events-none absolute top-1/2 left-1/2 z-40 text-[11px] font-bold tracking-wide uppercase sm:text-[13px]"
+            style={{ animationDuration: `${POISE_BREAK_CALLOUT_DURATION_MS}ms` }}
+          >
+            Staggered!
+          </div>
+        )}
+
+        {/* Weakness callout — rises from the lower card so it clears the flinch/break pops. */}
+        {showDamage && isWeakHit && !isDead && (
+          <div
+            key={`weak-${animationKey}`}
+            className="stagger-callout stagger-callout--weak pixel-font pointer-events-none absolute top-[85%] left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
+          >
+            Weak!
+          </div>
+        )}
+
+        {/* Impact flash effect on hit — a touch stronger for skills */}
         {showDamage && (
           <div
             key={`flash-${animationKey}`}
-            className="pointer-events-none absolute inset-0 rounded-lg bg-red-500/40"
+            className={cn(
+              'impact-flash pointer-events-none absolute inset-0 rounded-lg',
+              isSkillHit ? 'bg-red-500/55' : 'bg-red-500/40',
+            )}
             style={{ animation: 'flash-fade 0.3s ease-out forwards' }}
           />
         )}
@@ -99,39 +265,54 @@ function EnemySprite({ enemy, isSelected, onSelect }: EnemySpriteProps) {
       {/* Enemy name */}
       <div
         className={cn(
-          'pixel-font text-[8px] font-bold uppercase sm:text-[10px]',
+          'pixel-font font-bold uppercase',
+          ENEMY_CARD_NAME_SIZE[size],
           isDead ? 'text-gray-500 line-through' : 'text-emerald-300',
         )}
       >
         {enemy.name}
       </div>
 
-      {/* HP bar */}
-      <BattleHpBar
-        currentHp={enemy.currentHp}
-        maxHp={enemy.maxHp}
-        thresholdColors={ENEMY_HP_THRESHOLD_BG}
-        className="max-w-[70px] sm:max-w-[85px] md:max-w-[100px]"
-      />
+      {enemy.weakTo && enemy.weakTo.length > 0 && !isDead && <EnemyWeaknessBadges weakTo={enemy.weakTo} />}
+
+      {/* HP bar — or, for a dummy that cannot die, the damage readout in its place */}
+      {isTraining ? (
+        <TrainingDummyReadout isBattlePaused={isBattlePaused} poise={poise} className={ENEMY_CARD_BAR_WIDTH[size]} />
+      ) : (
+        <BattleHpBar
+          currentHp={enemy.currentHp}
+          maxHp={enemy.maxHp}
+          thresholdColors={ENEMY_HP_THRESHOLD_BG}
+          className={ENEMY_CARD_BAR_WIDTH[size]}
+        />
+      )}
+
+      {/* Poise bar — posture left before the next Break, then the Break and recovery windows */}
+      {poise && !isDead && <EnemyPoiseBar poise={poise} isStandby={isStandby} className={ENEMY_CARD_BAR_WIDTH[size]} />}
     </div>
   );
 }
 
-export function EnemyDisplay() {
+interface EnemyDisplayProps {
+  isBattlePaused: boolean;
+}
+
+export function EnemyDisplay({ isBattlePaused }: EnemyDisplayProps) {
   const enemies = useAtomValue(enemiesAtom);
   const selectedEnemyId = useAtomValue(selectedEnemyIdAtom);
   const selectEnemy = useSetAtom(selectEnemyAtom);
 
   return (
-    <div className="relative flex xl:h-[45vh] 2xl:h-[44vh] flex-col items-center justify-center p-2 sm:p-3 md:p-4">
+    <div className="relative flex h-full flex-col items-center justify-center gap-8 p-1 sm:p-2 md:p-4">
       {/* Enemy party grid */}
-      <div className="relative flex flex-1 items-center justify-center">
-        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-12 2xl:scale-100">
+      <div className="relative flex items-center justify-center">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 2xl:gap-8">
           {enemies.map((enemy) => (
             <EnemySprite
               key={enemy.id}
               enemy={enemy}
               isSelected={enemy.id === selectedEnemyId}
+              isBattlePaused={isBattlePaused}
               onSelect={() => selectEnemy(enemy.id)}
             />
           ))}
@@ -139,9 +320,9 @@ export function EnemyDisplay() {
       </div>
 
       {/* Enemy section label */}
-      <div className="w-full max-w-xs px-2 mb-15 xl:mt-5 xl:py-2">
+      <div className="w-full max-w-xs">
         <div className="text-center">
-          <h2 className="pixel-font xl:-mt-5 scale-90 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
+          <h2 className="pixel-font scale-90 text-sm font-bold tracking-wider text-white uppercase sm:text-base md:text-lg">
             ENEMIES
           </h2>
         </div>

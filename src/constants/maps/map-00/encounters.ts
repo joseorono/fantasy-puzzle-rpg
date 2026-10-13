@@ -1,11 +1,11 @@
 import type { EncounterDefinition } from '~/types/map-node';
-import { MOSS_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import { MOSS_GOLEM, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
 
 /**
  * Enemy encounter compositions for each fight node on map-00.
  * Each key corresponds to a node ID from nodes.ts.
  */
-const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
+export const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
   // ─── Regular Battles ────────────────────────────────────────────────
   battle_1: {
     enemies: [
@@ -17,10 +17,7 @@ const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
     enemies: [MOSS_GOLEM],
   },
   battle_3: {
-    enemies: [
-      MOSS_GOLEM,
-      { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog' },
-    ],
+    enemies: [MOSS_GOLEM, { ...SWAMP_FROG, id: 'swamp-frog-1', name: 'Swamp Frog' }],
   },
   battle_4: {
     enemies: [
@@ -83,11 +80,9 @@ const MAP_00_ENCOUNTERS: Record<string, EncounterDefinition> = {
       { ...MOSS_GOLEM, id: 'moss-golem-3', name: 'Moss Golem C' },
     ],
   },
-};
 
-/**
- * Look up the encounter definition for a given node ID.
- */
-export function getEncounterForNode(nodeId: string): EncounterDefinition | undefined {
-  return MAP_00_ENCOUNTERS[nodeId];
-}
+  // ─── Roaming FOEs (keys match ids in foes.ts) ───────────────────────
+  overworld_foe_1: {
+    enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
+  },
+};

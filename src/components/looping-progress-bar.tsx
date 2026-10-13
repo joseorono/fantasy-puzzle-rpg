@@ -7,7 +7,8 @@ export default function LoopingProgressBar(props: LoopingProgressBarProps) {
 
   return (
     <div className="loader__progress-bar-container">
-      <div data-durationms={durationInMs} className="loop-progress-bar" />
+      {/* Exempt from reduced motion: this indeterminate bar is the only sign loading is alive. */}
+      <div data-durationms={durationInMs} className="loop-progress-bar motion-exempt" />
     </div>
   );
 }

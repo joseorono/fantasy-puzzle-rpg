@@ -1,17 +1,12 @@
 import type { LootTable } from './loot';
+import type { DungeonDefinition } from './dungeon';
+import type { MapId } from './map';
+import type { townLocations } from './map-node';
 
 /**
  * Available views in the game
  */
-export type ViewType =
-  | 'town-hub'
-  | 'battle-demo'
-  | 'map-demo'
-  | 'map-demo-2'
-  | 'dialogue-demo'
-  | 'inventory'
-  | 'debug'
-  | 'battle-rewards';
+export type ViewType = 'town-hub' | 'battle-demo' | 'map' | 'dialogue-demo' | 'debug' | 'battle-rewards' | 'dungeon';
 
 /**
  * Data for town hub view
@@ -27,6 +22,12 @@ export interface TownHubViewData {
   };
   itemsForSell: string[];
   onLeaveCallback: () => void;
+  /**
+   * Sub-location to open on the next hub mount instead of the signpost — consumed once by
+   * `TownHub`, so a later visit from the map starts at the signpost again. Set by a location
+   * that sends the player on a round-trip (the Training Grounds' sparring fight).
+   */
+  initialLocation?: Exclude<townLocations, 'town-hub'>;
 }
 
 /**
@@ -36,42 +37,38 @@ export interface BattleViewData {
   enemyId: string;
   location?: string;
   canFlee?: boolean;
+  /** Background image URL for the battle panels; falls back to the default art. */
+  bgImage?: string;
 }
 
 /**
- * Data for map demo view
+ * Data for the dungeon view. The full dungeon object is passed by reference (authored
+ * dungeons are module constants; generated/randomized ones are one-off objects), so a run
+ * needs no registry lookup and future multi-dungeon locations can hand off any definition.
+ * `isReplay` is computed at entry from completion state.
  */
-export interface MapDemoViewData {
-  // No specific data needed for demo
+export interface DungeonViewData {
+  dungeon: DungeonDefinition;
+  isReplay: boolean;
 }
 
 /**
- * Data for map demo 2 view
+ * Data for the map view. `mapId` selects the definition from `MAP_REGISTRY`, so every map
+ * shares this one view rather than each getting its own.
  */
-export interface MapDemo2ViewData {
-  // No specific data needed for demo
+export interface MapViewData {
+  mapId: MapId;
 }
 
 /**
- * Data for dialogue demo view
+ * Data for dialogue demo view (no specific data needed for demo)
  */
-export interface DialogueDemoViewData {
-  // No specific data needed for demo
-}
+export type DialogueDemoViewData = object;
 
 /**
- * Data for inventory view
+ * Data for debug view (no specific data needed)
  */
-export interface InventoryViewData {
-  // No specific data needed for now
-}
-
-/**
- * Data for debug view
- */
-export interface DebugViewData {
-  // No specific data needed
-}
+export type DebugViewData = object;
 
 /**
  * Data for battle rewards view
@@ -79,6 +76,8 @@ export interface DebugViewData {
 export interface BattleRewardsViewData {
   lootTable: LootTable;
   expReward: number;
+  /** Battle-rating loot bonus already applied to the resources (for the "×N LOOT" badge). */
+  lootMultiplier?: number;
 }
 
 /**
@@ -87,12 +86,11 @@ export interface BattleRewardsViewData {
 export interface ViewDataMap {
   'town-hub': TownHubViewData;
   'battle-demo': BattleViewData;
-  'map-demo': MapDemoViewData;
-  'map-demo-2': MapDemo2ViewData;
+  map: MapViewData;
   'dialogue-demo': DialogueDemoViewData;
-  inventory: InventoryViewData;
   debug: DebugViewData;
   'battle-rewards': BattleRewardsViewData;
+  dungeon: DungeonViewData;
 }
 
 /**
@@ -100,19 +98,42 @@ export interface ViewDataMap {
  */
 export type RouteStatus = TownHubViewData &
   BattleViewData &
-  MapDemoViewData &
-  MapDemo2ViewData &
+  MapViewData &
   DialogueDemoViewData &
-  InventoryViewData &
   DebugViewData &
-  BattleRewardsViewData;
+  BattleRewardsViewData &
+  DungeonViewData;
+
+/**
+ * What a navigation does with the view being left.
+ * - `push` (default): the current view and its data are stacked so `goBack()` returns to it.
+ * - `replace`: the current view is dropped; the stack is untouched. Used when a view stands in
+ *   for the one it replaces (battle rewards after the battle that produced them).
+ * - `reset`: the stack is emptied. Used when a flow starts a fresh timeline (loading a save).
+ */
+export type HistoryMode = 'push' | 'replace' | 'reset';
+
+/**
+ * Optional second argument of every `goToX` action
+ */
+export interface NavigationOptions {
+  history?: HistoryMode;
+}
+
+/**
+ * A stacked view together with the data it had when the player left it, so `goBack()` can
+ * restore the view exactly. Discriminated on `view`.
+ */
+export type HistoryEntry = { [V in ViewType]: { view: V; data?: ViewDataMap[V] } }[ViewType];
 
 /**
  * Router state
  */
 export interface RouterState {
   currentView: ViewType;
-  previousView: ViewType | null;
+  /** Views to return to, oldest first. `goBack()` pops the last one and restores its data. */
+  history: HistoryEntry[];
+  /** Live data per view: what the current view renders, plus the last-known data of the rest. */
   viewData: Partial<ViewDataMap>;
 }
 

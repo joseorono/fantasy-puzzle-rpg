@@ -1,18 +1,54 @@
-import type { MapProgressSlice, MapNodeType } from './map-progress.types';
+import type { MapProgressSlice, MapProgressState, MapNodeType } from './map-progress.types';
+import type { SliceSet, SliceGet } from '~/types/store';
+import { isNodeCompletedInProgress } from '~/lib/map-content';
 
 /**
- * Initial map progress state
+ * Fresh map progress — nothing completed, nobody placed. A factory (not a shared
+ * constant) so init and reset each get their own object and progress can never
+ * leak across a reset.
  */
-const INITIAL_MAP_PROGRESS_STATE = {
+export const createInitialMapProgressState = (): MapProgressState => ({
   battlesCompleted: {},
   bossesCompleted: {},
   dungeonsCompleted: {},
   townsVisited: {},
   treasuresFound: {},
   mysteriesSolved: {},
-  shopsVisited: {},
-  characterPosition: null,
-};
+  exitsUsed: {},
+  dialogueTriggersSeen: {},
+  characterPositions: {},
+  foesDefeated: {},
+  pendingFoeBattleId: null,
+  pendingNodeBattle: null,
+});
+
+/** Flag a node done in its type's progress record. Mutates the immer draft. */
+function markNodeCompleted(progress: MapProgressState, nodeType: MapNodeType, nodeId: string) {
+  switch (nodeType) {
+    case 'Battle':
+      progress.battlesCompleted[nodeId] = true;
+      break;
+    case 'Boss':
+      progress.bossesCompleted[nodeId] = true;
+      break;
+    case 'Dungeon':
+      progress.dungeonsCompleted[nodeId] = true;
+      break;
+    case 'Town':
+      progress.townsVisited[nodeId] = true;
+      break;
+    case 'Treasure':
+      progress.treasuresFound[nodeId] = true;
+      break;
+    case 'Mystery':
+      progress.mysteriesSolved[nodeId] = true;
+      break;
+    case 'NextMap':
+    case 'PreviousMap':
+      progress.exitsUsed[nodeId] = true;
+      break;
+  }
+}
 
 /**
  * Create the map progress slice
@@ -20,34 +56,18 @@ const INITIAL_MAP_PROGRESS_STATE = {
  * This function is designed to work with immer middleware,
  * so we can mutate the draft state directly.
  */
-export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => ({
-  mapProgress: INITIAL_MAP_PROGRESS_STATE,
+export const createMapProgressSlice = (
+  set: SliceSet<MapProgressSlice>,
+  get: SliceGet<MapProgressSlice>,
+): MapProgressSlice => ({
+  mapProgress: createInitialMapProgressState(),
 
   actions: {
     mapProgress: {
       completeNode: (nodeType: MapNodeType, nodeId: string) =>
         set(
           (state: MapProgressSlice) => {
-            switch (nodeType) {
-              case 'Battle':
-                state.mapProgress.battlesCompleted[nodeId] = true;
-                break;
-              case 'Boss':
-                state.mapProgress.bossesCompleted[nodeId] = true;
-                break;
-              case 'Dungeon':
-                state.mapProgress.dungeonsCompleted[nodeId] = true;
-                break;
-              case 'Town':
-                state.mapProgress.townsVisited[nodeId] = true;
-                break;
-              case 'Treasure':
-                state.mapProgress.treasuresFound[nodeId] = true;
-                break;
-              case 'Mystery':
-                state.mapProgress.mysteriesSolved[nodeId] = true;
-                break;
-            }
+            markNodeCompleted(state.mapProgress, nodeType, nodeId);
           },
           false,
           'mapProgress/completeNode',
@@ -55,51 +75,77 @@ export const createMapProgressSlice = (set: any, get: any): MapProgressSlice => 
 
       isNodeCompleted: (nodeType: MapNodeType, nodeId: string) => {
         const state = get() as MapProgressSlice;
-        switch (nodeType) {
-          case 'Battle':
-            return state.mapProgress.battlesCompleted[nodeId] === true;
-          case 'Boss':
-            return state.mapProgress.bossesCompleted[nodeId] === true;
-          case 'Dungeon':
-            return state.mapProgress.dungeonsCompleted[nodeId] === true;
-          case 'Town':
-            return state.mapProgress.townsVisited[nodeId] === true;
-          case 'Treasure':
-            return state.mapProgress.treasuresFound[nodeId] === true;
-          case 'Mystery':
-            return state.mapProgress.mysteriesSolved[nodeId] === true;
-          default:
-            return false;
-        }
+        return isNodeCompletedInProgress(state.mapProgress, nodeType, nodeId);
       },
 
-      setCharacterPosition: (position) =>
+      setCharacterPosition: (mapId, position) =>
         set(
           (state: MapProgressSlice) => {
-            state.mapProgress.characterPosition = position;
+            state.mapProgress.characterPositions[mapId] = position;
           },
           false,
           'mapProgress/setCharacterPosition',
         ),
 
+      markFoeDefeated: (foeId) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.foesDefeated[foeId] = true;
+          },
+          false,
+          'mapProgress/markFoeDefeated',
+        ),
+
+      markDialogueTriggerSeen: (key) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.dialogueTriggersSeen[key] = true;
+          },
+          false,
+          'mapProgress/markDialogueTriggerSeen',
+        ),
+
+      setPendingFoeBattle: (foeId) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.pendingFoeBattleId = foeId;
+          },
+          false,
+          'mapProgress/setPendingFoeBattle',
+        ),
+
+      setPendingNodeBattle: (battle) =>
+        set(
+          (state: MapProgressSlice) => {
+            state.mapProgress.pendingNodeBattle = battle;
+          },
+          false,
+          'mapProgress/setPendingNodeBattle',
+        ),
+
+      resolvePendingBattle: () =>
+        set(
+          (state: MapProgressSlice) => {
+            const { pendingFoeBattleId, pendingNodeBattle } = state.mapProgress;
+            if (pendingFoeBattleId !== null) state.mapProgress.foesDefeated[pendingFoeBattleId] = true;
+            if (pendingNodeBattle !== null) {
+              markNodeCompleted(state.mapProgress, pendingNodeBattle.nodeType, pendingNodeBattle.nodeId);
+            }
+            state.mapProgress.pendingFoeBattleId = null;
+            state.mapProgress.pendingNodeBattle = null;
+          },
+          false,
+          'mapProgress/resolvePendingBattle',
+        ),
+
       resetProgress: () =>
         set(
           (state: MapProgressSlice) => {
-            state.mapProgress = INITIAL_MAP_PROGRESS_STATE;
+            state.mapProgress = createInitialMapProgressState();
           },
           false,
           'mapProgress/resetProgress',
         ),
     },
   },
-
-  reset: () =>
-    set(
-      (state: MapProgressSlice) => {
-        state.mapProgress = INITIAL_MAP_PROGRESS_STATE;
-      },
-      false,
-      'mapProgress/reset',
-    ),
 });
-

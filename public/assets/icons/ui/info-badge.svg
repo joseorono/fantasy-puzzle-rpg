@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>More info</title>
+  <!-- Smooth anti-aliased indigolay-style info coin. No crispEdges so the vector
+       gradients and rounded strokes scale cleanly without blocky pixelation. -->
+  <defs>
+    <radialGradient id="face" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff4cf" />
+      <stop offset="35%" stop-color="#f5c658" />
+      <stop offset="80%" stop-color="#c78d35" />
+      <stop offset="100%" stop-color="#8f5b22" />
+    </radialGradient>
+    <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d79a" />
+      <stop offset="45%" stop-color="#a06b35" />
+      <stop offset="100%" stop-color="#3e2412" />
+    </linearGradient>
+    <linearGradient id="inner-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Drop shadow -->
+  <circle cx="12" cy="12.5" r="10.5" fill="#120b05" opacity="0.35" />
+
+  <!-- Beveled rim -->
+  <circle cx="12" cy="12" r="10.5" fill="url(#rim)" stroke="#120b05" stroke-width="1" />
+  <circle cx="12" cy="12" r="9.5" fill="none" stroke="#ffffff" stroke-width="0.75" opacity="0.25" />
+
+  <!-- Gold face -->
+  <circle cx="12" cy="12" r="9" fill="url(#face)" />
+
+  <!-- Top specular sheen -->
+  <ellipse cx="9" cy="7" rx="4.5" ry="2.5" fill="url(#inner-shadow)" />
+
+  <!-- "?" symbol scaled to 0.7 so it sits inside the coin with ~4px of clearance -->
+  <g transform="translate(12, 12) scale(0.7) translate(-12, -12)">
+    <path d="M 8.5 6.5 C 8.5 3.5, 15.5 3.5, 15.5 6.5 C 15.5 9.5, 13.5 11, 12 12.5 L 12 14"
+          stroke="#120b05" stroke-width="4" stroke-linecap="round" fill="none" />
+    <circle cx="12" cy="18" r="2.4" fill="#120b05" />
+  </g>
+</svg>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
 
@@ -12,14 +13,30 @@ interface DialogueTriggerModalProps {
  * dialogue trigger tile. Reuses the NodeInteractionMenu visual language.
  */
 export function DialogueTriggerModal({ isOpen, onAccept, onDecline }: DialogueTriggerModalProps) {
+  const [isClosing, setIsClosing] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleClose = (callback: () => void) => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      callback();
+    }, 180);
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={onDecline}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-[2px] transition-opacity duration-200 ${
+        isClosing ? 'opacity-0' : 'animate-fade-in opacity-100'
+      }`}
+      onClick={() => handleClose(onDecline)}
     >
-      <div className="nim w-[320px]" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`nim w-[320px] ${isClosing ? 'nim--leaving' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="nim-header">
           <div className="nim-icon-wrapper">
@@ -38,11 +55,11 @@ export function DialogueTriggerModal({ isOpen, onAccept, onDecline }: DialogueTr
 
         {/* Actions */}
         <div className="nim-actions">
-          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={onAccept}>
+          <ToffecButton variant="cream" size="sm" className="nim-btn" onClick={() => handleClose(onAccept)}>
             <FrostyRpgIcon name="openBook" size={16} />
             Yes
           </ToffecButton>
-          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={onDecline}>
+          <ToffecButton variant="orange" size="sm" className="nim-btn" onClick={() => handleClose(onDecline)}>
             No
           </ToffecButton>
         </div>

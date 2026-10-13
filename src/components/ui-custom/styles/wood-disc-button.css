@@ -1,0 +1,134 @@
+/* WoodDiscButton — a wooden disc with a chunky gray inline-SVG glyph on its face.
+
+   The face is a real pixel-art tile (`tc-bg-wood-*.png`, seamless 32×32) at a fixed 2× texel
+   scale, tinted per wood, with a posterized radial band pair over it. Ring, outline, and the
+   toffec extrusion signature (`0 4px 0 <darker>` collapsing on press) stay CSS geometry.
+
+   Structured like ToffecSquareButton's `--cb-*` set: every colour is a token and each variant
+   class declares the WHOLE block. The base rule must never declare a `--wd-*` property: this
+   stylesheet is unlayered, so any declaration here beats the cva `[--wd-size:…]` utilities in
+   Tailwind's `@layer utilities` — sizes come in via `var(--wd-size, 80px)` fallbacks instead. */
+
+/* ── Woods ──────────────────────────────────────────────────────────────────
+   `--wd-tint` pitches the shared tiles toward each wood's palette; `--wd-lit`/`--wd-edge` are
+   the posterized light/shade bands. The glyph is wood-independent gray, so no icon tokens
+   live here. `--wd-ring` deliberately inverts across the set — lighter than the face on oak,
+   darker on walnut — which is most of what separates them at a glance. */
+
+/* Honey oak — the lighter signpost-plank wood; tile 3 is already honey, so no tint. */
+.wood-disc-btn--oak {
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-3.png');
+  --wd-tint: rgba(0, 0, 0, 0);
+  --wd-lit: rgba(255, 236, 196, 0.28);
+  --wd-edge: rgba(92, 54, 23, 0.38);
+  --wd-outline: #5c3617;
+  --wd-under: #6d4420;
+  --wd-ring: #c8a05c;
+  --wd-shade: rgba(92, 54, 23, 0.34);
+}
+
+/* Dark walnut — tile 1 darkened toward the brick interior of the back button it sits beside. */
+.wood-disc-btn--walnut {
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-1.png');
+  --wd-tint: rgba(25, 12, 3, 0.45);
+  --wd-lit: rgba(206, 158, 102, 0.3);
+  --wd-edge: rgba(20, 10, 4, 0.45);
+  --wd-outline: #241306;
+  --wd-under: #2f1a09;
+  --wd-ring: #7a5c18;
+  --wd-shade: rgba(20, 10, 4, 0.42);
+}
+
+/* Redwood — the streaky tile 2 pushed a step redder, toward the town's warm end. */
+.wood-disc-btn--redwood {
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-2.png');
+  --wd-tint: rgba(130, 40, 10, 0.2);
+  --wd-lit: rgba(255, 206, 158, 0.28);
+  --wd-edge: rgba(74, 26, 10, 0.4);
+  --wd-outline: #4a1e0c;
+  --wd-under: #5c2a12;
+  --wd-ring: #9c6b1e;
+  --wd-shade: rgba(74, 26, 10, 0.36);
+}
+
+/* Ash — the cream tile 4 muted toward cool gray-tan, for surfaces that shouldn't read warm. */
+.wood-disc-btn--ash {
+  --wd-tile: url('/assets/bg/looping/tc-bg-wood-4.png');
+  --wd-tint: rgba(90, 78, 64, 0.28);
+  --wd-lit: rgba(245, 238, 220, 0.32);
+  --wd-edge: rgba(60, 52, 40, 0.36);
+  --wd-outline: #4a4034;
+  --wd-under: #5a4e40;
+  --wd-ring: #8b7a4a;
+  --wd-shade: rgba(60, 52, 40, 0.32);
+}
+
+/* ── Geometry ─────────────────────────────────────────────────────────────── */
+
+.wood-disc-btn {
+  position: relative;
+  width: var(--wd-size, 80px);
+  height: var(--wd-size, 80px);
+  flex-shrink: 0;
+  padding: 0;
+  cursor: pointer;
+  border: 3px solid var(--wd-outline);
+  border-radius: 50%;
+  background-image:
+    /* Hard stops, not a smooth blend: light band upper-left, shade band at the rim, and a
+       transparent middle so the real grain shows through. A continuous radial makes the disc
+       read as glossy plastic. */
+    radial-gradient(circle at 38% 32%, var(--wd-lit) 0 34%, transparent 34% 68%, var(--wd-edge) 68%),
+    linear-gradient(var(--wd-tint), var(--wd-tint)), var(--wd-tile);
+  /* 2× the 32px source — integer texels stay crisp at every disc size, and the grain density
+     is constant across sizes, so the set reads as cut from the same plank. */
+  background-size:
+    auto,
+    auto,
+    64px 64px;
+  background-repeat: no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 0 0 3px var(--wd-ring),
+    inset 0 3px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -5px 0 var(--wd-shade),
+    0 var(--wd-lip, 4px) 0 var(--wd-under);
+  /* steps() rather than easing — continuous interpolation reads wrong on a pixel-art surface. */
+  transition:
+    transform 60ms steps(1),
+    box-shadow 60ms steps(1),
+    filter 120ms steps(2);
+}
+
+/* The same wood, better lit — no hue jump, and deliberately not the yellow of the old coin art. */
+.wood-disc-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Bottoms out into its own lip, like a button pressed into the post. */
+.wood-disc-btn:active:not(:disabled) {
+  transform: translateY(var(--wd-lip, 4px));
+  box-shadow:
+    inset 0 0 0 3px var(--wd-ring),
+    inset 0 3px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -5px 0 var(--wd-shade),
+    0 0 0 var(--wd-under);
+}
+
+.wood-disc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wood-disc-btn:focus-visible {
+  outline: 2px solid #d4a574;
+  outline-offset: 3px;
+}
+
+/* The glyph brings its own three gray tones (see GLYPH_BITMAPS); the hard 1px dark offset is
+   what seats it on the wood — do not blur it. */
+.wood-disc-btn__glyph {
+  position: relative;
+  width: 58%;
+  height: 58%;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+}

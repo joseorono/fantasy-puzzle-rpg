@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { DialogueLine, DialogueCharacter } from '~/types/dialogue';
 import { MAX_MESSAGE_HISTORY } from '~/constants/dialogue';
+import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
+import { ModalTitle } from '~/components/typography/modal-title';
 
 interface MessageHistoryProps {
   lines: DialogueLine[];
@@ -41,10 +43,8 @@ export function MessageHistory({ lines, characters, currentIndex, isOpen, onClos
       {/* Message History Container */}
       <div className="mh-container" ref={containerRef}>
         <div className="mh-header">
-          <h2 className="mh-title">Message History</h2>
-          <button className="mh-close-button" onClick={onClose}>
-            ✕
-          </button>
+          <ModalTitle text="Message History" className="mh-title" />
+          <ToffecSquareButton variant="medieval1" hasBg size="sm" onClick={onClose} />
         </div>
 
         <div className="mh-content pixel-scrollbar" ref={contentRef}>

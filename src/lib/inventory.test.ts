@@ -11,6 +11,9 @@ import {
   filterInventoryByType,
   sortInventoryByName,
   sortInventoryByQuantity,
+  sortInventoryForDisplay,
+  describeConsumableAction,
+  getConsumableUsability,
 } from './inventory';
 import { EquipmentItems, ConsumableItems } from '~/constants/inventory';
 import type { BaseItemData } from '~/types/inventory';
@@ -76,6 +79,43 @@ describe('inventory utilities', () => {
       const original = [...testInventory];
       addItemToInventory(testInventory, 'potion', 5);
       expect(testInventory).toEqual(original);
+    });
+  });
+
+  describe('rarity-keyed stacking', () => {
+    it('keeps different rarities of the same item as separate stacks', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 1, 'rare');
+      expect(inv).toHaveLength(2);
+      expect(getItemQuantity(inv, 'iron-sword', 'common')).toBe(1);
+      expect(getItemQuantity(inv, 'iron-sword', 'rare')).toBe(1);
+    });
+
+    it('stacks items of the same id and rarity', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'rare');
+      inv = addItemToInventory(inv, 'iron-sword', 2, 'rare');
+      expect(inv).toHaveLength(1);
+      expect(inv[0]).toEqual({ itemId: 'iron-sword', quantity: 3, rarity: 'rare' });
+    });
+
+    it('sums all rarities when no rarity is given to getItemQuantity', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 2, 'rare');
+      expect(getItemQuantity(inv, 'iron-sword')).toBe(3);
+    });
+
+    it('removes from the matching rarity stack only', () => {
+      let inv = addItemToInventory(emptyInventory, 'iron-sword', 1, 'common');
+      inv = addItemToInventory(inv, 'iron-sword', 1, 'rare');
+      inv = removeItemFromInventory(inv, 'iron-sword', 1, 'common');
+      expect(getItemQuantity(inv, 'iron-sword', 'common')).toBe(0);
+      expect(getItemQuantity(inv, 'iron-sword', 'rare')).toBe(1);
+    });
+
+    it('does not add a rarity key for consumables', () => {
+      const inv = addItemToInventory(emptyInventory, 'potion', 2);
+      expect(inv[0]).toEqual({ itemId: 'potion', quantity: 2 });
+      expect('rarity' in inv[0]).toBe(false);
     });
   });
 
@@ -243,5 +283,128 @@ describe('inventory utilities', () => {
       const inventory: InventoryItem[] = [{ itemId: 'potion', quantity: 50 }];
       expect(getTotalItemCount(inventory)).toBe(50);
     });
+  });
+});
+
+describe('sortInventoryForDisplay', () => {
+  const allItems: BaseItemData[] = [...ConsumableItems, ...EquipmentItems];
+
+  it('orders consumables by definition order regardless of pickup order', () => {
+    const picked: InventoryItem[] = [
+      { itemId: 'energy-potion', quantity: 1 },
+      { itemId: 'potion', quantity: 3 },
+      { itemId: 'row-clear', quantity: 2 },
+      { itemId: 'high-potion', quantity: 1 },
+    ];
+    expect(sortInventoryForDisplay(picked, allItems).map((stack) => stack.itemId)).toEqual([
+      'potion',
+      'high-potion',
+      'row-clear',
+      'energy-potion',
+    ]);
+  });
+
+  it('puts weapons before armor', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'iron-armor', quantity: 1, rarity: 'legendary' },
+      { itemId: 'iron-sword', quantity: 1, rarity: 'common' },
+    ];
+    expect(sortInventoryForDisplay(stacks, allItems).map((stack) => stack.itemId)).toEqual([
+      'iron-sword',
+      'iron-armor',
+    ]);
+  });
+
+  it('orders the same slot by rarity, highest first', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'iron-sword', quantity: 1, rarity: 'common' },
+      { itemId: 'iron-sword', quantity: 1, rarity: 'legendary' },
+      { itemId: 'iron-sword', quantity: 1, rarity: 'rare' },
+    ];
+    expect(sortInventoryForDisplay(stacks, allItems).map((stack) => stack.rarity)).toEqual([
+      'legendary',
+      'rare',
+      'common',
+    ]);
+  });
+
+  it('treats a missing rarity as common', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'iron-sword', quantity: 1 },
+      { itemId: 'iron-sword', quantity: 1, rarity: 'uncommon' },
+    ];
+    expect(sortInventoryForDisplay(stacks, allItems).map((stack) => stack.rarity)).toEqual(['uncommon', undefined]);
+  });
+
+  it('breaks slot and rarity ties by name', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'steel-sword', quantity: 1, rarity: 'common' },
+      { itemId: 'bronze-sword', quantity: 1, rarity: 'common' },
+    ];
+    expect(sortInventoryForDisplay(stacks, allItems).map((stack) => stack.itemId)).toEqual([
+      'bronze-sword',
+      'steel-sword',
+    ]);
+  });
+
+  it('puts unknown items last', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'mystery', quantity: 1 },
+      { itemId: 'potion', quantity: 1 },
+    ];
+    expect(sortInventoryForDisplay(stacks, allItems).map((stack) => stack.itemId)).toEqual(['potion', 'mystery']);
+  });
+
+  it('does not mutate the input', () => {
+    const stacks: InventoryItem[] = [
+      { itemId: 'high-potion', quantity: 1 },
+      { itemId: 'potion', quantity: 1 },
+    ];
+    sortInventoryForDisplay(stacks, allItems);
+    expect(stacks.map((stack) => stack.itemId)).toEqual(['high-potion', 'potion']);
+  });
+
+  it('returns an empty array for an empty inventory', () => {
+    expect(sortInventoryForDisplay([], allItems)).toEqual([]);
+  });
+});
+
+describe('describeConsumableAction', () => {
+  it('describes a heal', () => {
+    expect(describeConsumableAction({ type: 'heal', amount: 50 })).toBe('Heals 50 HP');
+  });
+
+  it('describes row and column clears', () => {
+    expect(describeConsumableAction({ type: 'clear-line', orientation: 'row' })).toBe('Clears a row');
+    expect(describeConsumableAction({ type: 'clear-line', orientation: 'column' })).toBe('Clears a column');
+  });
+
+  it('describes an ultimate fill as a whole percentage', () => {
+    expect(describeConsumableAction({ type: 'fill-ultimate', amount: 0.3 })).toBe('Fills 30% Ultimate');
+  });
+
+  it('returns null without an action', () => {
+    expect(describeConsumableAction(undefined)).toBeNull();
+  });
+});
+
+describe('getConsumableUsability', () => {
+  const potion = ConsumableItems.find((item) => item.id === 'potion')!;
+  const rowClear = ConsumableItems.find((item) => item.id === 'row-clear')!;
+
+  it('reports anywhere for items usable in and out of battle', () => {
+    expect(getConsumableUsability(potion)).toBe('anywhere');
+  });
+
+  it('reports battle for battle-only items', () => {
+    expect(getConsumableUsability(rowClear)).toBe('battle');
+  });
+
+  it('reports field for out-of-battle-only items', () => {
+    expect(getConsumableUsability({ ...potion, usableInBattle: false })).toBe('field');
+  });
+
+  it('reports none when neither flag is set', () => {
+    expect(getConsumableUsability({ ...potion, usableInBattle: false, usableOutOfBattle: false })).toBe('none');
   });
 });

@@ -6,22 +6,25 @@
 */
 
 .mouseTracker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 80px;
   pointer-events: none;
+  z-index: 9999;
 }
 
 /* CURSOR ANIMATION */
 .clickAnim {
-  width: 80px;
-  height: 80px;
   background-color: black;
   border: none;
   border-radius: 50%;
-  position: fixed;
-  transition-duration: 200ms;
-  transition-timing-function: ease-out;
-  animation: clickAnimAnim 0.5s;
-  pointer-events: none;
-  z-index: 9999;
+  /* Eases the fill up from transparent so a click never lands as a hard black disc. Scoped to
+     background-color on purpose — a bare `transition-duration` also eases the tracking transform. */
+  transition: background-color 200ms ease-out;
+  /* forwards: hold the faded-out frame, so a finished ripple never snaps back to solid. */
+  animation: clickAnimAnim 0.5s forwards;
 }
 .clickAnim::after {
   content: '';

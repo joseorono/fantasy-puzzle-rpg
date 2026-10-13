@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <title>Floor locked</title>
+  <!-- Muted padlock. Replaces the old middot, which carried no meaning of its
+       own — the dimmed palette keeps it recessive next to the other markers. -->
+  <g fill="none" stroke-linecap="butt">
+    <path d="M5.5 7.5 L5.5 5 Q5.5 2.5 8 2.5 Q10.5 2.5 10.5 5 L10.5 7.5" stroke="#1e1a15" stroke-width="4" />
+    <path d="M5.5 7.5 L5.5 5 Q5.5 2.5 8 2.5 Q10.5 2.5 10.5 5 L10.5 7.5" stroke="#8a7d6c" stroke-width="1.8" />
+  </g>
+  <rect x="2" y="6" width="12" height="8" fill="#1e1a15" />
+  <rect x="3" y="7" width="10" height="6" fill="#5a4f42" />
+  <rect x="3" y="7" width="10" height="1" fill="#8a7d6c" />
+  <rect x="3" y="12" width="10" height="1" fill="#3a332a" />
+  <rect x="7" y="9" width="2" height="3" fill="#1e1a15" />
+</svg>

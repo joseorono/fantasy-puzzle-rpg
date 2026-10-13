@@ -2,12 +2,12 @@ appId: com.fantasy-puzzle-rpg.app
 productName: Fantasy Puzzle RPG
 directories:
   buildResources: assets
-  output: dist
+  output: release
 
 files:
-  - from: dist/renderer
+  - from: dist
     to: .
-  - from: dist/main
+  - from: dist-electron
     to: .
   - from: node_modules
     to: node_modules

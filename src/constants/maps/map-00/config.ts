@@ -1,10 +1,27 @@
-import type { TiledMapConfig } from '~/types/tilemap';
+import type { MapDefinition } from '~/types/map';
+import { demoMap } from './tiled-data';
+import { TILESET_DEMO_MAP } from '../tileset-data';
+import { DEMO_MAP_NODES } from './nodes';
+import { DEMO_FLOOR_LOOT } from './floor-loot';
+import { MAP_00_DIALOGUE_SCENES, MAP_00_DIALOGUE_TRIGGERS } from './dialogue';
+import { MAP_00_ENCOUNTERS } from './encounters';
+import { MAP_00_FOES } from './foes';
 
-export const MAP_00_CONFIG: TiledMapConfig = {
-  tilesetImage: '/assets/tileset/demo-map.png',
+export const MAP_00: MapDefinition = {
+  id: 'map-00',
+  tilesetImage: TILESET_DEMO_MAP.image,
   displayMapName: 'Overworld',
   walkableLayers: ['road'],
   visibleLayers: ['Capa de patrones 1', 'road', 'mountains', 'trees', 'signs'],
   defaultPlayerPosition: { x: 70, y: 58 },
   debug: true,
+  footstepVolume: 0.8,
+  footstepPitch: 1,
+  tiledData: demoMap,
+  nodes: DEMO_MAP_NODES,
+  floorLoot: DEMO_FLOOR_LOOT,
+  dialogueTriggers: MAP_00_DIALOGUE_TRIGGERS,
+  dialogueScenes: MAP_00_DIALOGUE_SCENES,
+  encounters: MAP_00_ENCOUNTERS,
+  foes: MAP_00_FOES,
 };

@@ -55,142 +55,147 @@
 
 /* ─── Party Bar (top) ────────────────────────────────────────────────── */
 
+/* Always mounted; tabs without the bar collapse its row track so the body eases up into the
+   space. The rounded top corners come from .pause-menu's own overflow clip. */
+.pause-menu-party-bar-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  flex-shrink: 0;
+  transition: grid-template-rows 0.22s ease-out;
+}
+
+.pause-menu-party-bar-slot--collapsed {
+  grid-template-rows: 0fr;
+}
+
+.pause-menu-party-bar-slot__inner {
+  min-height: 0;
+  overflow: hidden;
+  transition: opacity 0.18s ease-out;
+}
+
+.pause-menu-party-bar-slot--collapsed .pause-menu-party-bar-slot__inner {
+  opacity: 0;
+}
+
 .pause-menu-party-bar {
   display: flex;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
-  border-bottom: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
+  padding: 0.5rem 0.75rem;
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
+  /* Gold rule, same ramp as GradientDivider's gold variant. */
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #8b6914 20%, #d4a574 50%, #8b6914 80%, transparent) 1;
   overflow-x: auto;
 }
 
+/* ─── Party Portrait Frame ───────────────────────────────────────────── */
+/* Indigolay HUD thumbnail (187×225). Its window is punched out, so the portrait and a
+   crimson backdrop sit underneath and the gold corners overlap them. Percentages below
+   are measured off the art. */
+
+.party-portrait-frame {
+  position: relative;
+  aspect-ratio: 187 / 225;
+  flex-shrink: 0;
+}
+
+.party-portrait-frame__window {
+  position: absolute;
+  left: 17.1%;
+  top: 4%;
+  width: 77%;
+  height: 67.1%;
+  background: radial-gradient(circle at 50% 40%, #5a1c22, #2e0b10);
+}
+
+.party-portrait-frame__window > img {
+  --face-zoom: 2.2;
+}
+
+.party-portrait-frame__art {
+  position: absolute;
+  inset: 0;
+  background: url('/assets/frame/indigolay/portrait-frame.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* Centred on the pennant's face (x 46–161, y 172–206 of the art). */
+.party-portrait-frame__level {
+  position: absolute;
+  left: 55.3%;
+  top: 83.5%;
+  transform: translate(-50%, -50%);
+  font-size: 0.5rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: #ffe9c2;
+  text-shadow: 1px 1px 0 #000;
+}
+
 /* ─── Party Member Card (reusable) ──────────────────────────────────── */
+/* Same dark-wood recipe as the rewards card, scaled down. */
 
 .party-member-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  background: transparent;
-  border-radius: 0;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  width: 100%;
+  --party-card-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 3px 8px rgba(0, 0, 0, 0.5);
   position: relative;
-  overflow: visible;
-  flex-shrink: 0;
-}
-
-.party-member-card--bar,
-.party-member-card--roster {
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: transparent;
-  display: flex;
-  flex: 1; /* Allow it to grow in flex containers */
-  min-width: 200px;
-}
-
-.party-member-card--roster {
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.party-member-card--roster:hover .party-member-card__info-bar {
-  filter: brightness(1.1);
-}
-
-.party-member-card--roster.active .party-member-card__info-bar {
-  border-color: rgba(212, 165, 116, 0.85);
-  box-shadow: 
-    0 0 12px rgba(212, 165, 116, 0.7),
-    inset -2px -2px 0 rgba(0, 0, 0, 0.3),
-    inset 2px 2px 0 rgba(255, 255, 255, 0.1);
-}
-
-.party-member-card--roster.active .party-member-card__hp-bar,
-.party-member-card--roster.active .party-member-card__exp-bar,
-.party-member-card--roster.active .party-member-card__icon {
-  border-color: rgba(212, 165, 116, 0.85);
-}
-
-.party-member-card__icon {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin-right: -2px;
+  gap: 0.5rem;
+  flex: 1;
   flex-shrink: 0;
-  background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
-  background-size: 64px;
-  border: 3px solid #A98559;
-  height: 86px; /* Exactly matches the combined height of bars with solapamiento */
-  width: 64px;
-  z-index: 4;
+  width: 100%;
+  min-width: 200px;
+  padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.88), rgba(42, 24, 16, 0.92)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  border: 2px solid #5c3a1e;
+  border-radius: 8px;
+  box-shadow: var(--party-card-shadow);
 }
 
-.party-member-card--bar .party-member-card__icon,
-.party-member-card--roster .party-member-card__icon {
+.party-member-card__portrait {
   width: 64px;
-  height: 70px;
-  border-width: 2px;
 }
 
-.party-member-card__bars {
+.party-member-card__body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-  overflow: visible;
-  height: 86px;
-  position: relative;
+  gap: 3px;
 }
 
-.party-member-card__info-bar {
-  background: #844E27 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
-  background-size: 64px;
-  border: 2px solid #A98559;
-  margin-top: -3px;
-  position: relative;
-  z-index: 1;
-  padding: 0.35rem 0.6rem;
+/* Name + class over a gold rule (GradientDivider's gold ramp, fading out to the right). */
+.party-member-card__header {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  width: 90%;
-  border-radius: 4px 4px 10px;
-  height: 46px; /* Adjusted for 86px total height */
-  flex-shrink: 0;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, #d4a574, #8b6914 60%, transparent) 1;
 }
 
-.party-member-card__exp-bar {
-  width: 95%;
-  height: 12px; /* Adjusted for 86px total height */
-  background: #1a1008;
-  border: 2px solid #A98559;
-  border-radius: 4px;
-  margin-top: -3px;
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
+.party-member-card__class {
   flex-shrink: 0;
-  border-bottom-right-radius: 6px;
-}
-
-.party-member-card__exp-fill {
-  height: 100%;
-  background: #ffcc00;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
-  transition: width 0.3s ease;
+  font-size: 0.38rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #d4a574;
+  opacity: 0.85;
 }
 
 .party-member-card__name {
+  min-width: 0;
   font-size: 0.65rem;
   font-weight: 700;
-  color: #FFF8DC;
+  color: #fff8dc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,93 +203,109 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
 }
 
-.party-member-card__detail {
-  font-size: 0.5rem;
-  color: #E8DCC8;
-  white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
-  letter-spacing: -0.8px;
-  word-spacing: -3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Icon/tag column + bar. The column is fixed so the HP and EXP bars start together. */
+.party-member-card__stat-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.party-member-card__hp-bar {
-  width: 100%;
-  height: 23px;
-  background: #3D2817;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 0;
-  position: relative;
-  z-index: 3;
-  border: 2px solid #A98559;
+.party-member-card__stat-icon {
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
-.party-member-card--bar .party-member-card__hp-bar,
-.party-member-card--roster .party-member-card__hp-bar {
-  height: 14px;
-  border-width: 3px;
+.party-member-card__hp-bar,
+.party-member-card__exp-bar {
+  flex: 1;
+  min-width: 0;
 }
 
-.party-member-card__hp-fill {
-  height: 100%;
-  border-radius: 0;
-  transition: width 0.3s ease;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
+/* The sm bar's channel is only 8px tall, so the HP readout overlaps the frame a touch;
+   a 4-way outline (instead of the default drop shadow) keeps it legible over both. */
+.party-member-card__hp-bar .indigolay-bar__label {
+  font-size: 0.5rem;
+  letter-spacing: -0.02em;
+  text-shadow:
+    1px 0 0 #1a0d02,
+    -1px 0 0 #1a0d02,
+    0 1px 0 #1a0d02,
+    0 -1px 0 #1a0d02;
 }
 
-.party-member-card__hp-fill.full {
-  background: #4ade80;
+/* EXP bar tooltip: current / needed, then what's left to the next level. */
+.exp-bar-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
 }
 
-.party-member-card__hp-fill.medium {
-  background: #fbbf24;
+.exp-bar-tooltip__next {
+  color: #e8c48a;
 }
 
-.party-member-card__hp-fill.low {
-  background: #ef4444;
+/* Roster: selectable. The active ring stays soft — a gold edge, not a bloom. */
+.party-member-card--roster {
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-/* Dead state styling */
-.party-member-card.dead .party-member-card__icon {
-  background: #4A4037;
-  border-color: #8B8680;
-  opacity: 0.7;
+.party-member-card--roster:hover {
+  filter: brightness(1.08);
 }
 
-.party-member-card.dead .party-member-card__hp-bar {
-  background: #2A1810;
-  border-color: #8B8680;
+.party-member-card--roster.active {
+  border-color: #d4a574;
+  box-shadow:
+    var(--party-card-shadow),
+    0 0 8px rgba(212, 165, 116, 0.45);
 }
 
-.party-member-card.dead .party-member-card__info-bar {
-  background: #5A4A3A;
-  border-color: #8B8680;
+/* The shared kb-cursor ring would replace the panel's own shadows; layer it on top instead. */
+.pause-menu .party-member-card.kb-cursor {
+  box-shadow:
+    var(--party-card-shadow),
+    0 0 0 1px rgba(212, 165, 116, 0.5),
+    0 0 10px rgba(212, 165, 116, 0.25);
 }
 
-.party-member-card.dead .party-member-card__exp-bar {
-  background: #1a1008;
-  border-color: #8B8680;
+/* Dead: portrait and bars desaturate (a filter, since the bar fills are PNGs). */
+.party-member-card.dead .party-member-card__portrait,
+.party-member-card.dead .party-member-card__stat-icon {
+  filter: grayscale(1) brightness(0.7);
 }
 
-.party-member-card.dead .party-member-card__exp-fill {
-  background: #4A4037 !important;
-  box-shadow: none;
+.party-member-card.dead .indigolay-bar {
+  --ib-filter: grayscale(1) brightness(0.6);
 }
 
 .party-member-card.dead .party-member-card__name {
-  color: #9D9691;
+  color: #9d9691;
+  text-decoration: line-through;
 }
 
-.party-member-card.dead .party-member-card__detail {
-  color: #7A7570;
+/* Slim roster card (Stats/Equip): the framed portrait and name/class, no bars — HP and EXP
+   already show in the party bar above. Name and class stack and get a little more size. */
+.party-member-card--slim .party-member-card__header {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
-.party-member-card.dead .party-member-card__hp-fill {
-  background: #4A4037 !important;
-  box-shadow: none;
+.party-member-card--slim .party-member-card__name {
+  font-size: 0.75rem;
+}
+
+.party-member-card--slim .party-member-card__class {
+  font-size: 0.5rem;
 }
 
 /* ─── Body (sidebar + content) ───────────────────────────────────────── */
@@ -293,7 +314,18 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  background: linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url("/assets/bg/looping/bg-board.png");
+  background:
+    linear-gradient(to bottom, rgba(42, 24, 16, 0.4), rgba(26, 16, 8, 0.4)), url('/assets/bg/looping/bg-board.png');
+}
+
+/* Right column of the body — holds the tab content and the key-hint pill so the
+   sidebar can stretch to the bottom edge of the menu. */
+.pause-menu-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────── */
@@ -318,11 +350,11 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.8rem 1.25rem;
-  background: #6B5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #6b5344 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: none;
   border-radius: 0;
-  color: #FFF8DC;
+  color: #fff8dc;
   font-weight: 700;
   font-size: 0.75rem;
   cursor: pointer;
@@ -332,19 +364,14 @@
   letter-spacing: 0.05em;
   position: relative;
   margin-bottom: 8px;
-  
+
   /* Jagged wood carved edges - refined with appropriate notch volume */
-  clip-path: polygon(
-    3px 0%, 96% 1px, 100% 6px, 
-    98% 48%, 100% 92%, 
-    95% 100%, 4px 98%, 
-    0% 85%, 3% 52%, 0% 12%
-  );
-  
+  clip-path: polygon(3px 0%, 96% 1px, 100% 6px, 98% 48%, 100% 92%, 95% 100%, 4px 98%, 0% 85%, 3% 52%, 0% 12%);
+
   /* Filter to create the border effect on the clipped shape */
-  filter: drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817) drop-shadow(-1px 0 0 #3d2817);
-  
-  box-shadow: 
+  filter: drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
+  box-shadow:
     inset 0 -2px 0 rgba(0, 0, 0, 0.3),
     inset 0 2px 0 rgba(255, 255, 255, 0.1);
 }
@@ -361,19 +388,20 @@
 }
 
 .pause-menu-nav-btn:hover {
-  background-color: #7B6354;
+  background-color: #7b6354;
   color: #fff;
   transform: scale(1.02);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817) drop-shadow(-1px 0 0 #3d2817);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
 }
 
 .pause-menu-nav-btn.active {
-  background-color: #A07151; /* Lighter wood for active */
+  background-color: #a07151; /* Lighter wood for active */
   color: #fff;
   transform: translateX(4px);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574) drop-shadow(-1px 0 0 #d4a574);
-  box-shadow: 
-    0 0 15px rgba(212, 165, 116, 0.3);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
+  box-shadow: 0 0 15px rgba(212, 165, 116, 0.3);
 }
 
 /* Arrow indicator for active button */
@@ -385,7 +413,7 @@
   transform: translateY(-50%);
   color: #fff;
   font-size: 0.8rem;
-  animation: arrow-indicator 1.05s steps(3) infinite;
+  animation: arrow-indicator 1s steps(3) infinite;
   text-shadow: 0 0 4px rgba(247, 247, 247, 0.6);
   z-index: 10;
 }
@@ -396,15 +424,15 @@
     opacity: 0.7;
   }
   25% {
-    left: 2px;
+    left: 1.5px;
     opacity: 0.85;
   }
   50% {
-    left: 4px;
+    left: 3px;
     opacity: 1;
   }
   75% {
-    left: 6px;
+    left: 4.5px;
     opacity: 0.85;
   }
   100% {
@@ -417,10 +445,20 @@
   transform: scale(0.98);
 }
 
+/* A tab whose feature is unavailable right now (Save inside a dungeon). Still
+   selectable — the pane explains why — so only the label and icon fade. */
+.pause-menu-nav-btn--locked {
+  color: rgba(255, 248, 220, 0.55);
+}
+
+.pause-menu-nav-btn--locked .pause-menu-nav-icon {
+  filter: grayscale(1) brightness(0.5) contrast(1.1);
+}
+
 .pause-menu-nav-icon {
-  filter: grayscale(1) brightness(0.8) contrast(1.2);
+  filter: grayscale(0.3) brightness(0.6) contrast(1.2);
   flex-shrink: 0;
-  image-rendering: pixelated;
+  image-rendering: auto;
   width: 24px;
   height: 24px;
   transition: all 0.2s ease;
@@ -444,7 +482,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 0.9rem;
-  background: #8B3434 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
+  background: #8b3434 url('/assets/bg/looping/tc-bg-wood-1.png') repeat;
   background-size: 64px;
   border: 3px solid #5a1f1f;
   border-radius: 0;
@@ -457,28 +495,25 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
-  box-shadow: 
+  box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     inset 0 -2px 4px rgba(0, 0, 0, 0.3),
     0 2px 4px rgba(0, 0, 0, 0.5);
-  
+
   /* Jagged wood carved edges - same as nav buttons */
-  clip-path: polygon(
-    3px 0%, 96% 1px, 100% 6px, 
-    98% 48%, 100% 92%, 
-    95% 100%, 4px 98%, 
-    0% 85%, 3% 52%, 0% 12%
-  );
-  
+  clip-path: polygon(3px 0%, 96% 1px, 100% 6px, 98% 48%, 100% 92%, 95% 100%, 4px 98%, 0% 85%, 3% 52%, 0% 12%);
+
   /* Filter to create the border effect on the clipped shape */
-  filter: drop-shadow(0 2px 0 #5a1f1f) drop-shadow(0 -1px 0 #5a1f1f) drop-shadow(1px 0 0 #5a1f1f) drop-shadow(-1px 0 0 #5a1f1f);
+  filter: drop-shadow(0 2px 0 #5a1f1f) drop-shadow(0 -1px 0 #5a1f1f) drop-shadow(1px 0 0 #5a1f1f)
+    drop-shadow(-1px 0 0 #5a1f1f);
 }
 
 .pause-menu-exit-btn:hover {
   background-color: #a54040;
   color: #fff;
   transform: scale(1.02);
-  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574) drop-shadow(-1px 0 0 #d4a574);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
 }
 
 .pause-menu-exit-btn:active {
@@ -492,9 +527,12 @@
   overflow-y: auto;
   padding: 1rem 1.25rem;
   min-width: 0;
+  min-height: 0;
 }
 
-.pause-menu-content--equip {
+.pause-menu-content--equip,
+.pause-menu-content--items,
+.pause-menu-content--skills {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -502,7 +540,7 @@
 }
 
 .pause-menu-content h2 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 2px 0;
   font-size: 1.1rem;
   color: #ffd700;
   text-transform: uppercase;
@@ -512,37 +550,44 @@
 
 /* ─── Items Tab ──────────────────────────────────────────────────────── */
 
+/* The Items tab's category filters: a tight IndigolayTabs row — see indigolay-tab.css. */
 .pause-menu-item-categories {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  --indigolay-tabs-gap: 0.35rem;
+  margin-bottom: 0.08rem;
+  padding: 0;
+  padding-left: 0.35rem;
 }
 
-.pause-menu-category-btn {
-  padding: 0.4rem 0.8rem;
-  background: linear-gradient(to bottom, #2a1810, #1a1008);
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 6px;
-  color: #d4a574;
-  font-weight: 700;
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.pause-menu-item-category-tab.indigolay-tab {
+  min-width: 4.85rem;
+  height: 1.72rem;
+  padding: 0.3rem 0.72rem 0.16rem;
+  font-size: 0.55rem;
+  margin-bottom: 0;
+  filter: drop-shadow(0 1px 0 rgba(36, 17, 9, 0.48));
 }
 
-.pause-menu-category-btn:hover {
-  border-color: #d4a574;
+.pause-menu-item-category-tab.indigolay-tab:hover:not(:disabled) {
+  filter: brightness(1.02) drop-shadow(0 1px 0 rgba(36, 17, 9, 0.48));
 }
 
-.pause-menu-category-btn.active {
-  background: linear-gradient(to bottom, #d48c46, #8b4513);
-  border-color: #d4a574;
-  color: #fff;
-  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
+.pause-menu-item-category-tab.indigolay-tab.indigolay-tab--active {
+  color: #f3e7d8;
 }
 
+.pause-menu-item-category-tab__count {
+  margin-left: 0.35rem;
+  font-size: 0.5rem;
+  opacity: 0.7;
+}
+
+/* The pane is the query container (a container can't query itself), so the layout
+   below can drop the card under the list when the pane gets narrow. */
+.pause-menu-content--items {
+  container: items-layout / inline-size;
+}
+
+/* List (or target picker) beside the parchment item card. */
 .pause-menu-items-layout {
   display: flex;
   gap: 1rem;
@@ -550,118 +595,119 @@
   min-height: 0;
 }
 
-.pause-menu-item-list {
+.pause-menu-item-list,
+.pause-menu-item-picker {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.92), rgba(10, 6, 4, 0.92));
   border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
   border-radius: 8px;
   padding: 0.5rem;
+}
+
+.pause-menu-item-list {
+  gap: 0.2rem;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
+/* Icon | name (+ rarity) | equipped pill + quantity. */
 .pause-menu-item-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.6rem;
+  column-gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.4rem;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.1s ease;
   border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
 }
 
 .pause-menu-item-row:hover {
-  background: rgba(255, 215, 0, 0.05);
+  background: rgba(92, 62, 38, 0.45);
   border-color: rgba(212, 165, 116, 0.3);
 }
 
 .pause-menu-item-row.selected {
-  background: rgba(255, 215, 0, 0.1);
-  border-color: #ffd700;
+  background: linear-gradient(135deg, rgba(110, 76, 49, 0.72), rgba(71, 47, 30, 0.82));
+  border-color: #d4a574;
 }
 
-.pause-menu-item-icon-slot {
-  display: inline-flex;
+/* The shared ring's 8px radius would round past the row's own corners. */
+.pause-menu .pause-menu-item-row.kb-cursor {
+  border-radius: 4px;
+}
+
+.pause-menu-item-row__icon {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(to bottom, #1a1008, #0a0604);
+  border: 1px solid #84684a;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.pause-menu-item-name {
-  font-size: 0.7rem;
-  color: #e0e0e0;
-  font-weight: 700;
-}
-
-.pause-menu-item-qty {
-  font-size: 0.65rem;
-  color: #d4a574;
-  font-weight: 700;
-}
-
-.pause-menu-item-detail {
-  width: 220px;
-  flex-shrink: 0;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgb(42 24 16 / 60%) 0%, rgb(26 16 8 / 60%) 100%);
-  border: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 8px;
+.pause-menu-item-row__text {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 3px;
+  min-width: 0;
 }
 
-.pause-menu-item-detail-name {
-  font-size: 0.85rem;
-  color: #ffd700;
-  font-weight: 700;
-  text-align: center;
+.pause-menu-item-row__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: #f3e7d8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
-.pause-menu-item-detail-icon {
-  font-size: 2rem;
-  text-align: center;
+.pause-menu-item-row__rarity {
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.pause-menu-item-row__meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  background: url("/assets/bg/tc-bg-item-darker.png") no-repeat center;
-  background-size: contain;
-  image-rendering: pixelated;
-  border: none;
-  border-radius: 8px;
+  gap: 0.5rem;
 }
 
-.pause-menu-item-detail-desc {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-style: italic;
-  line-height: 1.6;
-  text-align: center;
+.pause-menu-item-row__equipped {
+  flex-shrink: 0;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid rgba(212, 165, 116, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(110, 76, 49, 0.72), rgba(71, 47, 30, 0.82));
+  color: #e3bb92;
+  font-size: 0.45rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.pause-menu-item-detail-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
+.pause-menu-item-row__qty {
+  min-width: 2.2rem;
+  justify-content: flex-end;
+  font-size: 0.65rem;
+  color: #d4a574;
 }
 
-.pause-menu-item-stat-badge {
-  padding: 0.2rem 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  border-radius: 3px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-}
-
+/* Empty category: centred two-line note inside the list frame. */
 .pause-menu-empty {
   display: flex;
   align-items: center;
@@ -672,35 +718,375 @@
   font-style: italic;
 }
 
-/* Use button in item detail panel */
-.pause-menu-use-btn {
-  margin-top: auto;
-  padding: 0.5rem 1rem;
+.pause-menu-empty--items {
+  flex: 1;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.5rem 1rem;
+  font-style: normal;
+  text-align: center;
+  line-height: 1.6;
+  color: #e3bb92;
+}
+
+.pause-menu-empty--items .pause-menu-empty__sub {
+  font-family: monospace;
   font-size: 0.75rem;
-  font-weight: 700;
+  color: #b38a63;
+}
+
+/* ─── Item card (parchment, the .skill-detail recipe in skills.css) ─── */
+
+.pause-menu-item-detail {
+  width: 240px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 0.35rem 0.45rem;
+  border: 20px solid transparent;
+  border-image: url('/assets/skills/ui/indigolay-skill-panel-text-area.png') 30 fill / 20px stretch;
+  color: #33200f;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  animation: skill-detail-in 0.18s ease-out backwards;
+}
+
+.pause-menu-item-detail .pixel-font {
+  text-shadow: none;
+}
+
+.pause-menu-item-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  background: url('/assets/bg/tc-bg-item-darker.png') no-repeat center;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.pause-menu-item-card__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__name {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #33200f;
+  overflow-wrap: anywhere;
+}
+
+.pause-menu-item-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Dark gilded capsule (the .skill-detail__tier-badge recipe) — the muted rarity
+   colours only read on a dark ground, never on the parchment itself. */
+.pause-menu-item-card__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 0.55rem;
+  font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: linear-gradient(to bottom, #d48c46, #8b4513);
-  border: 2px solid #ffd700;
+  letter-spacing: 0.08em;
+  color: #ffe9c9;
+  background: linear-gradient(135deg, rgba(61, 40, 23, 0.95), rgba(42, 24, 16, 0.98));
+  border: 1px solid #8b6914;
+  border-radius: 999px;
+}
+
+.pause-menu-item-card__tag--battle {
+  color: #e09a63;
+}
+
+.pause-menu-item-card__tag--field {
+  color: #a9c281;
+}
+
+.pause-menu-item-card__desc {
+  margin: 0;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #33200f;
+}
+
+.pause-menu-item-card__ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.45rem 0.5rem;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size:
+    auto,
+    50px 50px;
+  border: 2px solid #5c3a1e;
   border-radius: 8px;
-  color: #fff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1.5px rgba(212, 165, 116, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  color: #f2d2af;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+@media (max-height: 700px) {
+  .pause-menu-item-card__ledger {
+    gap: 0.12rem;
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+.pause-menu-item-card__ledger .pause-menu-item-card__desc {
+  color: #f2d2af;
+}
+
+/* POW / VIT / SPD: the Equip tab's gear chips, label stacked over value. */
+.pause-menu-item-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.pause-menu-item-card__stats .gear-stats__chip {
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.25rem 0.2rem;
+}
+
+.pause-menu-item-card__stats .gear-stats__value--zero {
+  opacity: 0.45;
+}
+
+.pause-menu-item-card__stats .gear-stats__value--down {
+  color: #c9785f;
+}
+
+.pause-menu-item-card__fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.pause-menu-item-card__fact-label {
+  flex-shrink: 0;
+  font-size: 0.45rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d4a574;
+}
+
+.pause-menu-item-card__fact-value {
+  min-width: 0;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-align: right;
+  color: #f7e3c4;
+  overflow-wrap: anywhere;
+}
+
+.pause-menu-item-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.pause-menu-item-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #5c3a1e;
+}
+
+.pause-menu-item-card__owned strong {
+  color: #33200f;
+}
+
+.pause-menu-item-card__sell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* The cursor-corner wrapper defaults to fit-content (cursor.css); the button spans the card. */
+.pause-menu-item-card__use.cursor-corners {
+  display: block;
+  width: 100%;
+}
+
+.pause-menu-item-card__use .toffec-button {
+  width: 100%;
+}
+
+.pause-menu-item-card__reason {
+  margin: 0;
+  font-family: monospace;
+  font-size: 0.65rem;
+  font-style: italic;
+  text-align: center;
+  color: #7a5230;
+}
+
+/* ─── Target picker (replaces the list while a potion is being used) ── */
+
+.pause-menu-item-picker {
+  gap: 0.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.pause-menu-item-picker__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  font-size: 0.65rem;
+  color: #e3bb92;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-item-picker__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pause-menu-item-picker__remaining {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  color: #d4a574;
+}
+
+.pause-menu-item-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.pause-menu-item-picker__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Same gotchas the Inn solves (town.css): the card's 200px floor and the corner
+   wrapper's fit-content would both overflow a half-width cell. */
+.pause-menu-item-picker__grid .party-member-card--bar {
+  min-width: 0;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
-.pause-menu-use-btn:hover:not(:disabled) {
-  background: linear-gradient(to bottom, #e59c56, #9b5523);
-  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
-  transform: translateY(-1px);
+.pause-menu-item-picker__grid .cursor-corners {
+  display: block;
+  width: 100%;
 }
 
-.pause-menu-use-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  border-color: color(srgb 0.83 0.65 0.46 / 0.6);
+.pause-menu-item-picker__cell--disabled {
+  opacity: 0.55;
+}
+
+.pause-menu-item-picker__cell--disabled .party-member-card--bar {
+  cursor: default;
+}
+
+.pause-menu-item-picker__cell--disabled:hover .cursor-corner {
+  opacity: 0;
+}
+
+/* Result preview under each hero: the Inn's heal-cost plate. */
+.pause-menu-item-picker__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.55rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #e8c48a;
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.95));
+  border: 1px solid #5c3a1e;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.pause-menu-item-picker__status--revive {
+  color: #e09a63;
+}
+
+.pause-menu-item-picker__status--full {
+  color: #a8c79a;
+}
+
+.pause-menu-item-picker__hint {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+/* Narrow pane: the card drops under the list and sheds its price. */
+@container items-layout (max-width: 520px) {
+  .pause-menu-items-layout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pause-menu-item-list,
+  .pause-menu-item-picker {
+    flex: 1 1 0;
+    min-height: 132px;
+  }
+
+  .pause-menu-item-detail {
+    width: auto;
+  }
+
+  .pause-menu-item-card__sell {
+    display: none;
+  }
+
+  .pause-menu-item-card__ledger {
+    max-height: 96px;
+  }
 }
 
 /* ─── Stats Tab ──────────────────────────────────────────────────────── */
+/* Built from Level Up pieces: .character-info-panel, .progress-section, .stat-chip and
+   DerivedStatsDisplay (level-up-screen.css), plus the read-only SkillDetailPanel. */
 
 .pause-menu-stats-layout {
   display: flex;
@@ -709,380 +1095,609 @@
 
 .pause-menu-stats-main {
   flex: 1;
-}
-
-.pause-menu-stats-header {
+  min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.pause-menu-stats-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.pause-menu-stats-name {
-  font-size: 1.1rem;
-  color: #fff;
-  font-weight: 700;
-}
-
-.pause-menu-stats-class {
-  font-size: 0.65rem;
-  color: #d4a574;
-  text-transform: capitalize;
-}
-
-.pause-menu-stats-grid {
+/* Core stats beside the derived list; stacks when the content column gets narrow. */
+.pause-menu-stats-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(130px, 0.7fr) 1.6fr;
   gap: 1rem;
-  margin-bottom: 1rem;
+  align-items: start;
 }
 
-.pause-menu-stats-section h3 {
-  font-size: 0.7rem;
-  color: #d4a574;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 0.6rem 0;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
+@media (max-width: 900px) {
+  .pause-menu-stats-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
-.pause-menu-stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.35rem 0.5rem;
-  border-radius: 3px;
-  margin-bottom: 0.25rem;
+/* Grid items default to `min-width: auto`, so the no-wrap derived rows would widen their
+   column past the container and push the deltas out. Let both columns shrink instead. */
+.pause-menu-stats-columns > * {
+  min-width: 0;
 }
 
-.pause-menu-stat-row:nth-child(even) {
-  background: rgba(0, 0, 0, 0.15);
+.pause-menu-stats-columns .derived-stats {
+  margin-top: 0;
+  padding: 0;
 }
 
-.pause-menu-stat-label {
-  font-size: 0.65rem;
-  color: #d4a574;
-  font-weight: 700;
+/* DerivedStatsDisplay is sized for Level Up's tall left column. Here it shares a row with
+   the core stats, so one line per stat: smaller type, no wrapping, tighter rows. Unlayered,
+   so it beats the component's Tailwind `text-xs`. */
+.pause-menu-stats-columns .derived-stat-row {
+  gap: 0.5rem;
+  padding: 0.22rem 0;
 }
 
-.pause-menu-stat-value {
-  font-size: 0.7rem;
-  color: #fff;
-  font-weight: 700;
+.pause-menu-stats-columns .derived-stat-name {
+  min-width: 0;
+  font-size: 0.55rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.pause-menu-stats-skill {
-  padding: 0.75rem;
-  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
-  border: 1px solid rgba(212, 165, 116, 0.85);
-  border-radius: 8px;
-}
-
-.pause-menu-stats-skill-name {
-  font-size: 0.75rem;
-  color: #fff;
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-}
-
-.pause-menu-stats-skill-desc {
+.pause-menu-stats-columns .derived-stat-value {
+  flex-shrink: 0;
+  gap: 0.3rem;
   font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.pause-menu-stats-columns .derived-stat-value .stat-delta {
+  padding: 0.08rem 0.3rem;
+  font-size: 0.5rem;
+}
+
+/* A Level Up stat chip stretched into a full-width row. */
+.pause-menu-core-stat {
+  display: flex;
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+
+.pause-menu-core-stat__icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 0.35rem;
+  object-fit: contain;
+}
+
+/* ─── Skill selector (Stats + Equip) ─────────────────────────────── */
+.pause-menu-skill-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pause-menu-skill-select-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0;
+}
+
+.pause-menu-skill-select-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #d4a574;
+  margin-right: 0.1rem;
+}
+.pause-menu-skill-option {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  border-radius: 6px;
+  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease-in-out,
+    filter 0.12s ease-in-out;
+}
+
+.pause-menu-skill-option:hover:not(.disabled) {
+  filter: brightness(1.1);
+}
+
+.pause-menu-skill-option.active {
+  background-color: #a07151;
+  color: #fff;
+  border-color: #d4a574;
+  filter: brightness(1.05);
+}
+
+.pause-menu-skill-option.disabled {
+  cursor: default;
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.pause-menu-skill-option-icon {
+  flex-shrink: 0;
+}
+
+/* Compact variant for the Equip tab (sits above the stat preview) */
+.pause-menu-skill-select--compact {
+  gap: 0.3rem;
+}
+
+.pause-menu-skill-select--compact .pause-menu-skill-option {
+  padding: 0.25rem 0.45rem;
+  font-size: 0.6rem;
+}
+
+.pause-menu-skill-select-locked {
+  font-size: 0.55rem;
+  color: rgba(255, 215, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Party roster (right side of stats/equip) */
-.pause-menu-party-roster {
-  width: 255px; /* Increased to accommodate 16-bit cards */
+.party-roster {
+  width: 230px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding-right: 0.5rem;
 }
 
+/* The card's `flex: 1` is for the horizontal party bar; in this column it would stretch
+   each card to fill the roster's height. */
+.party-roster .party-member-card {
+  flex: none;
+}
+
+/* Content-height wrapper so cards keep their natural size inside a full-height roster */
+.party-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ─── Character header (Stats + Equip) ─────────────────────────────── */
+/* One line: class icon chip, name, class · level, over a gold rule that fades right. */
+
+.pause-menu-character-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-bottom: 0.35rem;
+  white-space: nowrap;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, #d4a574, #8b6914 60%, transparent) 1;
+}
+
+/* Dark-wood chip, same recipe as the party card panel. */
+.pause-menu-character-header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  background-image:
+    linear-gradient(135deg, rgba(61, 40, 23, 0.92), rgba(42, 24, 16, 0.96)), url('/assets/bg/looping/bg-board.png');
+  background-repeat: no-repeat, repeat;
+  background-size: auto, 50px 50px;
+  border: 1px solid #5c3a1e;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(212, 165, 116, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* Regular weight: the pixel font has no bold, so 700 is synthesized and smears the glyphs.
+   A crisp 1px shadow replaces .pixel-font's soft 2px offset for the same reason. */
+.pause-menu-character-header__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fff8dc;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-character-header__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  line-height: 1;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-character-header__class {
+  color: #d4a574;
+  text-transform: capitalize;
+}
+
+.pause-menu-character-header__sep {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.pause-menu-character-header__level {
+  color: #e8c48a;
+}
 
 /* ─── Equip Tab ──────────────────────────────────────────────────────── */
 
-.pause-menu-equip-layout {
-  display: flex;
-  gap: 1rem;
+/* Both Equip panels sit in the Indigolay HUD title frame (gold filigree corners, crest on top),
+   nine-sliced at half scale. */
+.pause-menu-equip-slots,
+.pause-menu-equip-available {
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.15rem;
+  border: solid transparent;
+  border-width: 22px 26px;
+  border-image: url('/assets/menu/equip/indigolay-ornate-panel.png') 44 52 fill / 22px 26px stretch;
+  image-rendering: pixelated;
 }
 
-.pause-menu-equip-main {
-  flex: 1;
-}
-
-.pause-menu-equip-header {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgba(139, 105, 20, 0.5);
-  min-width: 0;
-  white-space: nowrap;
-}
-
-.pause-menu-equip-header .pause-menu-stats-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-}
-
-.pause-menu-equip-header-line {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-width: 0;
-  white-space: nowrap;
-}
-
-.pause-menu-equip-header .pause-menu-stats-name {
-  font-size: 0.85rem;
-  line-height: 1;
-}
-
-.pause-menu-equip-header .pause-menu-stats-class {
-  font-size: 0.55rem;
-  line-height: 1;
-}
-
-.pause-menu-equip-header-separator {
-  color: rgba(255, 255, 255, 0.35);
-  flex-shrink: 0;
-  font-size: 0.55rem;
-  line-height: 1;
-}
-
-.pause-menu-equip-header-level {
-  font-size: 0.55rem;
-  color: #d4a574;
-  text-transform: capitalize;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.pause-menu-equip-tab > h2 {
-  flex-shrink: 0;
-}
-
-/* Equip slots */
 .pause-menu-equip-slots {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
+/* Socket | label, name, rarity | Unequip. Frameless rows inside the ornate panel. */
 .pause-menu-equip-slot-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.65rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.4rem;
+  cursor: pointer;
+}
+
+/* Fading gold hairline between the two slots. */
+.pause-menu-equip-slot-row + .pause-menu-equip-slot-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.55), transparent);
+}
+
+/* Hover, open slot and worn piece: a warm glow instead of a box. */
+.pause-menu-equip-slot-row:hover,
+.pause-menu-equip-available .pause-menu-item-row:hover {
+  background: radial-gradient(ellipse at 30% 50%, rgba(212, 165, 116, 0.14), transparent 70%);
+  border-color: transparent;
+}
+
+.pause-menu-equip-slot-row.active,
+.pause-menu-equip-available .pause-menu-item-row.selected {
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 190, 118, 0.2), transparent 75%);
+  border-color: transparent;
+}
+
+/* Indigolay corner brackets (the cursor art IndigolayCornersWrapper uses) in one pseudo-element,
+   shown on hover and under the keyboard cursor in place of the shared gold ring. */
+.pause-menu-equip-slot-row::after,
+.pause-menu-equip-available .pause-menu-item-row::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-topleft.png') top left / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-topright.png') top right / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomleft.png') bottom left / 10px 10px no-repeat,
+    url('/assets/cursors/corners/indigolay/indigolay-cursor-bottomright.png') bottom right / 10px 10px no-repeat;
+  transition: opacity 0.12s ease;
+}
+
+.pause-menu-equip-slot-row:hover::after,
+.pause-menu-equip-available .pause-menu-item-row:hover::after,
+.pause-menu .pause-menu-equip-slot-row.kb-cursor::after,
+.pause-menu .pause-menu-equip-available .pause-menu-item-row.kb-cursor::after {
+  opacity: 1;
+}
+
+.pause-menu .pause-menu-equip-slot-row.kb-cursor,
+.pause-menu .pause-menu-equip-available .pause-menu-item-row.kb-cursor {
+  box-shadow: none;
+}
+
+/* Indigolay HUD slot; the gold-framed art marks the slot whose list is open. */
+.pause-menu-equip-socket {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1rem;
-  background: rgba(26, 16, 8, 0.6);
-  border: 2px solid #3d2817;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: none;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: url('/assets/menu/equip/indigolay-gear-slot-normal.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
-.pause-menu-equip-slot-row:hover {
-  background: rgba(35, 22, 11, 0.6);
+.pause-menu-equip-slot-row.active .pause-menu-equip-socket {
+  background-image: url('/assets/menu/equip/indigolay-gear-slot-selected.png');
 }
 
-.pause-menu-equip-slot-row.active {
-  border-color: #d4a574;
-  background: rgba(26, 16, 8, 0.6);
+.pause-menu-equip-slot-row.is-empty .pause-menu-equip-socket {
+  opacity: 0.6;
 }
 
-.pause-menu-equip-slot-row .slot-label {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
+.pause-menu-equip-slot-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pause-menu-equip-slot-row__label {
+  font-size: 0.45rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #d4a574;
-  min-width: 80px;
-  text-transform: capitalize;
 }
 
-.pause-menu-equip-slot-value {
-  flex: 1;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.65rem;
-  color: #fff;
-  text-align: center;
-  padding-right: 1.5rem;
+.pause-menu-equip-slot-row__empty {
+  color: rgba(227, 187, 146, 0.45);
 }
 
-.pause-menu-equip-slot-value.empty {
-  color: #7a7a7a;
-  font-style: italic;
-  font-weight: 400;
-}
-
-/* ToffecCloseButton hover state for equip slots */
-.pause-menu-equip-slot-row .toffec-close-btn:hover {
+/* ToffecSquareButton hover state for equip slots */
+.pause-menu-equip-slot-row .toffec-square-btn:hover {
   opacity: 1;
   filter: brightness(1.1);
 }
 
-/* Stat preview */
-.pause-menu-equip-preview {
-  padding: 0.6rem 0.4rem;
-  background: linear-gradient(to bottom, rgba(26, 16, 8, 0.6), rgba(10, 6, 4, 0.6));
-  border: 2px solid rgba(212, 165, 116, 0.85);
-  border-radius: 8px;
-  margin-top: auto;
-  margin-bottom: 0;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.pause-menu-equip-preview-title {
-  font-size: 0.7rem;
-  color: #d4a574;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  flex-shrink: 0;
-}
-
-.pause-menu-equip-preview-stat-group {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.pause-menu-equip-preview-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-}
-
-.pause-menu-equip-preview-base {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.pause-menu-equip-stat-diff {
-  font-size: 0.6rem;
-  font-weight: 700;
-}
-
-.pause-menu-equip-stat-diff.positive {
-  color: #4ade80;
-}
-
-.pause-menu-equip-stat-diff.negative {
-  color: #ef4444;
-}
-
-.pause-menu-equip-preview-total {
-  font-size: 0.7rem;
-  color: #ffd700;
-  font-weight: 700;
-}
-
-.pause-menu-equip-preview-divider {
-  width: 1px;
-  height: 1.2rem;
-  background: rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-}
-
-/* Available items list */
-.pause-menu-equip-available {
-  border: 2px solid #d4a574;
-  border-radius: 12px;
-  padding: 1rem;
-  background: rgba(10, 6, 4, 0.6);
-  margin-top: 0.75rem;
-  position: relative;
-}
-
-.pause-menu-equip-available::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid #d4a574;
-  border-radius: 12px;
-  pointer-events: none;
-}
-
-.pause-menu-equip-available h3 {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.65rem;
-  color: #d4a574;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 0.75rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #3d2817;
-}
-
-.pause-menu-equip-empty {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.6rem;
-  color: #7a7a7a;
-  font-style: italic;
-  text-align: center;
-  padding: 1.5rem 0;
-  letter-spacing: 0.05em;
-  text-transform: lowercase;
-}
-
-.pause-menu-equip-available-item {
-  width: 100%;
-  border-radius: 4px;
-  transition: background 0.15s ease;
-}
-
-.pause-menu-equip-available-clickable {
+/* Gear stat summary: effective stats with current gear. Chip + gold pill match level-up's .stat-chip / .stat-delta. */
+.gear-stats {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  width: 100%;
-  cursor: pointer;
+  min-width: 0;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(139, 105, 20, 0.5);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
 }
 
-.pause-menu-equip-available-item:hover {
-  background: rgba(255, 215, 0, 0.08);
+.gear-stats__title {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-.pause-menu-equip-available-info {
+.gear-stats__grid {
   flex: 1;
   min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
 }
 
-.pause-menu-equip-available-name {
-  font-size: 0.7rem;
-  color: #ffd700;
-  font-weight: 700;
-}
-
-.pause-menu-equip-available-stats {
+.gear-stats__chip {
   display: flex;
-  gap: 0.4rem;
-  margin-top: 0.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.25rem 0.35rem;
+  background-image: url('/assets/bg/looping/bg-board.png');
+  background-size: 50px 50px;
+  border: 1px solid #5c3a1e;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(212, 165, 116, 0.25);
 }
 
-/* ─── Equip Tab ──────────────────────────────────────────────────────── */
+.gear-stats__label {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.gear-stats__label--pow {
+  color: #e09a63;
+}
+
+.gear-stats__label--vit {
+  color: #a9c281;
+}
+
+.gear-stats__label--spd {
+  color: #8fb4d4;
+}
+
+.gear-stats__value {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #f7e3c4;
+}
+
+.gear-stats__bonus {
+  padding: 0.1rem 0.3rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 3px;
+}
+
+/* Compound selector: .number-flow-container's `align-items: baseline` loads later at the same specificity. */
+.gear-stats__bonus.number-flow-container {
+  align-items: center;
+}
+
+.gear-stats__bonus--up {
+  color: #e9be76;
+  border: 1px solid rgba(233, 190, 118, 0.22);
+}
+
+.gear-stats__bonus--down {
+  color: #c9785f;
+  border: 1px solid rgba(201, 120, 95, 0.25);
+}
+
+/* Available gear: fills the column under the slots and scrolls inside its frame. */
+.pause-menu-equip-available {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: skill-detail-in 0.18s ease-out backwards;
+}
+
+/* Centred title over the Indigolay filigree divider; Close pinned right. */
+.pause-menu-equip-available__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 22px;
+  padding-bottom: 14px;
+}
+
+.pause-menu-equip-available__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 216px;
+  max-width: 100%;
+  height: 13px;
+  transform: translateX(-50%);
+  background: url('/assets/menu/equip/indigolay-filigree-divider.png') center / contain no-repeat;
+  image-rendering: pixelated;
+}
+
+.pause-menu-equip-available__header .toffec-square-btn {
+  position: absolute;
+  top: 0;
+  right: 0.2rem;
+}
+
+.pause-menu-equip-available__title {
+  margin: 0;
+  font-size: 0.55rem;
+  font-weight: 400;
+  color: #e8c48a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* Frameless Items rows; icons sit in the small HUD slot, gold-framed for the worn piece. */
+.pause-menu-equip-available .pause-menu-item-row {
+  position: relative;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  border-color: transparent;
+}
+
+.pause-menu-equip-available .pause-menu-item-row__icon {
+  width: 30px;
+  height: 30px;
+  background: url('/assets/menu/equip/indigolay-gear-slot-small.png') center / 100% 100% no-repeat;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
+.pause-menu-equip-available .pause-menu-item-row.selected .pause-menu-item-row__icon {
+  background-image: url('/assets/menu/equip/indigolay-gear-slot-small-selected.png');
+}
+
+/* Equipped: a dark plaque with a gold hairline. */
+.pause-menu-equip-available .pause-menu-item-row__equipped {
+  background: linear-gradient(to bottom, #3b2414, #24150b);
+  border: 1px solid #b8893f;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  color: #e8c48a;
+}
+
+.pause-menu-equip-available__list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Under a gear name: rarity, then the piece's own stats. */
+.pause-menu-equip-subline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pause-menu-equip-raw {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-size: 0.55rem;
+  color: #f3e7d8;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-equip-raw .gear-stats__label {
+  font-size: 0.45rem;
+}
+
+/* Swap preview: stat label, then the signed change, unboxed. */
+.pause-menu-equip-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.1rem;
+  font-size: 0.6rem;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.pause-menu-equip-delta .gear-stats__label {
+  font-size: 0.45rem;
+}
+
+.pause-menu-equip-delta--up {
+  color: #e9be76;
+}
+
+.pause-menu-equip-delta--down {
+  color: #c9785f;
+}
+
+.pause-menu-equip-delta--none {
+  color: rgba(227, 187, 146, 0.45);
+}
 
 .pause-menu-equip-tab {
   display: flex;
@@ -1104,17 +1719,99 @@
   gap: 1rem;
   flex: 1;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-right: 0.25rem;
 }
 
+/* Header, slots, then the available list taking the leftover height; Stats pins to the bottom. */
 .pause-menu-equip-main {
   flex: 1;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.pause-menu-equip-main .gear-stats {
+  margin-top: auto;
+}
+
+.pause-menu-equip-available + .gear-stats {
+  margin-top: 0.5rem;
+}
+
+/* ─── Tutorial Tab (hidden: opened with H / ?) ───────────────────────── */
+
+.pause-menu-content--tutorial {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Topic list (Items-list rows) beside a parchment card of short lines. */
+.pause-menu-tutorial-layout {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.pause-menu-tutorial-list {
+  flex: none;
+  width: 200px;
+}
+
+.pause-menu-tutorial-list .pause-menu-item-row {
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.pause-menu-tutorial-card {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
+  padding: 0.5rem 0.75rem;
+  border: 20px solid transparent;
+  border-image: url('/assets/skills/ui/indigolay-skill-panel-text-area.png') 30 fill / 20px stretch;
+  color: #33200f;
+  animation: skill-detail-in 0.18s ease-out backwards;
+}
+
+.pause-menu-tutorial-card__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #5c3a1e;
+  text-shadow: none;
+}
+
+.pause-menu-tutorial-card__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pause-menu-tutorial-card__lines li {
+  position: relative;
+  padding-left: 1rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pause-menu-tutorial-card__lines li::before {
+  content: '';
+  position: absolute;
+  left: 0.15rem;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  background: #8a5a32;
 }
 
 /* ─── Placeholder Tabs ───────────────────────────────────────────────── */
@@ -1147,78 +1844,12 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  padding: 0.5rem 0;
   margin-top: 0.5rem;
+  flex-shrink: 0;
   border-top: 1px solid rgba(139, 105, 20, 0.5);
   background: linear-gradient(180deg, rgba(30, 20, 10, 0.3) 0%, rgba(20, 14, 6, 0.3) 100%);
   border-radius: 4px;
   padding: 0.375rem 0.5rem;
-}
-
-.pause-menu-resource {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: linear-gradient(180deg, #3a2a1a 0%, #2a1e12 50%, #1e150c 100%);
-  border: 1px solid color(srgb 0.83 0.65 0.46 / 0.6);
-  border-radius: 4px;
-  padding: 0.2rem 0.4rem;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 215, 0, 0.08);
-}
-
-.pause-menu-resource__icon {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow:
-    inset -1px -1px 2px rgba(0, 0, 0, 0.4),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.15);
-}
-
-.pause-menu-resource__content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1;
-}
-
-.pause-menu-resource__label {
-  font-family: monospace;
-  font-size: 0.5rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: #c8b06e;
-  letter-spacing: 0.03em;
-}
-
-.pause-menu-resource__value {
-  font-family: monospace;
-  font-size: 0.7rem;
-  font-weight: bold;
-}
-
-/* Resource type colors */
-.pause-menu-resource--coins .pause-menu-resource__value {
-  color: #ffd700;
-}
-
-.pause-menu-resource--gold .pause-menu-resource__value {
-  color: #ffd700;
-}
-
-.pause-menu-resource--silver .pause-menu-resource__value {
-  color: #c0c0c0;
-}
-
-.pause-menu-resource--iron .pause-menu-resource__value {
-  color: #71797E;
-}
-
-.pause-menu-resource--copper .pause-menu-resource__value {
-  color: #b87333;
 }
 
 /* ─── Tab Transitions & Animations ──────────────────────────────────────── */
@@ -1235,8 +1866,6 @@
     opacity: 1;
   }
 }
-
-
 
 /* ─── Placeholder Styling ────────────────────────────────────────────────── */
 
@@ -1293,8 +1922,151 @@
 
 .pause-menu-option-value {
   font-size: 0.75rem;
-  color: #ffd700;
+  color: #e3bb92;
   font-weight: 700;
   min-width: 50px;
   text-align: right;
+}
+
+.pause-menu-option-row--mute {
+  gap: 0.65rem;
+}
+
+.pause-menu-mute-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.15rem 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: filter 0.1s ease;
+}
+
+.pause-menu-mute-toggle:hover {
+  filter: brightness(1.12);
+}
+
+.pause-menu-mute-toggle:hover .pause-menu-option-label {
+  color: #e3bb92;
+}
+
+.pause-menu-mute-toggle:active {
+  transform: translateY(1px);
+}
+
+.pause-menu-mute-toggle .pause-menu-option-label {
+  cursor: pointer;
+}
+
+/* Checkbox + explanatory copy (e.g. Reduced Motion), separated from the audio controls above. */
+.pause-menu-option-row--toggle {
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.22);
+}
+
+.pause-menu-option-description {
+  color: #fff1d6; /* Beige claro / crema */
+  text-shadow: 1px 1px 0px #3a1e05;
+  margin: 0;
+  padding: 0 0.25rem;
+  max-width: 48ch;
+  font-size: 0.6rem;
+  line-height: 1.8;
+  color: #b38a63;
+}
+
+.pause-menu-mute-toggle__icon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* ─── Keyboard navigation ────────────────────────────────────────────── */
+
+/* Keyboard focus mirrors hover on the sidebar buttons (their outline is suppressed). */
+.pause-menu-nav-btn:focus-visible {
+  outline: none;
+  background-color: #7b6354;
+  color: #fff;
+  transform: scale(1.02);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #3d2817) drop-shadow(0 -1px 0 #3d2817) drop-shadow(1px 0 0 #3d2817)
+    drop-shadow(-1px 0 0 #3d2817);
+}
+
+.pause-menu-exit-btn:focus-visible {
+  outline: none;
+  background-color: #a54040;
+  color: #fff;
+  transform: scale(1.02);
+  filter: brightness(1.1) drop-shadow(0 2px 0 #d4a574) drop-shadow(0 -1px 0 #d4a574) drop-shadow(1px 0 0 #d4a574)
+    drop-shadow(-1px 0 0 #d4a574);
+}
+
+/* Shared keyboard-cursor ring, in the parchment gold the pause menu already speaks.
+   Applied via `kb-cursor` (roster cards, equip slot rows, small buttons) and the
+   Options tab's row modifier. */
+.pause-menu .kb-cursor,
+.pause-menu-option-row--kb-selected {
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(212, 165, 116, 0.5),
+    0 0 10px rgba(212, 165, 116, 0.25);
+}
+
+/* Option rows are edge-to-edge, so the ring gets a hair of breathing room and a faint tint. */
+.pause-menu-option-row--kb-selected {
+  padding: 0.35rem 0.4rem;
+  margin: -0.35rem -0.4rem;
+  background: rgba(212, 165, 116, 0.06);
+}
+
+/* A slider open for adjusting — the same gold, turned up, so edit mode is unmistakable
+   without introducing a second colour. */
+.pause-menu-option-row--editing {
+  background: rgba(212, 165, 116, 0.13);
+  box-shadow:
+    0 0 0 2px rgba(212, 165, 116, 0.85),
+    0 0 14px rgba(212, 165, 116, 0.35);
+}
+
+/* Shared tab header (PauseMenuTabHeader): heading and descriptive hint on one
+   bottom-aligned row. Same baseline offsets as .save-load-menu__header in
+   save-load.css — both boxes keep different empty space under their letters. */
+.pause-menu-tab-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.pause-menu-tab-header__title {
+  display: inline-flex;
+  margin-bottom: -6px;
+}
+
+.pause-menu-tab-header__hint {
+  margin: 0 0 6px;
+  font-size: 0.6rem;
+  color: #f4f3f1;
+}
+
+/* Contextual key hint sitting inline with a control — a slider row's header, the item
+   category tabs. Layout only: the look is KeyHintPill's. */
+.pause-menu-inline-hint {
+  white-space: nowrap;
+}
+
+/* Zone-aware key hint strip under the content column — carries the menu's own
+   gradient so it reads as part of the frame, not the board texture. */
+.pause-menu-key-hint {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0 0.15rem;
+  background: linear-gradient(135deg, #3d2817 0%, #2a1810 100%);
+  border-top: 2px solid color(srgb 0.83 0.65 0.46 / 0.6);
 }

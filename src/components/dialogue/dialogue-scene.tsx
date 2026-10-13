@@ -1,6 +1,10 @@
 import { useEffect, useCallback, useState } from 'react';
+import { useSetAtom } from 'jotai';
 import type { DialogueScene as DialogueSceneType } from '~/types/dialogue';
+import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
 import { useDialogue } from '~/hooks/use-dialogue';
+import { useWindowKeyDown } from '~/hooks/use-window-keydown';
+import { KeyboardKeys, isConfirmKey } from '~/constants/keyboard';
 import { DialogueBox } from './dialogue-box';
 import { DialoguePortrait } from './dialogue-portrait';
 import { MessageHistory } from './message-history';
@@ -30,40 +34,40 @@ export function DialogueScene({ scene, onComplete, textSpeed = 2, turboSpeed = 1
     }
   }, [isLast, isComplete, onComplete, next]);
 
-  // Add/remove dialogue-active class to prevent page scrolling
+  const setDialogueActive = useSetAtom(isDialogueActiveAtom);
+
+  // Flag dialogue as active (blocks the pause menu) and add the body class that
+  // prevents page scrolling, for as long as a scene is mounted.
   useEffect(() => {
+    setDialogueActive(true);
     document.body.classList.add('dialogue-active');
     return () => {
+      setDialogueActive(false);
       document.body.classList.remove('dialogue-active');
     };
-  }, []);
+  }, [setDialogueActive]);
 
   // Keyboard controls
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      // When history is open: prevent dialogue advancement and allow ESC to close
-      if (isHistoryOpen) {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          closeHistory();
-        }
-        // Block SPACE/ENTER from advancing while history is open
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-        }
-        return;
-      }
-
-      // Normal controls when history is not open
-      if (e.key === ' ' || e.key === 'Enter') {
+  useWindowKeyDown((e) => {
+    // When history is open: prevent dialogue advancement and allow ESC to close
+    if (isHistoryOpen) {
+      if (e.key === KeyboardKeys.Escape) {
         e.preventDefault();
-        handleAdvance();
+        closeHistory();
       }
+      // Block SPACE/ENTER from advancing while history is open
+      if (isConfirmKey(e.key)) {
+        e.preventDefault();
+      }
+      return;
     }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleAdvance, isHistoryOpen]);
+    // Normal controls when history is not open
+    if (isConfirmKey(e.key)) {
+      e.preventDefault();
+      handleAdvance();
+    }
+  });
 
   // Scroll wheel detection to open message history
   useEffect(() => {

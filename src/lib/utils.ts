@@ -36,6 +36,13 @@ export function auxObjectMap<T, U>(object: Record<string, T>, mapFn: (arg: T) =>
   }, {});
 }
 
+/** Splits a list into rows of `size` — e.g. so keyboard rows match the rows a grid actually renders. */
+export function chunk<T>(items: readonly T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size));
+  return rows;
+}
+
 export function getRandomElement<T>(array: readonly T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }

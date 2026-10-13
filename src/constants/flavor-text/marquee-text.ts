@@ -1,4 +1,11 @@
-export type MarqueeTextTypes = 'blacksmith' | 'inn' | 'item-shop' | 'level-up' | 'world-map' | 'general';
+export type MarqueeTextTypes =
+  | 'blacksmith'
+  | 'inn'
+  | 'item-shop'
+  | 'training-grounds'
+  | 'level-up'
+  | 'world-map'
+  | 'general';
 
 const clickLeaveToTownHub = 'Click Leave to return to Town Hub.';
 
@@ -14,18 +21,28 @@ export const MARQUEE_HELP_TEXT: Readonly<{ [K in MarqueeTextTypes]: readonly str
     'Pay coins to fully heal your party.',
     'The Inn in later stages may increase in price.',
     "You may not need to heal if you're near full HP.",
+    'Use Arrow Keys or WASD to pick a hero, Enter to heal, Esc to leave.',
     clickLeaveToTownHub,
   ],
   'item-shop': [
     'Buy items using coins.',
     'Click Buy to add the item to your inventory.',
     "Check each item's description and cost.",
+    'Left/Right switch tabs, Up/Down pick an item, Enter to trade, Esc to leave.',
+    clickLeaveToTownHub,
+  ],
+  'training-grounds': [
+    'Respec moves the stat points you chose at level-up; random growth stays put.',
+    'Each respec costs more coins than the last.',
+    'Lowering Vitality lowers Max HP — HP above the new maximum is lost.',
+    'Left/Right switch tabs, Up/Down and Enter pick a hero, Left/Right move points, Esc to leave.',
     clickLeaveToTownHub,
   ],
   'level-up': [
     'Allocate Points to increase stats.',
     "Preview your character's stats on the right before applying changes.",
     'Use Confirm to apply changes or Reset to undo.',
+    'Use Arrow Keys/WASD to pick and allocate stats. Press Enter to confirm, Esc to reset.',
   ],
   'world-map': ['Use Arrow Keys or WASD to move the character.', "You can't walk past Battles you haven't beaten."],
   general: ['You can see past messages by scrolling up.'],

@@ -1,0 +1,49 @@
+/* floating-particles.css
+   Ambient dust motes drifting across the battle screen. Purely decorative — see
+   ~/components/effects/floating-particles.
+
+   Warm cream rather than white: the battle backdrops are bright sky and grass, where a
+   white mote at low opacity has no contrast and simply disappears. The amber glow also
+   gives each mote an edge against the white clouds.
+
+   Only `transform` and `opacity` are animated, so the motes stay on the compositor and
+   never trigger layout or paint. Per-mote variation comes from custom properties set
+   inline by the component. */
+
+.floating-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.floating-mote {
+  position: absolute;
+  width: var(--mote-size);
+  height: var(--mote-size);
+  border-radius: 9999px;
+  background: #f7ead0;
+  box-shadow: 0 0 var(--mote-glow) rgba(226, 186, 116, 0.55);
+  /* Base opacity is the animation's peak, so that when Reduced Motion collapses the
+     animation the motes stay visible and static instead of vanishing at opacity 0. */
+  opacity: var(--mote-peak);
+  will-change: transform, opacity;
+  animation: floating-mote-drift var(--mote-duration) ease-in-out var(--mote-delay) infinite;
+}
+
+@keyframes floating-mote-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    opacity: var(--mote-peak);
+  }
+  85% {
+    opacity: var(--mote-peak);
+  }
+  100% {
+    transform: translate3d(var(--mote-drift-x), var(--mote-drift-y), 0) scale(1);
+    opacity: 0;
+  }
+}

@@ -11,6 +11,10 @@ export const ANCIENT_CHEST_LOOT: LootTable = {
       item: EquipmentItems.find((item) => item.id === 'iron-sword')!,
       probability: 1 as ProbabilityNumber,
     },
+    {
+      item: EquipmentItems.find((item) => item.id === 'iron-rod')!,
+      probability: 1 as ProbabilityNumber,
+    },
   ],
   consumableItems: [
     {

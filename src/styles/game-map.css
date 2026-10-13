@@ -1,113 +1,128 @@
+/*
+  Map screen. The map draws at its native pixel size (or an integer zoom) through a
+  camera viewport that fills the stage. A map smaller than the stage on an axis
+  shrinks the viewport to fit it, leaving the letterbox — a tiled board texture —
+  around it. A thin ring hugs the viewport itself.
+
+  Tunables. --map-viewport-inset must stay >= --map-frame-width: .game-map clips
+  at its padding box, and the frame ring is painted outside the viewport.
+*/
+:root {
+  --map-viewport-inset: 0.5rem;
+  --map-frame-width: 3px;
+  --map-frame-color: #8a6a3f;
+
+  /* Letterbox ground. The board tile is the same texture the dialogue nameplate and
+     rewards panels use, at an integer texel scale so it stays crisp; the tint knocks
+     it back so it reads as the surface the map sits on, not as content. */
+  --map-letterbox-tile: url('/assets/bg/looping/bg-board-2.png');
+  --map-letterbox-scale: 32px;
+  --map-letterbox-tint: rgba(10, 6, 4, 0.35);
+
+  /* Back button, smaller here than in town — the map wants its canvas. */
+  --map-leave-btn-width: 44px;
+  --map-leave-btn-offset: 10px;
+}
+
 .game-map {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f0f0f0;
-  height: 100vh;
-  width: 100vw;
+  /* 100% of the frame's viewport, not 100vw/100vh — the window frame already
+     insets this box by --frame-thickness on every side. */
+  height: 100%;
+  width: 100%;
+  padding: var(--map-viewport-inset);
   box-sizing: border-box;
   overflow: hidden;
-}
+  /* Positioning context for .leave-btn — keep it here, not on
+     .tilemap-container, or the back button re-anchors onto the map. */
+  position: relative;
 
-/* Responsive layout: stack on mobile, side-by-side on desktop */
-@media (min-width: 1024px) {
-  .game-map {
-    flex-direction: row;
-    gap: 1.25rem;
-    padding: 1.25rem;
-  }
-}
+  /* Overrides the flat .game-view fill: tile over the tint over the base colour, so a
+     failed image request still lands on the old dark ground rather than on nothing. */
+  background-color: #0f0a06;
+  background-image: linear-gradient(var(--map-letterbox-tint), var(--map-letterbox-tint)),
+    var(--map-letterbox-tile);
+  background-size:
+    auto,
+    var(--map-letterbox-scale) var(--map-letterbox-scale);
+  background-repeat: no-repeat, repeat;
 
-.map-controls {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-  max-height: fit-content;
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .map-controls {
-    min-width: 200px;
-    max-width: 250px;
-    width: auto;
-  }
-}
-
-.map-controls h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
-  font-size: 1rem;
-}
-
-.map-controls label {
-  display: block;
-  margin: 0.5rem 0;
-  cursor: pointer;
-  user-select: none;
-  font-size: 0.875rem;
-}
-
-.map-controls input[type='checkbox'] {
-  margin-right: 0.5rem;
-  cursor: pointer;
+  --leave-btn-width: var(--map-leave-btn-width);
+  --leave-btn-offset: var(--map-leave-btn-offset);
 }
 
 .tilemap-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
   flex: 1;
   min-height: 0;
-  gap: 0.25rem;
 }
 
-.tilemap-container .map-title {
-  margin: 0;
-  font-size: 1rem;
-  text-align: center;
-  width: 100%;
+/* The space the viewport may fill. Measured to size and centre the viewport. */
+.map-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
 }
 
-.tilemap-container canvas {
+/*
+  The camera viewport. Sized in JS to a whole multiple of the zoom, and centred in
+  JS at a whole-pixel offset — flex centring would land on a half pixel whenever the
+  leftover space is odd, blurring every tile. It clips the map and the sprite, so
+  nothing outside the map ever shows.
+
+  The frame ring is an `outline`, never a `border`: it hugs the viewport exactly
+  with square corners while costing no layout space, so the viewport's client
+  rect is exactly the canvas's.
+*/
+.map-viewport {
+  position: absolute;
+  overflow: hidden;
+  outline: var(--map-frame-width) solid var(--map-frame-color);
+  /* Click-and-hold moves the character. Keep the custom gauntlet cursor with
+     the interactive hotspot (matching buttons) rather than a native pointer.
+     `touch-action: none` lets a touch drag steer instead of panning the page. */
+  cursor:
+    var(--cursor-gauntlet) 8 8,
+    auto;
+  touch-action: none;
+}
+
+.map-viewport canvas {
   display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 10rem);
-  object-fit: contain;
+  /* Drawn at the map's zoom already; this keeps a HiDPI resample crisp too. */
+  image-rendering: pixelated;
 }
 
-@media (min-width: 1024px) {
-  .tilemap-container canvas {
-    max-height: calc(100vh - 8rem);
-  }
+/* Stacked over the character sprite (z-index 10); never takes the click-and-hold input. */
+.map-viewport .map-occlusion-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
 }
 
-.tilemap-container .character-info {
-  font-size: 0.7rem;
-  font-family: monospace;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+/* Debug readout, pinned to the top-right of the game frame (inside the window
+   frame border) so it costs no layout space around the map. */
+.map-debug-overlay {
+  position: fixed;
+  top: calc(var(--frame-thickness) + 0.5rem);
+  right: calc(var(--frame-thickness) + 1rem);
+  z-index: 50;
+  pointer-events: none;
+  max-width: 16rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.15rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(38, 32, 26, 0.72);
+  color: #e8ddc8;
+  font-family: monospace;
+  font-size: 0.7rem;
   line-height: 1.2;
 }
-
-.tilemap-container .character-info br {
-  display: none;
-}
-

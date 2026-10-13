@@ -7,6 +7,12 @@ import { ConsumableItemIds } from '~/constants/inventory';
 export const DEFAULT_VIEW: ViewType = 'debug';
 
 /**
+ * Most entries the navigation history keeps; the oldest are dropped past this. A safety net
+ * against a flow that keeps pushing instead of going back — real flows are three deep at most.
+ */
+export const ROUTER_HISTORY_LIMIT = 16;
+
+/**
  * Default town hub data
  */
 export const DEFAULT_TOWN_HUB_DATA: TownHubViewData = {
@@ -27,7 +33,7 @@ export const DEFAULT_TOWN_HUB_DATA: TownHubViewData = {
  */
 export const INITIAL_ROUTER_STATE: RouterState = {
   currentView: DEFAULT_VIEW,
-  previousView: null,
+  history: [],
   viewData: {
     debug: {},
     'town-hub': DEFAULT_TOWN_HUB_DATA,

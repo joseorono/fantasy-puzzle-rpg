@@ -1,95 +1,92 @@
-import { useState } from 'react';
-import { ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import type { CharacterData, CoreRPGStats, StatType } from '~/types/rpg-elements';
 import { DerivedStatsDisplay } from '~/components/level-up-screen/derived-stats-display';
+import { StatAllocationRow } from '~/components/level-up-screen/stat-allocation-row';
 import { calculateMaxHp } from '~/lib/rpg-calculations';
+import { getExpThresholdForLevel } from '~/lib/leveling-system';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { MarqueeText } from '~/components/marquee/marquee-text';
 import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
 import Franuka05aBottomBar from '~/components/frames/franuka-05a-bottom-bar';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ToffecButton } from '~/components/ui-custom/toffec-button';
-import { ExperienceBar } from '~/components/ui/experience-bar';
+import { LevelTag } from '~/components/ui-custom/level-tag';
+import { useStatAllocation } from '~/hooks/use-stat-allocation';
+import { useStatAllocationKeyboard } from '~/hooks/use-stat-allocation-keyboard';
+import { IndigolayBar } from '~/components/ui-custom/indigolay-bar';
+import { GradientDivider } from '~/components/dividers/gradient-divider';
 import {
   SNAPPY_SPIN_TIMING,
   SNAPPY_TRANSFORM_TIMING,
   SNAPPY_OPACITY_TIMING,
   INTEGER_FORMAT,
 } from '~/constants/number-flow';
+import { CHARACTER_SPRITES } from '~/constants/party';
+
+/** The three stat rows in the order they appear in the allocation panel. */
+const STAT_ORDER: StatType[] = ['pow', 'vit', 'spd'];
+type AllocationAction = 'confirm' | 'reset';
 
 interface LevelUpViewProps {
   character: CharacterData;
   availablePoints: number;
   potentialStatPoints: CoreRPGStats;
   onConfirm: (allocatedStats: CoreRPGStats) => void;
+  /** Applies the level-up with random stats only and advances. No control is bound to it yet. */
   onBack: () => void;
 }
 
-export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm, onBack }: LevelUpViewProps) {
-  const [pendingAllocations, setPendingAllocations] = useState<CoreRPGStats>({
-    pow: 0,
-    vit: 0,
-    spd: 0,
-  });
-
-  const pointsSpent = pendingAllocations.pow + pendingAllocations.vit + pendingAllocations.spd;
-  const pointsRemaining = availablePoints - pointsSpent;
-  const hasPendingChanges = pointsSpent > 0;
-  const allPointsAllocated = pointsRemaining === 0;
+export function LevelUpView({ character, availablePoints, potentialStatPoints, onConfirm }: LevelUpViewProps) {
+  const allocation = useStatAllocation(availablePoints);
+  const { pointsRemaining, hasPendingChanges, allPointsAllocated } = allocation;
 
   // Calculate preview stats
-  const previewStats = {
-    pow: character.stats.pow + pendingAllocations.pow,
-    vit: character.stats.vit + pendingAllocations.vit,
-    spd: character.stats.spd + pendingAllocations.spd,
+  const previewStats: CoreRPGStats = {
+    pow: character.stats.pow + allocation.pending.pow,
+    vit: character.stats.vit + allocation.pending.vit,
+    spd: character.stats.spd + allocation.pending.spd,
   };
 
-  function handleIncreaseStat(stat: StatType) {
-    if (pointsRemaining <= 0) return;
-    setPendingAllocations((prev) => ({
-      ...prev,
-      [stat]: prev[stat] + 1,
-    }));
-  }
-
-  function handleDecreaseStat(stat: StatType) {
-    if (pendingAllocations[stat] <= 0) return;
-    setPendingAllocations((prev) => ({
-      ...prev,
-      [stat]: prev[stat] - 1,
-    }));
-  }
-
   function handleReset() {
-    setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
+    allocation.reset();
+    keyboard.focusStats();
   }
 
+  // Gated on allPointsAllocated to match the Confirm button's own `disabled`, so the keyboard
+  // shortcut can't confirm with points still unspent. Deliberately does NOT call onBack(): the
+  // parent's onConfirm already applies the level-up and advances to the next character.
   function handleConfirm() {
-    if (!hasPendingChanges) return;
-    onConfirm(pendingAllocations);
-    setPendingAllocations({ pow: 0, vit: 0, spd: 0 });
-    onBack();
+    if (!allPointsAllocated) return;
+    onConfirm(allocation.pending);
+    allocation.reset();
   }
+
+  // Arrows/WASD pick a stat row and spend points on it. Once the stat rows are exhausted, the
+  // same vertical navigation enters the Confirm/Reset action row without changing allocation.
+  const keyboard = useStatAllocationKeyboard<AllocationAction>({
+    allocation,
+    stats: STAT_ORDER,
+    actions: [
+      { id: 'confirm', disabled: !allPointsAllocated },
+      { id: 'reset', disabled: !hasPendingChanges },
+    ],
+    onActivate: (action) => (action === 'confirm' ? handleConfirm() : handleReset()),
+    onConfirmShortcut: handleConfirm,
+    onEscape: hasPendingChanges ? handleReset : undefined,
+  });
+  const { selectedStatIndex, selectedAction } = keyboard;
 
   // Calculate HP percentage for display
   const hpPercentage = (character.currentHp / character.maxHp) * 100;
   const expPercentage =
-    character.expToNextLevel > 0
-      ? Math.min(100, (character.expToNextLevel / calculateExpToNextLevel(character.level)) * 100)
+    character.currentLevelExp > 0
+      ? Math.min(100, (character.currentLevelExp / getExpThresholdForLevel(character.level)) * 100)
       : 0;
 
   // Calculate HP delta from VIT changes
   const currentMaxHp = character.maxHp;
   const previewMaxHp = calculateMaxHp(character.baseHp, previewStats.vit, character.vitHpMultiplier);
   const maxHpDelta = previewMaxHp - currentMaxHp;
-
-  // Helper function for exp calculation (simplified for display)
-  function calculateExpToNextLevel(level: number): number {
-    return Math.floor(Math.exp(level));
-  }
-
-  const maxStatValue = 100; // For meter display
 
   return (
     <div className="level-up-screen">
@@ -121,16 +118,19 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           {/* Left Column - Character Info & Derived Stats */}
           <div className="character-info-panel">
             <div className="character-identity">
-              <div style={{ position: 'relative' }}>
-                <img
-                  src="/assets/portraits/Innkeeper_02.png"
-                  alt={character.name}
-                  className="character-portrait-small pixel-art"
-                />
-                <div className="level-badge pixel-border pixel-font text-xs">
-                  {character.level}
-                  <ArrowUpIcon className="level-badge-arrow" />
+              <div className="portrait-badge-wrap">
+                <div
+                  className="character-portrait-small portrait-face-crop"
+                  style={
+                    {
+                      '--face-x': CHARACTER_SPRITES[character.class].faceFocus.x,
+                      '--face-y': CHARACTER_SPRITES[character.class].faceFocus.y,
+                    } as React.CSSProperties
+                  }
+                >
+                  <img src={CHARACTER_SPRITES[character.class].face} alt={character.name} />
                 </div>
+                <LevelTag level={character.level} />
               </div>
               <div className="character-name-class">
                 <h2 className="character-name pixel-font text-sm sm:text-base">{character.name}</h2>
@@ -142,10 +142,12 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="EXP" size={1} />
               </div>
-              <ExperienceBar
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="yellow"
+                size="lg"
                 percentage={expPercentage}
-                label={`${character.expToNextLevel} / ${calculateExpToNextLevel(character.level)}`}
-                variant="full"
+                label={`${character.currentLevelExp} / ${getExpThresholdForLevel(character.level)}`}
               />
             </div>
 
@@ -153,28 +155,30 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <div className="stat-label">
                 <NarikWoodBitFont text="HP" size={1} />
               </div>
-              <div className="hp-bar-container">
-                <div className="hp-bar" style={{ width: `${hpPercentage}%` }} />
-                <div className="bar-text pixel-font text-xs">
-                  {character.currentHp}/{character.maxHp}
-                  {maxHpDelta !== 0 && (
-                    <span
-                      className="bar-text-delta number-flow-container"
-                      style={{ color: maxHpDelta > 0 ? '#4caf50' : '#e53935' }}
-                    >
-                      <NumberFlow
-                        value={maxHpDelta}
-                        format={INTEGER_FORMAT}
-                        prefix={maxHpDelta > 0 ? ' +' : ' '}
-                        trend={1}
-                        spinTiming={SNAPPY_SPIN_TIMING}
-                        transformTiming={SNAPPY_TRANSFORM_TIMING}
-                        opacityTiming={SNAPPY_OPACITY_TIMING}
-                      />
-                    </span>
-                  )}
-                </div>
-              </div>
+              <IndigolayBar
+                className="progress-section__bar"
+                variant="red"
+                size="lg"
+                percentage={hpPercentage}
+                label={
+                  <>
+                    {character.currentHp}/{character.maxHp}
+                    {maxHpDelta > 0 && (
+                      <span className="bar-text-delta number-flow-container">
+                        <NumberFlow
+                          value={maxHpDelta}
+                          format={INTEGER_FORMAT}
+                          prefix="+"
+                          trend={1}
+                          spinTiming={SNAPPY_SPIN_TIMING}
+                          transformTiming={SNAPPY_TRANSFORM_TIMING}
+                          opacityTiming={SNAPPY_OPACITY_TIMING}
+                        />
+                      </span>
+                    )}
+                  </>
+                }
+              />
             </div>
 
             <DerivedStatsDisplay character={character} previewStats={previewStats} />
@@ -183,9 +187,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
           {/* Center Column - Character Display */}
           <div className="character-display-panel">
             <img
-              src="/assets/portraits/Innkeeper_02.png"
+              src={CHARACTER_SPRITES[character.class].face}
               alt={character.name}
-              className="character-portrait-large pixel-art"
+              className="character-portrait-large"
             />
 
             <div className="stat-chips">
@@ -193,9 +197,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">POW</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.pow}
-                  {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
+                  {potentialStatPoints.pow + allocation.pending.pow > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.pow + pendingAllocations.pow}
+                      value={potentialStatPoints.pow + allocation.pending.pow}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -210,9 +214,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">VIT</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.vit}
-                  {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
+                  {potentialStatPoints.vit + allocation.pending.vit > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.vit + pendingAllocations.vit}
+                      value={potentialStatPoints.vit + allocation.pending.vit}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -227,9 +231,9 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
                 <span className="stat-chip-label">SPD</span>
                 <span className="stat-chip-value number-flow-container">
                   {character.stats.spd}
-                  {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
+                  {potentialStatPoints.spd + allocation.pending.spd > 0 && (
                     <NumberFlow
-                      value={potentialStatPoints.spd + pendingAllocations.spd}
+                      value={potentialStatPoints.spd + allocation.pending.spd}
                       format={INTEGER_FORMAT}
                       prefix=" +"
                       trend={1}
@@ -245,216 +249,42 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
             {hasPendingChanges && (
               <div className="pending-changes-banner pixel-font">
                 <span className="pending-changes-text">Confirm to apply</span>
-                <span className="pending-changes-hint">· Reset to undo</span>
+                <span className="pending-changes-hint">Reset to undo</span>
               </div>
             )}
           </div>
 
           {/* Right Column - Stat Allocation */}
           <div className="stat-allocation-panel">
-            <h2 className="allocation-title">
-              <NarikWoodBitFont text="Allocate Points" size={1.2} />
-            </h2>
-
-            {/* Power Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name pow pixel-font text-xs sm:text-sm">Power (POW)</span>
-                </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.pow}</span>
-                  {potentialStatPoints.pow + pendingAllocations.pow > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.pow + potentialStatPoints.pow}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="stat-hint pixel-font text-xs">
-                {character.class === 'healer' ? 'Increases your healing power.' : 'Increases your ability power.'}{' '}
-                {/* <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {character.class === 'healer' ? 'Increases your healing output' : 'Increases your damage output'}
-                  </TooltipContent>
-                </Tooltip> */}
-              </p>
-              <div className="stat-meter">
-                <div className="stat-meter-fill pow" style={{ width: `${(previewStats.pow / maxStatValue) * 100}%` }} />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleDecreaseStat('pow')}
-                    disabled={pendingAllocations.pow === 0}
-                    aria-label="Decrease Power"
-                  >
-                    −
-                  </button>
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleIncreaseStat('pow')}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Power"
-                  >
-                    +
-                  </button>
-                </ToffecBeigeCornersWrapper>
-              </div>
+            <div className="allocation-header">
+              <h2 className="allocation-title">
+                <NarikWoodBitFont text="Allocate Points" size={1.2} />
+              </h2>
+              <GradientDivider variant="gold" className="allocation-title-divider" />
             </div>
 
-            {/* Vitality Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name vit pixel-font text-xs sm:text-sm">Vitality (VIT)</span>
-                </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.vit}</span>
-                  {potentialStatPoints.vit + pendingAllocations.vit > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.vit + potentialStatPoints.vit}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="stat-hint pixel-font text-xs">
-                Increases your Maximum HP.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Increases your Maximum HP</TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill vit"
-                  style={{ width: `${((previewStats.vit + potentialStatPoints.vit) / maxStatValue) * 100}%` }}
-                />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleDecreaseStat('vit')}
-                    disabled={pendingAllocations.vit === 0}
-                    aria-label="Decrease Vitality"
-                  >
-                    −
-                  </button>
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleIncreaseStat('vit')}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Vitality"
-                  >
-                    +
-                  </button>
-                </ToffecBeigeCornersWrapper>
-              </div>
-            </div>
-
-            {/* Speed Stat */}
-            <div className="stat-allocation-row">
-              <div className="stat-header">
-                <div className="stat-name-group">
-                  <span className="stat-name spd pixel-font text-xs sm:text-sm">Speed (SPD)</span>
-                </div>
-                <div className="stat-values pixel-font text-xs">
-                  <span className="stat-current">{character.stats.spd}</span>
-                  {potentialStatPoints.spd + pendingAllocations.spd > 0 && (
-                    <>
-                      <span className="stat-arrow">
-                        <ArrowRightIcon className="stat-arrow-icon" />
-                      </span>
-                      <span className="stat-preview number-flow-container">
-                        <NumberFlow
-                          value={previewStats.spd + potentialStatPoints.spd}
-                          format={INTEGER_FORMAT}
-                          trend={1}
-                          spinTiming={SNAPPY_SPIN_TIMING}
-                          transformTiming={SNAPPY_TRANSFORM_TIMING}
-                          opacityTiming={SNAPPY_OPACITY_TIMING}
-                        />
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="stat-hint pixel-font text-xs">
-                Reduces skill cooldowns.{' '}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="info-icon cursor-help">ⓘ</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    -Reduces ultimate skill cooldown
-                    <br />
-                    -Reduces item cooldowns in battle
-                  </TooltipContent>
-                </Tooltip>
-              </p>
-              <div className="stat-meter">
-                <div
-                  className="stat-meter-fill spd"
-                  style={{ width: `${((previewStats.spd + potentialStatPoints.spd) / maxStatValue) * 100}%` }}
-                />
-              </div>
-              <div className="stat-controls">
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button minus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleDecreaseStat('spd')}
-                    disabled={pendingAllocations.spd === 0}
-                    aria-label="Decrease Speed"
-                  >
-                    −
-                  </button>
-                </ToffecBeigeCornersWrapper>
-                <ToffecBeigeCornersWrapper>
-                  <button
-                    className="stat-button plus pixel-font text-xs sm:text-sm"
-                    onClick={() => handleIncreaseStat('spd')}
-                    disabled={pointsRemaining === 0}
-                    aria-label="Increase Speed"
-                  >
-                    +
-                  </button>
-                </ToffecBeigeCornersWrapper>
-              </div>
+            {/* Stat cards share the panel's free height so the actions sit on the bottom padding line. */}
+            <div className="stat-allocation-list">
+              {STAT_ORDER.map((stat, index) => {
+                const preview = previewStats[stat] + potentialStatPoints[stat];
+                return (
+                  <StatAllocationRow
+                    key={stat}
+                    stat={stat}
+                    characterClass={character.class}
+                    currentValue={character.stats[stat]}
+                    previewValue={potentialStatPoints[stat] + allocation.pending[stat] > 0 ? preview : null}
+                    meterValue={preview}
+                    isSelected={selectedStatIndex === index}
+                    canIncrease={allocation.pointsRemaining > 0}
+                    canDecrease={allocation.pending[stat] > 0}
+                    onIncrease={() => allocation.increase(stat)}
+                    onDecrease={() => allocation.decrease(stat)}
+                    holdIncrease={allocation.holdIncrease[stat]}
+                    holdDecrease={allocation.holdDecrease[stat]}
+                  />
+                );
+              })}
             </div>
 
             {/* Action Buttons */}
@@ -462,24 +292,20 @@ export function LevelUpView({ character, availablePoints, potentialStatPoints, o
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <ToffecButton
-                      variant="cream"
-                      onClick={handleConfirm}
-                      disabled={!allPointsAllocated}
-                    >
-                      Confirm
-                    </ToffecButton>
+                    <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'confirm'}>
+                      <ToffecButton variant="cream" onClick={handleConfirm} disabled={!allPointsAllocated}>
+                        Confirm
+                      </ToffecButton>
+                    </ToffecBeigeCornersWrapper>
                   </div>
                 </TooltipTrigger>
                 {!allPointsAllocated && <TooltipContent side="top">Spend all points before continuing</TooltipContent>}
               </Tooltip>
-              <ToffecButton
-                variant="tan"
-                onClick={handleReset}
-                disabled={!hasPendingChanges}
-              >
-                Reset
-              </ToffecButton>
+              <ToffecBeigeCornersWrapper forceDisplay={selectedAction === 'reset'}>
+                <ToffecButton variant="tan" onClick={handleReset} disabled={!hasPendingChanges}>
+                  Reset
+                </ToffecButton>
+              </ToffecBeigeCornersWrapper>
             </div>
           </div>
         </div>

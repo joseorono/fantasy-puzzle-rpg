@@ -1,0 +1,263 @@
+/**
+ * Arcade victory rating — pure scoring logic. Given a battle's end-of-fight stats, produces a
+ * per-criterion breakdown and a 1–5 star result. UI-agnostic and fully unit-tested; all tunables
+ * live in `~/constants/battle-rating.ts`.
+ *
+ * Skill criteria (clear time, HP kept) dominate; RNG-heavy ones (match score, cascade combo) carry
+ * small weights; using battle items applies a capped penalty. Ultimates used and enemies staggered
+ * each grant their own independent capped bonus.
+ */
+import {
+  RATING_WEIGHTS,
+  RATING_CRITERION_LABELS,
+  RNG_HEAVY_CRITERIA,
+  TIME_FULL_MS,
+  TIME_ZERO_MS,
+  SCORE_TARGET,
+  COMBO_TARGET,
+  ITEM_PENALTY_PER_USE,
+  MAX_ITEM_PENALTY,
+  ULTIMATE_BONUS_PER_USE,
+  MAX_ULTIMATE_BONUS,
+  STAGGER_BONUS_PER_BREAK,
+  MAX_STAGGER_BONUS,
+  STAR_THRESHOLDS,
+  RATING_POINTS_SCALE,
+  LOOT_MULTIPLIER_BY_STARS,
+  type RatingCriterionKey,
+} from '~/constants/battle-rating';
+
+/** Raw end-of-battle stats fed into the rating. */
+export interface BattleRatingInput {
+  /** Battle duration in milliseconds. */
+  elapsedMs: number;
+  /** Accumulated match score. */
+  score: number;
+  /** Deepest cascade combo reached (chain length). */
+  maxCombo: number;
+  /** 1 − net party HP lost this battle as a fraction of party max HP (see {@link computeHpKeptPct}). */
+  hpKeptPct: number;
+  /** Number of battle items consumed (penalty). */
+  itemsUsed: number;
+  /** Number of ultimate skills used (capped bonus). Defaults to 0 when omitted. */
+  ultimateSkillsUsed?: number;
+  /**
+   * Number of enemy Breaks (staggers) landed this battle, summed across every enemy — a capped
+   * bonus scored separately from the ultimates one. Defaults to 0 when omitted.
+   */
+  enemiesBroken?: number;
+}
+
+/** A single scored line on the results screen. */
+export interface RatingCriterion {
+  key: RatingCriterionKey;
+  label: string;
+  /** Preformatted achievement value, e.g. "0:42", "1,240", "x4", "88%", "2". */
+  displayValue: string;
+  /** Signed points contribution (negative for the items penalty, positive otherwise). */
+  points: number;
+  /** True for the items-used penalty row (styled distinctly; the only negative row). */
+  isPenalty: boolean;
+  /** True for board-RNG-dependent criteria (score, combo) so the UI can de-emphasize them. */
+  isRngHeavy: boolean;
+  /** True when no net HP was lost this battle (a flawless clear). */
+  isFlawless: boolean;
+}
+
+/** Full rating outcome. */
+export interface BattleRatingResult {
+  /** 1–5 stars (you always earn at least one for winning). */
+  stars: number;
+  /** Total arcade points (>= 0), after the items penalty. */
+  totalScore: number;
+  /** Normalized total (0..1) used to derive the stars. */
+  normalized: number;
+  /** Multiplier applied to earned money + resources (never items/XP). >= 1. */
+  lootMultiplier: number;
+  /** Per-criterion breakdown, in display order. */
+  criteria: RatingCriterion[];
+}
+
+/**
+ * The loot multiplier earned for a given star rating — scales money + resources only. Reads the
+ * tunable {@link LOOT_MULTIPLIER_BY_STARS} map; falls back to 1 (no bonus) for unmapped counts.
+ * @param stars Star rating (1..MAX_STARS).
+ * @returns A multiplier >= 1.
+ */
+export function getLootMultiplier(stars: number): number {
+  return LOOT_MULTIPLIER_BY_STARS[stars] ?? 1;
+}
+
+/** Clamps a value to the [0, 1] range. */
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+/**
+ * The HP criterion's input: how much of the party's HP survived this battle. Scored on net loss
+ * against the HP the party walked in with, so entering wounded isn't punished, and normalized by
+ * max HP so the same hit costs the same at any starting HP. Healing back to (or past) the starting
+ * total counts as flawless.
+ * @param startHpTotal Party HP summed at battle start.
+ * @param endHpTotal Party HP summed at victory.
+ * @param maxHpTotal Party max HP summed.
+ * @returns A fraction in [0, 1]; 1 means no net HP lost. 0 when max HP is 0.
+ */
+export function computeHpKeptPct(startHpTotal: number, endHpTotal: number, maxHpTotal: number): number {
+  if (maxHpTotal <= 0) return 0;
+  return 1 - clamp01((startHpTotal - endHpTotal) / maxHpTotal);
+}
+
+/**
+ * Formats a duration as `M:SS` (e.g. 42000 → "0:42", 125000 → "2:05").
+ * @param ms Duration in milliseconds (negative is treated as 0).
+ */
+export function formatClearTime(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/** Inserts thousands separators (locale-independent), e.g. 12480 → "12,480". */
+export function formatThousands(value: number): string {
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/** Faster clears score higher; linear between {@link TIME_FULL_MS} and {@link TIME_ZERO_MS}. */
+function normalizeTime(elapsedMs: number): number {
+  return clamp01((TIME_ZERO_MS - elapsedMs) / (TIME_ZERO_MS - TIME_FULL_MS));
+}
+
+function toPoints(weightedNormalized: number): number {
+  return Math.round(weightedNormalized * RATING_POINTS_SCALE);
+}
+
+/**
+ * Computes the arcade rating for a won battle.
+ * @param input Raw end-of-battle stats.
+ * @returns A star count, total points, and the per-criterion breakdown for display.
+ */
+export function computeBattleRating(input: BattleRatingInput): BattleRatingResult {
+  const { elapsedMs, score, maxCombo, hpKeptPct, itemsUsed, ultimateSkillsUsed = 0, enemiesBroken = 0 } = input;
+
+  const subTime = normalizeTime(elapsedMs);
+  const subHp = clamp01(hpKeptPct);
+  const subScore = clamp01(SCORE_TARGET > 0 ? score / SCORE_TARGET : 0);
+  const subCombo = clamp01(COMBO_TARGET > 0 ? maxCombo / COMBO_TARGET : 0);
+
+  const positive =
+    RATING_WEIGHTS.time * subTime +
+    RATING_WEIGHTS.hp * subHp +
+    RATING_WEIGHTS.score * subScore +
+    RATING_WEIGHTS.combo * subCombo;
+
+  const itemPenalty = Math.min(Math.max(0, itemsUsed) * ITEM_PENALTY_PER_USE, MAX_ITEM_PENALTY);
+  // Using ultimates grants a small capped bonus on top of the positive score (outside the weight
+  // sum, so it never dents the skill ceiling — a flawless no-ultimate clear is already maxed).
+  const ultimateBonus = Math.min(Math.max(0, ultimateSkillsUsed) * ULTIMATE_BONUS_PER_USE, MAX_ULTIMATE_BONUS);
+  // Staggering enemies earns its own bonus on the same terms, capped independently of the
+  // ultimates one: the two are different plays and are never pooled.
+  const staggerBonus = Math.min(Math.max(0, enemiesBroken) * STAGGER_BONUS_PER_BREAK, MAX_STAGGER_BONUS);
+  const normalized = clamp01(positive + ultimateBonus + staggerBonus - itemPenalty);
+
+  // 1 star for winning, +1 per cleared threshold.
+  const stars = STAR_THRESHOLDS.reduce((count, threshold) => count + (normalized >= threshold ? 1 : 0), 1);
+
+  const isRng = (key: RatingCriterionKey) => RNG_HEAVY_CRITERIA.includes(key);
+  const isFlawless = subHp >= 1;
+
+  // Rows are built in display order. Zero-contribution rows (combo/ultimates/staggers/items at 0)
+  // are omitted to keep the panel compact — they carry 0 points, so hiding them never shifts the
+  // total. Labels come from RATING_CRITERION_LABELS so the copy stays with the tunables.
+  const criteria: RatingCriterion[] = [
+    {
+      key: 'time',
+      label: RATING_CRITERION_LABELS.time,
+      displayValue: formatClearTime(elapsedMs),
+      points: toPoints(RATING_WEIGHTS.time * subTime),
+      isPenalty: false,
+      isRngHeavy: isRng('time'),
+      isFlawless: false,
+    },
+    {
+      key: 'hp',
+      label: RATING_CRITERION_LABELS.hp,
+      displayValue: `${Math.round(subHp * 100)}%`,
+      points: toPoints(RATING_WEIGHTS.hp * subHp),
+      isPenalty: false,
+      isRngHeavy: isRng('hp'),
+      isFlawless,
+    },
+    ...(maxCombo > 0
+      ? [
+          {
+            key: 'combo' as const,
+            label: RATING_CRITERION_LABELS.combo,
+            displayValue: `x${Math.max(0, Math.floor(maxCombo))}`,
+            points: toPoints(RATING_WEIGHTS.combo * subCombo),
+            isPenalty: false,
+            isRngHeavy: isRng('combo'),
+            isFlawless: false,
+          },
+        ]
+      : []),
+    {
+      key: 'score',
+      label: RATING_CRITERION_LABELS.score,
+      displayValue: formatThousands(score),
+      points: toPoints(RATING_WEIGHTS.score * subScore),
+      isPenalty: false,
+      isRngHeavy: isRng('score'),
+      isFlawless: false,
+    },
+    ...(ultimateSkillsUsed > 0
+      ? [
+          {
+            key: 'ultimates' as const,
+            label: RATING_CRITERION_LABELS.ultimates,
+            displayValue: `${Math.max(0, Math.floor(ultimateSkillsUsed))}`,
+            points: toPoints(ultimateBonus),
+            isPenalty: false,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
+    ...(enemiesBroken > 0
+      ? [
+          {
+            key: 'staggers' as const,
+            label: RATING_CRITERION_LABELS.staggers,
+            displayValue: `x${Math.max(0, Math.floor(enemiesBroken))}`,
+            points: toPoints(staggerBonus),
+            isPenalty: false,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
+    ...(itemsUsed > 0
+      ? [
+          {
+            key: 'items' as const,
+            label: RATING_CRITERION_LABELS.items,
+            displayValue: `${Math.max(0, Math.floor(itemsUsed))}`,
+            points: -toPoints(itemPenalty),
+            isPenalty: true,
+            isRngHeavy: false,
+            isFlawless: false,
+          },
+        ]
+      : []),
+  ];
+
+  const totalScore = Math.max(
+    0,
+    criteria.reduce((sum, c) => sum + c.points, 0),
+  );
+
+  return { stars, totalScore, normalized, lootMultiplier: getLootMultiplier(stars), criteria };
+}

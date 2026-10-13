@@ -1,0 +1,45 @@
+/* Red hanging pennant (indigolay UI_Indicator_Tag, native 38×62) showing the
+   character level as a 2-digit number. Hangs from the top-left of a portrait;
+   the parent must be position: relative. Replaces the old diagonal .level-ribbon. */
+.level-tag {
+  position: absolute;
+  top: -2px;
+  left: -4px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Keep native 38:62 aspect (≈0.613). */
+  width: 26px;
+  height: 42px;
+  /* Number sits in the rectangular upper area, clear of the forked bottom. */
+  padding-bottom: 12px;
+  background: url('/assets/indicators/indigolay/level-tag-red.png') no-repeat center / contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+.level-tag__num {
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  /* normal spacing keeps two digits optically centered (letter-spacing leaves
+     trailing space that shifts the glyphs left). */
+  letter-spacing: 0;
+  color: #ffe9c2;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* Larger reward portrait on wide screens — scale the pennant to match. */
+@media (min-width: 1280px) {
+  .character-card .level-tag {
+    width: 30px;
+    height: 49px;
+    padding-bottom: 14px;
+  }
+
+  .character-card .level-tag__num {
+    font-size: 0.58rem;
+  }
+}
