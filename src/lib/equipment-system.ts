@@ -119,6 +119,28 @@ export function getEquipmentBonuses(character: CharacterData): CoreRPGStats {
 }
 
 /**
+ * How a hero's POW/VIT/SPD would change by swapping the piece in a slot for a candidate.
+ * @param character Hero whose slot is compared.
+ * @param slot Slot the candidate would go into.
+ * @param candidate Item and rolled rarity being considered.
+ * @returns Candidate's scaled stats minus the equipped piece's (the candidate's own stats when the slot is empty).
+ */
+export function getEquipmentSwapDelta(
+  character: CharacterData,
+  slot: EquipmentSlot,
+  candidate: EquipmentInstance,
+): CoreRPGStats {
+  const next = getScaledEquipmentStats(candidate.item, candidate.rarity);
+  const equippedId = slot === 'weapon' ? character.equippedWeaponId : character.equippedArmorId;
+  const equippedRarity = slot === 'weapon' ? character.equippedWeaponRarity : character.equippedArmorRarity;
+  const equipped = equippedId ? findEquipmentItem(equippedId) : undefined;
+  if (!equipped) return next;
+
+  const current = getScaledEquipmentStats(equipped, equippedRarity);
+  return { pow: next.pow - current.pow, vit: next.vit - current.vit, spd: next.spd - current.spd };
+}
+
+/**
  * Calculate the total cascade combo bonus from a character's equipped items.
  * Combines the (very low) comboBonus of the equipped weapon and armor.
  * @param character Character data

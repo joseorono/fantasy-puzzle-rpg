@@ -169,6 +169,10 @@ export const assetList: string[] = [
   '/assets/skills/ui/indigolay-skill-panel-text-area.png',
   '/assets/skills/ui/indigolay-icon-equip.png',
 
+  // Equip tab gear sockets
+  '/assets/menu/equip/indigolay-gear-slot-normal.png',
+  '/assets/menu/equip/indigolay-gear-slot-selected.png',
+
   // Save/load slot scrolls (SaveSlotCard chrome)
   '/assets/menu/save-load/indigolay-scroll-normal.png',
   '/assets/menu/save-load/indigolay-scroll-dim.png',
