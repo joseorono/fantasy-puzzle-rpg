@@ -841,6 +841,13 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
 }
 
+@media (max-height: 700px) {
+  .pause-menu-item-card__ledger {
+    gap: 0.12rem;
+    padding: 0.4rem 0.5rem;
+  }
+}
+
 .pause-menu-item-card__effect {
   font-family: monospace;
   font-size: 0.78rem;
