@@ -28,6 +28,24 @@ export interface FoeTunables {
 }
 
 /**
+ * A FOE's map-size animation strip, baked from its battle sheet by
+ * `scripts/bake-foe-map-strips.mjs`. Row 0 is idle, row 1 (when present) is move; every
+ * cell shares one anchor, so the body stays put across rows.
+ */
+export interface FoeMapStrip {
+  image: string;
+  cellW: number;
+  cellH: number;
+  /** Where the feet sit inside a cell, in strip pixels from the cell's top-left. */
+  anchorX: number;
+  anchorY: number;
+  /** Time-based: plays while standing (and while moving when there is no move row). */
+  idle: { frames: number; frameDurationMs: number };
+  /** Distance-based: `frameDurationMs` is the pace at `FOE_MOVE_ANIM_REFERENCE_TILES_PER_SECOND`. */
+  move?: { frames: number; frameDurationMs: number };
+}
+
+/**
  * A roaming overworld enemy (a "FOE"): patrols a loop, chases the player on sight and
  * starts a battle on contact. Authored per map in `MapDefinition.foes`.
  */
@@ -37,6 +55,13 @@ export interface FoeDefinition {
   name: string;
   /** PNG drawn on the map canvas at its natural size (see `scripts/recolor-sprite.py`). */
   mapSprite: string;
+  /** Animated idle/move frames at map size; replaces `mapSprite` once loaded. */
+  mapStrip?: FoeMapStrip;
+  /**
+   * Intensity of the procedural hop-and-squash played while walking; 0 turns it off.
+   * Defaults to `FOE_DEFAULT_WALK_TWEEN` without a move row, 0 with one.
+   */
+  walkTween?: number;
   /** Walkable tiles walked in order and looped. `patrol[0]` is the home post the leash is measured from. */
   patrol: GridPosition[];
   /** Key into `MapDefinition.encounters`; defaults to `id`. */
@@ -44,6 +69,9 @@ export interface FoeDefinition {
   /** Per-FOE overrides of `FOE_DEFAULT_TUNABLES`. */
   overrides?: Partial<FoeTunables>;
 }
+
+/** How a kind of FOE looks on the map, shared by every FOE of that kind. */
+export type FoeLook = Pick<FoeDefinition, 'mapSprite' | 'mapStrip' | 'walkTween'>;
 
 export type FoeMode = 'patrol' | 'chase' | 'return';
 export type FoeFacing = 'left' | 'right';
@@ -77,6 +105,12 @@ export interface FoeRuntime {
   reaggroSeconds: number;
   /** Contact can fire only once the player has been clear of the FOE since it spawned. */
   isContactArmed: boolean;
+  /** `definition.walkTween` with its default resolved. */
+  walkTween: number;
+  /** Distance walked since spawning, in map pixels; drives move frames and the walk tween. */
+  strideDistancePx: number;
+  /** Whether the FOE moved on the last simulation step. */
+  isMoving: boolean;
 }
 
 /** The player as the simulation sees it: a map-pixel point and the tile it is in. */

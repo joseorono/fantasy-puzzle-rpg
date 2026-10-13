@@ -1,11 +1,13 @@
 import type { FoeDefinition } from '~/types/foe';
+import {
+  BAT_FOE_LOOK,
+  FROG_FOE_LOOK,
+  SLIME_FOE_LOOK,
+  STONE_GOLEM_FOE_LOOK,
+} from '~/constants/enemies/world-00/foe-looks';
 
-const STONE_GOLEM_MAP_SPRITE = '/assets/enemy-sprites/stone_golem_map.png';
-const GIANT_FROG_MAP_SPRITE = '/assets/enemy-sprites/frogger_map.png';
-const BAT_MAP_SPRITE = '/assets/enemy-sprites/tecopena-bat_map.png';
-const SLIME_MAP_SPRITE = '/assets/enemy-sprites/tecopena-slime_map.png';
-// The only frog map sprite: Swamp Frog packs wear the Giant Frog's.
-const SWAMP_FROG_MAP_SPRITE = GIANT_FROG_MAP_SPRITE;
+// The only frog sprite: Swamp Frog packs wear the Giant Frog's.
+const SWAMP_FROG_FOE_LOOK = FROG_FOE_LOOK;
 
 /**
  * Roaming enemies on the Fairy Forest trail, weakest first in walking order; the giants and
@@ -18,7 +20,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_6',
     name: 'Bats',
-    mapSprite: BAT_MAP_SPRITE,
+    ...BAT_FOE_LOOK,
     // The start pocket, around Thornfield.
     patrol: [
       { row: 63, col: 99 },
@@ -29,7 +31,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_7',
     name: 'Swamp Frogs',
-    mapSprite: SWAMP_FROG_MAP_SPRITE,
+    ...SWAMP_FROG_FOE_LOOK,
     // The south-east column, up toward Fernwall.
     patrol: [
       { row: 60, col: 85 },
@@ -40,7 +42,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_8',
     name: 'Swamp Frogs',
-    mapSprite: SWAMP_FROG_MAP_SPRITE,
+    ...SWAMP_FROG_FOE_LOOK,
     // The central-east hub, between Sunmoss and the eastern band.
     patrol: [
       { row: 45, col: 72 },
@@ -51,7 +53,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_4',
     name: 'Bats',
-    mapSprite: BAT_MAP_SPRITE,
+    ...BAT_FOE_LOOK,
     // The open glade around the Rootbound Den.
     patrol: [
       { row: 25, col: 52 },
@@ -62,7 +64,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_11',
     name: 'Slimes',
-    mapSprite: SLIME_MAP_SPRITE,
+    ...SLIME_FOE_LOOK,
     // The western clearing, past Glade Gate.
     patrol: [
       { row: 45, col: 26 },
@@ -73,7 +75,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_12',
     name: 'Giant Frog',
-    mapSprite: GIANT_FROG_MAP_SPRITE,
+    ...FROG_FOE_LOOK,
     // The west lobe, past Thistle Gate.
     patrol: [
       { row: 30, col: 11 },
@@ -87,7 +89,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_3',
     name: 'Giant Frog',
-    mapSprite: GIANT_FROG_MAP_SPRITE,
+    ...FROG_FOE_LOOK,
     // Thornwood — the east pocket, chest at (55, 113). The swamp's biggest frog holds this one.
     patrol: [
       { row: 53, col: 111 },
@@ -100,7 +102,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_2',
     name: 'Stone Golem',
-    mapSprite: STONE_GOLEM_MAP_SPRITE,
+    ...STONE_GOLEM_FOE_LOOK,
     // Fairy Cache — the north-east pocket, chest at (21, 104).
     patrol: [
       { row: 23, col: 100 },
@@ -111,7 +113,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_9',
     name: 'Slimes',
-    mapSprite: SLIME_MAP_SPRITE,
+    ...SLIME_FOE_LOOK,
     // The north band, behind Canopy Gate, on the way to the Elder Treant.
     patrol: [
       { row: 11, col: 92 },
@@ -122,7 +124,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_5',
     name: 'Slimes',
-    mapSprite: SLIME_MAP_SPRITE,
+    ...SLIME_FOE_LOOK,
     // The south hollow, behind Mire Gate, between its two battles.
     patrol: [
       { row: 63, col: 45 },
@@ -133,7 +135,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_10',
     name: 'Swamp Frogs',
-    mapSprite: SWAMP_FROG_MAP_SPRITE,
+    ...SWAMP_FROG_FOE_LOOK,
     // The south hollow's western end, around Toadstool Grove.
     patrol: [
       { row: 69, col: 36 },
@@ -144,7 +146,7 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
   {
     id: 'fairy_forest_foe_1',
     name: 'Stone Golem',
-    mapSprite: STONE_GOLEM_MAP_SPRITE,
+    ...STONE_GOLEM_FOE_LOOK,
     // Willow Hollow, past the Badger — kept clear of the exit and its arrival tile.
     patrol: [
       { row: 1, col: 14 },

@@ -69,11 +69,38 @@ export const FOE_SPRITE_SCALE = 1;
 /** How far below the FOE's position its feet sit, as a fraction of a tile. */
 export const FOE_FOOT_OFFSET_TILES = 0.25;
 
-/** Idle bob while patrolling, in map pixels. */
+/** Idle bob while standing on patrol, in map pixels. */
 export const FOE_BOB_AMPLITUDE_PX = 1;
 
 /** Idle bob rate, in radians per second. */
 export const FOE_BOB_RADIANS_PER_SECOND = 4;
+
+/**
+ * Walking speed at which a strip's move row plays at its authored frame rate. Faster FOEs
+ * (a chase) step through frames faster, so feet never skate.
+ */
+export const FOE_MOVE_ANIM_REFERENCE_TILES_PER_SECOND = FOE_DEFAULT_TUNABLES.patrolSpeedTilesPerSecond;
+
+/** Strip row of the idle animation (see `FoeMapStrip`). */
+export const FOE_STRIP_IDLE_ROW = 0;
+
+/** Strip row of the move animation, when the strip has one. */
+export const FOE_STRIP_MOVE_ROW = 1;
+
+/** Walk-tween intensity for FOEs whose strip has no move row (or who have no strip). */
+export const FOE_DEFAULT_WALK_TWEEN = 1;
+
+/** Distance covered by one hop of the walk tween, in tiles. */
+export const FOE_WALK_TWEEN_TILES_PER_HOP = 1;
+
+/**
+ * Walk-tween amplitudes at intensity 1: peak lift in map pixels, and how far the sprite
+ * stretches tall mid-hop and squashes flat on landing (as a fraction of its height).
+ */
+export const FOE_WALK_TWEEN_STYLE = {
+  hopPx: 2,
+  squash: 0.08,
+} as const;
 
 /** How long the "!" shows above a FOE that has just spotted the player, in seconds. */
 export const FOE_ALERT_FLASH_SECONDS = 0.8;

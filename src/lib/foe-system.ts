@@ -17,6 +17,7 @@ import {
   FOE_FACING_EPSILON_PX,
 } from '~/constants/foe';
 import { smoothPath } from './foe-pathfinding';
+import { resolveFoeWalkTween } from './foe-sprite';
 
 /**
  * Roaming-enemy (FOE) behaviour as pure functions over a `FoeRuntime` value.
@@ -113,6 +114,9 @@ export function createFoeRuntime(
     alertSeconds: 0,
     reaggroSeconds: 0,
     isContactArmed: false,
+    walkTween: resolveFoeWalkTween(definition),
+    strideDistancePx: 0,
+    isMoving: false,
   };
 }
 
