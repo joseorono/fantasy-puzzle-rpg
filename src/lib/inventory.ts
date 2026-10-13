@@ -255,7 +255,7 @@ export function sortInventoryForDisplay(inventory: InventoryItem[], items: BaseI
 }
 
 /**
- * One-line description of what a consumable does, for the item detail card.
+ * One-line description of what a consumable does, for the battle item tooltip.
  * @param action - The consumable's action, if any
  * @returns e.g. "Heals 50 HP", "Clears a row", "Fills 30% Ultimate"; `null` without an action
  */

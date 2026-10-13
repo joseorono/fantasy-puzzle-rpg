@@ -93,3 +93,85 @@ export const GIANT_FROG_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Bat — trash-tier, a few coins
+ */
+export const BAT_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 10,
+      gold: 0,
+      copper: 0,
+      silver: 0,
+      iron: 0,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Small Slime — sturdy, so it pays a little more than its size suggests
+ */
+export const SMALL_SLIME_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 25,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Skeleton
+ */
+export const SKELETON_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 30,
+      gold: 0,
+      copper: 0,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Badger, the Fairy Forest's area boss
+ */
+export const BADGER_LOOT: LootTable = {
+  equipableItems: [
+    {
+      item: EquipmentItems.find((item) => item.id === 'silver-armor')!,
+      probability: 0.35 as ProbabilityNumber,
+    },
+  ],
+  consumableItems: [
+    {
+      item: ConsumableItems.find((item) => item.id === 'high-potion')!,
+      probability: 1 as ProbabilityNumber,
+    },
+  ],
+  resources: {
+    item: {
+      coins: 300,
+      gold: 1,
+      copper: 6,
+      silver: 3,
+      iron: 6,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};

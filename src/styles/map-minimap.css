@@ -189,6 +189,7 @@
   height: 84px;
   opacity: 0.9;
   pointer-events: none;
+  image-rendering: auto !important;
 }
 
 /* ─── Pins ─────────────────────────────────────────────────────────────── */
@@ -293,19 +294,13 @@
     0 0 0 3px var(--mm-ink);
 }
 
-.map-minimap__key-hint {
-  pointer-events: none;
-}
-
 /* ─── On-map hint ──────────────────────────────────────────────────────── */
 
-/* Sits over the bottom of the map viewport; never intercepts clicks meant for the map. */
+/* Sits over the bottom of the map viewport; its groups are buttons (map, menu). */
 .map-key-hint {
   position: absolute;
   left: 50%;
   bottom: 0.6rem;
   z-index: 20;
   transform: translateX(-50%);
-  pointer-events: none;
-  opacity: 0.85;
 }

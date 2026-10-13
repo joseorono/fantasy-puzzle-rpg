@@ -41,6 +41,7 @@ export function AdmurinEnemySprite({ sheet, animation, mode, playId, paused, cla
             key={`${animation.row}-${playId}`}
             className={cn(
               'admurin-enemy-sprite__strip',
+              sheet.pixelated && 'admurin-enemy-sprite__strip--pixelated',
               animates && (mode === 'loop' ? 'admurin-enemy-sprite__strip--loop' : 'admurin-enemy-sprite__strip--once'),
             )}
             style={

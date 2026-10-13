@@ -43,12 +43,16 @@ import {
 } from '~/stores/battle-atoms';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
 import { TRAINING_DUMMY } from '~/constants/enemies/training';
+import { BAT, SMALL_SLIME, STONE_GOLEM } from '~/constants/enemies/world-00';
 import {
   BATTLE_TICK_DELTA_SECONDS,
   POISE_BREAK_IMMUNITY_MS,
   POISE_BREAK_STAGGER_DURATION_MS,
   POISE_SKILL_MULTIPLIER,
+  PREEMPTIVE_STRIKE_DAMAGE_BONUS,
 } from '~/constants/battle';
+import type { EnemyData, OrbType } from '~/types/rpg-elements';
+import { resolveWeaknessDamage } from './weakness-system';
 import { calculateItemCooldownInMs } from './rpg-calculations';
 import { getPartyPassiveModifiers, getSelectedSkill } from './skill-system';
 import { weighHitsByAttacker } from './flinch-system';
@@ -792,6 +796,79 @@ describe('enemy poise', () => {
     expect(summary?.phase).toBe('broken');
     expect(summary?.windowPercent).toBe(100);
     expect(summary?.breakCount).toBe(1);
+  });
+});
+
+describe('enemy weaknesses', () => {
+  /** One sturdy target (so no hit kills it), past standby unless `isStandby`. */
+  function createWeaknessStore(enemy: EnemyData, isStandby = false) {
+    const store = createStore();
+    const target = { ...enemy, id: `${enemy.id}-1`, maxHp: 5000, currentHp: 5000 };
+    store.set(setupBattleAtom, { party: INITIAL_PARTY, enemies: [target] });
+    store.set(battleStateAtom, {
+      ...store.get(battleStateAtom),
+      standbyEnemyIds: isStandby ? [target.id] : [],
+      party: store.get(battleStateAtom).party.map((member) => ({ ...member, skillCooldown: 0 })),
+    });
+    return store;
+  }
+
+  function attackerOfColor(color: OrbType) {
+    return INITIAL_PARTY.find((member) => member.color === color)!;
+  }
+
+  it("boosts a match hit of the enemy's weak colour and flags it", () => {
+    const store = createWeaknessStore(BAT);
+    store.set(damageEnemyAtom, { hits: [{ amount: 20, characterId: attackerOfColor('green').id, orbType: 'green' }] });
+
+    const lastDamage = store.get(battleStateAtom).lastDamage;
+    expect(lastDamage?.amount).toBe(resolveWeaknessDamage(20, true));
+    expect(lastDamage?.weakEnemyIds).toEqual(['bat-1']);
+  });
+
+  it('leaves other colours alone', () => {
+    const store = createWeaknessStore(BAT);
+    store.set(damageEnemyAtom, { hits: [{ amount: 20, characterId: attackerOfColor('blue').id, orbType: 'blue' }] });
+
+    const lastDamage = store.get(battleStateAtom).lastDamage;
+    expect(lastDamage?.amount).toBe(20);
+    expect(lastDamage?.weakEnemyIds).toBeUndefined();
+  });
+
+  it('stacks with the preemptive-strike bonus', () => {
+    const store = createWeaknessStore(SMALL_SLIME, true);
+    store.set(damageEnemyAtom, { hits: [{ amount: 20, orbType: 'purple' }] });
+
+    const expected = Math.round(resolveWeaknessDamage(20, true) * (1 + PREEMPTIVE_STRIKE_DAMAGE_BONUS));
+    expect(store.get(battleStateAtom).lastDamage?.amount).toBe(expected);
+  });
+
+  it("boosts any hero's Ultimate on an Ultimate-weak enemy, but not its matches", () => {
+    const attacker = attackerOfColor('blue');
+    const plain = createWeaknessStore({ ...STONE_GOLEM, weakTo: undefined });
+    plain.set(activateSkillAtom, attacker.id);
+    const baseDamage = plain.get(battleStateAtom).lastDamage!.amount;
+
+    const weak = createWeaknessStore(STONE_GOLEM);
+    weak.set(activateSkillAtom, attacker.id);
+    const lastDamage = weak.get(battleStateAtom).lastDamage;
+    expect(lastDamage?.amount).toBe(resolveWeaknessDamage(baseDamage, true));
+    expect(lastDamage?.weakEnemyIds).toEqual(['stone-golem-1']);
+
+    const matched = createWeaknessStore(STONE_GOLEM);
+    matched.set(damageEnemyAtom, { hits: [{ amount: 20, orbType: 'blue' }] });
+    expect(matched.get(battleStateAtom).lastDamage?.amount).toBe(20);
+  });
+
+  it("boosts a hero's Ultimate on an enemy weak to that hero's colour", () => {
+    const attacker = attackerOfColor('green');
+    const plain = createWeaknessStore({ ...BAT, weakTo: undefined });
+    plain.set(activateSkillAtom, attacker.id);
+    const baseDamage = plain.get(battleStateAtom).lastDamage!.amount;
+
+    const weak = createWeaknessStore(BAT);
+    weak.set(activateSkillAtom, attacker.id);
+    expect(weak.get(battleStateAtom).lastDamage?.amount).toBe(resolveWeaknessDamage(baseDamage, true));
   });
 });
 

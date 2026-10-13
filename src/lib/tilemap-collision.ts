@@ -1,4 +1,5 @@
 import type { TilemapData } from '~/types/tilemap';
+import type { GridPosition } from '~/types/geometry';
 
 /** A precomputed per-tile walkability lookup for one map. */
 export interface WalkableMask {
@@ -120,7 +121,7 @@ export function isMaskWalkable(mask: WalkableMask, row: number, col: number): bo
  *
  * @returns The tile, or `null` when the map has no walkable tiles at all.
  */
-export function findFirstWalkableTile(mask: WalkableMask): { row: number; col: number } | null {
+export function findFirstWalkableTile(mask: WalkableMask): GridPosition | null {
   for (let row = 0; row < mask.height; row++) {
     for (let col = 0; col < mask.width; col++) {
       if (mask.data[row * mask.width + col] === 1) return { row, col };

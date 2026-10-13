@@ -17,6 +17,7 @@ import {
 } from '~/constants/map';
 import { JIRBY_SYMBOL_SHEET } from '~/constants/jirby-symbols';
 import { getMarkerAtlasExtraFrame, getMarkerAtlasFrame } from '~/lib/map-marker-atlas';
+import { getNodePositions } from '~/lib/map-content';
 
 /** A marker's reach, bob and badge included, in map pixels. Used to skip markers outside the view. */
 export interface MarkerBounds {
@@ -121,18 +122,20 @@ export function buildMarkerList(
   const plateSize = MAP_MARKER_PLATE_SIZE_PX * scale;
 
   for (const node of map.nodes ?? []) {
-    const { row, col } = node.position;
-    const isOccupied = characterTile !== null && characterTile.row === row && characterTile.col === col;
-    // The plate is wider than the tile: centred on it, standing on its bottom edge.
-    markers.push({
-      kind: 'node',
-      x: col * tileSize + (tileSize - plateSize) / 2,
-      y: (row + 1) * tileSize - plateSize,
-      scale,
-      bounds: getTileBounds(row, col, tileSize, scale),
-      nodeType: node.type,
-      state: getNodeMarkerState(status.isNodeCompleted(node), isOccupied),
-    });
+    const isCompleted = status.isNodeCompleted(node);
+    for (const { row, col } of getNodePositions(node)) {
+      const isOccupied = characterTile !== null && characterTile.row === row && characterTile.col === col;
+      // The plate is wider than the tile: centred on it, standing on its bottom edge.
+      markers.push({
+        kind: 'node',
+        x: col * tileSize + (tileSize - plateSize) / 2,
+        y: (row + 1) * tileSize - plateSize,
+        scale,
+        bounds: getTileBounds(row, col, tileSize, scale),
+        nodeType: node.type,
+        state: getNodeMarkerState(isCompleted, isOccupied),
+      });
+    }
   }
 
   for (const spot of map.floorLoot ?? []) {
@@ -147,7 +150,7 @@ export function buildMarkerList(
   }
 
   for (const trigger of map.dialogueTriggers ?? []) {
-    if (status.isTriggerVisited(trigger.row, trigger.col)) continue;
+    if (trigger.autoPlay || status.isTriggerVisited(trigger.row, trigger.col)) continue;
     markers.push({
       kind: 'dialogueTrigger',
       ...getFloatingOrigin(trigger.row, trigger.col, tileSize, scale),

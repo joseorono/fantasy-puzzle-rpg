@@ -4,7 +4,7 @@ import type { CharacterData } from './rpg-elements';
 // Damage Display Component
 export interface DamageDisplayProps {
   amount: number;
-  type: 'damage' | 'heal' | 'critical';
+  type: 'damage' | 'heal' | 'critical' | 'weak';
   className?: string;
 }
 

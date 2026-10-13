@@ -3,7 +3,9 @@ import type { MapPoint, MapSize } from '~/lib/map-camera';
 import type { MapDefinition } from '~/types/map';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
+import type { GridPosition } from '~/types/geometry';
 import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
+import { getNodePositions } from '~/lib/map-content';
 import {
   MINIMAP_CHROME_HEIGHT_PX,
   MINIMAP_CHROME_WIDTH_PX,
@@ -118,12 +120,10 @@ export function tileToMinimapPercent(
 }
 
 /** Something pinned on the overview. */
-export interface MinimapMarker {
+export interface MinimapMarker extends GridPosition {
   kind: 'node' | 'floorLoot' | 'dialogueTrigger';
   /** Stable React key. */
   id: string;
-  row: number;
-  col: number;
   isDone: boolean;
   /** Node markers only. */
   nodeType?: MapNodeType;
@@ -142,14 +142,18 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   const markers: MinimapMarker[] = [];
 
   for (const node of map.nodes ?? []) {
-    markers.push({
-      kind: 'node',
-      id: `node-${node.id}`,
-      row: node.position.row,
-      col: node.position.col,
-      isDone: status.isNodeCompleted(node),
-      nodeType: node.type,
-      symbol: MAP_NODE_MARKER_STYLES[node.type].whiteSymbol,
+    const isDone = status.isNodeCompleted(node);
+    getNodePositions(node).forEach(({ row, col }, index) => {
+      markers.push({
+        kind: 'node',
+        // Copies of a node get their own key: the id is a React key.
+        id: index === 0 ? `node-${node.id}` : `node-${node.id}-${index}`,
+        row,
+        col,
+        isDone,
+        nodeType: node.type,
+        symbol: MAP_NODE_MARKER_STYLES[node.type].whiteSymbol,
+      });
     });
   }
 
@@ -165,7 +169,7 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   }
 
   for (const trigger of map.dialogueTriggers ?? []) {
-    if (status.isTriggerVisited(trigger.row, trigger.col)) continue;
+    if (trigger.autoPlay || status.isTriggerVisited(trigger.row, trigger.col)) continue;
     markers.push({
       kind: 'dialogueTrigger',
       id: `trigger-${trigger.row}-${trigger.col}`,
@@ -180,7 +184,16 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
 }
 
 /** Order the legend lists node types in, regardless of their order on the map. */
-const LEGEND_ORDER: readonly MapNodeType[] = ['Town', 'Dungeon', 'Battle', 'Boss', 'Treasure', 'Mystery'];
+const LEGEND_ORDER: readonly MapNodeType[] = [
+  'Town',
+  'Dungeon',
+  'Battle',
+  'Boss',
+  'Treasure',
+  'Mystery',
+  'NextMap',
+  'PreviousMap',
+];
 
 /**
  * The node types present on the overview, in a fixed order, with their symbols.

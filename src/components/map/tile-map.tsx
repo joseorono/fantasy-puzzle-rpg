@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { TilemapData } from '../../types/tilemap';
 import type { MapDefinition } from '~/types/map';
 import type { FoeDefinition } from '~/types/foe';
-import type { Position } from '~/types/geometry';
+import type { GridPosition, Position } from '~/types/geometry';
 import { DEBUG_MODE } from '~/constants/dev';
 import { DialogueTriggerModal } from './dialogue-trigger-modal';
 import { MapDebugOverlay } from './map-debug-overlay';
@@ -13,7 +13,13 @@ import { LootNotification } from './loot-notification';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MapMinimap } from './map-minimap';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
-import { findNodeAt, findFloorLootAt, findDialogueTriggerAt, isNodeCompletedInProgress } from '~/lib/map-content';
+import {
+  findNodeAt,
+  findFloorLootAt,
+  findDialogueTriggerAt,
+  getDialogueTriggerSeenKey,
+  isNodeCompletedInProgress,
+} from '~/lib/map-content';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 import { useSaveGameActions } from '~/hooks/use-save-game';
 import { useCharacterMovement } from '~/hooks/use-character-movement';
@@ -22,6 +28,7 @@ import { useMapRenderer } from '~/hooks/use-map-renderer';
 import { useFoeSimulation } from '~/hooks/use-foe-simulation';
 import { useViewTransitions } from '~/hooks/use-view-transitions';
 import { buildWalkableMask, findFirstWalkableTile, isMaskWalkable } from '~/lib/tilemap-collision';
+import { canPlayerOccupy, floodOpenTiles, getUnbeatenGateTiles } from '~/lib/map-gates';
 import { clientToMapPoint } from '~/lib/pointer-movement';
 import { computeViewportLayout, mapToClientPoint, resolveMapZoom } from '~/lib/map-camera';
 import { buildMarkerList, type MarkerStatus } from '~/lib/map-draw';
@@ -33,9 +40,9 @@ import {
 } from '~/constants/character-sprite';
 import type { SpriteState } from '~/hooks/use-character-sprite';
 import MapCharacterSprite from './map-character-sprite';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { setupBattleAtom } from '~/stores/battle-atoms';
-import { isPauseMenuOpenAtom } from '~/stores/pause-menu-atoms';
+import { usePauseMenu } from '~/hooks/use-pause-menu';
 import {
   useMapProgressActions,
   useGameStore,
@@ -70,6 +77,7 @@ import { footstepSystem } from '~/services/footstep-system';
 import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/footsteps';
 import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
+import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -97,11 +105,6 @@ function isMapNodeCompleted(
 
 type DialogueSceneKey = string;
 
-interface CharacterPosition {
-  row: number;
-  col: number;
-}
-
 interface TilemapComponentProps {
   /** The map to render and run. All content is read from here — nothing map-specific is imported. */
   map: MapDefinition;
@@ -123,16 +126,18 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [footstepProfile] = useState(() =>
     createFootstepProfile(map.footstepVolume ?? DEFAULT_FOOTSTEP_VOLUME, map.footstepPitch ?? DEFAULT_FOOTSTEP_PITCH),
   );
-  const [charPosition, setCharPosition] = useState<CharacterPosition>(() => {
+  const [charPosition, setCharPosition] = useState<GridPosition>(() => {
     const saved = useGameStore.getState().mapProgress.characterPositions[map.id];
     return saved ?? { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x };
   });
+  // Where this visit began. Ground reachable from here (or the map's spawn) stays open past gates,
+  // so arriving from the far side of one never strands the player.
+  const [visitStartTile] = useState(charPosition);
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [visitedTriggers, setVisitedTriggers] = useState<Set<string>>(new Set());
   const [showTriggerModal, setShowTriggerModal] = useState(false);
   const [pendingDialogue, setPendingDialogue] = useState<DialogueSceneKey | null>(null);
   const [activeDialogue, setActiveDialogue] = useState<DialogueSceneKey | null>(null);
-  const [pendingFightNodeId, setPendingFightNodeId] = useState<string | null>(null);
+  const [pendingFightNode, setPendingFightNode] = useState<InteractiveMapNode | null>(null);
   const [dialogueKey, setDialogueKey] = useState(0);
   const [currentNode, setCurrentNode] = useState<InteractiveMapNode | null>(null);
   const [showNodeMenu, setShowNodeMenu] = useState(false);
@@ -144,7 +149,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [popupAnchor, setPopupAnchor] = useState<Position | null>(null);
   // True while a cover transition plays before leaving the map: movement stays frozen underneath it.
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { enterBattle, enterTown } = useViewTransitions();
+  const { enterBattle, enterTown, travelBetweenMaps } = useViewTransitions();
 
   // Get tile size from map data
   const tileSize = mapData.tilewidth || 16;
@@ -168,7 +173,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const { completedDungeons } = useDungeonProgressState();
   const partyMembers = useParty();
   const setupBattle = useSetAtom(setupBattleAtom);
-  const isPauseMenuOpen = useAtomValue(isPauseMenuOpenAtom);
+  const { isOpen: isPauseMenuOpen, open: openPauseMenu, openTab: openPauseMenuTab } = usePauseMenu();
   const { autosave } = useSaveGameActions();
 
   // Load tileset image
@@ -190,23 +195,28 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     return buildWalkableMask(mapData, walkableLayers, { surfaceLayers, ignoredGids });
   }, [mapData, walkableLayers, surfaceLayers]);
 
-  // Check if a position is walkable (walkable ground, and no blocking node)
-  const isRoadTile = React.useCallback(
-    (row: number, col: number): boolean => {
-      if (!isMaskWalkable(walkableMask, row, col)) return false;
-
-      // Check if there's an interactive node at this position
-      const node = findNodeAt(map.nodes, row, col);
-      if (node && node.blocksMovement) {
-        // Node blocks movement - check if it's completed
-        const isCompleted = isMapNodeCompleted(node, completedDungeons, mapProgressState);
-        return isCompleted; // Can only walk through if completed
-      }
-
-      return true;
-    },
-    [walkableMask, mapProgressState, completedDungeons, map.nodes],
+  // Gates: an unbeaten blocking node can be stepped onto, but the ground past it is sealed.
+  const isUnbeatenGateAt = (row: number, col: number): boolean => {
+    const node = findNodeAt(map.nodes, row, col);
+    return node !== undefined && node.blocksMovement && !isMapNodeCompleted(node, completedDungeons, mapProgressState);
+  };
+  const gateTiles = getUnbeatenGateTiles(map.nodes, (node) =>
+    isMapNodeCompleted(node, completedDungeons, mapProgressState),
   );
+  const openTiles =
+    gateTiles.length > 0
+      ? floodOpenTiles(walkableMask, gateTiles, [
+          { row: defaultPlayerPosition.y, col: defaultPlayerPosition.x },
+          visitStartTile,
+        ])
+      : null;
+
+  const isRoadTile = (row: number, col: number): boolean =>
+    canPlayerOccupy(walkableMask, openTiles, isUnbeatenGateAt(row, col), row, col);
+
+  // FOEs never cross an unbeaten gate, but roam freely on either side of it.
+  const isFoeWalkable = (row: number, col: number): boolean =>
+    isMaskWalkable(walkableMask, row, col) && !isUnbeatenGateAt(row, col);
 
   // Roaming enemies step inside the movement loop (see `onFrame`) and draw on the canvas.
   // The chest loot panel holds them: the player can't act under it, so nothing may creep up.
@@ -214,7 +224,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     map,
     tileSize,
     walkableMask,
-    isWalkable: isRoadTile,
+    isWalkable: isFoeWalkable,
     defeatedIds: mapProgressState.foesDefeated,
     isHeld: currentLoot !== null,
     showDebug: Boolean(debug) && DEBUG_MODE,
@@ -245,19 +255,24 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const checkDialogueTrigger = React.useCallback(
     (row: number, col: number) => {
       const trigger = findDialogueTriggerAt(map.dialogueTriggers, row, col);
+      if (!trigger) return;
 
-      if (trigger) {
-        const triggerKey = `${row},${col}`;
+      // Read fresh: the tiles of one event sit side by side, and a stale render must not replay it.
+      const seenKey = getDialogueTriggerSeenKey(map.id, trigger.scene);
+      if (useGameStore.getState().mapProgress.dialogueTriggersSeen[seenKey]) return;
 
-        // Only trigger if not already visited
-        if (!visitedTriggers.has(triggerKey)) {
-          console.log('Dialogue trigger activated at:', { row, col });
-          setPendingDialogue(trigger.scene);
-          setShowTriggerModal(true);
-        }
+      if (trigger.autoPlay) {
+        mapProgressActions.markDialogueTriggerSeen(seenKey);
+        setDialogueKey((k) => k + 1);
+        setActiveDialogue(trigger.scene);
+        return;
       }
+
+      setPendingDialogue(trigger.scene);
+      setShowTriggerModal(true);
     },
-    [visitedTriggers, map.dialogueTriggers],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [map.id, map.dialogueTriggers],
   );
 
   // Check if character is standing on an interactive node
@@ -328,7 +343,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const markerStatus: MarkerStatus = {
     isNodeCompleted: (node) => isMapNodeCompleted(node, completedDungeons, mapProgressState),
     isFloorLootCollected: (lootId) => floorLootProgressState[map.id]?.[lootId] === true,
-    isTriggerVisited: (row, col) => visitedTriggers.has(`${row},${col}`),
+    isTriggerVisited: (row, col) => {
+      const trigger = findDialogueTriggerAt(map.dialogueTriggers, row, col);
+      if (!trigger) return false;
+      return mapProgressState.dialogueTriggersSeen[getDialogueTriggerSeenKey(map.id, trigger.scene)] === true;
+    },
   };
   const markers = buildMarkerList(map, tileSize, markerStatus, charPosition);
 
@@ -483,18 +502,18 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A FOE battle still pending when the map mounts was never won (a save loaded mid-fight):
-  // forget it so the FOE stays alive. Victories are resolved by the rewards screen.
+  // A battle still pending when the map mounts was never won (a save loaded mid-fight): forget
+  // it so the FOE stays alive and the node stays open. Victories are resolved by the rewards screen.
   useEffect(() => {
     mapProgressActions.setPendingFoeBattle(null);
+    mapProgressActions.setPendingNodeBattle(null);
     // Once per mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleAcceptDialogue() {
     if (pendingDialogue) {
-      const triggerKey = `${charPosition.row},${charPosition.col}`;
-      setVisitedTriggers((prev) => new Set(prev).add(triggerKey));
+      mapProgressActions.markDialogueTriggerSeen(getDialogueTriggerSeenKey(map.id, pendingDialogue));
       setDialogueKey((k) => k + 1);
       setActiveDialogue(pendingDialogue);
     }
@@ -512,24 +531,26 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     setActiveDialogue(null);
 
     // If a fight was pending after dialogue, start it now
-    if (pendingFightNodeId) {
-      const nodeId = pendingFightNodeId;
-      setPendingFightNodeId(null);
-      void startBattle(nodeId);
+    if (pendingFightNode) {
+      const node = pendingFightNode;
+      setPendingFightNode(null);
+      void startBattle(node.id, node);
     }
   }
 
   /**
    * Start a battle for the given encounter: set up the atoms, play a cover transition with the
-   * map frozen, then navigate under it.
+   * map frozen, then navigate under it. A fought node is only marked pending here; the rewards
+   * screen completes it on victory.
    */
-  async function startBattle(nodeId: string) {
+  async function startBattle(nodeId: string, foughtNode?: InteractiveMapNode) {
     const encounter = map.encounters?.[nodeId];
     if (!encounter) {
       console.warn('No encounter found for node:', nodeId);
       return;
     }
 
+    if (foughtNode) mapProgressActions.setPendingNodeBattle({ nodeType: foughtNode.type, nodeId: foughtNode.id });
     setupBattle({ enemies: encounter.enemies, party: partyMembers });
     setIsTransitioning(true);
     await enterBattle();
@@ -546,11 +567,11 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
   /** Walk into a town: checkpoint, cover transition with the map frozen, then the hub. */
   async function walkIntoTown(node: InteractiveMapNode) {
+    setIsTransitioning(true);
+    await enterTown();
     mapProgressActions.completeNode(node.type, node.id);
     // Reaching a town is a checkpoint — snapshot before the player starts spending.
     autosave();
-    setIsTransitioning(true);
-    await enterTown();
     routerActions.goToTownHub({
       ...DEFAULT_TOWN_HUB_DATA,
       townName: node.name,
@@ -558,13 +579,33 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     });
   }
 
+  /** Take a map exit: climb under the stairs cover, then land beside the far end's paired exit. */
+  async function travelToMap(node: InteractiveMapNode) {
+    const { destination } = node;
+    if (!destination) {
+      console.warn(`Exit node "${node.id}" has no destination.`);
+      return;
+    }
+
+    setIsTransitioning(true);
+    await travelBetweenMaps();
+    mapProgressActions.completeNode(node.type, node.id);
+    mapProgressActions.setCharacterPosition(destination.mapId, destination.arrival);
+    routerActions.goToMap({ mapId: destination.mapId }, { history: 'replace' });
+  }
+
+  function handleNodeTravel() {
+    if (!currentNode) return;
+    const exitNode = currentNode;
+    setShowNodeMenu(false);
+    setCurrentNode(null);
+    void travelToMap(exitNode);
+  }
+
   // Node interaction handlers
   function handleNodeFight() {
     if (!currentNode) return;
     console.log('Starting fight with:', currentNode.name);
-
-    // Mark node as completed (rewards screen can re-check if needed)
-    mapProgressActions.completeNode(currentNode.type, currentNode.id);
 
     // Close menu
     setShowNodeMenu(false);
@@ -572,14 +613,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
     // If the node has a pre-fight dialogue, play it first
     if (currentNode.dialogueScene && map.dialogueScenes?.[currentNode.dialogueScene]) {
-      setPendingFightNodeId(currentNode.id);
+      setPendingFightNode(currentNode);
       setDialogueKey((k) => k + 1);
       setActiveDialogue(currentNode.dialogueScene);
       return;
     }
 
     // No dialogue — go straight to battle
-    void startBattle(currentNode.id);
+    void startBattle(currentNode.id, currentNode);
   }
 
   function handleNodeEnter() {
@@ -757,10 +798,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           {!isMinimapOpen && (
             <KeyHintPill
               size="sm"
+              variant="map"
               className="map-key-hint"
               items={[
-                { keys: ['Tab'], label: 'map' },
-                { keys: ['Esc'], label: 'menu' },
+                { keys: ['Tab'], label: 'map', onClick: canOpenMinimap ? openMinimap : undefined },
+                { keys: ['Esc'], label: 'menu', onClick: openPauseMenu },
+                { keys: ['H', '?'], label: 'tutorial', onClick: () => openPauseMenuTab('tutorial') },
               ]}
             />
           )}
@@ -792,6 +835,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           onEnter={currentNode.type === 'Town' || currentNode.type === 'Dungeon' ? handleNodeEnter : undefined}
           onRandomize={currentNode.type === 'Dungeon' ? handleNodeRandomize : undefined}
           onOpenChest={currentNode.type === 'Treasure' ? handleNodeOpenChest : undefined}
+          onTravel={MAP_EXIT_NODE_TYPES.includes(currentNode.type) ? handleNodeTravel : undefined}
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={popupAnchor ?? getCharacterScreenPosition()}
         />

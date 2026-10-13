@@ -5,7 +5,7 @@ import type { Resources } from '~/types/resources';
 import type { CharacterData } from '~/types/rpg-elements';
 import type { PartyState } from '~/stores/slices/party.types';
 import type { InventoryState } from '~/stores/slices/inventory.types';
-import type { MapProgressState } from '~/stores/slices/map-progress.types';
+import type { MapNodeType, MapProgressState } from '~/stores/slices/map-progress.types';
 import type { FloorLootProgressState } from '~/stores/slices/floor-loot-progress.types';
 import type { CraftingState } from '~/stores/slices/crafting.types';
 import type { ProgressFlagsState } from '~/stores/slices/progress-flags.types';
@@ -23,6 +23,19 @@ const MAP_ID_COVERAGE = {
   'map-03-desert': true,
 } as const satisfies Record<MapId, true>;
 export const mapIdSchema = z.enum(Object.keys(MAP_ID_COVERAGE) as [MapId, ...MapId[]]);
+
+/** Must list every MapNodeType, for the same reason as MAP_ID_COVERAGE. */
+const MAP_NODE_TYPE_COVERAGE = {
+  Town: true,
+  Battle: true,
+  Boss: true,
+  Dungeon: true,
+  Treasure: true,
+  Mystery: true,
+  NextMap: true,
+  PreviousMap: true,
+} as const satisfies Record<MapNodeType, true>;
+const mapNodeTypeSchema = z.enum(Object.keys(MAP_NODE_TYPE_COVERAGE) as [MapNodeType, ...MapNodeType[]]);
 
 const gridPositionSchema = z.object({ row: z.number().int(), col: z.number().int() });
 
@@ -91,10 +104,15 @@ export const saveGameStateSchema = z.object({
     townsVisited: nodeProgressSchema,
     treasuresFound: nodeProgressSchema,
     mysteriesSolved: nodeProgressSchema,
+    // Defaulted: saves written before map exits and persisted dialogue events lack both keys.
+    exitsUsed: nodeProgressSchema.default({}),
+    dialogueTriggersSeen: nodeProgressSchema.default({}),
     characterPositions: z.partialRecord(mapIdSchema, gridPositionSchema),
     // Defaulted: saves written before FOEs existed lack both keys.
     foesDefeated: nodeProgressSchema.default({}),
     pendingFoeBattleId: z.string().nullable().default(null),
+    // Defaulted: saves written before node battles resolved on victory lack the key.
+    pendingNodeBattle: z.object({ nodeType: mapNodeTypeSchema, nodeId: z.string() }).nullable().default(null),
   }),
   floorLootProgress: z.record(z.string(), z.record(z.string(), z.boolean())),
   crafting: z.object({ pity: z.number().int().min(0) }),

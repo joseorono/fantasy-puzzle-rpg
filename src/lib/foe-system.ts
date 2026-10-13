@@ -16,6 +16,7 @@ import {
   FOE_DEFAULT_TUNABLES,
   FOE_FACING_EPSILON_PX,
 } from '~/constants/foe';
+import { smoothPath } from './foe-pathfinding';
 
 /**
  * Roaming-enemy (FOE) behaviour as pure functions over a `FoeRuntime` value.
@@ -26,8 +27,9 @@ import {
  * - `chase`: paths toward the player's tile, repathing when they change tile or the
  *   repath interval elapses. Gives up (→ `return`) past the leash, after losing sight
  *   for `loseSightSeconds`, or when no path exists.
- * - `return`: walks home; on arrival resumes `patrol`. It does not re-aggro on the way
- *   back — that would bounce on the leash boundary — but contact still fires.
+ * - `return`: walks home; on arrival resumes `patrol`. It re-notices the player once
+ *   `reaggroCooldownSeconds` has passed, but only while both it and the player are inside
+ *   the leash, so it never bounces on the leash boundary.
  *
  * Contact (the fight trigger) is checked in every mode. The runtime is never mutated:
  * `stepFoe` returns a new value so a frame's result can be compared with its input.
@@ -109,6 +111,7 @@ export function createFoeRuntime(
     lostSightSeconds: 0,
     graceSeconds,
     alertSeconds: 0,
+    reaggroSeconds: 0,
     isContactArmed: false,
   };
 }
@@ -156,8 +159,12 @@ export function advanceAlongPath(
   return { point: { x, y }, path: index === 0 ? path : path.slice(index), movedX, arrived: index >= path.length };
 }
 
+/** A tile route to `target`, straightened so the FOE walks any angle where the way is clear. */
 function findPathFrom(foe: FoeRuntime, target: GridPosition, world: FoeWorld): GridPosition[] | null {
-  return world.pathfinder.findPath(pointToTile(foe, world.tileSize), target, world.isWalkable, world.pathNodeBudget);
+  const { tileSize } = world;
+  const path = world.pathfinder.findPath(pointToTile(foe, tileSize), target, world.isWalkable, world.pathNodeBudget);
+  if (path === null) return null;
+  return smoothPath({ x: foe.x / tileSize, y: foe.y / tileSize }, path, world.isWalkable);
 }
 
 function startChase(foe: FoeRuntime): FoeRuntime {
@@ -173,7 +180,15 @@ function startChase(foe: FoeRuntime): FoeRuntime {
 }
 
 function giveUpChase(foe: FoeRuntime): FoeRuntime {
-  return { ...foe, mode: 'return', path: [], pathTarget: null, repathSeconds: 0, lostSightSeconds: 0 };
+  return {
+    ...foe,
+    mode: 'return',
+    path: [],
+    pathTarget: null,
+    repathSeconds: 0,
+    lostSightSeconds: 0,
+    reaggroSeconds: foe.tunables.reaggroCooldownSeconds,
+  };
 }
 
 function stepPatrol(
@@ -278,9 +293,27 @@ function stepChase(foe: FoeRuntime, player: FoeActor, dtSeconds: number, world: 
   };
 }
 
-function stepReturn(foe: FoeRuntime, dtSeconds: number, world: FoeWorld): FoeRuntime {
+function stepReturn(
+  foe: FoeRuntime,
+  player: FoeActor,
+  dtSeconds: number,
+  world: FoeWorld,
+  canSense: boolean,
+): FoeRuntime {
   const { tunables, definition } = foe;
   const home = definition.patrol[0];
+
+  // Both inside the leash: a chase started here is not abandoned on its first step.
+  const homePoint = tileCenter(home, world.tileSize);
+  if (
+    canSense &&
+    foe.reaggroSeconds <= 0 &&
+    isWithinTiles(foe, player, tunables.detectionRadiusTiles, world.tileSize) &&
+    isWithinTiles(foe, homePoint, tunables.leashRadiusTiles, world.tileSize) &&
+    isWithinTiles(player, homePoint, tunables.leashRadiusTiles, world.tileSize)
+  ) {
+    return startChase(foe);
+  }
 
   let path = foe.path;
   if (path.length === 0 || !isSameTile(foe.pathTarget, home)) {
@@ -331,6 +364,7 @@ export function stepFoe(foe: FoeRuntime, player: FoeActor, dtSeconds: number, wo
     graceSeconds: Math.max(0, foe.graceSeconds - dtSeconds),
     alertSeconds: Math.max(0, foe.alertSeconds - dtSeconds),
     repathSeconds: Math.max(0, foe.repathSeconds - dtSeconds),
+    reaggroSeconds: Math.max(0, foe.reaggroSeconds - dtSeconds),
   };
   if (
     !ticked.isContactArmed &&
@@ -350,6 +384,6 @@ export function stepFoe(foe: FoeRuntime, player: FoeActor, dtSeconds: number, wo
     case 'chase':
       return { foe: stepChase(ticked, player, dtSeconds, world), contact: false };
     case 'return':
-      return { foe: stepReturn(ticked, dtSeconds, world), contact: false };
+      return { foe: stepReturn(ticked, player, dtSeconds, world, canSense), contact: false };
   }
 }

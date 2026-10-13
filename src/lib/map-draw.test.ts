@@ -102,6 +102,21 @@ describe('buildMarkerList', () => {
     ]);
   });
 
+  it('draws a plate on every tile of a node placed on several, sharing its state', () => {
+    const gate = {
+      ...MAP.nodes![0],
+      position: [
+        { row: 2, col: 3 },
+        { row: 2, col: 4 },
+      ],
+    };
+    const placed = buildMarkerList({ ...MAP, nodes: [gate] }, TILE, STATUS, { row: 2, col: 4 });
+    expect(find(placed, 'node').map((node) => [node.x, node.state])).toEqual([
+      [3 * TILE + (TILE - MAP_MARKER_PLATE_SIZE_PX) / 2, 'todo'],
+      [4 * TILE + (TILE - MAP_MARKER_PLATE_SIZE_PX) / 2, 'todo'],
+    ]);
+  });
+
   it('relights a completed node the character stands on', () => {
     const occupied = buildMarkerList(MAP, TILE, STATUS, { row: 4, col: 4 });
     expect(find(occupied, 'node').map((node) => node.state)).toEqual(['todo', 'doneActive']);

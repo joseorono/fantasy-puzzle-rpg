@@ -3,11 +3,9 @@ import type { GridPosition } from './geometry';
 
 export type ActionTarget = 'party' | 'enemy';
 
-export interface Orb {
+export interface Orb extends GridPosition {
   id: string;
   type: OrbType;
-  row: number;
-  col: number;
   /** Wildcard tile: matches with any color and explodes a 3x3 area when matched. */
   isBomb?: boolean;
 }
@@ -123,7 +121,9 @@ export interface BattleState {
     /** Multiple targets hit at once (e.g. an all-enemy skill). Each id flinches. */
     enemyIds?: string[];
     /** Individual hits folded into this event (a multi-color match). Absent = one hit of `amount`. */
-    hits?: Array<{ amount: number; characterId?: string }>;
+    hits?: Array<{ amount: number; characterId?: string; orbType?: OrbType }>;
+    /** Struck enemies whose weakness this hit exploited (see `~/lib/weakness-system`). */
+    weakEnemyIds?: string[];
     /**
      * Per-target amounts when one event hit several enemies for different values (an all-enemy
      * skill landing on a mix of staggered and unbroken targets). Falls back to `amount`.

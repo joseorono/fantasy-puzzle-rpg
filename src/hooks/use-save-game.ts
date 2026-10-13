@@ -2,7 +2,7 @@ import { useAtomValue, useStore } from 'jotai';
 import { RESET } from 'jotai/utils';
 import { SoundNames } from '~/constants/audio';
 import { DEBUG_MODE } from '~/constants/dev';
-import { DEFAULT_MAP_ID } from '~/constants/maps';
+import { DEFAULT_MAP_ID, STARTER_MAP_ID } from '~/constants/maps';
 import { SAVE_SLOT_IDS, type SaveSlotId } from '~/constants/storage-keys';
 import { buildSaveData, computePlaytimeMs, pickMostRecentSlot } from '~/lib/save-game';
 import { isGameStartedAtom } from '~/stores/app-atoms';
@@ -103,12 +103,18 @@ export function useSaveGameActions() {
     store.set(saveSlotAtoms[slotId], RESET);
   }
 
-  /** Wipes progress back to a fresh game and restarts the playtime clock. */
+  /**
+   * Wipes progress back to a fresh game and restarts the playtime clock. Players start on the
+   * tutorial map; under `DEBUG_MODE` the reset router leaves them on the Debug view instead.
+   */
   function newGame(): void {
     store.set(resetDungeonRunAtom);
     resetGameState();
     store.set(basePlaytimeMsAtom, 0);
     store.set(sessionStartedAtAtom, Date.now());
+    if (!DEBUG_MODE) {
+      useGameStore.getState().actions.router.goToMap({ mapId: STARTER_MAP_ID }, { history: 'reset' });
+    }
   }
 
   return { saveToSlot, autosave, loadSlot, deleteSlot, newGame };

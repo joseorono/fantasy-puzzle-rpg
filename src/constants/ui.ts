@@ -1,4 +1,4 @@
-import type { OrbType } from '~/types/rpg-elements';
+import type { OrbType, WeaknessSource } from '~/types/rpg-elements';
 import type { HpThreshold } from '~/lib/rpg-calculations';
 
 // Orb type classes for styling
@@ -26,6 +26,21 @@ export const ORB_GLOW_CLASSES: Record<OrbType, string> = {
  * idle wait before it appears is `BOARD_HINT_DELAY_MS`.
  */
 export const ORB_HINT_CLASSES = 'orb-hint';
+
+// ─── Enemy Weaknesses ───────────────────────────────────────────────
+
+/** Tooltip text for each weakness badge on an enemy card. */
+export const WEAKNESS_SOURCE_LABELS: Record<WeaknessSource, string> = {
+  blue: 'Weak to blue orbs',
+  green: 'Weak to green orbs',
+  purple: 'Weak to purple orbs',
+  yellow: 'Weak to yellow orbs',
+  gray: 'Weak to gray orbs',
+  ultimate: 'Weak to Ultimates',
+};
+
+/** Numeral and callout colour of a hit that exploited a weakness: a muted teal, apart from the warm crit. */
+export const WEAK_HIT_COLOR = '#8fd6cf';
 
 // ─── HP Threshold Colors ────────────────────────────────────────────
 // Maps from HpThreshold ('high' | 'medium' | 'low') to presentation values.

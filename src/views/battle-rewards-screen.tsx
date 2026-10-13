@@ -87,8 +87,8 @@ export function BattleRewardsScreen() {
     // next entry anyway, and resetting here would replay (and re-grant) the whole reward
     // sequence in a loop if goBack() ever fails.
     if (pendingLevelUps.length === 0 || currentLevelUpIndex >= pendingLevelUps.length) {
-      // A roaming FOE's battle is won by the time rewards show; retire it before the checkpoint.
-      mapProgressActions.resolvePendingFoeBattle();
+      // The battle is won by the time rewards show: retire its FOE or complete its node before the checkpoint.
+      mapProgressActions.resolvePendingBattle();
       // Loot, EXP and level-ups are all committed by now, so this is the checkpoint.
       if (shouldAutosaveOnExit) autosave();
       routerActions.goBack();

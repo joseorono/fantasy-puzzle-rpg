@@ -8,9 +8,15 @@ const keyHintPillVariants = cva('key-hint-pill pixel-font', {
       sm: 'key-hint-pill--sm',
       md: 'key-hint-pill--md',
     },
+    variant: {
+      default: '',
+      // Opaque plate for busy, low-contrast backdrops such as the map's tile art.
+      map: 'key-hint-pill--map',
+    },
   },
   defaultVariants: {
     size: 'md',
+    variant: 'default',
   },
 });
 
@@ -40,6 +46,8 @@ export interface KeyHintItem {
   keys: string[];
   /** What the keys do. */
   label: string;
+  /** Makes the group a button that does what its keys do. */
+  onClick?: () => void;
 }
 
 interface KeyHintPillProps extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof keyHintPillVariants> {
@@ -48,23 +56,56 @@ interface KeyHintPillProps extends HTMLAttributes<HTMLSpanElement>, VariantProps
   separator?: string;
 }
 
-/** A dark rounded bar of keyboard hints: key chips plus a short label per group. */
-export function KeyHintPill({ items, separator = '·', size, className, ...rest }: KeyHintPillProps) {
+function KeyHintContent({ item }: { item: KeyHintItem }) {
   return (
-    <span className={cn(keyHintPillVariants({ size }), className)} {...rest}>
-      {items.map((item, index) => (
-        <Fragment key={index}>
-          {index > 0 && <span className="key-hint-pill__sep">{separator}</span>}
-          <span className="key-hint-pill__item">
-            {item.keys.map((key) => (
-              <kbd key={key} className="key-hint-pill__key">
-                <KeyGlyph keyName={key} />
-              </kbd>
-            ))}
-            <span className="key-hint-pill__label">{item.label}</span>
-          </span>
-        </Fragment>
+    <>
+      {item.keys.map((key) => (
+        <kbd key={key} className="key-hint-pill__key">
+          <KeyGlyph keyName={key} />
+        </kbd>
       ))}
+      <span className="key-hint-pill__label">{item.label}</span>
+    </>
+  );
+}
+
+/**
+ * A dark rounded bar of keyboard hints: key chips plus a short label per group.
+ * Groups with an `onClick` render as buttons; their clicks don't bubble, so a pill
+ * inside a click-to-close backdrop fires its action once.
+ */
+export function KeyHintPill({ items, separator = '·', size, variant, className, ...rest }: KeyHintPillProps) {
+  const isInteractive = items.some((item) => item.onClick);
+
+  return (
+    <span
+      className={cn(keyHintPillVariants({ size, variant }), isInteractive && 'key-hint-pill--interactive', className)}
+      {...rest}
+    >
+      {items.map((item, index) => {
+        const { onClick } = item;
+        return (
+          <Fragment key={index}>
+            {index > 0 && <span className="key-hint-pill__sep">{separator}</span>}
+            {onClick ? (
+              <button
+                type="button"
+                className="key-hint-pill__item key-hint-pill__item--clickable"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onClick();
+                }}
+              >
+                <KeyHintContent item={item} />
+              </button>
+            ) : (
+              <span className="key-hint-pill__item">
+                <KeyHintContent item={item} />
+              </span>
+            )}
+          </Fragment>
+        );
+      })}
     </span>
   );
 }

@@ -9,6 +9,7 @@ import { PauseMenuStats } from './tabs/pause-menu-stats';
 import { PauseMenuOptions } from './tabs/pause-menu-options';
 import { PauseMenuSave } from './tabs/pause-menu-save';
 import { PauseMenuLoad } from './tabs/pause-menu-load';
+import { PauseMenuTutorial } from './tabs/pause-menu-tutorial';
 
 export function PauseMenuContent() {
   const { activeTab } = usePauseMenu();
@@ -17,6 +18,7 @@ export function PauseMenuContent() {
     'pause-menu-content--equip': activeTab === 'equip',
     'pause-menu-content--items': activeTab === 'items',
     'pause-menu-content--skills': activeTab === 'skills',
+    'pause-menu-content--tutorial': activeTab === 'tutorial',
   });
 
   // Keyboard flows into the active tab only while the content zone owns it.
@@ -41,6 +43,7 @@ export function PauseMenuContent() {
       )}
       {activeTab === 'save' && <PauseMenuSave keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
       {activeTab === 'load' && <PauseMenuLoad keyboardActive={keyboardActive} onExitToSidebar={exitToSidebar} />}
+      {activeTab === 'tutorial' && <PauseMenuTutorial keyboardActive={keyboardActive} />}
     </div>
   );
 }

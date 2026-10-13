@@ -22,6 +22,8 @@ export interface MatchEffect {
   amount: number;
   isHeal: boolean;
   characterId?: string;
+  /** The colour that produced it — gray has no hero, so enemy weaknesses key off this. */
+  orbType: OrbType;
 }
 
 /** Everything a resolved move produces, ready to be committed and landed. */
@@ -113,6 +115,7 @@ export function resolveMatchGroups(
       amount: totalDamage,
       isHeal: matchingCharacter?.class === 'healer',
       characterId: matchingCharacter?.id,
+      orbType: type,
     });
   }
 

@@ -45,7 +45,7 @@ import {
   CRAFTING_FEE,
 } from '~/constants/blacksmith';
 
-type EquipmentType = 'sword' | 'bow' | 'staff' | 'armor';
+type EquipmentType = 'sword' | 'bow' | 'staff' | 'rod' | 'armor';
 type BlacksmithTab = 'craft' | 'modify' | 'exchange' | 'melt';
 type BlacksmithZone = 'tabs' | 'content';
 
@@ -63,6 +63,7 @@ const EQUIPMENT_TYPE_FILTERS: Record<EquipmentType, string> = {
   sword: 'Swords',
   bow: 'Bows',
   staff: 'Staves',
+  rod: 'Rods',
   armor: 'Armor',
 };
 
@@ -70,6 +71,7 @@ function getEquipmentType(itemId: string): EquipmentType | null {
   if (itemId.includes('sword') || itemId.includes('broadsword')) return 'sword';
   if (itemId.includes('bow')) return 'bow';
   if (itemId.includes('staff') || itemId.includes('scepter')) return 'staff';
+  if (itemId.includes('rod')) return 'rod';
   if (itemId.includes('armor') || itemId.includes('plate')) return 'armor';
   return null;
 }

@@ -3,6 +3,8 @@ import type { EnemyData } from './rpg-elements';
 import type { Resources } from './resources';
 import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
+import type { MapId } from './map';
+import type { GridPosition } from './geometry';
 
 // ─── General Map Types ────────────────────────────────────────────────
 
@@ -19,11 +21,8 @@ export interface InteractiveMapNode {
   id: string;
   /** Type of node */
   type: MapNodeType;
-  /** Position on the map grid */
-  position: {
-    row: number;
-    col: number;
-  };
+  /** Position on the map grid; several tiles place copies that share this node's id and progress */
+  position: GridPosition | GridPosition[];
   /** Display name for the node */
   name: string;
   /** Optional dialogue scene key to trigger */
@@ -38,6 +37,17 @@ export interface InteractiveMapNode {
   dungeonId?: string;
   /** Inline dungeon definition for a Dungeon node — takes precedence over `dungeonId` when both are set */
   dungeon?: DungeonDefinition;
+  /** Where a NextMap / PreviousMap node leads */
+  destination?: MapDestination;
+}
+
+/**
+ * The far end of a map exit. `arrival` should sit beside the paired exit node, not on it,
+ * so its menu doesn't pop open the moment the player lands.
+ */
+export interface MapDestination {
+  mapId: MapId;
+  arrival: GridPosition;
 }
 
 /**
@@ -71,10 +81,7 @@ export interface FloorLootSpot {
   /** Unique identifier for this floor loot spot */
   id: string;
   /** Position on the map grid */
-  position: {
-    row: number;
-    col: number;
-  };
+  position: GridPosition;
   /** Maximum values for random resource generation */
   maxValues: Resources;
   /** Whether this loot has been collected (runtime state, not persisted here) */

@@ -23,6 +23,9 @@ export const MAP_REGISTRY: Record<MapId, MapDefinition> = {
 /** Map used when a navigation arrives without one. */
 export const DEFAULT_MAP_ID: MapId = 'map-00';
 
+/** Where a new game begins: the tutorial map. */
+export const STARTER_MAP_ID: MapId = 'map-00-apprentice-forge';
+
 /** All maps in registry order — for menus that list them. */
 export const ALL_MAPS: MapDefinition[] = Object.values(MAP_REGISTRY);
 

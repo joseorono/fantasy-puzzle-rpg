@@ -1,6 +1,6 @@
 import NumberFlow from '@number-flow/react';
 import { cn } from '~/lib/utils';
-import { describeConsumableAction, getConsumableUsability } from '~/lib/inventory';
+import { getConsumableUsability } from '~/lib/inventory';
 import { getEquipmentSlot, getEquippedHolders, getScaledEquipmentStats } from '~/lib/equipment-system';
 import { getSellPrice } from '~/lib/crafting';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
@@ -37,9 +37,9 @@ interface PauseMenuItemDetailProps {
 }
 
 /**
- * The Items tab's parchment card for the inspected stack: icon and tags, flavor text, a dark
- * ledger of facts (effect and usability for consumables, scaled stats and wearers for gear),
- * then owned count, sell price and Use.
+ * The Items tab's parchment card for the inspected stack: icon and tags, a dark ledger
+ * (description plus usability tags for consumables; flavor text, then scaled stats and wearers
+ * for gear), then owned count, sell price and Use.
  */
 export function PauseMenuItemDetail({
   item,
@@ -74,9 +74,12 @@ export function PauseMenuItemDetail({
         </div>
       </div>
 
-      <p className="pause-menu-item-card__desc">{item.description}</p>
+      {item.type === 'consumable' ? (
+        <ConsumableFacts item={item as ConsumableItemData} />
+      ) : (
+        <p className="pause-menu-item-card__desc">{item.description}</p>
+      )}
 
-      {item.type === 'consumable' && <ConsumableFacts item={item as ConsumableItemData} />}
       {isEquipment && <EquipmentFacts item={item as EquipmentItemData} rarity={rarity} party={party} />}
 
       <div className="pause-menu-item-card__footer">
@@ -121,29 +124,30 @@ export function PauseMenuItemDetail({
   );
 }
 
-/** Effect line plus where the item can be used. */
+/** Description in the dark ledger, then tags saying where the item can be used. */
 function ConsumableFacts({ item }: { item: ConsumableItemData }) {
-  const effect = describeConsumableAction(item.action);
   const usability = getConsumableUsability(item);
 
   return (
-    <div className="pause-menu-item-card__ledger">
-      {effect && <span className="pause-menu-item-card__effect">{effect}</span>}
-      <span className="pause-menu-item-card__chips">
+    <>
+      <div className="pause-menu-item-card__ledger">
+        <p className="pause-menu-item-card__desc">{item.description}</p>
+      </div>
+      <span className="pause-menu-item-card__tags">
         {usability === 'anywhere' && (
           <>
-            <span className="pause-menu-item-card__chip pause-menu-item-card__chip--battle">Battle</span>
-            <span className="pause-menu-item-card__chip pause-menu-item-card__chip--field">Anywhere</span>
+            <span className="pause-menu-item-card__tag pause-menu-item-card__tag--battle">Battle</span>
+            <span className="pause-menu-item-card__tag pause-menu-item-card__tag--field">Anywhere</span>
           </>
         )}
         {usability === 'battle' && (
-          <span className="pause-menu-item-card__chip pause-menu-item-card__chip--battle">Battle only</span>
+          <span className="pause-menu-item-card__tag pause-menu-item-card__tag--battle">Battle only</span>
         )}
         {usability === 'field' && (
-          <span className="pause-menu-item-card__chip pause-menu-item-card__chip--field">Field only</span>
+          <span className="pause-menu-item-card__tag pause-menu-item-card__tag--field">Field only</span>
         )}
       </span>
-    </div>
+    </>
   );
 }
 

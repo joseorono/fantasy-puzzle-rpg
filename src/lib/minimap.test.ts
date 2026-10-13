@@ -132,6 +132,21 @@ describe('buildMinimapMarkers', () => {
   it('gives every marker a unique key', () => {
     expect(new Set(markers.map((marker) => marker.id)).size).toBe(markers.length);
   });
+
+  it('pins every tile of a node placed on several, each under its own key', () => {
+    const gate = {
+      ...MAP.nodes![0],
+      position: [
+        { row: 2, col: 3 },
+        { row: 2, col: 4 },
+      ],
+    };
+    const pins = buildMinimapMarkers({ ...MAP, nodes: [gate] }, STATUS).filter((marker) => marker.kind === 'node');
+    expect(pins.map((pin) => [pin.id, pin.col])).toEqual([
+      ['node-fight', 3],
+      ['node-fight-1', 4],
+    ]);
+  });
 });
 
 describe('getMinimapLegend', () => {

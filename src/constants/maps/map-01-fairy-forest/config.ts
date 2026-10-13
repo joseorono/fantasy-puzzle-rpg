@@ -27,7 +27,8 @@ export const MAP_01_FAIRY_FOREST: MapDefinition = {
   ],
   // The trail runs under canopies and through bushes: these cover her when she's behind them.
   occlusionLayers: ['trees', 'trees-2', 'bushes', 'plants'],
-  defaultPlayerPosition: { x: 35, y: 39 },
+  // The lower-right corner; the trail climbs to the exit in the upper left.
+  defaultPlayerPosition: { x: 114, y: 71 },
   debug: true,
   footstepVolume: 0.65,
   footstepPitch: 0.9,

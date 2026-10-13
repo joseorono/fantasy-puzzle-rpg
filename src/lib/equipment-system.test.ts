@@ -9,6 +9,7 @@ import {
   getPartyWithEffectiveStats,
   getAvailableEquipmentForSlot,
   getScaledEquipmentStats,
+  getEquipmentSwapDelta,
   getOwnedEquipmentInstances,
   findEquipmentItem,
   getEquippedHolders,
@@ -56,6 +57,11 @@ describe('getEquipmentSlot', () => {
   it('returns weapon for staff/scepter items', () => {
     expect(getEquipmentSlot('iron-staff')).toBe('weapon');
     expect(getEquipmentSlot('golden-scepter')).toBe('weapon');
+  });
+
+  it('returns weapon for rod items', () => {
+    expect(getEquipmentSlot('iron-rod')).toBe('weapon');
+    expect(getEquipmentSlot('golden-holy-rod')).toBe('weapon');
   });
 
   it('returns armor for armor items', () => {
@@ -106,14 +112,24 @@ describe('canEquip', () => {
     expect(canEquip(healer, armor)).toBe(true);
   });
 
-  it('prevents healer from equipping weapons (no healer weapons exist)', () => {
+  it('allows healer to equip rods', () => {
     const healer = makeCharacter({ id: 'healer', class: 'healer', color: 'yellow' });
-    const sword = findEquipmentItem('iron-sword')!;
-    const bows = findEquipmentItem('iron-short-bow')!;
-    const staff = findEquipmentItem('iron-staff')!;
-    expect(canEquip(healer, sword)).toBe(false);
-    expect(canEquip(healer, bows)).toBe(false);
-    expect(canEquip(healer, staff)).toBe(false);
+    const rod = findEquipmentItem('iron-rod')!;
+    expect(canEquip(healer, rod)).toBe(true);
+  });
+
+  it('keeps rods healer-only and other weapons off the healer', () => {
+    const warrior = makeCharacter({ class: 'warrior' });
+    const rogue = makeCharacter({ id: 'rogue', class: 'rogue', color: 'green' });
+    const mage = makeCharacter({ id: 'mage', class: 'mage', color: 'purple' });
+    const healer = makeCharacter({ id: 'healer', class: 'healer', color: 'yellow' });
+    const rod = findEquipmentItem('iron-rod')!;
+    expect(canEquip(warrior, rod)).toBe(false);
+    expect(canEquip(rogue, rod)).toBe(false);
+    expect(canEquip(mage, rod)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-sword')!)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-short-bow')!)).toBe(false);
+    expect(canEquip(healer, findEquipmentItem('iron-staff')!)).toBe(false);
   });
 });
 
@@ -166,6 +182,56 @@ describe('rarity scaling', () => {
     const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'legendary' });
     // iron-sword pow 5 → round(8) = 8, vit 2 → round(3.2) = 3, spd 0
     expect(getEquipmentBonuses(char)).toEqual({ pow: 8, vit: 3, spd: 0 });
+  });
+});
+
+describe('getEquipmentSwapDelta', () => {
+  const ironSword = findEquipmentItem('iron-sword')!;
+
+  it("returns the candidate's own stats when the slot is empty", () => {
+    const char = makeCharacter();
+    expect(getEquipmentSwapDelta(char, 'weapon', { item: ironSword, rarity: 'common' })).toEqual({
+      pow: 5,
+      vit: 2,
+      spd: 0,
+    });
+  });
+
+  it('returns zeros for the piece already equipped', () => {
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'common' });
+    expect(getEquipmentSwapDelta(char, 'weapon', { item: ironSword, rarity: 'common' })).toEqual({
+      pow: 0,
+      vit: 0,
+      spd: 0,
+    });
+  });
+
+  it('counts a higher rarity of the same item as an upgrade', () => {
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedWeaponRarity: 'common' });
+    // legendary iron-sword: pow 8, vit 3 vs common pow 5, vit 2
+    expect(getEquipmentSwapDelta(char, 'weapon', { item: ironSword, rarity: 'legendary' })).toEqual({
+      pow: 3,
+      vit: 1,
+      spd: 0,
+    });
+  });
+
+  it('goes negative when swapping down to a weaker piece', () => {
+    const char = makeCharacter({ equippedWeaponId: 'golden-broadsword', equippedWeaponRarity: 'common' });
+    const golden = getScaledEquipmentStats(findEquipmentItem('golden-broadsword')!, 'common');
+    const delta = getEquipmentSwapDelta(char, 'weapon', { item: ironSword, rarity: 'common' });
+    expect(delta).toEqual({ pow: 5 - golden.pow, vit: 2 - golden.vit, spd: 0 - golden.spd });
+    expect(delta.pow).toBeLessThan(0);
+  });
+
+  it('compares against the armor slot for armor', () => {
+    const char = makeCharacter({ equippedWeaponId: 'iron-sword', equippedArmorId: 'iron-armor' });
+    const armor = findEquipmentItem('iron-armor')!;
+    expect(getEquipmentSwapDelta(char, 'armor', { item: armor, rarity: 'common' })).toEqual({
+      pow: 0,
+      vit: 0,
+      spd: 0,
+    });
   });
 });
 

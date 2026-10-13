@@ -27,6 +27,8 @@ export interface AdmurinEnemySheet {
   image: string;
   cellW: number;
   cellH: number;
+  /** Small sprites the card scales UP (tecopena, MonoPixelArt): nearest-neighbour keeps them crisp. */
+  pixelated?: boolean;
   animations: {
     idle: AdmurinEnemyAnimation;
     move?: AdmurinEnemyAnimation;

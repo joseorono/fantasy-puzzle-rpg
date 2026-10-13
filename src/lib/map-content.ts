@@ -1,9 +1,21 @@
 import type { InteractiveMapNode, FloorLootSpot } from '~/types/map-node';
-import type { DialogueTrigger } from '~/types/map';
+import type { DialogueTrigger, MapId } from '~/types/map';
 import type { MapNodeType, MapProgressState, NodeProgress } from '~/stores/slices/map-progress.types';
+import type { GridPosition } from '~/types/geometry';
 
 /**
- * Finds the interactive node occupying a tile.
+ * Every tile a node occupies. A node placed on several tiles is one node: its copies share
+ * its id, so they share its progress.
+ *
+ * @param node The node.
+ * @returns Its positions, a single position normalized to a one-item list.
+ */
+export function getNodePositions(node: InteractiveMapNode): readonly GridPosition[] {
+  return Array.isArray(node.position) ? node.position : [node.position];
+}
+
+/**
+ * Finds the interactive node occupying a tile, on any of its positions.
  *
  * @param nodes The owning map's nodes; omit or pass an empty array for a map with none.
  * @param row Grid row (Y).
@@ -15,7 +27,7 @@ export function findNodeAt(
   row: number,
   col: number,
 ): InteractiveMapNode | undefined {
-  return nodes?.find((node) => node.position.row === row && node.position.col === col);
+  return nodes?.find((node) => getNodePositions(node).some((tile) => tile.row === row && tile.col === col));
 }
 
 /**
@@ -50,6 +62,17 @@ export function findDialogueTriggerAt(
   return triggers?.find((trigger) => trigger.row === row && trigger.col === col);
 }
 
+/**
+ * The persisted key of a dialogue trigger's event: every tile that plays the same scene on
+ * the same map shares it, so walking any one of them consumes the whole event.
+ *
+ * @param mapId The owning map's id.
+ * @param scene The trigger's scene key.
+ */
+export function getDialogueTriggerSeenKey(mapId: MapId, scene: string): string {
+  return `${mapId}:${scene}`;
+}
+
 /** The `MapProgressState` fields that are per-id completion records. */
 type NodeProgressKey = {
   [K in keyof MapProgressState]: MapProgressState[K] extends NodeProgress ? K : never;
@@ -63,6 +86,8 @@ const NODE_PROGRESS_KEYS: Record<MapNodeType, NodeProgressKey> = {
   Town: 'townsVisited',
   Treasure: 'treasuresFound',
   Mystery: 'mysteriesSolved',
+  NextMap: 'exitsUsed',
+  PreviousMap: 'exitsUsed',
 };
 
 /**

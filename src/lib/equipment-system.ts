@@ -27,7 +27,7 @@ export interface OwnedEquipmentInstance extends EquipmentInstance {
 
 /**
  * Determine the equipment slot for an item by its ID.
- * Weapons have forClass set; armor items don't (or contain 'armor'/'plate').
+ * Weapon ids contain sword/bow/staff/scepter/rod; armor ids contain 'armor'/'plate'.
  */
 export function getEquipmentSlot(itemId: string): EquipmentSlot | null {
   if (
@@ -35,7 +35,8 @@ export function getEquipmentSlot(itemId: string): EquipmentSlot | null {
     itemId.includes('broadsword') ||
     itemId.includes('bow') ||
     itemId.includes('staff') ||
-    itemId.includes('scepter')
+    itemId.includes('scepter') ||
+    itemId.includes('rod')
   ) {
     return 'weapon';
   }
@@ -115,6 +116,28 @@ export function getEquipmentBonuses(character: CharacterData): CoreRPGStats {
   }
 
   return bonuses;
+}
+
+/**
+ * How a hero's POW/VIT/SPD would change by swapping the piece in a slot for a candidate.
+ * @param character Hero whose slot is compared.
+ * @param slot Slot the candidate would go into.
+ * @param candidate Item and rolled rarity being considered.
+ * @returns Candidate's scaled stats minus the equipped piece's (the candidate's own stats when the slot is empty).
+ */
+export function getEquipmentSwapDelta(
+  character: CharacterData,
+  slot: EquipmentSlot,
+  candidate: EquipmentInstance,
+): CoreRPGStats {
+  const next = getScaledEquipmentStats(candidate.item, candidate.rarity);
+  const equippedId = slot === 'weapon' ? character.equippedWeaponId : character.equippedArmorId;
+  const equippedRarity = slot === 'weapon' ? character.equippedWeaponRarity : character.equippedArmorRarity;
+  const equipped = equippedId ? findEquipmentItem(equippedId) : undefined;
+  if (!equipped) return next;
+
+  const current = getScaledEquipmentStats(equipped, equippedRarity);
+  return { pow: next.pow - current.pow, vit: next.vit - current.vit, spd: next.spd - current.spd };
 }
 
 /**

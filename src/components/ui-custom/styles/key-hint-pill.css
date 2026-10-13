@@ -51,6 +51,50 @@
   margin-left: 0.15rem;
 }
 
+/* ─── Clickable groups (items with an onClick) ─────────────────────────── */
+
+/* Wins over a caller's `pointer-events: none` layout class. */
+.key-hint-pill--interactive {
+  pointer-events: auto;
+}
+
+/* Hover is a hard palette swap, never a glow: the label lights up and the keycap
+   lifts a pixel. Pressing sinks it back into its bottom edge. */
+.key-hint-pill__item--clickable {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Beats the global `button:hover` glow in cursor.css. */
+.key-hint-pill__item--clickable:hover {
+  filter: none;
+}
+
+.key-hint-pill__item--clickable:hover,
+.key-hint-pill__item--clickable:focus-visible {
+  color: #f5e6c8;
+}
+
+.key-hint-pill__item--clickable:focus-visible {
+  outline: none;
+}
+
+.key-hint-pill__item--clickable:hover .key-hint-pill__key,
+.key-hint-pill__item--clickable:focus-visible .key-hint-pill__key {
+  transform: translateY(-1px);
+  background: rgba(212, 165, 116, 0.32);
+  border-color: rgba(212, 165, 116, 0.7);
+}
+
+.key-hint-pill__item--clickable:active .key-hint-pill__key {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+
 /* Compact variant for tight surfaces (confirm dialogs, inline row hints). */
 .key-hint-pill--sm {
   gap: 0.35rem;
@@ -69,4 +113,92 @@
 
 .key-hint-pill--sm .key-hint-pill__label {
   margin-left: 0.1rem;
+}
+
+/* ─── Map variant ──────────────────────────────────────────────────────── */
+
+/* The battle top bar's IndigoLay banner (hud/bar-red.png, 9-sliced), shrunk to a hint
+   bar. The banner sits on its own layer so only it turns see-through over the map;
+   hovering the bar firms it up while the text and keycaps stay opaque. */
+.key-hint-pill--map {
+  --khp-map-plate-opacity: 0.6;
+  --khp-map-plate-opacity-hover: 0.95;
+  --khp-map-text: #f2d2af;
+  --khp-map-text-hover: #fff0d6;
+  --khp-map-gold: #b8864a;
+  --khp-map-gold-hover: #e3c08a;
+  --khp-map-gold-shade: #7a5418;
+  --khp-map-gold-shade-hover: #9c7228;
+  --khp-map-cap: rgba(40, 10, 16, 0.75);
+  --khp-map-cap-hover: rgba(92, 28, 40, 0.9);
+
+  isolation: isolate;
+  /* The art carries more transparent margin above its frame than below, so the maroon
+     centre sits ~0.7px under the box centre; the extra top padding follows it. */
+  padding: 0.6rem 2rem 0.5rem;
+  color: var(--khp-map-text);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+/* Zero specificity, so a caller's layout class (e.g. `position: absolute`) wins. */
+:where(.key-hint-pill--map) {
+  position: relative;
+}
+
+.key-hint-pill--map::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-style: solid;
+  border-width: 7px 18px 8px;
+  border-image-source: url('/assets/hud/bar-red.png');
+  border-image-slice: 26 64 32 64 fill;
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
+  opacity: var(--khp-map-plate-opacity);
+  transition: opacity 0.2s ease;
+}
+
+.key-hint-pill--map:hover::before {
+  opacity: var(--khp-map-plate-opacity-hover);
+}
+
+.key-hint-pill--map .key-hint-pill__sep {
+  color: var(--khp-map-gold);
+}
+
+.key-hint-pill--map .key-hint-pill__key {
+  color: var(--khp-map-text);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+  background: var(--khp-map-cap);
+  border: 1px solid var(--khp-map-gold);
+  border-bottom: 2px solid var(--khp-map-gold-shade);
+  border-radius: 3px;
+  /* Evens out the 1px/2px borders so the key sits on the label's line. */
+  padding-top: 1px;
+}
+
+.key-hint-pill--map .key-hint-pill__item--clickable:hover,
+.key-hint-pill--map .key-hint-pill__item--clickable:focus-visible {
+  color: var(--khp-map-text-hover);
+}
+
+/* No lift here: the key stays on the label's line, and the gold trim marks the hover. */
+.key-hint-pill--map .key-hint-pill__item--clickable:hover .key-hint-pill__key,
+.key-hint-pill--map .key-hint-pill__item--clickable:focus-visible .key-hint-pill__key {
+  transform: none;
+  background: var(--khp-map-cap-hover);
+  border-color: var(--khp-map-gold-hover);
+  border-bottom-color: var(--khp-map-gold-shade-hover);
+}
+
+/* Pressed: the shade row collapses; the padding swap keeps the text in place. */
+.key-hint-pill--map .key-hint-pill__item--clickable:active .key-hint-pill__key {
+  transform: none;
+  border-bottom-width: 1px;
+  padding-top: 0;
 }

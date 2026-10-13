@@ -253,7 +253,7 @@ export function Match3Board({ isBattlePaused }: Match3BoardProps) {
   function landMatchEffects(effects: MatchEffect[], cascadeLevel: number, orbCount: number) {
     const hits = effects
       .filter((effect) => !effect.isHeal)
-      .map((effect) => ({ amount: effect.amount, characterId: effect.characterId }));
+      .map((effect) => ({ amount: effect.amount, characterId: effect.characterId, orbType: effect.orbType }));
     const didDamage = hits.length > 0;
 
     for (const effect of effects) {

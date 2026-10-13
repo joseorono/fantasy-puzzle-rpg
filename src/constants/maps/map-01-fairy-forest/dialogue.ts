@@ -7,7 +7,7 @@ import { NARRATOR_CHAR, KNIGHT_CHAR, MAGE_CHAR, MYSTERY_CHAR } from '~/constants
  * `scene` keys into FAIRY_FOREST_DIALOGUE_SCENES below.
  */
 export const FAIRY_FOREST_DIALOGUE_TRIGGERS: DialogueTrigger[] = [
-  { row: 39, col: 40, scene: 'forest-arrival' },
+  { row: 70, col: 111, scene: 'forest-arrival' },
   { row: 13, col: 45, scene: 'whispering-crossroads' },
 ];
 

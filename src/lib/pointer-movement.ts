@@ -4,7 +4,7 @@ import {
   POINTER_RUN_DISTANCE_TILES,
   POINTER_RUN_HYSTERESIS_TILES,
 } from '~/constants/map-movement';
-import { viewportToMapPoint } from '~/lib/map-camera';
+import { viewportToMapPoint, type MapPoint } from '~/lib/map-camera';
 
 /**
  * A resolved movement request, in the shape the simulation consumes.
@@ -21,12 +21,6 @@ export interface MovementIntent {
   facing: NavDirection;
   /** Whether the character should run rather than walk. */
   running: boolean;
-}
-
-/** Raw pointer state, in map-pixel space. */
-export interface PointerPoint {
-  x: number;
-  y: number;
 }
 
 /** Direction/gait carried between frames so hysteresis and facing stay stable. */
@@ -83,8 +77,8 @@ export function clientToMapPoint(
   clientY: number,
   viewportOrigin: CanvasOrigin,
   zoom: number,
-  camera: PointerPoint,
-): PointerPoint | null {
+  camera: MapPoint,
+): MapPoint | null {
   if (!(zoom > 0)) return null;
   return viewportToMapPoint({ x: clientX - viewportOrigin.left, y: clientY - viewportOrigin.top }, camera, zoom);
 }
@@ -157,8 +151,8 @@ export function shouldRunAtDistance(distanceTiles: number, wasRunning: boolean):
  * @param previous Facing and gait from the previous frame.
  */
 export function resolvePointerIntent(
-  pointer: PointerPoint,
-  character: PointerPoint,
+  pointer: MapPoint,
+  character: MapPoint,
   tileSize: number,
   previous: IntentMemory,
 ): MovementIntent {

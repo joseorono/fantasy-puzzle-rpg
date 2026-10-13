@@ -22,16 +22,19 @@ import {
   findEquipmentItem,
   getEquipmentBonuses,
   getEffectiveStats,
+  getEquipmentSwapDelta,
   getScaledEquipmentStats,
   getAvailableEquipmentForSlot,
 } from '~/lib/equipment-system';
 import { getRarityColor, getRarityLabel } from '~/lib/rarity';
 import type { EquipmentItemData } from '~/types/inventory';
+import type { CoreRPGStats } from '~/types/rpg-elements';
 import type { RarityTier } from '~/constants/rarity';
-import { FrostyRpgIcon } from '~/components/sprite-icons/frost-icons';
-import { ToffecBeigeCornersWrapper } from '~/components/cursor/toffec-beige-corners-wrapper';
+import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui-custom/tooltip';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
+
+const STAT_KEYS = ['pow', 'vit', 'spd'] as const;
 
 /** Stable keyboard id for an available-equipment instance. */
 function availId(instance: EquipmentInstance): string {
@@ -234,8 +237,10 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
 
             {selectedSlot && (
               <div className="pause-menu-equip-available">
-                <div className="pause-menu-equip-available-header">
-                  <h3>Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}</h3>
+                <div className="pause-menu-equip-available__header">
+                  <h3 className="pause-menu-equip-available__title">
+                    Available {selectedSlot === 'weapon' ? 'Weapons' : 'Armor'}
+                  </h3>
                   <ToffecSquareButton
                     variant="medieval2"
                     size="sm"
@@ -245,23 +250,26 @@ export function PauseMenuEquip({ keyboardActive = false, onExitToSidebar }: Paus
                   />
                 </div>
                 {availableItems.length === 0 ? (
-                  <div className="pause-menu-equip-empty">
+                  <div className="pause-menu-empty pause-menu-empty--items">
                     No {selectedSlot === 'weapon' ? 'weapons' : 'armor'} available
                   </div>
                 ) : (
-                  availableItems.map((instance) => (
-                    <EquipAvailableItem
-                      key={availId(instance)}
-                      instance={instance}
-                      isEquipped={instance.item.id === equippedIdForSlot && instance.rarity === equippedRarityForSlot}
-                      isKeyboardSelected={selection.isSelected(availId(instance))}
-                      onEquip={() => handleEquip(instance.item.id, instance.rarity)}
-                      rowRef={(el) => {
-                        if (el) rowRefs.current.set(availId(instance), el);
-                        else rowRefs.current.delete(availId(instance));
-                      }}
-                    />
-                  ))
+                  <div className="pause-menu-equip-available__list">
+                    {availableItems.map((instance) => (
+                      <EquipAvailableItem
+                        key={availId(instance)}
+                        instance={instance}
+                        delta={getEquipmentSwapDelta(selected, selectedSlot, instance)}
+                        isEquipped={instance.item.id === equippedIdForSlot && instance.rarity === equippedRarityForSlot}
+                        isKeyboardSelected={selection.isSelected(availId(instance))}
+                        onEquip={() => handleEquip(instance.item.id, instance.rarity)}
+                        rowRef={(el) => {
+                          if (el) rowRefs.current.set(availId(instance), el);
+                          else rowRefs.current.delete(availId(instance));
+                        }}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -287,6 +295,7 @@ interface EquipSlotRowProps {
   onUnequip: () => void;
 }
 
+/** A gear socket (Indigolay slot frame, gold while its list is open), the slot label over name and rarity, and Unequip. */
 function EquipSlotRow({
   label,
   item,
@@ -299,20 +308,26 @@ function EquipSlotRow({
 }: EquipSlotRowProps) {
   return (
     <div
-      className={cn('pause-menu-equip-slot-row', isActive && 'active', isKeyboardSelected && 'kb-cursor')}
+      className={cn(
+        'pause-menu-equip-slot-row',
+        isActive && 'active',
+        !item && 'is-empty',
+        isKeyboardSelected && 'kb-cursor',
+      )}
       onClick={onToggle}
     >
-      <span className="slot-label">{label}</span>
-      <span className="pause-menu-item-icon-slot">
-        {item?.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
-      </span>
-      <span
-        className={cn('pause-menu-equip-slot-value', !item && 'empty')}
-        style={item ? { color: getRarityColor(rarity) } : undefined}
-      >
-        {item ? item.name : '— Empty —'}
-        {item && (
-          <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>
+      <span className="pause-menu-equip-socket">{item && <ItemIcon item={item} size={32} />}</span>
+      <span className="pause-menu-equip-slot-row__text">
+        <span className="pause-menu-equip-slot-row__label">{label}</span>
+        {item ? (
+          <>
+            <span className="pause-menu-item-row__name" style={{ color: getRarityColor(rarity) }}>
+              {item.name}
+            </span>
+            <RarityStatLine item={item} rarity={rarity} />
+          </>
+        ) : (
+          <span className="pause-menu-item-row__name pause-menu-equip-slot-row__empty">Empty</span>
         )}
       </span>
       {item && (
@@ -337,6 +352,30 @@ function EquipSlotRow({
   );
 }
 
+interface RarityStatLineProps {
+  item: EquipmentItemData;
+  rarity: RarityTier | undefined;
+}
+
+/** Rarity label, then the piece's own rarity-scaled POW/VIT/SPD (zeros left out). */
+function RarityStatLine({ item, rarity }: RarityStatLineProps) {
+  const stats = getScaledEquipmentStats(item, rarity);
+
+  return (
+    <span className="pause-menu-equip-subline">
+      <span className="pause-menu-item-row__rarity" style={{ color: getRarityColor(rarity) }}>
+        {getRarityLabel(rarity)}
+      </span>
+      {STAT_KEYS.filter((stat) => stats[stat] !== 0).map((stat) => (
+        <span key={stat} className="pause-menu-equip-raw">
+          <span className={`gear-stats__label gear-stats__label--${stat}`}>{stat}</span>
+          {stats[stat]}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 interface GearStatSummaryProps {
   bonuses: { pow: number; vit: number; spd: number };
   effective: { pow: number; vit: number; spd: number };
@@ -344,13 +383,11 @@ interface GearStatSummaryProps {
 
 /** The hero's effective stats with their current gear, plus what that gear adds. */
 function GearStatSummary({ bonuses, effective }: GearStatSummaryProps) {
-  const stats = ['pow', 'vit', 'spd'] as const;
-
   return (
     <div className="gear-stats">
       <span className="gear-stats__title">Stats</span>
       <div className="gear-stats__grid">
-        {stats.map((stat) => {
+        {STAT_KEYS.map((stat) => {
           const diff = bonuses[stat];
           return (
             <div key={stat} className="gear-stats__chip">
@@ -391,56 +428,63 @@ function GearStatSummary({ bonuses, effective }: GearStatSummaryProps) {
 
 interface EquipAvailableItemProps {
   instance: EquipmentInstance;
+  /** Stat change if this piece replaced the one in the slot. */
+  delta: CoreRPGStats;
   isEquipped: boolean;
   /** Keyboard cursor rests on this item. */
   isKeyboardSelected: boolean;
   onEquip: () => void;
-  /** Registers the clickable row for scroll-into-view. */
+  /** Registers the row for scroll-into-view. */
   rowRef: (el: HTMLDivElement | null) => void;
 }
 
-function EquipAvailableItem({ instance, isEquipped, isKeyboardSelected, onEquip, rowRef }: EquipAvailableItemProps) {
+/** An Items-list row for a candidate piece: icon, name and rarity, then Equipped or the swap's stat change. */
+function EquipAvailableItem({
+  instance,
+  delta,
+  isEquipped,
+  isKeyboardSelected,
+  onEquip,
+  rowRef,
+}: EquipAvailableItemProps) {
   const { item, rarity } = instance;
-  const stats = getScaledEquipmentStats(item, rarity);
+  const changedStats = STAT_KEYS.filter((stat) => delta[stat] !== 0);
+
   return (
-    <ToffecBeigeCornersWrapper
-      forceDisplay={isKeyboardSelected}
-      className={cn('pause-menu-equip-available-item', isEquipped && 'is-equipped')}
+    <div
+      ref={rowRef}
+      className={cn('pause-menu-item-row', isEquipped && 'selected', isKeyboardSelected && 'kb-cursor')}
+      onClick={onEquip}
     >
-      <div className="pause-menu-equip-available-clickable" onClick={onEquip} ref={rowRef}>
-        <span className="pause-menu-item-icon-slot">
-          {item.iconName && <FrostyRpgIcon name={item.iconName} size={24} />}
+      <span className="pause-menu-item-row__icon">
+        <ItemIcon item={item} size={24} />
+      </span>
+      <span className="pause-menu-item-row__text">
+        <span className="pause-menu-item-row__name" style={{ color: getRarityColor(rarity) }}>
+          {item.name}
         </span>
-        <div className="pause-menu-equip-available-info">
-          <div className="pause-menu-equip-available-name-row">
-            <div className="pause-menu-equip-available-name" style={{ color: getRarityColor(rarity) }}>
-              {item.name}
-              <span className="ml-1 text-[0.55rem] tracking-wider uppercase opacity-80">{getRarityLabel(rarity)}</span>
-            </div>
-            {isEquipped && <span className="pause-menu-equip-available-badge">Equipped</span>}
-          </div>
-          <div className="pause-menu-equip-available-stats">
-            {stats.pow !== 0 && (
-              <span className="pause-menu-item-stat-badge">
-                POW {stats.pow > 0 ? '+' : ''}
-                {stats.pow}
-              </span>
-            )}
-            {stats.vit !== 0 && (
-              <span className="pause-menu-item-stat-badge">
-                VIT {stats.vit > 0 ? '+' : ''}
-                {stats.vit}
-              </span>
-            )}
-            {stats.spd !== 0 && (
-              <span className="pause-menu-item-stat-badge">
-                SPD {stats.spd > 0 ? '+' : ''}
-                {stats.spd}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </ToffecBeigeCornersWrapper>
+        <RarityStatLine item={item} rarity={rarity} />
+      </span>
+      <span className="pause-menu-item-row__meta">
+        {isEquipped ? (
+          <span className="pause-menu-item-row__equipped">Equipped</span>
+        ) : changedStats.length === 0 ? (
+          <span className="pause-menu-equip-delta pause-menu-equip-delta--none">—</span>
+        ) : (
+          changedStats.map((stat) => (
+            <span
+              key={stat}
+              className={cn(
+                'pause-menu-equip-delta',
+                delta[stat] > 0 ? 'pause-menu-equip-delta--up' : 'pause-menu-equip-delta--down',
+              )}
+            >
+              <span className={`gear-stats__label gear-stats__label--${stat}`}>{stat}</span>
+              {delta[stat] > 0 ? `+${delta[stat]}` : delta[stat]}
+            </span>
+          ))
+        )}
+      </span>
+    </div>
   );
 }

@@ -2,6 +2,39 @@
   object-fit: contain;
 }
 
+/* ─── Enemy Weakness Badges ─────────────────────────────────────────
+   Under the enemy name: orb dots for colour weaknesses, an "ULT" chip for Ultimates. */
+
+.enemy-weakness-badges {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.enemy-weakness-badges__label {
+  font-size: 6px;
+  color: #c9b48a;
+  text-transform: uppercase;
+}
+
+.enemy-weakness-badges__orb {
+  width: 8px;
+  height: 8px;
+  border-width: 1px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 0 rgba(22, 10, 6, 0.8);
+}
+
+.enemy-weakness-badges__ult {
+  padding: 1px 2px;
+  font-size: 6px;
+  line-height: 1;
+  color: #2a1608;
+  background: #c9b48a;
+  border: 1px solid #6b4a24;
+  border-radius: 2px;
+}
+
 /* ─── Battle Item Bar Slots ─────────────────────────────────────────
    Individual item slots styled to match the board's background. */
 

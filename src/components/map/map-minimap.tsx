@@ -14,9 +14,10 @@ import {
 import { buildMinimapOutlinePath } from '~/lib/minimap-outline';
 import { useElementSize } from '~/hooks/use-element-size';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
-import { isCancelKey, isMinimapKey } from '~/constants/keyboard';
+import { isCancelKey, isMinimapKey, isTutorialKey } from '~/constants/keyboard';
 import { MINIMAP_INK_WOBBLE_TILES } from '~/constants/minimap';
 import { FOE_MARKER_STYLE } from '~/constants/foe';
+import { MAP_NODE_TYPE_LABELS } from '~/constants/map';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
 import { JirbySymbolIcon } from '~/components/sprite-icons/jirby-symbol-icons';
 import { ToffecSquareButton } from '~/components/ui-custom/toffec-square-button';
@@ -91,8 +92,14 @@ export function MapMinimap({
 
   // Claimed in the capture phase, so Esc closes the overview without also opening the
   // pause menu, and Tab never reaches the map's own handler (which would reopen it).
+  // The Tutorial keys are swallowed for the same reason: no menu opens over the overview.
   useWindowKeyDown(
     (event) => {
+      if (isTutorialKey(event.key)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
       if (!isMinimapKey(event.key) && !isCancelKey(event.key)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -200,7 +207,7 @@ export function MapMinimap({
               {legend.map(({ type, symbol }) => (
                 <li key={type}>
                   <JirbySymbolIcon tone="white" name={symbol} isOutlined={false} className="map-minimap__inked" />
-                  {type}
+                  {MAP_NODE_TYPE_LABELS[type]}
                 </li>
               ))}
               {foePoints.length > 0 && (
@@ -217,7 +224,7 @@ export function MapMinimap({
             </ul>
           </div>
 
-          <KeyHintPill size="sm" className="map-minimap__key-hint" items={[{ keys: ['Tab', 'Esc'], label: 'close' }]} />
+          <KeyHintPill size="sm" items={[{ keys: ['Tab', 'Esc'], label: 'close', onClick: onClose }]} />
         </div>
       )}
     </div>

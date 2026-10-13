@@ -87,8 +87,14 @@ export const assetList: string[] = [
   '/assets/enemy-sprites/frogger_map.png',
   '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
+  '/assets/enemy-sprites/monopixelart-skeleton_map.png',
+  '/assets/enemy-sprites/monopixelart-skeleton_sheet.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',
+  '/assets/enemy-sprites/tecopena-bat_map.png',
+  '/assets/enemy-sprites/tecopena-bat_sheet.png',
+  '/assets/enemy-sprites/tecopena-slime_map.png',
+  '/assets/enemy-sprites/tecopena-slime_sheet.png',
 
   // Fonts
   '/assets/fonts/RedWood-5x-narik.png',
@@ -162,6 +168,14 @@ export const assetList: string[] = [
   '/assets/skills/ui/indigolay-skill-slot-deco.png',
   '/assets/skills/ui/indigolay-skill-panel-text-area.png',
   '/assets/skills/ui/indigolay-icon-equip.png',
+
+  // Equip tab gear sockets
+  '/assets/menu/equip/indigolay-gear-slot-normal.png',
+  '/assets/menu/equip/indigolay-gear-slot-selected.png',
+  '/assets/menu/equip/indigolay-gear-slot-small.png',
+  '/assets/menu/equip/indigolay-gear-slot-small-selected.png',
+  '/assets/menu/equip/indigolay-ornate-panel.png',
+  '/assets/menu/equip/indigolay-filigree-divider.png',
 
   // Save/load slot scrolls (SaveSlotCard chrome)
   '/assets/menu/save-load/indigolay-scroll-normal.png',
