@@ -4,7 +4,17 @@ import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
 import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
-import { BADGER, BAT, GIANT_FROG, SKELETON, SMALL_SLIME, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import {
+  BADGER,
+  BAT,
+  DINO_REX,
+  DINO_TRI,
+  GIANT_FROG,
+  SKELETON,
+  SMALL_SLIME,
+  STONE_GOLEM,
+  SWAMP_FROG,
+} from '~/constants/enemies/world-00';
 import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 import { cn } from '~/lib/utils';
@@ -91,6 +101,22 @@ const BATTLE_DEMOS: {
     location: 'Forest',
     title: 'The roaming FOE: only Ultimates exploit its weakness.',
     enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
+  },
+  {
+    id: 'dino-rex',
+    label: 'Dino Rex',
+    className: 'bg-orange-600 hover:bg-orange-700',
+    location: 'Forest',
+    title: 'Dino Rex: the split attack_B concatenated into one animation, the stomp as a third attack, black ability.',
+    enemies: [{ ...DINO_REX, id: 'dino-rex-1' }],
+  },
+  {
+    id: 'dino-tri',
+    label: 'Dino Tri',
+    className: 'bg-orange-500 hover:bg-orange-600',
+    location: 'Forest',
+    title: 'Dino Tri: the pack has no hurt row (so hits show only the recoil) and sit/thought were skipped.',
+    enemies: [{ ...DINO_TRI, id: 'dino-tri-1' }],
   },
 ];
 
