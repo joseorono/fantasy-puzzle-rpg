@@ -559,12 +559,47 @@
     0 0 8px rgba(247, 231, 198, 0.55);
 }
 
-/* Weakness callout — same pop in muted teal (WEAK_HIT_COLOR), so it never reads as a crit. */
-.stagger-callout--weak {
-  color: #8fd6cf;
+/* Weakness callout — same pop, tinted by the exploited weakness (WEAK_CALLOUT_CLASSES). */
+.stagger-callout--weak-blue {
+  color: #60a5fa;
   text-shadow:
-    0 1px 0 #0d2a28,
-    0 0 6px rgba(143, 214, 207, 0.5);
+    0 1px 0 #0b1f3a,
+    0 0 6px rgba(96, 165, 250, 0.5);
+}
+
+.stagger-callout--weak-green {
+  color: #4ade80;
+  text-shadow:
+    0 1px 0 #0b2a17,
+    0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.stagger-callout--weak-purple {
+  color: #c084fc;
+  text-shadow:
+    0 1px 0 #2a0f3d,
+    0 0 6px rgba(192, 132, 252, 0.5);
+}
+
+.stagger-callout--weak-yellow {
+  color: #eab308;
+  text-shadow:
+    0 1px 0 #3a2a05,
+    0 0 6px rgba(234, 179, 8, 0.5);
+}
+
+.stagger-callout--weak-gray {
+  color: #d1d5db;
+  text-shadow:
+    0 1px 0 #1f2328,
+    0 0 6px rgba(209, 213, 219, 0.45);
+}
+
+.stagger-callout--weak-ultimate {
+  color: #f2f3f4;
+  text-shadow:
+    0 1px 0 #1f2328,
+    0 0 8px rgba(242, 243, 244, 0.6);
 }
 
 /* Broken enemy — washed out and dazed for the whole stagger window. The tint is static (survives

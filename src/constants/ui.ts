@@ -39,6 +39,16 @@ export const WEAKNESS_SOURCE_LABELS: Record<WeaknessSource, string> = {
   ultimate: 'Weak to Ultimates',
 };
 
+/** "Weak!" callout tint per exploited weakness (styles in animations.css); Ultimates pop bigger. */
+export const WEAK_CALLOUT_CLASSES: Record<WeaknessSource, string> = {
+  blue: 'stagger-callout--weak-blue text-[9px] sm:text-[11px]',
+  green: 'stagger-callout--weak-green text-[9px] sm:text-[11px]',
+  purple: 'stagger-callout--weak-purple text-[9px] sm:text-[11px]',
+  yellow: 'stagger-callout--weak-yellow text-[9px] sm:text-[11px]',
+  gray: 'stagger-callout--weak-gray text-[9px] sm:text-[11px]',
+  ultimate: 'stagger-callout--weak-ultimate text-[11px] sm:text-[13px]',
+};
+
 /** Numeral and callout colour of a hit that exploited a weakness: a muted teal, apart from the warm crit. */
 export const WEAK_HIT_COLOR = '#8fd6cf';
 
