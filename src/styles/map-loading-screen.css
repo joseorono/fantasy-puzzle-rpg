@@ -61,26 +61,53 @@
   }
 }
 
-/* ─── Text (bottom-left) ─────────────────────────────────────────────── */
+/* ─── Centered panel: Indigolay banner, divider, tip ─────────────────── */
 
-.map-loading-screen__text {
+.map-loading-screen__panel {
   position: absolute;
-  left: 2rem;
-  bottom: 2rem;
+  inset: 0;
+  margin: auto;
+  width: min(34rem, calc(100% - 4rem));
+  height: fit-content;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-width: min(36rem, calc(100% - 17rem));
-  animation: map-loading-content-in 400ms ease-out 120ms both;
+  align-items: center;
+  animation: map-loading-panel-in 450ms ease-out 120ms both;
 }
 
-.map-loading-screen__title {
+@keyframes map-loading-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Same 9-slice as the battle top bar's red banner. */
+.map-loading-screen__banner {
   margin: 0;
-  font-size: 0.9rem;
-  color: #e8d5b0;
+  padding: 0.35rem 1.5rem;
+  border-style: solid;
+  border-width: 14px 40px;
+  border-image: url('/assets/hud/bar-red.png') 26 64 32 64 fill / 14px 40px stretch;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: #f2d2af;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  text-shadow: 2px 2px 0 #2a1a0e;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(40, 10, 16, 0.8);
+}
+
+/* Reserves the width of all three dots so the centered title never shifts as they appear. */
+.map-loading-screen__dots {
+  display: inline-block;
+  width: 3ch;
+  letter-spacing: 0;
+  text-align: left;
 }
 
 /* Press Start 2P is monospaced, so 1ch is exactly one dot: stepping the width reveals 0–3 dots. */
@@ -99,30 +126,34 @@
   }
 }
 
-.map-loading-screen__hint {
+/* Same 9-slice as the Equip view's ornate panels. */
+.map-loading-screen__tip {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 2px solid rgba(138, 106, 63, 0.45);
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.25rem 0.75rem;
+  border: solid transparent;
+  border-width: 22px 26px;
+  border-image: url('/assets/menu/equip/indigolay-ornate-panel.png') 44 52 fill / 22px 26px stretch;
+  text-align: center;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
-.map-loading-screen__hint-label {
-  flex-shrink: 0;
-  padding: 0.3rem 0.45rem;
-  border: 2px solid #8a6a3f;
-  font-size: 0.5rem;
+.map-loading-screen__tip-label {
+  font-size: 0.55rem;
   line-height: 1;
-  color: #d4a574;
+  color: #e8c48a;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
-.map-loading-screen__hint-text {
+.map-loading-screen__tip-text {
   margin: 0;
   font-size: 0.55rem;
   line-height: 1.9;
-  color: #b89a72;
+  color: #e3bb92;
 }
 
 /* ─── Gear cluster (bottom-right) ────────────────────────────────────── */

@@ -4,6 +4,7 @@ import { cn, getRandomElement } from '~/lib/utils';
 import { MAP_LOADING_COGS, MAP_LOADING_FADE_MS } from '~/constants/loading-screen';
 import { MAP_LOADING_HINTS } from '~/constants/flavor-text/loading-hints';
 import type { LoadingCog } from '~/types/loading-screen';
+import { IndigolayDivider } from '~/components/dividers/indigolay-divider';
 
 interface MapLoadingScreenProps {
   /** False starts the fade-out; the screen unmounts itself once it finishes. */
@@ -31,14 +32,15 @@ export function MapLoadingScreen({ isVisible }: MapLoadingScreenProps) {
     >
       <div className="map-loading-screen__glow" />
 
-      <div className="map-loading-screen__text">
-        <p className="map-loading-screen__title">
+      <div className="map-loading-screen__panel">
+        <p className="map-loading-screen__banner indigolay-art">
           Now Loading
           <span className="map-loading-screen__dots" aria-hidden />
         </p>
-        <div className="map-loading-screen__hint">
-          <span className="map-loading-screen__hint-label">Tip</span>
-          <p className="map-loading-screen__hint-text">{hint}</p>
+        <IndigolayDivider className="my-2" />
+        <div className="map-loading-screen__tip indigolay-art">
+          <span className="map-loading-screen__tip-label">Tip</span>
+          <p className="map-loading-screen__tip-text">{hint}</p>
         </div>
       </div>
 
