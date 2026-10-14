@@ -2,6 +2,7 @@ import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
 import { ALL_MAPS } from '~/constants/maps';
 import { TITLE_MAP_PREVIEW_IMAGES } from '~/constants/title-screen';
+import { MAP_LOADING_COGS } from '~/constants/loading-screen';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -211,6 +212,9 @@ export const assetList: string[] = [
   '/assets/sprite/party-warrior-stella-side-view.png',
   '/assets/sprite/party-rogue-stella-side-view.png',
   '/assets/sprite/party-healer-stella-side-view.png',
+
+  // Map loading screen gears
+  ...MAP_LOADING_COGS.map((cog) => cog.src),
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

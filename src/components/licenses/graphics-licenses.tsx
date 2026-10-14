@@ -96,6 +96,13 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Free Pixel Art Gear Wheels Pack, by Karsiori&nbsp;
+          <a href="https://karsiori.itch.io/free-pixel-art-gear-wheels-pack-animated">
+            https://karsiori.itch.io/free-pixel-art-gear-wheels-pack-animated
+          </a>
+        </p>
+
+        <p>
           Pixel Art Skeletons Pack, by MonoPixelArt&nbsp;
           <a href="https://monopixelart.itch.io/skeletons-pack">https://monopixelart.itch.io/skeletons-pack</a>
         </p>
