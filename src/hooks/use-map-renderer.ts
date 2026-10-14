@@ -22,6 +22,7 @@ import {
   type MapMarker,
 } from '~/lib/map-draw';
 import { getReadyMapMarkerAtlas } from '~/lib/map-marker-atlas';
+import { getReadyChestSheet } from '~/lib/chest-sprite';
 import {
   buildOcclusionGrid,
   collectOccludingCells,
@@ -235,6 +236,8 @@ export function useMapRenderer(options: UseMapRendererOptions): MapRenderer {
       currentLayout,
       getMarkerPulsePhase(frame.timestampMs),
       getReadyMapMarkerAtlas(),
+      getReadyChestSheet(),
+      frame.timestampMs,
     );
     drawOverlayRef.current?.(ctx, camera, currentLayout, frame.timestampMs);
     drawOcclusion(frame, camera, currentLayout);
