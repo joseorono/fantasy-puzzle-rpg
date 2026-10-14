@@ -2,6 +2,7 @@ import type { EncounterDefinition } from '~/types/map-node';
 import {
   BADGER,
   BAT,
+  DINO_TRI,
   GIANT_FROG,
   MOSS_GOLEM,
   SMALL_SLIME,
@@ -252,6 +253,14 @@ export const FAIRY_FOREST_ENCOUNTERS: Record<string, EncounterDefinition> = {
       { ...BAT, id: 'bat-1', name: 'Bat A' },
       { ...BAT, id: 'bat-2', name: 'Bat B' },
       { ...BAT, id: 'bat-3', name: 'Bat C' },
+    ],
+  },
+  // The Dino Tri roam as a trio; xl bodies keep the row at three.
+  fairy_forest_foe_13: {
+    enemies: [
+      { ...DINO_TRI, id: 'dino-tri-1', name: 'Dino Tri A' },
+      { ...DINO_TRI, id: 'dino-tri-2', name: 'Dino Tri B' },
+      { ...DINO_TRI, id: 'dino-tri-3', name: 'Dino Tri C' },
     ],
   },
   fairy_forest_foe_10: {

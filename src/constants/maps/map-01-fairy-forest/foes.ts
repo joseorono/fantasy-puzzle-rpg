@@ -1,6 +1,7 @@
 import type { FoeDefinition } from '~/types/foe';
 import {
   BAT_FOE_LOOK,
+  DINO_TRI_FOE_LOOK,
   FROG_FOE_LOOK,
   SLIME_FOE_LOOK,
   STONE_GOLEM_FOE_LOOK,
@@ -59,6 +60,17 @@ export const FAIRY_FOREST_FOES: FoeDefinition[] = [
       { row: 25, col: 52 },
       { row: 33, col: 52 },
       { row: 33, col: 62 },
+    ],
+  },
+  {
+    id: 'fairy_forest_foe_13',
+    name: 'Dino Tri',
+    ...DINO_TRI_FOE_LOOK,
+    // The south-west apron of the central glade, below Den Watch.
+    patrol: [
+      { row: 36, col: 47 },
+      { row: 37, col: 50 },
+      { row: 36, col: 52 },
     ],
   },
   {

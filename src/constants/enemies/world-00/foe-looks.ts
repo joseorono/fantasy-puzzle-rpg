@@ -1,5 +1,6 @@
 import type { FoeLook } from '~/types/foe';
 import {
+  DINO_TRI_MAP_STRIP,
   FROGGER_MAP_STRIP,
   MONOPIXELART_SKELETON_MAP_STRIP,
   TECOPENA_BAT_MAP_STRIP,
@@ -7,6 +8,11 @@ import {
 } from './foe-map-strips';
 
 /** Map look of each world-00 FOE kind; spread into a `FoeDefinition`. */
+
+export const DINO_TRI_FOE_LOOK: FoeLook = {
+  mapSprite: '/assets/enemy-sprites/dino-tri_map.png',
+  mapStrip: DINO_TRI_MAP_STRIP,
+};
 
 export const BAT_FOE_LOOK: FoeLook = {
   mapSprite: '/assets/enemy-sprites/tecopena-bat_map.png',
