@@ -7,6 +7,7 @@ import type { MapNodeType } from '~/stores/slices/map-progress.types';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import {
   MAP_BACKGROUND_COLOR,
+  MAP_EXIT_NODE_TYPES,
   MAP_MARKER_BOB_PX,
   MAP_MARKER_CHECK,
   MAP_MARKER_CULL_MARGIN_PX,
@@ -71,6 +72,18 @@ export function getMapMarkerScale(tileSize: number): number {
 }
 
 /**
+ * Whether a node's marker shows as done. Exits never do: using one is tracked, but an
+ * exit stays a live way through.
+ *
+ * @param node The node.
+ * @param status Progress lookups.
+ */
+export function isNodeMarkerDone(node: InteractiveMapNode, status: MarkerStatus): boolean {
+  if (MAP_EXIT_NODE_TYPES.includes(node.type)) return false;
+  return status.isNodeCompleted(node);
+}
+
+/**
  * How a node marker draws: coloured until done, grey with a check once done, and lit
  * in colour again (check kept) while the character stands on it.
  *
@@ -122,7 +135,7 @@ export function buildMarkerList(
   const plateSize = MAP_MARKER_PLATE_SIZE_PX * scale;
 
   for (const node of map.nodes ?? []) {
-    const isCompleted = status.isNodeCompleted(node);
+    const isCompleted = isNodeMarkerDone(node, status);
     for (const { row, col } of getNodePositions(node)) {
       const isOccupied = characterTile !== null && characterTile.row === row && characterTile.col === col;
       // The plate is wider than the tile: centred on it, standing on its bottom edge.

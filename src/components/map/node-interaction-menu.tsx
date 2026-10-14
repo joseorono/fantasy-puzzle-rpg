@@ -103,17 +103,15 @@ export function NodeInteractionMenu({
         </div>
       </div>
 
-      {/* Completion status — an exit is a way through, not something to finish */}
-      {!canTravel && (
-        <div className="nim-status">
-          <span className="nim-status-label pixel-font">Completed:</span>
-          <span
-            className={`nim-status-value pixel-font ${isCompleted ? 'nim-status-value--true' : 'nim-status-value--false'}`}
-          >
-            {isCompleted ? 'Yes' : 'No'}
-          </span>
-        </div>
-      )}
+      {/* Completion status */}
+      <div className="nim-status">
+        <span className="nim-status-label pixel-font">Completed:</span>
+        <span
+          className={`nim-status-value pixel-font ${isCompleted ? 'nim-status-value--true' : 'nim-status-value--false'}`}
+        >
+          {isCompleted ? 'Yes' : 'No'}
+        </span>
+      </div>
 
       {/* Description */}
       {node.description && (

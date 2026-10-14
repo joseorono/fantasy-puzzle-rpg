@@ -286,19 +286,59 @@ describe('chase', () => {
     expect(world.isWalkable(pointToTile(after, TILE).row, pointToTile(after, TILE).col)).toBe(true);
   });
 
-  it('gives up past the leash and walks home, then patrols again', () => {
-    const def = definition({
-      patrol: [
-        { row: 2, col: 2 },
-        { row: 2, col: 4 },
-      ],
-    });
-    // Detection reaches the player at col 12 but not FAR_AWAY (28 tiles from home).
-    const foe = { ...awakeFoe(def, { leashRadiusTiles: 4, detectionRadiusTiles: 12 }), mode: 'chase' as const };
-    const player = playerAt(2, 12);
+  /** Home (2, 2), leash 4: the player at (2, 12) is seen (detection 12) but out of reach. */
+  const LEASHED_DEF = definition({
+    patrol: [
+      { row: 2, col: 2 },
+      { row: 2, col: 4 },
+    ],
+  });
+  const LEASH_PX = 4 * TILE;
+  const LEASHED_HOME = tileCenter({ row: 2, col: 2 }, TILE);
+  const BEYOND_LEASH = playerAt(2, 12);
 
-    const chased = simulate(foe, player, 1.2);
+  function leashedChaser(tunables: Partial<FoeTunables> = {}): FoeRuntime {
+    const foe = awakeFoe(LEASHED_DEF, { leashRadiusTiles: 4, detectionRadiusTiles: 12, ...tunables });
+    return { ...foe, mode: 'chase' };
+  }
+
+  const distanceFromHome = (foe: FoeRuntime) => Math.hypot(foe.x - LEASHED_HOME.x, foe.y - LEASHED_HOME.y);
+
+  it('holds the leash edge facing a player beyond it, instead of turning back', () => {
+    const { foe } = simulate(leashedChaser(), BEYOND_LEASH, 1.2);
+    expect(foe.mode).toBe('chase');
+    expect(foe.standoffSeconds).toBeGreaterThan(0);
+    expect(foe.facing).toBe('right');
+    expect(distanceFromHome(foe)).toBeLessThanOrEqual(LEASH_PX + 1e-6);
+    expect(distanceFromHome(foe)).toBeGreaterThan(LEASH_PX - 2);
+
+    const { foe: later } = stepFoe(foe, BEYOND_LEASH, DT, worldFor());
+    expect(later.x).toBeCloseTo(foe.x, 6);
+    expect(later.y).toBeCloseTo(foe.y, 6);
+  });
+
+  it('lunges again when the player steps into reach', () => {
+    const { foe: holding } = simulate(leashedChaser(), BEYOND_LEASH, 1.2);
+    const { foe } = stepFoe(holding, playerAt(2, 4), DT, worldFor());
+    expect(foe.standoffSeconds).toBe(0);
+    expect(foe.x).toBeLessThan(holding.x);
+  });
+
+  it('slides along the leash edge to where the player is nearest', () => {
+    const { foe: holding } = simulate(leashedChaser(), BEYOND_LEASH, 1.2);
+    // Due south of home, 7 tiles out: the nearest edge point is straight below home.
+    const { foe } = simulate(holding, playerAt(9, 2), 2);
+    expect(foe.mode).toBe('chase');
+    expect(foe.standoffSeconds).toBeGreaterThan(0);
+    expect(distanceFromHome(foe)).toBeLessThanOrEqual(LEASH_PX + 1e-6);
+    expect(foe.x).toBeCloseTo(LEASHED_HOME.x, 0);
+    expect(foe.y).toBeCloseTo(LEASHED_HOME.y + LEASH_PX, 0);
+  });
+
+  it('gives up a standoff after maxStandoffSeconds and walks home, then patrols again', () => {
+    const chased = simulate(leashedChaser({ maxStandoffSeconds: 0.5 }), BEYOND_LEASH, 1.5);
     expect(chased.foe.mode).toBe('return');
+    expect(chased.foe.reaggroSeconds).toBeGreaterThan(0);
 
     // Step until it is back on patrol: that flip happens at the home post.
     let foe2 = chased.foe;
@@ -339,21 +379,12 @@ describe('chase', () => {
     expect(after.reaggroSeconds).toBeGreaterThan(0);
   });
 
-  it('ignores a player standing outside the leash on the way home, so it never bounces', () => {
-    const def = definition({
-      patrol: [
-        { row: 2, col: 2 },
-        { row: 2, col: 4 },
-      ],
-    });
-    // Seen (detection 12) but past the leash (4 tiles from home).
-    const foe = { ...awakeFoe(def, { leashRadiusTiles: 4, detectionRadiusTiles: 12 }), mode: 'chase' as const };
-    const player = playerAt(2, 12);
-    let current = simulate(foe, player, 1.2).foe;
+  it('ignores a player standing outside the leash on the way home, so outlasting a standoff opens a window', () => {
+    let current = simulate(leashedChaser({ maxStandoffSeconds: 0.5 }), BEYOND_LEASH, 1.5).foe;
     expect(current.mode).toBe('return');
 
     for (let elapsed = 0; elapsed < 5 && current.mode === 'return'; elapsed += DT) {
-      current = stepFoe(current, player, DT, worldFor()).foe;
+      current = stepFoe(current, BEYOND_LEASH, DT, worldFor()).foe;
       expect(current.mode).not.toBe('chase');
     }
     expect(current.mode).toBe('patrol');

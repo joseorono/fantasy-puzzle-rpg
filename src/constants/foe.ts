@@ -26,6 +26,7 @@ export const FOE_DEFAULT_TUNABLES: FoeTunables = {
   contactDistanceTiles: 0.6,
   repathIntervalSeconds: 0.25,
   reaggroCooldownSeconds: 1.5,
+  maxStandoffSeconds: 4,
 };
 
 /** The player's run speed in tiles per second — what `chaseSpeedRatio` is a fraction of. */

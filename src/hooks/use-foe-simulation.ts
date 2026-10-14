@@ -81,7 +81,7 @@ function drawFoeDebug(ctx: CanvasRenderingContext2D, foe: FoeRuntime, tileSize: 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = `${FOE_MARKER_STYLE.color}1)`;
-  ctx.fillText(foe.mode, foe.x, labelY);
+  ctx.fillText(foe.standoffSeconds > 0 ? 'standoff' : foe.mode, foe.x, labelY);
 }
 
 /**

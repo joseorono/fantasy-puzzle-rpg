@@ -25,6 +25,8 @@ export interface FoeTunables {
   repathIntervalSeconds: number;
   /** Seconds after giving up a chase before a returning FOE can notice the player again. */
   reaggroCooldownSeconds: number;
+  /** How long a FOE stares from its leash edge at a player it can't reach before heading home. */
+  maxStandoffSeconds: number;
 }
 
 /**
@@ -97,6 +99,8 @@ export interface FoeRuntime {
   repathSeconds: number;
   /** How long the player has been out of sight during a chase. */
   lostSightSeconds: number;
+  /** Continuous time a chasing FOE has been held at its leash edge; 0 while it moves. */
+  standoffSeconds: number;
   /** While positive, the FOE neither notices nor catches the player. */
   graceSeconds: number;
   /** While positive, the "!" is shown. */

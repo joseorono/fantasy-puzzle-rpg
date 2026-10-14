@@ -122,6 +122,18 @@ describe('buildMarkerList', () => {
     expect(find(occupied, 'node').map((node) => node.state)).toEqual(['todo', 'doneActive']);
   });
 
+  it('never draws a used exit as done', () => {
+    const stairs = {
+      id: 'stairs',
+      type: 'NextMap' as const,
+      position: { row: 1, col: 1 },
+      name: 'Stairs',
+      blocksMovement: false,
+    };
+    const used = buildMarkerList({ ...MAP, nodes: [stairs] }, TILE, { ...STATUS, isNodeCompleted: () => true });
+    expect(find(used, 'node').map((node) => node.state)).toEqual(['todo']);
+  });
+
   it('centres a plate on its tile, standing on the tile bottom', () => {
     const [fight] = find(markers, 'node');
     expect(fight.scale).toBe(1);

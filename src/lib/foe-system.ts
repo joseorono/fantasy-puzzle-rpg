@@ -26,11 +26,13 @@ import { resolveFoeWalkTween } from './foe-sprite';
  * - `patrol`: walks its waypoint loop, pausing at each; notices the player inside the
  *   detection radius and switches to `chase`.
  * - `chase`: paths toward the player's tile, repathing when they change tile or the
- *   repath interval elapses. Gives up (→ `return`) past the leash, after losing sight
- *   for `loseSightSeconds`, or when no path exists.
+ *   repath interval elapses. The leash is its territory: it never steps out of it, and a
+ *   player beyond it gets a standoff — the FOE holds the edge facing them, lunging again if
+ *   they step into reach. Gives up (→ `return`) after `maxStandoffSeconds` of standoff,
+ *   after losing sight for `loseSightSeconds`, or when no path exists.
  * - `return`: walks home; on arrival resumes `patrol`. It re-notices the player once
  *   `reaggroCooldownSeconds` has passed, but only while both it and the player are inside
- *   the leash, so it never bounces on the leash boundary.
+ *   the leash, so a standoff that timed out leaves the player a window to slip past.
  *
  * Contact (the fight trigger) is checked in every mode. The runtime is never mutated:
  * `stepFoe` returns a new value so a frame's result can be compared with its input.
@@ -110,6 +112,7 @@ export function createFoeRuntime(
     waitSeconds: 0,
     repathSeconds: 0,
     lostSightSeconds: 0,
+    standoffSeconds: 0,
     graceSeconds,
     alertSeconds: 0,
     reaggroSeconds: 0,
@@ -180,6 +183,7 @@ function startChase(foe: FoeRuntime): FoeRuntime {
     pathTarget: null,
     repathSeconds: 0,
     lostSightSeconds: 0,
+    standoffSeconds: 0,
   };
 }
 
@@ -191,8 +195,28 @@ function giveUpChase(foe: FoeRuntime): FoeRuntime {
     pathTarget: null,
     repathSeconds: 0,
     lostSightSeconds: 0,
+    standoffSeconds: 0,
     reaggroSeconds: foe.tunables.reaggroCooldownSeconds,
   };
+}
+
+/**
+ * Whether a step from `from` to `to` keeps a FOE in its territory: it ends inside the leash,
+ * or no farther from home than it started — so a FOE on the edge can slide along it and can
+ * always step back in.
+ */
+function staysInTerritory(from: MapPoint, to: MapPoint, home: MapPoint, leashPx: number): boolean {
+  const toDistanceSquared = distanceSquaredPx(to, home);
+  return toDistanceSquared <= leashPx * leashPx || toDistanceSquared <= distanceSquaredPx(from, home);
+}
+
+/** The point on the leash circle along the ray from home through `point`. */
+function projectOntoLeash(point: MapPoint, home: MapPoint, leashPx: number): MapPoint {
+  const dx = point.x - home.x;
+  const dy = point.y - home.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance === 0) return home;
+  return { x: home.x + (dx / distance) * leashPx, y: home.y + (dy / distance) * leashPx };
 }
 
 function stepPatrol(
@@ -242,17 +266,19 @@ function stepPatrol(
   };
 }
 
-function stepChase(foe: FoeRuntime, player: FoeActor, dtSeconds: number, world: FoeWorld): FoeRuntime {
-  const { tunables, definition } = foe;
+/**
+ * One chase step toward the player, ignoring the leash. `held` is the same FOE with the
+ * fresh path but its position unchanged, for when the step would leave its territory.
+ * Null when the player can't be reached.
+ */
+function chaseStep(
+  foe: FoeRuntime,
+  player: FoeActor,
+  dtSeconds: number,
+  world: FoeWorld,
+): { moved: FoeRuntime; held: FoeRuntime } | null {
+  const { tunables } = foe;
   const { tileSize } = world;
-
-  const home = tileCenter(definition.patrol[0], tileSize);
-  if (!isWithinTiles(foe, home, tunables.leashRadiusTiles, tileSize)) return giveUpChase(foe);
-
-  const seesPlayer = isWithinTiles(foe, player, tunables.detectionRadiusTiles, tileSize);
-  const lostSightSeconds = seesPlayer ? 0 : foe.lostSightSeconds + dtSeconds;
-  if (lostSightSeconds >= tunables.loseSightSeconds) return giveUpChase(foe);
-
   const speedPx = world.playerRunSpeedPx * tunables.chaseSpeedRatio * dtSeconds;
   const playerTile: GridPosition = { row: player.row, col: player.col };
   const foeTile = pointToTile(foe, tileSize);
@@ -264,36 +290,69 @@ function stepChase(foe: FoeRuntime, player: FoeActor, dtSeconds: number, world: 
     const distance = Math.hypot(dx, dy);
     const step = Math.min(distance, speedPx);
     const ratio = distance > 0 ? step / distance : 0;
+    const held: FoeRuntime = { ...foe, path: [], pathTarget: playerTile };
     return {
-      ...foe,
-      x: foe.x + dx * ratio,
-      y: foe.y + dy * ratio,
-      path: [],
-      pathTarget: playerTile,
-      lostSightSeconds,
-      facing: facingFrom(dx * ratio, foe.facing),
+      moved: { ...held, x: foe.x + dx * ratio, y: foe.y + dy * ratio, facing: facingFrom(dx * ratio, foe.facing) },
+      held,
     };
   }
 
   let { path, pathTarget, repathSeconds } = foe;
   if (repathSeconds <= 0 || path.length === 0 || !isSameTile(pathTarget, playerTile)) {
     const found = findPathFrom(foe, playerTile, world);
-    if (found === null) return giveUpChase(foe);
+    if (found === null) return null;
     path = found;
     pathTarget = playerTile;
     repathSeconds = tunables.repathIntervalSeconds;
   }
 
   const advance = advanceAlongPath(foe, path, speedPx, tileSize);
+  const held: FoeRuntime = { ...foe, path, pathTarget, repathSeconds };
   return {
-    ...foe,
-    x: advance.point.x,
-    y: advance.point.y,
-    path: advance.path,
-    pathTarget,
-    repathSeconds,
+    moved: {
+      ...held,
+      x: advance.point.x,
+      y: advance.point.y,
+      path: advance.path,
+      facing: facingFrom(advance.movedX, foe.facing),
+    },
+    held,
+  };
+}
+
+function stepChase(foe: FoeRuntime, player: FoeActor, dtSeconds: number, world: FoeWorld): FoeRuntime {
+  const { tunables, definition } = foe;
+  const { tileSize } = world;
+
+  const seesPlayer = isWithinTiles(foe, player, tunables.detectionRadiusTiles, tileSize);
+  const lostSightSeconds = seesPlayer ? 0 : foe.lostSightSeconds + dtSeconds;
+  if (lostSightSeconds >= tunables.loseSightSeconds) return giveUpChase(foe);
+
+  const step = chaseStep(foe, player, dtSeconds, world);
+  if (step === null) return giveUpChase(foe);
+
+  const home = tileCenter(definition.patrol[0], tileSize);
+  if (staysInTerritory(foe, step.moved, home, tunables.leashRadiusTiles * tileSize)) {
+    return { ...step.moved, lostSightSeconds, standoffSeconds: 0 };
+  }
+
+  // Standoff: the player is beyond the leash, so hold the edge and stare them down.
+  const standoffSeconds = foe.standoffSeconds + dtSeconds;
+  if (standoffSeconds >= tunables.maxStandoffSeconds) return giveUpChase(foe);
+
+  // The step pulled back onto the leash keeps its sideways part, so the FOE slides along the
+  // edge to where the player is nearest. Projection never travels farther than the step did.
+  const edge = projectOntoLeash(step.moved, home, tunables.leashRadiusTiles * tileSize);
+  const edgeTile = pointToTile(edge, tileSize);
+  const canSlide =
+    distanceSquaredPx(edge, foe) <= distanceSquaredPx(step.moved, foe) && world.isWalkable(edgeTile.row, edgeTile.col);
+  return {
+    ...step.held,
+    x: canSlide ? edge.x : foe.x,
+    y: canSlide ? edge.y : foe.y,
     lostSightSeconds,
-    facing: facingFrom(advance.movedX, foe.facing),
+    standoffSeconds,
+    facing: facingFrom(player.x - foe.x, foe.facing),
   };
 }
 
@@ -307,7 +366,7 @@ function stepReturn(
   const { tunables, definition } = foe;
   const home = definition.patrol[0];
 
-  // Both inside the leash: a chase started here is not abandoned on its first step.
+  // Only a player inside the leash: one who outlasted a standoff gets a window to slip past.
   const homePoint = tileCenter(home, world.tileSize);
   if (
     canSense &&
