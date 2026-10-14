@@ -68,42 +68,54 @@
   background-image: url('/assets/frame/frame1-upper-right-corner.png');
 }
 
+/* Lower corner sprites are 32x28: bottom-aligned so their bar lines up with the bottom loop,
+   with the side post tiled into the 4px gap above. */
+.wf-corner--bottom-left,
+.wf-corner--bottom-right {
+  background-size:
+    var(--frame-thickness) calc(var(--frame-thickness) * 28 / 32),
+    var(--frame-thickness) auto;
+  background-position: bottom, top;
+  background-repeat: no-repeat, repeat-y;
+}
+
 .wf-corner--bottom-left {
-  background-image: url('/assets/frame/frame1-lower-left-corner.png');
+  background-image: url('/assets/frame/frame1-lower-left-corner.png'), url('/assets/frame/frame1-left.png');
 }
 
 .wf-corner--bottom-right {
-  background-image: url('/assets/frame/frame1-lower-right-corner.png');
+  background-image: url('/assets/frame/frame1-lower-right-corner.png'), url('/assets/frame/frame1-right.png');
 }
 
 /* Edge styling (kept above the fixed battle overlays — see .wf-corner). */
 .wf-edge {
   position: relative;
   z-index: 60;
-  background-size: var(--frame-thickness) var(--frame-thickness);
   background-repeat: repeat;
 }
 
 .wf-edge--top {
   background-image: url('/assets/frame/frame1-top-loop.png');
   height: var(--frame-thickness);
+  background-size: auto var(--frame-thickness);
 }
 
 .wf-edge--bottom {
   background-image: url('/assets/frame/frame1-bottom-loop.png');
   height: var(--frame-thickness);
+  background-size: auto var(--frame-thickness);
 }
 
 .wf-edge--left {
   background-image: url('/assets/frame/frame1-left.png');
   width: var(--frame-thickness);
-  background-size: var(--frame-thickness) var(--frame-thickness);
+  background-size: var(--frame-thickness) auto;
 }
 
 .wf-edge--right {
   background-image: url('/assets/frame/frame1-right.png');
   width: var(--frame-thickness);
-  background-size: var(--frame-thickness) var(--frame-thickness);
+  background-size: var(--frame-thickness) auto;
 }
 
 /* Viewport styling */
