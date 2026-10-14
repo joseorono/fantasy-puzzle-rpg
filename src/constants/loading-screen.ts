@@ -1,7 +1,7 @@
 import type { LoadingCog } from '~/types/loading-screen';
 
 /** Shortest time (ms) the map loading screen stays up, even when the map is ready sooner. */
-export const MAP_LOADING_MIN_DURATION_MS = 7000;
+export const MAP_LOADING_MIN_DURATION_MS = 4000;
 
 /** Map loading screen fade-out (ms), handed to the CSS as `--map-loading-fade-ms`. */
 export const MAP_LOADING_FADE_MS = 450;
