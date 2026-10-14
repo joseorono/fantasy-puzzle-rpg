@@ -230,9 +230,10 @@
 */
 
 .f05a-frame {
-  --f05a-side: 15px;
-  --f05a-top: 18px;
-  --f05a-bottom: 15px;
+  --f05a-scale: 1;
+  --f05a-side: calc(15px * var(--f05a-scale));
+  --f05a-top: calc(18px * var(--f05a-scale));
+  --f05a-bottom: calc(15px * var(--f05a-scale));
   display: grid;
   grid-template-rows: var(--f05a-top) 1fr var(--f05a-bottom);
   grid-template-columns: var(--f05a-side) 1fr var(--f05a-side);
@@ -266,34 +267,64 @@
   gap: 0;
 }
 
-/* Corner styling */
+/* Corner sprites are larger than their cells (bar overhang, post caps, inner braces), so each is
+   drawn at native size on ::before, offset so its bar/post line up with the edge loops. */
 .f05a-corner {
+  position: relative;
+  z-index: 1;
+}
+
+.f05a-corner::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--f05a-corner-x) * var(--f05a-scale) * 1px);
+  top: calc(var(--f05a-corner-y) * var(--f05a-scale) * 1px);
+  width: calc(var(--f05a-corner-w) * var(--f05a-scale) * 1px);
+  height: calc(var(--f05a-corner-h) * var(--f05a-scale) * 1px);
+  background-image: var(--f05a-corner-img);
   background-size: 100% 100%;
   background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 .f05a-corner--top-left {
   width: var(--f05a-side);
   height: var(--f05a-top);
-  background-image: url('/assets/frame/franuka-05a/frame-top-left-corner.png');
+  --f05a-corner-x: -6;
+  --f05a-corner-y: -9;
+  --f05a-corner-w: 34;
+  --f05a-corner-h: 41;
+  --f05a-corner-img: url('/assets/frame/franuka-05a/frame-top-left-corner.png');
 }
 
 .f05a-corner--top-right {
   width: var(--f05a-side);
   height: var(--f05a-top);
-  background-image: url('/assets/frame/franuka-05a/frame-top-right-corner.png');
+  --f05a-corner-x: -8;
+  --f05a-corner-y: -3;
+  --f05a-corner-w: 29;
+  --f05a-corner-h: 35;
+  --f05a-corner-img: url('/assets/frame/franuka-05a/frame-top-right-corner.png');
 }
 
 .f05a-corner--bottom-left {
   width: var(--f05a-side);
   height: var(--f05a-bottom);
-  background-image: url('/assets/frame/franuka-05a/frame-bottom-left-corner.png');
+  --f05a-corner-x: -6;
+  --f05a-corner-y: -11;
+  --f05a-corner-w: 30;
+  --f05a-corner-h: 29;
+  --f05a-corner-img: url('/assets/frame/franuka-05a/frame-bottom-left-corner.png');
 }
 
 .f05a-corner--bottom-right {
   width: var(--f05a-side);
   height: var(--f05a-bottom);
-  background-image: url('/assets/frame/franuka-05a/frame-bottom-right-corner.png');
+  --f05a-corner-x: -12;
+  --f05a-corner-y: -11;
+  --f05a-corner-w: 33;
+  --f05a-corner-h: 32;
+  --f05a-corner-img: url('/assets/frame/franuka-05a/frame-bottom-right-corner.png');
 }
 
 /* Edge styling */
@@ -344,6 +375,8 @@
 .f05a-viewport {
   overflow: hidden;
   position: relative;
+  /* Keeps board z-indices (sweep, orbs) beneath the corner braces. */
+  isolation: isolate;
   background-image: url('/assets/bg/looping/bg-board.png');
   background-repeat: repeat;
   /* The tileset is original 16x16, adjust background size to set how pixelated it should be */
