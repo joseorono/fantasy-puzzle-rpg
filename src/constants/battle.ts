@@ -115,7 +115,7 @@ export const BATTLE_CALLOUT_DURATION_MS = 1200;
  * legal swap gets the muted hint ring. The hint stays until the next valid swap or a pause.
  * `0` shows it as soon as the board settles. Ring styling lives in `ORB_HINT_CLASSES`.
  */
-export const BOARD_HINT_DELAY_MS = 4000;
+export const BOARD_HINT_DELAY_MS = 2500;
 
 /**
  * Notches drawn across the party HP and Guard bars. Purely visual — it does not
