@@ -89,6 +89,11 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
+          Treasure chest sprites (Free Chest Animations), by Admurin&nbsp;
+          <a href="https://admurin.itch.io/free-chest-animations">https://admurin.itch.io/free-chest-animations</a>
+        </p>
+
+        <p>
           Pixel Art Bat and Pixel Art Slime enemy sprites, by tecopena&nbsp;
           <a href="https://tecopena.itch.io/pixel-art-bat">https://tecopena.itch.io/pixel-art-bat</a>
           &nbsp;
