@@ -89,7 +89,7 @@
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FF191970"
+            "Color": "#FF696969"
           }
         }
       }
@@ -107,7 +107,7 @@
             "Hue": 0,
             "Saturation": 0,
             "Lightness": 0,
-            "Color": "#FF191970"
+            "Color": "#FF696969"
           }
         }
       }
@@ -137,7 +137,28 @@
       "Offsets": {},
       "Visible": true,
       "UseSkinToneColoring": true,
-      "LayerSettings": {}
+      "LayerSettings": {
+        "Face": {
+          "ff00ff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": null
+          },
+          "ffffff00": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": null
+          },
+          "ffff0000": {
+            "Hue": 0,
+            "Saturation": 0,
+            "Lightness": 0,
+            "Color": "#FFCD853F"
+          }
+        }
+      }
     }
   ],
   "BodyType": "Male Lean (Neutral Pose)",
