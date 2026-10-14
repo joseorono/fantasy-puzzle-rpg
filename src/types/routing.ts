@@ -58,6 +58,11 @@ export interface DungeonViewData {
  */
 export interface MapViewData {
   mapId: MapId;
+  /**
+   * Cover the map with the loading screen on the next mount — consumed once by `MapView`, so a
+   * return from battle or town doesn't show it again. Set on map entry (travel, load, new game).
+   */
+  showLoadingScreen?: boolean;
 }
 
 /**

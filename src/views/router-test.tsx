@@ -169,28 +169,28 @@ export default function RouterTestView() {
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-00-apprentice-forge' })}
+          onClick={() => goToMap({ mapId: 'map-00-apprentice-forge', showLoadingScreen: true })}
         >
           Apprentice Forge
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-01-fairy-forest' })}
+          onClick={() => goToMap({ mapId: 'map-01-fairy-forest', showLoadingScreen: true })}
         >
           Fairy Forest
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-02-castle-garden' })}
+          onClick={() => goToMap({ mapId: 'map-02-castle-garden', showLoadingScreen: true })}
         >
           Castle Garden
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-03-desert' })}
+          onClick={() => goToMap({ mapId: 'map-03-desert', showLoadingScreen: true })}
         >
           Desert
         </button>
@@ -217,7 +217,7 @@ export default function RouterTestView() {
             <button
               key={map.id}
               className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-              onClick={() => goToMap({ mapId: map.id })}
+              onClick={() => goToMap({ mapId: map.id, showLoadingScreen: true })}
             >
               {map.displayMapName}
             </button>

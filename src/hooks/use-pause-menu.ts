@@ -7,6 +7,7 @@ import {
 } from '~/stores/pause-menu-atoms';
 import type { PauseMenuTab } from '~/stores/pause-menu-atoms';
 import { isDialogueActiveAtom } from '~/stores/dialogue-atoms';
+import { isMapLoadingScreenActiveAtom } from '~/stores/app-atoms';
 import { useCurrentView } from '~/stores/game-store';
 import type { ViewType } from '~/types/routing';
 
@@ -23,9 +24,10 @@ export function usePauseMenu() {
   const setZone = useSetAtom(pauseMenuZoneAtom);
   const currentView = useCurrentView();
   const isDialogueActive = useAtomValue(isDialogueActiveAtom);
+  const isMapLoadingScreenActive = useAtomValue(isMapLoadingScreenActiveAtom);
 
-  // Blocked on certain views, and never opened over an active dialogue.
-  const isDisabled = DISABLED_VIEWS.includes(currentView) || isDialogueActive;
+  // Blocked on certain views, and never opened over an active dialogue or loading screen.
+  const isDisabled = DISABLED_VIEWS.includes(currentView) || isDialogueActive || isMapLoadingScreenActive;
 
   /** Open the menu on a given tab. A hidden tab has no sidebar entry, so its content takes the keyboard. */
   function openTab(tab: PauseMenuTab) {

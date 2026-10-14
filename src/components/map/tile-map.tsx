@@ -78,6 +78,8 @@ import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/foo
 import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
 import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
+import { useMapLoadingScreen } from '~/hooks/use-map-loading-screen';
+import { MapLoadingScreen } from './map-loading-screen';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -108,9 +110,13 @@ type DialogueSceneKey = string;
 interface TilemapComponentProps {
   /** The map to render and run. All content is read from here — nothing map-specific is imported. */
   map: MapDefinition;
+  /** Hold the loading screen over the map until it has drawn. Read once, on mount. */
+  showLoadingScreen: boolean;
+  /** Called once the map is on screen: on mount, or when the loading screen starts fading. */
+  onReveal: () => void;
 }
 
-const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
+const Tilemap: React.FC<TilemapComponentProps> = ({ map, showLoadingScreen, onReveal }) => {
   const { tilesetImage, displayMapName, walkableLayers, surfaceLayers, visibleLayers, defaultPlayerPosition, debug } =
     map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -386,6 +392,18 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     drawOverlay: foes.drawFoes,
   });
 
+  const [hasLoadingScreen] = useState(showLoadingScreen);
+  const { isVisible: isLoadingScreenVisible } = useMapLoadingScreen({
+    isEnabled: hasLoadingScreen,
+    isReady: renderer.isReady,
+  });
+  const isMapRevealed = renderer.isReady && !isLoadingScreenVisible;
+
+  useEffect(() => {
+    if (!isLoadingScreenVisible) onReveal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingScreenVisible]);
+
   // --- Smooth character movement (rAF-based) ---
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
@@ -408,7 +426,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
     // The overview is read in place: frozen, turned to the camera, book open.
-    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
+    // The loading screen freezes everything under it, FOEs included.
+    isPaused:
+      isLoadingScreenVisible ||
+      showTriggerModal ||
+      activeDialogue !== null ||
+      isPauseMenuOpen ||
+      isTransitioning ||
+      isMinimapOpen,
     isReading: isMinimapOpen,
     onFootstep: ({ running }) => {
       footstepSystem.playFootstep(running ? footstepProfile.run : footstepProfile.walk);
@@ -443,7 +468,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // modifier and focus loss are owned by useMultiKeyDirection.
   // The overview only opens when nothing else owns the screen.
   const canOpenMinimap =
-    !isMinimapOpen && !isPauseMenuOpen && !showTriggerModal && activeDialogue === null && !isTransitioning;
+    !isLoadingScreenVisible &&
+    !isMinimapOpen &&
+    !isPauseMenuOpen &&
+    !showTriggerModal &&
+    activeDialogue === null &&
+    !isTransitioning;
 
   function openMinimap() {
     soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
@@ -591,7 +621,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     await travelBetweenMaps();
     mapProgressActions.completeNode(node.type, node.id);
     mapProgressActions.setCharacterPosition(destination.mapId, destination.arrival);
-    routerActions.goToMap({ mapId: destination.mapId }, { history: 'replace' });
+    routerActions.goToMap({ mapId: destination.mapId, showLoadingScreen: true }, { history: 'replace' });
   }
 
   function handleNodeTravel() {
@@ -816,6 +846,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
           {debug && DEBUG_MODE && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
+
+        {hasLoadingScreen && <MapLoadingScreen isVisible={isLoadingScreenVisible} />}
       </div>
 
       {/* Dialogue trigger confirmation modal */}
@@ -826,7 +858,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       />
 
       {/* Node interaction tooltip */}
-      {showNodeMenu && currentNode && renderer.isReady ? (
+      {showNodeMenu && currentNode && isMapRevealed ? (
         <NodeInteractionMenu
           key={currentNode.id}
           node={currentNode}
@@ -839,7 +871,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={popupAnchor ?? getCharacterScreenPosition()}
         />
-      ) : closingNode && renderer.isReady ? (
+      ) : closingNode && isMapRevealed ? (
         <NodeInteractionMenu
           key={`closing-${closingNode.node.id}`}
           node={closingNode.node}

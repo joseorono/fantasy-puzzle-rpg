@@ -467,6 +467,8 @@
 
 @import './styles/map-minimap.css';
 
+@import './styles/map-loading-screen.css';
+
 @import './components/ui-custom/styles/toffec-button.css';
 
 @import './components/ui-custom/styles/indigolay-bar.css';
