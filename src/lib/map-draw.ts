@@ -4,6 +4,7 @@ import type { InteractiveMapNode } from '~/types/map-node';
 import type { GridPosition, PixelRect, Position } from '~/types/geometry';
 import type { OcclusionGrid } from '~/types/map-occlusion';
 import type { MapNodeType } from '~/stores/slices/map-progress.types';
+import type { ChestVariant } from '~/types/chest';
 import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import {
   MAP_BACKGROUND_COLOR,
@@ -17,8 +18,16 @@ import {
   MAP_MARKER_SHADOW,
 } from '~/constants/map';
 import { JIRBY_SYMBOL_SHEET } from '~/constants/jirby-symbols';
+import { CHEST_ANCHOR_X_PX, CHEST_SPRITE_SHEET } from '~/constants/chest';
 import { getMarkerAtlasExtraFrame, getMarkerAtlasFrame } from '~/lib/map-marker-atlas';
 import { getNodePositions } from '~/lib/map-content';
+import {
+  getChestFrameRect,
+  getChestIdleFrame,
+  getChestIdleOffset,
+  getChestOpenedFrame,
+  resolveChestVariant,
+} from '~/lib/chest-sprite';
 
 /** A marker's reach, bob and badge included, in map pixels. Used to skip markers outside the view. */
 export interface MarkerBounds {
@@ -47,12 +56,23 @@ export interface FloorLootMarker extends MarkerBase {
   kind: 'floorLoot';
 }
 
+/** A Treasure node, drawn from the chest sheet rather than the plate atlas. */
+export interface ChestMarker extends MarkerBase {
+  kind: 'chest';
+  variant: ChestVariant;
+  isOpened: boolean;
+  /** From `getChestIdleOffset`, so neighbouring chests glint apart. */
+  idleOffsetMs: number;
+  /** The plate drawn while the chest sheet loads. */
+  fallback: NodeMarker;
+}
+
 /** Only unvisited triggers get one. */
 export interface DialogueTriggerMarker extends MarkerBase {
   kind: 'dialogueTrigger';
 }
 
-export type MapMarker = NodeMarker | FloorLootMarker | DialogueTriggerMarker;
+export type MapMarker = NodeMarker | ChestMarker | FloorLootMarker | DialogueTriggerMarker;
 
 /** Progress lookups the marker list needs. */
 export interface MarkerStatus {
@@ -115,6 +135,39 @@ function getFloatingOrigin(row: number, col: number, tileSize: number, scale: nu
   };
 }
 
+/** A chest's frame: the closed chest centred on its tile, standing on the tile's bottom edge. */
+function buildChestMarker(
+  map: MapDefinition,
+  node: InteractiveMapNode,
+  row: number,
+  col: number,
+  tileSize: number,
+  isOpened: boolean,
+  fallback: NodeMarker,
+): ChestMarker {
+  const { scale } = fallback;
+  const x = col * tileSize + tileSize / 2 - CHEST_ANCHOR_X_PX * scale;
+  const y = (row + 1) * tileSize - CHEST_SPRITE_SHEET.frameHeight * scale;
+  const tileBounds = getTileBounds(row, col, tileSize, scale);
+  return {
+    kind: 'chest',
+    x,
+    y,
+    scale,
+    // The frame is wider and taller than the tile, so the bounds must reach all of it.
+    bounds: {
+      left: Math.min(tileBounds.left, x),
+      top: Math.min(tileBounds.top, y),
+      right: Math.max(tileBounds.right, x + CHEST_SPRITE_SHEET.frameWidth * scale),
+      bottom: tileBounds.bottom,
+    },
+    variant: resolveChestVariant(map, node),
+    isOpened,
+    idleOffsetMs: getChestIdleOffset({ row, col }),
+    fallback,
+  };
+}
+
 /**
  * Everything the map draws on top of its tiles, resolved against current progress.
  * Collected floor loot and visited dialogue triggers are left out entirely.
@@ -139,7 +192,7 @@ export function buildMarkerList(
     for (const { row, col } of getNodePositions(node)) {
       const isOccupied = characterTile !== null && characterTile.row === row && characterTile.col === col;
       // The plate is wider than the tile: centred on it, standing on its bottom edge.
-      markers.push({
+      const plate: NodeMarker = {
         kind: 'node',
         x: col * tileSize + (tileSize - plateSize) / 2,
         y: (row + 1) * tileSize - plateSize,
@@ -147,7 +200,10 @@ export function buildMarkerList(
         bounds: getTileBounds(row, col, tileSize, scale),
         nodeType: node.type,
         state: getNodeMarkerState(isCompleted, isOccupied),
-      });
+      };
+      markers.push(
+        node.type === 'Treasure' ? buildChestMarker(map, node, row, col, tileSize, isCompleted, plate) : plate,
+      );
     }
   }
 
@@ -522,6 +578,28 @@ function drawNodeMarker(
   drawAtlasSprite(ctx, atlas, frame, x, y + (lift - MAP_MARKER_CHECK.overhangPx) * scale, scale);
 }
 
+function drawChestMarker(
+  ctx: CanvasRenderingContext2D,
+  atlas: HTMLCanvasElement,
+  marker: ChestMarker,
+  sheet: HTMLImageElement,
+  timestampMs: number,
+): void {
+  const { x, y, scale, variant, isOpened } = marker;
+  const { frameWidth, frameHeight } = CHEST_SPRITE_SHEET;
+
+  // The same ground shadow as a plate, tucked under the chest's base.
+  const shadow = getMarkerAtlasExtraFrame('plateShadow');
+  const shadowX = x + (CHEST_ANCHOR_X_PX - shadow.width / 2) * scale;
+  const shadowY = y + (frameHeight - MAP_MARKER_SHADOW.overlapPx) * scale;
+  drawAtlasSprite(ctx, atlas, shadow, Math.round(shadowX), shadowY, scale);
+
+  const frame = isOpened
+    ? getChestFrameRect(variant, 'open', getChestOpenedFrame())
+    : getChestFrameRect(variant, 'idle', getChestIdleFrame(timestampMs, marker.idleOffsetMs));
+  ctx.drawImage(sheet, frame.x, frame.y, frameWidth, frameHeight, x, y, frameWidth * scale, frameHeight * scale);
+}
+
 function drawFloatingMarker(
   ctx: CanvasRenderingContext2D,
   atlas: HTMLCanvasElement,
@@ -545,6 +623,8 @@ function drawFloatingMarker(
  * @param layout The viewport layout.
  * @param phase From {@link getMarkerPulsePhase}.
  * @param atlas From `getReadyMapMarkerAtlas`; `null` while the symbol sheet loads, which draws nothing.
+ * @param chestSheet From `getReadyChestSheet`; `null` while it loads, which draws chests as plates.
+ * @param timestampMs The frame's timestamp, for the chests' idle animation.
  */
 export function drawMarkers(
   ctx: CanvasRenderingContext2D,
@@ -553,6 +633,8 @@ export function drawMarkers(
   layout: ViewportLayout,
   phase: number,
   atlas: HTMLCanvasElement | null,
+  chestSheet: HTMLImageElement | null,
+  timestampMs: number,
 ): void {
   if (!atlas) return;
 
@@ -566,6 +648,12 @@ export function drawMarkers(
 
     if (marker.kind === 'node') {
       drawNodeMarker(ctx, atlas, marker, bob);
+    } else if (marker.kind === 'chest') {
+      if (chestSheet) {
+        drawChestMarker(ctx, atlas, marker, chestSheet, timestampMs);
+      } else {
+        drawNodeMarker(ctx, atlas, marker.fallback, bob);
+      }
     } else {
       drawFloatingMarker(ctx, atlas, marker, bob);
     }

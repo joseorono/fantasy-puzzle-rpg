@@ -9,7 +9,7 @@ import { rollRarity } from './rarity';
 import { addItemToInventory, type InventoryItem } from './inventory';
 import { addResources, scaleResources } from './resources';
 import { randomBool } from './utils';
-import { CHEST_RARITY_BIAS } from '~/constants/rarity';
+import { CHEST_RARITY_BIAS, RARITY_TIERS, type RarityTier } from '~/constants/rarity';
 
 // ─── Enemy Loot ───────────────────────────────────────────────────────
 
@@ -91,6 +91,20 @@ export function rollLootTableRarities(lootTable: LootTable, bias: number = 0): L
     ...lootTable,
     equipableItems: lootTable.equipableItems.map((entry) => ({ ...entry, rarity: rollRarity(bias) })),
   };
+}
+
+/**
+ * The highest rarity among a loot table's rolled equipment.
+ * @param lootTable - A loot table whose equipment has been rolled (see `rollLootTableRarities`)
+ * @returns The best tier, or `undefined` when no equipment carries a rarity
+ */
+export function getBestLootRarity(lootTable: LootTable): RarityTier | undefined {
+  let best: RarityTier | undefined;
+  for (const { rarity } of lootTable.equipableItems) {
+    if (!rarity) continue;
+    if (!best || RARITY_TIERS.indexOf(rarity) > RARITY_TIERS.indexOf(best)) best = rarity;
+  }
+  return best;
 }
 
 /**

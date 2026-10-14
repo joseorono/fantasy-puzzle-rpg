@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { combineLootFromEnemies, applyLootTable } from './loot';
+import { combineLootFromEnemies, applyLootTable, getBestLootRarity } from './loot';
 import { getTotalExpToReachLevel } from './leveling-system';
 import { createEmptyLootTable, createLootTable } from '~/types/loot';
 import { createResources } from './resources';
@@ -227,6 +227,21 @@ describe('combineLootFromEnemies', () => {
     expect(result.lootTable.consumableItems).toEqual([]);
     expect(result.lootTable.resources.item.coins).toBe(100);
     expect(result.lootTable.resources.item.gold).toBe(50);
+  });
+});
+
+describe('getBestLootRarity', () => {
+  it('picks the highest rolled tier', () => {
+    const loot = createLootTable([{ item: mockSword }, { item: mockSword }, { item: mockSword }]);
+    loot.equipableItems[0].rarity = 'uncommon';
+    loot.equipableItems[1].rarity = 'epic';
+    loot.equipableItems[2].rarity = 'rare';
+    expect(getBestLootRarity(loot)).toBe('epic');
+  });
+
+  it('is undefined without rolled equipment', () => {
+    expect(getBestLootRarity(createEmptyLootTable())).toBeUndefined();
+    expect(getBestLootRarity(createLootTable([{ item: mockSword }]))).toBeUndefined();
   });
 });
 
