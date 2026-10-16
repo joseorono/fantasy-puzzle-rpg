@@ -41,9 +41,14 @@ export const CHEST_OPENING = {
   rattlePitchStep: 0.12,
   /** Per frame of the open row. */
   openFrameMs: 80,
-  /** From the lid popping to the loot rising out. */
+  /**
+   * Each loot icon in turn: launched out of the chest to where the rays cross, held, then a quick
+   * grow-and-vanish. The three phases set the `chest-loot-launch` keyframe percentages in chest-opening.css.
+   */
+  parade: { iconSize: 48, launchMs: 380, holdMs: 360, popMs: 220, pitchStep: 0.06, volume: 0.55 },
+  /** From the lid popping to the first loot icon launching. */
   revealDelayMs: 450,
-  /** From the loot rising out to the overlay closing on its own. */
+  /** From the loot list rising out, after the last icon, to the overlay closing on its own. */
   revealHoldMs: 3200,
   /** Gap between each loot entry rising out. */
   lootStaggerMs: 110,

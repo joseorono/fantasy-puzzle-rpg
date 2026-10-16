@@ -8,6 +8,7 @@ import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ItemIcon } from '~/components/sprite-icons/item-icon';
 import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
 import { ChestSprite } from './chest-sprite';
+import { buildChestLootIcons } from './chest-loot-icons';
 import { CHEST_OPENING } from '~/constants/chest';
 import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { SoundNames } from '~/constants/audio';
@@ -18,7 +19,11 @@ import { cn } from '~/lib/utils';
 import { soundService } from '~/services/sound-service';
 import { useWindowKeyDown } from '~/hooks/use-window-keydown';
 
-type ChestOpeningPhase = 'shake' | 'open' | 'reveal';
+type ChestOpeningPhase = 'shake' | 'open' | 'parade' | 'reveal';
+
+const { parade: PARADE } = CHEST_OPENING;
+/** One icon's whole beat: launch, hold, grow-and-vanish. */
+const PARADE_ICON_MS = PARADE.launchMs + PARADE.holdMs + PARADE.popMs;
 
 const ADVANCE_KEYS: readonly string[] = [
   KeyboardKeys.Enter,
@@ -37,10 +42,13 @@ interface ChestOpeningOverlayProps {
 
 /**
  * The chest-opening ceremony: the chest rattles, the lid pops in a flash and a burst of
- * sparks, then the loot rises out of it. A click or confirm/cancel key skips to the next beat.
+ * sparks, then each piece of loot launches out to where the rays cross, grows and vanishes
+ * for the next, and finally the whole haul is listed. A click or confirm/cancel key skips
+ * to the next beat (or the next icon).
  */
 export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverlayProps) {
   const [phase, setPhase] = useState<ChestOpeningPhase>('shake');
+  const [paradeIndex, setParadeIndex] = useState(0);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
@@ -54,6 +62,8 @@ export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverl
     ...loot.consumableItems.map((lootItem) => ({ kind: 'consumable' as const, lootItem })),
   ];
   const revealCount = lootEntries.length + (earnedResources.length > 0 ? 1 : 0);
+  const lootIcons = buildChestLootIcons(loot, PARADE.iconSize);
+  const paradeIcon = phase === 'parade' ? lootIcons[paradeIndex] : undefined;
 
   function clearTimers() {
     timersRef.current.forEach(clearTimeout);
@@ -75,17 +85,33 @@ export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverl
     schedule(finish, CHEST_OPENING.revealHoldMs + revealCount * CHEST_OPENING.lootStaggerMs);
   }
 
+  /** Launches the icon at `index`, or lists the haul once every icon has had its turn. */
+  function launchIcon(index: number) {
+    clearTimers();
+    const lootIcon = lootIcons[index];
+    if (!lootIcon) {
+      revealLoot();
+      return;
+    }
+    setPhase('parade');
+    setParadeIndex(index);
+    const sound = lootIcon.kind === 'resource' ? SoundNames.clickCoin : SoundNames.shimmeringSuccessShorter;
+    soundService.playSound(sound, PARADE.volume, 0, 0, 1 + index * PARADE.pitchStep);
+    schedule(() => launchIcon(index + 1), PARADE_ICON_MS);
+  }
+
   function openLid() {
     clearTimers();
     setPhase('open');
     soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
     soundService.playSound(SoundNames.shimmeringSuccessShort, 0.8);
-    schedule(revealLoot, CHEST_OPENING.revealDelayMs);
+    schedule(() => launchIcon(0), CHEST_OPENING.revealDelayMs);
   }
 
   function advance() {
     if (phase === 'shake') openLid();
-    else if (phase === 'open') revealLoot();
+    else if (phase === 'open') launchIcon(0);
+    else if (phase === 'parade') launchIcon(paradeIndex + 1);
     else finish();
   }
 
@@ -133,6 +159,22 @@ export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverl
           <div className="chest-opening__chest">
             <ChestSprite variant={variant} animation={isOpen ? 'open' : 'idle'} scale={CHEST_OPENING.displayScale} />
           </div>
+          {paradeIcon && (
+            // Keyed per icon so each one replays the launch from the chest.
+            <div
+              key={paradeIcon.key}
+              className="chest-opening__parade"
+              style={
+                {
+                  '--parade-color': paradeIcon.color ?? glowColor,
+                  '--parade-ms': `${PARADE_ICON_MS}ms`,
+                } as CSSProperties
+              }
+            >
+              <div className="chest-opening__parade-halo motion-hold" />
+              <div className="chest-opening__parade-icon motion-hold">{paradeIcon.icon}</div>
+            </div>
+          )}
           {isOpen && (
             <BurstParticles
               count={CHEST_OPENING.burstParticleCount}
@@ -179,8 +221,11 @@ export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverl
                 ))}
               </div>
             )}
-            <p className="chest-opening__hint pixel-font">[ Click or Enter ]</p>
           </div>
+        )}
+
+        {(phase === 'parade' || phase === 'reveal') && (
+          <p className="chest-opening__hint pixel-font">[ Click or Enter ]</p>
         )}
 
         {isOpen && <SparkleLayer count={CHEST_OPENING.sparkleCount} />}

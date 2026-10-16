@@ -209,16 +209,16 @@ export default function RouterTestView() {
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-02-castle-garden', showLoadingScreen: true })}
+          onClick={() => goToMap({ mapId: 'map-03-desert', showLoadingScreen: true })}
         >
-          Castle Garden
+          Desert
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-03-desert', showLoadingScreen: true })}
+          onClick={() => goToMap({ mapId: 'map-02-castle-garden', showLoadingScreen: true })}
         >
-          Desert
+          Castle Garden
         </button>
 
         <button
