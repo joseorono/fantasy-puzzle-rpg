@@ -106,7 +106,7 @@
 }
 
 .chest-opening--shake .chest-opening__chest {
-  animation: chest-rattle 1150ms linear both;
+  animation: chest-rattle 550ms linear both;
 }
 
 .chest-opening--open .chest-opening__chest,
@@ -209,7 +209,7 @@
 }
 
 .chest-opening--shake .chest-opening__glow {
-  animation: chest-glow-build 1150ms ease-in both;
+  animation: chest-glow-build 550ms ease-in both;
 }
 
 .chest-opening--open .chest-opening__glow,
@@ -342,7 +342,7 @@
   left: 0;
   top: 0;
   translate: -50% -50%;
-  animation-duration: var(--parade-ms, 960ms);
+  animation-duration: var(--parade-ms, 360ms);
   animation-fill-mode: both;
 }
 
@@ -368,30 +368,28 @@
   animation-timing-function: ease-out;
 }
 
-/* Phases follow CHEST_OPENING.parade (380 / 360 / 220ms): launch 0–40%, hold 40–77%,
-   grow 77–85%, vanish 85–100%. Starts at the chest's mouth, below the focal point. */
+/* Phases follow CHEST_OPENING.parade (170 / 80 / 110ms): launch 0–47%, hold 47–69%,
+   grow 69–79%, vanish 79–100%. Starts visible and tiny inside the open chest, below the
+   focal point, so the climb out of it reads. */
 @keyframes chest-loot-launch {
   0% {
-    opacity: 0;
-    transform: translateY(70px) scale(0.3);
-    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
-  }
-  8% {
     opacity: 1;
+    transform: translateY(86px) scale(0.2);
+    animation-timing-function: cubic-bezier(0.3, 0.6, 0.4, 1);
   }
-  28% {
+  34% {
     transform: translateY(-12px) scale(1.1);
     animation-timing-function: ease-in-out;
   }
-  40% {
+  47% {
     transform: translateY(0) scale(1);
   }
-  77% {
+  69% {
     opacity: 1;
     transform: scale(1);
     animation-timing-function: ease-out;
   }
-  85% {
+  79% {
     opacity: 1;
     transform: scale(1.4);
     animation-timing-function: ease-in;
@@ -404,19 +402,19 @@
 
 @keyframes chest-loot-halo {
   0%,
-  25% {
+  30% {
     opacity: 0;
     transform: scale(0.4);
   }
-  40% {
+  47% {
     opacity: 1;
     transform: scale(1);
   }
-  60% {
+  58% {
     opacity: 0.75;
     transform: scale(0.92);
   }
-  77% {
+  69% {
     opacity: 1;
     transform: scale(1);
   }

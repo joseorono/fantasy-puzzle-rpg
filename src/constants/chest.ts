@@ -33,9 +33,9 @@ export const CHEST_OPENING = {
   /** Display scale of the sprite in the overlay. */
   displayScale: 2,
   /** How long the chest rattles before the lid pops. */
-  shakeMs: 1150,
-  /** When each rattle starts, within `shakeMs`; keep in step with `chest-rattle` in chest-opening.css. */
-  rattleAtMs: [0, 420, 800],
+  shakeMs: 550,
+  /** When each rattle starts, within `shakeMs`; keep in step with `chest-rattle` (and its duration) in chest-opening.css. */
+  rattleAtMs: [0, 200, 385],
   rattleVolume: 0.35,
   /** Playback speed added per rattle, so the clicks wind up. */
   rattlePitchStep: 0.12,
@@ -45,13 +45,13 @@ export const CHEST_OPENING = {
    * Each loot icon in turn: launched out of the chest to where the rays cross, held, then a quick
    * grow-and-vanish. The three phases set the `chest-loot-launch` keyframe percentages in chest-opening.css.
    */
-  parade: { iconSize: 48, launchMs: 380, holdMs: 360, popMs: 220, pitchStep: 0.06, volume: 0.55 },
+  parade: { iconSize: 48, launchMs: 170, holdMs: 80, popMs: 110, pitchStep: 0.06, volume: 0.55 },
   /** From the lid popping to the first loot icon launching. */
-  revealDelayMs: 450,
+  revealDelayMs: 150,
   /** From the loot list rising out, after the last icon, to the overlay closing on its own. */
-  revealHoldMs: 3200,
+  revealHoldMs: 1400,
   /** Gap between each loot entry rising out. */
-  lootStaggerMs: 110,
+  lootStaggerMs: 45,
   burstParticleCount: 30,
   sparkleCount: 24,
   /** Glow and particle tint when the chest holds no equipment. */
