@@ -142,4 +142,7 @@ export const TILESET_DESERT: TilemapTileset = {
     720, 721, 722, 723, 724, 725, 726, 727, 730, 731, 732, 733, 742, 743, 744, 745, 746, 747, 748, 749, 750, 755, 756,
     757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768, 769, 770, 771, 772, 773, 774, 775,
   ],
+  // The huge bone's raised arc and tip: the player walks under them. Its grounded
+  // base (366, 367, 391–393) stays solid.
+  overheadGids: [294, 318, 319, 342, 343, 344, 368, 369],
 };
