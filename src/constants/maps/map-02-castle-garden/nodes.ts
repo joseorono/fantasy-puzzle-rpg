@@ -9,9 +9,9 @@ export const CASTLE_GARDEN_NODES: InteractiveMapNode[] = [
     id: 'castle_garden_previous_map',
     type: 'PreviousMap',
     position: { row: 4, col: 0 },
-    name: 'Willow Gate',
+    name: 'Desert Road',
     blocksMovement: false,
-    description: 'The willow gate back into the Fairy Forest',
-    destination: { mapId: 'map-01-fairy-forest', arrival: { row: 2, col: 1 } },
+    description: 'The road back into the Desert',
+    destination: { mapId: 'map-03-desert', arrival: { row: 13, col: 117 } },
   },
 ];

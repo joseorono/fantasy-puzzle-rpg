@@ -427,7 +427,7 @@ export const FAIRY_FOREST_NODES: InteractiveMapNode[] = [
     position: { row: 1, col: 0 },
     name: 'Willow Gate',
     blocksMovement: false,
-    description: 'A gate of woven willow opens onto a castle garden',
-    destination: { mapId: 'map-02-castle-garden', arrival: { row: 4, col: 1 } },
+    description: 'A gate of woven willow opens onto the desert',
+    destination: { mapId: 'map-03-desert', arrival: { row: 74, col: 83 } },
   },
 ];
