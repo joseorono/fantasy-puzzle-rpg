@@ -6,10 +6,10 @@ import { SparkleLayer } from '~/components/effects/sparkle-layer';
 import { BurstParticles } from '~/components/effects/burst-particles';
 import { NarikWoodBitFont } from '~/components/bitmap-fonts/narik-wood';
 import { ItemIcon } from '~/components/sprite-icons/item-icon';
-import { ResourceChip } from '~/components/ui-custom/resource-chip';
+import { ResourceStatItem } from '~/components/ui-custom/resource-stat-item';
 import { ChestSprite } from './chest-sprite';
 import { CHEST_OPENING } from '~/constants/chest';
-import { RESOURCE_DISPLAY_ORDER } from '~/constants/resources';
+import { RESOURCE_DISPLAY_ORDER, RESOURCE_ICON_NAMES, RESOURCE_LABELS } from '~/constants/resources';
 import { SoundNames } from '~/constants/audio';
 import { KeyboardKeys } from '~/constants/keyboard';
 import { getBestLootRarity } from '~/lib/loot';
@@ -163,11 +163,19 @@ export function ChestOpeningOverlay({ variant, loot, onDone }: ChestOpeningOverl
             ))}
             {earnedResources.length > 0 && (
               <div
-                className="chest-opening__entry chest-opening__entry--resources"
+                className="chest-opening__resources"
                 style={{ animationDelay: `${lootEntries.length * CHEST_OPENING.lootStaggerMs}ms` }}
               >
                 {earnedResources.map((key) => (
-                  <ResourceChip key={key} resource={key} amount={loot.resources.item[key]} iconSize={20} />
+                  <ResourceStatItem
+                    key={key}
+                    variant="treasure"
+                    resource={key}
+                    label={RESOURCE_LABELS[key]}
+                    value={loot.resources.item[key]}
+                    iconName={RESOURCE_ICON_NAMES[key]}
+                    prefix="+"
+                  />
                 ))}
               </div>
             )}

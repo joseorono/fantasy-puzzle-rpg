@@ -17,6 +17,7 @@ const resourceStatItemVariants = cva('resource-stat', {
       card: 'resource-stat--card',
       town: 'resource-stat--town',
       compact: 'resource-stat--compact',
+      treasure: 'resource-stat--treasure',
     },
   },
   defaultVariants: {
@@ -34,11 +35,12 @@ const resourceStatItemVariants = cva('resource-stat', {
 const ICON_SPRITE_SIZE = 24;
 
 /**
- * Compact rows sit beside 10px text, so the sprite steps down to two-thirds.
- * That does resample unevenly — half a cell (12) would not — but 12px is too
- * small to read the sheet's resources apart, which is the icon's whole job here.
+ * Compact rows sit beside 10px text, so the sprite steps down to two-thirds. That
+ * does resample unevenly — half a cell (12) would not — but 12px is too small to
+ * read the sheet's resources apart, which is the icon's whole job here.
  */
 const COMPACT_ICON_SPRITE_SIZE = 16;
+const TREASURE_ICON_SPRITE_SIZE = 20;
 
 interface ResourceStatItemProps extends VariantProps<typeof resourceStatItemVariants> {
   /** Picks the value colour via the `resource-stat--<resource>` modifier. */
@@ -58,9 +60,8 @@ interface ResourceStatItemProps extends VariantProps<typeof resourceStatItemVari
 }
 
 /**
- * One resource readout: icon, label, and an animated value. Shared by the pause
- * menu's compact bar, the battle-rewards cards and the town bar, which differ
- * only in skin.
+ * One resource readout: icon, label, and an animated value. Shared by pause-menu,
+ * battle-reward, town, save-slot, and chest-opening displays, which differ by skin.
  */
 export function ResourceStatItem({
   resource,
@@ -81,10 +82,17 @@ export function ResourceStatItem({
         `resource-stat--${resource}`,
         riveted && 'resource-stat--riveted',
       )}
+      title={variant === 'treasure' ? label : undefined}
     >
       <FrostyRpgIcon
         name={iconName}
-        size={variant === 'compact' ? COMPACT_ICON_SPRITE_SIZE : ICON_SPRITE_SIZE}
+        size={
+          variant === 'compact'
+            ? COMPACT_ICON_SPRITE_SIZE
+            : variant === 'treasure'
+              ? TREASURE_ICON_SPRITE_SIZE
+              : ICON_SPRITE_SIZE
+        }
         className="resource-stat__icon"
       />
       <div className="resource-stat__content">
