@@ -5,6 +5,7 @@ import type { LootTable } from './loot';
 import type { DungeonDefinition } from './dungeon';
 import type { MapId } from './map';
 import type { GridPosition } from './geometry';
+import type { ChestVariant } from './chest';
 
 // ─── General Map Types ────────────────────────────────────────────────
 
@@ -33,6 +34,8 @@ export interface InteractiveMapNode {
   description?: string;
   /** Loot payload for Treasure nodes */
   lootPayload?: LootTable;
+  /** Treasure only: overrides the map's `chestVariant` for this chest */
+  chestVariant?: ChestVariant;
   /** Dungeon registry id (`DungeonDefinition.id`) this Dungeon node enters — resolved via the `DUNGEONS` registry */
   dungeonId?: string;
   /** Inline dungeon definition for a Dungeon node — takes precedence over `dungeonId` when both are set */

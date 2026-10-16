@@ -4,7 +4,17 @@ import { setupBattleAtom } from '~/stores/battle-atoms';
 import { ConsumableItems, EquipmentItems, ConsumableItemIds } from '~/constants/inventory';
 import { INITIAL_ENEMIES } from '~/constants/party';
 import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from '~/constants/enemies/debug';
-import { BADGER, BAT, GIANT_FROG, SKELETON, SMALL_SLIME, STONE_GOLEM, SWAMP_FROG } from '~/constants/enemies/world-00';
+import {
+  BADGER,
+  BAT,
+  DINO_REX,
+  DINO_TRI,
+  GIANT_FROG,
+  SKELETON,
+  SMALL_SLIME,
+  STONE_GOLEM,
+  SWAMP_FROG,
+} from '~/constants/enemies/world-00';
 import { ALL_MAPS } from '~/constants/maps';
 import { createLootTable } from '~/types/loot';
 import { cn } from '~/lib/utils';
@@ -92,6 +102,22 @@ const BATTLE_DEMOS: {
     title: 'The roaming FOE: only Ultimates exploit its weakness.',
     enemies: [{ ...STONE_GOLEM, id: 'stone-golem-1' }],
   },
+  {
+    id: 'dino-rex',
+    label: 'Dino Rex',
+    className: 'bg-orange-600 hover:bg-orange-700',
+    location: 'Forest',
+    title: 'Dino Rex: the split attack_B concatenated into one animation, the stomp as a third attack, black ability.',
+    enemies: [{ ...DINO_REX, id: 'dino-rex-1' }],
+  },
+  {
+    id: 'dino-tri',
+    label: 'Dino Tri',
+    className: 'bg-orange-500 hover:bg-orange-600',
+    location: 'Forest',
+    title: 'Dino Tri: the pack has no hurt row (so hits show only the recoil) and sit/thought were skipped.',
+    enemies: [{ ...DINO_TRI, id: 'dino-tri-1' }],
+  },
 ];
 
 /**
@@ -169,30 +195,30 @@ export default function RouterTestView() {
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-00-apprentice-forge' })}
+          onClick={() => goToMap({ mapId: 'map-00-apprentice-forge', showLoadingScreen: true })}
         >
           Apprentice Forge
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-01-fairy-forest' })}
+          onClick={() => goToMap({ mapId: 'map-01-fairy-forest', showLoadingScreen: true })}
         >
           Fairy Forest
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-02-castle-garden' })}
+          onClick={() => goToMap({ mapId: 'map-03-desert', showLoadingScreen: true })}
         >
-          Castle Garden
+          Desert
         </button>
 
         <button
           className="rounded bg-emerald-500 px-3 py-2 text-white transition-colors hover:bg-emerald-600"
-          onClick={() => goToMap({ mapId: 'map-03-desert' })}
+          onClick={() => goToMap({ mapId: 'map-02-castle-garden', showLoadingScreen: true })}
         >
-          Desert
+          Castle Garden
         </button>
 
         <button
@@ -217,7 +243,7 @@ export default function RouterTestView() {
             <button
               key={map.id}
               className="rounded bg-blue-500 px-3 py-2 text-white transition-colors hover:bg-blue-600"
-              onClick={() => goToMap({ mapId: map.id })}
+              onClick={() => goToMap({ mapId: map.id, showLoadingScreen: true })}
             >
               {map.displayMapName}
             </button>

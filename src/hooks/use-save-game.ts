@@ -90,9 +90,9 @@ export function useSaveGameActions() {
     const { goToDebug, goToMap } = useGameStore.getState().actions.router;
     if (DEBUG_MODE) {
       goToDebug({}, { history: 'reset' });
-      goToMap({ mapId: save.currentMapId });
+      goToMap({ mapId: save.currentMapId, showLoadingScreen: true });
     } else {
-      goToMap({ mapId: save.currentMapId }, { history: 'reset' });
+      goToMap({ mapId: save.currentMapId, showLoadingScreen: true }, { history: 'reset' });
     }
     store.set(isGameStartedAtom, true);
     soundService.playSound(SoundNames.loadChime, 0.7);
@@ -113,7 +113,8 @@ export function useSaveGameActions() {
     store.set(basePlaytimeMsAtom, 0);
     store.set(sessionStartedAtAtom, Date.now());
     if (!DEBUG_MODE) {
-      useGameStore.getState().actions.router.goToMap({ mapId: STARTER_MAP_ID }, { history: 'reset' });
+      const { goToMap } = useGameStore.getState().actions.router;
+      goToMap({ mapId: STARTER_MAP_ID, showLoadingScreen: true }, { history: 'reset' });
     }
   }
 

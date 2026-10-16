@@ -16,8 +16,8 @@ export const MAP_REGISTRY: Record<MapId, MapDefinition> = {
   'map-01': MAP_01,
   'map-00-apprentice-forge': MAP_00_APPRENTICE_FORGE,
   'map-01-fairy-forest': MAP_01_FAIRY_FOREST,
-  'map-02-castle-garden': MAP_02_CASTLE_GARDEN,
   'map-03-desert': MAP_03_DESERT,
+  'map-02-castle-garden': MAP_02_CASTLE_GARDEN,
 };
 
 /** Map used when a navigation arrives without one. */

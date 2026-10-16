@@ -10,6 +10,7 @@ import { MapInfoPanel } from './map-info-panel';
 import { DialogueScene } from '~/components/dialogue';
 import { NodeInteractionMenu } from './node-interaction-menu';
 import { LootNotification } from './loot-notification';
+import { ChestOpeningOverlay } from './chest-opening-overlay';
 import { FloorLootNotification } from './floor-loot-notification';
 import { MapMinimap } from './map-minimap';
 import { KeyHintPill } from '~/components/ui-custom/key-hint-pill';
@@ -65,9 +66,11 @@ import { additionWithMax } from '~/lib/math';
 import { randomBool } from '~/lib/utils';
 import { MAX_AMOUNT_PER_ITEM } from '~/constants/inventory';
 import { DEFAULT_TOWN_HUB_DATA } from '~/constants/routing';
-import type { LootTable } from '~/types/loot';
+import { createEmptyLootTable, type LootTable } from '~/types/loot';
+import type { ChestVariant } from '~/types/chest';
 import type { Resources } from '~/types/resources';
 import { generateRandomResources, rollLootTableRarities } from '~/lib/loot';
+import { resolveChestVariant } from '~/lib/chest-sprite';
 import { CHEST_RARITY_BIAS } from '~/constants/rarity';
 import { soundService } from '~/services/sound-service';
 import { SoundNames } from '~/constants/audio';
@@ -78,6 +81,8 @@ import { DEFAULT_FOOTSTEP_PITCH, DEFAULT_FOOTSTEP_VOLUME } from '~/constants/foo
 import { createFootstepProfile } from '~/lib/footsteps';
 import { isMinimapKey } from '~/constants/keyboard';
 import { MAP_EXIT_NODE_TYPES } from '~/constants/map';
+import { useMapLoadingScreen } from '~/hooks/use-map-loading-screen';
+import { MapLoadingScreen } from './map-loading-screen';
 
 /** Resolve the dungeon a node points at — an inline definition wins, else the registry id. */
 function resolveDungeon(node: InteractiveMapNode): DungeonDefinition | undefined {
@@ -108,9 +113,13 @@ type DialogueSceneKey = string;
 interface TilemapComponentProps {
   /** The map to render and run. All content is read from here — nothing map-specific is imported. */
   map: MapDefinition;
+  /** Hold the loading screen over the map until it has drawn. Read once, on mount. */
+  showLoadingScreen: boolean;
+  /** Called once the map is on screen: on mount, or when the loading screen starts fading. */
+  onReveal: () => void;
 }
 
-const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
+const Tilemap: React.FC<TilemapComponentProps> = ({ map, showLoadingScreen, onReveal }) => {
   const { tilesetImage, displayMapName, walkableLayers, surfaceLayers, visibleLayers, defaultPlayerPosition, debug } =
     map;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,6 +152,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   const [showNodeMenu, setShowNodeMenu] = useState(false);
   const [closingNode, setClosingNode] = useState<{ node: InteractiveMapNode; position: Position } | null>(null);
   const [currentLoot, setCurrentLoot] = useState<LootTable | null>(null);
+  // The chest being opened; its loot moves to `currentLoot` once the ceremony ends.
+  const [openingChest, setOpeningChest] = useState<{ variant: ChestVariant; loot: LootTable } | null>(null);
   const [collectedFloorLoot, setCollectedFloorLoot] = useState<Resources | null>(null);
   const [isMinimapOpen, setIsMinimapOpen] = useState(false);
   // Where the character is on screen, kept current only while a popup points at it.
@@ -219,14 +230,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     isMaskWalkable(walkableMask, row, col) && !isUnbeatenGateAt(row, col);
 
   // Roaming enemies step inside the movement loop (see `onFrame`) and draw on the canvas.
-  // The chest loot panel holds them: the player can't act under it, so nothing may creep up.
+  // The chest ceremony and loot panel hold them: the player can't act under them, so nothing may creep up.
   const foes = useFoeSimulation({
     map,
     tileSize,
     walkableMask,
     isWalkable: isFoeWalkable,
     defeatedIds: mapProgressState.foesDefeated,
-    isHeld: currentLoot !== null,
+    isHeld: openingChest !== null || currentLoot !== null,
     showDebug: Boolean(debug) && DEBUG_MODE,
     onContact: (foe) => startFoeBattle(foe),
   });
@@ -386,6 +397,18 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     drawOverlay: foes.drawFoes,
   });
 
+  const [hasLoadingScreen] = useState(showLoadingScreen);
+  const { isVisible: isLoadingScreenVisible } = useMapLoadingScreen({
+    isEnabled: hasLoadingScreen,
+    isReady: renderer.isReady,
+  });
+  const isMapRevealed = renderer.isReady && !isLoadingScreenVisible;
+
+  useEffect(() => {
+    if (!isLoadingScreenVisible) onReveal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingScreenVisible]);
+
   // --- Smooth character movement (rAF-based) ---
   const movement = useCharacterMovement({
     initialRow: charPosition.row,
@@ -408,7 +431,15 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     // The node menu is deliberately excluded: stepping off a node is how you dismiss it.
     // The pause menu owns the keyboard while open — WASD must not walk the character under it.
     // The overview is read in place: frozen, turned to the camera, book open.
-    isPaused: showTriggerModal || activeDialogue !== null || isPauseMenuOpen || isTransitioning || isMinimapOpen,
+    // The loading screen freezes everything under it, FOEs included.
+    isPaused:
+      isLoadingScreenVisible ||
+      showTriggerModal ||
+      activeDialogue !== null ||
+      isPauseMenuOpen ||
+      isTransitioning ||
+      isMinimapOpen ||
+      openingChest !== null,
     isReading: isMinimapOpen,
     onFootstep: ({ running }) => {
       footstepSystem.playFootstep(running ? footstepProfile.run : footstepProfile.walk);
@@ -443,7 +474,12 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
   // modifier and focus loss are owned by useMultiKeyDirection.
   // The overview only opens when nothing else owns the screen.
   const canOpenMinimap =
-    !isMinimapOpen && !isPauseMenuOpen && !showTriggerModal && activeDialogue === null && !isTransitioning;
+    !isLoadingScreenVisible &&
+    !isMinimapOpen &&
+    !isPauseMenuOpen &&
+    !showTriggerModal &&
+    activeDialogue === null &&
+    !isTransitioning;
 
   function openMinimap() {
     soundService.playSound(SoundNames.clickChangeTab, 0.35, 0.1, 0.05);
@@ -591,7 +627,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     await travelBetweenMaps();
     mapProgressActions.completeNode(node.type, node.id);
     mapProgressActions.setCharacterPosition(destination.mapId, destination.arrival);
-    routerActions.goToMap({ mapId: destination.mapId }, { history: 'replace' });
+    routerActions.goToMap({ mapId: destination.mapId, showLoadingScreen: true }, { history: 'replace' });
   }
 
   function handleNodeTravel() {
@@ -677,19 +713,20 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
     if (!currentNode || currentNode.type !== 'Treasure' || !currentNode.lootPayload) return;
     console.log('Opening chest:', currentNode.name);
 
-    // Play chest opening sound immediately for instant feedback
-    soundService.playSound(SoundNames.rhodesmasChime, 0.7, 0.1, 0.05);
-
     // Roll a rarity for each equipment entry once, so the inventory grant and the
     // loot notification below show the same tiers.
-    const loot = rollLootTableRarities(currentNode.lootPayload, CHEST_RARITY_BIAS);
+    const rolledLoot = rollLootTableRarities(currentNode.lootPayload, CHEST_RARITY_BIAS);
+
+    // Only what passes its probability roll is granted, and only that is shown.
+    const loot: LootTable = {
+      equipableItems: rolledLoot.equipableItems.filter((lootItem) => randomBool(lootItem.probability)),
+      consumableItems: rolledLoot.consumableItems.filter((lootItem) => randomBool(lootItem.probability)),
+      resources: randomBool(rolledLoot.resources.probability) ? rolledLoot.resources : createEmptyLootTable().resources,
+    };
 
     // Apply loot to player inventory and resources using math utilities
     // Add equipment items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
     loot.equipableItems.forEach((lootItem) => {
-      // Check probability to determine if item should be included
-      if (!randomBool(lootItem.probability)) return;
-
       const item = lootItem.item;
       const existingItem = currentInventory.items.find(
         (invItem) => invItem.itemId === item.id && invItem.rarity === lootItem.rarity,
@@ -704,9 +741,6 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
     // Add consumable items with additionWithMax to respect MAX_AMOUNT_PER_ITEM
     loot.consumableItems.forEach((lootItem) => {
-      // Check probability to determine if item should be included
-      if (!randomBool(lootItem.probability)) return;
-
       const item = lootItem.item;
       const existingItem = currentInventory.items.find((invItem) => invItem.itemId === item.id);
       const currentQuantity = existingItem?.quantity ?? 0;
@@ -719,17 +753,14 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
     // Add resources using the addResources utility from lib/resources.ts
     // This ensures proper arithmetic operations for currency
-    // Check probability to determine if resources should be included
-    if (randomBool(loot.resources.probability)) {
-      const newResources = addResources(currentResources, loot.resources.item);
-      resourcesActions.setResources(newResources);
-    }
+    const newResources = addResources(currentResources, loot.resources.item);
+    resourcesActions.setResources(newResources);
 
     // Mark treasure as looted
     mapProgressActions.completeNode(currentNode.type, currentNode.id);
 
-    // Show loot notification
-    setCurrentLoot(loot);
+    // Granted already, so quitting mid-ceremony loses nothing; the loot notification follows it.
+    setOpeningChest({ variant: resolveChestVariant(map, currentNode), loot });
 
     // Close menu and clear current node
     setShowNodeMenu(false);
@@ -816,6 +847,8 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
 
           {debug && DEBUG_MODE && <MapDebugOverlay charPosition={charPosition} status={debugInfo} />}
         </div>
+
+        {hasLoadingScreen && <MapLoadingScreen isVisible={isLoadingScreenVisible} />}
       </div>
 
       {/* Dialogue trigger confirmation modal */}
@@ -826,7 +859,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
       />
 
       {/* Node interaction tooltip */}
-      {showNodeMenu && currentNode && renderer.isReady ? (
+      {showNodeMenu && currentNode && isMapRevealed ? (
         <NodeInteractionMenu
           key={currentNode.id}
           node={currentNode}
@@ -839,7 +872,7 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
           onViewDialogue={currentNode.dialogueScene ? handleNodeViewDialogue : undefined}
           characterPosition={popupAnchor ?? getCharacterScreenPosition()}
         />
-      ) : closingNode && renderer.isReady ? (
+      ) : closingNode && isMapRevealed ? (
         <NodeInteractionMenu
           key={`closing-${closingNode.node.id}`}
           node={closingNode.node}
@@ -849,7 +882,17 @@ const Tilemap: React.FC<TilemapComponentProps> = ({ map }) => {
         />
       ) : null}
 
-      {/* Loot notification */}
+      {/* Chest opening ceremony, then the loot notification */}
+      {openingChest && (
+        <ChestOpeningOverlay
+          variant={openingChest.variant}
+          loot={openingChest.loot}
+          onDone={() => {
+            setCurrentLoot(openingChest.loot);
+            setOpeningChest(null);
+          }}
+        />
+      )}
       {currentLoot && <LootNotification loot={currentLoot} onClose={() => setCurrentLoot(null)} />}
 
       {/* Floor loot notification */}

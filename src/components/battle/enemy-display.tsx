@@ -12,7 +12,7 @@ import {
   isTrainingBattleAtom,
   standbyEnemyIdsAtom,
 } from '~/stores/battle-atoms';
-import { ENEMY_HP_THRESHOLD_BG } from '~/constants/ui';
+import { ENEMY_HP_THRESHOLD_BG, WEAK_CALLOUT_CLASSES } from '~/constants/ui';
 import { POISE_BREAK_CALLOUT_DURATION_MS } from '~/constants/battle';
 import { POISE_BREAK_SOUND } from '~/constants/audio';
 import { cn } from '~/lib/utils';
@@ -25,7 +25,7 @@ import { EnemyWeaknessBadges } from '~/components/battle/enemy-weakness-badges';
 import { TrainingDummyReadout } from '~/components/battle/training-dummy-readout';
 import { DamageDisplay } from '~/components/ui-custom/damage-display';
 import { IndigolayCornersWrapper } from '~/components/cursor/indigolay-corners-wrapper';
-import type { EnemyData } from '~/types/rpg-elements';
+import type { EnemyData, WeaknessSource } from '~/types/rpg-elements';
 
 type EnemySpriteSize = NonNullable<EnemyData['spriteSize']>;
 
@@ -83,7 +83,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
   const [isRecoiling, setIsRecoiling] = useState(false);
   const [isSkillHit, setIsSkillHit] = useState(false);
   const [isVulnerableHit, setIsVulnerableHit] = useState(false);
-  const [isWeakHit, setIsWeakHit] = useState(false);
+  const [weakSource, setWeakSource] = useState<WeaknessSource | null>(null);
   const [showStagger, setShowStagger] = useState(false);
   const [staggerKey, setStaggerKey] = useState(0);
   const [showBreak, setShowBreak] = useState(false);
@@ -103,7 +103,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
       setIsSkillHit(lastDamage.source === 'skill');
       // A hit landing while Broken (or the one that Breaks) reads as a crit.
       setIsVulnerableHit(isStaggeredRef.current);
-      setIsWeakHit(lastDamage.weakEnemyIds?.includes(enemy.id) ?? false);
+      setWeakSource(lastDamage.weaknessByEnemyId?.[enemy.id] ?? null);
       setShowDamage(true);
       setIsRecoiling(true);
       setAnimationKey((prev) => prev + 1);
@@ -211,7 +211,7 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
           >
             <DamageDisplay
               amount={damageAmount}
-              type={isWeakHit ? 'weak' : isSkillHit || isVulnerableHit || damageAmount > 20 ? 'critical' : 'damage'}
+              type={weakSource ? 'weak' : isSkillHit || isVulnerableHit || damageAmount > 20 ? 'critical' : 'damage'}
               className={isSkillHit ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'}
             />
           </div>
@@ -240,10 +240,13 @@ function EnemySprite({ enemy, isSelected, isBattlePaused, onSelect }: EnemySprit
         )}
 
         {/* Weakness callout — rises from the lower card so it clears the flinch/break pops. */}
-        {showDamage && isWeakHit && !isDead && (
+        {showDamage && weakSource && !isDead && (
           <div
             key={`weak-${animationKey}`}
-            className="stagger-callout stagger-callout--weak pixel-font pointer-events-none absolute top-[85%] left-1/2 z-40 text-[9px] font-bold tracking-wide uppercase sm:text-[11px]"
+            className={cn(
+              'stagger-callout pixel-font pointer-events-none absolute top-[85%] left-1/2 z-40 font-bold tracking-wide uppercase',
+              WEAK_CALLOUT_CLASSES[weakSource],
+            )}
           >
             Weak!
           </div>

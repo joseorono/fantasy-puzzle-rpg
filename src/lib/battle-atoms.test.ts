@@ -823,7 +823,7 @@ describe('enemy weaknesses', () => {
 
     const lastDamage = store.get(battleStateAtom).lastDamage;
     expect(lastDamage?.amount).toBe(resolveWeaknessDamage(20, true));
-    expect(lastDamage?.weakEnemyIds).toEqual(['bat-1']);
+    expect(lastDamage?.weaknessByEnemyId).toEqual({ 'bat-1': 'green' });
   });
 
   it('leaves other colours alone', () => {
@@ -832,7 +832,7 @@ describe('enemy weaknesses', () => {
 
     const lastDamage = store.get(battleStateAtom).lastDamage;
     expect(lastDamage?.amount).toBe(20);
-    expect(lastDamage?.weakEnemyIds).toBeUndefined();
+    expect(lastDamage?.weaknessByEnemyId).toBeUndefined();
   });
 
   it('stacks with the preemptive-strike bonus', () => {
@@ -853,7 +853,7 @@ describe('enemy weaknesses', () => {
     weak.set(activateSkillAtom, attacker.id);
     const lastDamage = weak.get(battleStateAtom).lastDamage;
     expect(lastDamage?.amount).toBe(resolveWeaknessDamage(baseDamage, true));
-    expect(lastDamage?.weakEnemyIds).toEqual(['stone-golem-1']);
+    expect(lastDamage?.weaknessByEnemyId).toEqual({ 'stone-golem-1': 'ultimate' });
 
     const matched = createWeaknessStore(STONE_GOLEM);
     matched.set(damageEnemyAtom, { hits: [{ amount: 20, orbType: 'blue' }] });
@@ -868,7 +868,9 @@ describe('enemy weaknesses', () => {
 
     const weak = createWeaknessStore(BAT);
     weak.set(activateSkillAtom, attacker.id);
-    expect(weak.get(battleStateAtom).lastDamage?.amount).toBe(resolveWeaknessDamage(baseDamage, true));
+    const lastDamage = weak.get(battleStateAtom).lastDamage;
+    expect(lastDamage?.amount).toBe(resolveWeaknessDamage(baseDamage, true));
+    expect(lastDamage?.weaknessByEnemyId).toEqual({ 'bat-1': 'green' });
   });
 });
 

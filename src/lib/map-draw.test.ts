@@ -23,6 +23,7 @@ import {
   MAP_MARKER_PLATE_SIZE_PX,
   MAP_MARKER_PULSE_RADIANS_PER_SECOND,
 } from '~/constants/map';
+import { CHEST_ANCHOR_X_PX, CHEST_SPRITE_SHEET, DEFAULT_CHEST_VARIANT } from '~/constants/chest';
 
 const TILE = 16;
 
@@ -95,11 +96,44 @@ describe('getNodeMarkerState', () => {
 describe('buildMarkerList', () => {
   const markers = buildMarkerList(MAP, TILE, STATUS);
 
-  it('lists every node with its type and state', () => {
-    expect(find(markers, 'node').map((node) => [node.nodeType, node.state])).toEqual([
-      ['Battle', 'todo'],
-      ['Treasure', 'done'],
+  it('lists every node with its type and state, chests apart', () => {
+    expect(find(markers, 'node').map((node) => [node.nodeType, node.state])).toEqual([['Battle', 'todo']]);
+    expect(find(markers, 'chest').map((chest) => [chest.variant, chest.isOpened])).toEqual([
+      [DEFAULT_CHEST_VARIANT, true],
     ]);
+  });
+
+  it('centres the closed chest on its tile, standing on the tile bottom', () => {
+    const [chest] = find(markers, 'chest');
+    expect(chest.x + CHEST_ANCHOR_X_PX).toBe(4 * TILE + TILE / 2);
+    expect(chest.y + CHEST_SPRITE_SHEET.frameHeight).toBe(5 * TILE);
+    expect(chest.bounds.left).toBeLessThanOrEqual(chest.x);
+    expect(chest.bounds.top).toBeLessThanOrEqual(chest.y);
+    expect(chest.bounds.right).toBeGreaterThanOrEqual(chest.x + CHEST_SPRITE_SHEET.frameWidth);
+  });
+
+  it('scales the chest by whole numbers on 32px tiles', () => {
+    const [chest] = find(buildMarkerList(MAP, 32, STATUS), 'chest');
+    expect(chest.scale).toBe(2);
+    expect(chest.x + CHEST_ANCHOR_X_PX * 2).toBe(4 * 32 + 16);
+    expect(chest.y + CHEST_SPRITE_SHEET.frameHeight * 2).toBe(5 * 32);
+  });
+
+  it('takes the chest variant from the node, else the map', () => {
+    const [chest] = MAP.nodes!.slice(1);
+    const onMap = buildMarkerList({ ...MAP, chestVariant: 'frost' }, TILE, STATUS);
+    expect(find(onMap, 'chest')[0].variant).toBe('frost');
+    const overridden = buildMarkerList(
+      { ...MAP, chestVariant: 'frost', nodes: [{ ...chest, chestVariant: 'royal' }] },
+      TILE,
+      STATUS,
+    );
+    expect(find(overridden, 'chest')[0].variant).toBe('royal');
+  });
+
+  it('keeps a closed chest closed until its node is done', () => {
+    const fresh = buildMarkerList(MAP, TILE, { ...STATUS, isNodeCompleted: () => false });
+    expect(find(fresh, 'chest')[0].isOpened).toBe(false);
   });
 
   it('draws a plate on every tile of a node placed on several, sharing its state', () => {
@@ -119,7 +153,20 @@ describe('buildMarkerList', () => {
 
   it('relights a completed node the character stands on', () => {
     const occupied = buildMarkerList(MAP, TILE, STATUS, { row: 4, col: 4 });
-    expect(find(occupied, 'node').map((node) => node.state)).toEqual(['todo', 'doneActive']);
+    expect(find(occupied, 'node').map((node) => node.state)).toEqual(['todo']);
+    expect(find(occupied, 'chest').map((chest) => chest.fallback.state)).toEqual(['doneActive']);
+  });
+
+  it('never draws a used exit as done', () => {
+    const stairs = {
+      id: 'stairs',
+      type: 'NextMap' as const,
+      position: { row: 1, col: 1 },
+      name: 'Stairs',
+      blocksMovement: false,
+    };
+    const used = buildMarkerList({ ...MAP, nodes: [stairs] }, TILE, { ...STATUS, isNodeCompleted: () => true });
+    expect(find(used, 'node').map((node) => node.state)).toEqual(['todo']);
   });
 
   it('centres a plate on its tile, standing on the tile bottom', () => {

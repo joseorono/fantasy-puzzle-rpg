@@ -1,4 +1,4 @@
-import type { CharacterData, EnemyData, OrbType } from './rpg-elements';
+import type { CharacterData, EnemyData, OrbType, WeaknessSource } from './rpg-elements';
 import type { GridPosition } from './geometry';
 
 export type ActionTarget = 'party' | 'enemy';
@@ -122,8 +122,8 @@ export interface BattleState {
     enemyIds?: string[];
     /** Individual hits folded into this event (a multi-color match). Absent = one hit of `amount`. */
     hits?: Array<{ amount: number; characterId?: string; orbType?: OrbType }>;
-    /** Struck enemies whose weakness this hit exploited (see `~/lib/weakness-system`). */
-    weakEnemyIds?: string[];
+    /** Struck enemies whose weakness this hit exploited, and which one (see `~/lib/weakness-system`). */
+    weaknessByEnemyId?: Record<string, WeaknessSource>;
     /**
      * Per-target amounts when one event hit several enemies for different values (an all-enemy
      * skill landing on a mix of staggered and unbroken targets). Falls back to `amount`.

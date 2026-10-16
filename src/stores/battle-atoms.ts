@@ -10,7 +10,7 @@ import type {
   LineOrientation,
 } from '~/types/battle';
 import type { GridPosition } from '~/types/geometry';
-import type { CharacterData, EnemyData, OrbType } from '~/types/rpg-elements';
+import type { CharacterData, EnemyData, OrbType, WeaknessSource } from '~/types/rpg-elements';
 import { subtractionWithMin } from '~/lib/math';
 import { getRandomElement } from '~/lib/utils';
 import { INITIAL_PARTY, INITIAL_ENEMIES } from '~/constants/party';
@@ -18,7 +18,7 @@ import { BOMB_REFILL_CHANCE } from '~/constants/board';
 import { GUARD_MAX, POISE_SKILL_MULTIPLIER, PREEMPTIVE_STRIKE_DAMAGE_BONUS } from '~/constants/battle';
 import { BASE_SKILL_DAMAGE } from '~/constants/skills';
 import { weighHitsByAttacker } from '~/lib/flinch-system';
-import { isWeakTo, resolveWeaknessDamage, resolveWeaknessHits } from '~/lib/weakness-system';
+import { getWeaknessSource, resolveWeaknessDamage, resolveWeaknessHits } from '~/lib/weakness-system';
 import {
   applyPoiseHits,
   countEnemyBreaks,
@@ -326,7 +326,7 @@ export const damageEnemyAtom = atom(null, (get, set, hit: number | EnemyHit | En
       enemyId: selectedId,
       characterId,
       hits: finalHits,
-      weakEnemyIds: weakness.isWeak ? [selectedId] : undefined,
+      weaknessByEnemyId: weakness.weakSource ? { [selectedId]: weakness.weakSource } : undefined,
     },
     lastPreemptiveStrike: isPreemptive ? { timestamp } : currentState.lastPreemptiveStrike,
     enemyPoise,
@@ -861,7 +861,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
   // Per-target HP damage, once the vulnerable bonus is applied; the popup reads its own entry.
   const amountByEnemyId: Record<string, number> = {};
 
-  const weakEnemyIds: string[] = [];
+  const weaknessByEnemyId: Record<string, WeaknessSource> = {};
   const attackerColor = character.color;
 
   function isStaggeredTarget(enemyId: string): boolean {
@@ -871,9 +871,12 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
 
   /** HP this Ultimate deals to one target: weakness first, then the vulnerable window. */
   function resolveLandedAmount(target: EnemyData): number {
-    const isWeak = isWeakTo(target.weakTo, { color: attackerColor, kind: 'ultimate' });
-    if (isWeak) weakEnemyIds.push(target.id);
-    const landed = resolveVulnerableDamage(resolveWeaknessDamage(amount, isWeak), isStaggeredTarget(target.id));
+    const weakSource = getWeaknessSource(target.weakTo, { color: attackerColor, kind: 'ultimate' });
+    if (weakSource) weaknessByEnemyId[target.id] = weakSource;
+    const landed = resolveVulnerableDamage(
+      resolveWeaknessDamage(amount, weakSource !== null),
+      isStaggeredTarget(target.id),
+    );
     amountByEnemyId[target.id] = landed;
     return landed;
   }
@@ -958,7 +961,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       enemyId: hitEnemyId,
       characterId,
       source: 'skill',
-      weakEnemyIds: weakEnemyIds.length > 0 ? weakEnemyIds : undefined,
+      weaknessByEnemyId: Object.keys(weaknessByEnemyId).length > 0 ? weaknessByEnemyId : undefined,
     };
     damageDealt = landed;
   } else if (skill.target === 'allEnemy') {
@@ -970,7 +973,7 @@ export const activateSkillAtom = atom(null, (get, set, characterId: string) => {
       characterId,
       source: 'skill',
       amountByEnemyId,
-      weakEnemyIds: weakEnemyIds.length > 0 ? weakEnemyIds : undefined,
+      weaknessByEnemyId: Object.keys(weaknessByEnemyId).length > 0 ? weaknessByEnemyId : undefined,
     };
     damageDealt = hitEnemyIds.reduce((sum, id) => sum + amountByEnemyId[id], 0);
   }

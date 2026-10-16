@@ -117,6 +117,18 @@ describe('buildMinimapMarkers', () => {
     expect(markers.find((marker) => marker.id === 'node-fight')).toMatchObject({ isDone: false, symbol: 'sword' });
   });
 
+  it('never dims a used exit', () => {
+    const stairs = {
+      id: 'stairs',
+      type: 'PreviousMap' as const,
+      position: { row: 1, col: 1 },
+      name: 'Stairs',
+      blocksMovement: false,
+    };
+    const pins = buildMinimapMarkers({ ...MAP, nodes: [stairs] }, { ...STATUS, isNodeCompleted: () => true });
+    expect(pins.find((marker) => marker.id === 'node-stairs')).toMatchObject({ isDone: false });
+  });
+
   it('pins triggers with a symbol and loot as a plain dot', () => {
     expect(markers.find((marker) => marker.kind === 'dialogueTrigger')?.symbol).toBe(MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL);
     expect(markers.find((marker) => marker.kind === 'floorLoot')?.symbol).toBeUndefined();

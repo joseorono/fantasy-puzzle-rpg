@@ -2,6 +2,7 @@ import { DUNGEON_BG_IMAGES } from '~/constants/dungeon-backgrounds';
 import { SKILL_ICON_SHEET_IMAGES } from '~/constants/skill-icons';
 import { ALL_MAPS } from '~/constants/maps';
 import { TITLE_MAP_PREVIEW_IMAGES } from '~/constants/title-screen';
+import { MAP_LOADING_COGS } from '~/constants/loading-screen';
 
 // No sé si sea lo más optimo, pero se me ocurre que se podrían pre-cargar los assets de la siguiente manera:
 // const preloadin = await preloadEveryImage(['img1.jpg', 'img2.jpg'])
@@ -84,16 +85,24 @@ export const assetList: string[] = [
 
   // Enemies
   '/assets/enemy-sprites/badger_sheet.png',
+  '/assets/enemy-sprites/dino-rex_sheet.png',
+  '/assets/enemy-sprites/dino-tri_map.png',
+  '/assets/enemy-sprites/dino-tri_map_strip.png',
+  '/assets/enemy-sprites/dino-tri_sheet.png',
   '/assets/enemy-sprites/frogger_map.png',
+  '/assets/enemy-sprites/frogger_map_strip.png',
   '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
   '/assets/enemy-sprites/monopixelart-skeleton_map.png',
+  '/assets/enemy-sprites/monopixelart-skeleton_map_strip.png',
   '/assets/enemy-sprites/monopixelart-skeleton_sheet.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',
   '/assets/enemy-sprites/tecopena-bat_map.png',
+  '/assets/enemy-sprites/tecopena-bat_map_strip.png',
   '/assets/enemy-sprites/tecopena-bat_sheet.png',
   '/assets/enemy-sprites/tecopena-slime_map.png',
+  '/assets/enemy-sprites/tecopena-slime_map_strip.png',
   '/assets/enemy-sprites/tecopena-slime_sheet.png',
 
   // Fonts
@@ -157,6 +166,7 @@ export const assetList: string[] = [
   '/assets/icons/rpg-icons-sprite-frostyrabbid-24x24.png',
   '/assets/icons/skull-frostyrabbid.png',
   '/assets/icons/jirby-symbols-16x16.png',
+  '/assets/sprite/chest/admurin-chests.png',
 
   // Skill icon sheets — only the preloaded sizes; the rest stream in on use.
   ...SKILL_ICON_SHEET_IMAGES,
@@ -207,6 +217,9 @@ export const assetList: string[] = [
   '/assets/sprite/party-warrior-stella-side-view.png',
   '/assets/sprite/party-rogue-stella-side-view.png',
   '/assets/sprite/party-healer-stella-side-view.png',
+
+  // Map loading screen gears
+  ...MAP_LOADING_COGS.map((cog) => cog.src),
 
   // Tabs
   '/assets/tabs/UI_tab_Off.png',

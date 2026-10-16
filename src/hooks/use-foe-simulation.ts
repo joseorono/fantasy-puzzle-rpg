@@ -6,6 +6,7 @@ import type { MapPoint, ViewportLayout } from '~/lib/map-camera';
 import { isMaskWalkable, type WalkableMask } from '~/lib/tilemap-collision';
 import { createTilePathfinder } from '~/lib/foe-pathfinding';
 import { createFoeRuntime, stepFoe, tileCenter } from '~/lib/foe-system';
+import { getFoeStripFrame, getFoeStripRow, getFoeWalkLiftPx, getFoeWalkScaleY } from '~/lib/foe-sprite';
 import { getCachedImage, isImageReady } from '~/lib/image-cache';
 import { DEBUG_MODE } from '~/constants/dev';
 import {
@@ -14,6 +15,7 @@ import {
   FOE_BOB_RADIANS_PER_SECOND,
   FOE_CULL_MARGIN_PX,
   FOE_DEBUG_STYLE,
+  FOE_FACING_EPSILON_PX,
   FOE_FOOT_OFFSET_TILES,
   FOE_MARKER_STYLE,
   FOE_PATH_NODE_BUDGET,
@@ -79,7 +81,7 @@ function drawFoeDebug(ctx: CanvasRenderingContext2D, foe: FoeRuntime, tileSize: 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = `${FOE_MARKER_STYLE.color}1)`;
-  ctx.fillText(foe.mode, foe.x, labelY);
+  ctx.fillText(foe.standoffSeconds > 0 ? 'standoff' : foe.mode, foe.x, labelY);
 }
 
 /**
@@ -152,7 +154,11 @@ export function useFoeSimulation(options: UseFoeSimulationOptions): FoeSimulatio
     };
 
     for (let index = 0; index < foes.length; index++) {
-      const result = stepFoe(foes[index], player, frame.dtSeconds, world);
+      const previous = foes[index];
+      const result = stepFoe(previous, player, frame.dtSeconds, world);
+      const movedPx = Math.hypot(result.foe.x - previous.x, result.foe.y - previous.y);
+      result.foe.isMoving = movedPx > FOE_FACING_EPSILON_PX;
+      result.foe.strideDistancePx = previous.strideDistancePx + movedPx;
       foes[index] = result.foe;
       if (result.contact) {
         contactLatchedRef.current = true;
@@ -184,23 +190,42 @@ export function useFoeSimulation(options: UseFoeSimulationOptions): FoeSimulatio
     for (const foe of foes) {
       if (foe.x < minX || foe.x > maxX || foe.y < minY || foe.y > maxY) continue;
 
-      const image = getCachedImage(foe.definition.mapSprite);
       const feetY = foe.y + FOE_FOOT_OFFSET_TILES * tileSize;
       let top = feetY - tileSize;
 
+      const strip = foe.definition.mapStrip;
+      const stripImage = strip ? getCachedImage(strip.image) : null;
+      const isStripReady = strip !== undefined && stripImage !== null && isImageReady(stripImage);
+      const image = isStripReady ? stripImage : getCachedImage(foe.definition.mapSprite);
+
       if (isImageReady(image)) {
-        const width = image.naturalWidth * FOE_SPRITE_SCALE;
-        const height = image.naturalHeight * FOE_SPRITE_SCALE;
-        top = feetY - height + (foe.mode === 'patrol' ? bob : 0);
-        const left = foe.x - width / 2;
+        let sourceX = 0;
+        let sourceY = 0;
+        let sourceW = image.naturalWidth;
+        let sourceH = image.naturalHeight;
+        let anchorX = Math.round(sourceW / 2);
+        let anchorY = sourceH;
+        if (isStripReady) {
+          const row = getFoeStripRow(strip, foe.isMoving);
+          sourceX = getFoeStripFrame(strip, row, foe.strideDistancePx, timestampMs, tileSize) * strip.cellW;
+          sourceY = row * strip.cellH;
+          sourceW = strip.cellW;
+          sourceH = strip.cellH;
+          anchorX = strip.anchorX;
+          anchorY = strip.anchorY;
+        }
+
+        const isTweening = foe.isMoving && foe.walkTween > 0;
+        const lift = isTweening ? getFoeWalkLiftPx(foe.strideDistancePx, tileSize, foe.walkTween) : 0;
+        const scaleY = isTweening ? getFoeWalkScaleY(foe.strideDistancePx, tileSize, foe.walkTween) : 1;
+        const restBob = !foe.isMoving && foe.mode === 'patrol' ? bob : 0;
+        const groundY = Math.round(feetY + restBob) - lift;
+        top = groundY - anchorY * FOE_SPRITE_SCALE * scaleY;
 
         ctx.save();
-        if (foe.facing === 'left') {
-          ctx.translate(foe.x, 0);
-          ctx.scale(-1, 1);
-          ctx.translate(-foe.x, 0);
-        }
-        ctx.drawImage(image, Math.round(left), Math.round(top), width, height);
+        ctx.translate(Math.round(foe.x), groundY);
+        ctx.scale((foe.facing === 'left' ? -FOE_SPRITE_SCALE : FOE_SPRITE_SCALE) / scaleY, FOE_SPRITE_SCALE * scaleY);
+        ctx.drawImage(image, sourceX, sourceY, sourceW, sourceH, -anchorX, -anchorY, sourceW, sourceH);
         ctx.restore();
       }
 

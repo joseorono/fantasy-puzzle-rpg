@@ -4,6 +4,7 @@ import type { DialogueScene } from './dialogue';
 import type { FoeDefinition } from './foe';
 import type { JirbyColorSymbolName, JirbyWhiteSymbolName } from './jirby-symbols';
 import type { GridPosition } from './geometry';
+import type { ChestVariant } from './chest';
 
 /**
  * Every map in the game. Adding one means adding a member here, an entry in
@@ -50,6 +51,8 @@ export interface MapDefinition extends TiledMapConfig {
   encounters?: Record<string, EncounterDefinition>;
   /** Roaming enemies; each one's fight lives in `encounters` under `encounterId ?? id`. */
   foes?: FoeDefinition[];
+  /** The look of this map's chests; a node can override it. Defaults to `DEFAULT_CHEST_VARIANT`. */
+  chestVariant?: ChestVariant;
 }
 
 /** The three shades of a node marker's plate, as CSS colours. */

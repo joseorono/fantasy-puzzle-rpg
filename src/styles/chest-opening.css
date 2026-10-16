@@ -1,0 +1,535 @@
+/* ─── Chest sprite (Admurin's sheet) ──────────────────────────────────
+   Same technique as admurin-enemy-sprites.css: a frame-sized box clips the sheet, and the strip
+   steps through a row by translating itself. The row is a static `top` offset set inline. */
+
+.chest-sprite {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chest-sprite__strip {
+  position: absolute;
+  left: 0;
+  /* 5 frames wide, 8 rows tall, relative to the one-frame box. */
+  width: 500%;
+  height: 800%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  will-change: transform;
+}
+
+.chest-sprite__strip--idle {
+  animation-name: chest-strip-loop;
+  animation-iteration-count: infinite;
+}
+
+.chest-sprite__strip--open {
+  animation-name: chest-strip-once;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+@keyframes chest-strip-loop {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Ends on the last frame (4 of 5) and holds there. */
+@keyframes chest-strip-once {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-80%);
+  }
+}
+
+/* ─── Opening ceremony ─────────────────────────────────────────────── */
+
+.chest-opening {
+  --chest-glow: #e8b45a;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(90vw, 420px);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.chest-opening__title {
+  display: flex;
+  justify-content: center;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transform: translateY(8px) scale(0.8);
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chest-opening--parade .chest-opening__title,
+.chest-opening--reveal .chest-opening__title {
+  opacity: 1;
+  transform: none;
+}
+
+/* `--chest-focus-y`: where the rays cross, above the chest's mouth; the loot icons stop there. */
+.chest-opening__stage {
+  --chest-focus-y: 110px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 240px;
+  height: 200px;
+  animation: modal-zoom-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The chest stands at the stage's bottom centre; its sprite box is left-heavy (the open lid falls
+   right), so it's nudged so the closed chest itself sits centred. */
+.chest-opening__chest {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 10px;
+  transform: translateX(18px);
+  transform-origin: 30% 100%;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45));
+}
+
+.chest-opening--shake .chest-opening__chest {
+  animation: chest-rattle 550ms linear both;
+}
+
+.chest-opening--open .chest-opening__chest,
+.chest-opening--parade .chest-opening__chest,
+.chest-opening--reveal .chest-opening__chest {
+  animation: chest-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Three rattles, each bigger than the last, with a held breath between; ends squashed, ready to
+   pop. Rattle starts (0%, ~36%, ~70%) match CHEST_OPENING.rattleAtMs in src/constants/chest.ts. */
+@keyframes chest-rattle {
+  0% {
+    transform: translateX(18px) rotate(0);
+  }
+  3% {
+    transform: translateX(17px) rotate(-3deg);
+  }
+  7% {
+    transform: translateX(19px) rotate(3deg);
+  }
+  11% {
+    transform: translateX(18px) rotate(-2deg);
+  }
+  15%,
+  36% {
+    transform: translateX(18px) rotate(0);
+  }
+  39% {
+    transform: translateX(16px) translateY(-3px) rotate(-5deg);
+  }
+  43% {
+    transform: translateX(20px) translateY(-1px) rotate(5deg);
+  }
+  47% {
+    transform: translateX(17px) rotate(-4deg);
+  }
+  51% {
+    transform: translateX(19px) rotate(3deg);
+  }
+  55%,
+  69% {
+    transform: translateX(18px) rotate(0);
+  }
+  72% {
+    transform: translateX(15px) translateY(-6px) rotate(-7deg);
+  }
+  76% {
+    transform: translateX(21px) translateY(-4px) rotate(7deg);
+  }
+  80% {
+    transform: translateX(15px) translateY(-2px) rotate(-7deg);
+  }
+  84% {
+    transform: translateX(21px) rotate(6deg);
+  }
+  88% {
+    transform: translateX(16px) rotate(-5deg);
+  }
+  92% {
+    transform: translateX(20px) rotate(3deg);
+  }
+  100% {
+    transform: translateX(18px) scale(1.12, 0.86);
+  }
+}
+
+@keyframes chest-pop {
+  0% {
+    transform: translateX(18px) scale(1.12, 0.86);
+  }
+  35% {
+    transform: translateX(18px) translateY(-10px) scale(0.9, 1.14);
+  }
+  65% {
+    transform: translateX(18px) scale(1.05, 0.95);
+  }
+  100% {
+    transform: translateX(18px) scale(1);
+  }
+}
+
+/* A warm pool of light behind the chest: it builds through the rattles and blooms on the pop. */
+.chest-opening__glow {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  z-index: 1;
+  width: 220px;
+  height: 180px;
+  margin-left: -110px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--chest-glow) 70%, transparent) 0%,
+    color-mix(in srgb, var(--chest-glow) 25%, transparent) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.chest-opening--shake .chest-opening__glow {
+  animation: chest-glow-build 550ms ease-in both;
+}
+
+.chest-opening--open .chest-opening__glow,
+.chest-opening--parade .chest-opening__glow,
+.chest-opening--reveal .chest-opening__glow {
+  opacity: 0.9;
+  transform: scale(1.25);
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.5s ease-out;
+}
+
+@keyframes chest-glow-build {
+  0% {
+    opacity: 0.1;
+  }
+  30% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 0.15;
+  }
+  65% {
+    opacity: 0.4;
+  }
+  75% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Slow-turning god rays, faded out at the edges; only once the lid is off. */
+.chest-opening__rays {
+  position: absolute;
+  left: 50%;
+  /* Centred on the focal point. */
+  bottom: calc(var(--chest-focus-y) - 150px);
+  z-index: 0;
+  width: 300px;
+  height: 300px;
+  margin-left: -150px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--chest-glow) 45%, transparent) 0deg 9deg,
+    transparent 9deg 30deg
+  );
+  mask-image: radial-gradient(circle, #000 15%, transparent 68%);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+.chest-opening--open .chest-opening__rays,
+.chest-opening--parade .chest-opening__rays,
+.chest-opening--reveal .chest-opening__rays {
+  opacity: 1;
+  animation:
+    chest-rays-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    chest-rays-spin 9s linear 0.5s infinite;
+}
+
+@keyframes chest-rays-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(20deg);
+  }
+}
+
+@keyframes chest-rays-spin {
+  from {
+    transform: scale(1) rotate(20deg);
+  }
+  to {
+    transform: scale(1) rotate(380deg);
+  }
+}
+
+/* The pop's white-hot flash. */
+.chest-opening__flash {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 3;
+  width: 200px;
+  height: 160px;
+  margin-left: -100px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, #fff8e6 0%, rgba(255, 244, 214, 0.6) 30%, transparent 65%);
+  pointer-events: none;
+  animation: chest-flash 0.45s ease-out forwards;
+}
+
+@keyframes chest-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/* ─── Loot icons launching to the focal point ──────────────────────── */
+
+/* A zero-size anchor at the focal point; the halo and icon centre on it. */
+.chest-opening__parade {
+  position: absolute;
+  left: 50%;
+  bottom: var(--chest-focus-y);
+  z-index: 5;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.chest-opening__parade-icon,
+.chest-opening__parade-halo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  animation-duration: var(--parade-ms, 360ms);
+  animation-fill-mode: both;
+}
+
+.chest-opening__parade-icon {
+  display: flex;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
+  animation-name: chest-loot-launch;
+  animation-timing-function: linear;
+}
+
+.chest-opening__parade-halo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--parade-color) 75%, transparent) 0%,
+    color-mix(in srgb, var(--parade-color) 30%, transparent) 40%,
+    transparent 70%
+  );
+  animation-name: chest-loot-halo;
+  animation-timing-function: ease-out;
+}
+
+/* Phases follow CHEST_OPENING.parade (170 / 80 / 110ms): launch 0–47%, hold 47–69%,
+   grow 69–79%, vanish 79–100%. Starts visible and tiny inside the open chest, below the
+   focal point, so the climb out of it reads. */
+@keyframes chest-loot-launch {
+  0% {
+    opacity: 1;
+    transform: translateY(86px) scale(0.2);
+    animation-timing-function: cubic-bezier(0.3, 0.6, 0.4, 1);
+  }
+  34% {
+    transform: translateY(-12px) scale(1.1);
+    animation-timing-function: ease-in-out;
+  }
+  47% {
+    transform: translateY(0) scale(1);
+  }
+  69% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: ease-out;
+  }
+  79% {
+    opacity: 1;
+    transform: scale(1.4);
+    animation-timing-function: ease-in;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes chest-loot-halo {
+  0%,
+  30% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  47% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  58% {
+    opacity: 0.75;
+    transform: scale(0.92);
+  }
+  69% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/* ─── Loot list (after the last icon) ──────────────────────────────── */
+
+.chest-opening__loot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  width: min(80vw, 320px);
+}
+
+.chest-opening__entry {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid #d4a574;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  image-rendering: pixelated;
+  animation: chest-loot-rise 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.chest-opening__resources {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  width: 100%;
+  animation: chest-loot-rise 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.chest-opening__entry-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.65rem;
+  color: #f2e2c4;
+  text-align: left;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.chest-opening__entry-rarity {
+  margin-top: 0.15rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.chest-opening__hint {
+  margin-top: 0.4rem;
+  font-size: 0.5rem;
+  color: #d4a574;
+  opacity: 0.8;
+  animation: gom-fade-in 0.4s ease-out 0.6s both;
+}
+
+@keyframes chest-loot-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Burst particles (components/effects/burst-particles.tsx) ─────── */
+
+.burst-particles {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  z-index: 4;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.burst-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation-name: burst-particle-fly;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes burst-particle-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.2);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(var(--burst-dx), var(--burst-dy)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--burst-dx), calc(var(--burst-dy) + var(--burst-fall))) scale(0.6);
+  }
+}

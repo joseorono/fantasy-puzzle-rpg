@@ -1,7 +1,7 @@
 /* ResourceStatItem — icon + label + animated value.
 
    Three independent modifier axes sit on the same block:
-     .resource-stat--chip / --card / --town / --compact   the skin (metrics and chrome)
+     .resource-stat--chip / --card / --town / --compact / --treasure   the skin (metrics and chrome)
      .resource-stat--coins / --gold / …       the resource (value colour only)
      .resource-stat--riveted                  the golden corner orbs
 
@@ -118,6 +118,28 @@
 
 .resource-stat--compact .resource-stat__value {
   font-size: 0.625rem;
+}
+
+/* Small icon-and-amount cells for the chest-opening reward reveal. */
+.resource-stat--treasure {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.15rem 0.375rem;
+  background-color: rgba(0, 0, 0, 0.65);
+  border: 1px solid color(srgb 0.83 0.65 0.46 / 0.6);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 215, 0, 0.08);
+}
+
+.resource-stat--treasure .resource-stat__label {
+  display: none;
+}
+
+.resource-stat--treasure .resource-stat__value {
+  font-size: 0.7rem;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 /* ========== CARD SKIN (battle rewards) ========== */

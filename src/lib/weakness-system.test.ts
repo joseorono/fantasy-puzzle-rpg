@@ -1,6 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { WEAKNESS_DAMAGE_BONUS } from '~/constants/battle';
-import { isWeakTo, resolveWeaknessDamage, resolveWeaknessHits } from './weakness-system';
+import { getWeaknessSource, isWeakTo, resolveWeaknessDamage, resolveWeaknessHits } from './weakness-system';
+
+describe('getWeaknessSource', () => {
+  it('reports the colour a hit exploited', () => {
+    expect(getWeaknessSource(['green'], { color: 'green', kind: 'match' })).toBe('green');
+    expect(getWeaknessSource(['green'], { color: 'green', kind: 'ultimate' })).toBe('green');
+  });
+
+  it("reports 'ultimate' for an Ultimate, even when its colour also matches", () => {
+    expect(getWeaknessSource(['ultimate'], { color: 'blue', kind: 'ultimate' })).toBe('ultimate');
+    expect(getWeaknessSource(['purple', 'ultimate'], { color: 'purple', kind: 'ultimate' })).toBe('ultimate');
+  });
+
+  it('is null when the hit exploits nothing', () => {
+    expect(getWeaknessSource(['ultimate'], { color: 'blue', kind: 'match' })).toBeNull();
+    expect(getWeaknessSource(['green'], { color: 'blue', kind: 'match' })).toBeNull();
+    expect(getWeaknessSource(undefined, { color: 'green', kind: 'match' })).toBeNull();
+  });
+});
 
 describe('isWeakTo', () => {
   it('matches a colour weakness on matches and Ultimates alike', () => {
@@ -39,22 +57,22 @@ describe('resolveWeaknessDamage', () => {
 });
 
 describe('resolveWeaknessHits', () => {
-  it('boosts only the hits of a weak colour and reports the batch as weak', () => {
+  it('boosts only the hits of a weak colour and reports which colour', () => {
     const hits = [
-      { amount: 20, orbType: 'green' as const },
       { amount: 20, orbType: 'blue' as const },
+      { amount: 20, orbType: 'green' as const },
     ];
     const result = resolveWeaknessHits(hits, ['green']);
 
-    expect(result.isWeak).toBe(true);
-    expect(result.hits.map((hit) => hit.amount)).toEqual([resolveWeaknessDamage(20, true), 20]);
+    expect(result.weakSource).toBe('green');
+    expect(result.hits.map((hit) => hit.amount)).toEqual([20, resolveWeaknessDamage(20, true)]);
   });
 
   it('returns the same array when nothing is weak', () => {
     const hits = [{ amount: 20, orbType: 'blue' as const }, { amount: 5 }];
     const result = resolveWeaknessHits(hits, ['green']);
 
-    expect(result.isWeak).toBe(false);
+    expect(result.weakSource).toBeNull();
     expect(result.hits).toBe(hits);
   });
 });

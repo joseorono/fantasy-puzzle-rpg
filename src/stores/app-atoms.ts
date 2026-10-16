@@ -7,3 +7,6 @@ import { atom } from 'jotai';
  * like a game-over flip it back to `false` to return the player to the start menu.
  */
 export const isGameStartedAtom = atom(false);
+
+/** True while the map loading screen covers the map. Blocks the pause menu like a dialogue does. */
+export const isMapLoadingScreenActiveAtom = atom(false);

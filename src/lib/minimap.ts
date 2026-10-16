@@ -6,6 +6,7 @@ import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
 import type { GridPosition } from '~/types/geometry';
 import { MAP_DIALOGUE_TRIGGER_WHITE_SYMBOL, MAP_NODE_MARKER_STYLES } from '~/constants/map';
 import { getNodePositions } from '~/lib/map-content';
+import { isNodeMarkerDone } from '~/lib/map-draw';
 import {
   MINIMAP_CHROME_HEIGHT_PX,
   MINIMAP_CHROME_WIDTH_PX,
@@ -142,7 +143,7 @@ export function buildMinimapMarkers(map: MapDefinition, status: MarkerStatus): M
   const markers: MinimapMarker[] = [];
 
   for (const node of map.nodes ?? []) {
-    const isDone = status.isNodeCompleted(node);
+    const isDone = isNodeMarkerDone(node, status);
     getNodePositions(node).forEach(({ row, col }, index) => {
       markers.push({
         kind: 'node',
