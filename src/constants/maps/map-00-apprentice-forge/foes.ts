@@ -53,4 +53,15 @@ export const APPRENTICE_FORGE_FOES: FoeDefinition[] = [
       { row: 7, col: 40 },
     ],
   },
+  {
+    id: 'apprentice_forge_foe_5',
+    name: 'Bats',
+    ...BAT_FOE_LOOK,
+    // The west wing, below the Scrap Cache gate, guarding the way down to Cinder Watch.
+    patrol: [
+      { row: 13, col: 2 },
+      { row: 16, col: 5 },
+      { row: 16, col: 1 },
+    ],
+  },
 ];
