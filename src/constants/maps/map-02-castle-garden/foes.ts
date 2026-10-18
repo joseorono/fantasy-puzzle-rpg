@@ -18,12 +18,9 @@ export const CASTLE_GARDEN_FOES: FoeDefinition[] = [
       { row: 58, col: 87 },
       { row: 58, col: 48 },
     ],
-    // A fast horse: brisk patrol, hard chase to outrun, long sight.
+    // A horse: long sight and short pauses; its pace comes from the look's `fast` tier.
     overrides: {
       detectionRadiusTiles: 7,
-      chaseSpeedRatio: 0.95,
-      patrolSpeedTilesPerSecond: 3,
-      returnSpeedTilesPerSecond: 4.5,
       waypointPauseSeconds: 0.5,
     },
   },
