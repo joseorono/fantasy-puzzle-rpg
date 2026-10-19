@@ -100,6 +100,7 @@ export const assetList: string[] = [
   '/assets/enemy-sprites/rider_map.png',
   '/assets/enemy-sprites/rider_map_strip.png',
   '/assets/enemy-sprites/rider_sheet.png',
+  '/assets/enemy-sprites/small-golem_sheet.png',
   '/assets/enemy-sprites/stone_golem_idle.png',
   '/assets/enemy-sprites/stone_golem_map.png',
   '/assets/enemy-sprites/tecopena-bat_map.png',

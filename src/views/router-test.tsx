@@ -13,6 +13,7 @@ import {
   GIANT_FROG,
   RIDER,
   SKELETON,
+  SMALL_GOLEM,
   SMALL_SLIME,
   STONE_GOLEM,
   SWAMP_FROG,
@@ -137,6 +138,15 @@ const BATTLE_DEMOS: {
     title:
       'Brown Wolf: a balanced mid-tier predator (150 HP, quick 2.56s attacks, no elemental weakness). Attacks: Bite, then a heavy Pounce (the run row).',
     enemies: [{ ...BROWN_WOLF, id: 'brown-wolf-1' }],
+  },
+  {
+    id: 'small-golem',
+    label: 'Small Golem',
+    className: 'bg-stone-500 hover:bg-stone-600',
+    location: 'Forest',
+    title:
+      'Small Golem: a rocky mini-tank (160 HP, slow ~4s attacks, hard to stagger). Attacks: Tackle, then a heavy Roll.',
+    enemies: [{ ...SMALL_GOLEM, id: 'small-golem-1' }],
   },
 ];
 

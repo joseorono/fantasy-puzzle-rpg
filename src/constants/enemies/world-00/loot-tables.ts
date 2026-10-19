@@ -221,3 +221,21 @@ export const BROWN_WOLF_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Small Golem — a rocky beast, ore-heavy scraps
+ */
+export const SMALL_GOLEM_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 35,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 2,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
