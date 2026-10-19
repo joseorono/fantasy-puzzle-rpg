@@ -257,3 +257,21 @@ export const ENCHANTED_GOLEM_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Minotaur — a horned brute elite
+ */
+export const MINOTAUR_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 90,
+      gold: 0,
+      copper: 3,
+      silver: 2,
+      iron: 4,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};

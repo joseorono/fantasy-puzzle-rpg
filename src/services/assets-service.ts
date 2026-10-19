@@ -95,6 +95,7 @@ export const assetList: string[] = [
   '/assets/enemy-sprites/frogger_map_strip.png',
   '/assets/enemy-sprites/frogger_sheet.png',
   '/assets/enemy-sprites/gollux_idle.png',
+  '/assets/enemy-sprites/minotaur_sheet.png',
   '/assets/enemy-sprites/monopixelart-skeleton_map.png',
   '/assets/enemy-sprites/monopixelart-skeleton_map_strip.png',
   '/assets/enemy-sprites/monopixelart-skeleton_sheet.png',

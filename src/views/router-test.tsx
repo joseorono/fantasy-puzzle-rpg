@@ -12,6 +12,7 @@ import {
   DINO_TRI,
   ENCHANTED_GOLEM,
   GIANT_FROG,
+  MINOTAUR,
   RIDER,
   SKELETON,
   SMALL_GOLEM,
@@ -157,6 +158,15 @@ const BATTLE_DEMOS: {
     title:
       'Enchanted Golem: an armoured elite (260 HP, ~3.6s attacks, very hard to stagger). Attacks: Strike, then a heavy Slam.',
     enemies: [{ ...ENCHANTED_GOLEM, id: 'enchanted-golem-1' }],
+  },
+  {
+    id: 'minotaur',
+    label: 'Minotaur',
+    className: 'bg-red-700 hover:bg-red-800',
+    location: 'Forest',
+    title:
+      'Minotaur: a horned brute elite (400 HP, ~3.1s swings, very hard to stagger). Attacks: Cleave, then a heavy Gore.',
+    enemies: [{ ...MINOTAUR, id: 'minotaur-1' }],
   },
 ];
 
