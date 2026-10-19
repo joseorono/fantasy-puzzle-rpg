@@ -10,6 +10,7 @@ import {
   BROWN_WOLF,
   DINO_REX,
   DINO_TRI,
+  ENCHANTED_GOLEM,
   GIANT_FROG,
   RIDER,
   SKELETON,
@@ -147,6 +148,15 @@ const BATTLE_DEMOS: {
     title:
       'Small Golem: a rocky mini-tank (160 HP, slow ~4s attacks, hard to stagger). Attacks: Tackle, then a heavy Roll.',
     enemies: [{ ...SMALL_GOLEM, id: 'small-golem-1' }],
+  },
+  {
+    id: 'enchanted-golem',
+    label: 'Enchanted Golem',
+    className: 'bg-violet-600 hover:bg-violet-700',
+    location: 'Forest',
+    title:
+      'Enchanted Golem: an armoured elite (260 HP, ~3.6s attacks, very hard to stagger). Attacks: Strike, then a heavy Slam.',
+    enemies: [{ ...ENCHANTED_GOLEM, id: 'enchanted-golem-1' }],
   },
 ];
 

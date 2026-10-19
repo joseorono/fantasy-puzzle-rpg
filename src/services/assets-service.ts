@@ -90,6 +90,7 @@ export const assetList: string[] = [
   '/assets/enemy-sprites/dino-tri_map.png',
   '/assets/enemy-sprites/dino-tri_map_strip.png',
   '/assets/enemy-sprites/dino-tri_sheet.png',
+  '/assets/enemy-sprites/enchanted-golem_sheet.png',
   '/assets/enemy-sprites/frogger_map.png',
   '/assets/enemy-sprites/frogger_map_strip.png',
   '/assets/enemy-sprites/frogger_sheet.png',

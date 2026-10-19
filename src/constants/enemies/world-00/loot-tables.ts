@@ -239,3 +239,21 @@ export const SMALL_GOLEM_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Enchanted Golem — an armoured elite, richer scraps
+ */
+export const ENCHANTED_GOLEM_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 60,
+      gold: 0,
+      copper: 2,
+      silver: 1,
+      iron: 3,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
