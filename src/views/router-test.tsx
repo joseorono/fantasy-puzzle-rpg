@@ -7,6 +7,7 @@ import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from 
 import {
   BADGER,
   BAT,
+  BROWN_WOLF,
   DINO_REX,
   DINO_TRI,
   GIANT_FROG,
@@ -127,6 +128,15 @@ const BATTLE_DEMOS: {
     title:
       'Rider: the Castle Garden FOE — fast (spd 50), very sturdy (500 HP, hard to stagger), weak to the rogue\'s green orbs. Attacks: Trample, then a heavy Leap.',
     enemies: [{ ...RIDER, id: 'rider-1' }],
+  },
+  {
+    id: 'brown-wolf',
+    label: 'Brown Wolf',
+    className: 'bg-lime-700 hover:bg-lime-800',
+    location: 'Forest',
+    title:
+      'Brown Wolf: a balanced mid-tier predator (150 HP, quick 2.56s attacks, no elemental weakness). Attacks: Bite, then a heavy Pounce (the run row).',
+    enemies: [{ ...BROWN_WOLF, id: 'brown-wolf-1' }],
   },
 ];
 

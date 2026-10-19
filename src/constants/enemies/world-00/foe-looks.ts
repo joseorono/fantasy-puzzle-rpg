@@ -45,6 +45,7 @@ export const FROG_FOE_LOOK: FoeLook = {
 export const RIDER_FOE_LOOK: FoeLook = {
   mapSprite: '/assets/enemy-sprites/rider_map.png',
   mapStrip: RIDER_MAP_STRIP,
+  speed: 'fast',
 };
 
 /** No animation frames at all, so it walks on the default tween. */

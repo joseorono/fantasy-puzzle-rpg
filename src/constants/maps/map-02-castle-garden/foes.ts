@@ -18,12 +18,10 @@ export const CASTLE_GARDEN_FOES: FoeDefinition[] = [
       { row: 58, col: 87 },
       { row: 58, col: 48 },
     ],
-    // A fast horse: brisk patrol, hard chase to outrun, long sight.
+    // A fast horse: the `fast` speed tier scales patrol/return/chase together, and the
+    // rider spots the player from farther than the garden's other roamers would.
     overrides: {
       detectionRadiusTiles: 7,
-      chaseSpeedRatio: 0.95,
-      patrolSpeedTilesPerSecond: 3,
-      returnSpeedTilesPerSecond: 4.5,
       waypointPauseSeconds: 0.5,
     },
   },

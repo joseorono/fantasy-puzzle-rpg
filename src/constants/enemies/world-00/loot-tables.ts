@@ -203,3 +203,21 @@ export const RIDER_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Brown Wolf — a regular beast, a few coins and scraps
+ */
+export const BROWN_WOLF_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 30,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};

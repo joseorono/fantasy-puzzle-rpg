@@ -85,6 +85,7 @@ export const assetList: string[] = [
 
   // Enemies
   '/assets/enemy-sprites/badger_sheet.png',
+  '/assets/enemy-sprites/brown-wolf_sheet.png',
   '/assets/enemy-sprites/dino-rex_sheet.png',
   '/assets/enemy-sprites/dino-tri_map.png',
   '/assets/enemy-sprites/dino-tri_map_strip.png',
