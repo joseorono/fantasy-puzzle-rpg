@@ -3,6 +3,7 @@ import {
   DINO_TRI_MAP_STRIP,
   FROGGER_MAP_STRIP,
   MONOPIXELART_SKELETON_MAP_STRIP,
+  RIDER_MAP_STRIP,
   TECOPENA_BAT_MAP_STRIP,
   TECOPENA_SLIME_MAP_STRIP,
 } from './foe-map-strips';
@@ -34,6 +35,11 @@ export const SKELETON_FOE_LOOK: FoeLook = {
 export const FROG_FOE_LOOK: FoeLook = {
   mapSprite: '/assets/enemy-sprites/frogger_map.png',
   mapStrip: FROGGER_MAP_STRIP,
+};
+
+export const RIDER_FOE_LOOK: FoeLook = {
+  mapSprite: '/assets/enemy-sprites/rider_map.png',
+  mapStrip: RIDER_MAP_STRIP,
 };
 
 /** No animation frames at all, so it walks on the default tween. */
