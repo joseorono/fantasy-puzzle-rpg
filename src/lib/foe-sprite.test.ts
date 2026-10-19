@@ -31,7 +31,14 @@ const WALKER: FoeMapStrip = {
 const FLIER: FoeMapStrip = { ...WALKER, move: undefined };
 
 function definition(overrides: Partial<FoeDefinition> = {}): FoeDefinition {
-  return { id: 'foe', name: 'Test FOE', mapSprite: '/x.png', patrol: [{ row: 0, col: 0 }], ...overrides };
+  return {
+    id: 'foe',
+    name: 'Test FOE',
+    mapSprite: '/x.png',
+    speed: 'normal',
+    patrol: [{ row: 0, col: 0 }],
+    ...overrides,
+  };
 }
 
 describe('resolveFoeWalkTween', () => {

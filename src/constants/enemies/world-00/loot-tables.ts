@@ -175,3 +175,103 @@ export const BADGER_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Rider — a Castle Garden FOE, so it also pays out like a small chest
+ */
+export const RIDER_LOOT: LootTable = {
+  equipableItems: [
+    {
+      item: EquipmentItems.find((item) => item.id === 'iron-armor')!,
+      probability: 0.3 as ProbabilityNumber,
+    },
+  ],
+  consumableItems: [
+    {
+      item: ConsumableItems.find((item) => item.id === 'potion')!,
+      probability: 0.5 as ProbabilityNumber,
+    },
+  ],
+  resources: {
+    item: {
+      coins: 150,
+      gold: 0,
+      copper: 4,
+      silver: 1,
+      iron: 3,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Brown Wolf — a regular beast, a few coins and scraps
+ */
+export const BROWN_WOLF_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 30,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 1,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Small Golem — a rocky beast, ore-heavy scraps
+ */
+export const SMALL_GOLEM_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 35,
+      gold: 0,
+      copper: 1,
+      silver: 0,
+      iron: 2,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Enchanted Golem — an armoured elite, richer scraps
+ */
+export const ENCHANTED_GOLEM_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 60,
+      gold: 0,
+      copper: 2,
+      silver: 1,
+      iron: 3,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
+
+/**
+ * Loot table for the Minotaur — a horned brute elite
+ */
+export const MINOTAUR_LOOT: LootTable = {
+  equipableItems: [],
+  consumableItems: [],
+  resources: {
+    item: {
+      coins: 90,
+      gold: 0,
+      copper: 3,
+      silver: 2,
+      iron: 4,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};

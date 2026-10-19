@@ -15,16 +15,16 @@
 
 /* One cell of the sheet at the pose's scale, centred on the pose and clipped: the box IS the clip
    region, so without it a zoomed-out pose would drag the rows above/below into view. Size and
-   offset come in inline, per animation. */
+   offset come in inline, per animation.
+   Only the centring eases: the size snaps, because a transitioning width/height forces the browser
+   to re-rasterise the (pixelated) background at fractional intermediate scales every frame, which
+   makes neighbouring rows flicker at the clip edge while the pose shrinks or grows. */
 .admurin-enemy-sprite__cell {
   position: absolute;
   left: 50%;
   top: 50%;
   overflow: hidden;
-  transition:
-    width 120ms ease-out,
-    height 120ms ease-out,
-    transform 120ms ease-out;
+  transition: transform 120ms ease-out;
 }
 
 /* Row selection is a static offset, so it never competes with the strip's frame transform. */
