@@ -10,6 +10,7 @@ import {
   DINO_REX,
   DINO_TRI,
   GIANT_FROG,
+  RIDER,
   SKELETON,
   SMALL_SLIME,
   STONE_GOLEM,
@@ -117,6 +118,15 @@ const BATTLE_DEMOS: {
     location: 'Forest',
     title: 'Dino Tri: the pack has no hurt row (so hits show only the recoil) and sit/thought were skipped.',
     enemies: [{ ...DINO_TRI, id: 'dino-tri-1' }],
+  },
+  {
+    id: 'rider',
+    label: 'Rider',
+    className: 'bg-teal-600 hover:bg-teal-700',
+    location: 'Castle Garden',
+    title:
+      'Rider: the Castle Garden FOE — fast (spd 50), very sturdy (500 HP, hard to stagger), weak to the rogue\'s green orbs. Attacks: Trample, then a heavy Leap.',
+    enemies: [{ ...RIDER, id: 'rider-1' }],
   },
 ];
 

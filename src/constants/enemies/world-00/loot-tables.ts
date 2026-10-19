@@ -175,3 +175,31 @@ export const BADGER_LOOT: LootTable = {
     probability: 1 as ProbabilityNumber,
   },
 };
+
+/**
+ * Loot table for the Rider — a Castle Garden FOE, so it also pays out like a small chest
+ */
+export const RIDER_LOOT: LootTable = {
+  equipableItems: [
+    {
+      item: EquipmentItems.find((item) => item.id === 'iron-armor')!,
+      probability: 0.3 as ProbabilityNumber,
+    },
+  ],
+  consumableItems: [
+    {
+      item: ConsumableItems.find((item) => item.id === 'potion')!,
+      probability: 0.5 as ProbabilityNumber,
+    },
+  ],
+  resources: {
+    item: {
+      coins: 150,
+      gold: 0,
+      copper: 4,
+      silver: 1,
+      iron: 3,
+    },
+    probability: 1 as ProbabilityNumber,
+  },
+};
