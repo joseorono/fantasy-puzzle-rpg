@@ -19,7 +19,7 @@ export const DINO_TRI_FOE_LOOK: FoeLook = {
 export const BAT_FOE_LOOK: FoeLook = {
   mapSprite: '/assets/enemy-sprites/tecopena-bat_map.png',
   mapStrip: TECOPENA_BAT_MAP_STRIP,
-  speed: 'normal',
+  speed: 'fast',
   // A flier: a soft bob reads as fluttering, a full hop does not.
   walkTween: 0.5,
 };
@@ -27,7 +27,7 @@ export const BAT_FOE_LOOK: FoeLook = {
 export const SLIME_FOE_LOOK: FoeLook = {
   mapSprite: '/assets/enemy-sprites/tecopena-slime_map.png',
   mapStrip: TECOPENA_SLIME_MAP_STRIP,
-  speed: 'normal',
+  speed: 'slow',
 };
 
 export const SKELETON_FOE_LOOK: FoeLook = {
