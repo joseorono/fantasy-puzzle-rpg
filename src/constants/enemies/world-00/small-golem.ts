@@ -11,11 +11,41 @@ export const SMALL_GOLEM_SHEET: AdmurinEnemySheet = {
   cellH: 64,
   pixelated: true,
   animations: {
-    idle: { row: 0, frames: 4, frameDurationMs: 140, source: 'idle', rect: { x: 16, y: 0, width: 30, height: 64 } },
-    hurt: { row: 1, frames: 9, frameDurationMs: 80, source: 'hurt', rect: { x: 17, y: 0, width: 30, height: 64 } },
+    // Sequences repeat the middle frames and run slower than the generated defaults: at speed the
+    // little golem read as jerky. Idle ping-pongs so the loop never pops 3 -> 0.
+    idle: {
+      row: 0,
+      frames: 4,
+      frameDurationMs: 150,
+      frameSequence: [0, 1, 2, 3, 2, 1],
+      source: 'idle',
+      rect: { x: 16, y: 0, width: 30, height: 64 },
+    },
+    hurt: {
+      row: 1,
+      frames: 9,
+      frameDurationMs: 90,
+      frameSequence: [0, 1, 2, 3, 4, 4, 5, 6, 7, 8],
+      source: 'hurt',
+      rect: { x: 17, y: 0, width: 30, height: 64 },
+    },
     attacks: [
-      { row: 2, frames: 9, frameDurationMs: 70, source: 'attack_a', rect: { x: 16, y: 0, width: 31, height: 64 } },
-      { row: 3, frames: 9, frameDurationMs: 70, source: 'attack_b', rect: { x: 16, y: 0, width: 29, height: 64 } },
+      {
+        row: 2,
+        frames: 9,
+        frameDurationMs: 80,
+        frameSequence: [0, 1, 2, 3, 4, 4, 4, 5, 6, 7, 8],
+        source: 'attack_a',
+        rect: { x: 16, y: 0, width: 31, height: 64 },
+      },
+      {
+        row: 3,
+        frames: 9,
+        frameDurationMs: 80,
+        frameSequence: [0, 1, 2, 3, 4, 4, 4, 5, 6, 7, 8],
+        source: 'attack_b',
+        rect: { x: 16, y: 0, width: 29, height: 64 },
+      },
     ],
   },
 };

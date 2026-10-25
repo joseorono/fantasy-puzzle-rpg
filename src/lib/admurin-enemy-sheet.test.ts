@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getAdmurinAnimationCycleMs,
   getAdmurinAnimationOrigin,
+  getAdmurinAnimationTimingFunction,
   getAdmurinAnimationZoom,
   getAdmurinPlacement,
   getAdmurinSheetRowCount,
@@ -33,6 +34,35 @@ describe('getAdmurinAnimationCycleMs', () => {
   it('multiplies frames by the frame duration', () => {
     expect(getAdmurinAnimationCycleMs(animation({ frames: 5, frameDurationMs: 150 }))).toBe(750);
     expect(getAdmurinAnimationCycleMs(animation({ frames: 45, frameDurationMs: 45 }))).toBe(2025);
+  });
+
+  it('counts each frameSequence step as a frame', () => {
+    expect(
+      getAdmurinAnimationCycleMs(animation({ frames: 4, frameDurationMs: 150, frameSequence: [0, 1, 2, 3, 2, 1] })),
+    ).toBe(900);
+    // An empty sequence means no sequence at all.
+    expect(getAdmurinAnimationCycleMs(animation({ frames: 9, frameDurationMs: 80, frameSequence: [] }))).toBe(720);
+  });
+});
+
+describe('getAdmurinAnimationTimingFunction', () => {
+  it('steps one cell per frame without a sequence', () => {
+    expect(getAdmurinAnimationTimingFunction(animation({ frames: 5 }))).toBe('steps(5, end)');
+    expect(getAdmurinAnimationTimingFunction(animation({ frames: 4, frameSequence: [] }))).toBe('steps(4, end)');
+  });
+
+  it('compiles a sequence into flat linear() segments', () => {
+    expect(
+      getAdmurinAnimationTimingFunction(animation({ frames: 4, frameSequence: [0, 1, 2, 3, 2, 1] })),
+    ).toBe(
+      'linear(0 0% 16.6667%, 0.25 16.6667% 33.3333%, 0.5 33.3333% 50%, 0.75 50% 66.6667%, 0.5 66.6667% 83.3333%, 0.25 83.3333% 100%)',
+    );
+  });
+
+  it('repeats a held frame in place', () => {
+    expect(
+      getAdmurinAnimationTimingFunction(animation({ frames: 9, frameSequence: [0, 1, 1, 2] })),
+    ).toBe('linear(0 0% 25%, 0.1111 25% 75%, 0.2222 75% 100%)');
   });
 });
 

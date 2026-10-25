@@ -108,6 +108,13 @@ export const POISE_BREAK_CALLOUT_DURATION_MS = 1300;
 /** How long (ms) a centered battle callout ("Preemptive Strike!", "No moves! Reshuffle!") stays on screen. */
 export const BATTLE_CALLOUT_DURATION_MS = 1200;
 
+/**
+ * Row-switch dissolve on Admurin enemy sprites (ms): a new row's pose can sit higher or lower
+ * than the old one (a golem crouching into a roll reads as a height jump), so the outgoing pose
+ * fades over the incoming one instead of snapping. See `AdmurinEnemySprite`.
+ */
+export const ENEMY_SPRITE_CROSSFADE_MS = 150;
+
 // ─── Board Hint ──────────────────────────────────────────────────────────────
 
 /**

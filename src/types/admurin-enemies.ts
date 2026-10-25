@@ -12,6 +12,11 @@ export interface AdmurinEnemyAnimation {
   frames: number;
   /** How long each frame is shown. */
   frameDurationMs: number;
+  /**
+   * Cell indices to play, in order — each held `frameDurationMs`. Lets a sheet repeat or ping-pong
+   * frames (e.g. `[0, 1, 2, 3, 2, 1]`) without new pixels. Default: every cell once, left to right.
+   */
+  frameSequence?: number[];
   /** Original animation name in the pack ('tongue', 'attack_A', …) — audit trail. */
   source: string;
   /**

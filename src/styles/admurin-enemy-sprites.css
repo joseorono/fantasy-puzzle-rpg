@@ -34,6 +34,29 @@
   transform: translateY(calc(var(--admurin-row, 0) * -100%));
 }
 
+/* A row switch swaps the whole silhouette at once — poses sit at different heights inside their
+   rows (a golem crouches into its roll), so a hard cut reads as a vertical jump. The outgoing
+   row's ghost dissolves over the incoming one for --admurin-fade-ms instead. The fade lives on
+   the .shift wrappers so the strips' frame stepping is untouched, and it is only ever attached
+   to a freshly remounted shift — the fade can never cut a running row mid-cycle. */
+.admurin-enemy-sprite__shift--fade-in {
+  animation: admurin-enemy-row-fade var(--admurin-fade-ms, 150ms) linear;
+}
+
+.admurin-enemy-sprite__shift--fade-out {
+  /* reverse replays the keyframes 1 -> 0; `forwards` holds opacity 0 until React drops the ghost. */
+  animation: admurin-enemy-row-fade var(--admurin-fade-ms, 150ms) linear forwards reverse;
+}
+
+@keyframes admurin-enemy-row-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* One cell is one box wide, so a step of 100% spans every frame's cell and `steps(frames)` lands on
    each one. */
 .admurin-enemy-sprite__strip {
