@@ -11,11 +11,42 @@ export const ENCHANTED_GOLEM_SHEET: AdmurinEnemySheet = {
   cellH: 64,
   pixelated: true,
   animations: {
-    idle: { row: 0, frames: 4, frameDurationMs: 140, source: 'idle', rect: { x: 21, y: 0, width: 24, height: 64 } },
-    hurt: { row: 1, frames: 6, frameDurationMs: 80, source: 'hurt', rect: { x: 23, y: 0, width: 18, height: 64 } },
+    // Same treatment as the small golem: ping-pong idle so the loop never pops, held hurt peak.
+    // Attacks step fast (45ms) and ping-pong out-and-back twice — the strike visibly extends,
+    // returns, and hits a second time instead of flashing past in one 560ms sweep.
+    idle: {
+      row: 0,
+      frames: 4,
+      frameDurationMs: 150,
+      frameSequence: [0, 1, 2, 3, 2, 1],
+      source: 'idle',
+      rect: { x: 21, y: 0, width: 24, height: 64 },
+    },
+    hurt: {
+      row: 1,
+      frames: 6,
+      frameDurationMs: 90,
+      frameSequence: [0, 1, 2, 3, 3, 4, 5],
+      source: 'hurt',
+      rect: { x: 23, y: 0, width: 18, height: 64 },
+    },
     attacks: [
-      { row: 2, frames: 8, frameDurationMs: 70, source: 'attack_a', rect: { x: 17, y: 0, width: 30, height: 64 } },
-      { row: 3, frames: 8, frameDurationMs: 70, source: 'attack_b', rect: { x: 20, y: 0, width: 26, height: 64 } },
+      {
+        row: 2,
+        frames: 8,
+        frameDurationMs: 45,
+        frameSequence: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1],
+        source: 'attack_a',
+        rect: { x: 17, y: 0, width: 30, height: 64 },
+      },
+      {
+        row: 3,
+        frames: 8,
+        frameDurationMs: 45,
+        frameSequence: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1],
+        source: 'attack_b',
+        rect: { x: 20, y: 0, width: 26, height: 64 },
+      },
     ],
   },
 };
