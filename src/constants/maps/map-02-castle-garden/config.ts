@@ -1,6 +1,8 @@
 import type { MapDefinition } from '~/types/map';
 import { map02CastleGardenTiledData } from './tiled-data';
 import { TILESET_CASTLE_GARDEN } from '../tileset-data';
+import { CASTLE_GARDEN_ENCOUNTERS } from './encounters';
+import { CASTLE_GARDEN_FOES } from './foes';
 import { CASTLE_GARDEN_NODES } from './nodes';
 
 export const MAP_02_CASTLE_GARDEN: MapDefinition = {
@@ -34,4 +36,6 @@ export const MAP_02_CASTLE_GARDEN: MapDefinition = {
   footstepPitch: 1,
   tiledData: map02CastleGardenTiledData,
   nodes: CASTLE_GARDEN_NODES,
+  encounters: CASTLE_GARDEN_ENCOUNTERS,
+  foes: CASTLE_GARDEN_FOES,
 };

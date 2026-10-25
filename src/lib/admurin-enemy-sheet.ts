@@ -11,9 +11,36 @@ export function getAdmurinAnimationOrigin(
 
 /** Full playthrough duration of an animation, in ms. */
 export function getAdmurinAnimationCycleMs(
-  animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameDurationMs'>,
+  animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameDurationMs' | 'frameSequence'>,
 ): number {
-  return animation.frames * animation.frameDurationMs;
+  return (animation.frameSequence?.length || animation.frames) * animation.frameDurationMs;
+}
+
+/** Trims float noise so generated easings stay readable (16.6667, not 16.666666666666668). */
+const round4 = (n: number) => Math.round(n * 10000) / 10000;
+
+/**
+ * The `animation-timing-function` for an animation row. A plain row steps one cell per frame
+ * (`steps(frames, end)`); a `frameSequence` compiles to a `linear()` easing whose flat segments
+ * jump between cell offsets — same compositor-only transform, arbitrary order/repeats.
+ */
+export function getAdmurinAnimationTimingFunction(
+  animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameSequence'>,
+): string {
+  const sequence = animation.frameSequence;
+  if (!sequence || sequence.length === 0) return `steps(${animation.frames}, end)`;
+  // Consecutive repeats merge into one flat segment: [1, 1] -> `0.1111 25% 75%`, not two stops.
+  const stops: string[] = [];
+  let segmentStart = 0;
+  for (let index = 0; index < sequence.length; index += 1) {
+    if (index < sequence.length - 1 && sequence[index + 1] === sequence[index]) continue;
+    const value = round4(sequence[index] / animation.frames);
+    const start = round4((segmentStart / sequence.length) * 100);
+    const end = round4(((index + 1) / sequence.length) * 100);
+    stops.push(`${value} ${start}% ${end}%`);
+    segmentStart = index + 1;
+  }
+  return `linear(${stops.join(', ')})`;
 }
 
 /** The attack row a combat attack index plays; wraps to what the sheet actually has. Returns undefined when the sheet has no attack rows. */

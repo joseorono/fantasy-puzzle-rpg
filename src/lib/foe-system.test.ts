@@ -10,7 +10,12 @@ import {
   tileCenter,
 } from './foe-system';
 import type { FoeActor, FoeDefinition, FoeRuntime, FoeTunables, FoeWorld } from '~/types/foe';
-import { FOE_ALERT_FLASH_SECONDS, FOE_DEFAULT_TUNABLES, FOE_PLAYER_RUN_TILES_PER_SECOND } from '~/constants/foe';
+import {
+  FOE_ALERT_FLASH_SECONDS,
+  FOE_DEFAULT_TUNABLES,
+  FOE_PLAYER_RUN_TILES_PER_SECOND,
+  FOE_SPEED_MULTIPLIERS,
+} from '~/constants/foe';
 
 const TILE = 16;
 const RUN_SPEED_PX = FOE_PLAYER_RUN_TILES_PER_SECOND * TILE;
@@ -59,6 +64,7 @@ function definition(overrides: Partial<FoeDefinition> = {}): FoeDefinition {
     id: 'foe',
     name: 'Test FOE',
     mapSprite: '/x.png',
+    speed: 'normal',
     patrol: [
       { row: 2, col: 2 },
       { row: 2, col: 6 },
@@ -96,6 +102,31 @@ describe('resolveFoeTunables', () => {
     const tunables = resolveFoeTunables(definition({ overrides: { detectionRadiusTiles: 2 } }));
     expect(tunables.detectionRadiusTiles).toBe(2);
     expect(tunables.leashRadiusTiles).toBe(FOE_DEFAULT_TUNABLES.leashRadiusTiles);
+  });
+
+  it('keeps the default speeds at normal speed', () => {
+    const tunables = resolveFoeTunables(definition({ speed: 'normal' }));
+    expect(tunables.patrolSpeedTilesPerSecond).toBe(FOE_DEFAULT_TUNABLES.patrolSpeedTilesPerSecond);
+    expect(tunables.returnSpeedTilesPerSecond).toBe(FOE_DEFAULT_TUNABLES.returnSpeedTilesPerSecond);
+    expect(tunables.chaseSpeedRatio).toBe(FOE_DEFAULT_TUNABLES.chaseSpeedRatio);
+  });
+
+  it('scales every movement speed by the tier, and nothing else', () => {
+    const multiplier = FOE_SPEED_MULTIPLIERS.slow;
+    const tunables = resolveFoeTunables(definition({ speed: 'slow' }));
+    expect(tunables.patrolSpeedTilesPerSecond).toBeCloseTo(FOE_DEFAULT_TUNABLES.patrolSpeedTilesPerSecond * multiplier);
+    expect(tunables.returnSpeedTilesPerSecond).toBeCloseTo(FOE_DEFAULT_TUNABLES.returnSpeedTilesPerSecond * multiplier);
+    expect(tunables.chaseSpeedRatio).toBeCloseTo(FOE_DEFAULT_TUNABLES.chaseSpeedRatio * multiplier);
+    expect(tunables.detectionRadiusTiles).toBe(FOE_DEFAULT_TUNABLES.detectionRadiusTiles);
+  });
+
+  it('applies the tier on top of a speed override', () => {
+    const tunables = resolveFoeTunables(definition({ speed: 'fast', overrides: { patrolSpeedTilesPerSecond: 3 } }));
+    expect(tunables.patrolSpeedTilesPerSecond).toBeCloseTo(3 * FOE_SPEED_MULTIPLIERS.fast);
+  });
+
+  it('leaves a fast chase slower than a running player', () => {
+    expect(FOE_SPEED_MULTIPLIERS.fast * FOE_DEFAULT_TUNABLES.chaseSpeedRatio).toBeLessThan(1);
   });
 });
 

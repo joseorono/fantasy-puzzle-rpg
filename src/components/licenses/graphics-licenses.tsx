@@ -11,8 +11,7 @@ export default function GraphicsLicensesDialogContent() {
         </h3>
 
         <p>
-          Map character sprites: Art by Memao, created with Memao Sprite Sheet Creator by Sleeping Robot
-          Games&nbsp;
+          Map character sprites: Art by Memao, created with Memao Sprite Sheet Creator by Sleeping Robot Games&nbsp;
           <a href="https://sleeping-robot-games.itch.io/sprite-sheet-creator">
             https://sleeping-robot-games.itch.io/sprite-sheet-creator
           </a>
@@ -76,8 +75,8 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
-          Pixel RPG UI MEGA PACK (4 in 1), by Indigolay — bars, frames, icons, checkboxes,
-          tabs, cursors, skill icons and most other Indigolay graphics bought from them&nbsp;
+          Pixel RPG UI MEGA PACK (4 in 1), by Indigolay — bars, frames, icons, checkboxes, tabs, cursors, skill icons
+          and most other Indigolay graphics bought from them&nbsp;
           <a href="https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1">
             https://indigolay.itch.io/pixel-rpg-ui-mega-pack-4-in-1
           </a>
@@ -86,6 +85,11 @@ export default function GraphicsLicensesDialogContent() {
         <p>
           Badger and Frog enemy sprites, by Admurin&nbsp;
           <a href="https://admurin.itch.io">https://admurin.itch.io</a>
+        </p>
+
+        <p>
+          Enemy sprites, by Elthen&nbsp;
+          <a href="https://elthen.itch.io/">https://elthen.itch.io/</a>
         </p>
 
         <p>
@@ -124,24 +128,23 @@ export default function GraphicsLicensesDialogContent() {
         </p>
 
         <p>
-          LPC Revised Character Spritesheet, CC-BY-SA 3.0 / GPL 3.0, by wulax, Stephen
-          Challener (Redshrike), and Johannes Sjölund&nbsp;
+          LPC Revised Character Spritesheet, CC-BY-SA 3.0 / GPL 3.0, by wulax, Stephen Challener (Redshrike), and
+          Johannes Sjölund&nbsp;
           <a href="https://opengameart.org/content/lpc-revised-character-spritesheet">
             https://opengameart.org/content/lpc-revised-character-spritesheet
           </a>
         </p>
 
         <p>
-          Liberated Pixel Cup (LPC) Base Assets, CC-BY-SA 3.0 / GPL 3.0, by Stephen
-          &quot;Redshrike&quot; Challener and contributors&nbsp;
+          Liberated Pixel Cup (LPC) Base Assets, CC-BY-SA 3.0 / GPL 3.0, by Stephen &quot;Redshrike&quot; Challener and
+          contributors&nbsp;
           <a href="https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles">
             https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
           </a>
         </p>
 
         <p>
-          LPC Revised Run and Jump, CC-BY-SA 3.0 / GPL 3.0, by wulax and Johannes
-          Sjölund&nbsp;
+          LPC Revised Run and Jump, CC-BY-SA 3.0 / GPL 3.0, by wulax and Johannes Sjölund&nbsp;
           <a href="https://opengameart.org/content/lpc-revised-run-and-jump">
             https://opengameart.org/content/lpc-revised-run-and-jump
           </a>
