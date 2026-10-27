@@ -530,9 +530,9 @@ export const lastReshuffleAtom = atom((get) => get(battleStateAtom).lastReshuffl
 // Per-enemy "Flinched!" callout trigger — fires when an enemy hits its per-cycle flinch cap.
 export const lastMaxFlinchAtom = atom((get) => get(battleStateAtom).lastMaxFlinch ?? null);
 
-/** Payload of {@link lastEnemyAttackAtom}: which enemy attacked, when, and which attack row played. */
+/** Payload of {@link lastEnemyAttackAtom}: which enemy is winding up, and which attack row to play. */
 export type LastEnemyAttack = { enemyId: string; timestamp: number; attackIndex: number };
-/** Latest enemy attack, for the sprite layer. `attackIndex` indexes the sheet's attack rows. */
+/** Latest enemy attack-animation start, for the sprite layer. `attackIndex` indexes the sheet's attack rows. */
 export const lastEnemyAttackAtom = atom<LastEnemyAttack | null>(null);
 
 // ─── Enemy Poise / Break (see ~/lib/poise-system) ────────────────────────────

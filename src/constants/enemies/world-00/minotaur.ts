@@ -9,7 +9,15 @@ export const MINOTAUR_SHEET: AdmurinEnemySheet = {
   cellH: 101,
   pixelated: true,
   animations: {
-    idle: { row: 0, frames: 5, frameDurationMs: 140, source: 'idle', rect: { x: 28, y: 53, width: 52, height: 42 } },
+    // Reverse through the middle poses before wrapping so the breathing loop has no hard reset.
+    idle: {
+      row: 0,
+      frames: 5,
+      frameDurationMs: 140,
+      frameSequence: [0, 1, 2, 3, 4, 3, 2, 1],
+      source: 'idle',
+      rect: { x: 28, y: 53, width: 52, height: 42 },
+    },
     move: { row: 1, frames: 8, frameDurationMs: 80, source: 'move', rect: { x: 25, y: 51, width: 56, height: 44 } },
     hurt: { row: 2, frames: 3, frameDurationMs: 80, source: 'hurt', rect: { x: 28, y: 54, width: 52, height: 41 } },
     attacks: [

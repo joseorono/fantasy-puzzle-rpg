@@ -1,14 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import {
   getAdmurinAnimationCycleMs,
+  getAdmurinBackgroundSize,
+  getAdmurinAnimationStepCount,
   getAdmurinAnimationOrigin,
   getAdmurinAnimationTimingFunction,
+  getAdmurinAnimationTimingFunctionForSupport,
   getAdmurinAnimationZoom,
   getAdmurinPlacement,
+  getAdmurinRowBackgroundPosition,
   getAdmurinSheetRowCount,
   resolveAdmurinAttackAnimation,
 } from './admurin-enemy-sheet';
 import type { AdmurinEnemyAnimation, AdmurinEnemySheet } from '~/types/admurin-enemies';
+import { BROWN_WOLF_SHEET } from '~/constants/enemies/world-00/brown-wolf';
 
 const animation = (overrides: Partial<AdmurinEnemyAnimation> = {}): AdmurinEnemyAnimation => ({
   row: 0,
@@ -43,6 +48,42 @@ describe('getAdmurinAnimationCycleMs', () => {
     // An empty sequence means no sequence at all.
     expect(getAdmurinAnimationCycleMs(animation({ frames: 9, frameDurationMs: 80, frameSequence: [] }))).toBe(720);
   });
+
+  it('uses the plain frame count when linear easing is unavailable', () => {
+    const animationWithSequence = animation({ frames: 4, frameDurationMs: 150, frameSequence: [0, 1, 2, 3, 2, 1] });
+    expect(getAdmurinAnimationStepCount(animationWithSequence, false)).toBe(4);
+    expect(getAdmurinAnimationCycleMs(animationWithSequence, false)).toBe(600);
+    expect(getAdmurinAnimationTimingFunctionForSupport(animationWithSequence, false)).toBe('steps(4, end)');
+  });
+
+  it('uses the sequence count and timing where linear easing is supported', () => {
+    const animationWithSequence = animation({ frames: 4, frameSequence: [0, 1, 2, 3, 2, 1] });
+    expect(getAdmurinAnimationStepCount(animationWithSequence, true)).toBe(6);
+    expect(getAdmurinAnimationTimingFunctionForSupport(animationWithSequence, true)).toContain('linear(');
+  });
+});
+
+describe('Brown Wolf animation tuning', () => {
+  it('slows the idle cycle and holds the attack motion-line frames longer', () => {
+    expect(getAdmurinAnimationCycleMs(BROWN_WOLF_SHEET.animations.idle)).toBe(1040);
+    expect(getAdmurinAnimationCycleMs(BROWN_WOLF_SHEET.animations.attacks![0])).toBe(560);
+    expect(BROWN_WOLF_SHEET.animations.attacks![0].frameSequence).toEqual([0, 1, 1, 2, 2, 3, 4, 5]);
+    expect(BROWN_WOLF_SHEET.animations.attacks![0].crossfadeMs).toBe(40);
+    expect(BROWN_WOLF_SHEET.animations.attacks![1].crossfadeMs).toBeUndefined();
+    expect(getAdmurinRowBackgroundPosition(BROWN_WOLF_SHEET, BROWN_WOLF_SHEET.animations.attacks![0])).toBe(
+      '0 66.6667%',
+    );
+    expect(getAdmurinRowBackgroundPosition(BROWN_WOLF_SHEET, BROWN_WOLF_SHEET.animations.attacks![1])).toBe('0 100%');
+  });
+
+  it('preserves atlas width for idle rows with fewer frames than the sheet has columns', () => {
+    const idle = BROWN_WOLF_SHEET.animations.idle;
+    const attacks = BROWN_WOLF_SHEET.animations.attacks!;
+
+    expect(idle.frames).toBe(3);
+    expect(attacks[0].frames).toBe(6);
+    expect(getAdmurinBackgroundSize(BROWN_WOLF_SHEET)).toBe('auto 400%');
+  });
 });
 
 describe('getAdmurinAnimationTimingFunction', () => {
@@ -52,17 +93,15 @@ describe('getAdmurinAnimationTimingFunction', () => {
   });
 
   it('compiles a sequence into flat linear() segments', () => {
-    expect(
-      getAdmurinAnimationTimingFunction(animation({ frames: 4, frameSequence: [0, 1, 2, 3, 2, 1] })),
-    ).toBe(
+    expect(getAdmurinAnimationTimingFunction(animation({ frames: 4, frameSequence: [0, 1, 2, 3, 2, 1] }))).toBe(
       'linear(0 0% 16.6667%, 0.25 16.6667% 33.3333%, 0.5 33.3333% 50%, 0.75 50% 66.6667%, 0.5 66.6667% 83.3333%, 0.25 83.3333% 100%)',
     );
   });
 
   it('repeats a held frame in place', () => {
-    expect(
-      getAdmurinAnimationTimingFunction(animation({ frames: 9, frameSequence: [0, 1, 1, 2] })),
-    ).toBe('linear(0 0% 25%, 0.1111 25% 75%, 0.2222 75% 100%)');
+    expect(getAdmurinAnimationTimingFunction(animation({ frames: 9, frameSequence: [0, 1, 1, 2] }))).toBe(
+      'linear(0 0% 25%, 0.1111 25% 75%, 0.2222 75% 100%)',
+    );
   });
 });
 
@@ -104,6 +143,26 @@ describe('getAdmurinSheetRowCount', () => {
 
   it('handles a sheet with only an idle row', () => {
     expect(getAdmurinSheetRowCount(sheetWith())).toBe(1);
+  });
+});
+
+describe('getAdmurinRowBackgroundPosition', () => {
+  const sheet: Pick<AdmurinEnemySheet, 'animations'> = {
+    animations: {
+      idle: animation({ row: 0 }),
+      hurt: animation({ row: 1 }),
+      attacks: [animation({ row: 2 }), animation({ row: 3 })],
+    },
+  };
+
+  it('aligns each row within a single-row strip', () => {
+    expect(getAdmurinRowBackgroundPosition(sheet, animation({ row: 0 }))).toBe('0 0%');
+    expect(getAdmurinRowBackgroundPosition(sheet, animation({ row: 2 }))).toBe('0 66.6667%');
+    expect(getAdmurinRowBackgroundPosition(sheet, animation({ row: 3 }))).toBe('0 100%');
+  });
+
+  it('keeps a single-row sheet at the origin', () => {
+    expect(getAdmurinRowBackgroundPosition({ animations: { idle: animation({ row: 0 }) } }, animation())).toBe('0 0%');
   });
 });
 

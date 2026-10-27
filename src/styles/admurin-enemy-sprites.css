@@ -1,6 +1,7 @@
 /* ─── Admurin enemy battler sprites ───────────────────────────────────
    One combined sheet per enemy (see scripts/admurin-enemy-to-sprite-sheet.mjs). AdmurinEnemySprite
-   sets --admurin-row / --admurin-frames / --admurin-rows / --admurin-cycle-ms.
+   sets --admurin-frames / --admurin-cycle-ms and selects a source row as a static
+   background offset inside a one-row-high strip.
 
    Compositor-only: a cell-sized box (scaled per pose) clips the sheet, and the strip holds the whole
    sheet, stepping frames by translating itself. Keyframes use literal values — no var() — so the
@@ -27,11 +28,11 @@
   transition: transform 120ms ease-out;
 }
 
-/* Row selection is a static offset, so it never competes with the strip's frame transform. */
+/* Row wrapper owns opacity only; the background row is selected inside the one-cell-high strip. */
 .admurin-enemy-sprite__shift {
   position: absolute;
   inset: 0;
-  transform: translateY(calc(var(--admurin-row, 0) * -100%));
+  overflow: hidden;
 }
 
 /* A row switch swaps the whole silhouette at once — poses sit at different heights inside their
@@ -57,17 +58,18 @@
   }
 }
 
-/* One cell is one box wide, so a step of 100% spans every frame's cell and `steps(frames)` lands on
-   each one. */
+/* The strip is one source row high. Its background still covers the whole sheet, but background-position
+   selects the row before the horizontal compositor animation; adjacent rows are never translated
+   through the clipping edge. The inline background-size preserves the source aspect ratio. One step
+   of 100% spans one frame cell. */
 .admurin-enemy-sprite__strip {
   position: absolute;
   top: 0;
   left: 0;
   width: calc(var(--admurin-frames, 1) * 100%);
-  height: calc(var(--admurin-rows, 1) * 100%);
+  height: 100%;
   background-repeat: no-repeat;
-  background-position: 0 0;
-  background-size: auto 100%;
+  /* Keep the source aspect ratio: shorter animation rows may use fewer frames than the sheet width. */
   /* Downscaled, so nearest-neighbour would drop pixel rows (see party-sprites.css). */
   image-rendering: auto;
   will-change: transform;

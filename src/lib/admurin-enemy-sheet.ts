@@ -1,5 +1,9 @@
 import type { AdmurinEnemyAnimation, AdmurinEnemySheet } from '~/types/admurin-enemies';
 
+/** `linear()` easings are required to honor custom frame sequences. */
+export const SUPPORTS_ADMURIN_FRAME_SEQUENCE =
+  typeof CSS !== 'undefined' && CSS.supports('animation-timing-function', 'linear(0, 1)');
+
 /** Native-pixel origin (top-left) of an animation's frame 0 on its sheet. */
 export function getAdmurinAnimationOrigin(
   sheet: Pick<AdmurinEnemySheet, 'cellH'>,
@@ -12,8 +16,17 @@ export function getAdmurinAnimationOrigin(
 /** Full playthrough duration of an animation, in ms. */
 export function getAdmurinAnimationCycleMs(
   animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameDurationMs' | 'frameSequence'>,
+  supportsLinearEasing = true,
 ): number {
-  return (animation.frameSequence?.length || animation.frames) * animation.frameDurationMs;
+  return getAdmurinAnimationStepCount(animation, supportsLinearEasing) * animation.frameDurationMs;
+}
+
+/** Number of timeline steps the sprite player will render, including compatibility fallback. */
+export function getAdmurinAnimationStepCount(
+  animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameSequence'>,
+  supportsLinearEasing = true,
+): number {
+  return supportsLinearEasing && animation.frameSequence?.length ? animation.frameSequence.length : animation.frames;
 }
 
 /** Trims float noise so generated easings stay readable (16.6667, not 16.666666666666668). */
@@ -43,6 +56,16 @@ export function getAdmurinAnimationTimingFunction(
   return `linear(${stops.join(', ')})`;
 }
 
+/** Selects the row's timing function for this browser's CSS feature support. */
+export function getAdmurinAnimationTimingFunctionForSupport(
+  animation: Pick<AdmurinEnemyAnimation, 'frames' | 'frameSequence'>,
+  supportsLinearEasing: boolean,
+): string {
+  return supportsLinearEasing && animation.frameSequence?.length
+    ? getAdmurinAnimationTimingFunction(animation)
+    : `steps(${animation.frames}, end)`;
+}
+
 /** The attack row a combat attack index plays; wraps to what the sheet actually has. Returns undefined when the sheet has no attack rows. */
 export function resolveAdmurinAttackAnimation(
   sheet: Pick<AdmurinEnemySheet, 'animations'>,
@@ -61,6 +84,21 @@ export function getAdmurinSheetRowCount(sheet: Pick<AdmurinEnemySheet, 'animatio
     .filter((animation): animation is AdmurinEnemyAnimation => animation !== undefined)
     .map((animation) => animation.row);
   return Math.max(...rows) + 1;
+}
+
+/** CSS background offset that aligns one source row to a cell-height strip without translating the sheet vertically. */
+export function getAdmurinRowBackgroundPosition(
+  sheet: Pick<AdmurinEnemySheet, 'animations'>,
+  animation: Pick<AdmurinEnemyAnimation, 'row'>,
+): string {
+  const rowCount = getAdmurinSheetRowCount(sheet);
+  const offsetPercent = rowCount > 1 ? (animation.row / (rowCount - 1)) * 100 : 0;
+  return `0 ${round4(offsetPercent)}%`;
+}
+
+/** Scales a sheet to its full row height while preserving its source aspect ratio. */
+export function getAdmurinBackgroundSize(sheet: Pick<AdmurinEnemySheet, 'animations'>): string {
+  return `auto ${getAdmurinSheetRowCount(sheet) * 100}%`;
 }
 
 /** Fraction of the card left empty around the sprite: nothing should ever touch the card edge. */

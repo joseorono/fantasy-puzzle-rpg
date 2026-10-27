@@ -11,10 +11,26 @@ export const BROWN_WOLF_SHEET: AdmurinEnemySheet = {
   cellH: 32,
   pixelated: true,
   animations: {
-    idle: { row: 0, frames: 3, frameDurationMs: 140, source: 'idle', rect: { x: 4, y: 0, width: 34, height: 32 } },
+    // Ping-pong the short breathing row rather than snapping from its last frame to frame 0.
+    idle: {
+      row: 0,
+      frames: 3,
+      frameDurationMs: 260,
+      frameSequence: [0, 1, 2, 1],
+      source: 'idle',
+      rect: { x: 4, y: 0, width: 34, height: 32 },
+    },
     hurt: { row: 1, frames: 6, frameDurationMs: 80, source: 'hurt', rect: { x: 4, y: 0, width: 42, height: 32 } },
     attacks: [
-      { row: 2, frames: 6, frameDurationMs: 70, source: 'attack_a', rect: { x: 3, y: 0, width: 43, height: 32 } },
+      {
+        row: 2,
+        frames: 6,
+        frameDurationMs: 70,
+        frameSequence: [0, 1, 1, 2, 2, 3, 4, 5],
+        crossfadeMs: 40,
+        source: 'attack_a',
+        rect: { x: 3, y: 0, width: 43, height: 32 },
+      },
       { row: 3, frames: 6, frameDurationMs: 70, source: 'attack_b', rect: { x: 3, y: 0, width: 45, height: 32 } },
     ],
   },

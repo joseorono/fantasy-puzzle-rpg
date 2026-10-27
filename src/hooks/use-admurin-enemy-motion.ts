@@ -1,7 +1,11 @@
 import { useAtomValue } from 'jotai';
 import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import { enemyPoiseSummaryAtom, lastDamageAtom, lastEnemyAttackAtom } from '~/stores/battle-atoms';
-import { getAdmurinAnimationCycleMs, resolveAdmurinAttackAnimation } from '~/lib/admurin-enemy-sheet';
+import {
+  getAdmurinAnimationCycleMs,
+  resolveAdmurinAttackAnimation,
+  SUPPORTS_ADMURIN_FRAME_SEQUENCE,
+} from '~/lib/admurin-enemy-sheet';
 import type { AdmurinEnemyAnimation } from '~/types/admurin-enemies';
 import type { EnemyData } from '~/types/rpg-elements';
 
@@ -29,16 +33,17 @@ function playOneShot(
 ) {
   const now = performance.now();
   // Triggers that land while a clip is still playing are dropped, so it always completes instead
-  // of twitching on every hit in a fast cycle. Forced plays (a hit) take over instead.
+  // of twitching on every hit in a fast cycle. Higher-priority plays (enemy attacks) take over.
   if (!force && now < endsAtRef.current) return;
-  const durationMs = getAdmurinAnimationCycleMs(animation);
+  const durationMs = getAdmurinAnimationCycleMs(animation, SUPPORTS_ADMURIN_FRAME_SEQUENCE);
   endsAtRef.current = now + durationMs;
   setOneShot((previous) => ({ animation, durationMs, id: (previous?.id ?? 0) + 1 }));
 }
 
 /**
  * Picks the sheet row an Admurin enemy plays. Mirrors `useBattlerMotion`: the idle row loops, hits
- * and attacks play as one-shots (latest wins, a hit interrupts a running attack) and a Poise Break
+ * and attacks play as one-shots (an attack takes priority over a hurt reaction; a later attack
+ * replaces an older one) and a Poise Break
  * cancels one. A paused battle banks the running clip so it resumes where it froze instead of
  * expiring off-screen. Returns null for enemies without an `admurinSheet`, so the caller renders
  * the static sprite.
@@ -84,14 +89,15 @@ export function useAdmurinEnemyMotion(enemy: EnemyData, isBattlePaused: boolean)
     playOneShot(setOneShot, endsAtRef, hurt, false);
   }, [lastDamage, enemy.id, isDead, sheet]);
 
-  // The enemy's own attack: play the row the engine picked. Dropped while a clip is still playing.
+  // Wind-up starts just before the scheduled shot, so the attack's final pose lands with impact.
+  // It takes over hurt/recovery clips so the visual attack is not silently dropped.
   useEffect(() => {
     if (!sheet || !lastAttack || lastAttack.enemyId !== enemy.id || isDead) return;
     playOneShot(
       setOneShot,
       endsAtRef,
       resolveAdmurinAttackAnimation(sheet, lastAttack.attackIndex) ?? sheet.animations.idle,
-      false,
+      true,
     );
   }, [lastAttack, enemy.id, isDead, sheet]);
 

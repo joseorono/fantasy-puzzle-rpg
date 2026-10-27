@@ -17,6 +17,8 @@ export interface AdmurinEnemyAnimation {
    * frames (e.g. `[0, 1, 2, 3, 2, 1]`) without new pixels. Default: every cell once, left to right.
    */
   frameSequence?: number[];
+  /** Optional row-switch dissolve duration; defaults to the shared enemy sprite crossfade. */
+  crossfadeMs?: number;
   /** Original animation name in the pack ('tongue', 'attack_A', …) — audit trail. */
   source: string;
   /**
