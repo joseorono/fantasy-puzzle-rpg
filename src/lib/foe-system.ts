@@ -15,6 +15,7 @@ import {
   FOE_CONTACT_REARM_RATIO,
   FOE_DEFAULT_TUNABLES,
   FOE_FACING_EPSILON_PX,
+  FOE_SPEED_MULTIPLIERS,
 } from '~/constants/foe';
 import { smoothPath } from './foe-pathfinding';
 import { resolveFoeWalkTween } from './foe-sprite';
@@ -39,7 +40,8 @@ import { resolveFoeWalkTween } from './foe-sprite';
  */
 
 /**
- * Merges the shared defaults with a FOE's overrides.
+ * Merges the shared defaults with a FOE's overrides, then scales its movement speeds by
+ * its speed tier.
  *
  * @param definition The FOE.
  * @param defaults The base tunables, `FOE_DEFAULT_TUNABLES` unless a test says otherwise.
@@ -48,7 +50,14 @@ export function resolveFoeTunables(
   definition: FoeDefinition,
   defaults: FoeTunables = FOE_DEFAULT_TUNABLES,
 ): FoeTunables {
-  return { ...defaults, ...definition.overrides };
+  const merged = { ...defaults, ...definition.overrides };
+  const multiplier = FOE_SPEED_MULTIPLIERS[definition.speed];
+  return {
+    ...merged,
+    patrolSpeedTilesPerSecond: merged.patrolSpeedTilesPerSecond * multiplier,
+    returnSpeedTilesPerSecond: merged.returnSpeedTilesPerSecond * multiplier,
+    chaseSpeedRatio: merged.chaseSpeedRatio * multiplier,
+  };
 }
 
 /** Centre of a tile in map pixels. */

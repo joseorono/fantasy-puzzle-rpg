@@ -18,6 +18,11 @@ import {
 import { calculateEnemyAttackInterval, calculateEnemyDamage } from '~/lib/rpg-calculations';
 import { resolveStaggerHits, weighHitsByAttacker } from '~/lib/flinch-system';
 import { resolveEnemyAttackCycle, type ResolvedEnemyAttack } from '~/lib/enemy-attacks';
+import {
+  getAdmurinAnimationCycleMs,
+  resolveAdmurinAttackAnimation,
+  SUPPORTS_ADMURIN_FRAME_SEQUENCE,
+} from '~/lib/admurin-enemy-sheet';
 import type { EnemyData } from '~/types/rpg-elements';
 import { resolveCountdownRingAnchor } from '~/lib/battle-system';
 import { POISE_BREAK_STAGGER_DURATION_MS, SKILL_STAGGER_MULTIPLIER } from '~/constants/battle';
@@ -153,6 +158,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
   const staggerPulseRef = useRef<Map<string, { nonce: number; level: 'normal' | 'max' }>>(new Map());
   // One pending timeout per enemy (standby wait or the next attack), for cleanup.
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const attackAnimationTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   // Guards against re-processing the same hit (effect re-runs / StrictMode double-invoke).
   const processedDamageRef = useRef<typeof lastDamage>(null);
   // Last list handed to the caller, reused whenever the new one is field-for-field identical.
@@ -198,6 +204,8 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
     function clearTimers() {
       for (const timer of timersRef.current.values()) clearTimeout(timer);
       timersRef.current.clear();
+      for (const timer of attackAnimationTimersRef.current.values()) clearTimeout(timer);
+      attackAnimationTimersRef.current.clear();
     }
 
     if (gameStatus !== 'playing' || isBattlePaused === true || isTraining) {
@@ -222,7 +230,7 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
       const enemy = enemiesRef.current.find((e) => e.id === id);
       if (!enemy || enemy.currentHp <= 0) return;
       // Alternate the enemy's attack variants: the resolved one owns both the interval that leads
-      // into its shot and the hit it lands, and its index rides to the sprite on lastEnemyAttackAtom.
+      // into its shot and the hit it lands, and its index selects the matching attack animation.
       const cycleIndex = attackCycleRef.current.get(id) ?? 0;
       const resolved = resolveEnemyAttackCycle(enemy, cycleIndex);
       attackCycleRef.current.set(id, cycleIndex + 1);
@@ -244,6 +252,31 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
         id,
         setTimeout(() => fireShot(id), delay),
       );
+
+      const enemy = enemiesRef.current.find((entry) => entry.id === id);
+      const pendingAttack = pendingAttackRef.current.get(id);
+      const attackAnimation =
+        enemy?.admurinSheet && pendingAttack
+          ? resolveAdmurinAttackAnimation(enemy.admurinSheet, pendingAttack.attackIndex)
+          : undefined;
+      if (!enemy || !attackAnimation) return;
+
+      const leadMs = getAdmurinAnimationCycleMs(attackAnimation, SUPPORTS_ADMURIN_FRAME_SEQUENCE);
+      const announceAttack = () => {
+        const releaseAt = releaseAtRef.current.get(id) ?? performance.now();
+        const announceAt = releaseAt - leadMs;
+        const remaining = announceAt - performance.now();
+        if (remaining > 0) {
+          attackAnimationTimersRef.current.set(id, setTimeout(announceAttack, remaining));
+          return;
+        }
+        attackAnimationTimersRef.current.delete(id);
+        const currentEnemy = enemiesRef.current.find((entry) => entry.id === id);
+        if (!currentEnemy || currentEnemy.currentHp <= 0 || staggeredIdsRef.current.includes(id)) return;
+        flagEnemyAttack({ enemyId: id, timestamp: Date.now(), attackIndex: pendingAttack.attackIndex });
+      };
+      const announceDelay = Math.max(0, delay - leadMs);
+      attackAnimationTimersRef.current.set(id, setTimeout(announceAttack, announceDelay));
     }
 
     function fireShot(id: string) {
@@ -266,7 +299,6 @@ export function useEnemyAttackTimers(isBattlePaused: boolean = false): EnemyAtta
         id,
         (enemy.guardBreak ?? 1) * resolved.guardBreakMultiplier,
       );
-      flagEnemyAttack({ enemyId: id, timestamp: Date.now(), attackIndex: resolved.attackIndex });
       startCycle(id);
     }
 

@@ -71,4 +71,18 @@ export const APPRENTICE_FORGE_ENCOUNTERS: Record<string, EncounterDefinition> = 
       { ...BAT, id: 'bat-2', name: 'Bat B' },
     ],
   },
+  apprentice_forge_foe_4: {
+    enemies: [
+      { ...BAT, id: 'bat-1', name: 'Bat A' },
+      { ...BAT, id: 'bat-2', name: 'Bat B' },
+      { ...BAT, id: 'bat-3', name: 'Bat C' },
+    ],
+  },
+  apprentice_forge_foe_5: {
+    enemies: [
+      { ...BAT, id: 'bat-1', name: 'Bat A' },
+      { ...BAT, id: 'bat-2', name: 'Bat B' },
+      { ...BAT, id: 'bat-3', name: 'Bat C' },
+    ],
+  },
 };

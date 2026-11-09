@@ -31,6 +31,16 @@ export const MONOPIXELART_SKELETON_MAP_STRIP: FoeMapStrip = {
   move: { frames: 10, frameDurationMs: 80 },
 };
 
+export const RIDER_MAP_STRIP: FoeMapStrip = {
+  image: '/assets/enemy-sprites/rider_map_strip.png',
+  cellW: 55,
+  cellH: 48,
+  anchorX: 29,
+  anchorY: 48,
+  idle: { frames: 7, frameDurationMs: 140 },
+  move: { frames: 7, frameDurationMs: 80 },
+};
+
 export const TECOPENA_BAT_MAP_STRIP: FoeMapStrip = {
   image: '/assets/enemy-sprites/tecopena-bat_map_strip.png',
   cellW: 48,

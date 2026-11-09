@@ -1,5 +1,5 @@
 import type { JirbyWhiteSymbolName } from '~/types/jirby-symbols';
-import type { FoeTunables } from '~/types/foe';
+import type { FoeSpeed, FoeTunables } from '~/types/foe';
 import { RUN_SPEED_MULTIPLIER, WALK_TILES_PER_SECOND } from './map-movement';
 
 /**
@@ -27,6 +27,16 @@ export const FOE_DEFAULT_TUNABLES: FoeTunables = {
   repathIntervalSeconds: 0.25,
   reaggroCooldownSeconds: 1.5,
   maxStandoffSeconds: 4,
+};
+
+/**
+ * Multiplier on every movement speed (patrol, return, chase), keyed by `FoeDefinition.speed`.
+ * Keep `fast * chaseSpeedRatio` below 1, or a running player can't outpace the chase.
+ */
+export const FOE_SPEED_MULTIPLIERS: Record<FoeSpeed, number> = {
+  slow: 0.7,
+  normal: 1,
+  fast: 1.1,
 };
 
 /** The player's run speed in tiles per second — what `chaseSpeedRatio` is a fraction of. */

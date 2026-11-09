@@ -29,6 +29,9 @@ export interface FoeTunables {
   maxStandoffSeconds: number;
 }
 
+/** Movement tier of a FOE; each is a multiplier in `FOE_SPEED_MULTIPLIERS`. */
+export type FoeSpeed = 'slow' | 'normal' | 'fast';
+
 /**
  * A FOE's map-size animation strip, baked from its battle sheet by
  * `scripts/bake-foe-map-strips.mjs`. Row 0 is idle, row 1 (when present) is move; every
@@ -64,6 +67,8 @@ export interface FoeDefinition {
    * Defaults to `FOE_DEFAULT_WALK_TWEEN` without a move row, 0 with one.
    */
   walkTween?: number;
+  /** Scales patrol, return and chase speed together. */
+  speed: FoeSpeed;
   /** Walkable tiles walked in order and looped. `patrol[0]` is the home post the leash is measured from. */
   patrol: GridPosition[];
   /** Key into `MapDefinition.encounters`; defaults to `id`. */
@@ -73,7 +78,7 @@ export interface FoeDefinition {
 }
 
 /** How a kind of FOE looks on the map, shared by every FOE of that kind. */
-export type FoeLook = Pick<FoeDefinition, 'mapSprite' | 'mapStrip' | 'walkTween'>;
+export type FoeLook = Pick<FoeDefinition, 'mapSprite' | 'mapStrip' | 'walkTween' | 'speed'>;
 
 export type FoeMode = 'patrol' | 'chase' | 'return';
 export type FoeFacing = 'left' | 'right';

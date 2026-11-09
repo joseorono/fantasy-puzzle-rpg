@@ -7,10 +7,15 @@ import { EXP_PINATA_FROGS, EXP_PINATA_TARGET_LEVEL, EXP_PINATA_TOTAL_EXP } from 
 import {
   BADGER,
   BAT,
+  BROWN_WOLF,
   DINO_REX,
   DINO_TRI,
+  ENCHANTED_GOLEM,
   GIANT_FROG,
+  MINOTAUR,
+  RIDER,
   SKELETON,
+  SMALL_GOLEM,
   SMALL_SLIME,
   STONE_GOLEM,
   SWAMP_FROG,
@@ -117,6 +122,51 @@ const BATTLE_DEMOS: {
     location: 'Forest',
     title: 'Dino Tri: the pack has no hurt row (so hits show only the recoil) and sit/thought were skipped.',
     enemies: [{ ...DINO_TRI, id: 'dino-tri-1' }],
+  },
+  {
+    id: 'rider',
+    label: 'Rider',
+    className: 'bg-teal-600 hover:bg-teal-700',
+    location: 'Castle Garden',
+    title:
+      'Rider: the Castle Garden FOE — fast (spd 50), very sturdy (500 HP, hard to stagger), weak to the rogue\'s green orbs. Attacks: Trample, then a heavy Leap.',
+    enemies: [{ ...RIDER, id: 'rider-1' }],
+  },
+  {
+    id: 'brown-wolf',
+    label: 'Brown Wolf',
+    className: 'bg-lime-700 hover:bg-lime-800',
+    location: 'Forest',
+    title:
+      'Brown Wolf: a balanced mid-tier predator (150 HP, quick 2.56s attacks, no elemental weakness). Attacks: Bite, then a heavy Pounce (the run row).',
+    enemies: [{ ...BROWN_WOLF, id: 'brown-wolf-1' }],
+  },
+  {
+    id: 'small-golem',
+    label: 'Small Golem',
+    className: 'bg-stone-500 hover:bg-stone-600',
+    location: 'Forest',
+    title:
+      'Small Golem: a rocky mini-tank (160 HP, slow ~4s attacks, hard to stagger). Attacks: Tackle, then a heavy Roll.',
+    enemies: [{ ...SMALL_GOLEM, id: 'small-golem-1' }],
+  },
+  {
+    id: 'enchanted-golem',
+    label: 'Enchanted Golem',
+    className: 'bg-violet-600 hover:bg-violet-700',
+    location: 'Forest',
+    title:
+      'Enchanted Golem: an armoured elite (260 HP, ~3.6s attacks, very hard to stagger). Attacks: Strike, then a heavy Slam.',
+    enemies: [{ ...ENCHANTED_GOLEM, id: 'enchanted-golem-1' }],
+  },
+  {
+    id: 'minotaur',
+    label: 'Minotaur',
+    className: 'bg-red-700 hover:bg-red-800',
+    location: 'Forest',
+    title:
+      'Minotaur: a horned brute elite (400 HP, ~3.1s swings, very hard to stagger). Attacks: Cleave, then a heavy Gore.',
+    enemies: [{ ...MINOTAUR, id: 'minotaur-1' }],
   },
 ];
 

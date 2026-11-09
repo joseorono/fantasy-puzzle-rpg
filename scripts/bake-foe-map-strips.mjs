@@ -24,6 +24,7 @@ import sharp from 'sharp';
 import { DINO_TRI_SHEET } from '../src/constants/enemies/world-00/dino-tri-sheet.ts';
 import { FROGGER_SHEET } from '../src/constants/enemies/world-00/frogger-sheet.ts';
 import { MONOPIXELART_SKELETON_SHEET } from '../src/constants/enemies/world-00/monopixelart-skeleton-sheet.ts';
+import { RIDER_SHEET } from '../src/constants/enemies/world-00/rider-sheet.ts';
 import { TECOPENA_BAT_SHEET } from '../src/constants/enemies/world-00/tecopena-bat-sheet.ts';
 import { TECOPENA_SLIME_SHEET } from '../src/constants/enemies/world-00/tecopena-slime-sheet.ts';
 
@@ -34,7 +35,7 @@ const OUT_TS = path.join(REPO_ROOT, 'src', 'constants', 'enemies', 'world-00', '
 /** Alpha above this counts as ink, matching `admurin-enemy-to-sprite-sheet.mjs`. */
 const INK_ALPHA = 8;
 
-const SHEETS = [DINO_TRI_SHEET, FROGGER_SHEET, MONOPIXELART_SKELETON_SHEET, TECOPENA_BAT_SHEET, TECOPENA_SLIME_SHEET];
+const SHEETS = [DINO_TRI_SHEET, FROGGER_SHEET, MONOPIXELART_SKELETON_SHEET, RIDER_SHEET, TECOPENA_BAT_SHEET, TECOPENA_SLIME_SHEET];
 
 const toUpperSnake = (slug) => slug.replace(/[^a-z0-9]+/gi, '_').toUpperCase();
 const publicFile = (url) => path.join(PUBLIC_DIR, ...url.split('/').filter(Boolean));
